@@ -40,7 +40,7 @@
       - Else -> extract story key from current branch name (feature/{{story_key}})
     </action>
 
-    <action>Run `git diff develop...HEAD --name-only` -> {{changed_files}}</action>
+    <action>Run `git diff dev...HEAD --name-only` -> {{changed_files}}</action>
     <action>If story file found, extract File Specification and ACs -> {{story_context}}</action>
     <action>Filter changed files to UI components -> {{changed_ui_files}}</action>
 
