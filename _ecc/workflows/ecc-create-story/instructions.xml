@@ -1,0 +1,480 @@
+<workflow>
+  <critical>The workflow execution engine is governed by: {project-root}/_bmad/core/tasks/workflow.xml</critical>
+  <critical>You MUST have already loaded and processed: {installed_path}/workflow.yaml</critical>
+  <critical>Communicate all responses in {communication_language} and language MUST be tailored to {user_skill_level}</critical>
+  <critical>Generate all documents in {document_output_language}</critical>
+
+  <critical>ECC-ORCHESTRATED STORY CREATION - ECC Orchestrator spawns Planner + Architect agents!</critical>
+  <critical>This workflow uses ECC agents to analyze requirements and provide technical guidance</critical>
+  <critical>Sequence: planner -> architect -> [database-reviewer + security-reviewer] if needed</critical>
+
+  <!-- ECC ORCHESTRATOR PROTOCOL -->
+  <orchestrator-protocol>
+    <principle>ECC Orchestrator coordinates story creation with ECC agent analysis</principle>
+    <principle>Planner analyzes requirements and identifies implementation risks</principle>
+    <principle>Architect provides technical design and pattern recommendations</principle>
+    <principle>Optional parallel technical review for complex stories</principle>
+
+    <available-agents>
+      | Agent | subagent_type | Purpose |
+      |-------|---------------|---------|
+      | Planner | everything-claude-code:planner | Requirements analysis, risk identification |
+      | Architect | everything-claude-code:architect | Technical design, patterns |
+      | Database Reviewer | everything-claude-code:database-reviewer | Schema/query analysis |
+      | Security Reviewer | everything-claude-code:security-reviewer | Security considerations |
+    </available-agents>
+  </orchestrator-protocol>
+
+  <!-- STEP 0: Project Knowledge Loading -->
+
+  <step n="0" goal="Load project knowledge for story creation context">
+    <action>Load and cache {project-root}/_ecc/knowledge/code-review-patterns.md -> {{cached_review_patterns}}</action>
+    <action>Load and cache any docs/architecture/*.md files that exist -> {{cached_architecture}}</action>
+    <action>Combine cached knowledge into {{project_patterns}} for ECC agents</action>
+
+    <output>**ECC Orchestrator Initialized for Story Creation**
+
+      Project knowledge loaded:
+      - Review patterns: {{cached_review_patterns_summary}}
+      - Architecture docs: loaded (if available)
+
+      Ready to spawn ECC agents for story analysis.
+    </output>
+  </step>
+
+  <!-- STEP 1: Find Next Story from Epics -->
+
+  <step n="1" goal="Identify next story to create from epics">
+    <action>Search {epics_dir} for epic files</action>
+    <action>Check {sprint_status} for stories already created</action>
+    <action>Find next uncreated story from epic requirements</action>
+
+    <check if="no epics found">
+      <output>No epic files found in {epics_dir}
+
+        **Options:**
+        1. Create epics first with `/create-epics-and-stories`
+        2. Provide story requirements manually
+      </output>
+      <ask>Choose [1] or [2], or describe the story you want to create:</ask>
+    </check>
+
+    <check if="next story identified">
+      <action>Extract {{story_requirements}} from epic</action>
+      <action>Extract {{acceptance_criteria}} from epic</action>
+      <action>Set {{story_key}} from epic naming convention</action>
+
+      <output>**Next Story Identified**
+
+        Story: {{story_key}}
+        Epic: {{epic_name}}
+        Requirements: {{story_requirements_summary}}
+      </output>
+    </check>
+  </step>
+
+  <!-- STEP 2: ECC Planner - Requirements Analysis -->
+
+  <step n="2" goal="Spawn ECC Planner for requirements analysis">
+    <critical>ECC ORCHESTRATOR: Spawning ECC Planner agent</critical>
+    <critical>SIZING AWARENESS: Planner must respect Opus 4.6 sizing guidelines when decomposing tasks</critical>
+
+    <output>**Spawning ECC Planner...**
+
+      Task: Analyze story requirements and identify implementation approach
+    </output>
+
+    <ecc-spawn agent="planner">
+      <task-call>
+        subagent_type: "everything-claude-code:planner"
+        description: "Analyze story requirements for {{story_key}}"
+        prompt: |
+          ## Story Requirements Analysis
+
+          **Story:** {{story_key}}
+
+          **Requirements:**
+          {{story_requirements}}
+
+          **Acceptance Criteria:**
+          {{acceptance_criteria}}
+
+          **Project Context:**
+          {{project_patterns}}
+
+          ---
+
+          ## SIZING GUIDELINES (Opus 4.6)
+
+          **CRITICAL:** Task decomposition MUST respect these sizing limits.
+          Opus 4.6 handles larger context windows than previous models.
+          Prefer fewer, larger stories over many micro-stories.
+
+          - **SMALL (1-2 pts):** 1-3 tasks, <=10 subtasks total, <=4 files
+          - **MEDIUM (3-5 pts):** 3-6 tasks, <=25 subtasks total, <=8 files
+          - **LARGE (5-8 pts):** 6-8 tasks, <=40 subtasks total, <=12 files
+          - **TOO LARGE (needs split):** >8 tasks OR >40 subtasks OR >12 files
+
+          **Sizing Principles:**
+          - Group related work into single tasks (types + service + tests for one layer = 1 task)
+          - Don't split by individual file - split by functional concern
+          - Foundation (types/schema) + integration (service/UI) can be ONE story if <=8 tasks total
+
+          ---
+
+          **Pre-Analysis: Run `dust` on affected directories for context budgeting:**
+          - `dust src/ -d 2` to assess existing source size
+          - Use this to inform sizing classification and task breakdown
+
+          **Analysis Required:**
+
+          1. **Requirements Breakdown**
+             - Core functionality needed
+             - Dependencies on existing code
+             - External integrations required
+
+          2. **Implementation Approach**
+             - Recommended approach
+             - Alternative approaches considered
+             - Trade-offs
+
+          3. **Risk Assessment**
+             - Technical risks
+             - Complexity factors
+             - Unknown areas
+
+          4. **Task Decomposition** (MUST respect sizing guidelines above)
+             - Suggested task breakdown
+             - Estimated complexity per task
+             - Recommended order
+             - **Sizing check:** Verify total tasks <=8, subtasks <=40, files <=12
+
+          5. **Testing Strategy**
+             - Key unit test scenarios
+             - Integration test points
+
+          **Output Format:**
+          Structured analysis with:
+          - Implementation approach recommendation
+          - Risk assessment (HIGH/MEDIUM/LOW)
+          - Task breakdown with estimates
+          - **Sizing classification:** SMALL/MEDIUM/LARGE (must not be TOO_LARGE)
+          - Testing strategy outline
+      </task-call>
+    </ecc-spawn>
+
+    <action>Collect planner output as {{planner_analysis}}</action>
+
+    <output>**ECC Planner Complete**
+
+      **Implementation Approach:**
+      {{planner_approach}}
+
+      **Risk Level:** {{risk_level}}
+
+      **Task Breakdown:**
+      {{task_suggestions}}
+    </output>
+  </step>
+
+  <!-- STEP 3: ECC Architect - Technical Design -->
+
+  <step n="3" goal="Spawn ECC Architect for technical design, architecture enforcement, and AC generation">
+    <critical>ECC ORCHESTRATOR: Spawning ECC Architect agent</critical>
+    <critical>Architect handles: architecture loading, pattern detection, file specs, and architectural ACs</critical>
+
+    <output>**Spawning ECC Architect...**
+
+      Task: Load architecture context, provide technical design, generate architectural ACs
+    </output>
+
+    <ecc-spawn agent="architect">
+      <task-call>
+        subagent_type: "everything-claude-code:architect"
+        description: "Technical design for {{story_key}}"
+        prompt: |
+          ## Technical Design Task
+
+          **Story:** {{story_key}}
+
+          **Requirements:**
+          {{story_requirements}}
+
+          **Planner Analysis:**
+          {{planner_analysis}}
+
+          **Project Patterns (from knowledge cache):**
+          {{project_patterns}}
+
+          ---
+
+          ## Phase 1: Architecture Discovery (auto-detect)
+
+          Load architecture context from multiple sources - do NOT ask the user:
+          1. Search epic document ({{epic_file}}) for architecture references
+          2. Load docs/architecture/*.md if they exist
+          3. Scan existing codebase for conventions (file structure, naming, imports)
+          4. If no docs exist, infer patterns from existing code
+
+          **Foundation check:** If this is the first story for a new feature module
+          (no existing directory), include directory scaffolding
+          as the first task in the story. No separate foundation story needed.
+
+          ---
+
+          ## Phase 2: Technical Design
+
+          1. **Component Design** - new components, modifications, interactions
+          2. **Data Model** - data structures, database changes, API contracts
+          3. **Dependencies** - internal, external packages
+          4. **Dev Notes** - technical guidance, pitfalls, reference implementations
+
+          ---
+
+          ## Phase 3: File Specification (MANDATORY)
+
+          Specify EXACT file paths for every new/modified file:
+          ```
+          | File/Component | EXACT Path | Pattern Reference |
+          |----------------|------------|-------------------|
+          | ComponentName | src/path/to/Name.ext | Pattern |
+          ```
+
+          ---
+
+          ## Phase 4: Architectural Acceptance Criteria (MANDATORY)
+
+          Generate testable ACs based on discovered patterns:
+
+          **File Location ACs:**
+          - AC-ARCH-LOC-{n}: {Component} located at {exact_path}
+
+          **Pattern Compliance ACs:**
+          - AC-ARCH-PATTERN-{n}: Follows {pattern_name} for {aspect}
+
+          **Anti-Pattern ACs (must NOT happen):**
+          - AC-ARCH-NO-{n}: {anti-pattern} must NOT occur
+
+          ---
+
+          **Output Format:**
+          - Architecture source (which docs/code informed the design)
+          - File specification table (exact paths)
+          - Architectural ACs (file location + pattern + anti-pattern)
+          - Dev Notes for story file
+      </task-call>
+    </ecc-spawn>
+
+    <action>Collect architect output as {{architect_design}}</action>
+    <action>Extract {{file_locations}} from architect output</action>
+    <action>Extract {{architectural_acs}} from architect output</action>
+    <action>Set {{architecture_source}} from architect's discovery phase</action>
+
+    <output>**ECC Architect Complete**
+
+      **Architecture Source:** {{architecture_source}}
+
+      **Files to Change:**
+      {{file_locations}}
+
+      **Architectural ACs Generated:**
+      {{architectural_acs}}
+    </output>
+  </step>
+
+  <!-- STEP 4: Optional Parallel Technical Review -->
+
+  <step n="4" goal="Optional parallel technical review for complex stories">
+    <action>Analyze story requirements and architect design for specialized concerns:
+      - Search for: database, schema, query, migration, index
+      - Set {{involves_database}} = true/false
+      - Search for: auth, authentication, authorization, token, password, secret, security
+      - Set {{involves_auth}} = true/false
+    </action>
+
+    <check if="{{involves_database}} OR {{involves_auth}}">
+      <parallel-execution-rule>
+        HOW TO ACHIEVE TRUE PARALLELISM:
+
+        If BOTH database-reviewer AND security-reviewer are needed,
+        you MUST issue BOTH Task tool invocations in your NEXT SINGLE RESPONSE.
+      </parallel-execution-rule>
+
+      <output>**Spawning Parallel Technical Reviewers...**
+
+        Story involves specialized areas - running additional analysis.
+      </output>
+
+      <ecc-parallel-spawn>
+        <task-call id="db_review" condition="involves_database">
+          subagent_type: "everything-claude-code:database-reviewer"
+          description: "Database analysis for {{story_key}}"
+          prompt: |
+            Analyze database requirements for story: {{story_key}}
+
+            **Architect Design:**
+            {{architect_design}}
+
+            **Check:**
+            - Schema design recommendations
+            - Index requirements
+            - Query optimization notes
+            - Security considerations
+
+            Output: Database considerations for Dev Notes
+        </task-call>
+
+        <task-call id="security_review" condition="involves_auth">
+          subagent_type: "everything-claude-code:security-reviewer"
+          description: "Security analysis for {{story_key}}"
+          prompt: |
+            Analyze security requirements for story: {{story_key}}
+
+            **Requirements:**
+            {{story_requirements}}
+
+            **Check:**
+            - Authentication requirements
+            - Authorization model
+            - Input validation needs
+            - Security testing requirements
+
+            Output: Security considerations for Dev Notes
+        </task-call>
+      </ecc-parallel-spawn>
+
+      <action>Merge technical review outputs into {{technical_notes}}</action>
+    </check>
+
+    <check if="NOT {{involves_database}} AND NOT {{involves_auth}}">
+      <action>Set {{technical_notes}} = "No specialized technical review required"</action>
+    </check>
+  </step>
+
+  <!-- STEP 5: Dependency Note -->
+
+  <step n="5" goal="Note cross-cutting dependencies for story">
+    <action>From architect output, extract any cross-feature dependencies</action>
+    <action>Add DEPENDS tags to story if it touches shared modules</action>
+    <action>If story has significant cross-cutting impact, recommend running `ecc-impact-analysis` after story creation</action>
+  </step>
+
+  <!-- STEP 6: Generate Story File -->
+
+  <step n="6" goal="Generate comprehensive story file with mandatory architectural ACs">
+    <action>Set {{complexity_estimate}} from planner risk_level: HIGH->Complex, MEDIUM->Moderate, LOW->Simple</action>
+    <action>Count {{functional_ac_count}} = number of functional ACs from epic requirements</action>
+    <action>Count {{arch_ac_count}} = number of architectural ACs from architect (Step 3)</action>
+    <action>Count {{task_count}} = number of tasks from planner breakdown (Step 2)</action>
+    <action>Extract {{tasks_from_planner}} formatted task/subtask list from {{planner_analysis}}</action>
+
+    <action>Compile story file from:
+      - Original requirements and ACs from epic
+      - Architectural ACs from architect (Step 3)
+      - Planner task breakdown
+      - Architect technical design (with exact file paths)
+      - Technical review notes
+      - Dependency notes from Step 5
+    </action>
+
+    <output>**Generating Story File...**</output>
+
+    <story-template>
+      ```markdown
+      # Story: {{story_key}}
+
+      ## Status: ready-for-dev
+      ## Epic: {{epic_name}}
+
+      ## Overview
+      {{story_requirements}}
+
+      ## Functional Acceptance Criteria
+      {{functional_acs}}
+
+      ## Architectural Acceptance Criteria (MANDATORY)
+
+      > These ACs are MANDATORY and will be validated during code review.
+
+      ### File Location Requirements
+      {{file_location_acs}}
+
+      ### Pattern Requirements
+      {{pattern_acs}}
+
+      ### Anti-Pattern Requirements (Must NOT Happen)
+      {{antipattern_acs}}
+
+      ## File Specification
+
+      | File/Component | Exact Path | Pattern | AC Reference |
+      |----------------|------------|---------|--------------|
+      {{file_specification_table}}
+
+      ## Tasks / Subtasks
+      {{tasks_from_planner}}
+
+      ## Dev Notes
+
+      ### Architecture Guidance
+      {{architect_notes}}
+
+      ### Technical Notes
+      {{technical_notes}}
+
+      ### E2E Testing
+      E2E coverage recommended - run `/ecc-e2e {{story_key}}` after implementation.
+
+      ## ECC Analysis Summary
+      - Risk Level: {{risk_level}}
+      - Complexity: {{complexity_estimate}}
+      - Agents consulted: Planner, Architect{{#if involves_database}}, Database Reviewer{{/if}}{{#if involves_auth}}, Security Reviewer{{/if}}
+      ```
+    </story-template>
+
+    <output>## Story Created: {{story_key}}
+
+      **File:** {story_dir}/{{story_key}}.md
+
+      **Sections:**
+      - Functional ACs: {{functional_ac_count}}
+      - Architectural ACs: {{arch_ac_count}} (MANDATORY)
+      - File Specification: exact paths
+      - Tasks: {{task_count}}
+      - Dev Notes: ECC-generated
+
+      **Agents:** Planner, Architect{{#if involves_database}}, DB Reviewer{{/if}}{{#if involves_auth}}, Security Reviewer{{/if}}
+    </output>
+  </step>
+
+  <!-- STEP 7: Update Sprint Status -->
+
+  <step n="7" goal="Update sprint status with new story">
+    <check if="{{sprint_status}} file exists">
+      <action>Add {{story_key}}: ready-for-dev to sprint-status.yaml</action>
+      <output>Sprint status updated: {{story_key}} -> ready-for-dev</output>
+    </check>
+  </step>
+
+  <!-- STEP 8: Story Creation Complete -->
+
+  <step n="8" goal="Finalize story creation">
+
+    <output>**ECC Story Creation Complete!**
+
+      **Story:** {{story_key}}
+      **Status:** ready-for-dev
+      **File:** {story_dir}/{{story_key}}.md
+
+      **ECC Analysis:**
+      - Risk Level: {{risk_level}}
+      - Tasks: {{task_count}}
+      - Complexity: {{complexity_estimate}}
+
+      **Next Steps:**
+      - Run `/ecc-dev-story` to implement with ECC agents
+      - Run `/ecc-e2e` after implementation for E2E test coverage
+    </output>
+  </step>
+
+</workflow>

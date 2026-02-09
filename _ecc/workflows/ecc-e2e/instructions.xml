@@ -1,0 +1,435 @@
+<workflow name="ecc-e2e" version="1.0">
+
+  <orchestrator-protocol>
+    <critical>You are the ECC E2E Orchestrator. You run E2E testing as a standalone concern.</critical>
+    <critical>Pre-flight is MANDATORY. No test code is written until all 4 pre-flight checks pass or get explicit user exception.</critical>
+    <critical>All tests run ONLY against the configured dev/staging server.</critical>
+
+    <available-agents>
+      | Agent | subagent_type | Purpose |
+      |-------|---------------|---------|
+      | E2E Runner | everything-claude-code:e2e-runner | Write and run E2E tests |
+      | Code Reviewer | everything-claude-code:code-reviewer | Post-test quality review |
+    </available-agents>
+  </orchestrator-protocol>
+
+  <!-- STEP 0: Load E2E Knowledge -->
+
+  <step n="0" goal="Load and cache E2E knowledge for the session" tag="knowledge-init">
+    <critical>Load ALL knowledge ONCE. These inform pre-flight checks and agent prompts.</critical>
+
+    <action>Load and cache tests/e2e/E2E-TEST-CONVENTIONS.md -> {{e2e_conventions}} (if exists)</action>
+    <action>Load and cache any test helper files -> {{staging_helpers_api}} (if exist)</action>
+
+    <output>**ECC E2E Orchestrator Initialized**
+
+      Knowledge loaded:
+      - E2E conventions: {{e2e_conventions_summary}}
+      - Test helpers: {{helper_count}} functions available
+    </output>
+  </step>
+
+  <!-- STEP 1: Analyze Story for E2E Need -->
+
+  <step n="1" goal="Determine E2E action: SKIP, VERIFY, EXTEND, or CREATE" tag="analysis">
+
+    <!-- Input collection -->
+    <action>Detect story from branch name or user argument:
+      - If user passed story key -> load story from sprint_artifacts
+      - If user passed directory -> use as scope
+      - Else -> extract story key from current branch name (feature/{{story_key}})
+    </action>
+
+    <action>Run `git diff develop...HEAD --name-only` -> {{changed_files}}</action>
+    <action>If story file found, extract File Specification and ACs -> {{story_context}}</action>
+    <action>Filter changed files to UI components -> {{changed_ui_files}}</action>
+
+    <!-- Auto-classification -->
+    <action>Classify E2E action:
+      1. If no UI files in {{changed_ui_files}} and no user-flow ACs -> SKIP
+      2. Search existing E2E test files for selectors matching {{changed_ui_files}}
+      3. If match found and all relevant ACs already covered -> VERIFY
+      4. If match found but new ACs not covered -> EXTEND
+      5. If no match -> CREATE
+    </action>
+
+    <action>Set {{e2e_action}} = SKIP | VERIFY | EXTEND | CREATE</action>
+    <action>Set {{target_spec}} = matching spec file (for VERIFY/EXTEND) or new file path (for CREATE)</action>
+
+    <ask>**E2E Analysis: {{e2e_action}}**
+
+      Story: {{story_key}}
+      Changed UI: {{changed_ui_files}}
+      {{#if target_spec}}Existing spec: {{target_spec}}{{/if}}
+
+      Proceed with {{e2e_action}}? [Y / N / Override]</ask>
+
+    <check if="e2e_action == SKIP and user confirms">
+      <output>**E2E not needed** - {{skip_reason}}</output>
+      <action>Jump to Step 7 (update story with "E2E: SKIP" note)</action>
+    </check>
+
+    <check if="e2e_action == VERIFY">
+      <action>Run existing spec against dev server</action>
+      <check if="test passes">
+        <output>**Existing E2E spec passes** - no changes needed</output>
+        <action>Jump to Step 7</action>
+      </check>
+      <check if="test fails">
+        <output>Existing spec FAILS - switching to EXTEND mode to fix</output>
+        <action>Set {{e2e_action}} = EXTEND</action>
+      </check>
+    </check>
+  </step>
+
+  <!-- STEP 2: Pre-Flight Checklist (MANDATORY) -->
+
+  <step n="2" goal="Complete all 4 pre-flight checks before writing any test code" tag="pre-flight">
+    <critical>NO test code is written until all 4 checks pass or get explicit user exception.</critical>
+
+    <!-- 2a: TestId/Selector Discovery -->
+    <action>**2a: TestId/Selector Discovery**
+
+      1. Check if dev server is running
+      2. If running -> use Playwright CLI or DOM inspection for selector extraction
+      3. If NOT running -> fallback to source file reading for selectors
+      4. Output: {{testid_map}} - all interactive elements on target views
+    </action>
+
+    <!-- 2b: Data Flow Analysis -->
+    <action>**2b: Data Flow Analysis**
+
+      For EVERY mutation the test will trigger:
+      1. Read the service/API function - understand the write operation
+      2. Read the hook/state management - find optimistic update patterns
+      3. Document expected state transitions
+      Output: {{data_flow_map}} - mutations, patterns, expected transitions
+    </action>
+
+    <!-- 2c: Environment Readiness -->
+    <action>**2c: Environment Readiness**
+
+      1. Verify dev server is accessible
+      2. Check if required backend services are running
+      3. Verify test data/fixtures are available
+      Output: {{env_readiness}} - pass/fail with details
+    </action>
+
+    <!-- 2d: Cleanup Strategy -->
+    <action>**2d: Cleanup Strategy**
+
+      1. Determine data created during test
+      2. Plan try/finally cleanup from the start
+      3. Name test data with identifiable prefix + timestamp for cleanup targeting
+      Output: {{cleanup_plan}} - cleanup sequence, residual data handling
+    </action>
+
+    <!-- Exception handling -->
+    <check if="any pre-flight check fails">
+      <ask>Pre-flight check failed: {{failed_check}}
+
+        Issue: {{issue_description}}
+        Recommendation: {{recommendation}}
+
+        [F]ix (attempt to resolve) / [S]kip (proceed with known risk) / [A]bort</ask>
+    </check>
+
+    <output>**Pre-Flight Complete**
+
+      - Selector Map: {{testid_count}} elements discovered
+      - Data Flow: {{mutation_count}} mutations mapped
+      - Environment: {{env_readiness}}
+      - Cleanup: {{cleanup_summary}}
+    </output>
+  </step>
+
+  <!-- STEP 3: Multi-User Detection and Strategy -->
+
+  <step n="3" goal="Auto-detect multi-user need and recommend approach" tag="multi-user">
+
+    <action>Detect multi-user indicators:
+      - Story mentions: sharing, invitation, join, group membership, cross-user
+      - Changed files include multi-user operations
+      - ACs mention multiple user perspectives
+    </action>
+
+    <check if="multi-user indicators found">
+      <action>Determine pattern:
+        - CONCURRENT: users must see each other's actions in same session
+          -> Separate browser contexts, both open simultaneously
+        - SEQUENTIAL: users act independently in sequence
+          -> Single page, login/logout between users
+      </action>
+
+      <ask>**Multi-User Analysis**
+
+        Pattern: {{multi_user_pattern}} ({{pattern_reason}})
+        Users: {{user_a}} ({{role_a}}), {{user_b}} ({{role_b}})
+
+        Proceed? [Y / N / Adjust]</ask>
+    </check>
+
+    <check if="no multi-user indicators">
+      <action>Set {{multi_user_strategy}} = "SINGLE-USER - standard test pattern"</action>
+    </check>
+  </step>
+
+  <!-- STEP 4: Write/Extend E2E Test -->
+
+  <step n="4" goal="Spawn e2e-runner agent to write or extend test" tag="write-test">
+    <critical>ECC ORCHESTRATOR: Spawning E2E Runner agent with full pre-flight context</critical>
+
+    <output>**Spawning E2E Runner...**
+
+      Mode: {{e2e_action}}
+      Target: {{target_spec}}
+    </output>
+
+    <ecc-spawn agent="e2e-runner">
+      <task-call>
+        subagent_type: "everything-claude-code:e2e-runner"
+        description: "E2E test {{e2e_action}} for {{story_key}}"
+        prompt: |
+          ## E2E Test {{e2e_action}}: {{story_key}}
+
+          **Mode:** {{e2e_action}}
+          **Target:** {{target_spec}}
+
+          **Pre-Flight Results:**
+          - Selector Map: {{testid_map}}
+          - Data Flow: {{data_flow_map}}
+          - Environment: {{env_readiness}}
+          - Cleanup Plan: {{cleanup_plan}}
+          - Multi-User Strategy: {{multi_user_strategy}}
+
+          **E2E Conventions (MUST follow):**
+          {{e2e_conventions}}
+
+          **Available Helpers:**
+          {{staging_helpers_api}}
+
+          **Selector Priority:**
+          1. data-testid (always preferred)
+          2. getByRole with name
+          3. Scoped locator within known container
+          4. text= (last resort, breaks on translations)
+
+          **Wait Strategy:**
+          - Observable state: element.waitFor({ state: 'hidden/visible' })
+          - Settling only: waitForTimeout(<1000ms)
+          - NEVER: waitForTimeout(2000+) for async operations
+          - NEVER: waitForLoadState('networkidle') with persistent connections
+
+          **Screenshot Convention:**
+          - Directory: test-results/{spec-name}/
+          - Pattern: {step}-{description}.png
+          - Capture at: page load, navigation, dialog open/close, form submit, final state
+
+          **Story ACs relevant to E2E:**
+          {{story_acs_relevant_to_e2e}}
+
+          **Requirements:**
+          1. Follow ALL conventions from E2E-TEST-CONVENTIONS.md (if available)
+          2. Use data-testid selectors - NEVER bare text selectors
+          3. Include try/finally cleanup matching the cleanup plan
+          4. Add screenshots at every key interaction point
+          5. Name test data with identifiable prefix + timestamp
+          6. If multi-user: implement {{multi_user_pattern}} pattern
+          7. File size limits: E2E spec max 400 lines
+      </task-call>
+    </ecc-spawn>
+
+    <action>Collect e2e-runner output as {{test_code}}</action>
+    <action>Set {{test_file}} = path to created/modified spec file</action>
+
+    <output>**E2E Test Written**
+
+      File: {{test_file}}
+      Mode: {{e2e_action}}
+      Multi-User: {{multi_user_pattern}}
+    </output>
+  </step>
+
+  <!-- STEP 5: Run and Verify -->
+
+  <step n="5" goal="Run E2E test and handle failures" tag="run-verify">
+
+    <!-- Check server availability -->
+    <action>Check if dev server is running</action>
+
+    <check if="dev server not running">
+      <ask>Dev server is not running.
+
+        Start it and confirm when ready: [R]eady / [A]bort</ask>
+    </check>
+
+    <!-- Run test -->
+    <action>Run E2E test: {{test_file}}</action>
+    <action>Set {{run_attempt}} = 1</action>
+
+    <check if="test fails and run_attempt &lt;= 2">
+      <action>Analyze failure:
+        - Selector not found -> re-check selector map, fix selector
+        - Timeout -> check wait strategy, add polling/settling
+        - State mismatch -> check state management handling
+        - Auth failure -> verify test user, re-login sequence
+        - Flaky/timing -> add settling wait, increase timeout
+      </action>
+      <action>Fix identified issue in test file</action>
+      <action>Increment {{run_attempt}}</action>
+      <action>Set {{retries_needed}} = true</action>
+      <action>Re-run test</action>
+    </check>
+
+    <check if="test fails after 2 retries">
+      <ask>E2E test failed after 2 retries.
+
+        Error: {{error_summary}}
+        Screenshots: {{screenshot_paths}}
+
+        [F]ix manually / [S]kip test / [D]efer (create TD story for flaky test)</ask>
+    </check>
+
+    <check if="test passes">
+      <!-- Determinism check: run once more -->
+      <action>Run again for determinism check</action>
+      <check if="second run fails">
+        <output>**Flaky test detected** - passed first run, failed second</output>
+        <action>Analyze flakiness source and fix</action>
+      </check>
+      <check if="second run passes">
+        <action>Set {{test_result}} = "PASS"</action>
+        <action>Set {{test_duration}} from test output</action>
+      </check>
+    </check>
+
+    <output>{{#if test_result == "PASS"}}**E2E Run Complete**{{else}}**E2E Run Complete (with issues)**{{/if}}
+
+      Result: {{test_result}}
+      File: {{test_file}}
+      Duration: {{test_duration}}
+      Retries needed: {{retries_needed}}
+    </output>
+  </step>
+
+  <!-- STEP 6: Post-Test Quality Check -->
+
+  <step n="6" goal="Review E2E test quality using TEA 5-dimension scoring" tag="quality-review">
+    <critical>ECC ORCHESTRATOR: Spawning Code Reviewer for E2E quality assessment</critical>
+
+    <ecc-spawn agent="code-reviewer">
+      <task-call>
+        subagent_type: "everything-claude-code:code-reviewer"
+        description: "E2E quality review for {{test_file}}"
+        prompt: |
+          ## E2E Test Quality Review
+
+          **Test file:** {{test_file}}
+          **Story:** {{story_key}}
+          **E2E Conventions:** {{e2e_conventions}}
+
+          **Review checklist:**
+          - Follows project E2E conventions?
+          - Uses data-testid selectors (not fragile selectors)?
+          - Has proper cleanup (try/finally)?
+          - Screenshots at key interaction points?
+          - Wait strategy correct (no long timeouts)?
+          - Test data named with identifiable prefix + timestamp?
+          - Multi-user cleanup bidirectional (if applicable)?
+          - File under 400 lines?
+
+          **TEA 5-Dimension Quality Score (rate each 0-20, total /100):**
+          1. **Determinism** - No random/flaky patterns? No timing dependencies?
+          2. **Isolation** - No shared state leaking? Proper cleanup?
+          3. **Maintainability** - Uses helpers? Follows conventions? Readable?
+          4. **Coverage** - Story ACs covered by assertions? Edge cases?
+          5. **Performance** - Runs within 60-120s budget? No unnecessary waits?
+
+          **Output:** Score per dimension + total + any findings to fix.
+      </task-call>
+    </ecc-spawn>
+
+    <action>Collect quality review as {{quality_review}}</action>
+    <action>Extract {{quality_score}} (0-100) from review</action>
+    <action>Extract {{quality_findings}} if any issues found</action>
+
+    <check if="quality_findings has CRITICAL or HIGH severity">
+      <action>Fix critical quality issues in test file</action>
+      <action>Re-run test to verify fixes don't break it</action>
+    </check>
+
+    <output>**Quality Review Complete**
+
+      TEA 5-Dimension Score: {{quality_score}}/100
+      - Determinism: {{score_determinism}}/20
+      - Isolation: {{score_isolation}}/20
+      - Maintainability: {{score_maintainability}}/20
+      - Coverage: {{score_coverage}}/20
+      - Performance: {{score_performance}}/20
+
+      {{#if quality_findings}}
+      Findings: {{quality_findings_count}} ({{fixed_count}} fixed)
+      {{/if}}
+    </output>
+  </step>
+
+  <!-- STEP 7: Update Story + TEA Escalation Assessment -->
+
+  <step n="7" goal="Update story with E2E results and assess TEA escalation" tag="completion">
+
+    <!-- Update story Dev Notes -->
+    <action>Add E2E results to story file:
+      ```markdown
+      ### E2E Testing
+      - Action: {{e2e_action}}
+      - Test File: {{test_file}}
+      - Result: {{test_result}}
+      - Multi-User: {{multi_user_pattern}}
+      - Quality Score: {{quality_score}}/100
+      - Date: {{date}}
+      ```
+    </action>
+
+    <check if="e2e_action == CREATE">
+      <action>Add new test file to story File Specification</action>
+    </check>
+
+    <!-- TEA Escalation Assessment -->
+    <action>Assess TEA escalation triggers:
+      - {{quality_score}} &lt; 60 -> flag
+      - Multi-user concurrent + retries needed -> flag
+      - >3 specs created/modified in this session -> flag
+    </action>
+
+    <check if="any TEA escalation trigger fired">
+      <output>**TEA Follow-Up Recommended**
+
+        Reason: {{escalation_reason}}
+        Suggested: {{suggested_tea_workflow}}
+        Scope: {{escalation_scope}}
+      </output>
+    </check>
+
+    <output>**ECC E2E Complete**
+
+      **Story:** {{story_key}}
+      **Action:** {{e2e_action}}
+      **Result:** {{test_result}}
+      **Quality:** {{quality_score}}/100
+
+      **Test File:** {{test_file}}
+      {{#if multi_user_pattern != "SINGLE-USER"}}
+      **Multi-User:** {{multi_user_pattern}} ({{user_a}}, {{user_b}})
+      {{/if}}
+
+      **Next Steps:**
+      {{#if test_result == "PASS"}}
+      - Commit E2E test with story changes
+      - Run `ecc-code-review` if not yet done
+      {{else}}
+      - Fix failing test and re-run `/ecc-e2e`
+      {{/if}}
+    </output>
+  </step>
+
+</workflow>

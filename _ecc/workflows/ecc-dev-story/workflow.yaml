@@ -1,0 +1,134 @@
+# ECC-Enhanced Story Development Workflow
+name: ecc-dev-story
+description: "Story implementation using ECC agents with TDD-first development and parallel reviews"
+author: "BMad"
+
+# ECC Integration - Orchestrator Configuration
+ecc_orchestration:
+  enabled: true
+  orchestrator: "ECC Orchestrator"
+
+  # ECC agents used in this workflow
+  agents:
+    planner:
+      subagent_type: "everything-claude-code:planner"
+      purpose: "Implementation planning and risk assessment"
+    tdd-guide:
+      subagent_type: "everything-claude-code:tdd-guide"
+      purpose: "Test-driven development, RED-GREEN-REFACTOR cycle"
+    build-error-resolver:
+      subagent_type: "everything-claude-code:build-error-resolver"
+      purpose: "Fix build/TypeScript errors with minimal diffs"
+    code-reviewer:
+      subagent_type: "everything-claude-code:code-reviewer"
+      purpose: "Code quality self-review before completion"
+    security-reviewer:
+      subagent_type: "everything-claude-code:security-reviewer"
+      purpose: "Security analysis for sensitive code"
+
+  # Workflow sequence
+  sequence: "planner -> tdd-guide -> build-error-resolver (on failure) -> code-reviewer"
+
+  # Parallel phases
+  parallel_phases:
+    pre_completion_review:
+      agents: ["code-reviewer", "security-reviewer"]
+      description: "Parallel self-review before marking story complete"
+
+# Project Knowledge Integration
+project_knowledge:
+  enabled: true
+  load_at_session_start: true
+  files:
+    required:
+      - "{project-root}/_ecc/knowledge/code-review-patterns.md"
+    optional:
+      - "{project-root}/docs/architecture/*.md"
+
+# Critical variables from config
+config_source: "{project-root}/_bmad/bmm/config.yaml"
+output_folder: "{config_source}:output_folder"
+user_name: "{config_source}:user_name"
+communication_language: "{config_source}:communication_language"
+user_skill_level: "{config_source}:user_skill_level"
+document_output_language: "{config_source}:document_output_language"
+date: system-generated
+
+sprint_artifacts: "{project-root}/docs/sprint-artifacts"
+story_dir: "{sprint_artifacts}/stories"
+story_file: ""
+context_file: "{story_dir}/{{story_key}}.context.xml"
+sprint_status: "{sprint_artifacts}/sprint-status.yaml"
+
+# Project knowledge paths
+project_knowledge_path: "{project-root}/_ecc/knowledge"
+project_architecture_path: "{project-root}/docs/architecture"
+
+# Workflow components
+installed_path: "{project-root}/_ecc/workflows/ecc-dev-story"
+instructions: "{installed_path}/instructions.xml"
+
+# Workflow Optimizations
+workflow_optimizations:
+  tdd:
+    run_per_edit: true
+    avoid_full_suite: true
+  validation:
+    consolidate_builds: true
+    skip_type_check_if_build_passes: true
+  progress_tracking:
+    mode: "batched"
+    batch_at:
+      - task_complete
+      - story_complete
+  knowledge:
+    cache_at_session_start: true
+    summarize_for_story_type: true
+    cache_files:
+      - "_ecc/knowledge/code-review-patterns.md"
+
+# Branch Guard Configuration
+branch_guard:
+  enabled: true
+  protected_branches: ["main", "develop"]
+  branch_from: "develop"
+  naming_convention: "feature/{{story_key}}"
+  sync_check: true
+  auto_create: true
+  stash_uncommitted: true
+
+# Mid-Story Sizing Configuration
+mid_story_sizing:
+  enabled: true
+  post_planning_check: true
+  per_task_check: true
+  pre_review_check: false
+  auto_suggest_split: true
+  block_on_exceed: false
+  record_metrics: true
+
+  # Thresholds
+  thresholds:
+    small:
+      max_tasks: 2
+      max_subtasks: 5
+      max_files: 2
+    medium:
+      max_tasks: 3
+      max_subtasks: 10
+      max_files: 4
+    large:
+      max_tasks: 4
+      max_subtasks: 15
+      max_files: 8
+    too_large:
+      description: "REQUIRES SPLIT"
+      trigger: ">4 tasks OR >15 subtasks OR >8 files"
+
+  # Growth alert thresholds
+  growth_alerts:
+    file_growth: 3
+    subtask_growth: 5
+    loc_per_task: 500
+
+standalone: true
