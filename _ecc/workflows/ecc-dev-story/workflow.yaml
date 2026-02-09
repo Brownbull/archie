@@ -90,8 +90,8 @@ workflow_optimizations:
 # Branch Guard Configuration
 branch_guard:
   enabled: true
-  protected_branches: ["main", "develop"]
-  branch_from: "develop"
+  protected_branches: ["main", "dev"]
+  branch_from: "dev"
   naming_convention: "feature/{{story_key}}"
   sync_check: true
   auto_create: true
