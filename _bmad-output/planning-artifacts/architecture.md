@@ -688,16 +688,17 @@ archie/
 │   │   │   ├── componentSchema.test.ts
 │   │   │   ├── architectureFileSchema.test.ts
 │   │   │   └── metricSchema.test.ts
-│   │   ├── db/
-│   │   │   └── repositories/
-│   │   │       └── componentRepository.test.ts
+│   │   ├── repositories/
+│   │   │   └── componentRepository.test.ts
 │   │   └── services/
 │   │       ├── yamlImporter.test.ts
-│   │       └── yamlExporter.test.ts
+│   │       ├── yamlExporter.test.ts
+│   │       ├── componentLibrary.test.ts
+│   │       └── recalculationService.test.ts
 │   ├── integration/
 │   │   ├── yamlRoundTrip.test.ts         # FR26: Lossless round-trip
 │   │   ├── recalculationPipeline.test.ts # FR13-FR14: End-to-end recalc
-│   │   └── librarySeeding.test.ts        # Dexie.js seed + repository access
+│   │   └── firestoreSeeding.test.ts      # Firestore seed + repository access
 │   └── e2e/
 │       ├── import-export.spec.ts         # Journey 1: AI-Archie round-trip
 │       ├── canvas-interactions.spec.ts   # Journey 3: Build from scratch
@@ -707,7 +708,10 @@ archie/
 ├── .gitignore
 ├── CLAUDE.md                        # Project instructions for AI agents
 ├── firebase.json                    # Firebase Hosting config
+├── firestore.rules                  # Firestore security rules
 ├── .firebaserc                      # Firebase project alias
+├── scripts/
+│   └── seed-firestore.ts           # Seeds Firestore from src/data/ YAML files
 ├── index.html                       # Vite entry HTML
 ├── package.json
 ├── tsconfig.json
@@ -722,20 +726,22 @@ archie/
 
 **Data Access Boundary:**
 ```
-Components/Hooks → Stores (Zustand) → Repositories → Dexie.js
-                                   ↘ Services → Repositories → Dexie.js
+Components/Hooks → Stores (Zustand) → Services → Repositories → Firestore
+                                                ↘ Engine (pure functions)
 ```
-- React components NEVER access Dexie.js directly
-- Stores call repositories for data; services orchestrate complex operations
-- Repositories are the only code that touches Dexie.js
+- React components NEVER access Firestore directly
+- Stores call services for orchestration; services call repositories for data
+- Repositories are the only code that touches the Firestore SDK
+- Component library service caches repository data in memory at startup
 
 **Computation Boundary:**
 ```
-Zustand Store → engine/* (pure functions) → Zustand Store
+Zustand Store → recalculationService → engine/* (pure functions) → recalculationService → Zustand Store
 ```
+- Store actions call `recalculationService`, which assembles data from the in-memory cache and passes it to pure engine functions
 - Engine functions receive data as arguments, return results
-- No side effects, no imports from React/Zustand/Dexie inside `engine/`
-- Engine is testable in complete isolation
+- No side effects, no imports from React/Zustand/Firestore inside `engine/`
+- Engine is testable in complete isolation; service is testable with mocked cache
 
 **Auth Boundary:**
 ```
@@ -760,12 +766,12 @@ Zustand Store → yamlExporter (dehydrate → serialize) → User File
 | FR Area | Primary Location | Supporting |
 |---------|-----------------|------------|
 | FR1-FR7 (Architecture Composition) | `src/components/canvas/` | `src/stores/architectureStore.ts` |
-| FR8-FR12 (Component System) | `src/components/toolbox/` + `src/components/inspector/` | `src/db/repositories/` |
+| FR8-FR12 (Component System) | `src/components/toolbox/` + `src/components/inspector/` | `src/repositories/` + `src/services/componentLibrary.ts` |
 | FR13-FR16 (Recalculation + Heatmap) | `src/engine/` + `src/components/heatmap/` | `src/stores/architectureStore.ts` |
 | FR17-FR19 (Scoring Dashboard) | `src/components/dashboard/` | `src/engine/recalculator.ts` |
 | FR20-FR22 (Tier System) | `src/engine/tierEvaluator.ts` + `src/components/dashboard/TierBadge.tsx` | |
 | FR23-FR27 (Import/Export) | `src/services/` + `src/components/import-export/` + `src/schemas/` | |
-| FR28-FR30 (Content Library) | `src/data/` + `src/services/librarySeeder.ts` | `src/db/repositories/` |
+| FR28-FR30 (Content Library) | `src/data/` + `scripts/seed-firestore.ts` | `src/repositories/` |
 
 ### Data Flow
 
@@ -777,23 +783,28 @@ Zustand Store → yamlExporter (dehydrate → serialize) → User File
      │                                    │
      │ calls                              │ renders
      ▼                                    ▼
-[Engine Functions] ──→ returns ──→ [Zustand Store] ──→ [Heatmap + Dashboard + Tier]
+[Recalculation Service]           [Heatmap + Dashboard + Tier]
+     │              │
+     │ reads        │ calls
+     ▼              ▼
+[Memory Cache]  [Engine Functions (pure)]
      │
-     │ reads (via repositories)
+     │ loaded at startup from
      ▼
-[Dexie.js] ←── seeded from ── [src/data/*.yaml]
+[Firestore] ←── seeded from ── [scripts/seed-firestore.ts]
 ```
 
 **Config Change Flow (the core loop):**
 1. User clicks config dropdown → `ConfigSelector.tsx`
 2. Calls `useArchitectureStore.changeConfigVariant(nodeId, variantId)`
-3. Store updates active variant
-4. Store calls `recalculator.recalculate(graph, changedNodeId)`
-5. Engine traverses affected subgraph, returns new metric values
-6. Store calls `heatmapCalculator.computeColors(metrics)`
-7. Store calls `tierEvaluator.evaluate(graph)`
-8. Store updates all computed state
-9. React re-renders only affected components (Zustand selectors)
+3. Store action calls `recalculationService.run(graph, changedNodeId)`
+4. Service reads component data from in-memory cache (synchronous)
+5. Service calls `recalculator.recalculate(hydratedGraph)` — pure function
+6. Service calls `heatmapCalculator.computeColors(metrics)` — pure function
+7. Service calls `tierEvaluator.evaluate(graph)` — pure function
+8. Service returns all computed results to store
+9. Store updates all computed state in a single batch
+10. React re-renders only affected components (Zustand selectors)
 
 ## Architecture Validation Results
 
@@ -801,7 +812,7 @@ Zustand Store → yamlExporter (dehydrate → serialize) → User File
 
 **Decision Compatibility: PASS**
 - React 19 + React Flow + Zustand + Tailwind v4 + shadcn/ui → standard React ecosystem, no conflicts
-- Dexie.js + Zod → clean pipeline (Dexie stores documents, Zod validates them)
+- Firestore + Zod → clean pipeline (Firestore stores documents, Zod validates them at the repository boundary)
 - Firebase Auth + React Router → standard protected route pattern
 - Firebase Hosting + Vite → static output served via CDN
 - js-yaml → Zod → Zustand → clean data pipeline from YAML to app state
@@ -811,7 +822,7 @@ React Flow nodes carry an `archieComponentId` in their `data` property. React Fl
 
 ```typescript
 type ArchieNodeData = {
-  archieComponentId: string     // Reference to component in Dexie.js
+  archieComponentId: string     // Reference to component in Firestore
   activeConfigVariantId: string // Currently selected config variant
 }
 ```
