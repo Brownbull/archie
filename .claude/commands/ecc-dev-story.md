@@ -1,12 +1,10 @@
 ---
-name: 'dev-story'
-description: 'REDIRECTS to /ecc-dev-story — Use the ECC version for TDD-first development with 5-agent orchestration'
+name: 'ecc-dev-story'
+description: 'ECC: TDD-first development with 5-agent orchestration, architecture enforcement, and parallel review'
 disable-model-invocation: true
 ---
 
-**This command redirects to the ECC workflow.**
-
-Use `/ecc-dev-story` instead for the full ECC agent-orchestrated development.
+IT IS CRITICAL THAT YOU FOLLOW THESE STEPS - while staying in character as the current agent persona you may have loaded:
 
 <steps CRITICAL="TRUE">
 1. Always LOAD the FULL @{project-root}/_bmad/core/tasks/workflow.xml

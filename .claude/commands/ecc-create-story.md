@@ -1,12 +1,10 @@
 ---
-name: 'create-story'
-description: 'REDIRECTS to /ecc-create-story — Use the ECC version for Planner + Architect agent orchestration'
+name: 'ecc-create-story'
+description: 'ECC: Planner + Architect agents for story creation with epic context, Opus 4.6 sizing, and architectural ACs'
 disable-model-invocation: true
 ---
 
-**This command redirects to the ECC workflow.**
-
-Use `/ecc-create-story` instead for the full ECC agent-orchestrated story creation.
+IT IS CRITICAL THAT YOU FOLLOW THESE STEPS - while staying in character as the current agent persona you may have loaded:
 
 <steps CRITICAL="TRUE">
 1. Always LOAD the FULL @{project-root}/_bmad/core/tasks/workflow.xml
