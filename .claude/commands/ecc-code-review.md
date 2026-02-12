@@ -1,12 +1,10 @@
 ---
-name: 'code-review'
-description: 'REDIRECTS to /ecc-code-review — Use the ECC version for 4-agent parallel code review'
+name: 'ecc-code-review'
+description: 'ECC: 4-agent parallel code review with adaptive classification, weighted scoring, and TEA quality assessment'
 disable-model-invocation: true
 ---
 
-**This command redirects to the ECC workflow.**
-
-Use `/ecc-code-review` instead for the full ECC 4-agent parallel code review.
+IT IS CRITICAL THAT YOU FOLLOW THESE STEPS - while staying in character as the current agent persona you may have loaded:
 
 <steps CRITICAL="TRUE">
 1. Always LOAD the FULL @{project-root}/_bmad/core/tasks/workflow.xml

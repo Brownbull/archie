@@ -12,6 +12,7 @@ inputDocuments:
   - 'docs/brainstorming/02-morphological-analysis.md'
   - 'docs/brainstorming/03-six-thinking-hats.md'
   - 'docs/brainstorming/04-constraint-mapping-mvp.md'
+  - '_bmad-output/planning-artifacts/ux-playground-gap-analysis.md'
 workflowType: 'architecture'
 project_name: 'archie'
 user_name: 'Gabe'
@@ -26,7 +27,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 ### Requirements Overview
 
-**Functional Requirements (30 FRs, 6 capability areas):**
+**Functional Requirements (43 FRs, 10 capability areas):**
 
 | Area | FRs | Architectural Implication |
 |------|-----|--------------------------|
@@ -36,6 +37,10 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 | Architecture Assessment | FR20-FR22 | Tier evaluation system that analyzes the current component graph against defined architectural principles. Must show current tier and gap to next tier. |
 | Data Import & Export | FR23-FR27 | YAML parser/serializer with schema validation, lossless round-trip guarantee, security hardening (size limits, field allowlisting, URL validation). |
 | Content Library | FR28-FR30 | Bundled example architectures (2-3), pre-populated with full component definitions, connections, and metrics. Static AI prompt template. |
+| Component Intelligence | FR31-FR35 | Inspector enrichment: code snippets per variant (stored in library), metric explanations with contributing factors, variant recommendations computed from metric data, +/- delta indicators on variant switch, and metric show/hide filtering. Extends component library data model. |
+| Connection System | FR36-FR38 | Connections as first-class inspectable objects with typed properties (protocol, pattern, latency, co-location). Connection properties stored in component library. Draggable connection labels on canvas for readability. |
+| Dashboard & Architecture Overview | FR39-FR41 | Dashboard drill-down: expanded overlay showing per-category contributing factors, interactive category info popups. Issues summary badge with clickable navigation to problem components. |
+| Canvas Enhancements | FR42-FR43 | Flow particle animation on connection lines (speed varies by health status). Semi-transparent canvas legend for heatmap colors and connection styles. |
 
 **Non-Functional Requirements (11 NFRs, 2 categories):**
 
@@ -48,7 +53,7 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 
 - Primary domain: Client-side interactive web application (canvas/graph tooling)
 - Complexity level: Medium
-- Estimated architectural components: 8-12 distinct modules (schema layer, recalculation engine, canvas/React Flow integration, toolbox, inspector, dashboard, tier system, import/export, state management, component library data)
+- Estimated architectural components: 12-16 distinct modules (schema layer, recalculation engine, recommendation engine, connection analyzer, canvas/React Flow integration, toolbox, inspector with intelligence features, dashboard with drill-down, issues overview, tier system, import/export, state management, component library data, flow animation, canvas legend)
 
 ### Technical Constraints & Dependencies
 
@@ -76,6 +81,10 @@ _This document builds collaboratively through step-by-step discovery. Sections a
 4. **Component Graph Data Structure** — The in-memory representation of the architecture. Nodes (components with ports), edges (connections between ports), compatibility rules, and propagation paths. This structure is read by the recalculation engine, written by canvas interactions, serialized to/from YAML.
 
 5. **Security Boundary at YAML Import** — All untrusted data enters through YAML file import. Validation, sanitization, and rejection happen at this single entry point. Once validated, internal code can trust the data. DOM rendering must still escape strings as a defense-in-depth layer (React handles this by default).
+
+6. **Component Library Data Richness** — The component library (Firestore) stores significantly more than base metrics. Each component/variant now carries: implementation code snippets (FR31), per-metric explanations with contributing factors (FR32), connection properties (protocol, pattern, latency, co-location) (FR36), and dashboard category descriptions (FR40). This data is all loaded into the in-memory cache at startup alongside metrics. The library is the single source of truth for all reference data — nothing is hardcoded in the UI.
+
+7. **Connection Data Model** — Connections are not just visual edges. Each connection between two components has derived properties (protocol, communication pattern, typical latency, co-location potential) based on the component types at each endpoint. These properties are stored in the component library as connection type definitions. The connection inspector (FR37) reads these properties; connection health is computed by the engine from endpoint metrics.
 
 ## Starter Template Evaluation
 
@@ -186,17 +195,83 @@ The component library holds all the rich reference data (metrics, descriptions, 
 
 | Layer | Contains | Storage |
 |-------|----------|---------|
-| Architecture File (YAML) | Component IDs, config selections, positions, connections | User's file system (import/export) |
-| Component Library (reference data) | Metrics, descriptions, config variants, pros/cons, compatibility | Firebase Firestore — seeded once via admin script |
-| Runtime State (Zustand) | Hydrated architecture + computed state (recalculated metrics, heatmap, tier) | In-memory |
+| Architecture File (YAML) | Component IDs, config selections, positions, connections, connection label positions | User's file system (import/export) |
+| Component Library (reference data) | Metrics, descriptions, config variants, pros/cons, compatibility, code snippets (FR31), metric explanations (FR32), connection properties (FR36), category descriptions (FR40) | Firebase Firestore — seeded once via admin script |
+| Runtime State (Zustand) | Hydrated architecture + computed state (recalculated metrics, heatmap, tier, recommendations, deltas, issues list) | In-memory |
 
 **Database: Firebase Firestore**
 - Cloud document database in the same Firebase project as Auth and Hosting
 - Seeded once from AI-generated YAML files via admin script (`scripts/seed-firestore.ts`)
 - Repository pattern abstracts data access — all code reads through `ComponentRepository`, `StackRepository`, `BlueprintRepository` interfaces
-- Firestore offline persistence provides automatic local caching after first load
+- Firestore offline persistence provides automatic local caching after first load (see Caching Strategy below)
 - Component library data loaded once at startup and cached in memory for synchronous access by the recalculation engine
 - Firestore security rules: component library is read-only for authenticated users; admin writes via service account
+
+**Caching Strategy (Two-Layer):**
+
+Component library data is read-only for users (only seed scripts write to it), which makes caching straightforward:
+
+*Layer 1 — Firestore SDK Offline Persistence (cross-session):*
+- Firestore is initialized with `persistentLocalCache()`, which caches all fetched data in IndexedDB automatically
+- First visit: SDK fetches all component library data from the network and caches it locally
+- Subsequent visits: SDK reads from IndexedDB cache immediately, then syncs deltas from the server in the background
+- Works fully offline — the app functions from cache if the network is unavailable
+- No custom IndexedDB code — this is managed entirely by the Firestore SDK internally
+
+*Layer 2 — In-Memory Cache via `componentLibrary.ts` (per-session):*
+- On each page load, `componentLibrary.initialize()` reads from Firestore (which resolves from Layer 1's local cache — not the network)
+- Data is stored in JavaScript Maps for O(1) synchronous lookups during recalculation
+- The recalculation engine never awaits data — all reads are synchronous from this in-memory cache
+
+*Fetch Behavior:*
+| Scenario | Network Call? | Source |
+|----------|--------------|--------|
+| First visit ever | Yes — full fetch | Firestore network |
+| Subsequent page loads | No (delta sync in background) | Firestore local cache → memory |
+| Offline / no network | No | Firestore local cache → memory |
+| User clears browser data | Yes — full re-fetch | Firestore network |
+| Component library updated (new seed) | Delta sync only | Firestore detects changes, syncs new docs |
+
+*Cost Impact:*
+- Firebase free tier allows 50,000 reads/day. Since most reads hit the local cache, actual network reads are minimal — practically just delta syncs when component library data changes (rare, only on new seed deploys).
+- MVP data size (~50 components): ~200KB of JSON. Trivial for IndexedDB and in-memory storage.
+
+**Component Library Data Model (Expanded for FR31-FR43):**
+
+The component library documents in Firestore now carry richer data per component/variant to support the intelligence features:
+
+```typescript
+// Conceptual structure — Zod schemas are the actual source of truth
+{
+  // Existing fields
+  id, name, category, description, baseMetrics, configVariants, pros, cons, compatibility,
+
+  // FR31: Code snippets per config variant
+  configVariants: [{
+    id, name, metrics,
+    codeSnippet: { language: "nginx" | "typescript" | "yaml" | ..., code: string }
+  }],
+
+  // FR32: Metric explanations per variant per metric
+  configVariants: [{
+    metricExplanations: {
+      [metricId]: { reason: string, contributingFactors: string[] }
+    }
+  }],
+
+  // FR36: Connection properties (what this component exposes)
+  connectionProperties: {
+    protocol: string,            // e.g., "RESP", "PostgreSQL Wire Protocol"
+    communicationPatterns: string[], // e.g., ["request-response", "pub-sub"]
+    typicalLatency: string,      // e.g., "<1ms (in-memory)"
+    coLocationPotential: boolean
+  }
+}
+```
+
+Connection type definitions (protocol + pattern between two specific component types) are stored as a separate Firestore collection `connectionTypes`, keyed by source-target category pairs. This allows the connection inspector (FR37) to show rich connection-specific data without hardcoding it in the UI.
+
+**Dashboard category descriptions** (FR40) are stored as a separate Firestore collection `metricCategories` with fields: `name`, `description`, `keyMetrics`, `whyItMatters`, `howToImprove`.
 
 **Schema Validation: Zod**
 - Single source of truth for TypeScript types AND runtime validation
@@ -297,7 +372,8 @@ npm install zod
 - React Flow handles canvas virtualization and rendering optimization
 - Zustand's selector pattern prevents unnecessary re-renders
 - Recalculation engine is pure functions — memoizable and testable in isolation
-- Component library data loaded once from Firestore at startup, cached in memory for synchronous engine access
+- Two-layer caching: Firestore SDK offline persistence (cross-session) + in-memory Maps (per-session) — see Caching Strategy in Data Architecture
+- After first visit, page loads resolve component library data from local cache — no network round-trip
 
 ### Infrastructure & Deployment
 
@@ -397,12 +473,22 @@ src/
 │   ├── inspector/             # Right-side inspector panel
 │   │   ├── InspectorPanel.tsx
 │   │   ├── MetricCard.tsx
-│   │   └── ConfigSelector.tsx
+│   │   ├── ConfigSelector.tsx
+│   │   ├── CodeSnippet.tsx     # FR31: Syntax-highlighted code per variant
+│   │   ├── MetricExplanation.tsx # FR32: Expandable reason + factors
+│   │   ├── VariantRecommendation.tsx # FR33: Weak metric suggestions
+│   │   ├── MetricDelta.tsx     # FR34: +/- delta indicators
+│   │   ├── MetricFilter.tsx    # FR35: Show/hide metric filter
+│   │   └── ConnectionInspector.tsx # FR37: Connection properties + health
 │   ├── dashboard/             # Bottom scoring dashboard
 │   │   ├── DashboardPanel.tsx
-│   │   └── CategoryBar.tsx
+│   │   ├── CategoryBar.tsx
+│   │   ├── CategoryOverlay.tsx  # FR39: Expanded contributing factors
+│   │   └── CategoryInfo.tsx     # FR40: Interactive category info popup
 │   ├── heatmap/               # Heatmap overlay logic
-│   │   └── HeatmapProvider.tsx
+│   │   ├── HeatmapProvider.tsx
+│   │   ├── FlowParticles.tsx   # FR42: Animated particles on connections
+│   │   └── CanvasLegend.tsx    # FR43: Heatmap color/style legend
 │   └── auth/                  # Login page, auth guard
 │       ├── LoginPage.tsx
 │       └── AuthGuard.tsx
@@ -423,7 +509,9 @@ src/
 │   ├── recalculator.ts        # Core metric recalculation
 │   ├── propagator.ts          # Graph traversal + propagation
 │   ├── heatmapCalculator.ts   # Heatmap color computation
-│   └── tierEvaluator.ts       # Architecture tier assessment
+│   ├── tierEvaluator.ts       # Architecture tier assessment
+│   ├── recommendationEngine.ts # FR33: Variant recommendations for weak metrics
+│   └── connectionAnalyzer.ts  # FR37: Connection health + endpoint analysis
 ├── services/                  # Orchestration layer
 │   ├── yamlImporter.ts        # YAML import pipeline (parse → validate → hydrate)
 │   ├── yamlExporter.ts        # YAML export pipeline (dehydrate → serialize)
@@ -604,11 +692,12 @@ archie/
 │   ├── vite-env.d.ts                 # Vite type declarations
 │   ├── components/
 │   │   ├── ui/                       # shadcn/ui components (auto-generated)
-│   │   ├── canvas/                   # FR1-FR7: Architecture Composition
+│   │   ├── canvas/                   # FR1-FR7, FR38: Architecture Composition
 │   │   │   ├── ArchieNode.tsx        # Custom React Flow node (component on canvas)
 │   │   │   ├── ArchieEdge.tsx        # Custom React Flow edge (connection line)
 │   │   │   ├── CanvasView.tsx        # Canvas container + React Flow provider
 │   │   │   ├── ConnectionWarning.tsx # FR7: WARN overlay on incompatible connections
+│   │   │   ├── ConnectionLabel.tsx   # FR38: Draggable connection labels
 │   │   │   └── PlaceholderNode.tsx   # Unknown component placeholder
 │   │   ├── toolbox/                  # FR8-FR12: Component System
 │   │   │   ├── ToolboxPanel.tsx      # Three-tab container
@@ -617,19 +706,29 @@ archie/
 │   │   │   ├── BlueprintTab.tsx      # FR8: Browse blueprints + FR28 examples
 │   │   │   ├── ComponentCard.tsx     # FR9: Benefit card (IS/GAIN/COST)
 │   │   │   └── SearchFilter.tsx      # Toolbox search/filter
-│   │   ├── inspector/                # FR9-FR12, FR18: Component details
-│   │   │   ├── InspectorPanel.tsx    # Right-side panel container
+│   │   ├── inspector/                # FR9-FR12, FR18, FR31-FR35, FR37: Component & Connection details
+│   │   │   ├── InspectorPanel.tsx    # Right-side panel container (routes to component or connection view)
 │   │   │   ├── ComponentDetail.tsx   # FR9: Full detail card
 │   │   │   ├── ConfigSelector.tsx    # FR11-FR12: Config variant dropdown
 │   │   │   ├── ComponentSwapper.tsx  # FR10: In-place component type swap
-│   │   │   └── MetricCard.tsx        # FR18: Per-component metric display
-│   │   ├── dashboard/                # FR17, FR19-FR22: Scoring + Tiers
+│   │   │   ├── MetricCard.tsx        # FR18: Per-component metric display
+│   │   │   ├── CodeSnippet.tsx       # FR31: Syntax-highlighted implementation code per variant
+│   │   │   ├── MetricExplanation.tsx # FR32: Expandable reason + contributing factors
+│   │   │   ├── VariantRecommendation.tsx # FR33: Weak metric variant suggestions
+│   │   │   ├── MetricDelta.tsx       # FR34: +/- delta indicators on variant switch
+│   │   │   ├── MetricFilter.tsx      # FR35: Show/hide individual metrics
+│   │   │   └── ConnectionInspector.tsx # FR37: Connection properties + per-endpoint health
+│   │   ├── dashboard/                # FR17, FR19-FR22, FR39-FR40: Scoring + Tiers + Overview
 │   │   │   ├── DashboardPanel.tsx    # Bottom panel container
 │   │   │   ├── CategoryBar.tsx       # FR17: Single category score bar
 │   │   │   ├── AggregateScore.tsx    # FR19: Architecture-level ratings
-│   │   │   └── TierBadge.tsx         # FR20-FR22: Tier display + gap info
-│   │   ├── heatmap/                  # FR15-FR16: Bottleneck Heatmap
-│   │   │   └── HeatmapProvider.tsx   # Heatmap color computation + overlay
+│   │   │   ├── TierBadge.tsx         # FR20-FR22: Tier display + gap info
+│   │   │   ├── CategoryOverlay.tsx   # FR39: Expanded view with per-category contributing factors
+│   │   │   └── CategoryInfo.tsx      # FR40: Interactive category description popup
+│   │   ├── heatmap/                  # FR15-FR16, FR42-FR43: Bottleneck Heatmap + Canvas Enhancements
+│   │   │   ├── HeatmapProvider.tsx   # Heatmap color computation + overlay
+│   │   │   ├── FlowParticles.tsx     # FR42: Animated particles on connection lines
+│   │   │   └── CanvasLegend.tsx      # FR43: Semi-transparent legend (colors, line styles)
 │   │   ├── import-export/            # FR23-FR27: Data Import & Export
 │   │   │   ├── ImportDialog.tsx      # FR23: YAML file import UI
 │   │   │   ├── ExportButton.tsx      # FR24: YAML export trigger
@@ -639,33 +738,42 @@ archie/
 │   │   │   └── AuthGuard.tsx         # Protected route wrapper
 │   │   └── layout/                   # App shell
 │   │       ├── AppLayout.tsx         # Three-zone layout (toolbox + canvas + inspector + dashboard)
-│   │       └── Toolbar.tsx           # Top toolbar (import/export buttons, example selector)
+│   │       ├── Toolbar.tsx           # Top toolbar (import/export buttons, example selector)
+│   │       └── IssuesSummary.tsx     # FR41: Issues badge + dropdown in toolbar
 │   ├── stores/                       # Zustand state management
 │   │   ├── architectureStore.ts      # Architecture state (nodes, edges, configs, metrics)
 │   │   └── uiStore.ts               # UI state (selected tab, panel visibility, selected node)
 │   ├── repositories/                 # Repository pattern (Firestore-backed)
 │   │   ├── types.ts                 # Repository interfaces (contracts)
 │   │   ├── componentRepository.ts   # Firestore component collection access
+│   │   ├── connectionTypeRepository.ts # FR36: Connection type definitions access
+│   │   ├── metricCategoryRepository.ts # FR40: Dashboard category descriptions access
 │   │   ├── stackRepository.ts       # Firestore stack collection access
 │   │   └── blueprintRepository.ts   # Firestore blueprint collection access
 │   ├── schemas/                      # Zod schemas (single source of truth)
-│   │   ├── componentSchema.ts       # Component + ConfigVariant schemas
+│   │   ├── componentSchema.ts       # Component + ConfigVariant + code snippets + explanations
+│   │   ├── connectionTypeSchema.ts  # FR36: Connection type properties schema
+│   │   ├── metricCategorySchema.ts  # FR40: Dashboard category description schema
 │   │   ├── stackSchema.ts           # Stack schema
 │   │   ├── blueprintSchema.ts       # Blueprint schema
 │   │   ├── architectureFileSchema.ts # YAML import/export file schema (skeleton)
 │   │   └── metricSchema.ts          # Metric value + category schemas
-│   ├── engine/                       # FR13-FR14: Recalculation engine (pure functions)
+│   ├── engine/                       # FR13-FR14, FR33, FR37: Recalculation engine (pure functions)
 │   │   ├── recalculator.ts          # Core metric recalculation logic
 │   │   ├── propagator.ts            # Graph traversal + metric propagation
 │   │   ├── heatmapCalculator.ts     # Metric values → heatmap colors
-│   │   └── tierEvaluator.ts         # Architecture tier assessment logic
+│   │   ├── tierEvaluator.ts         # Architecture tier assessment logic
+│   │   ├── recommendationEngine.ts  # FR33: Variant recommendations for weak metrics
+│   │   └── connectionAnalyzer.ts    # FR37: Connection health + per-endpoint analysis
 │   ├── services/                     # Orchestration / pipelines
 │   │   ├── yamlImporter.ts          # Import pipeline: parse → validate → hydrate → recalculate
 │   │   ├── yamlExporter.ts          # Export pipeline: dehydrate → serialize
 │   │   ├── componentLibrary.ts      # Loads Firestore data into memory cache; provides sync lookups
 │   │   └── recalculationService.ts  # Orchestrates: cache lookup → engine computation → results
 │   ├── data/                         # FR28-FR30: Seed data + static content
-│   │   ├── components/              # AI-generated component YAML files (for Firestore seeding)
+│   │   ├── components/              # AI-generated component YAML (includes snippets, explanations)
+│   │   ├── connection-types/        # FR36: Connection type definitions (protocol, pattern, latency)
+│   │   ├── metric-categories/       # FR40: Dashboard category descriptions
 │   │   ├── stacks/                  # Stack definitions (for Firestore seeding)
 │   │   ├── blueprints/              # Example architectures (for Firestore seeding)
 │   │   └── prompt-template.md       # FR30: AI prompt template for YAML generation
@@ -683,7 +791,9 @@ archie/
 │   │   │   ├── recalculator.test.ts
 │   │   │   ├── propagator.test.ts
 │   │   │   ├── heatmapCalculator.test.ts
-│   │   │   └── tierEvaluator.test.ts
+│   │   │   ├── tierEvaluator.test.ts
+│   │   │   ├── recommendationEngine.test.ts  # FR33
+│   │   │   └── connectionAnalyzer.test.ts    # FR37
 │   │   ├── schemas/
 │   │   │   ├── componentSchema.test.ts
 │   │   │   ├── architectureFileSchema.test.ts
@@ -772,6 +882,10 @@ Zustand Store → yamlExporter (dehydrate → serialize) → User File
 | FR20-FR22 (Tier System) | `src/engine/tierEvaluator.ts` + `src/components/dashboard/TierBadge.tsx` | |
 | FR23-FR27 (Import/Export) | `src/services/` + `src/components/import-export/` + `src/schemas/` | |
 | FR28-FR30 (Content Library) | `src/data/` + `scripts/seed-firestore.ts` | `src/repositories/` |
+| FR31-FR35 (Component Intelligence) | `src/components/inspector/` (CodeSnippet, MetricExplanation, VariantRecommendation, MetricDelta, MetricFilter) | `src/engine/recommendationEngine.ts` + `src/services/componentLibrary.ts` |
+| FR36-FR38 (Connection System) | `src/components/inspector/ConnectionInspector.tsx` + `src/components/canvas/ConnectionLabel.tsx` | `src/engine/connectionAnalyzer.ts` + `src/repositories/connectionTypeRepository.ts` + `src/schemas/connectionTypeSchema.ts` |
+| FR39-FR41 (Dashboard & Overview) | `src/components/dashboard/CategoryOverlay.tsx` + `CategoryInfo.tsx` + `src/components/layout/IssuesSummary.tsx` | `src/repositories/metricCategoryRepository.ts` + `src/stores/architectureStore.ts` |
+| FR42-FR43 (Canvas Enhancements) | `src/components/heatmap/FlowParticles.tsx` + `CanvasLegend.tsx` | `src/engine/heatmapCalculator.ts` |
 
 ### Data Flow
 
@@ -797,14 +911,18 @@ Zustand Store → yamlExporter (dehydrate → serialize) → User File
 **Config Change Flow (the core loop):**
 1. User clicks config dropdown → `ConfigSelector.tsx`
 2. Calls `useArchitectureStore.changeConfigVariant(nodeId, variantId)`
-3. Store action calls `recalculationService.run(graph, changedNodeId)`
-4. Service reads component data from in-memory cache (synchronous)
-5. Service calls `recalculator.recalculate(hydratedGraph)` — pure function
-6. Service calls `heatmapCalculator.computeColors(metrics)` — pure function
-7. Service calls `tierEvaluator.evaluate(graph)` — pure function
-8. Service returns all computed results to store
-9. Store updates all computed state in a single batch
-10. React re-renders only affected components (Zustand selectors)
+3. Store snapshots previous metrics for delta computation (FR34)
+4. Store action calls `recalculationService.run(graph, changedNodeId)`
+5. Service reads component data from in-memory cache (synchronous)
+6. Service calls `recalculator.recalculate(hydratedGraph)` — pure function
+7. Service calls `heatmapCalculator.computeColors(metrics)` — pure function
+8. Service calls `tierEvaluator.evaluate(graph)` — pure function
+9. Service calls `recommendationEngine.suggest(graph, weakMetrics)` — pure function (FR33)
+10. Service computes metric deltas (new - previous) (FR34)
+11. Service derives issues list (components with warning/bottleneck status) (FR41)
+12. Service returns all computed results to store
+13. Store updates all computed state in a single batch
+14. React re-renders only affected components (Zustand selectors)
 
 ## Architecture Validation Results
 
@@ -833,9 +951,9 @@ type ArchieNodeData = {
 
 ### Requirements Coverage Validation
 
-**Functional Requirements: 30/30 COVERED**
+**Functional Requirements: 43/43 COVERED**
 
-All FRs from Architecture Composition (FR1-FR7), Component System (FR8-FR12), Trade-off Visualization (FR13-FR19), Architecture Assessment (FR20-FR22), Data Import/Export (FR23-FR27), and Content Library (FR28-FR30) have specific files, components, and patterns assigned.
+All FRs from Architecture Composition (FR1-FR7), Component System (FR8-FR12), Trade-off Visualization (FR13-FR19), Architecture Assessment (FR20-FR22), Data Import/Export (FR23-FR27), Content Library (FR28-FR30), Component Intelligence (FR31-FR35), Connection System (FR36-FR38), Dashboard & Architecture Overview (FR39-FR41), and Canvas Enhancements (FR42-FR43) have specific files, components, and patterns assigned.
 
 **Non-Functional Requirements: 11/11 COVERED**
 
@@ -850,9 +968,9 @@ All FRs from Architecture Composition (FR1-FR7), Component System (FR8-FR12), Tr
 
 ### Gap Analysis Results
 
-**No critical gaps.** Three minor items documented:
+**No critical gaps.** All 15 UX playground gaps resolved: 12 incorporated as MVP FRs (FR31-FR43), 1 deferred to Phase 2 (Data Context Items), 1 classified as UX spec update only (node shape variations), 1 excluded (dynamic prompt generator — design tool, not app feature). Three minor items documented:
 
-1. **Dexie.js Schema Versioning** — `librarySeeder` should check a data version flag and re-seed when bundled data is newer than what's in IndexedDB. Dexie supports `db.version(n).stores({...}).upgrade(...)` for migrations.
+1. **Firestore Library Versioning** — The seed script should write a `_metadata` document with the library data version. The component library service checks this on startup and notifies if the local cache is stale (e.g., after a seed update). Consider a version field per component document as well for granular tracking.
 
 2. **Dark Mode Default** — Per UX spec, Archie is dark-mode-first. Set `<html class="dark">` during shadcn/ui init and use dark theme as default.
 
@@ -861,13 +979,13 @@ All FRs from Architecture Composition (FR1-FR7), Component System (FR8-FR12), Tr
 ### Architecture Completeness Checklist
 
 **Requirements Analysis**
-- [x] Project context thoroughly analyzed (30 FRs, 11 NFRs)
+- [x] Project context thoroughly analyzed (43 FRs, 11 NFRs)
 - [x] Scale and complexity assessed (medium — canvas tool, 10-20 components)
-- [x] Technical constraints identified (client-side, no backend, YAML persistence)
+- [x] Technical constraints identified (client-side computation, Firebase backend, YAML persistence)
 - [x] Cross-cutting concerns mapped (schema, recalculation, state, graph, security)
 
 **Architectural Decisions**
-- [x] Critical decisions documented (Zustand, Dexie.js, Zod, Firebase Auth)
+- [x] Critical decisions documented (Zustand, Firebase Firestore, Zod, Firebase Auth)
 - [x] Technology stack fully specified with initialization sequence
 - [x] Data architecture defined (skeleton YAML + library + runtime state)
 - [x] Performance strategy addressed (React Flow virtualization, Zustand selectors, pure engine)
@@ -882,7 +1000,7 @@ All FRs from Architecture Composition (FR1-FR7), Component System (FR8-FR12), Tr
 - [x] Complete directory structure defined (every file mapped to FRs)
 - [x] Component boundaries established (data access, computation, auth, YAML I/O)
 - [x] Integration points mapped (data flow diagram, config change flow)
-- [x] Requirements to structure mapping complete (all 30 FRs → specific files)
+- [x] Requirements to structure mapping complete (all 43 FRs → specific files)
 
 ### Architecture Readiness Assessment
 
@@ -891,18 +1009,21 @@ All FRs from Architecture Composition (FR1-FR7), Component System (FR8-FR12), Tr
 **Confidence Level:** High
 
 **Key Strengths:**
-- Clean separation: visual layer (React Flow) / domain logic (engine) / data layer (Dexie.js + repos) / state (Zustand)
-- Recalculation engine as pure functions — fully testable, no side effects
-- Repository pattern enables Dexie.js → Firestore migration without touching UI
-- Skeleton YAML keeps exports small; library data updatable independently
-- Firebase Auth + Hosting in one project — zero extra infrastructure
+- Clean separation: visual layer (React Flow) / services (orchestration) / domain logic (engine) / data layer (Firestore + repos) / state (Zustand)
+- Recalculation service + pure engine pattern — service handles data assembly, engine is fully testable with zero side effects
+- Firebase platform (Auth + Firestore + Hosting) in one project — zero additional infrastructure
+- Component library in Firestore — updatable without app redeployment
+- Skeleton YAML keeps exports small and portable
 - Every FR and NFR traced to specific files and patterns
+- Component intelligence features (FR31-FR35) extend inspector without new architectural layers — data-driven from enriched component library
+- Connection system (FR36-FR38) cleanly separates connection properties (library data) from connection health (engine-computed)
+- New engine functions (recommendationEngine, connectionAnalyzer) follow existing pure-function pattern — no architectural deviation
 
 **Areas for Future Enhancement:**
-- Firestore migration (clean path via repository pattern)
 - Additional auth providers (Firebase Auth supports them)
 - Complex routing for community features (React Router already in place)
 - Performance optimization for 100+ component graphs (not needed at MVP scale)
+- Real-time Firestore listeners for live library updates (currently loads at startup)
 
 ### Implementation Handoff
 
@@ -910,17 +1031,18 @@ All FRs from Architecture Composition (FR1-FR7), Component System (FR8-FR12), Tr
 - Follow all architectural decisions exactly as documented
 - Use implementation patterns consistently across all components
 - Respect project structure and boundaries (especially data access through repositories)
-- Keep the recalculation engine pure — no React, no Zustand, no Dexie inside `engine/`
+- Keep the recalculation engine pure — no React, no Zustand, no Firestore inside `engine/`
 - Refer to this document for all architectural questions
 
 **Implementation Sequence:**
 1. Project scaffolding (Vite + shadcn/ui + all dependencies + Firebase init)
-2. Firebase Auth integration + login page + auth guard
+2. Firebase Auth + Firestore setup + security rules + login page + auth guard
 3. Zod schemas (data contract — everything depends on this)
-4. Dexie.js database setup + repository interfaces + library seeder
-5. Zustand stores (architecture state, UI state)
-6. React Flow canvas integration with custom nodes/edges
-7. Recalculation engine (pure functions)
-8. UI panels (toolbox, inspector, dashboard, heatmap)
-9. YAML import/export pipeline
-10. Example architectures + AI prompt template
+4. Firestore repository interfaces + component library service (cache layer)
+5. Seed Firestore with AI-generated component data
+6. Zustand stores (architecture state, UI state)
+7. React Flow canvas integration with custom nodes/edges
+8. Recalculation service + engine (pure functions)
+9. UI panels (toolbox, inspector, dashboard, heatmap)
+10. YAML import/export pipeline
+11. Example architectures + AI prompt template

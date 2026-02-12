@@ -13,6 +13,8 @@
 - Development: `/ecc-dev-story` (TDD Guide + Build Resolver + parallel reviewers)
 - Code review: `/ecc-code-review` (4 parallel agents: code, security, architect, TDD)
 - E2E testing: `/ecc-e2e` (pre-flight enforcement, TEA quality scoring)
+- Impact analysis: `/ecc-impact-analysis` (dependency graphs + sprint conflict detection)
+- Story sizing: `/story-sizing` (validate and split oversized stories)
 
 ## File Ownership
 
@@ -57,21 +59,30 @@ Sequential handoff: pass context documents between dependent agents.
 - Sonnet: main development, orchestration, planning
 - Opus: complex architecture, deep reasoning, security review
 
+## ECC Hooks
+
+Pre/post edit guards enforced via `.claude/settings.json`:
+- **Pre-edit:** `ecc-pre-edit-guard.py` — blocks console.log, explicit `: any`, oversized files
+- **Post-edit:** `ecc-post-edit-warn.py` — warns on bare `toHaveBeenCalled`, missing cleanup
+- **Post-edit:** `ecc-post-edit-typecheck.sh` — runs `tsc --noEmit` on .ts/.tsx edits
+
+Hook files live in `_ecc/hooks/`.
+
 ## Story Lifecycle
 
 ```
-create-story -> story-ready -> dev-story -> code-review -> story-done
+/ecc-create-story -> ready-for-dev -> /ecc-dev-story -> review -> /ecc-code-review -> done
 ```
 
 - IMPORTANT: Developers mark stories "review" ONLY — never "done"
 - Reviewers mark "done" after approval
-- Sprint tracking: `docs/sprint-artifacts/sprint-status.yaml`
+- Sprint tracking: `_bmad-output/implementation-artifacts/sprint-status.yaml`
 
 ## Story Sizing (Opus 4.6)
 
 Maximum per story: **8 tasks / 40 subtasks / 12 files**
 
-If a story exceeds these limits during dev, split it.
+If a story exceeds these limits during dev, run `/story-sizing` to split.
 
 ## Project Knowledge Loading
 

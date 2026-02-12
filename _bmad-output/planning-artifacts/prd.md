@@ -13,6 +13,7 @@ inputDocuments:
   - 'docs/brainstorming/02-morphological-analysis.md'
   - 'docs/brainstorming/03-six-thinking-hats.md'
   - 'docs/brainstorming/04-constraint-mapping-mvp.md'
+  - '_bmad-output/planning-artifacts/ux-playground-gap-analysis.md'
 documentCounts:
   briefs: 1
   research: 0
@@ -91,7 +92,7 @@ author: Gabe
 
 **MVP Approach:** Problem-Solving MVP — deliver the core trade-off visualization loop (configure → recalculate → see heatmap) with enough content (2-3 example architectures) to validate that visual, interactive architecture exploration is genuinely faster and more insightful than text-based AI conversations.
 
-**Resource Requirements:** Solo developer (Gabe), client-side only, no backend infrastructure. React + React Flow + Tailwind/shadcn stack. AI-generated component data (Opus 4.6) — no runtime AI dependency.
+**Resource Requirements:** Solo developer (Gabe), Firebase stack (Auth + Firestore + Hosting). React + React Flow + Tailwind/shadcn stack. AI-generated component data (Opus 4.6) — no runtime AI dependency.
 
 ### MVP Feature Set (Phase 1)
 
@@ -111,17 +112,22 @@ Merged MVP 0+1+2 from brainstorming — Schema + Canvas + Intelligence Layer as 
 6. **Architecture Tier System** — Progressive tier assessment (Foundation → Production-Ready → Resilient); demonstrated on example architectures
 7. **Example Architectures** — 2-3 fully defined AI-generated blueprints (WhatsApp, Telegram, possibly Facebook) with all components, connections, configuration variants, and metrics populated
 8. **AI Prompt Template** — Static format guide for generating Archie-compatible YAML outside the tool
+9. **Component Intelligence** — Implementation code snippets per variant with syntax highlighting, metric explanations with contributing factors, variant recommendations for weak metrics, metric delta indicators on variant switch, and metric filtering in inspector
+10. **Connection System** — Connections as first-class inspectable objects with protocol, communication pattern, latency, and co-location properties; draggable labels for readability; per-endpoint health metrics in inspector
+11. **Architecture Overview** — Issues summary badge with bottleneck/warning navigation, dashboard expanded overlay showing per-category contributing factors, interactive dashboard categories with educational content, flow particle animation on connections, and canvas legend
 
 **Deferred from MVP (moved to Phase 2):**
 - **Priority Sliders** — Weight adjustment across metric categories to rerank scoring. Valuable but not essential for core trade-off visualization — users can mentally prioritize in MVP.
 - **Constraint Guardrails** — Hard limits that flag violations (e.g., "budget must stay under X"). Useful refinement but WARN mode on connections covers the critical safety net for MVP.
+- **Data Context Items** — Personalized per-component data analysis where users define data items (e.g., "User Sessions, read-heavy, 50KB") and see fit indicators (great/good/trade-off/poor/risky) per variant. Powerful differentiator but adds significant data modeling complexity — deferred to align with Phase 3 personalization features.
 
 ### Post-MVP Features
 
 **Phase 2 (Growth):**
 - Priority sliders for metric category weighting
 - Constraint guardrails with configurable thresholds
-- Animated flow simulation with traffic load dial
+- Traffic load dial — adjustable load simulation that modifies flow animation intensity and recalculates metrics under different load scenarios (extends MVP flow particle animation)
+- Data context items — user-defined data per component (name, access pattern, size) with fit indicators per variant for personalized trade-off analysis
 - Expanded component library (20-30+ across all 10 categories)
 - Component swapping via drag-replacement (enhanced UX beyond in-place selector)
 
@@ -195,9 +201,9 @@ Finally, he tries PostgreSQL full-text search — no new component needed, just 
 
 | Journey | Capabilities Revealed |
 |---------|----------------------|
-| **Round-Trip** | YAML import/export, configuration variant switching, parametric recalculation, heatmap visualization, tier assessment, multi-track scoring, priority sliders *(Phase 2)* |
-| **Explorer** | Example architecture loading, in-place component selector (swap type preserving connections), metric comparison across alternatives, priority slider reranking *(Phase 2)* |
-| **From Scratch** | Empty canvas workflow, component drag-and-drop from toolbox, manual wiring, rapid add/remove component comparison, configuration variants on existing components |
+| **Round-Trip** | YAML import/export, configuration variant switching, parametric recalculation, heatmap visualization, tier assessment, multi-track scoring, metric explanations, variant recommendations, metric deltas, issues summary, priority sliders *(Phase 2)* |
+| **Explorer** | Example architecture loading, in-place component selector (swap type preserving connections), metric comparison across alternatives, code pattern inspection, connection inspection, dashboard drill-down, flow particle animation, priority slider reranking *(Phase 2)* |
+| **From Scratch** | Empty canvas workflow, component drag-and-drop from toolbox, manual wiring, rapid add/remove component comparison, configuration variants on existing components, connection label arrangement, canvas legend |
 
 **Cross-cutting requirements from all journeys:**
 - Canvas must support both "load a full architecture" and "build incrementally" workflows
@@ -205,6 +211,8 @@ Finally, he tries PostgreSQL full-text search — no new component needed, just 
 - Configuration variant switching must be the single fastest interaction in the tool
 - Heatmap must update in real-time with every change — this is the primary feedback mechanism
 - Export must capture the exact current state, including all configuration choices
+- Connection inspection must be as accessible as component inspection — click to inspect
+- Metric explanations and variant recommendations must build trust in directional data without overwhelming the interface (progressive disclosure via expand/collapse)
 
 ## Innovation & Novel Patterns
 
@@ -355,6 +363,31 @@ Archie is a Single Page Application (SPA) built with React and React Flow, backe
 - **FR29:** Example architectures include fully defined components, connections, configuration variants, and populated metrics
 - **FR30:** User can access a static AI prompt template for generating Archie-compatible YAML outside the tool
 
+### Component Intelligence
+
+- **FR31:** Inspector displays representative implementation code snippets per configuration variant with syntax highlighting; code snippets are stored as part of component library data
+- **FR32:** Each metric value has an expandable explanation showing a plain-language reason and a list of contributing technical factors; explanations are stored per component + variant + metric in the component library
+- **FR33:** System identifies components with metrics below a health threshold and suggests the variant that best addresses the weakness, showing both the improvement amount and the trade-off cost; recommendations are computed from existing metric data, not pre-stored
+- **FR34:** When switching configuration variants, the inspector displays +/- delta indicators next to each metric, showing the change amount from the previous configuration; deltas persist until the next variant switch
+- **FR35:** Inspector provides a filter to show or hide individual metrics, letting users focus on the metrics most relevant to their current decision
+
+### Connection System
+
+- **FR36:** Connections are first-class inspectable objects with typed properties: protocol, communication pattern, typical latency, and co-location potential; properties are derived from connected components and stored in the component library
+- **FR37:** User can click a connection to inspect its properties in the inspector panel, including per-endpoint health metrics showing how each endpoint contributes to overall connection health
+- **FR38:** Connection labels on the canvas are draggable so users can reposition them for readability when connections overlap
+
+### Dashboard & Architecture Overview
+
+- **FR39:** Dashboard supports an expanded overlay view showing per-category contributing factors — which specific components and metrics drive each category score
+- **FR40:** Dashboard category bars are interactive — clicking shows a description of the category, its key metrics, why it matters, and how to improve it
+- **FR41:** System displays an issues summary with a badge count of components that have warning or bottleneck status; clicking opens a dropdown listing each affected component with health status, average score, and worst metric — each entry is clickable to navigate to that component on the canvas
+
+### Canvas Enhancements
+
+- **FR42:** When heatmap is enabled, animated particles flow along connection lines with speed varying by health status (green = fast flow, red = slow/congested flow)
+- **FR43:** Canvas displays a semi-transparent legend explaining heatmap colors, connection line styles, and connection type indicators
+
 ## Non-Functional Requirements
 
 ### Performance
@@ -377,6 +410,6 @@ Archie is a Single Page Application (SPA) built with React and React Flow, backe
 ### Categories Skipped
 
 - **Scalability:** Not applicable for MVP — Firebase handles infrastructure scaling; single-user tool with no custom backend
-- **Accessibility:** Deferred for MVP per project scoping decision
+- **Accessibility:** Basic accessibility included in MVP (ARIA labels on canvas nodes, keyboard navigation, color independence for heatmap status). Full WCAG compliance deferred to post-MVP.
 - **Integration:** No external system integrations for MVP
 - **Reliability:** Client-side tool with no uptime requirements; data integrity covered by FR26 (lossless round-trip)
