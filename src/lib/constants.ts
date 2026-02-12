@@ -15,3 +15,19 @@ export const SPACING_XL = 24
 
 // File limits (NFR7)
 export const MAX_FILE_SIZE = 1_048_576 // 1MB in bytes
+
+// Component categories (AC-ARCH-PATTERN-10)
+export const COMPONENT_CATEGORIES = {
+  compute: { label: "Compute", color: "var(--color-cat-compute)", iconName: "Cpu" },
+  "data-storage": { label: "Data Storage", color: "var(--color-cat-data-storage)", iconName: "Database" },
+  caching: { label: "Caching", color: "var(--color-cat-caching)", iconName: "Flame" },
+  messaging: { label: "Messaging", color: "var(--color-cat-messaging)", iconName: "MessageSquare" },
+  "delivery-network": { label: "Delivery/Network", color: "var(--color-cat-delivery)", iconName: "Globe" },
+  "real-time": { label: "Real-Time", color: "var(--color-cat-realtime)", iconName: "Radio" },
+  "auth-security": { label: "Auth/Security", color: "var(--color-cat-auth)", iconName: "Shield" },
+  monitoring: { label: "Monitoring", color: "var(--color-cat-monitoring)", iconName: "Activity" },
+  search: { label: "Search", color: "var(--color-cat-search)", iconName: "Search" },
+  devops: { label: "DevOps", color: "var(--color-cat-devops)", iconName: "Settings" },
+} as const
+
+export type ComponentCategoryId = keyof typeof COMPONENT_CATEGORIES

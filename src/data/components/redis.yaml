@@ -1,0 +1,80 @@
+id: redis
+name: Redis
+category: data-storage
+description: In-memory data structure store used as database, cache, and message broker
+is: A blazing-fast in-memory key-value store supporting rich data structures
+gain:
+  - Sub-millisecond read/write latency
+  - Versatile data structures (strings, hashes, lists, sets, sorted sets)
+  - Built-in pub/sub and Lua scripting
+cost:
+  - Dataset limited by available RAM
+  - Persistence options trade durability for performance
+  - Single-threaded command execution
+tags:
+  - database
+  - nosql
+  - in-memory
+  - key-value
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: data-durability
+    value: medium
+    numeric_value: 5
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+config_variants:
+  - id: standalone
+    name: Standalone
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 2
+        category: scalability
+  - id: sentinel
+    name: Sentinel HA
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 5
+        category: scalability
+  - id: cluster
+    name: Redis Cluster
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+    - pub-sub
+  typical_latency: "<1ms"
+  co_location_potential: true

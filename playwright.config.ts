@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test"
 
+const AUTH_FILE = "tests/e2e/.auth/user.json"
+
 export default defineConfig({
   testDir: "./tests/e2e",
   outputDir: "playwright-artifacts",
@@ -12,18 +14,27 @@ export default defineConfig({
     baseURL: "http://localhost:5173",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
+    video: "on-first-retry",
   },
   projects: [
     {
-      name: "desktop",
-      use: { ...devices["Desktop Chrome"] },
+      name: "setup",
+      testMatch: /global-setup\.ts/,
     },
     {
-      name: "mobile",
+      name: "desktop",
       use: {
-        viewport: { width: 360, height: 780 },
-        userAgent: devices["Pixel 5"].userAgent,
+        ...devices["Desktop Chrome"],
+        storageState: AUTH_FILE,
       },
+      testIgnore: /global-setup\.ts/,
+      dependencies: ["setup"],
     },
   ],
+  webServer: {
+    command: "npm run dev",
+    url: "http://localhost:5173",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
+  },
 })

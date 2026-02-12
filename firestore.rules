@@ -7,32 +7,32 @@ service cloud.firestore {
     }
 
     // Component library collections — read-only for authenticated users
-    match /components/{document=**} {
+    match /components/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
 
-    match /stacks/{document=**} {
+    match /stacks/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
 
-    match /blueprints/{document=**} {
+    match /blueprints/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
 
-    match /connectionTypes/{document=**} {
+    match /connectionTypes/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
 
-    match /metricCategories/{document=**} {
+    match /metricCategories/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }
 
-    match /_metadata/{document=**} {
+    match /_metadata/{docId} {
       allow read: if isAuthenticated();
       allow write: if false;
     }

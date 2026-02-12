@@ -24,6 +24,11 @@ export default defineConfig([
       security,
     },
     rules: {
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      }],
       'security/detect-object-injection': 'warn',
       'security/detect-non-literal-regexp': 'warn',
       'security/detect-unsafe-regex': 'warn',

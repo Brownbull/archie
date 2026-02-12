@@ -636,10 +636,41 @@
     <action>Add "Senior Developer Review (ECC)" section to story</action>
   </step>
 
-  <!-- STEP 6: Review Complete -->
+  <!-- STEP 6: E2E Coverage Check & Review Complete -->
 
-  <step n="6" goal="Finalize review and report results">
+  <step n="6" goal="Check E2E coverage gaps, finalize review and report results">
 
+    <!-- 6a: Check for UI changes without E2E coverage -->
+    <action>Check if any {{files_to_review}} match UI component patterns:
+      - "src/components/**/*.tsx" (excluding ui/ - those are shadcn primitives)
+      - "src/hooks/*.ts" (hooks that drive UI behavior)
+      - "src/stores/*.ts" (state that drives UI)
+    </action>
+    <action>Set {{has_ui_changes}} = true/false</action>
+    <action>Set {{changed_ui_files}} = list of matching UI files</action>
+
+    <check if="{{has_ui_changes}}">
+      <!-- 6b: Search existing E2E specs for coverage -->
+      <action>Search tests/e2e/*.spec.ts for data-testid values from {{changed_ui_files}}:
+        - For each changed .tsx component, extract data-testid attributes from source
+        - Search existing E2E specs for those testids
+        - Set {{covered_testids}} = testids found in E2E specs
+        - Set {{uncovered_testids}} = testids NOT found in any E2E spec
+      </action>
+      <action>Set {{ui_missing_e2e}} = true if {{uncovered_testids}} is non-empty</action>
+
+      <!-- 6c: Assess critical path importance -->
+      <action>Evaluate if the UI changes are on a critical user path:
+        - Check if story ACs reference core user flows (authentication, main canvas, toolbox browsing,
+          component placement, connection wiring, YAML import/export)
+        - Check if changed files are in the primary interaction chain
+          (AppLayout, ToolboxPanel, Canvas, Inspector, Dashboard)
+        - Set {{is_critical_path}} = true if any of the above match
+        - Set {{critical_path_reason}} = brief explanation of why
+      </action>
+    </check>
+
+    <!-- 6d: Final output with E2E recommendation -->
     <output>**ECC Code Review Complete!**
 
       **Story:** {{story_key}}
@@ -657,15 +688,57 @@
       - {{agent}}
       {{/each}}
 
+      {{#if has_ui_changes}}
+      {{#if ui_missing_e2e}}
+      **E2E Coverage Gap Detected**
+      UI components changed: {{changed_ui_files}}
+      Missing E2E coverage for: {{uncovered_testids}}
+      {{#if is_critical_path}}
+      **Critical path:** {{critical_path_reason}}
+      **Recommendation:** Run `/ecc-e2e` — these changes affect a core user flow.
+      {{/if}}
+      {{#if NOT is_critical_path}}
+      **Recommendation:** Consider running `/ecc-e2e` for E2E coverage of new UI changes.
+      {{/if}}
+      {{/if}}
+      {{#if NOT ui_missing_e2e}}
+      E2E: Existing specs cover the changed UI components.
+      {{/if}}
+      {{/if}}
+
       **Next Steps:**
       {{#if new_status == "done"}}
       - Deploy or commit to branch
+      {{/if}}
+      {{#if ui_missing_e2e}}
+      - Run `/ecc-e2e` to add E2E coverage for new UI changes
       {{/if}}
       {{#if new_status != "done"}}
       - Address remaining issues
       - Re-run `/ecc-code-review` after fixes
       {{/if}}
     </output>
+
+    <!-- 6e: Prompt user on critical path E2E gaps -->
+    <check if="{{has_ui_changes}} AND {{ui_missing_e2e}} AND {{is_critical_path}}">
+      <ask>E2E gap on critical path. How to proceed?
+        [E] Run `/ecc-e2e` now to add E2E coverage
+        [S] Skip — will add E2E later or not needed
+        [N] Note in story Dev Notes for future reference
+
+        Choose [E], [S], or [N]:</ask>
+
+      <check if="user chooses E">
+        <output>Run `/ecc-e2e {{story_key}}` to generate E2E coverage.</output>
+      </check>
+      <check if="user chooses N">
+        <action>Add to story Dev Notes:
+          - E2E Gap: {{uncovered_testids}} — deferred by user ({date})
+          - Critical path: {{critical_path_reason}}
+        </action>
+        <output>E2E gap noted in story Dev Notes for future tracking.</output>
+      </check>
+    </check>
   </step>
 
 </workflow>

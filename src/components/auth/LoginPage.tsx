@@ -2,8 +2,11 @@ import { Navigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 
+const isDev = import.meta.env.DEV
+const hasTestCredentials = !!import.meta.env.VITE_TEST_EMAIL
+
 export function LoginPage() {
-  const { user, loading, error, signIn } = useAuth()
+  const { user, loading, error, signIn, signInWithTest } = useAuth()
 
   if (loading) {
     return null
@@ -34,6 +37,18 @@ export function LoginPage() {
         >
           Sign in with Google
         </Button>
+
+        {isDev && hasTestCredentials && (
+          <Button
+            data-testid="test-login-button"
+            onClick={signInWithTest}
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            Test Login (Dev Only)
+          </Button>
+        )}
 
         {error && (
           <p data-testid="auth-error" className="text-sm text-destructive">

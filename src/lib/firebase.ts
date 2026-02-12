@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app"
-import { getAuth } from "firebase/auth"
+import { getAuth, browserLocalPersistence, setPersistence } from "firebase/auth"
 import { initializeFirestore, persistentLocalCache } from "firebase/firestore"
 
 const requiredVars = [
@@ -30,6 +30,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 
 export const auth = getAuth(app)
+
+// Use localStorage for auth persistence so Playwright can capture/restore auth state
+setPersistence(auth, browserLocalPersistence)
 
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache(),

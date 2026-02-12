@@ -1,0 +1,66 @@
+id: rabbitmq
+name: RabbitMQ
+category: messaging
+description: Open-source message broker supporting multiple messaging protocols
+is: A reliable message broker that implements AMQP for decoupling services and managing work queues
+gain:
+  - Mature routing with exchanges, bindings, and queues
+  - Message acknowledgment ensures reliable delivery
+  - Built-in management UI and monitoring
+cost:
+  - Lower throughput than Kafka for streaming use cases
+  - Erlang runtime adds operational overhead
+  - Queue depth monitoring needed to prevent memory issues
+tags:
+  - message-broker
+  - amqp
+  - queue
+  - async
+base_metrics:
+  - id: message-throughput
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: message-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 6
+    category: operational-complexity
+config_variants:
+  - id: single-node
+    name: Single Node
+    metrics:
+      - id: message-throughput
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 2
+        category: scalability
+  - id: clustered
+    name: Clustered
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+connection_properties:
+  protocol: AMQP
+  communication_patterns:
+    - pub-sub
+    - work-queue
+    - routing
+  typical_latency: 1-5ms
+  co_location_potential: true

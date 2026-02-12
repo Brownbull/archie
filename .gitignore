@@ -46,8 +46,12 @@ logs/
 
 # Test artifacts
 playwright-artifacts/
-test-results/
+test-results/*
+!test-results/INDEX.md
 coverage/
+
+# E2E auth state (tokens — auto-generated)
+tests/e2e/.auth/
 
 # Firebase
 .firebase/

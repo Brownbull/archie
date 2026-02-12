@@ -1,0 +1,60 @@
+id: redis-cache
+name: Redis Cache
+category: caching
+description: Redis configured as a dedicated caching layer with eviction policies
+is: An in-memory cache that sits between your application and database to reduce load and latency
+gain:
+  - Dramatically reduces database read load
+  - Configurable eviction policies (LRU, LFU, TTL)
+  - Supports complex cached data structures
+cost:
+  - Cache invalidation complexity
+  - Additional infrastructure to manage
+  - Cold start requires cache warming strategy
+tags:
+  - cache
+  - in-memory
+  - performance
+  - layer
+base_metrics:
+  - id: cache-hit-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: cache-efficiency
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+config_variants:
+  - id: simple-cache
+    name: Simple Key-Value Cache
+    metrics:
+      - id: cache-hit-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: cache-efficiency
+        value: medium
+        numeric_value: 6
+        category: performance
+  - id: distributed-cache
+    name: Distributed Cache
+    metrics:
+      - id: cache-hit-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: cache-efficiency
+        value: high
+        numeric_value: 8
+        category: performance
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+  typical_latency: "<1ms"
+  co_location_potential: true
