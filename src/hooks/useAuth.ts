@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react"
+import { createElement, createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react"
 import type { User } from "firebase/auth"
 import {
   onAuthStateChanged,
@@ -25,16 +25,33 @@ function getErrorMessage(error: unknown): string {
   return "An unexpected error occurred. Please try again."
 }
 
-export function useAuth() {
+interface AuthContextValue {
+  user: User | null
+  loading: boolean
+  error: string | null
+  signIn: () => Promise<void>
+  signOut: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null)
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser)
-      setLoading(false)
-    })
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (firebaseUser) => {
+        setUser(firebaseUser)
+        setLoading(false)
+      },
+      (err) => {
+        setError(getErrorMessage(err))
+        setLoading(false)
+      }
+    )
     return unsubscribe
   }, [])
 
@@ -56,5 +73,14 @@ export function useAuth() {
     }
   }, [])
 
-  return { user, loading, error, signIn, signOut }
+  const value: AuthContextValue = { user, loading, error, signIn, signOut }
+  return createElement(AuthContext.Provider, { value }, children)
+}
+
+export function useAuth(): AuthContextValue {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
 }

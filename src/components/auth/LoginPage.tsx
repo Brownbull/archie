@@ -1,8 +1,17 @@
+import { Navigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 
 export function LoginPage() {
-  const { error, signIn } = useAuth()
+  const { user, loading, error, signIn } = useAuth()
+
+  if (loading) {
+    return null
+  }
+
+  if (user) {
+    return <Navigate to="/" replace />
+  }
 
   return (
     <div

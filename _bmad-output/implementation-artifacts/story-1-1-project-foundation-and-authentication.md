@@ -1,6 +1,6 @@
 # Story: 1-1-project-foundation-and-authentication
 
-## Status: review
+## Status: done
 
 ## Epic: Epic 1 - Architecture Canvas & Component Library
 

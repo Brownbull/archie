@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import { describe, it, expect } from "vitest"
 import {
   TOOLBAR_HEIGHT,
@@ -65,5 +67,12 @@ describe("Spacing Constants (UX16 - 4px base)", () => {
 describe("File Limits (NFR7)", () => {
   it("MAX_FILE_SIZE is 1MB in bytes", () => {
     expect(MAX_FILE_SIZE).toBe(1_048_576)
+  })
+})
+
+describe("Dark Mode (AC-4)", () => {
+  it("index.html has class='dark' on <html> element", () => {
+    const html = readFileSync(resolve(process.cwd(), "index.html"), "utf-8")
+    expect(html).toMatch(/<html[^>]*class="dark"/)
   })
 })

@@ -37,6 +37,10 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // SECURITY: When adding user-writable collections (e.g., userProjects),
+    // ALWAYS enforce ownership: allow write: if request.auth.uid == resource.data.userId;
+    // NEVER use match /{document=**} with allow write: if isAuthenticated();
+
     // Deny all by default
     match /{document=**} {
       allow read, write: if false;

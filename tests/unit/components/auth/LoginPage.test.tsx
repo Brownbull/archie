@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
-import { MemoryRouter } from "react-router-dom"
+import { MemoryRouter, Routes, Route } from "react-router-dom"
 import { LoginPage } from "@/components/auth/LoginPage"
 
 const mockSignIn = vi.fn()
@@ -24,6 +24,7 @@ function renderLoginPage() {
 
 describe("LoginPage", () => {
   beforeEach(() => {
+    vi.resetAllMocks()
     mockUseAuth.mockReturnValue({
       user: null,
       loading: false,
@@ -62,5 +63,40 @@ describe("LoginPage", () => {
 
     renderLoginPage()
     expect(screen.getByTestId("auth-error")).toHaveTextContent("Sign-in was cancelled.")
+  })
+
+  it("redirects to / when user is authenticated", () => {
+    mockUseAuth.mockReturnValue({
+      user: { uid: "123", displayName: "Test User" },
+      loading: false,
+      error: null,
+      signIn: mockSignIn,
+      signOut: vi.fn(),
+    })
+
+    render(
+      <MemoryRouter initialEntries={["/login"]}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<div>Home Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(screen.queryByTestId("sign-in-button")).not.toBeInTheDocument()
+    expect(screen.getByText("Home Page")).toBeInTheDocument()
+  })
+
+  it("renders nothing while loading", () => {
+    mockUseAuth.mockReturnValue({
+      user: null,
+      loading: true,
+      error: null,
+      signIn: mockSignIn,
+      signOut: vi.fn(),
+    })
+
+    const { container } = renderLoginPage()
+    expect(container.innerHTML).toBe("")
   })
 })

@@ -1,7 +1,12 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { AppLayout } from "@/components/layout/AppLayout"
+import {
+  TOOLBOX_WIDTH,
+  INSPECTOR_WIDTH,
+  DASHBOARD_HEIGHT,
+} from "@/lib/constants"
 
 vi.mock("@/hooks/useAuth", () => ({
   useAuth: () => ({
@@ -26,6 +31,10 @@ function renderAppLayout() {
 }
 
 describe("AppLayout", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
   it("renders the toolbar region", () => {
     renderAppLayout()
     expect(screen.getByTestId("toolbar")).toBeInTheDocument()
@@ -53,5 +62,12 @@ describe("AppLayout", () => {
     renderAppLayout()
     expect(screen.getByTestId("dashboard")).toBeInTheDocument()
     expect(screen.getByText("Dashboard")).toBeInTheDocument()
+  })
+
+  it("applies correct dimensions from constants", () => {
+    renderAppLayout()
+    expect(screen.getByTestId("toolbox")).toHaveStyle({ width: `${TOOLBOX_WIDTH}px` })
+    expect(screen.getByTestId("inspector")).toHaveStyle({ width: `${INSPECTOR_WIDTH}px` })
+    expect(screen.getByTestId("dashboard")).toHaveStyle({ height: `${DASHBOARD_HEIGHT}px` })
   })
 })

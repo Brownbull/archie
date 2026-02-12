@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
-import { MemoryRouter } from "react-router-dom"
+import { MemoryRouter, Routes, Route } from "react-router-dom"
 import { AuthGuard } from "@/components/auth/AuthGuard"
 
 const mockUseAuth = vi.fn()
@@ -13,20 +13,20 @@ vi.mock("@/lib/firebase", () => ({
   auth: { currentUser: null },
 }))
 
-function renderWithRouter(ui: React.ReactElement, initialEntries = ["/"]) {
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>
-  )
-}
-
 describe("AuthGuard", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
   it("renders skeleton loading state (not a spinner)", () => {
     mockUseAuth.mockReturnValue({ user: null, loading: true })
 
-    renderWithRouter(
-      <AuthGuard>
-        <div>Protected Content</div>
-      </AuthGuard>
+    render(
+      <MemoryRouter>
+        <AuthGuard>
+          <div>Protected Content</div>
+        </AuthGuard>
+      </MemoryRouter>
     )
 
     expect(screen.getByTestId("auth-loading")).toBeInTheDocument()
@@ -39,10 +39,12 @@ describe("AuthGuard", () => {
       loading: false,
     })
 
-    renderWithRouter(
-      <AuthGuard>
-        <div>Protected Content</div>
-      </AuthGuard>
+    render(
+      <MemoryRouter>
+        <AuthGuard>
+          <div>Protected Content</div>
+        </AuthGuard>
+      </MemoryRouter>
     )
 
     expect(screen.getByText("Protected Content")).toBeInTheDocument()
@@ -51,12 +53,23 @@ describe("AuthGuard", () => {
   it("redirects to /login when unauthenticated", () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false })
 
-    renderWithRouter(
-      <AuthGuard>
-        <div>Protected Content</div>
-      </AuthGuard>
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <AuthGuard>
+                <div>Protected Content</div>
+              </AuthGuard>
+            }
+          />
+          <Route path="/login" element={<div>Login Page</div>} />
+        </Routes>
+      </MemoryRouter>
     )
 
     expect(screen.queryByText("Protected Content")).not.toBeInTheDocument()
+    expect(screen.getByText("Login Page")).toBeInTheDocument()
   })
 })
