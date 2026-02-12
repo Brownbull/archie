@@ -1,6 +1,6 @@
 # Story: 1-1-project-foundation-and-authentication
 
-## Status: ready-for-dev
+## Status: review
 
 ## Epic: Epic 1 - Architecture Canvas & Component Library
 
@@ -129,56 +129,56 @@ This is the **greenfield foundation story**. It scaffolds the entire project: Vi
 ## Tasks / Subtasks
 
 ### Task 1: Project Scaffolding & Dependencies
-- [ ] 1.1 Run `npm create vite@latest` with `react-ts` template
-- [ ] 1.2 Run `npx shadcn@latest init` (dark mode, CSS variables, `@/*` alias)
-- [ ] 1.3 Install runtime deps: `@xyflow/react firebase react-router-dom zustand zod js-yaml`
-- [ ] 1.4 Install dev deps: `vitest @testing-library/react @testing-library/jest-dom jsdom @playwright/test @types/js-yaml`
-- [ ] 1.5 Create `vitest.config.ts` with jsdom environment, `tests/` include pattern, coverage thresholds (45/30/25/40)
-- [ ] 1.6 Create `playwright.config.ts` with desktop + mobile projects, `tests/e2e/` test dir
-- [ ] 1.7 Add npm scripts: `dev`, `build`, `typecheck`, `test`, `test:quick`, `test:story`, `test:sprint`, `test:e2e`
-- [ ] 1.8 Create `tests/setup.ts` with `@testing-library/jest-dom` import
-- [ ] 1.9 Create feature-based directory structure with `.gitkeep` placeholders (AR20)
+- [x] 1.1 Run `npm create vite@latest` with `react-ts` template
+- [x] 1.2 Run `npx shadcn@latest init` (dark mode, CSS variables, `@/*` alias)
+- [x] 1.3 Install runtime deps: `@xyflow/react firebase react-router-dom zustand zod js-yaml`
+- [x] 1.4 Install dev deps: `vitest @testing-library/react @testing-library/jest-dom jsdom @playwright/test @types/js-yaml`
+- [x] 1.5 Create `vitest.config.ts` with jsdom environment, `tests/` include pattern, coverage thresholds (45/30/25/40)
+- [x] 1.6 Create `playwright.config.ts` with desktop + mobile projects, `tests/e2e/` test dir
+- [x] 1.7 Add npm scripts: `dev`, `build`, `typecheck`, `test`, `test:quick`, `test:story`, `test:sprint`, `test:e2e`
+- [x] 1.8 Create `tests/setup.ts` with `@testing-library/jest-dom` import
+- [x] 1.9 Create feature-based directory structure with `.gitkeep` placeholders (AR20)
 
 ### Task 2: Design Tokens, Dark Mode & App Shell Layout
-- [ ] 2.1 Configure `src/index.css` with Tailwind v4 imports and UX14 design tokens (canvas #0f1117, panels #1a1d27, etc.)
-- [ ] 2.2 Update `index.html`: add `class="dark"` to `<html>`, Inter font, meta tags
-- [ ] 2.3 Create `src/components/layout/AppLayout.tsx` with three-zone layout (UX1 dimensions)
-- [ ] 2.4 Create `src/components/layout/Toolbar.tsx` (44px, Archie name, user info, sign-out)
-- [ ] 2.5 Create `src/lib/constants.ts` (layout dimensions, spacing scale, MAX_FILE_SIZE)
+- [x] 2.1 Configure `src/index.css` with Tailwind v4 imports and UX14 design tokens (canvas #0f1117, panels #1a1d27, etc.)
+- [x] 2.2 Update `index.html`: add `class="dark"` to `<html>`, Inter font, meta tags
+- [x] 2.3 Create `src/components/layout/AppLayout.tsx` with three-zone layout (UX1 dimensions)
+- [x] 2.4 Create `src/components/layout/Toolbar.tsx` (44px, Archie name, user info, sign-out)
+- [x] 2.5 Create `src/lib/constants.ts` (layout dimensions, spacing scale, MAX_FILE_SIZE)
 
 ### Task 3: Firebase Configuration & Authentication
-- [ ] 3.1 Create `src/lib/firebase.ts` (Firebase App + Auth + Firestore with `persistentLocalCache()`)
-- [ ] 3.2 Create `.env.example` with all `VITE_FIREBASE_*` keys; verify `.gitignore` excludes `.env*`
-- [ ] 3.3 Create `src/hooks/useAuth.ts` (`onAuthStateChanged`, `signInWithPopup`, `signOut`)
-- [ ] 3.4 Create `src/components/auth/LoginPage.tsx` (Google Sign-In button, Archie branding)
-- [ ] 3.5 Create `src/components/auth/AuthGuard.tsx` (loading/authenticated/unauthenticated states)
-- [ ] 3.6 Install shadcn/ui components: `button`, `skeleton`, `sonner` (toast)
+- [x] 3.1 Create `src/lib/firebase.ts` (Firebase App + Auth + Firestore with `persistentLocalCache()`)
+- [x] 3.2 Create `.env.example` with all `VITE_FIREBASE_*` keys; verify `.gitignore` excludes `.env*`
+- [x] 3.3 Create `src/hooks/useAuth.ts` (`onAuthStateChanged`, `signInWithPopup`, `signOut`)
+- [x] 3.4 Create `src/components/auth/LoginPage.tsx` (Google Sign-In button, Archie branding)
+- [x] 3.5 Create `src/components/auth/AuthGuard.tsx` (loading/authenticated/unauthenticated states)
+- [x] 3.6 Install shadcn/ui components: `button`, `skeleton`, `sonner` (toast)
 
 ### Task 4: Routing, Stores & App Integration
-- [ ] 4.1 Create `src/App.tsx` with React Router (2 routes: /login + / protected)
-- [ ] 4.2 Update `src/main.tsx` to render App
-- [ ] 4.3 Create `src/stores/architectureStore.ts` (skeleton with empty interface)
-- [ ] 4.4 Create `src/stores/uiStore.ts` (skeleton with empty interface)
-- [ ] 4.5 Create `src/types/index.ts` (barrel export placeholder)
-- [ ] 4.6 Validate startup: `npm run dev` serves login page, auth redirect works
+- [x] 4.1 Create `src/App.tsx` with React Router (2 routes: /login + / protected)
+- [x] 4.2 Update `src/main.tsx` to render App
+- [x] 4.3 Create `src/stores/architectureStore.ts` (skeleton with empty interface)
+- [x] 4.4 Create `src/stores/uiStore.ts` (skeleton with empty interface)
+- [x] 4.5 Create `src/types/index.ts` (barrel export placeholder)
+- [x] 4.6 Validate startup: `npm run dev` serves login page, auth redirect works
 
 ### Task 5: Firebase Hosting, Firestore Rules & CI/CD
-- [ ] 5.1 Create `firestore.rules` with `isAuthenticated()` helper, read-only collections, deny-all default
-- [ ] 5.2 Create `firebase.json` (hosting public: `dist`, SPA rewrite, firestore rules)
-- [ ] 5.3 Create `.firebaserc` (project alias placeholder)
-- [ ] 5.4 Create `.github/workflows/ci.yml` (Vitest + typecheck on PR to dev/main)
-- [ ] 5.5 Create `.github/workflows/deploy-preview.yml` (Firebase preview on PR to dev)
-- [ ] 5.6 Create `.github/workflows/deploy-production.yml` (Firebase production on merge to main)
+- [x] 5.1 Create `firestore.rules` with `isAuthenticated()` helper, read-only collections, deny-all default
+- [x] 5.2 Create `firebase.json` (hosting public: `dist`, SPA rewrite, firestore rules, security headers)
+- [x] 5.3 Create `.firebaserc` (project alias placeholder)
+- [x] 5.4 Create `.github/workflows/ci.yml` (Vitest + typecheck on PR to dev/main)
+- [x] 5.5 Create `.github/workflows/deploy-preview.yml` (Firebase preview on PR to dev)
+- [x] 5.6 Create `.github/workflows/deploy-production.yml` (Firebase production on merge to main)
 
 ### Task 6: Unit Tests
-- [ ] 6.1 Create `tests/unit/hooks/useAuth.test.ts` (loading state, auth/unauth, signIn/signOut calls)
-- [ ] 6.2 Create `tests/unit/components/auth/AuthGuard.test.tsx` (loading, redirect, render children)
-- [ ] 6.3 Create `tests/unit/components/auth/LoginPage.test.tsx` (renders button, triggers signIn)
-- [ ] 6.4 Create `tests/unit/components/layout/AppLayout.test.tsx` (five-region layout structure)
-- [ ] 6.5 Create `tests/unit/lib/constants.test.ts` (UX spec values match)
-- [ ] 6.6 Verify `npm run test` passes all unit tests
-- [ ] 6.7 Verify `npm run typecheck` passes with zero errors
-- [ ] 6.8 Verify `npm run build` produces successful production build
+- [x] 6.1 Create `tests/unit/hooks/useAuth.test.ts` (loading state, auth/unauth, signIn/signOut calls)
+- [x] 6.2 Create `tests/unit/components/auth/AuthGuard.test.tsx` (loading, redirect, render children)
+- [x] 6.3 Create `tests/unit/components/auth/LoginPage.test.tsx` (renders button, triggers signIn)
+- [x] 6.4 Create `tests/unit/components/layout/AppLayout.test.tsx` (five-region layout structure)
+- [x] 6.5 Create `tests/unit/lib/constants.test.ts` (UX spec values match)
+- [x] 6.6 Verify `npm run test` passes all unit tests
+- [x] 6.7 Verify `npm run typecheck` passes with zero errors
+- [x] 6.8 Verify `npm run build` produces successful production build
 
 ## Dev Notes
 

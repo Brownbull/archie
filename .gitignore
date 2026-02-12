@@ -44,5 +44,13 @@ out/
 logs/
 *.log
 
+# Test artifacts
+playwright-artifacts/
+test-results/
+coverage/
+
+# Firebase
+.firebase/
+
 # Claude local settings
 .claude/settings.local.json

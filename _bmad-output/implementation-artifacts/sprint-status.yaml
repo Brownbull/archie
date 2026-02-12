@@ -46,7 +46,7 @@ development_status:
   # FRs: FR1-FR12 | NFRs: NFR1, NFR5, NFR8, NFR10
   # ============================================================================
   epic-1: in-progress
-  1-1-project-foundation-and-authentication: ready-for-dev
+  1-1-project-foundation-and-authentication: review
   1-2-component-data-pipeline-and-toolbox-browsing: backlog
   1-3-canvas-and-component-placement: backlog
   1-4-connection-wiring-and-management: backlog
