@@ -1,4 +1,5 @@
 {
+  "enableAllProjectMcpServers": true,
   "hooks": {
     "PreToolUse": [
       {
@@ -30,6 +31,16 @@
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/_ecc/hooks/ecc-post-edit-typecheck.sh\"",
             "timeout": 30
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/_ecc/hooks/ecc-post-memory-notify.sh\"",
+            "timeout": 5
           }
         ]
       }

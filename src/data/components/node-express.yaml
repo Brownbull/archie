@@ -1,0 +1,65 @@
+id: node-express
+name: Node.js + Express
+category: compute
+description: JavaScript runtime with Express web framework for building APIs and web services
+is: A lightweight, event-driven server runtime ideal for I/O-heavy workloads and real-time applications
+gain:
+  - Non-blocking I/O handles thousands of concurrent connections
+  - Massive npm ecosystem for rapid development
+  - Same language (JavaScript/TypeScript) across frontend and backend
+cost:
+  - CPU-intensive tasks block the event loop
+  - Callback complexity in legacy codebases
+  - Single-threaded by default (requires clustering for multi-core)
+tags:
+  - server
+  - javascript
+  - api
+  - runtime
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: cpu-efficiency
+    value: medium
+    numeric_value: 4
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+config_variants:
+  - id: single-process
+    name: Single Process
+    metrics:
+      - id: concurrent-connections
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: cpu-efficiency
+        value: low
+        numeric_value: 3
+        category: performance
+  - id: cluster-mode
+    name: Cluster Mode
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: cpu-efficiency
+        value: medium
+        numeric_value: 6
+        category: performance
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+    - server-sent-events
+  typical_latency: 5-50ms
+  co_location_potential: false

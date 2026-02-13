@@ -45,14 +45,49 @@ New code should meet or exceed these. Do not lower thresholds.
 
 ## E2E Testing
 
-**Playwright projects:**
-- `desktop` — standard desktop viewport
-- `mobile` — `{ width: 360, height: 780 }`
+**Run command:** `npm run test:e2e` (auto-unsets conflicting shell env vars)
 
-**E2E conventions:**
-- Screenshots at key steps: `fullPage: true`, saved to `test-results/{spec-name}/`
-- Playwright auto-artifacts (traces, failure screenshots, videos) go to `playwright-artifacts/`
-- Canvas tests: use `data-testid` on React Flow nodes and edges
+**Playwright project:** `desktop` only (Archie is a desktop web application)
+
+### Auth Pattern
+- `global-setup.ts` authenticates via the dev-only test login button, saves storageState to `tests/e2e/.auth/user.json`
+- The `desktop` project depends on `setup` and injects the saved storageState automatically
+- Authenticated tests use the `page` fixture directly (auth is pre-loaded)
+- Unauthenticated tests override with `test.use({ storageState: { cookies: [], origins: [] } })` inside a `test.describe` block — do NOT use `browser.newContext()`
+
+### Screenshot Persistence
+- Save screenshots at key steps: `fullPage: true`, to `test-results/{spec-name}/` (e.g. `test-results/auth-and-app-shell/`)
+- Define `const SCREENSHOT_DIR = "test-results/{spec-name}"` at the top of each spec file
+- Use descriptive numbered filenames: `01-app-shell-authenticated.png`, `02-all-regions-visible.png`
+- Screenshots persist across runs — only overwritten when the same test re-runs
+- `test-results/INDEX.md` is tracked in git; all other `test-results/*` content is gitignored
+- Playwright auto-artifacts (traces, failure screenshots, videos) go to `playwright-artifacts/` (fully gitignored)
+
+### New Spec File Template
+```typescript
+import { test, expect } from "@playwright/test"
+
+const SCREENSHOT_DIR = "test-results/{spec-name}"
+
+test.describe("Feature E2E", () => {
+  test("authenticated scenario", async ({ page }) => {
+    // page has auth pre-loaded from storageState
+    await page.goto("/")
+    // ... assertions ...
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/01-description.png`, fullPage: true })
+  })
+
+  test.describe("unauthenticated", () => {
+    test.use({ storageState: { cookies: [], origins: [] } })
+
+    test("unauthenticated scenario", async ({ page }) => {
+      // page has NO auth — clean context
+      await page.goto("/")
+      // ... assertions ...
+    })
+  })
+})
+```
 
 ### E2E Selector Priority
 Always use this priority order: `data-testid` > `getByRole` > scoped locator > bare text (last resort)

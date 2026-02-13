@@ -1,0 +1,146 @@
+strict digraph "dependency-cruiser output"{
+    rankdir="LR" splines="ortho" overlap="false" nodesep="0.16" ranksep="0.18" fontname="Helvetica-bold" fontsize="9" style="rounded,bold,filled" fillcolor="#ffffff" compound="true"
+    node [shape="box" style="rounded, filled" height="0.2" color="black" fillcolor="#ffffcc" fontcolor="black" fontname="Helvetica" fontsize="9"]
+    edge [arrowhead="normal" arrowsize="0.6" penwidth="2.0" color="#00000033" fontname="Helvetica" fontsize="9"]
+
+    subgraph "cluster_src" {label="src" "src/App.tsx" [label=<App.tsx> tooltip="App.tsx" URL="src/App.tsx" fillcolor="#bbfeff"] }
+    "src/App.tsx" -> "src/components/auth/AuthGuard.tsx"
+    "src/App.tsx" -> "src/components/auth/LoginPage.tsx"
+    "src/App.tsx" -> "src/components/layout/AppLayout.tsx"
+    "src/App.tsx" -> "src/components/ui/sonner.tsx"
+    "src/App.tsx" -> "src/hooks/useAuth.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/auth" {label="auth" "src/components/auth/AuthGuard.tsx" [label=<AuthGuard.tsx> tooltip="AuthGuard.tsx" URL="src/components/auth/AuthGuard.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/auth/AuthGuard.tsx" -> "src/components/ui/skeleton.tsx"
+    "src/components/auth/AuthGuard.tsx" -> "src/hooks/useAuth.ts"
+    "src/components/auth/AuthGuard.tsx" -> "src/lib/constants.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/auth" {label="auth" "src/components/auth/LoginPage.tsx" [label=<LoginPage.tsx> tooltip="LoginPage.tsx" URL="src/components/auth/LoginPage.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/auth/LoginPage.tsx" -> "src/components/ui/button.tsx"
+    "src/components/auth/LoginPage.tsx" -> "src/hooks/useAuth.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/canvas" {label="canvas" "src/components/canvas/ArchieNode.tsx" [label=<ArchieNode.tsx> tooltip="ArchieNode.tsx" URL="src/components/canvas/ArchieNode.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/canvas/ArchieNode.tsx" -> "src/lib/categoryIcons.ts"
+    "src/components/canvas/ArchieNode.tsx" -> "src/lib/constants.ts"
+    "src/components/canvas/ArchieNode.tsx" -> "src/stores/architectureStore.ts" [arrowhead="onormal" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/canvas" {label="canvas" "src/components/canvas/CanvasView.tsx" [label=<CanvasView.tsx> tooltip="CanvasView.tsx" URL="src/components/canvas/CanvasView.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/canvas/CanvasView.tsx" -> "src/components/canvas/ArchieNode.tsx"
+    "src/components/canvas/CanvasView.tsx" -> "src/components/canvas/EmptyCanvasState.tsx"
+    "src/components/canvas/CanvasView.tsx" -> "src/lib/constants.ts"
+    "src/components/canvas/CanvasView.tsx" -> "src/stores/architectureStore.ts"
+    "src/components/canvas/CanvasView.tsx" -> "src/stores/uiStore.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/canvas" {label="canvas" "src/components/canvas/EmptyCanvasState.tsx" [label=<EmptyCanvasState.tsx> tooltip="EmptyCanvasState.tsx" URL="src/components/canvas/EmptyCanvasState.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/canvas/EmptyCanvasState.tsx" -> "src/stores/architectureStore.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/layout" {label="layout" "src/components/layout/AppLayout.tsx" [label=<AppLayout.tsx> tooltip="AppLayout.tsx" URL="src/components/layout/AppLayout.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/layout/AppLayout.tsx" -> "src/components/canvas/CanvasView.tsx"
+    "src/components/layout/AppLayout.tsx" -> "src/components/layout/Toolbar.tsx"
+    "src/components/layout/AppLayout.tsx" -> "src/components/toolbox/CommandPalette.tsx"
+    "src/components/layout/AppLayout.tsx" -> "src/components/toolbox/ToolboxPanel.tsx"
+    "src/components/layout/AppLayout.tsx" -> "src/components/ui/skeleton.tsx"
+    "src/components/layout/AppLayout.tsx" -> "src/lib/constants.ts"
+    "src/components/layout/AppLayout.tsx" -> "src/services/componentLibrary.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/layout" {label="layout" "src/components/layout/Toolbar.tsx" [label=<Toolbar.tsx> tooltip="Toolbar.tsx" URL="src/components/layout/Toolbar.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/layout/Toolbar.tsx" -> "src/components/ui/button.tsx"
+    "src/components/layout/Toolbar.tsx" -> "src/hooks/useAuth.ts"
+    "src/components/layout/Toolbar.tsx" -> "src/lib/constants.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/toolbox" {label="toolbox" "src/components/toolbox/BlueprintTab.tsx" [label=<BlueprintTab.tsx> tooltip="BlueprintTab.tsx" URL="src/components/toolbox/BlueprintTab.tsx" fillcolor="#bbfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/toolbox" {label="toolbox" "src/components/toolbox/CommandPalette.tsx" [label=<CommandPalette.tsx> tooltip="CommandPalette.tsx" URL="src/components/toolbox/CommandPalette.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/toolbox/CommandPalette.tsx" -> "src/components/ui/command.tsx"
+    "src/components/toolbox/CommandPalette.tsx" -> "src/hooks/useLibrary.ts"
+    "src/components/toolbox/CommandPalette.tsx" -> "src/lib/componentUtils.ts"
+    "src/components/toolbox/CommandPalette.tsx" -> "src/lib/constants.ts"
+    "src/components/toolbox/CommandPalette.tsx" -> "src/schemas/componentSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/components/toolbox/CommandPalette.tsx" -> "src/stores/uiStore.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/toolbox" {label="toolbox" "src/components/toolbox/ComponentCard.tsx" [label=<ComponentCard.tsx> tooltip="ComponentCard.tsx" URL="src/components/toolbox/ComponentCard.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/toolbox/ComponentCard.tsx" -> "src/components/ui/badge.tsx"
+    "src/components/toolbox/ComponentCard.tsx" -> "src/lib/constants.ts"
+    "src/components/toolbox/ComponentCard.tsx" -> "src/schemas/componentSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/toolbox" {label="toolbox" "src/components/toolbox/ComponentTab.tsx" [label=<ComponentTab.tsx> tooltip="ComponentTab.tsx" URL="src/components/toolbox/ComponentTab.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/toolbox/ComponentTab.tsx" -> "src/components/toolbox/ComponentCard.tsx"
+    "src/components/toolbox/ComponentTab.tsx" -> "src/components/ui/scroll-area.tsx"
+    "src/components/toolbox/ComponentTab.tsx" -> "src/hooks/useLibrary.ts"
+    "src/components/toolbox/ComponentTab.tsx" -> "src/lib/categoryIcons.ts"
+    "src/components/toolbox/ComponentTab.tsx" -> "src/lib/componentUtils.ts"
+    "src/components/toolbox/ComponentTab.tsx" -> "src/lib/constants.ts"
+    "src/components/toolbox/ComponentTab.tsx" -> "src/stores/uiStore.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/toolbox" {label="toolbox" "src/components/toolbox/SearchFilter.tsx" [label=<SearchFilter.tsx> tooltip="SearchFilter.tsx" URL="src/components/toolbox/SearchFilter.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/toolbox/SearchFilter.tsx" -> "src/components/ui/input.tsx"
+    "src/components/toolbox/SearchFilter.tsx" -> "src/stores/uiStore.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/toolbox" {label="toolbox" "src/components/toolbox/StackTab.tsx" [label=<StackTab.tsx> tooltip="StackTab.tsx" URL="src/components/toolbox/StackTab.tsx" fillcolor="#bbfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/toolbox" {label="toolbox" "src/components/toolbox/ToolboxPanel.tsx" [label=<ToolboxPanel.tsx> tooltip="ToolboxPanel.tsx" URL="src/components/toolbox/ToolboxPanel.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/toolbox/ToolboxPanel.tsx" -> "src/components/toolbox/BlueprintTab.tsx"
+    "src/components/toolbox/ToolboxPanel.tsx" -> "src/components/toolbox/ComponentTab.tsx"
+    "src/components/toolbox/ToolboxPanel.tsx" -> "src/components/toolbox/SearchFilter.tsx"
+    "src/components/toolbox/ToolboxPanel.tsx" -> "src/components/toolbox/StackTab.tsx"
+    "src/components/toolbox/ToolboxPanel.tsx" -> "src/components/ui/tabs.tsx"
+    "src/components/toolbox/ToolboxPanel.tsx" -> "src/stores/uiStore.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/badge.tsx" [label=<badge.tsx> tooltip="badge.tsx" URL="src/components/ui/badge.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/badge.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/button.tsx" [label=<button.tsx> tooltip="button.tsx" URL="src/components/ui/button.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/button.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/command.tsx" [label=<command.tsx> tooltip="command.tsx" URL="src/components/ui/command.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/command.tsx" -> "src/components/ui/dialog.tsx"
+    "src/components/ui/command.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/dialog.tsx" [label=<dialog.tsx> tooltip="dialog.tsx" URL="src/components/ui/dialog.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/dialog.tsx" -> "src/components/ui/button.tsx"
+    "src/components/ui/dialog.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/input.tsx" [label=<input.tsx> tooltip="input.tsx" URL="src/components/ui/input.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/input.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/scroll-area.tsx" [label=<scroll-area.tsx> tooltip="scroll-area.tsx" URL="src/components/ui/scroll-area.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/scroll-area.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/skeleton.tsx" [label=<skeleton.tsx> tooltip="skeleton.tsx" URL="src/components/ui/skeleton.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/skeleton.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/sonner.tsx" [label=<sonner.tsx> tooltip="sonner.tsx" URL="src/components/ui/sonner.tsx" fillcolor="#bbfeff"] } } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/components" {label="components" subgraph "cluster_src/components/ui" {label="ui" "src/components/ui/tabs.tsx" [label=<tabs.tsx> tooltip="tabs.tsx" URL="src/components/ui/tabs.tsx" fillcolor="#bbfeff"] } } }
+    "src/components/ui/tabs.tsx" -> "src/lib/utils.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/hooks" {label="hooks" "src/hooks/useAuth.ts" [label=<useAuth.ts> tooltip="useAuth.ts" URL="src/hooks/useAuth.ts" fillcolor="#ddfeff"] } }
+    "src/hooks/useAuth.ts" -> "src/lib/firebase.ts"
+    "src/hooks/useAuth.ts" -> "src/services/componentLibrary.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/hooks" {label="hooks" "src/hooks/useLibrary.ts" [label=<useLibrary.ts> tooltip="useLibrary.ts" URL="src/hooks/useLibrary.ts" fillcolor="#ddfeff"] } }
+    "src/hooks/useLibrary.ts" -> "src/services/componentLibrary.ts"
+    subgraph "cluster_src" {label="src" "src/index.css" [label=<index.css> tooltip="index.css" URL="src/index.css" ] }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/lib" {label="lib" "src/lib/categoryIcons.ts" [label=<categoryIcons.ts> tooltip="categoryIcons.ts" URL="src/lib/categoryIcons.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/lib" {label="lib" "src/lib/componentUtils.ts" [label=<componentUtils.ts> tooltip="componentUtils.ts" URL="src/lib/componentUtils.ts" fillcolor="#ddfeff"] } }
+    "src/lib/componentUtils.ts" -> "src/schemas/componentSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/lib" {label="lib" "src/lib/constants.ts" [label=<constants.ts> tooltip="constants.ts" URL="src/lib/constants.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/lib" {label="lib" "src/lib/firebase.ts" [label=<firebase.ts> tooltip="firebase.ts" URL="src/lib/firebase.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/lib" {label="lib" "src/lib/utils.ts" [label=<utils.ts> tooltip="utils.ts" URL="src/lib/utils.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" "src/main.tsx" [label=<main.tsx> tooltip="main.tsx" URL="src/main.tsx" fillcolor="#bbfeff"] }
+    "src/main.tsx" -> "src/App.tsx"
+    "src/main.tsx" -> "src/index.css"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/repositories" {label="repositories" "src/repositories/blueprintRepository.ts" [label=<blueprintRepository.ts> tooltip="blueprintRepository.ts" URL="src/repositories/blueprintRepository.ts" fillcolor="#ddfeff"] } }
+    "src/repositories/blueprintRepository.ts" -> "src/lib/firebase.ts"
+    "src/repositories/blueprintRepository.ts" -> "src/repositories/types.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/repositories/blueprintRepository.ts" -> "src/schemas/blueprintSchema.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/repositories" {label="repositories" "src/repositories/componentRepository.ts" [label=<componentRepository.ts> tooltip="componentRepository.ts" URL="src/repositories/componentRepository.ts" fillcolor="#ddfeff"] } }
+    "src/repositories/componentRepository.ts" -> "src/lib/firebase.ts"
+    "src/repositories/componentRepository.ts" -> "src/repositories/types.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/repositories/componentRepository.ts" -> "src/schemas/componentSchema.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/repositories" {label="repositories" "src/repositories/stackRepository.ts" [label=<stackRepository.ts> tooltip="stackRepository.ts" URL="src/repositories/stackRepository.ts" fillcolor="#ddfeff"] } }
+    "src/repositories/stackRepository.ts" -> "src/lib/firebase.ts"
+    "src/repositories/stackRepository.ts" -> "src/repositories/types.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/repositories/stackRepository.ts" -> "src/schemas/stackSchema.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/repositories" {label="repositories" "src/repositories/types.ts" [label=<types.ts> tooltip="types.ts" URL="src/repositories/types.ts" fillcolor="#ddfeff"] } }
+    "src/repositories/types.ts" -> "src/schemas/blueprintSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/repositories/types.ts" -> "src/schemas/componentSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/repositories/types.ts" -> "src/schemas/stackSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/schemas" {label="schemas" "src/schemas/blueprintSchema.ts" [label=<blueprintSchema.ts> tooltip="blueprintSchema.ts" URL="src/schemas/blueprintSchema.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/schemas" {label="schemas" "src/schemas/componentSchema.ts" [label=<componentSchema.ts> tooltip="componentSchema.ts" URL="src/schemas/componentSchema.ts" fillcolor="#ddfeff"] } }
+    "src/schemas/componentSchema.ts" -> "src/schemas/metricSchema.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/schemas" {label="schemas" "src/schemas/metricSchema.ts" [label=<metricSchema.ts> tooltip="metricSchema.ts" URL="src/schemas/metricSchema.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/schemas" {label="schemas" "src/schemas/stackSchema.ts" [label=<stackSchema.ts> tooltip="stackSchema.ts" URL="src/schemas/stackSchema.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/services" {label="services" "src/services/componentLibrary.ts" [label=<componentLibrary.ts> tooltip="componentLibrary.ts" URL="src/services/componentLibrary.ts" fillcolor="#ddfeff"] } }
+    "src/services/componentLibrary.ts" -> "src/repositories/blueprintRepository.ts"
+    "src/services/componentLibrary.ts" -> "src/repositories/componentRepository.ts"
+    "src/services/componentLibrary.ts" -> "src/repositories/stackRepository.ts"
+    "src/services/componentLibrary.ts" -> "src/schemas/blueprintSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/services/componentLibrary.ts" -> "src/schemas/componentSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/services/componentLibrary.ts" -> "src/schemas/stackSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/stores" {label="stores" "src/stores/architectureStore.ts" [label=<architectureStore.ts> tooltip="architectureStore.ts" URL="src/stores/architectureStore.ts" fillcolor="#ddfeff"] } }
+    "src/stores/architectureStore.ts" -> "src/lib/constants.ts"
+    "src/stores/architectureStore.ts" -> "src/services/componentLibrary.ts"
+    "src/stores/architectureStore.ts" -> "src/stores/uiStore.ts"
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/stores" {label="stores" "src/stores/uiStore.ts" [label=<uiStore.ts> tooltip="uiStore.ts" URL="src/stores/uiStore.ts" fillcolor="#ddfeff"] } }
+    subgraph "cluster_src" {label="src" subgraph "cluster_src/types" {label="types" "src/types/index.ts" [label=<index.ts> tooltip="index.ts" URL="src/types/index.ts" fillcolor="#ddfeff"] } }
+    "src/types/index.ts" -> "src/schemas/blueprintSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/types/index.ts" -> "src/schemas/componentSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/types/index.ts" -> "src/schemas/metricSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+    "src/types/index.ts" -> "src/schemas/stackSchema.ts" [arrowhead="onormal" penwidth="1.0"]
+}

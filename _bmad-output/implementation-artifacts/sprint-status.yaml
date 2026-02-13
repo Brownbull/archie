@@ -1,0 +1,105 @@
+# generated: 2026-02-12
+# project: archie
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, ideally different LLM)
+
+generated: 2026-02-12
+project: archie
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # ============================================================================
+  # Epic 1: Architecture Canvas & Component Library (6 stories)
+  # User can build architectures by browsing, dragging, wiring, configuring, inspecting
+  # FRs: FR1-FR12 | NFRs: NFR1, NFR5, NFR8, NFR10
+  # ============================================================================
+  epic-1: in-progress
+  1-1-project-foundation-and-authentication: done
+  1-2-component-data-pipeline-and-toolbox-browsing: done
+  td-1-2a-schema-alignment: done
+  td-1-2b-seed-hardening: done
+  td-1-2c-seed-credential-hardening: done
+  td-1-2d-seed-test-quality: done
+  td-1-2e-seed-test-dedup: done
+  1-3-canvas-and-component-placement: done
+  td-1-3a-canvas-resilience: done
+  td-1-3b-production-error-logging: done
+  td-1-3c-test-env-pattern: done
+  1-4-connection-wiring-and-management: done
+  td-1-4a-connection-robustness: done
+  td-1-4b-sanitizer-hardening: done
+  1-5-component-inspector-and-configuration: done
+  td-1-5a-inspector-polish: done
+  td-1-5b-selector-and-test-polish: done
+  1-6-in-place-component-swapping: done
+  td-1-6a-swapper-robustness: done
+  epic-1-retrospective: optional
+
+  # ============================================================================
+  # Epic 2: Trade-off Intelligence & Visualization (4 stories)
+  # User sees trade-offs visually -- recalculation, heatmap, dashboard, tier system
+  # FRs: FR13-FR22 | NFRs: NFR2, NFR3
+  # ============================================================================
+  epic-2: backlog
+  2-1-recalculation-engine-and-metric-propagation: backlog
+  2-2-bottleneck-heatmap: backlog
+  2-3-scoring-dashboard: backlog
+  2-4-architecture-tier-system: backlog
+  epic-2-retrospective: optional
+
+  # ============================================================================
+  # Epic 3: YAML Workflow & Content Library (3 stories)
+  # User can import/export YAML, use AI round-trip, explore examples
+  # FRs: FR23-FR30 | NFRs: NFR4, NFR6-NFR11
+  # ============================================================================
+  epic-3: backlog
+  3-1-yaml-import-pipeline: backlog
+  3-2-yaml-export-and-round-trip: backlog
+  3-3-example-architectures-and-ai-prompt-template: backlog
+  epic-3-retrospective: optional
+
+  # ============================================================================
+  # Epic 4: Deep Intelligence & Polish (5 stories)
+  # User gets rich insights -- code snippets, explanations, recommendations,
+  # connection inspection, dashboard drill-down, flow particles, legend
+  # FRs: FR31-FR43
+  # ============================================================================
+  epic-4: backlog
+  4-1-code-snippets-and-metric-explanations: backlog
+  4-2-variant-recommendations-and-metric-tools: backlog
+  4-3-connection-inspection-system: backlog
+  4-4-dashboard-drill-down-and-issues-navigation: backlog
+  4-5-canvas-visual-polish: backlog
+  epic-4-retrospective: optional

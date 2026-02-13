@@ -1,0 +1,61 @@
+id: websocket-server
+name: WebSocket Server
+category: real-time
+description: Persistent bidirectional communication channel for real-time features
+is: A full-duplex communication protocol enabling real-time data exchange between client and server
+gain:
+  - True real-time bidirectional communication
+  - Lower overhead than HTTP polling
+  - Ideal for chat, notifications, live updates
+cost:
+  - Persistent connections consume server resources
+  - Load balancing requires sticky sessions or external state
+  - Connection management complexity at scale
+tags:
+  - realtime
+  - websocket
+  - bidirectional
+  - push
+base_metrics:
+  - id: message-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: concurrent-connections
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: single-server
+    name: Single Server
+    metrics:
+      - id: concurrent-connections
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+  - id: clustered
+    name: Clustered with Redis Pub/Sub
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: operational-complexity
+        value: high
+        numeric_value: 7
+        category: operational-complexity
+connection_properties:
+  protocol: WebSocket
+  communication_patterns:
+    - bidirectional
+    - pub-sub
+  typical_latency: "<1ms"
+  co_location_potential: false

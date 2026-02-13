@@ -1,0 +1,61 @@
+id: prometheus
+name: Prometheus
+category: monitoring
+description: Open-source monitoring and alerting toolkit with time-series database
+is: A pull-based monitoring system that collects metrics, stores them in a time-series database, and triggers alerts
+gain:
+  - Powerful PromQL query language for metric analysis
+  - Pull-based model simplifies service discovery
+  - Rich ecosystem (Grafana, Alertmanager, exporters)
+cost:
+  - Local storage not designed for long-term retention
+  - Pull model less suited for short-lived/serverless workloads
+  - Cardinality explosion with high-dimensional labels
+tags:
+  - monitoring
+  - metrics
+  - alerting
+  - observability
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: storage-efficiency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: standalone
+    name: Standalone
+    metrics:
+      - id: storage-efficiency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+  - id: federated
+    name: Federated
+    metrics:
+      - id: storage-efficiency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: operational-complexity
+        value: high
+        numeric_value: 7
+        category: operational-complexity
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - pull-based
+    - push-gateway
+  typical_latency: 10-30s (scrape interval)
+  co_location_potential: false

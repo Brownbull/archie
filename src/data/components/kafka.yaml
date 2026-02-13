@@ -1,0 +1,65 @@
+id: kafka
+name: Apache Kafka
+category: messaging
+description: Distributed event streaming platform for high-throughput data pipelines
+is: A distributed commit log designed for high-throughput, fault-tolerant event streaming
+gain:
+  - Millions of messages per second throughput
+  - Durable message storage with configurable retention
+  - Consumer groups enable parallel processing
+cost:
+  - Significant operational complexity (ZooKeeper/KRaft)
+  - Higher latency than in-memory brokers
+  - Steep learning curve for topic design
+tags:
+  - streaming
+  - event-driven
+  - distributed
+  - log
+base_metrics:
+  - id: message-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: message-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: high
+    numeric_value: 8
+    category: operational-complexity
+config_variants:
+  - id: single-broker
+    name: Single Broker
+    metrics:
+      - id: message-throughput
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 3
+        category: scalability
+  - id: multi-broker
+    name: Multi-Broker Cluster
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 9
+        category: scalability
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - pub-sub
+    - streaming
+  typical_latency: 5-20ms
+  co_location_potential: false
