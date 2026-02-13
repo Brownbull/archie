@@ -1,6 +1,6 @@
 # Tech Debt: TD-1-2A Schema Alignment & Seed Script Consolidation
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 1 — Architecture Canvas & Component Library
 ## Source: Story 1-2 Code Review (findings #5, #17)
 
@@ -15,16 +15,16 @@ Two related schema alignment issues discovered during Story 1-2 code review:
 ## Tasks
 
 ### Task 1: Consolidate Seed Script Schemas
-- [ ] 1.1 Refactor `scripts/seed-firestore.ts` to import schemas from `src/schemas/` instead of duplicating them
-- [ ] 1.2 If Firebase Admin SDK environment prevents direct import, create a shared schema package or use path aliases
-- [ ] 1.3 Remove duplicated schema definitions from the seed script
-- [ ] 1.4 Verify `npm run seed:firestore -- --dry-run` still works after refactor
+- [x] 1.1 Refactor `scripts/seed-firestore.ts` to import schemas from `src/schemas/` instead of duplicating them
+- [x] 1.2 If Firebase Admin SDK environment prevents direct import, create a shared schema package or use path aliases
+- [x] 1.3 Remove duplicated schema definitions from the seed script
+- [x] 1.4 Verify `npm run seed:firestore -- --dry-run` still works after refactor
 
 ### Task 2: Add YAML Transform Variants for Stack & Blueprint Schemas
-- [ ] 2.1 Create `StackYamlSchema` in `src/schemas/stackSchema.ts` with snake_case→camelCase transforms (e.g., `component_ids` → `componentIds`, `config_overrides` → `configOverrides`)
-- [ ] 2.2 Create `BlueprintYamlSchema` in `src/schemas/blueprintSchema.ts` with snake_case→camelCase transforms
-- [ ] 2.3 Export the new YAML schemas and their inferred types
-- [ ] 2.4 Write unit tests for each YAML schema variant (valid transform, reject camelCase input, reject invalid data)
+- [x] 2.1 Create `StackYamlSchema` in `src/schemas/stackSchema.ts` with snake_case→camelCase transforms (e.g., `component_ids` → `componentIds`)
+- [x] 2.2 Create `BlueprintYamlSchema` in `src/schemas/blueprintSchema.ts` with snake_case→camelCase transforms
+- [x] 2.3 Export the new YAML schemas and their inferred types
+- [x] 2.4 Write unit tests for each YAML schema variant (valid transform, reject camelCase input, reject invalid data)
 
 ## Acceptance Criteria
 
@@ -32,3 +32,21 @@ Two related schema alignment issues discovered during Story 1-2 code review:
 - All three entity types (component, stack, blueprint) have YAML transform variants
 - No schema duplication across codebase
 - All existing tests continue to pass
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-13
+**Classification:** SIMPLE | **Agents:** code-reviewer, tdd-guide
+**Score:** 7/10 | **Status:** APPROVED (with deferred items)
+
+### Quick Fixes Applied
+1. Added try/catch around `load()` in seed script (prevents crash on malformed YAML)
+2. Updated credential error message to mention Firebase emulator option
+3. Consistent `ERROR:` prefix format across all error messages
+
+### Deferred to TD-1-2B
+- Firestore batch chunking (500-op limit)
+- Seed script integration tests (0% coverage)
+- Schema round-trip and edge case tests (empty string, null)
+
+**TD Story Created:** [td-1-2b-seed-hardening](td-1-2b-seed-hardening.md)
