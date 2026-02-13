@@ -34,6 +34,19 @@ const MAX_YAML_FILE_SIZE = 1024 * 1024
 /** Maximum service account file size (10KB) */
 const MAX_CREDENTIAL_FILE_SIZE = 10 * 1024
 
+/**
+ * Logger interface for seed functions (injectable for quiet test runs).
+ *
+ * Use `noopLogger` from seed-helpers.ts to suppress output in tests
+ * that don't verify log messages. Use a spy logger (vi.fn()) in tests
+ * that verify warnings or errors are logged correctly.
+ */
+export interface SeedLogger {
+  log: (...args: unknown[]) => void
+  warn: (...args: unknown[]) => void
+  error: (...args: unknown[]) => void
+}
+
 // ------ Exported Functions (testable) ------
 
 /**
@@ -74,13 +87,13 @@ export function validateServiceAccountFile(credPath: string): ServiceAccount {
  * Load and validate all YAML component files from a directory.
  * Returns validated components or throws on validation errors.
  */
-export function loadAndValidateComponents(dataDir: string): Component[] {
+export function loadAndValidateComponents(dataDir: string, logger: SeedLogger = console): Component[] {
   const files = readdirSync(dataDir).filter((f) => f.endsWith(".yaml"))
 
-  console.log(`Found ${files.length} YAML files in ${dataDir}`)
+  logger.log(`Found ${files.length} YAML files in ${dataDir}`)
 
   if (files.length === 0) {
-    console.warn("WARNING: No YAML files found in data directory. Nothing to validate.")
+    logger.warn("WARNING: No YAML files found in data directory. Nothing to validate.")
     return []
   }
 
@@ -92,7 +105,7 @@ export function loadAndValidateComponents(dataDir: string): Component[] {
 
     const fileSize = statSync(filePath).size
     if (fileSize > MAX_YAML_FILE_SIZE) {
-      console.error(`ERROR: File too large — ${file} (${fileSize} bytes, max ${MAX_YAML_FILE_SIZE})`)
+      logger.error(`ERROR: File too large — ${file} (${fileSize} bytes, max ${MAX_YAML_FILE_SIZE})`)
       hasErrors = true
       continue
     }
@@ -103,29 +116,29 @@ export function loadAndValidateComponents(dataDir: string): Component[] {
     try {
       parsed = load(raw)
     } catch (err) {
-      console.error(`ERROR: YAML parse failed — ${file}`)
-      console.error(err instanceof Error ? err.message : String(err))
+      logger.error(`ERROR: YAML parse failed — ${file}`)
+      logger.error(err instanceof Error ? err.message : String(err))
       hasErrors = true
       continue
     }
 
     const result = ComponentYamlSchema.safeParse(parsed)
     if (!result.success) {
-      console.error(`ERROR: Zod validation failed — ${file}`)
-      console.error(result.error.issues)
+      logger.error(`ERROR: Zod validation failed — ${file}`)
+      logger.error(result.error.issues)
       hasErrors = true
       continue
     }
 
     components.push(result.data)
-    console.log(`  ✓ ${file} → ${result.data.id} (${result.data.category})`)
+    logger.log(`  ✓ ${file} → ${result.data.id} (${result.data.category})`)
   }
 
   if (hasErrors) {
     throw new Error("Validation failed on one or more files.")
   }
 
-  console.log(`\nValidated ${components.length} components.`)
+  logger.log(`\nValidated ${components.length} components.`)
   return components
 }
 
@@ -134,7 +147,7 @@ export function loadAndValidateComponents(dataDir: string): Component[] {
  * Respects the 500-operation-per-batch Firestore limit.
  * The metadata write is included in chunk accounting.
  */
-export async function seedToFirestore(db: FirestoreSubset, components: Component[]): Promise<number> {
+export async function seedToFirestore(db: FirestoreSubset, components: Component[], logger: SeedLogger = console): Promise<number> {
   // Reserve 1 slot in the last chunk for the metadata write
   const totalOps = components.length + 1 // +1 for metadata
   const totalChunks = Math.ceil(totalOps / BATCH_LIMIT)
@@ -175,17 +188,17 @@ export async function seedToFirestore(db: FirestoreSubset, components: Component
     }
 
     await batch.commit()
-    console.log(`Batch ${chunkNum}/${totalChunks} committed (${opsInBatch} operations)`)
+    logger.log(`Batch ${chunkNum}/${totalChunks} committed (${opsInBatch} operations)`)
   }
 
   if (writtenIds.length !== components.length) {
-    console.warn(
-      `WARNING: Write count mismatch — expected ${components.length}, tracked ${writtenIds.length}`,
+    throw new Error(
+      `Write count mismatch — expected ${components.length}, tracked ${writtenIds.length}`,
     )
   }
 
-  console.log(`Seeded ${writtenIds.length} components to Firestore.`)
-  console.log("Metadata written to _metadata/seed.")
+  logger.log(`Seeded ${writtenIds.length} components to Firestore.`)
+  logger.log("Metadata written to _metadata/seed.")
   return writtenIds.length
 }
 
