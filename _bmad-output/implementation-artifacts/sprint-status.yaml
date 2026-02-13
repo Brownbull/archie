@@ -55,7 +55,8 @@ development_status:
   td-1-2e-seed-test-dedup: done
   1-3-canvas-and-component-placement: done
   td-1-3a-canvas-resilience: done
-  td-1-3b-production-error-logging: ready-for-dev
+  td-1-3b-production-error-logging: done
+  td-1-3c-test-env-pattern: ready-for-dev
   1-4-connection-wiring-and-management: done
   td-1-4a-connection-robustness: review
   1-5-component-inspector-and-configuration: done
