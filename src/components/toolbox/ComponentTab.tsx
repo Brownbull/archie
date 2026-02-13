@@ -3,16 +3,8 @@ import { useUiStore } from "@/stores/uiStore"
 import { ComponentCard } from "@/components/toolbox/ComponentCard"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
-import {
-  Cpu, Database, Flame, MessageSquare, Globe,
-  Radio, Shield, Activity, Search, Settings,
-} from "lucide-react"
+import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { groupByCategory } from "@/lib/componentUtils"
-
-const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  Cpu, Database, Flame, MessageSquare, Globe,
-  Radio, Shield, Activity, Search, Settings,
-}
 
 export function ComponentTab() {
   const { components, searchComponents } = useLibrary()

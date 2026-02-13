@@ -6,11 +6,13 @@
 - Phase 1 Analysis: `/bmad-bmm-create-product-brief`, `/bmad-bmm-research`
 - Phase 2 Planning: `/bmad-bmm-create-ux-design`, `/bmad-bmm-create-prd`
 - Phase 3 Solutioning: `/bmad-bmm-create-architecture`, `/bmad-bmm-create-epics-and-stories`, `/bmad-bmm-check-implementation-readiness`
+- Phase 3 (Copilot): `/bmad-create-architecture-copilot`, `/bmad-create-epics-copilot`, `/bmad-check-readiness-copilot`
 - Also: `/bmad-bmm-brainstorming`, `/bmad-bmm-party-mode`, `/bmad-bmm-retrospective`
 
 **ECC** handles all development execution (phase 4):
 - Story creation: `/ecc-create-story` (Planner + Architect agents)
 - Development: `/ecc-dev-story` (TDD Guide + Build Resolver + parallel reviewers)
+- Development (Copilot): `/ecc-dev-story-copilot` (generates playbook with copy-paste prompts for Copilot Chat)
 - Code review: `/ecc-code-review` (4 parallel agents: code, security, architect, TDD)
 - E2E testing: `/ecc-e2e` (pre-flight enforcement, TEA quality scoring)
 - Impact analysis: `/ecc-impact-analysis` (dependency graphs + sprint conflict detection)

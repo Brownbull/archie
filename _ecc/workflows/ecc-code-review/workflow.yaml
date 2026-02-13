@@ -104,4 +104,13 @@ adaptive_review:
     architect: 20
     tdd-guide: 10
 
+# Context budget settings
+context_budget:
+  # Do NOT read source files in main orchestrator context
+  orchestrator_reads_files: false
+  # Agents return compact findings only (no code snippets or full reasoning)
+  agent_compact_output: true
+  # Warn when file count exceeds story sizing limit
+  file_count_warning_threshold: 12
+
 standalone: true

@@ -91,8 +91,14 @@
     <check if="git repository exists">
       <action>Run `git status --porcelain` to find uncommitted changes</action>
       <action>Run `git diff --name-only` to see modified files</action>
-      <action>Compile {{files_to_review}} from git + story File List</action>
+      <action>Compile {{files_to_review}} as a FILE PATH LIST from git + story File List</action>
     </check>
+
+    <!-- CONTEXT BUDGET: Do NOT read file contents here -->
+    <critical>CONTEXT BUDGET: {{files_to_review}} is a LIST OF PATHS only.
+      Do NOT read source/test file contents in the main orchestrator context.
+      Agents have their own context windows and will read files themselves.
+      Only read files in main context when applying quick fixes (Step 4c).</critical>
 
     <output>**Review Target Identified**
 
@@ -199,6 +205,17 @@
       **Selected Review Agents ({{agent_count}}):** {{review_agents}}
     </output>
 
+    <!-- CONTEXT BUDGET: Large story warning -->
+    <check if="file_count > 12">
+      <output>**Context Budget Warning:** {{file_count}} files exceeds the 12-file story
+        sizing guideline. This review may exhaust context if all agents produce
+        detailed findings. Consider:
+        1. Splitting the story via `/story-sizing` before review
+        2. Running only 2 agents (e.g., code-reviewer + tdd-guide) then a second
+           pass with (security-reviewer + architect)
+        3. Proceeding as-is but with strict compact output mode</output>
+    </check>
+
     <ask>Proceed with {{classification}} review using {{agent_count}} agents? [Y/N/Override]</ask>
   </step>
 
@@ -222,6 +239,16 @@
     </output>
 
     <!-- ADAPTIVE PARALLEL SPAWN - Only selected agents, ALL IN ONE MESSAGE -->
+    <!-- CONTEXT BUDGET: All agent prompts MUST include this compact output directive -->
+    <compact-output-directive>
+      IMPORTANT: Keep your final output COMPACT. Return ONLY:
+      - Numbered findings table (severity | description | file:line)
+      - One-line recommendation (APPROVE / CHANGES REQUESTED / BLOCKED)
+      - Score (X/10)
+      Do NOT include: full code snippets, lengthy reasoning, or duplicate context.
+      Maximum output: ~50 lines. The orchestrator needs structured data, not prose.
+    </compact-output-directive>
+
     <ecc-parallel-spawn agents="{{review_agents}}">
       <!-- Task 1: Code Reviewer (ALWAYS included) -->
       <task-call id="code_review" if="code-reviewer in {{review_agents}}">
@@ -468,6 +495,13 @@
 
     <action>Wait for all selected agents to complete</action>
     <action>Collect outputs from spawned agents only</action>
+
+    <!-- CONTEXT BUDGET: Agent output handling -->
+    <critical>CONTEXT BUDGET: When reading agent outputs, extract ONLY the structured
+      findings table (severity + description + file:line + effort). Do NOT copy
+      full agent reasoning or code snippets into main context. The synthesis
+      in Step 3 needs only: finding number, severity, agent source, one-line
+      description, file reference, and effort class (QUICK/COMPLEX).</critical>
   </step>
 
   <!-- STEP 3: Review Synthesis -->

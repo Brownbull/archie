@@ -57,9 +57,9 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
       // AC-2: Benefit card format (IS / GAIN / COST)
       const firstCard = page.locator('[data-testid^="component-card-"]').first()
       await expect(firstCard).toBeVisible()
-      await expect(firstCard.locator("text=IS")).toBeVisible()
-      await expect(firstCard.locator("text=GAIN")).toBeVisible()
-      await expect(firstCard.locator("text=COST")).toBeVisible()
+      await expect(firstCard.getByText("IS", { exact: true })).toBeVisible()
+      await expect(firstCard.getByText("GAIN", { exact: true })).toBeVisible()
+      await expect(firstCard.getByText("COST", { exact: true })).toBeVisible()
 
       await page.screenshot({
         path: `${SCREENSHOT_DIR}/02-components-by-category.png`,

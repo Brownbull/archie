@@ -18,6 +18,7 @@ credentials.json
 service-account.json
 .aws/
 .gcp/
+.keys/
 
 # OS files
 .DS_Store
@@ -58,3 +59,6 @@ tests/e2e/.auth/
 
 # Claude local settings
 .claude/settings.local.json
+
+# MCP server config (machine-specific absolute paths)
+.mcp.json

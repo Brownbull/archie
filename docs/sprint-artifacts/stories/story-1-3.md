@@ -1,6 +1,6 @@
 # Story: 1-3 Canvas & Component Placement
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 1 — Architecture Canvas & Component Library
 
 ## Overview
@@ -97,48 +97,48 @@ This story integrates React Flow into the three-zone layout, creates custom Arch
 ## Tasks / Subtasks
 
 ### Task 1: Zustand Store Foundation & Constants
-- [ ] 1.1 Add canvas constants to `constants.ts`: `CANVAS_GRID_SIZE` (16px), `CANVAS_MIN_ZOOM` (0.5), `CANVAS_MAX_ZOOM` (2), `NODE_TYPE_COMPONENT` (`'archie-component'`)
-- [ ] 1.2 Define `ArchieNodeData` interface in `architectureStore.ts`: `archieComponentId`, `activeConfigVariantId`, `componentName`, `componentCategory`
-- [ ] 1.3 Populate `architectureStore.ts` with state: `nodes: Node<ArchieNodeData>[]`, `edges: Edge[]`
-- [ ] 1.4 Implement store actions: `addNode(componentId, position)` (hydrate from componentLibrary, generate UUID), `updateNodePosition(nodeId, position)` (snap-to-grid), `removeNode(nodeId)` (remove node + connected edges), `setNodes`, `setEdges`
-- [ ] 1.5 Add `selectedNodeId: string | null` and `setSelectedNodeId` action to `uiStore.ts`
-- [ ] 1.6 Write unit tests for all store actions — immutability, snap-to-grid logic, node removal cascades edges
+- [x] 1.1 Add canvas constants to `constants.ts`: `CANVAS_GRID_SIZE` (16px), `CANVAS_MIN_ZOOM` (0.5), `CANVAS_MAX_ZOOM` (2), `NODE_TYPE_COMPONENT` (`'archie-component'`)
+- [x] 1.2 Define `ArchieNodeData` interface in `architectureStore.ts`: `archieComponentId`, `activeConfigVariantId`, `componentName`, `componentCategory`
+- [x] 1.3 Populate `architectureStore.ts` with state: `nodes: Node<ArchieNodeData>[]`, `edges: Edge[]`
+- [x] 1.4 Implement store actions: `addNode(componentId, position)` (hydrate from componentLibrary, generate UUID), `updateNodePosition(nodeId, position)` (snap-to-grid), `removeNode(nodeId)` (remove node + connected edges), `setNodes`, `setEdges`
+- [x] 1.5 Add `selectedNodeId: string | null` and `setSelectedNodeId` action to `uiStore.ts`
+- [x] 1.6 Write unit tests for all store actions — immutability, snap-to-grid logic, node removal cascades edges
 
 ### Task 2: Custom ArchieNode Component
-- [ ] 2.1 Create `ArchieNode.tsx` accepting `NodeProps<ArchieNodeData>`
-- [ ] 2.2 Render: 4px category color stripe (top), category icon (from `COMPONENT_CATEGORIES`), component name (centered, truncate), 140px width
-- [ ] 2.3 Add connection handles: `<Handle type="target" position={Position.Left} />` and `<Handle type="source" position={Position.Right} />` — styled but non-functional until Story 1-4
-- [ ] 2.4 Apply dark-mode Tailwind styling consistent with design system, `data-testid="archie-node"`
-- [ ] 2.5 Write unit tests — renders name, category stripe color, icon, correct width, handles in DOM
+- [x] 2.1 Create `ArchieNode.tsx` accepting `NodeProps<ArchieNodeData>`
+- [x] 2.2 Render: 4px category color stripe (top), category icon (from `COMPONENT_CATEGORIES`), component name (centered, truncate), 140px width
+- [x] 2.3 Add connection handles: `<Handle type="target" position={Position.Left} />` and `<Handle type="source" position={Position.Right} />` — styled but non-functional until Story 1-4
+- [x] 2.4 Apply dark-mode Tailwind styling consistent with design system, `data-testid="archie-node"`
+- [x] 2.5 Write unit tests — renders name, category stripe color, icon, correct width, handles in DOM
 
 ### Task 3: Empty Canvas State
-- [ ] 3.1 Create `EmptyCanvasState.tsx` — centered overlay with three suggestions: "Import a YAML file", "Try an example from Blueprints", "Drag a component from the toolbox"
-- [ ] 3.2 Conditionally render based on `nodes.length === 0` Zustand selector
-- [ ] 3.3 Style: semi-transparent panel, `pointer-events: none` on overlay / `auto` on cards, `z-index` above canvas, `data-testid="canvas-empty-state"`
-- [ ] 3.4 Write unit tests — shows when empty, hides when nodes exist, renders all three suggestions
+- [x] 3.1 Create `EmptyCanvasState.tsx` — centered overlay with three suggestions: "Import a YAML file", "Try an example from Blueprints", "Drag a component from the toolbox"
+- [x] 3.2 Conditionally render based on `nodes.length === 0` Zustand selector
+- [x] 3.3 Style: semi-transparent panel, `pointer-events: none` on overlay / `auto` on cards, `z-index` above canvas, `data-testid="canvas-empty-state"`
+- [x] 3.4 Write unit tests — shows when empty, hides when nodes exist, renders all three suggestions
 
 ### Task 4: CanvasView with React Flow Integration
-- [ ] 4.1 Create `CanvasView.tsx` — import `ReactFlow`, `Background`, `MiniMap`, `Controls`, `ReactFlowProvider`
-- [ ] 4.2 Read `nodes` and `edges` from architectureStore via selectors, register custom node type `'archie-component': ArchieNode`
-- [ ] 4.3 Configure: `snapGrid={[CANVAS_GRID_SIZE, CANVAS_GRID_SIZE]}`, `snapToGrid={true}`, `minZoom`/`maxZoom`, `fitView`
-- [ ] 4.4 Implement `onNodesChange` handler — sync position updates back to architectureStore
-- [ ] 4.5 Implement `onNodeClick` handler — call `uiStore.setSelectedNodeId(nodeId)`
-- [ ] 4.6 Render `<Background variant="dots" />`, `<MiniMap />`, `<Controls />`, `<EmptyCanvasState />` (conditional)
-- [ ] 4.7 Add `data-testid="canvas-panel"`, wrap with `<ReactFlowProvider>`
-- [ ] 4.8 Write unit tests — React Flow renders, empty state toggles, minimap present, node click updates uiStore
+- [x] 4.1 Create `CanvasView.tsx` — import `ReactFlow`, `Background`, `MiniMap`, `Controls`, `ReactFlowProvider`
+- [x] 4.2 Read `nodes` and `edges` from architectureStore via selectors, register custom node type `'archie-component': ArchieNode`
+- [x] 4.3 Configure: `snapGrid={[CANVAS_GRID_SIZE, CANVAS_GRID_SIZE]}`, `snapToGrid={true}`, `minZoom`/`maxZoom`, `fitView`
+- [x] 4.4 Implement `onNodesChange` handler — sync position updates back to architectureStore
+- [x] 4.5 Implement `onNodeClick` handler — call `uiStore.setSelectedNodeId(nodeId)`
+- [x] 4.6 Render `<Background variant="dots" />`, `<MiniMap />`, `<Controls />`, `<EmptyCanvasState />` (conditional)
+- [x] 4.7 Add `data-testid="canvas-panel"`, wrap with `<ReactFlowProvider>`
+- [x] 4.8 Write unit tests — React Flow renders, empty state toggles, minimap present, node click updates uiStore
 
 ### Task 5: Drag-and-Drop from Toolbox to Canvas
-- [ ] 5.1 Update `ComponentCard.tsx` (from Story 1-2): add `draggable={true}`, `onDragStart` handler setting `dataTransfer.setData('application/archie-component', component.id)`, `effectAllowed = 'move'`
-- [ ] 5.2 Add `onDrop` handler to CanvasView: read componentId from `dataTransfer`, convert screen coords to canvas coords via `useReactFlow().screenToFlowPosition()`, call `architectureStore.addNode(componentId, position)`
-- [ ] 5.3 Add `onDragOver` handler to CanvasView wrapper: `preventDefault()`, `dropEffect = 'move'`
-- [ ] 5.4 Write unit tests — ComponentCard sets drag data correctly, drop creates node at correct position, store action called with right args
+- [x] 5.1 Update `ComponentCard.tsx` (from Story 1-2): add `draggable={true}`, `onDragStart` handler setting `dataTransfer.setData('application/archie-component', component.id)`, `effectAllowed = 'move'`
+- [x] 5.2 Add `onDrop` handler to CanvasView: read componentId from `dataTransfer`, convert screen coords to canvas coords via `useReactFlow().screenToFlowPosition()`, call `architectureStore.addNode(componentId, position)`
+- [x] 5.3 Add `onDragOver` handler to CanvasView wrapper: `preventDefault()`, `dropEffect = 'move'`
+- [x] 5.4 Write unit tests — ComponentCard sets drag data correctly, drop creates node at correct position, store action called with right args
 
 ### Task 6: Layout Integration & Verification
-- [ ] 6.1 Update `AppLayout.tsx` — replace canvas placeholder with `<CanvasView />`
-- [ ] 6.2 Run `npm run test:quick` — all unit tests pass
-- [ ] 6.3 Run `npx tsc --noEmit` — no type errors
-- [ ] 6.4 Verify coverage meets thresholds (Lines 45%, Branches 30%, Functions 25%, Statements 40%)
-- [ ] 6.5 Manual smoke test: login → empty canvas with suggestions → drag component → node appears → reposition with snap-to-grid → zoom out → minimap visible
+- [x] 6.1 Update `AppLayout.tsx` — replace canvas placeholder with `<CanvasView />`
+- [x] 6.2 Run `npm run test:quick` — all unit tests pass
+- [x] 6.3 Run `npx tsc --noEmit` — no type errors
+- [x] 6.4 Verify coverage meets thresholds (Lines 45%, Branches 30%, Functions 25%, Statements 40%)
+- [x] 6.5 Manual smoke test: login → empty canvas with suggestions → drag component → node appears → reposition with snap-to-grid → zoom out → minimap visible
 
 ## Dev Notes
 
@@ -236,6 +236,34 @@ Key E2E scenarios:
 - Drag node to reposition → snaps to grid
 - Place multiple components → zoom out → minimap shows positions
 - Click node → selected (visual feedback, prepares for Story 1-5 inspector)
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-12
+**Classification:** COMPLEX (4 agents)
+**Overall Score:** 9.1/10
+
+| Agent | Score | Status |
+|-------|-------|--------|
+| Code Quality | 8/10 | CHANGES REQUESTED |
+| Security | 9/10 | APPROVE |
+| Architecture | 10/10 | APPROVE (30/30 ACs) |
+| Testing | 9.5/10 | APPROVE (TEA 95/100) |
+
+**Quick Fixes Applied (7):**
+1. Removed console.error from AppLayout.tsx (stack trace leak)
+2. Added drag-and-drop data validation (length + pattern check)
+3. Added runtime category validation in architectureStore
+4. Added data-testid to ArchieNode connection handles
+5. Improved categoryIcons.ts type safety (derived from COMPONENT_CATEGORIES)
+6. Updated ArchieNode test assertions for new handle testids
+
+**Tech Debt Deferred → TD-1-3a:**
+- Error boundary for React Flow canvas (MEDIUM)
+- Rate limiting on node creation (LOW)
+- Cross-store coupling architectureStore → uiStore (LOW)
+
+**TD Story:** `docs/sprint-artifacts/stories/td-1-3a-canvas-resilience.md`
 
 ## ECC Analysis Summary
 - Risk Level: MEDIUM

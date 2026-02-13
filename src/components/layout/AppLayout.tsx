@@ -3,13 +3,17 @@ import { toast } from "sonner"
 import { Toolbar } from "@/components/layout/Toolbar"
 import { ToolboxPanel } from "@/components/toolbox/ToolboxPanel"
 import { CommandPalette } from "@/components/toolbox/CommandPalette"
+import { CanvasView } from "@/components/canvas/CanvasView"
+import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 // NOTE: Direct service import for initialization only (not data access).
 // Data reads go through useLibrary hook per AC-ARCH-NO-2.
 import { componentLibrary } from "@/services/componentLibrary"
+import { useUiStore } from "@/stores/uiStore"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   TOOLBOX_WIDTH,
   INSPECTOR_WIDTH,
+  INSPECTOR_COLLAPSED_WIDTH,
   DASHBOARD_HEIGHT,
 } from "@/lib/constants"
 
@@ -27,13 +31,17 @@ function ToolboxSkeleton() {
 
 export function AppLayout() {
   const [libraryReady, setLibraryReady] = useState(false)
+  const inspectorCollapsed = useUiStore((s) => s.inspectorCollapsed)
+  const selectedNodeId = useUiStore((s) => s.selectedNodeId)
+  const inspectorWidth = selectedNodeId
+    ? (inspectorCollapsed ? INSPECTOR_COLLAPSED_WIDTH : INSPECTOR_WIDTH)
+    : 0
 
   useEffect(() => {
     componentLibrary
       .initialize()
       .then(() => setLibraryReady(true))
-      .catch((err) => {
-        console.error("Failed to initialize component library:", err)
+      .catch(() => {
         toast.error("Failed to load component library")
       })
   }, [])
@@ -53,17 +61,17 @@ export function AppLayout() {
 
         <main
           data-testid="canvas"
-          className="flex flex-1 items-center justify-center bg-canvas text-text-secondary"
+          className="flex-1 overflow-hidden bg-canvas"
         >
-          Canvas
+          <CanvasView />
         </main>
 
         <aside
           data-testid="inspector"
-          className="flex items-center justify-center border-l border-archie-border bg-panel text-text-secondary"
-          style={{ width: `${INSPECTOR_WIDTH}px` }}
+          className="overflow-hidden border-l border-archie-border bg-panel transition-[width] duration-200 ease-in-out"
+          style={{ width: `${inspectorWidth}px` }}
         >
-          Inspector
+          <InspectorPanel />
         </aside>
       </div>
 

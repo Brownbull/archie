@@ -2,6 +2,7 @@
 export const TOOLBAR_HEIGHT = 44
 export const TOOLBOX_WIDTH = 260
 export const INSPECTOR_WIDTH = 300
+export const INSPECTOR_COLLAPSED_WIDTH = 40
 export const DASHBOARD_HEIGHT = 100
 export const NODE_WIDTH = 140
 export const BORDER_RADIUS = 6
@@ -31,3 +32,13 @@ export const COMPONENT_CATEGORIES = {
 } as const
 
 export type ComponentCategoryId = keyof typeof COMPONENT_CATEGORIES
+
+// Metrics (directional scale 1-10)
+export const METRIC_MAX_VALUE = 10
+
+// Canvas configuration (UX7, UX8)
+export const CANVAS_GRID_SIZE = 16
+export const CANVAS_MIN_ZOOM = 0.5
+export const CANVAS_MAX_ZOOM = 2
+export const NODE_TYPE_COMPONENT = "archie-component" as const
+export const EDGE_TYPE_CONNECTION = "archie-connection" as const

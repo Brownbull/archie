@@ -1,3 +1,5 @@
+/* React Flow styles MUST come before Tailwind so custom/Tailwind classes can override */
+@import "@xyflow/react/dist/style.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -169,4 +171,44 @@
     @apply bg-background text-foreground;
     font-family: "Inter", system-ui, -apple-system, sans-serif;
   }
+}
+
+/* Handle hover visibility (AC-ARCH-PATTERN-9) — CSS-only, no React state */
+.react-flow__handle {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.react-flow__node:hover .react-flow__handle {
+  opacity: 1;
+}
+
+/* React Flow controls & minimap dark theme */
+.dark .react-flow__controls {
+  border: 1px solid var(--archie-border);
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.dark .react-flow__controls-button {
+  background: var(--archie-surface);
+  border-color: var(--archie-border);
+  fill: var(--archie-text-secondary);
+  color: var(--archie-text-secondary);
+}
+.dark .react-flow__controls-button:hover {
+  background: var(--archie-panel);
+  fill: var(--archie-text-primary);
+}
+.dark .react-flow__minimap {
+  background: var(--archie-panel) !important;
+  border: 1px solid var(--archie-border);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.dark .react-flow__minimap-mask {
+  fill: rgba(15, 17, 23, 0.7);
+}
+.dark .react-flow__minimap-node {
+  fill: var(--archie-surface);
+  stroke: var(--archie-border);
 }

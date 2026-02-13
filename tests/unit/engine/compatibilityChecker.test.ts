@@ -1,0 +1,80 @@
+import { describe, it, expect } from "vitest"
+import { checkCompatibility } from "@/engine/compatibilityChecker"
+
+describe("checkCompatibility", () => {
+  it("returns compatible when source is undefined", () => {
+    const result = checkCompatibility(undefined, { category: "caching" })
+    expect(result).toEqual({ isCompatible: true, reason: "" })
+  })
+
+  it("returns compatible when target is undefined", () => {
+    const result = checkCompatibility(
+      { category: "data-storage" },
+      undefined,
+    )
+    expect(result).toEqual({ isCompatible: true, reason: "" })
+  })
+
+  it("returns compatible when both are undefined", () => {
+    const result = checkCompatibility(undefined, undefined)
+    expect(result).toEqual({ isCompatible: true, reason: "" })
+  })
+
+  it("returns compatible when source has no compatibility field", () => {
+    const result = checkCompatibility(
+      { category: "data-storage" },
+      { category: "caching" },
+    )
+    expect(result).toEqual({ isCompatible: true, reason: "" })
+  })
+
+  it("returns compatible when source has empty compatibility record", () => {
+    const result = checkCompatibility(
+      { category: "data-storage", compatibility: {} },
+      { category: "caching" },
+    )
+    expect(result).toEqual({ isCompatible: true, reason: "" })
+  })
+
+  it("returns compatible when target category is not in source compatibility", () => {
+    const result = checkCompatibility(
+      {
+        category: "data-storage",
+        compatibility: { compute: "Direct DB access from compute is discouraged" },
+      },
+      { category: "caching" },
+    )
+    expect(result).toEqual({ isCompatible: true, reason: "" })
+  })
+
+  it("returns incompatible when target category is in source compatibility", () => {
+    const result = checkCompatibility(
+      {
+        category: "data-storage",
+        compatibility: { caching: "Caching layer may cause stale reads" },
+      },
+      { category: "caching" },
+    )
+    expect(result).toEqual({
+      isCompatible: false,
+      reason: "Caching layer may cause stale reads",
+    })
+  })
+
+  it("returns incompatible with correct reason from compatibility record", () => {
+    const result = checkCompatibility(
+      {
+        category: "delivery-network",
+        compatibility: {
+          "data-storage": "Direct DB connection from CDN is unusual",
+          compute: "Typically proxies, not direct compute",
+        },
+      },
+      { category: "data-storage" },
+    )
+    expect(result).toEqual({
+      isCompatible: false,
+      reason: "Direct DB connection from CDN is unusual",
+    })
+  })
+})

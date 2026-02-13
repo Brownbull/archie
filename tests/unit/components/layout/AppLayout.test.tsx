@@ -2,9 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router-dom"
 import { AppLayout } from "@/components/layout/AppLayout"
+import { useUiStore } from "@/stores/uiStore"
 import {
   TOOLBOX_WIDTH,
   INSPECTOR_WIDTH,
+  INSPECTOR_COLLAPSED_WIDTH,
   DASHBOARD_HEIGHT,
 } from "@/lib/constants"
 
@@ -49,6 +51,21 @@ vi.mock("@/hooks/useLibrary", () => ({
   }),
 }))
 
+vi.mock("@xyflow/react", () => ({
+  ReactFlow: ({ children }: { children?: React.ReactNode }) => (
+    <div data-testid="react-flow-mock">{children}</div>
+  ),
+  ReactFlowProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Background: () => <div data-testid="react-flow-background" />,
+  MiniMap: () => <div data-testid="react-flow-minimap" />,
+  Controls: () => <div data-testid="react-flow-controls" />,
+  useReactFlow: () => ({ screenToFlowPosition: vi.fn((pos: unknown) => pos) }),
+  BackgroundVariant: { Dots: "dots" },
+  Position: { Left: "left", Right: "right" },
+  Handle: (props: Record<string, unknown>) => <div {...props} />,
+  applyNodeChanges: vi.fn((_changes: unknown, nodes: unknown) => nodes),
+}))
+
 function renderAppLayout() {
   return render(
     <MemoryRouter>
@@ -61,6 +78,11 @@ describe("AppLayout", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     mockInitialize.mockResolvedValue(undefined)
+    useUiStore.setState({
+      selectedNodeId: null,
+      selectedEdgeId: null,
+      inspectorCollapsed: false,
+    })
   })
 
   it("renders the toolbar region", () => {
@@ -81,16 +103,15 @@ describe("AppLayout", () => {
     })
   })
 
-  it("renders the canvas region", () => {
+  it("renders the canvas region with CanvasView", () => {
     renderAppLayout()
     expect(screen.getByTestId("canvas")).toBeInTheDocument()
-    expect(screen.getByText("Canvas")).toBeInTheDocument()
+    expect(screen.getByTestId("canvas-panel")).toBeInTheDocument()
   })
 
   it("renders the inspector region", () => {
     renderAppLayout()
     expect(screen.getByTestId("inspector")).toBeInTheDocument()
-    expect(screen.getByText("Inspector")).toBeInTheDocument()
   })
 
   it("renders the dashboard region", () => {
@@ -102,8 +123,27 @@ describe("AppLayout", () => {
   it("applies correct dimensions from constants", () => {
     renderAppLayout()
     expect(screen.getByTestId("toolbox")).toHaveStyle({ width: `${TOOLBOX_WIDTH}px` })
-    expect(screen.getByTestId("inspector")).toHaveStyle({ width: `${INSPECTOR_WIDTH}px` })
+    // Inspector is 0px when no node is selected
+    expect(screen.getByTestId("inspector")).toHaveStyle({ width: "0px" })
     expect(screen.getByTestId("dashboard")).toHaveStyle({ height: `${DASHBOARD_HEIGHT}px` })
+  })
+
+  it("shows inspector with INSPECTOR_WIDTH when node selected", () => {
+    useUiStore.setState({ selectedNodeId: "some-node" })
+    renderAppLayout()
+    expect(screen.getByTestId("inspector")).toHaveStyle({ width: `${INSPECTOR_WIDTH}px` })
+  })
+
+  it("shows inspector with INSPECTOR_COLLAPSED_WIDTH when collapsed", () => {
+    useUiStore.setState({ selectedNodeId: "some-node", inspectorCollapsed: true })
+    renderAppLayout()
+    expect(screen.getByTestId("inspector")).toHaveStyle({ width: `${INSPECTOR_COLLAPSED_WIDTH}px` })
+  })
+
+  it("inspector aside has transition class", () => {
+    renderAppLayout()
+    const inspector = screen.getByTestId("inspector")
+    expect(inspector.className).toContain("transition-[width]")
   })
 
   it("calls componentLibrary.initialize on mount", () => {

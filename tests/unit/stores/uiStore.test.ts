@@ -7,6 +7,9 @@ describe("uiStore", () => {
       toolboxTab: "components",
       searchQuery: "",
       commandPaletteOpen: false,
+      selectedNodeId: null,
+      selectedEdgeId: null,
+      inspectorCollapsed: false,
     })
   })
 
@@ -37,5 +40,96 @@ describe("uiStore", () => {
     expect(useUiStore.getState().commandPaletteOpen).toBe(true)
     useUiStore.getState().setCommandPaletteOpen(false)
     expect(useUiStore.getState().commandPaletteOpen).toBe(false)
+  })
+
+  it("has correct default selectedNodeId", () => {
+    expect(useUiStore.getState().selectedNodeId).toBeNull()
+  })
+
+  it("setSelectedNodeId updates selectedNodeId", () => {
+    useUiStore.getState().setSelectedNodeId("node-1")
+    expect(useUiStore.getState().selectedNodeId).toBe("node-1")
+  })
+
+  it("setSelectedNodeId can clear selection", () => {
+    useUiStore.getState().setSelectedNodeId("node-1")
+    useUiStore.getState().setSelectedNodeId(null)
+    expect(useUiStore.getState().selectedNodeId).toBeNull()
+  })
+
+  describe("selectedEdgeId", () => {
+    it("has correct default selectedEdgeId", () => {
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+
+    it("setSelectedEdgeId updates selectedEdgeId", () => {
+      useUiStore.getState().setSelectedEdgeId("edge-1")
+      expect(useUiStore.getState().selectedEdgeId).toBe("edge-1")
+    })
+
+    it("setSelectedEdgeId can clear selection", () => {
+      useUiStore.getState().setSelectedEdgeId("edge-1")
+      useUiStore.getState().setSelectedEdgeId(null)
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+  })
+
+  describe("mutual exclusion", () => {
+    it("setSelectedEdgeId clears selectedNodeId", () => {
+      useUiStore.getState().setSelectedNodeId("node-1")
+      expect(useUiStore.getState().selectedNodeId).toBe("node-1")
+
+      useUiStore.getState().setSelectedEdgeId("edge-1")
+      expect(useUiStore.getState().selectedEdgeId).toBe("edge-1")
+      expect(useUiStore.getState().selectedNodeId).toBeNull()
+    })
+
+    it("setSelectedNodeId clears selectedEdgeId", () => {
+      useUiStore.getState().setSelectedEdgeId("edge-1")
+      expect(useUiStore.getState().selectedEdgeId).toBe("edge-1")
+
+      useUiStore.getState().setSelectedNodeId("node-1")
+      expect(useUiStore.getState().selectedNodeId).toBe("node-1")
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+  })
+
+  describe("inspectorCollapsed", () => {
+    it("has correct default inspectorCollapsed (false)", () => {
+      expect(useUiStore.getState().inspectorCollapsed).toBe(false)
+    })
+
+    it("setInspectorCollapsed sets to true", () => {
+      useUiStore.getState().setInspectorCollapsed(true)
+      expect(useUiStore.getState().inspectorCollapsed).toBe(true)
+    })
+
+    it("setInspectorCollapsed sets back to false", () => {
+      useUiStore.getState().setInspectorCollapsed(true)
+      useUiStore.getState().setInspectorCollapsed(false)
+      expect(useUiStore.getState().inspectorCollapsed).toBe(false)
+    })
+  })
+
+  describe("clearSelection", () => {
+    it("clears both selectedNodeId and selectedEdgeId", () => {
+      useUiStore.getState().setSelectedNodeId("node-1")
+      useUiStore.getState().clearSelection()
+      expect(useUiStore.getState().selectedNodeId).toBeNull()
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+
+    it("clears selectedEdgeId when edge is selected", () => {
+      useUiStore.getState().setSelectedEdgeId("edge-1")
+      useUiStore.getState().clearSelection()
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+      expect(useUiStore.getState().selectedNodeId).toBeNull()
+    })
+
+    it("is safe to call when nothing is selected", () => {
+      useUiStore.getState().clearSelection()
+      expect(useUiStore.getState().selectedNodeId).toBeNull()
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
   })
 })
