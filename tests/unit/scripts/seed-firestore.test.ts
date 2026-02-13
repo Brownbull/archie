@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { dump } from "js-yaml"
-import { loadAndValidateComponents, seedToFirestore, validateServiceAccountFile } from "../../../scripts/seed-firestore"
+import { seedToFirestore } from "../../../scripts/seed-firestore"
+import { createMockDb, makeComponent } from "./seed-helpers"
 
 // Mock node:fs — partial mock with explicit default export
 vi.mock("node:fs", async (importOriginal) => {
@@ -25,230 +25,14 @@ vi.mock("firebase-admin/firestore", () => ({
   getFirestore: vi.fn(),
 }))
 
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
-
-const mockedExistsSync = vi.mocked(existsSync)
-const mockedReaddirSync = vi.mocked(readdirSync)
-const mockedReadFileSync = vi.mocked(readFileSync)
-const mockedStatSync = vi.mocked(statSync)
-
-/** Shorthand for readdirSync return type (Dirent[] but we mock with string[]) */
-type DirEntries = ReturnType<typeof readdirSync>
-
-// Helper: minimal valid component YAML (snake_case for ComponentYamlSchema)
-function makeComponentYaml(id: string) {
-  return dump({
-    id,
-    name: `Component ${id}`,
-    category: "data-storage",
-    description: `Description for ${id}`,
-    is: `A test component ${id}`,
-    gain: ["Fast"],
-    cost: ["Expensive"],
-    tags: ["test"],
-    base_metrics: [
-      { id: "latency", value: "low", numeric_value: 3, category: "performance" },
-    ],
-    config_variants: [
-      {
-        id: "default",
-        name: "Default",
-        metrics: [
-          { id: "latency", value: "low", numeric_value: 3, category: "performance" },
-        ],
-      },
-    ],
-  })
-}
-
-// Helper: create a mock Firestore db with proper types (no double cast)
-function createMockDb() {
-  const commitFn = vi.fn().mockResolvedValue(undefined)
-  const setFn = vi.fn()
-  const batchFn = vi.fn(() => ({ set: setFn, commit: commitFn }))
-  const docFn = vi.fn((docId: string) => ({ id: docId }))
-  const collectionFn = vi.fn(() => ({ doc: docFn }))
-
-  return {
-    db: { batch: batchFn, collection: collectionFn } as Parameters<typeof seedToFirestore>[0],
-    mocks: { commitFn, setFn, batchFn, docFn, collectionFn },
-  }
-}
-
 beforeEach(() => {
   vi.resetAllMocks()
-})
-
-// Helper: valid service account JSON
-function makeServiceAccountJson(overrides: Record<string, unknown> = {}) {
-  return JSON.stringify({
-    project_id: "my-project",
-    private_key: "-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----\n",
-    client_email: "test@my-project.iam.gserviceaccount.com",
-    ...overrides,
-  })
-}
-
-describe("validateServiceAccountFile", () => {
-  it("returns parsed ServiceAccount when file is valid", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 500 } as ReturnType<typeof statSync>)
-    mockedReadFileSync.mockReturnValue(makeServiceAccountJson())
-
-    const result = validateServiceAccountFile("/fake/creds.json")
-    expect(result).toHaveProperty("project_id", "my-project")
-  })
-
-  it("throws when file does not exist", () => {
-    mockedExistsSync.mockReturnValue(false)
-
-    expect(() => validateServiceAccountFile("/fake/creds.json"))
-      .toThrow("Service account file not found: /fake/creds.json")
-  })
-
-  it("accepts file at exactly 10KB boundary", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 10 * 1024 } as ReturnType<typeof statSync>)
-    mockedReadFileSync.mockReturnValue(makeServiceAccountJson())
-
-    const result = validateServiceAccountFile("/fake/creds.json")
-    expect(result).toHaveProperty("project_id", "my-project")
-  })
-
-  it("throws when file exceeds 10KB", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 10 * 1024 + 1 } as ReturnType<typeof statSync>)
-
-    expect(() => validateServiceAccountFile("/fake/creds.json"))
-      .toThrow("Service account file too large")
-  })
-
-  it("throws when file contains invalid JSON", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
-    mockedReadFileSync.mockReturnValue("not valid json {{{")
-
-    expect(() => validateServiceAccountFile("/fake/creds.json"))
-      .toThrow("not valid JSON")
-  })
-
-  it("throws when project_id is missing", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
-    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ project_id: undefined }))
-
-    expect(() => validateServiceAccountFile("/fake/creds.json"))
-      .toThrow("missing required field: project_id")
-  })
-
-  it("throws when private_key is missing", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
-    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ private_key: undefined }))
-
-    expect(() => validateServiceAccountFile("/fake/creds.json"))
-      .toThrow("missing required field: private_key")
-  })
-
-  it("throws when client_email is missing", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
-    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ client_email: undefined }))
-
-    expect(() => validateServiceAccountFile("/fake/creds.json"))
-      .toThrow("missing required field: client_email")
-  })
-
-  it("throws when required field is empty string", () => {
-    mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
-    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ project_id: "" }))
-
-    expect(() => validateServiceAccountFile("/fake/creds.json"))
-      .toThrow("missing required field: project_id")
-  })
-})
-
-describe("loadAndValidateComponents", () => {
-  it("loads and validates valid YAML files", () => {
-    mockedReaddirSync.mockReturnValue(["comp-a.yaml", "comp-b.yaml"] as unknown as DirEntries)
-    mockedReadFileSync.mockImplementation((filePath) => {
-      const path = String(filePath)
-      if (path.includes("comp-a")) return makeComponentYaml("comp-a")
-      if (path.includes("comp-b")) return makeComponentYaml("comp-b")
-      return ""
-    })
-
-    const result = loadAndValidateComponents("/fake/data")
-    expect(result).toHaveLength(2)
-    expect(result[0].id).toBe("comp-a")
-    expect(result[1].id).toBe("comp-b")
-  })
-
-  it("ignores non-YAML files", () => {
-    mockedReaddirSync.mockReturnValue(["comp.yaml", "readme.md", "data.json"] as unknown as DirEntries)
-    mockedReadFileSync.mockReturnValue(makeComponentYaml("comp"))
-
-    const result = loadAndValidateComponents("/fake/data")
-    expect(result).toHaveLength(1)
-    expect(mockedReadFileSync).toHaveBeenCalledTimes(1)
-  })
-
-  it("throws on malformed YAML syntax", () => {
-    mockedReaddirSync.mockReturnValue(["bad.yaml"] as unknown as DirEntries)
-    mockedReadFileSync.mockReturnValue("invalid: yaml: [unterminated")
-
-    expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
-  })
-
-  it("throws on Zod validation failure (missing required fields)", () => {
-    mockedReaddirSync.mockReturnValue(["incomplete.yaml"] as unknown as DirEntries)
-    mockedReadFileSync.mockReturnValue(dump({ id: "incomplete" }))
-
-    expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
-  })
-
-  it("returns empty array when no YAML files exist", () => {
-    mockedReaddirSync.mockReturnValue([] as unknown as DirEntries)
-
-    const result = loadAndValidateComponents("/fake/data")
-    expect(result).toHaveLength(0)
-  })
-
-  it("rejects YAML with empty required string fields", () => {
-    mockedReaddirSync.mockReturnValue(["empty-name.yaml"] as unknown as DirEntries)
-    mockedReadFileSync.mockReturnValue(dump({
-      id: "test",
-      name: "",
-      category: "data-storage",
-      description: "A description",
-      is: "Something",
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      base_metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
-      config_variants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }] }],
-    }))
-
-    expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
-  })
 })
 
 describe("seedToFirestore", () => {
   it("writes components in a single batch when count < 500", async () => {
     const { db, mocks } = createMockDb()
-    const components = Array.from({ length: 3 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = Array.from({ length: 3 }, (_, i) => makeComponent(`comp-${i}`))
 
     await seedToFirestore(db, components)
 
@@ -259,31 +43,18 @@ describe("seedToFirestore", () => {
   })
 
   it("chunks into multiple batches when count > 499", async () => {
+    const consoleSpy = vi.spyOn(console, "log")
     const { db, mocks } = createMockDb()
-    const components = Array.from({ length: 501 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = Array.from({ length: 501 }, (_, i) => makeComponent(`comp-${i}`))
 
     await seedToFirestore(db, components)
 
     // 501 components + 1 metadata = 502 ops → 2 batches (500 + 2)
     expect(mocks.batchFn).toHaveBeenCalledTimes(2)
     expect(mocks.commitFn).toHaveBeenCalledTimes(2)
-    // Total set calls: 501 components + 1 metadata = 502
     expect(mocks.setFn).toHaveBeenCalledTimes(502)
 
-    // Verify batch split: first batch gets 500 component ops, second gets 1 component + 1 metadata
-    const consoleSpy = vi.spyOn(console, "log")
-    await seedToFirestore(db, components)
+    // Verify batch split logged correctly
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Batch 1/2 committed (500 operations)"))
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Batch 2/2 committed (2 operations)"))
     consoleSpy.mockRestore()
@@ -291,18 +62,7 @@ describe("seedToFirestore", () => {
 
   it("includes metadata in chunk accounting (499 components fits in 1 batch)", async () => {
     const { db, mocks } = createMockDb()
-    const components = Array.from({ length: 499 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = Array.from({ length: 499 }, (_, i) => makeComponent(`comp-${i}`))
 
     await seedToFirestore(db, components)
 
@@ -314,18 +74,7 @@ describe("seedToFirestore", () => {
 
   it("handles exactly 500 components (metadata forces 2nd batch)", async () => {
     const { db, mocks } = createMockDb()
-    const components = Array.from({ length: 500 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = Array.from({ length: 500 }, (_, i) => makeComponent(`comp-${i}`))
 
     await seedToFirestore(db, components)
 
@@ -338,18 +87,7 @@ describe("seedToFirestore", () => {
   it("logs chunk progress", async () => {
     const consoleSpy = vi.spyOn(console, "log")
     const { db } = createMockDb()
-    const components = Array.from({ length: 2 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = Array.from({ length: 2 }, (_, i) => makeComponent(`comp-${i}`))
 
     await seedToFirestore(db, components)
 
@@ -359,18 +97,7 @@ describe("seedToFirestore", () => {
 
   it("returns the count of written components", async () => {
     const { db } = createMockDb()
-    const components = Array.from({ length: 3 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = Array.from({ length: 3 }, (_, i) => makeComponent(`comp-${i}`))
 
     const result = await seedToFirestore(db, components)
     expect(result).toBe(3)
@@ -380,36 +107,27 @@ describe("seedToFirestore", () => {
     const { db, mocks } = createMockDb()
     mocks.commitFn.mockRejectedValueOnce(new Error("Firestore unavailable"))
 
-    const components = Array.from({ length: 2 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = Array.from({ length: 2 }, (_, i) => makeComponent(`comp-${i}`))
 
     await expect(seedToFirestore(db, components)).rejects.toThrow("Firestore unavailable")
   })
 
+  it("throws on write count mismatch", async () => {
+    const { db, mocks } = createMockDb()
+    const components = Array.from({ length: 2 }, (_, i) => makeComponent(`comp-${i}`))
+
+    // Simulate external mutation during commit — components array grows
+    // after the write loop finishes, causing writtenIds.length < components.length
+    mocks.commitFn.mockImplementation(async () => {
+      components.push(makeComponent("sneaky"))
+    })
+
+    await expect(seedToFirestore(db, components)).rejects.toThrow("Write count mismatch")
+  })
+
   it("writes metadata document in the last batch", async () => {
     const { db, mocks } = createMockDb()
-    const components = Array.from({ length: 1 }, (_, i) => ({
-      id: `comp-${i}`,
-      name: `Component ${i}`,
-      category: "data-storage",
-      description: `Desc ${i}`,
-      is: `Is ${i}`,
-      gain: ["Fast"],
-      cost: ["Expensive"],
-      tags: ["test"],
-      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
-      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
-    }))
+    const components = [makeComponent("comp-0")]
 
     await seedToFirestore(db, components)
 
@@ -422,5 +140,33 @@ describe("seedToFirestore", () => {
         componentCount: 1,
       }),
     )
+  })
+
+  it("writes metadata with valid ISO timestamp in seededAt", async () => {
+    const { db, mocks } = createMockDb()
+    const components = [makeComponent("comp-0")]
+
+    await seedToFirestore(db, components)
+
+    const metadataCall = mocks.setFn.mock.calls.find(
+      (args) => args[1]?.seededAt !== undefined,
+    )
+    expect(metadataCall).toBeDefined()
+    const seededAt = metadataCall![1].seededAt as string
+    expect(new Date(seededAt).toISOString()).toBe(seededAt)
+  })
+
+  it("handles empty components array (writes only metadata)", async () => {
+    const { db, mocks } = createMockDb()
+
+    const result = await seedToFirestore(db, [])
+
+    expect(result).toBe(0)
+    // 1 batch with only metadata
+    expect(mocks.batchFn).toHaveBeenCalledTimes(1)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(1)
+    // Only metadata set, no component sets
+    expect(mocks.setFn).toHaveBeenCalledTimes(1)
+    expect(mocks.collectionFn).toHaveBeenCalledWith("_metadata")
   })
 })
