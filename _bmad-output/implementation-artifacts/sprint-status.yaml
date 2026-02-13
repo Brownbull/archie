@@ -50,7 +50,8 @@ development_status:
   1-2-component-data-pipeline-and-toolbox-browsing: done
   td-1-2a-schema-alignment: done
   td-1-2b-seed-hardening: done
-  td-1-2c-seed-credential-hardening: ready-for-dev
+  td-1-2c-seed-credential-hardening: done
+  td-1-2d-seed-test-quality: ready-for-dev
   1-3-canvas-and-component-placement: done
   td-1-3a-canvas-resilience: review
   1-4-connection-wiring-and-management: done

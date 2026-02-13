@@ -32,6 +32,9 @@ const mockedReaddirSync = vi.mocked(readdirSync)
 const mockedReadFileSync = vi.mocked(readFileSync)
 const mockedStatSync = vi.mocked(statSync)
 
+/** Shorthand for readdirSync return type (Dirent[] but we mock with string[]) */
+type DirEntries = ReturnType<typeof readdirSync>
+
 // Helper: minimal valid component YAML (snake_case for ComponentYamlSchema)
 function makeComponentYaml(id: string) {
   return dump({
@@ -103,9 +106,18 @@ describe("validateServiceAccountFile", () => {
       .toThrow("Service account file not found: /fake/creds.json")
   })
 
+  it("accepts file at exactly 10KB boundary", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 10 * 1024 } as ReturnType<typeof statSync>)
+    mockedReadFileSync.mockReturnValue(makeServiceAccountJson())
+
+    const result = validateServiceAccountFile("/fake/creds.json")
+    expect(result).toHaveProperty("project_id", "my-project")
+  })
+
   it("throws when file exceeds 10KB", () => {
     mockedExistsSync.mockReturnValue(true)
-    mockedStatSync.mockReturnValue({ size: 11_000 } as ReturnType<typeof statSync>)
+    mockedStatSync.mockReturnValue({ size: 10 * 1024 + 1 } as ReturnType<typeof statSync>)
 
     expect(() => validateServiceAccountFile("/fake/creds.json"))
       .toThrow("Service account file too large")
@@ -159,7 +171,7 @@ describe("validateServiceAccountFile", () => {
 
 describe("loadAndValidateComponents", () => {
   it("loads and validates valid YAML files", () => {
-    mockedReaddirSync.mockReturnValue(["comp-a.yaml", "comp-b.yaml"] as unknown as ReturnType<typeof readdirSync>)
+    mockedReaddirSync.mockReturnValue(["comp-a.yaml", "comp-b.yaml"] as unknown as DirEntries)
     mockedReadFileSync.mockImplementation((filePath) => {
       const path = String(filePath)
       if (path.includes("comp-a")) return makeComponentYaml("comp-a")
@@ -174,7 +186,7 @@ describe("loadAndValidateComponents", () => {
   })
 
   it("ignores non-YAML files", () => {
-    mockedReaddirSync.mockReturnValue(["comp.yaml", "readme.md", "data.json"] as unknown as ReturnType<typeof readdirSync>)
+    mockedReaddirSync.mockReturnValue(["comp.yaml", "readme.md", "data.json"] as unknown as DirEntries)
     mockedReadFileSync.mockReturnValue(makeComponentYaml("comp"))
 
     const result = loadAndValidateComponents("/fake/data")
@@ -183,28 +195,28 @@ describe("loadAndValidateComponents", () => {
   })
 
   it("throws on malformed YAML syntax", () => {
-    mockedReaddirSync.mockReturnValue(["bad.yaml"] as unknown as ReturnType<typeof readdirSync>)
+    mockedReaddirSync.mockReturnValue(["bad.yaml"] as unknown as DirEntries)
     mockedReadFileSync.mockReturnValue("invalid: yaml: [unterminated")
 
     expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
   })
 
   it("throws on Zod validation failure (missing required fields)", () => {
-    mockedReaddirSync.mockReturnValue(["incomplete.yaml"] as unknown as ReturnType<typeof readdirSync>)
+    mockedReaddirSync.mockReturnValue(["incomplete.yaml"] as unknown as DirEntries)
     mockedReadFileSync.mockReturnValue(dump({ id: "incomplete" }))
 
     expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
   })
 
   it("returns empty array when no YAML files exist", () => {
-    mockedReaddirSync.mockReturnValue([] as unknown as ReturnType<typeof readdirSync>)
+    mockedReaddirSync.mockReturnValue([] as unknown as DirEntries)
 
     const result = loadAndValidateComponents("/fake/data")
     expect(result).toHaveLength(0)
   })
 
   it("rejects YAML with empty required string fields", () => {
-    mockedReaddirSync.mockReturnValue(["empty-name.yaml"] as unknown as ReturnType<typeof readdirSync>)
+    mockedReaddirSync.mockReturnValue(["empty-name.yaml"] as unknown as DirEntries)
     mockedReadFileSync.mockReturnValue(dump({
       id: "test",
       name: "",
