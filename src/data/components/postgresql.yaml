@@ -1,0 +1,80 @@
+id: postgresql
+name: PostgreSQL
+category: data-storage
+description: Advanced open-source relational database with strong ACID compliance and extensibility
+is: A powerful, open-source object-relational database known for reliability, data integrity, and correctness
+gain:
+  - Full ACID compliance with MVCC concurrency
+  - Rich SQL support with JSON/JSONB for hybrid workloads
+  - Mature ecosystem with extensive extension library
+cost:
+  - Higher memory consumption than simpler stores
+  - Complex tuning required for high-write workloads
+  - Vertical scaling limitations under extreme load
+tags:
+  - database
+  - sql
+  - relational
+  - acid
+base_metrics:
+  - id: read-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: write-throughput
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: horizontal-scalability
+    value: low
+    numeric_value: 3
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: single-node
+    name: Single Node
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 2
+        category: scalability
+  - id: primary-replica
+    name: Primary-Replica
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 5
+        category: scalability
+  - id: citus-distributed
+    name: Citus Distributed
+    metrics:
+      - id: read-latency
+        value: medium
+        numeric_value: 4
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+    - connection-pooling
+  typical_latency: 1-10ms
+  co_location_potential: true

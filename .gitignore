@@ -18,6 +18,7 @@ credentials.json
 service-account.json
 .aws/
 .gcp/
+.keys/
 
 # OS files
 .DS_Store
@@ -44,5 +45,21 @@ out/
 logs/
 *.log
 
+# Test artifacts
+playwright-report/
+playwright-artifacts/
+test-results/*
+!test-results/INDEX.md
+coverage/
+
+# E2E auth state (tokens — auto-generated)
+tests/e2e/.auth/
+
+# Firebase
+.firebase/
+
 # Claude local settings
 .claude/settings.local.json
+
+# MCP server config (machine-specific absolute paths)
+.mcp.json

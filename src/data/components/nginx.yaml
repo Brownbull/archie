@@ -1,0 +1,61 @@
+id: nginx
+name: Nginx
+category: compute
+description: High-performance web server, reverse proxy, and load balancer
+is: An event-driven web server that excels at serving static content and proxying requests
+gain:
+  - Extremely efficient with static content and reverse proxying
+  - Handles tens of thousands of concurrent connections
+  - Low memory footprint compared to alternatives
+cost:
+  - Configuration syntax has learning curve
+  - Dynamic content requires upstream application servers
+  - Module system less flexible than Apache
+tags:
+  - server
+  - proxy
+  - load-balancer
+  - web-server
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: reverse-proxy
+    name: Reverse Proxy
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+  - id: load-balancer
+    name: Load Balancer
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+    - streaming
+  typical_latency: "<1ms"
+  co_location_potential: false

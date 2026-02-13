@@ -1,0 +1,61 @@
+id: cloudflare-cdn
+name: Cloudflare CDN
+category: delivery-network
+description: Global content delivery network with edge caching and DDoS protection
+is: A globally distributed network that caches and serves content from edge locations closest to users
+gain:
+  - Dramatic latency reduction for global audiences
+  - Built-in DDoS protection and WAF
+  - Automatic SSL/TLS and HTTP/3 support
+cost:
+  - Cache invalidation propagation delay
+  - Limited control over edge node behavior
+  - Cost scales with bandwidth usage
+tags:
+  - cdn
+  - edge
+  - security
+  - global
+base_metrics:
+  - id: edge-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+config_variants:
+  - id: static-caching
+    name: Static Asset Caching
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+  - id: full-site
+    name: Full-Site Acceleration
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+    - streaming
+  typical_latency: "<5ms (edge)"
+  co_location_potential: false

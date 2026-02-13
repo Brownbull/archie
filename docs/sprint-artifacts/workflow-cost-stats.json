@@ -1,0 +1,98 @@
+{
+  "generated": "2026-02-13T13:55:29.155896",
+  "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
+  "total_sessions": 58,
+  "total_cost": 958.19,
+  "averages": {
+    "overall": 16.52,
+    "last_10": 4.97,
+    "last_20": 7.69
+  },
+  "percentiles": {
+    "p50": 10.25,
+    "p75": 17.9,
+    "p90": 29.24,
+    "p95": 42.71
+  },
+  "thresholds": {
+    "warning": 17.9,
+    "high": 29.24
+  },
+  "trend_last10_vs_prev10_pct": -52.3,
+  "recent_outliers": [
+    {
+      "date": "2026-02-13 09:43",
+      "session_id": "576a246d-467",
+      "cost": 27.67,
+      "ratio": 3.6
+    }
+  ],
+  "by_model": {
+    "opus, sonnet": {
+      "count": 25,
+      "total_cost": 343.71000000000004
+    },
+    "opus": {
+      "count": 16,
+      "total_cost": 218.31
+    },
+    "haiku, opus": {
+      "count": 6,
+      "total_cost": 106.86999999999999
+    },
+    "<synthetic>, opus, sonnet": {
+      "count": 4,
+      "total_cost": 230.56
+    },
+    "<synthetic>, opus": {
+      "count": 2,
+      "total_cost": 18.87
+    },
+    "haiku, opus, sonnet": {
+      "count": 4,
+      "total_cost": 25.86
+    },
+    "<synthetic>, haiku, opus, sonnet": {
+      "count": 1,
+      "total_cost": 14.01
+    }
+  },
+  "by_workflow": {
+    "ecc-create-story": {
+      "count": 6,
+      "total_cost": 57.24,
+      "avg": 9.54,
+      "avg_last_10": 9.54,
+      "p50": 9.14,
+      "p75": 12.25,
+      "p90": 13.45
+    },
+    "ecc-dev-story": {
+      "count": 16,
+      "total_cost": 249.39,
+      "avg": 15.59,
+      "avg_last_10": 11.48,
+      "p50": 13.64,
+      "p75": 22.75,
+      "p90": 27.63
+    },
+    "ecc-code-review": {
+      "count": 15,
+      "total_cost": 265.54,
+      "avg": 17.7,
+      "avg_last_10": 6.21,
+      "p50": 8.61,
+      "p75": 29.05,
+      "p90": 46.37
+    },
+    "ecc-e2e": {
+      "count": 2,
+      "total_cost": 21.82,
+      "avg": 10.91,
+      "avg_last_10": 10.91,
+      "p50": 10.91,
+      "p75": 11.36,
+      "p90": 11.63
+    }
+  }
+}

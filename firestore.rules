@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Component library collections — read-only for authenticated users
+    match /components/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /stacks/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /blueprints/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /connectionTypes/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /metricCategories/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    match /_metadata/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if false;
+    }
+
+    // SECURITY: When adding user-writable collections (e.g., userProjects),
+    // ALWAYS enforce ownership: allow write: if request.auth.uid == resource.data.userId;
+    // NEVER use match /{document=**} with allow write: if isAuthenticated();
+
+    // Deny all by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
