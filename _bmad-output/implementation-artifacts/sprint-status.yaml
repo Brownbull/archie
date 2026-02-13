@@ -61,7 +61,8 @@ development_status:
   td-1-4a-connection-robustness: done
   td-1-4b-sanitizer-hardening: done
   1-5-component-inspector-and-configuration: done
-  td-1-5a-inspector-polish: review
+  td-1-5a-inspector-polish: done
+  td-1-5b-selector-and-test-polish: ready-for-dev
   1-6-in-place-component-swapping: done
   td-1-6a-swapper-robustness: review
   epic-1-retrospective: optional

@@ -1,6 +1,6 @@
 # Story: TD-1-5a Inspector Polish & Quality
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 1 — Architecture Canvas & Component Library
 ## Source: Code review of Story 1-5 (2026-02-13)
 
@@ -53,3 +53,34 @@ Tech debt items deferred from Story 1-5 code review. Four COMPLEX findings group
 
 - Size: Small (4 focused items, all in inspector scope)
 - Risk: Low (no architectural changes, all quality improvements)
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-13
+**Classification:** STANDARD
+**Agents:** code-reviewer, security-reviewer
+**Score:** 9/10 — APPROVED
+
+### Findings
+
+| # | Sev | Finding | Effort | Resolution |
+|---|-----|---------|--------|------------|
+| 1 | LOW | Zustand selector may benefit from shallow equality [InspectorPanel.tsx:14] | COMPLEX | Deferred → td-1-5b |
+| 2 | LOW | MetricCard test name misleading post-AC-2 [MetricCard.test.tsx:50] | QUICK | Fixed |
+| 3 | LOW | MetricBar tests lack shared render helper [MetricBar.test.tsx] | COMPLEX | Deferred → td-1-5b |
+
+### Triage: Quick + Defer
+- **Fixed:** 1 quick fix (Finding #2: renamed test)
+- **Deferred:** 2 complex items → `td-1-5b-selector-and-test-polish`
+
+### AC Validation
+- AC-1: PASS — All `waitForTimeout` replaced with assertion-based CSS waits
+- AC-2: PASS — `metric.name ?? metric.id` fallback; `name` field in schema + YAML schema
+- AC-3: PASS — Derived selector `s.nodes.find(n => n.id === selectedNodeId)`
+- AC-4: PASS — `renderDefault(overrides?)` helpers in ComponentDetail + MetricCard tests
+
+### Security: APPROVED 9.5/10
+- No vulnerabilities found
+- No secrets detected
+- All user content rendered via JSX (auto-escaped)
+- Zod schemas enforce input validation

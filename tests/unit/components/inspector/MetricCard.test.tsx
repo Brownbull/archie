@@ -10,71 +10,45 @@ const mockMetrics: MetricValue[] = [
 ]
 
 describe("MetricCard", () => {
-  it("renders the category label", () => {
-    render(
+  /** Render with default performance card props. Override via partial. */
+  function renderDefault(overrides: Partial<Parameters<typeof MetricCard>[0]> = {}) {
+    return render(
       <MetricCard
         categoryId="performance"
         categoryLabel="Performance"
         categoryColor="var(--color-cat-compute)"
         categoryIconName="Cpu"
         metrics={mockMetrics}
+        {...overrides}
       />,
     )
+  }
+
+  it("renders the category label", () => {
+    renderDefault()
     expect(screen.getByText("Performance")).toBeInTheDocument()
   })
 
   it("renders all metric bars", () => {
-    render(
-      <MetricCard
-        categoryId="performance"
-        categoryLabel="Performance"
-        categoryColor="var(--color-cat-compute)"
-        categoryIconName="Cpu"
-        metrics={mockMetrics}
-      />,
-    )
+    renderDefault()
     const bars = screen.getAllByTestId("metric-bar")
     expect(bars).toHaveLength(3)
   })
 
   it("renders the category icon", () => {
-    const { container } = render(
-      <MetricCard
-        categoryId="performance"
-        categoryLabel="Performance"
-        categoryColor="var(--color-cat-compute)"
-        categoryIconName="Cpu"
-        metrics={mockMetrics}
-      />,
-    )
+    const { container } = renderDefault()
     // lucide-react renders as svg
     const svg = container.querySelector("svg")
     expect(svg).toBeInTheDocument()
   })
 
   it("renders with data-testid", () => {
-    render(
-      <MetricCard
-        categoryId="performance"
-        categoryLabel="Performance"
-        categoryColor="var(--color-cat-compute)"
-        categoryIconName="Cpu"
-        metrics={mockMetrics}
-      />,
-    )
+    renderDefault()
     expect(screen.getByTestId("metric-card-performance")).toBeInTheDocument()
   })
 
-  it("renders metric names in correct order", () => {
-    render(
-      <MetricCard
-        categoryId="performance"
-        categoryLabel="Performance"
-        categoryColor="var(--color-cat-compute)"
-        categoryIconName="Cpu"
-        metrics={mockMetrics}
-      />,
-    )
+  it("renders metric IDs as labels when name field is absent", () => {
+    renderDefault()
     expect(screen.getByText("query-performance")).toBeInTheDocument()
     expect(screen.getByText("write-throughput")).toBeInTheDocument()
     expect(screen.getByText("index-speed")).toBeInTheDocument()
