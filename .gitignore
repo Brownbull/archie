@@ -46,6 +46,7 @@ logs/
 *.log
 
 # Test artifacts
+playwright-report/
 playwright-artifacts/
 test-results/*
 !test-results/INDEX.md

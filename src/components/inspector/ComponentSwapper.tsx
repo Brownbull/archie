@@ -1,4 +1,4 @@
-import { useLibrary } from "@/hooks/useLibrary"
+import type { Component } from "@/types"
 import {
   Select,
   SelectContent,
@@ -9,20 +9,18 @@ import {
 
 interface ComponentSwapperProps {
   currentComponentId: string
-  currentCategory: string
+  alternatives: Component[]
   onSwapComponent: (newComponentId: string) => void
 }
 
 export function ComponentSwapper({
   currentComponentId,
-  currentCategory,
+  alternatives,
   onSwapComponent,
 }: ComponentSwapperProps) {
-  const { getComponentsByCategory } = useLibrary()
-  const allInCategory = getComponentsByCategory(currentCategory)
-  const alternatives = allInCategory.filter((c) => c.id !== currentComponentId)
+  const filtered = alternatives.filter((c) => c.id !== currentComponentId)
 
-  if (alternatives.length === 0) return null
+  if (filtered.length === 0) return null
 
   return (
     <div data-testid="component-swapper" className="space-y-1">
@@ -40,7 +38,7 @@ export function ComponentSwapper({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {allInCategory.map((comp) => (
+          {alternatives.map((comp) => (
             <SelectItem key={comp.id} value={comp.id}>
               {comp.name}
             </SelectItem>

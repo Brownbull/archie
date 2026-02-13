@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { useShallow } from "zustand/react/shallow"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useLibrary } from "@/hooks/useLibrary"
@@ -10,7 +11,11 @@ export function InspectorPanel() {
   const inspectorCollapsed = useUiStore((s) => s.inspectorCollapsed)
   const setInspectorCollapsed = useUiStore((s) => s.setInspectorCollapsed)
 
-  const nodes = useArchitectureStore((s) => s.nodes)
+  // Derived selector with shallow equality: avoids re-render when React Flow recreates
+  // node objects with identical data during batch updates (TD-1-5b Item 1)
+  const selectedNode = useArchitectureStore(
+    useShallow((s) => s.nodes.find((n) => n.id === selectedNodeId)),
+  )
   const updateNodeConfigVariant = useArchitectureStore(
     (s) => s.updateNodeConfigVariant,
   )
@@ -22,7 +27,6 @@ export function InspectorPanel() {
 
   if (!selectedNodeId) return null
 
-  const selectedNode = nodes.find((n) => n.id === selectedNodeId)
   if (!selectedNode) return null
 
   const component = getComponentById(selectedNode.data.archieComponentId)

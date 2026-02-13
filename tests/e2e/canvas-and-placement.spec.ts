@@ -1,64 +1,7 @@
 import { test, expect } from "@playwright/test"
+import { waitForComponentLibrary, dragComponentToCanvas } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/canvas-and-placement"
-
-/**
- * Helper: wait for the component library to finish loading.
- * Returns true if components were loaded, false if empty state.
- */
-async function waitForComponentLibrary(page: import("@playwright/test").Page) {
-  await Promise.race([
-    page.locator('[data-testid="component-tab"]').waitFor({ state: "visible", timeout: 15_000 }),
-    page.locator('[data-testid="component-tab-empty"]').waitFor({ state: "visible", timeout: 15_000 }),
-  ])
-  return page.locator('[data-testid="component-tab"]').isVisible()
-}
-
-/**
- * Helper: simulate HTML5 drag-and-drop from toolbox to canvas.
- * Playwright doesn't natively support dataTransfer in drag events,
- * so we dispatch synthetic DragEvents via page.evaluate.
- */
-async function dragComponentToCanvas(
-  page: import("@playwright/test").Page,
-  componentId: string,
-  targetX: number,
-  targetY: number,
-) {
-  await page.evaluate(
-    ({ compId, x, y }) => {
-      const canvasPanel = document.querySelector('[data-testid="canvas-panel"]')
-      if (!canvasPanel) throw new Error("canvas-panel not found")
-
-      // Dispatch dragover (required for drop to work)
-      const dragOverEvent = new DragEvent("dragover", {
-        bubbles: true,
-        cancelable: true,
-      })
-      Object.defineProperty(dragOverEvent, "dataTransfer", {
-        value: { dropEffect: "", types: ["application/archie-component"] },
-      })
-      canvasPanel.dispatchEvent(dragOverEvent)
-
-      // Dispatch drop with componentId in dataTransfer
-      const dropEvent = new DragEvent("drop", {
-        bubbles: true,
-        cancelable: true,
-        clientX: x,
-        clientY: y,
-      })
-      Object.defineProperty(dropEvent, "dataTransfer", {
-        value: {
-          getData: (type: string) =>
-            type === "application/archie-component" ? compId : "",
-          types: ["application/archie-component"],
-        },
-      })
-      canvasPanel.dispatchEvent(dropEvent)
-    },
-    { compId: componentId, x: targetX, y: targetY },
-  )
-}
 
 test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
   test("AC-3: empty canvas shows suggestions on load", async ({ page }) => {

@@ -1,19 +1,7 @@
 import { test, expect } from "@playwright/test"
+import { waitForComponentLibrary } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/inspector-and-config"
-const TRANSITION_WAIT = 300 // CSS transition is 200ms + 100ms buffer
-
-/**
- * Helper: wait for the component library to finish loading.
- * Returns true if components were loaded, false if empty state.
- */
-async function waitForComponentLibrary(page: import("@playwright/test").Page) {
-  await Promise.race([
-    page.locator('[data-testid="component-tab"]').waitFor({ state: "visible", timeout: 15_000 }),
-    page.locator('[data-testid="component-tab-empty"]').waitFor({ state: "visible", timeout: 15_000 }),
-  ])
-  return page.locator('[data-testid="component-tab"]').isVisible()
-}
 
 /**
  * Helper: place a component on the canvas via the Add to Canvas button.
@@ -252,8 +240,7 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     await expect(collapseBtn).toBeVisible()
     await collapseBtn.click()
 
-    // Wait for CSS transition (200ms) to complete
-    await page.waitForTimeout(TRANSITION_WAIT)
+    // CSS assertion waits for transition to complete (TD-1-5a Item 1)
 
     // Inspector should be collapsed to 40px
     await expect(inspector).toHaveCSS("width", "40px")
@@ -268,8 +255,7 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     await expect(expandBtn).toBeVisible()
     await expandBtn.click()
 
-    // Wait for transition
-    await page.waitForTimeout(TRANSITION_WAIT)
+    // Assertion-based wait replaces waitForTimeout (TD-1-5a Item 1)
 
     // Inspector should be back to 300px
     await expect(inspector).toHaveCSS("width", "300px")
@@ -354,16 +340,13 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const canvasPane = page.locator(".react-flow__pane")
     await canvasPane.click({ position: { x: 50, y: 50 } })
 
-    // Wait for CSS transition
-    await page.waitForTimeout(TRANSITION_WAIT)
+    // Assertion-based wait: inspector-panel hidden confirms transition complete (TD-1-5a Item 1)
+    await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible({ timeout: 3_000 })
 
     // Inspector should collapse (no selected node) — border-box + border-l
     // means minimum computed width is 1px from the border, not 0px
     const inspectorWidth = await inspector.evaluate((el) => el.getBoundingClientRect().width)
     expect(inspectorWidth).toBeLessThanOrEqual(1)
-
-    // Inspector panel content should not be in the DOM (returns null)
-    await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/08-inspector-hidden-after-pane-click.png`,
@@ -391,15 +374,14 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Node should be removed from canvas
     await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(0, { timeout: 5_000 })
 
-    // Wait for transition
-    await page.waitForTimeout(TRANSITION_WAIT)
+    // Assertion-based wait: panel hidden confirms transition complete (TD-1-5a Item 1)
+    await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible({ timeout: 3_000 })
 
     // Inspector should hide (selectedNodeId cleared) — border-box + border-l
     // means minimum computed width is 1px, not 0px
     const inspector = page.locator('[data-testid="inspector"]')
     const inspectorWidth = await inspector.evaluate((el) => el.getBoundingClientRect().width)
     expect(inspectorWidth).toBeLessThanOrEqual(1)
-    await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/09-inspector-cleared-after-node-delete.png`,
@@ -451,15 +433,14 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Click the edge path to select it (force: true for SVG elements)
     await edges.first().click({ force: true })
 
-    // Wait a moment for any inspector reaction
-    await page.waitForTimeout(TRANSITION_WAIT)
+    // Assertion-based wait: panel hidden confirms no inspector for edges (TD-1-5a Item 1)
+    await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible({ timeout: 3_000 })
 
     // Inspector should NOT show component details (edge selection sets selectedEdgeId,
     // which clears selectedNodeId — InspectorPanel returns null)
     const inspector = page.locator('[data-testid="inspector"]')
     const inspectorWidth = await inspector.evaluate((el) => el.getBoundingClientRect().width)
     expect(inspectorWidth).toBeLessThanOrEqual(1)
-    await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/10-edge-click-no-inspector.png`,
@@ -495,8 +476,8 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const secondNode = page.locator('[data-testid="archie-node"]').nth(1)
     await secondNode.click()
 
-    // Wait for inspector to re-render with new content
-    await page.waitForTimeout(TRANSITION_WAIT)
+    // Assertion-based wait: inspector visible confirms re-render complete (TD-1-5a Item 1)
+    await expect(inspectorPanel).toBeVisible({ timeout: 3_000 })
 
     const secondName = await inspectorPanel.locator("h2").textContent()
 

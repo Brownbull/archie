@@ -10,10 +10,11 @@
 - Also: `/bmad-bmm-brainstorming`, `/bmad-bmm-party-mode`, `/bmad-bmm-retrospective`
 
 **ECC** handles all development execution (phase 4):
-- Story creation: `/ecc-create-story` (Planner + Architect agents)
-- Development: `/ecc-dev-story` (TDD Guide + Build Resolver + parallel reviewers)
+- Epic & story creation: `/ecc-create-epics-and-stories` (Planner + Architect + Security — hardening analysis, replaces BMAD epic workflow)
+- Story creation (ad-hoc): `/ecc-create-story` (Planner + Architect agents — for one-off or TD stories)
+- Development: `/ecc-dev-story` (Planner + TDD Guide + Build Resolver + self-review)
 - Development (Copilot): `/ecc-dev-story-copilot` (generates playbook with copy-paste prompts for Copilot Chat)
-- Code review: `/ecc-code-review` (4 parallel agents: code, security, architect, TDD)
+- Code review: `/ecc-code-review` (adaptive: 1-4 agents based on story complexity, auto-proceed)
 - E2E testing: `/ecc-e2e` (pre-flight enforcement, TEA quality scoring)
 - Impact analysis: `/ecc-impact-analysis` (dependency graphs + sprint conflict detection)
 - Story sizing: `/story-sizing` (validate and split oversized stories)
@@ -57,9 +58,29 @@ Sequential handoff: pass context documents between dependent agents.
 - Auth, user input, API endpoints, sensitive data -> spawn **security-reviewer**
 
 **Model selection for subagents:**
-- Haiku: lightweight exploration, quick searches, simple tasks
-- Sonnet: main development, orchestration, planning
-- Opus: complex architecture, deep reasoning, security review
+- Haiku: lightweight exploration, quick searches, simple tasks, test coverage review
+- Sonnet: main development, orchestration, planning, code review, security review
+- Opus: complex architecture, deep reasoning
+
+**Code review agent models** (configured in `_ecc/workflows/ecc-code-review/workflow.yaml`):
+- `code-reviewer`: Sonnet (code quality doesn't need deep reasoning)
+- `security-reviewer`: Sonnet (OWASP checklist is pattern matching)
+- `architect`: Opus (architecture compliance needs deep reasoning)
+- `tdd-guide`: Haiku (test coverage gaps are straightforward)
+- All agents: `max_turns: 5`, file contents pre-loaded (agents do NOT read files)
+
+**Dev story agent models** (configured in `_ecc/workflows/ecc-dev-story/workflow.yaml`):
+- `planner`: Opus, max_turns: 7 (implementation planning from story + architecture)
+- `tdd-guide`: Opus, no max_turns (iterative implementation needs many turns)
+- `build-error-resolver`: Sonnet, max_turns: 5 (surgical fixes)
+- `code-reviewer` (self-review): Sonnet, max_turns: 7, file contents pre-loaded
+- Step 6 is code-reviewer only — full review (security, architecture) runs via `/ecc-code-review`
+
+**Epic/story creation agent models** (configured in `_ecc/workflows/ecc-create-epics-and-stories/workflow.yaml`):
+- `planner`: Opus, max_turns: 7 (epic design + story breakdown with risk flags)
+- `architect`: Opus, max_turns: 5 (hardening analysis + story file generation)
+- `security-reviewer`: Sonnet, max_turns: 5 (security surface analysis, parallel with architect)
+- Hardening patterns: `_ecc/knowledge/hardening-patterns.md` (6 patterns from Epic 1 retrospective)
 
 ## ECC Hooks
 
@@ -73,9 +94,11 @@ Hook files live in `_ecc/hooks/`.
 ## Story Lifecycle
 
 ```
-/ecc-create-story -> ready-for-dev -> /ecc-dev-story -> review -> /ecc-code-review -> done
+/ecc-create-epics-and-stories -> drafted -> sprint-planning -> ready-for-dev -> /ecc-dev-story -> review -> /ecc-code-review -> done
 ```
 
+- `/ecc-create-epics-and-stories` produces stories as "drafted" — sprint planning promotes to "ready-for-dev"
+- `/ecc-create-story` still available for ad-hoc one-off stories and TD stories from code review
 - IMPORTANT: Developers mark stories "review" ONLY — never "done"
 - Reviewers mark "done" after approval
 - Sprint tracking: `_bmad-output/implementation-artifacts/sprint-status.yaml`
@@ -90,6 +113,7 @@ If a story exceeds these limits during dev, run `/story-sizing` to split.
 
 ECC workflows cache these at session start (Step 0):
 - `_ecc/knowledge/code-review-patterns.md` (MUST CHECK patterns)
+- `_ecc/knowledge/hardening-patterns.md` (6 patterns for proactive TD detection)
 - `.claude/rules/testing.md`
 - `.claude/rules/security.md`
 - Project architecture docs (when created)

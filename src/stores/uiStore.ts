@@ -2,6 +2,9 @@ import { create } from "zustand"
 
 export type ToolboxTab = "components" | "stacks" | "blueprints"
 
+// NOTE: architectureStore.removeNode directly writes selectedNodeId and
+// selectedEdgeId in this store to clear stale selection on node deletion.
+// See architectureStore.ts cross-store coupling comment (TD-1-3a / TD-1-4a).
 interface UiState {
   toolboxTab: ToolboxTab
   searchQuery: string

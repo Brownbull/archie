@@ -4,6 +4,7 @@ import { Toolbar } from "@/components/layout/Toolbar"
 import { ToolboxPanel } from "@/components/toolbox/ToolboxPanel"
 import { CommandPalette } from "@/components/toolbox/CommandPalette"
 import { CanvasView } from "@/components/canvas/CanvasView"
+import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 // NOTE: Direct service import for initialization only (not data access).
 // Data reads go through useLibrary hook per AC-ARCH-NO-2.
@@ -63,7 +64,9 @@ export function AppLayout() {
           data-testid="canvas"
           className="flex-1 overflow-hidden bg-canvas"
         >
-          <CanvasView />
+          <CanvasErrorBoundary>
+            <CanvasView />
+          </CanvasErrorBoundary>
         </main>
 
         <aside

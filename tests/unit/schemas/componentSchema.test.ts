@@ -206,4 +206,60 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
       expect(result.data.connectionProperties?.coLocationPotential).toBe(true)
     }
   })
+
+  it("round-trip: YAML output matches ComponentSchema shape", () => {
+    const result = ComponentYamlSchema.safeParse(yamlInput)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const baseResult = ComponentSchema.safeParse(result.data)
+      expect(baseResult.success).toBe(true)
+      if (baseResult.success) {
+        expect(baseResult.data).toEqual(result.data)
+      }
+    }
+  })
+})
+
+describe("ComponentSchema — empty string rejection", () => {
+  it("rejects empty id", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, id: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty name", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, name: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty category", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, category: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty description", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, description: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty is", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, is: "" })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("ComponentSchema — null rejection", () => {
+  it("rejects null id", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, id: null })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects null name", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, name: null })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects null description", () => {
+    const result = ComponentSchema.safeParse({ ...validComponent, description: null })
+    expect(result.success).toBe(false)
+  })
 })

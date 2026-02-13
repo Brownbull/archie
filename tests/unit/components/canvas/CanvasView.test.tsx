@@ -171,11 +171,11 @@ describe("CanvasView", () => {
     })
   })
 
-  it("onNodesDelete calls removeNode on architectureStore", () => {
-    const removeNodeSpy = vi.spyOn(useArchitectureStore.getState(), "removeNode")
+  it("onNodesDelete calls removeNodes (batch) on architectureStore", () => {
+    const removeNodesSpy = vi.spyOn(useArchitectureStore.getState(), "removeNodes")
     render(<CanvasView />)
     fireEvent.click(screen.getByTestId("mock-nodes-delete"))
-    expect(removeNodeSpy).toHaveBeenCalledWith("node-1")
+    expect(removeNodesSpy).toHaveBeenCalledWith(["node-1"])
   })
 
   it("onEdgesDelete calls removeEdges on architectureStore", () => {

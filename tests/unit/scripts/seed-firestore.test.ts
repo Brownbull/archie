@@ -1,29 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import "./seed-mocks"
 import { seedToFirestore } from "../../../scripts/seed-firestore"
-import { createMockDb, makeComponent } from "./seed-helpers"
+import { createMockDb, makeComponent, noopLogger } from "./seed-helpers"
 
-// Mock node:fs — partial mock with explicit default export
-vi.mock("node:fs", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:fs")>()
-  const mocked = {
-    ...actual,
-    existsSync: vi.fn(() => true),
-    readdirSync: vi.fn(),
-    readFileSync: vi.fn(),
-    statSync: vi.fn(() => ({ size: 100 })),
-  }
-  return { ...mocked, default: mocked }
-})
-
-// Mock firebase-admin (script imports these at top level)
-vi.mock("firebase-admin/app", () => ({
-  initializeApp: vi.fn(),
-  cert: vi.fn(),
-}))
-
-vi.mock("firebase-admin/firestore", () => ({
-  getFirestore: vi.fn(),
-}))
+function createSpyLogger() {
+  return { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
+}
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -34,7 +16,7 @@ describe("seedToFirestore", () => {
     const { db, mocks } = createMockDb()
     const components = Array.from({ length: 3 }, (_, i) => makeComponent(`comp-${i}`))
 
-    await seedToFirestore(db, components)
+    await seedToFirestore(db, components, noopLogger)
 
     // 1 batch: 3 components + 1 metadata = 4 operations
     expect(mocks.batchFn).toHaveBeenCalledTimes(1)
@@ -43,11 +25,11 @@ describe("seedToFirestore", () => {
   })
 
   it("chunks into multiple batches when count > 499", async () => {
-    const consoleSpy = vi.spyOn(console, "log")
+    const logger = createSpyLogger()
     const { db, mocks } = createMockDb()
     const components = Array.from({ length: 501 }, (_, i) => makeComponent(`comp-${i}`))
 
-    await seedToFirestore(db, components)
+    await seedToFirestore(db, components, logger)
 
     // 501 components + 1 metadata = 502 ops → 2 batches (500 + 2)
     expect(mocks.batchFn).toHaveBeenCalledTimes(2)
@@ -55,16 +37,15 @@ describe("seedToFirestore", () => {
     expect(mocks.setFn).toHaveBeenCalledTimes(502)
 
     // Verify batch split logged correctly
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Batch 1/2 committed (500 operations)"))
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Batch 2/2 committed (2 operations)"))
-    consoleSpy.mockRestore()
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Batch 1/2 committed (500 operations)"))
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Batch 2/2 committed (2 operations)"))
   })
 
   it("includes metadata in chunk accounting (499 components fits in 1 batch)", async () => {
     const { db, mocks } = createMockDb()
     const components = Array.from({ length: 499 }, (_, i) => makeComponent(`comp-${i}`))
 
-    await seedToFirestore(db, components)
+    await seedToFirestore(db, components, noopLogger)
 
     // 499 + 1 metadata = 500 → exactly 1 batch
     expect(mocks.batchFn).toHaveBeenCalledTimes(1)
@@ -76,7 +57,7 @@ describe("seedToFirestore", () => {
     const { db, mocks } = createMockDb()
     const components = Array.from({ length: 500 }, (_, i) => makeComponent(`comp-${i}`))
 
-    await seedToFirestore(db, components)
+    await seedToFirestore(db, components, noopLogger)
 
     // 500 components + 1 metadata = 501 ops → 2 batches (499 + 2)
     expect(mocks.batchFn).toHaveBeenCalledTimes(2)
@@ -85,21 +66,20 @@ describe("seedToFirestore", () => {
   })
 
   it("logs chunk progress", async () => {
-    const consoleSpy = vi.spyOn(console, "log")
+    const logger = createSpyLogger()
     const { db } = createMockDb()
     const components = Array.from({ length: 2 }, (_, i) => makeComponent(`comp-${i}`))
 
-    await seedToFirestore(db, components)
+    await seedToFirestore(db, components, logger)
 
-    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Batch 1/1 committed"))
-    consoleSpy.mockRestore()
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Batch 1/1 committed"))
   })
 
   it("returns the count of written components", async () => {
     const { db } = createMockDb()
     const components = Array.from({ length: 3 }, (_, i) => makeComponent(`comp-${i}`))
 
-    const result = await seedToFirestore(db, components)
+    const result = await seedToFirestore(db, components, noopLogger)
     expect(result).toBe(3)
   })
 
@@ -109,7 +89,7 @@ describe("seedToFirestore", () => {
 
     const components = Array.from({ length: 2 }, (_, i) => makeComponent(`comp-${i}`))
 
-    await expect(seedToFirestore(db, components)).rejects.toThrow("Firestore unavailable")
+    await expect(seedToFirestore(db, components, noopLogger)).rejects.toThrow("Firestore unavailable")
   })
 
   it("throws on write count mismatch", async () => {
@@ -122,14 +102,14 @@ describe("seedToFirestore", () => {
       components.push(makeComponent("sneaky"))
     })
 
-    await expect(seedToFirestore(db, components)).rejects.toThrow("Write count mismatch")
+    await expect(seedToFirestore(db, components, noopLogger)).rejects.toThrow("Write count mismatch")
   })
 
   it("writes metadata document in the last batch", async () => {
     const { db, mocks } = createMockDb()
     const components = [makeComponent("comp-0")]
 
-    await seedToFirestore(db, components)
+    await seedToFirestore(db, components, noopLogger)
 
     // Metadata call is the second set() call
     expect(mocks.collectionFn).toHaveBeenCalledWith("_metadata")
@@ -146,7 +126,7 @@ describe("seedToFirestore", () => {
     const { db, mocks } = createMockDb()
     const components = [makeComponent("comp-0")]
 
-    await seedToFirestore(db, components)
+    await seedToFirestore(db, components, noopLogger)
 
     const metadataCall = mocks.setFn.mock.calls.find(
       (args) => args[1]?.seededAt !== undefined,
@@ -159,7 +139,7 @@ describe("seedToFirestore", () => {
   it("handles empty components array (writes only metadata)", async () => {
     const { db, mocks } = createMockDb()
 
-    const result = await seedToFirestore(db, [])
+    const result = await seedToFirestore(db, [], noopLogger)
 
     expect(result).toBe(0)
     // 1 batch with only metadata

@@ -11,7 +11,14 @@
 import { vi } from "vitest"
 import { dump } from "js-yaml"
 import type { Component } from "@/schemas/componentSchema"
-import type { seedToFirestore } from "../../../scripts/seed-firestore"
+import type { seedToFirestore, SeedLogger } from "../../../scripts/seed-firestore"
+
+/** No-op logger that suppresses all output. Use in tests that don't check log messages. */
+export const noopLogger: SeedLogger = {
+  log: () => {},
+  warn: () => {},
+  error: () => {},
+}
 
 /**
  * Creates a valid snake_case YAML string that passes ComponentYamlSchema validation.

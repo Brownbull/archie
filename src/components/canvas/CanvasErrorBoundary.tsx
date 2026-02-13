@@ -20,7 +20,9 @@ export class CanvasErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("Canvas error caught by boundary:", error, errorInfo)
+    if (import.meta.env.DEV) {
+      console.error("Canvas error caught by boundary:", error, errorInfo)
+    }
   }
 
   handleReset = (): void => {

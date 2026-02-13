@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
+import { useLibrary } from "@/hooks/useLibrary"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -23,6 +24,9 @@ export function ComponentDetail({
   currentCategory,
   onSwapComponent,
 }: ComponentDetailProps) {
+  const { getComponentsByCategory } = useLibrary()
+  const alternatives = getComponentsByCategory(currentCategory)
+
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
   )
@@ -69,7 +73,7 @@ export function ComponentDetail({
         {/* Component Type Swapper */}
         <ComponentSwapper
           currentComponentId={component.id}
-          currentCategory={currentCategory}
+          alternatives={alternatives}
           onSwapComponent={onSwapComponent}
         />
 

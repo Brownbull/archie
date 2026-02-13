@@ -42,3 +42,9 @@ export const CANVAS_MIN_ZOOM = 0.5
 export const CANVAS_MAX_ZOOM = 2
 export const NODE_TYPE_COMPONENT = "archie-component" as const
 export const EDGE_TYPE_CONNECTION = "archie-connection" as const
+
+// Canvas node limit — defense-in-depth against client-side performance degradation (TD-1-3a)
+export const MAX_CANVAS_NODES = 50
+
+// Canvas spatial tolerances
+export const POSITION_EPSILON = 1 // px tolerance for floating-point position comparison

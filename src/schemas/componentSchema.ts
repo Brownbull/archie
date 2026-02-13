@@ -12,26 +12,26 @@ export const MetricExplanationSchema = z.object({
 }).strict()
 
 export const ConfigVariantSchema = z.object({
-  id: z.string(),
-  name: z.string(),
+  id: z.string().min(1),
+  name: z.string().min(1),
   metrics: z.array(MetricValueSchema),
   codeSnippet: CodeSnippetSchema.optional(),
   metricExplanations: z.record(z.string(), MetricExplanationSchema).optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
-  protocol: z.string(),
+  protocol: z.string().min(1),
   communicationPatterns: z.array(z.string()),
-  typicalLatency: z.string(),
+  typicalLatency: z.string().min(1),
   coLocationPotential: z.boolean(),
 }).strict()
 
 export const ComponentSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  category: z.string(),
-  description: z.string(),
-  is: z.string(),
+  id: z.string().min(1),
+  name: z.string().min(1),
+  category: z.string().min(1),
+  description: z.string().min(1),
+  is: z.string().min(1),
   gain: z.array(z.string()).min(1),
   cost: z.array(z.string()).min(1),
   tags: z.array(z.string()),
@@ -43,8 +43,8 @@ export const ComponentSchema = z.object({
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
 const ConfigVariantYamlSchema = z.object({
-  id: z.string(),
-  name: z.string(),
+  id: z.string().min(1),
+  name: z.string().min(1),
   metrics: z.array(MetricValueYamlSchema),
   code_snippet: CodeSnippetSchema.optional(),
   metric_explanations: z.record(z.string(), z.object({
@@ -63,9 +63,9 @@ const ConfigVariantYamlSchema = z.object({
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({
-  protocol: z.string(),
+  protocol: z.string().min(1),
   communication_patterns: z.array(z.string()),
-  typical_latency: z.string(),
+  typical_latency: z.string().min(1),
   co_location_potential: z.boolean(),
 }).strict().transform((data) => ({
   protocol: data.protocol,
@@ -75,11 +75,11 @@ const ConnectionPropertiesYamlSchema = z.object({
 }))
 
 export const ComponentYamlSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  category: z.string(),
-  description: z.string(),
-  is: z.string(),
+  id: z.string().min(1),
+  name: z.string().min(1),
+  category: z.string().min(1),
+  description: z.string().min(1),
+  is: z.string().min(1),
   gain: z.array(z.string()).min(1),
   cost: z.array(z.string()).min(1),
   tags: z.array(z.string()),

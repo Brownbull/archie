@@ -23,7 +23,7 @@ export function MetricBar({ metric }: MetricBarProps) {
       data-metric-id={metric.id}
     >
       <span className="w-28 shrink-0 truncate text-xs text-text-secondary">
-        {metric.id}
+        {metric.name ?? metric.id}
       </span>
       <div className="h-2 flex-1 rounded-full bg-muted">
         <div

@@ -47,7 +47,7 @@ function CanvasViewInner() {
   const addNode = useArchitectureStore((s) => s.addNode)
   const addEdge = useArchitectureStore((s) => s.addEdge)
   const removeEdges = useArchitectureStore((s) => s.removeEdges)
-  const removeNode = useArchitectureStore((s) => s.removeNode)
+  const removeNodes = useArchitectureStore((s) => s.removeNodes)
   const setEdges = useArchitectureStore((s) => s.setEdges)
   const setSelectedNodeId = useUiStore((s) => s.setSelectedNodeId)
   const setSelectedEdgeId = useUiStore((s) => s.setSelectedEdgeId)
@@ -104,11 +104,9 @@ function CanvasViewInner() {
 
   const handleNodesDelete: OnNodesDelete<ArchieNodeType> = useCallback(
     (deleted) => {
-      for (const node of deleted) {
-        removeNode(node.id)
-      }
+      removeNodes(deleted.map((n) => n.id))
     },
-    [removeNode],
+    [removeNodes],
   )
 
   const handleEdgesDelete: OnEdgesDelete<ArchieEdgeType> = useCallback(

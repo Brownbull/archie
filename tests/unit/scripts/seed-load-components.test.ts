@@ -1,30 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
+import "./seed-mocks"
 import { dump } from "js-yaml"
 import { loadAndValidateComponents } from "../../../scripts/seed-firestore"
-import { makeComponentYaml, mockDirEntries, mockStatResult } from "./seed-helpers"
-
-// Mock node:fs — partial mock with explicit default export
-vi.mock("node:fs", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("node:fs")>()
-  const mocked = {
-    ...actual,
-    existsSync: vi.fn(() => true),
-    readdirSync: vi.fn(),
-    readFileSync: vi.fn(),
-    statSync: vi.fn(() => ({ size: 100 })),
-  }
-  return { ...mocked, default: mocked }
-})
-
-// Mock firebase-admin (script imports these at top level)
-vi.mock("firebase-admin/app", () => ({
-  initializeApp: vi.fn(),
-  cert: vi.fn(),
-}))
-
-vi.mock("firebase-admin/firestore", () => ({
-  getFirestore: vi.fn(),
-}))
+import { makeComponentYaml, mockDirEntries, mockStatResult, noopLogger } from "./seed-helpers"
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
 
@@ -46,7 +24,7 @@ describe("loadAndValidateComponents", () => {
       return ""
     })
 
-    const result = loadAndValidateComponents("/fake/data")
+    const result = loadAndValidateComponents("/fake/data", noopLogger)
     expect(result).toHaveLength(2)
     expect(result[0].id).toBe("comp-a")
     expect(result[1].id).toBe("comp-b")
@@ -56,7 +34,7 @@ describe("loadAndValidateComponents", () => {
     mockedReaddirSync.mockReturnValue(mockDirEntries("comp.yaml", "readme.md", "data.json"))
     mockedReadFileSync.mockReturnValue(makeComponentYaml("comp"))
 
-    const result = loadAndValidateComponents("/fake/data")
+    const result = loadAndValidateComponents("/fake/data", noopLogger)
     expect(result).toHaveLength(1)
     expect(mockedReadFileSync).toHaveBeenCalledTimes(1)
   })
@@ -65,20 +43,20 @@ describe("loadAndValidateComponents", () => {
     mockedReaddirSync.mockReturnValue(mockDirEntries("bad.yaml"))
     mockedReadFileSync.mockReturnValue("invalid: yaml: [unterminated")
 
-    expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
+    expect(() => loadAndValidateComponents("/fake/data", noopLogger)).toThrow("Validation failed")
   })
 
   it("throws on Zod validation failure (missing required fields)", () => {
     mockedReaddirSync.mockReturnValue(mockDirEntries("incomplete.yaml"))
     mockedReadFileSync.mockReturnValue(dump({ id: "incomplete" }))
 
-    expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
+    expect(() => loadAndValidateComponents("/fake/data", noopLogger)).toThrow("Validation failed")
   })
 
   it("returns empty array when no YAML files exist", () => {
     mockedReaddirSync.mockReturnValue(mockDirEntries())
 
-    const result = loadAndValidateComponents("/fake/data")
+    const result = loadAndValidateComponents("/fake/data", noopLogger)
     expect(result).toHaveLength(0)
   })
 
@@ -86,7 +64,7 @@ describe("loadAndValidateComponents", () => {
     mockedReaddirSync.mockReturnValue(mockDirEntries("huge.yaml"))
     mockedStatSync.mockReturnValue(mockStatResult(1024 * 1024 + 1))
 
-    expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
+    expect(() => loadAndValidateComponents("/fake/data", noopLogger)).toThrow("Validation failed")
   })
 
   it("rejects YAML with empty required string fields", () => {
@@ -104,6 +82,6 @@ describe("loadAndValidateComponents", () => {
       config_variants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }] }],
     }))
 
-    expect(() => loadAndValidateComponents("/fake/data")).toThrow("Validation failed")
+    expect(() => loadAndValidateComponents("/fake/data", noopLogger)).toThrow("Validation failed")
   })
 })
