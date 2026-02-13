@@ -25,6 +25,7 @@ function ThrowingChild({ shouldThrow }: { shouldThrow: boolean }) {
 describe("CanvasErrorBoundary", () => {
   beforeEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
     // Most tests trigger React error boundary which logs to console.error.
     // Mock globally to avoid noisy test output; individual tests assert on it as needed.
     vi.spyOn(console, "error").mockImplementation(() => {})
@@ -114,7 +115,7 @@ describe("CanvasErrorBoundary", () => {
     expect(screen.queryByTestId("canvas-error-fallback")).not.toBeInTheDocument()
   })
 
-  it("logs error to console.error", () => {
+  it("logs error to console.error in dev mode", () => {
     render(
       <CanvasErrorBoundary>
         <ThrowingChild shouldThrow={true} />
@@ -125,5 +126,22 @@ describe("CanvasErrorBoundary", () => {
       expect.any(Error),
       expect.objectContaining({ componentStack: expect.any(String) }),
     )
+  })
+
+  it("does not log raw stack traces in production mode", () => {
+    vi.stubEnv("DEV", false)
+
+    render(
+      <CanvasErrorBoundary>
+        <ThrowingChild shouldThrow={true} />
+      </CanvasErrorBoundary>
+    )
+    // React itself calls console.error for error boundaries, but our
+    // custom "Canvas error caught by boundary:" message should NOT appear.
+    const calls = vi.mocked(console.error).mock.calls
+    const archieLogCall = calls.find(
+      (args) => typeof args[0] === "string" && args[0].includes("Canvas error caught by boundary:")
+    )
+    expect(archieLogCall).toBeUndefined()
   })
 })

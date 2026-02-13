@@ -1,6 +1,6 @@
 # Story: TD-1-3c Test Environment Variable Pattern
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 1 — Architecture Canvas & Component Library
 ## Source: Code review of Story TD-1-3b (2026-02-13)
 
@@ -27,3 +27,17 @@ Replace direct `import.meta.env.DEV` mutation in CanvasErrorBoundary tests with 
 ## Priority
 
 LOW — Current pattern works; this is a robustness improvement for test infrastructure.
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-13
+**Classification:** TRIVIAL | **Agents:** code-reviewer
+**Score:** 9.5/10 | **Status:** APPROVED
+
+**Findings:** None — all ACs met, clean implementation.
+
+**Strengths:**
+- Clean migration from unsafe `import.meta.env.DEV` mutation to `vi.stubEnv` API
+- Proper `vi.unstubAllEnvs()` cleanup in `beforeEach`
+- Robust assertion strategy (searches call array, not brittle exact match)
+- Clear comment explaining React's own console.error vs. custom log
