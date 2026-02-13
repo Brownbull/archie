@@ -10,7 +10,7 @@
  *   - OR Firebase emulator running
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs"
 import { resolve, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { load } from "js-yaml"
@@ -19,7 +19,10 @@ import {
   cert,
   type ServiceAccount,
 } from "firebase-admin/app"
-import { getFirestore, type Firestore } from "firebase-admin/firestore"
+import { getFirestore, type Firestore as FullFirestore } from "firebase-admin/firestore"
+
+/** Narrow Firestore dependency to only the methods we actually use */
+type FirestoreSubset = Pick<FullFirestore, "batch" | "collection">
 import { ComponentYamlSchema, type Component } from "../src/schemas/componentSchema"
 
 /** Firestore batch write limit (500 operations per batch) */
@@ -28,7 +31,44 @@ const BATCH_LIMIT = 500
 /** Maximum YAML file size (1MB) to prevent memory exhaustion */
 const MAX_YAML_FILE_SIZE = 1024 * 1024
 
+/** Maximum service account file size (10KB) */
+const MAX_CREDENTIAL_FILE_SIZE = 10 * 1024
+
 // ------ Exported Functions (testable) ------
+
+/**
+ * Validate and parse a service account credential file.
+ * Checks: existence, size (max 10KB), valid JSON, required fields.
+ */
+export function validateServiceAccountFile(credPath: string): ServiceAccount {
+  if (!existsSync(credPath)) {
+    throw new Error(`Service account file not found: ${credPath}`)
+  }
+
+  const fileSize = statSync(credPath).size
+  if (fileSize > MAX_CREDENTIAL_FILE_SIZE) {
+    throw new Error(
+      `Service account file too large: ${fileSize} bytes (max ${MAX_CREDENTIAL_FILE_SIZE})`,
+    )
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(readFileSync(credPath, "utf-8"))
+  } catch {
+    throw new Error(`Service account file is not valid JSON: ${credPath}`)
+  }
+
+  const sa = parsed as Record<string, unknown>
+  const required = ["project_id", "private_key", "client_email"] as const
+  for (const field of required) {
+    if (typeof sa[field] !== "string" || sa[field].length === 0) {
+      throw new Error(`Service account missing required field: ${field}`)
+    }
+  }
+
+  return parsed as ServiceAccount
+}
 
 /**
  * Load and validate all YAML component files from a directory.
@@ -94,12 +134,13 @@ export function loadAndValidateComponents(dataDir: string): Component[] {
  * Respects the 500-operation-per-batch Firestore limit.
  * The metadata write is included in chunk accounting.
  */
-export async function seedToFirestore(db: Firestore, components: Component[]): Promise<void> {
+export async function seedToFirestore(db: FirestoreSubset, components: Component[]): Promise<number> {
   // Reserve 1 slot in the last chunk for the metadata write
   const totalOps = components.length + 1 // +1 for metadata
   const totalChunks = Math.ceil(totalOps / BATCH_LIMIT)
 
   let opIndex = 0
+  const writtenIds: string[] = []
 
   for (let chunkNum = 1; chunkNum <= totalChunks; chunkNum++) {
     const batch = db.batch()
@@ -117,6 +158,7 @@ export async function seedToFirestore(db: Firestore, components: Component[]): P
       const comp = components[opIndex]
       const ref = db.collection("components").doc(comp.id)
       batch.set(ref, comp)
+      writtenIds.push(comp.id)
       opsInBatch++
       opIndex++
     }
@@ -136,8 +178,15 @@ export async function seedToFirestore(db: Firestore, components: Component[]): P
     console.log(`Batch ${chunkNum}/${totalChunks} committed (${opsInBatch} operations)`)
   }
 
-  console.log(`Seeded ${components.length} components to Firestore.`)
+  if (writtenIds.length !== components.length) {
+    console.warn(
+      `WARNING: Write count mismatch — expected ${components.length}, tracked ${writtenIds.length}`,
+    )
+  }
+
+  console.log(`Seeded ${writtenIds.length} components to Firestore.`)
   console.log("Metadata written to _metadata/seed.")
+  return writtenIds.length
 }
 
 // ------ Main ------
@@ -169,7 +218,14 @@ async function main() {
     process.exit(1)
   }
 
-  const serviceAccount = JSON.parse(readFileSync(credPath, "utf-8")) as ServiceAccount
+  let serviceAccount: ServiceAccount
+  try {
+    serviceAccount = validateServiceAccountFile(credPath)
+  } catch (err) {
+    console.error(`ERROR: ${err instanceof Error ? err.message : String(err)}`)
+    process.exit(1)
+  }
+
   initializeApp({ credential: cert(serviceAccount) })
   const db = getFirestore()
 

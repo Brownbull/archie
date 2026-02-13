@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { dump } from "js-yaml"
-import { loadAndValidateComponents, seedToFirestore } from "../../../scripts/seed-firestore"
+import { loadAndValidateComponents, seedToFirestore, validateServiceAccountFile } from "../../../scripts/seed-firestore"
 
 // Mock node:fs — partial mock with explicit default export
 vi.mock("node:fs", async (importOriginal) => {
   const actual = await importOriginal<typeof import("node:fs")>()
   const mocked = {
     ...actual,
+    existsSync: vi.fn(() => true),
     readdirSync: vi.fn(),
     readFileSync: vi.fn(),
     statSync: vi.fn(() => ({ size: 100 })),
@@ -24,10 +25,12 @@ vi.mock("firebase-admin/firestore", () => ({
   getFirestore: vi.fn(),
 }))
 
-import { readdirSync, readFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs"
 
+const mockedExistsSync = vi.mocked(existsSync)
 const mockedReaddirSync = vi.mocked(readdirSync)
 const mockedReadFileSync = vi.mocked(readFileSync)
+const mockedStatSync = vi.mocked(statSync)
 
 // Helper: minimal valid component YAML (snake_case for ComponentYamlSchema)
 function makeComponentYaml(id: string) {
@@ -55,7 +58,7 @@ function makeComponentYaml(id: string) {
   })
 }
 
-// Helper: create a mock Firestore db
+// Helper: create a mock Firestore db with proper types (no double cast)
 function createMockDb() {
   const commitFn = vi.fn().mockResolvedValue(undefined)
   const setFn = vi.fn()
@@ -64,13 +67,94 @@ function createMockDb() {
   const collectionFn = vi.fn(() => ({ doc: docFn }))
 
   return {
-    db: { batch: batchFn, collection: collectionFn } as unknown as Parameters<typeof seedToFirestore>[0],
+    db: { batch: batchFn, collection: collectionFn } as Parameters<typeof seedToFirestore>[0],
     mocks: { commitFn, setFn, batchFn, docFn, collectionFn },
   }
 }
 
 beforeEach(() => {
   vi.resetAllMocks()
+})
+
+// Helper: valid service account JSON
+function makeServiceAccountJson(overrides: Record<string, unknown> = {}) {
+  return JSON.stringify({
+    project_id: "my-project",
+    private_key: "-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----\n",
+    client_email: "test@my-project.iam.gserviceaccount.com",
+    ...overrides,
+  })
+}
+
+describe("validateServiceAccountFile", () => {
+  it("returns parsed ServiceAccount when file is valid", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 500 } as ReturnType<typeof statSync>)
+    mockedReadFileSync.mockReturnValue(makeServiceAccountJson())
+
+    const result = validateServiceAccountFile("/fake/creds.json")
+    expect(result).toHaveProperty("project_id", "my-project")
+  })
+
+  it("throws when file does not exist", () => {
+    mockedExistsSync.mockReturnValue(false)
+
+    expect(() => validateServiceAccountFile("/fake/creds.json"))
+      .toThrow("Service account file not found: /fake/creds.json")
+  })
+
+  it("throws when file exceeds 10KB", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 11_000 } as ReturnType<typeof statSync>)
+
+    expect(() => validateServiceAccountFile("/fake/creds.json"))
+      .toThrow("Service account file too large")
+  })
+
+  it("throws when file contains invalid JSON", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
+    mockedReadFileSync.mockReturnValue("not valid json {{{")
+
+    expect(() => validateServiceAccountFile("/fake/creds.json"))
+      .toThrow("not valid JSON")
+  })
+
+  it("throws when project_id is missing", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
+    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ project_id: undefined }))
+
+    expect(() => validateServiceAccountFile("/fake/creds.json"))
+      .toThrow("missing required field: project_id")
+  })
+
+  it("throws when private_key is missing", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
+    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ private_key: undefined }))
+
+    expect(() => validateServiceAccountFile("/fake/creds.json"))
+      .toThrow("missing required field: private_key")
+  })
+
+  it("throws when client_email is missing", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
+    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ client_email: undefined }))
+
+    expect(() => validateServiceAccountFile("/fake/creds.json"))
+      .toThrow("missing required field: client_email")
+  })
+
+  it("throws when required field is empty string", () => {
+    mockedExistsSync.mockReturnValue(true)
+    mockedStatSync.mockReturnValue({ size: 100 } as ReturnType<typeof statSync>)
+    mockedReadFileSync.mockReturnValue(makeServiceAccountJson({ project_id: "" }))
+
+    expect(() => validateServiceAccountFile("/fake/creds.json"))
+      .toThrow("missing required field: project_id")
+  })
 })
 
 describe("loadAndValidateComponents", () => {
@@ -259,6 +343,45 @@ describe("seedToFirestore", () => {
 
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("Batch 1/1 committed"))
     consoleSpy.mockRestore()
+  })
+
+  it("returns the count of written components", async () => {
+    const { db } = createMockDb()
+    const components = Array.from({ length: 3 }, (_, i) => ({
+      id: `comp-${i}`,
+      name: `Component ${i}`,
+      category: "data-storage",
+      description: `Desc ${i}`,
+      is: `Is ${i}`,
+      gain: ["Fast"],
+      cost: ["Expensive"],
+      tags: ["test"],
+      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
+      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
+    }))
+
+    const result = await seedToFirestore(db, components)
+    expect(result).toBe(3)
+  })
+
+  it("rejects when batch commit fails", async () => {
+    const { db, mocks } = createMockDb()
+    mocks.commitFn.mockRejectedValueOnce(new Error("Firestore unavailable"))
+
+    const components = Array.from({ length: 2 }, (_, i) => ({
+      id: `comp-${i}`,
+      name: `Component ${i}`,
+      category: "data-storage",
+      description: `Desc ${i}`,
+      is: `Is ${i}`,
+      gain: ["Fast"],
+      cost: ["Expensive"],
+      tags: ["test"],
+      baseMetrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
+      configVariants: [{ id: "default", name: "Default", metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }] }],
+    }))
+
+    await expect(seedToFirestore(db, components)).rejects.toThrow("Firestore unavailable")
   })
 
   it("writes metadata document in the last batch", async () => {
