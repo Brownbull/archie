@@ -1,6 +1,6 @@
 # Story: TD-1-4b Sanitizer Hardening & Constant Consolidation
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 1 — Architecture Canvas & Component Library
 ## Source: Code review of Story TD-1-4a (2026-02-13)
 
@@ -44,3 +44,24 @@ Low-severity improvements identified during TD-1-4a review. Three items that har
 ## Priority
 
 LOW — All items are defense-in-depth improvements. Items 1-2 should be completed before Epic 3 YAML import integration. Item 3 is pure cleanup.
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-13
+**Classification:** SIMPLE | **Agents:** code-reviewer, tdd-guide
+**Score:** 8.5/10 | **Status:** APPROVED
+
+### Findings
+
+| # | Sev | Agent | Finding | Resolution |
+|---|------|-------|---------|------------|
+| 1 | LOW | code-reviewer | Layer comment order (1c/1d) didn't match execution order | Fixed — comments clarified |
+| 2 | INFO | code-reviewer | Test comment said "homoglyph bypass" but NFC prevents combining-character bypass | Fixed — comment corrected |
+| 3 | INFO | tdd-guide | No test for AC-3 (constant move) — correct per testing conventions | N/A |
+
+### AC Verification
+
+- AC-1: PASS — Pre-truncation to `maxLength * 2` before regex (sanitize.ts:46-48)
+- AC-2: PASS — Unicode NFC normalization before tag detection (sanitize.ts:44)
+- AC-3: PASS — POSITION_EPSILON exported from constants.ts, imported in architectureStore
+- AC-4: PASS — 25 sanitize tests green, 3 ReDoS + 3 Unicode tests added

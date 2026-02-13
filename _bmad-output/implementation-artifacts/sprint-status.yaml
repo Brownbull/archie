@@ -59,7 +59,7 @@ development_status:
   td-1-3c-test-env-pattern: done
   1-4-connection-wiring-and-management: done
   td-1-4a-connection-robustness: done
-  td-1-4b-sanitizer-hardening: ready-for-dev
+  td-1-4b-sanitizer-hardening: done
   1-5-component-inspector-and-configuration: done
   td-1-5a-inspector-polish: review
   1-6-in-place-component-swapping: done

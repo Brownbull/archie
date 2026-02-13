@@ -40,13 +40,19 @@ export function sanitizeDisplayString(
   input: string,
   maxLength: number = DEFAULT_MAX_LENGTH,
 ): string {
+  // Layer 0a: Unicode normalization — collapse look-alike sequences before regex (TD-1-4b AC-2)
+  let cleaned = input.normalize("NFC")
+  // Layer 0b: ReDoS guard — bound regex input to 2x maxLength (TD-1-4b AC-1)
+  if (cleaned.length > maxLength * 2) {
+    cleaned = cleaned.slice(0, maxLength * 2)
+  }
   // Layer 1a: Strip paired dangerous tags with their content
-  let cleaned = input.replace(DANGEROUS_PAIRED_REGEX, "")
+  cleaned = cleaned.replace(DANGEROUS_PAIRED_REGEX, "")
   // Layer 1b: Strip self-closing dangerous tags
   cleaned = cleaned.replace(DANGEROUS_SELFCLOSE_REGEX, "")
-  // Layer 1c: Strip unclosed dangerous tags + everything after (last resort)
+  // Layer 1c: Strip unclosed dangerous tag + everything after (greedy last resort)
   cleaned = cleaned.replace(DANGEROUS_UNCLOSED_REGEX, "")
-  // Layer 1d: Strip orphan dangerous tags (closing tags like </script>)
+  // Layer 1d: Strip remaining orphan dangerous tags (e.g. </script>)
   cleaned = cleaned.replace(DANGEROUS_ORPHAN_REGEX, "")
   // Layer 2: Strip all remaining HTML tags
   cleaned = cleaned.replace(HTML_TAG_REGEX, "")

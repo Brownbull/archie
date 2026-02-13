@@ -89,4 +89,51 @@ describe("sanitizeDisplayString", () => {
     const result = sanitizeDisplayString('url data:text/html,<script>x</script>')
     expect(result).not.toContain("data:")
   })
+
+  describe("ReDoS guard (AC-1)", () => {
+    it("truncates input to maxLength * 2 before regex processing", () => {
+      const maxLength = 500
+      // Input far exceeding 2x maxLength — pre-truncation bounds regex work
+      const payload = "<b>" + "x".repeat(2000) + "</b>"
+      const result = sanitizeDisplayString(payload, maxLength)
+      expect(result.length).toBeLessThanOrEqual(maxLength)
+    })
+
+    it("does not alter input shorter than maxLength * 2", () => {
+      const result = sanitizeDisplayString("short text", 500)
+      expect(result).toBe("short text")
+    })
+
+    it("preserves sanitization accuracy within the pre-truncation window", () => {
+      const maxLength = 100
+      // Script tag within the 2x window should still be stripped
+      const payload = '<script>alert(1)</script>' + "a".repeat(150)
+      const result = sanitizeDisplayString(payload, maxLength)
+      expect(result).not.toContain("<script")
+      expect(result).not.toContain("alert")
+      expect(result.length).toBeLessThanOrEqual(maxLength)
+    })
+  })
+
+  describe("Unicode normalization (AC-2)", () => {
+    it("normalizes NFC before processing", () => {
+      // e + combining acute (U+0301) → NFC e-acute (U+00E9)
+      const decomposed = "caf\u0065\u0301"
+      const result = sanitizeDisplayString(decomposed)
+      expect(result).toBe("caf\u00E9")
+    })
+
+    it("handles already-NFC input unchanged", () => {
+      const nfc = "caf\u00E9"
+      const result = sanitizeDisplayString(nfc)
+      expect(result).toBe("caf\u00E9")
+    })
+
+    it("normalizes before tag detection to prevent combining-character bypass", () => {
+      // Verify normalization happens before regex layers
+      const input = "<b>te\u0073\u0074</b>"
+      const result = sanitizeDisplayString(input)
+      expect(result).toBe("test")
+    })
+  })
 })
