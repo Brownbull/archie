@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import type { Node, Edge, NodeChange, Connection } from "@xyflow/react"
 import { applyNodeChanges } from "@xyflow/react"
+import { toast } from "sonner"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
@@ -8,6 +9,7 @@ import {
   CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
   EDGE_TYPE_CONNECTION,
+  MAX_CANVAS_NODES,
   NODE_TYPE_COMPONENT,
   NODE_WIDTH,
   type ComponentCategoryId,
@@ -36,12 +38,14 @@ function snapToGrid(value: number): number {
 
 const NODE_GAP = CANVAS_GRID_SIZE * 2 // 32px between nodes
 
+const POSITION_EPSILON = 1 // px tolerance for floating-point comparison (TD-1-4a Item 6)
+
 function findNextAvailablePosition(nodes: ArchieNode[]): { x: number; y: number } {
   if (nodes.length === 0) return { x: 0, y: 0 }
 
   // Place to the right of the rightmost node, snapped to grid
   const maxX = Math.max(...nodes.map((n) => n.position.x))
-  const sameRowNodes = nodes.filter((n) => n.position.x === maxX)
+  const sameRowNodes = nodes.filter((n) => Math.abs(n.position.x - maxX) < POSITION_EPSILON)
   const y = sameRowNodes[0]?.position.y ?? 0
 
   return {
@@ -62,6 +66,7 @@ interface ArchitectureState {
   updateNodeConfigVariant: (nodeId: string, variantId: string) => void
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
   removeNode: (nodeId: string) => void
+  removeNodes: (nodeIds: string[]) => void
   addEdge: (connection: Connection) => void
   removeEdges: (edgeIds: string[]) => void
   setNodes: (nodes: ArchieNode[]) => void
@@ -75,11 +80,21 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   edges: [],
 
   addNodeSmartPosition: (componentId) => {
+    // Early exit avoids unnecessary position calculation when canvas is full (TD-1-3a)
+    if (get().nodes.length >= MAX_CANVAS_NODES) {
+      toast.warning(`Canvas limit reached (${MAX_CANVAS_NODES} components)`)
+      return
+    }
     const position = findNextAvailablePosition(get().nodes)
     get().addNode(componentId, position)
   },
 
   addNode: (componentId, position) => {
+    // Defense-in-depth: prevent client-side performance degradation (TD-1-3a)
+    if (get().nodes.length >= MAX_CANVAS_NODES) {
+      toast.warning(`Canvas limit reached (${MAX_CANVAS_NODES} components)`)
+      return
+    }
     const component = componentLibrary.getComponent(componentId)
     if (!component) return
 
@@ -112,6 +127,14 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   swapNodeComponent: (nodeId, newComponentId) => {
     const newComponent = componentLibrary.getComponent(newComponentId)
     if (!newComponent) return
+
+    // Guard: reject swap to component with no config variants (TD-1-6a)
+    if (newComponent.configVariants.length === 0) {
+      console.warn(
+        `swapNodeComponent: "${newComponentId}" has no configVariants — swap rejected`,
+      )
+      return
+    }
 
     const node = get().nodes.find((n) => n.id === nodeId)
     if (!node || node.data.archieComponentId === newComponentId) return
@@ -165,6 +188,15 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     })
   },
 
+  // CROSS-STORE COUPLING (TD-1-3a, also tracked in TD-1-4a Item 2):
+  // removeNode directly reads/writes uiStore to clear selection state when the
+  // deleted node (or its connected edge) is currently selected. This prevents
+  // stale selection references in the inspector panel.
+  //
+  // This coupling is intentional for correctness but creates a tight dependency
+  // between architectureStore and uiStore. If more stores need to react to node
+  // removal in the future, consider an event/subscription pattern or a thin
+  // coordination layer. TD-1-4a Item 2 tracks potential decoupling.
   removeNode: (nodeId) => {
     if (useUiStore.getState().selectedNodeId === nodeId) {
       useUiStore.getState().setSelectedNodeId(null)
@@ -183,6 +215,34 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       edges: get().edges.filter(
         (e) => e.source !== nodeId && e.target !== nodeId,
       ),
+    })
+  },
+
+  removeNodes: (nodeIds) => {
+    if (nodeIds.length === 0) return
+    const idsToRemove = new Set(nodeIds)
+
+    const selectedNodeId = useUiStore.getState().selectedNodeId
+    if (selectedNodeId && idsToRemove.has(selectedNodeId)) {
+      useUiStore.getState().setSelectedNodeId(null)
+    }
+
+    const currentEdges = get().edges
+    const survivingEdges = currentEdges.filter(
+      (e) => !idsToRemove.has(e.source) && !idsToRemove.has(e.target),
+    )
+
+    const selectedEdgeId = useUiStore.getState().selectedEdgeId
+    if (selectedEdgeId) {
+      const edgeStillExists = survivingEdges.some((e) => e.id === selectedEdgeId)
+      if (!edgeStillExists) {
+        useUiStore.getState().setSelectedEdgeId(null)
+      }
+    }
+
+    set({
+      nodes: get().nodes.filter((n) => !idsToRemove.has(n.id)),
+      edges: survivingEdges,
     })
   },
 

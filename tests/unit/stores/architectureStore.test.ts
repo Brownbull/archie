@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useArchitectureStore, type ArchieEdge } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
-import { CANVAS_GRID_SIZE, EDGE_TYPE_CONNECTION, NODE_TYPE_COMPONENT, NODE_WIDTH } from "@/lib/constants"
+import { CANVAS_GRID_SIZE, EDGE_TYPE_CONNECTION, MAX_CANVAS_NODES, NODE_TYPE_COMPONENT, NODE_WIDTH } from "@/lib/constants"
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
@@ -92,6 +92,10 @@ vi.mock("@/lib/firebase", () => ({
   db: {},
 }))
 
+vi.mock("sonner", () => ({
+  toast: { warning: vi.fn() },
+}))
+
 let uuidCounter = 0
 vi.stubGlobal("crypto", {
   randomUUID: () => `test-uuid-${++uuidCounter}`,
@@ -171,6 +175,47 @@ describe("architectureStore", () => {
       useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
       const after = useArchitectureStore.getState().nodes
       expect(before).not.toBe(after)
+    })
+  })
+
+  describe("addNode — max-nodes guard", () => {
+    function seedNodes(count: number) {
+      const nodes = Array.from({ length: count }, (_, i) => ({
+        id: `dummy-${i}`,
+        type: NODE_TYPE_COMPONENT as const,
+        position: { x: i * 200, y: 0 },
+        data: {
+          archieComponentId: "postgresql",
+          activeConfigVariantId: "default",
+          componentName: "PostgreSQL",
+          componentCategory: "data-storage" as const,
+        },
+      }))
+      useArchitectureStore.setState({ nodes })
+    }
+
+    it("blocks addNode when node count equals MAX_CANVAS_NODES", () => {
+      seedNodes(MAX_CANVAS_NODES)
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      expect(useArchitectureStore.getState().nodes).toHaveLength(MAX_CANVAS_NODES)
+    })
+
+    it("blocks addNode when node count exceeds MAX_CANVAS_NODES", () => {
+      seedNodes(MAX_CANVAS_NODES + 5)
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      expect(useArchitectureStore.getState().nodes).toHaveLength(MAX_CANVAS_NODES + 5)
+    })
+
+    it("allows addNode when node count is MAX_CANVAS_NODES - 1", () => {
+      seedNodes(MAX_CANVAS_NODES - 1)
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      expect(useArchitectureStore.getState().nodes).toHaveLength(MAX_CANVAS_NODES)
+    })
+
+    it("blocks addNodeSmartPosition when at max", () => {
+      seedNodes(MAX_CANVAS_NODES)
+      useArchitectureStore.getState().addNodeSmartPosition("postgresql")
+      expect(useArchitectureStore.getState().nodes).toHaveLength(MAX_CANVAS_NODES)
     })
   })
 
@@ -303,10 +348,13 @@ describe("architectureStore", () => {
     })
 
     it("creates an edge with correct ArchieEdgeData for compatible components", () => {
+      // postgresql→redis is now incompatible bidirectionally (redis warns about data-storage)
+      // Use postgresql→nginx instead (nginx has no compatibility field)
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
       const nodes = useArchitectureStore.getState().nodes
       useArchitectureStore.getState().addEdge({
-        source: nodes[0].id,
-        target: nodes[1].id,
+        source: nodes[0].id, // postgresql
+        target: nodes[2].id, // nginx
         sourceHandle: null,
         targetHandle: null,
       })
@@ -315,7 +363,7 @@ describe("architectureStore", () => {
       expect(edges[0].data?.isIncompatible).toBe(false)
       expect(edges[0].data?.incompatibilityReason).toBeNull()
       expect(edges[0].data?.sourceArchieComponentId).toBe("postgresql")
-      expect(edges[0].data?.targetArchieComponentId).toBe("redis")
+      expect(edges[0].data?.targetArchieComponentId).toBe("nginx")
     })
 
     it("creates an edge with incompatibility data for incompatible components", () => {
@@ -658,6 +706,93 @@ describe("architectureStore", () => {
     })
   })
 
+  describe("removeNodes (batch)", () => {
+    it("removes multiple nodes in a single call", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      useArchitectureStore.getState().removeNodes([nodes[0].id, nodes[2].id])
+      const remaining = useArchitectureStore.getState().nodes
+      expect(remaining).toHaveLength(1)
+      expect(remaining[0].id).toBe(nodes[1].id)
+    })
+
+    it("cascade-deletes edges connected to any removed node", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      const edges: ArchieEdge[] = [
+        {
+          id: "e1", source: nodes[0].id, target: nodes[1].id, type: EDGE_TYPE_CONNECTION,
+          data: { isIncompatible: false, incompatibilityReason: null, sourceArchieComponentId: "postgresql", targetArchieComponentId: "redis" },
+        },
+        {
+          id: "e2", source: nodes[1].id, target: nodes[2].id, type: EDGE_TYPE_CONNECTION,
+          data: { isIncompatible: false, incompatibilityReason: null, sourceArchieComponentId: "redis", targetArchieComponentId: "nginx" },
+        },
+      ]
+      useArchitectureStore.setState({ edges })
+
+      useArchitectureStore.getState().removeNodes([nodes[0].id])
+      expect(useArchitectureStore.getState().edges).toHaveLength(1)
+      expect(useArchitectureStore.getState().edges[0].id).toBe("e2")
+    })
+
+    it("clears selectedNodeId when the selected node is in the batch", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      useUiStore.getState().setSelectedNodeId(nodes[0].id)
+
+      useArchitectureStore.getState().removeNodes([nodes[0].id])
+      expect(useUiStore.getState().selectedNodeId).toBeNull()
+    })
+
+    it("does not clear selectedNodeId when selected node is not in batch", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      useUiStore.getState().setSelectedNodeId(nodes[1].id)
+
+      useArchitectureStore.getState().removeNodes([nodes[0].id])
+      expect(useUiStore.getState().selectedNodeId).toBe(nodes[1].id)
+    })
+
+    it("clears selectedEdgeId when cascade-deleting the selected edge", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      const edge: ArchieEdge = {
+        id: "e1", source: nodes[0].id, target: nodes[1].id, type: EDGE_TYPE_CONNECTION,
+        data: { isIncompatible: false, incompatibilityReason: null, sourceArchieComponentId: "postgresql", targetArchieComponentId: "redis" },
+      }
+      useArchitectureStore.setState({ edges: [edge] })
+      useUiStore.getState().setSelectedEdgeId("e1")
+
+      useArchitectureStore.getState().removeNodes([nodes[0].id])
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+
+    it("handles empty array (no-op)", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      const nodesBefore = useArchitectureStore.getState().nodes
+      useArchitectureStore.getState().removeNodes([])
+      expect(useArchitectureStore.getState().nodes).toBe(nodesBefore)
+    })
+
+    it("creates new array references when nodes are removed", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      const nodesBefore = useArchitectureStore.getState().nodes
+      useArchitectureStore.getState().removeNodes([nodes[0].id])
+      const nodesAfter = useArchitectureStore.getState().nodes
+      expect(nodesBefore).not.toBe(nodesAfter)
+    })
+  })
+
   describe("removeNode — selectedEdgeId cascade", () => {
     it("clears selectedEdgeId when cascade-deleting the selected edge", () => {
       useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
@@ -787,10 +922,23 @@ describe("architectureStore", () => {
       expect(useArchitectureStore.getState().nodes).toBe(nodesBefore)
     })
 
-    it("handles component with empty configVariants (sets empty string)", () => {
+    it("is a no-op when target component has empty configVariants (TD-1-6a)", () => {
+      const nodeId = useArchitectureStore.getState().nodes[0].id
+      const nodesBefore = useArchitectureStore.getState().nodes
+      useArchitectureStore.getState().swapNodeComponent(nodeId, "empty-variants")
+      expect(useArchitectureStore.getState().nodes).toBe(nodesBefore)
+      // Original component data should be preserved
+      expect(useArchitectureStore.getState().nodes[0].data.archieComponentId).toBe("postgresql")
+    })
+
+    it("warns when rejecting swap to empty-variants component (TD-1-6a)", () => {
+      const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
       const nodeId = useArchitectureStore.getState().nodes[0].id
       useArchitectureStore.getState().swapNodeComponent(nodeId, "empty-variants")
-      expect(useArchitectureStore.getState().nodes[0].data.activeConfigVariantId).toBe("")
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("empty-variants"),
+      )
+      warnSpy.mockRestore()
     })
 
     it("is a no-op when swapping to same component", () => {
@@ -812,6 +960,58 @@ describe("architectureStore", () => {
       const edgesBefore = useArchitectureStore.getState().edges
       useArchitectureStore.getState().swapNodeComponent(nodes[0].id, "mongodb")
       expect(useArchitectureStore.getState().edges).toBe(edgesBefore)
+    })
+  })
+
+  describe("findNextAvailablePosition — epsilon comparison", () => {
+    it("treats positions within 1px as same column (floating-point tolerance)", () => {
+      // Seed two nodes at same snapped X but with tiny float diff
+      const snappedX = CANVAS_GRID_SIZE * 2 // 32
+      useArchitectureStore.setState({
+        nodes: [
+          {
+            id: "n1", type: NODE_TYPE_COMPONENT as const,
+            position: { x: snappedX, y: 0 },
+            data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" as const },
+          },
+          {
+            id: "n2", type: NODE_TYPE_COMPONENT as const,
+            position: { x: snappedX + 0.0001, y: 0 }, // tiny float diff
+            data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" as const },
+          },
+        ],
+      })
+
+      // Smart position should place to the right of the rightmost "column"
+      useArchitectureStore.getState().addNodeSmartPosition("postgresql")
+      const nodes = useArchitectureStore.getState().nodes
+      expect(nodes).toHaveLength(3)
+      // The new node should be placed to the right of snappedX, not stacked on top
+      expect(nodes[2].position.x).toBeGreaterThan(snappedX)
+    })
+
+    it("keeps same-row y from the epsilon-matched column", () => {
+      const snappedX = CANVAS_GRID_SIZE * 4 // 64
+      const yPos = CANVAS_GRID_SIZE * 3 // 48
+      useArchitectureStore.setState({
+        nodes: [
+          {
+            id: "n1", type: NODE_TYPE_COMPONENT as const,
+            position: { x: 0, y: 0 },
+            data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" as const },
+          },
+          {
+            id: "n2", type: NODE_TYPE_COMPONENT as const,
+            position: { x: snappedX + 0.5, y: yPos },
+            data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" as const },
+          },
+        ],
+      })
+
+      useArchitectureStore.getState().addNodeSmartPosition("postgresql")
+      const nodes = useArchitectureStore.getState().nodes
+      // y should match the rightmost column's y (snapped)
+      expect(nodes[2].position.y).toBe(Math.round(yPos / CANVAS_GRID_SIZE) * CANVAS_GRID_SIZE)
     })
   })
 })
