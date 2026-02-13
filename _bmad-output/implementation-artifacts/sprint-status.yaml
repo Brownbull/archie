@@ -49,7 +49,8 @@ development_status:
   1-1-project-foundation-and-authentication: done
   1-2-component-data-pipeline-and-toolbox-browsing: done
   td-1-2a-schema-alignment: done
-  td-1-2b-seed-hardening: ready-for-dev
+  td-1-2b-seed-hardening: done
+  td-1-2c-seed-credential-hardening: ready-for-dev
   1-3-canvas-and-component-placement: done
   td-1-3a-canvas-resilience: review
   1-4-connection-wiring-and-management: done

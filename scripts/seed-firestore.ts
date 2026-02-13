@@ -10,33 +10,53 @@
  *   - OR Firebase emulator running
  */
 
-import { readFileSync, readdirSync } from "node:fs"
+import { readFileSync, readdirSync, statSync } from "node:fs"
 import { resolve, join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { load } from "js-yaml"
 import {
   initializeApp,
   cert,
   type ServiceAccount,
 } from "firebase-admin/app"
-import { getFirestore } from "firebase-admin/firestore"
+import { getFirestore, type Firestore } from "firebase-admin/firestore"
 import { ComponentYamlSchema, type Component } from "../src/schemas/componentSchema"
 
-// ------ Main ------
+/** Firestore batch write limit (500 operations per batch) */
+const BATCH_LIMIT = 500
 
-async function main() {
-  const isDryRun = process.argv.includes("--dry-run")
-  const dataDir = resolve(import.meta.dirname ?? ".", "../src/data/components")
+/** Maximum YAML file size (1MB) to prevent memory exhaustion */
+const MAX_YAML_FILE_SIZE = 1024 * 1024
+
+// ------ Exported Functions (testable) ------
+
+/**
+ * Load and validate all YAML component files from a directory.
+ * Returns validated components or throws on validation errors.
+ */
+export function loadAndValidateComponents(dataDir: string): Component[] {
   const files = readdirSync(dataDir).filter((f) => f.endsWith(".yaml"))
 
   console.log(`Found ${files.length} YAML files in ${dataDir}`)
-  if (isDryRun) console.log("DRY RUN — validating only, no Firestore writes\n")
 
-  // 1. Read and validate all YAML files
+  if (files.length === 0) {
+    console.warn("WARNING: No YAML files found in data directory. Nothing to validate.")
+    return []
+  }
+
   const components: Component[] = []
   let hasErrors = false
 
   for (const file of files) {
     const filePath = join(dataDir, file)
+
+    const fileSize = statSync(filePath).size
+    if (fileSize > MAX_YAML_FILE_SIZE) {
+      console.error(`ERROR: File too large — ${file} (${fileSize} bytes, max ${MAX_YAML_FILE_SIZE})`)
+      hasErrors = true
+      continue
+    }
+
     const raw = readFileSync(filePath, "utf-8")
 
     let parsed: unknown
@@ -62,24 +82,90 @@ async function main() {
   }
 
   if (hasErrors) {
-    console.error("\nAborting: validation failed on one or more files.")
-    process.exit(1)
+    throw new Error("Validation failed on one or more files.")
   }
 
   console.log(`\nValidated ${components.length} components.`)
+  return components
+}
+
+/**
+ * Write components to Firestore using chunked batch writes.
+ * Respects the 500-operation-per-batch Firestore limit.
+ * The metadata write is included in chunk accounting.
+ */
+export async function seedToFirestore(db: Firestore, components: Component[]): Promise<void> {
+  // Reserve 1 slot in the last chunk for the metadata write
+  const totalOps = components.length + 1 // +1 for metadata
+  const totalChunks = Math.ceil(totalOps / BATCH_LIMIT)
+
+  let opIndex = 0
+
+  for (let chunkNum = 1; chunkNum <= totalChunks; chunkNum++) {
+    const batch = db.batch()
+    let opsInBatch = 0
+
+    // Add component writes to this chunk
+    while (opIndex < components.length && opsInBatch < BATCH_LIMIT) {
+      // If this is the last chunk, reserve 1 slot for metadata
+      const isLastChunk = chunkNum === totalChunks
+      const reservedSlots = isLastChunk ? 1 : 0
+      if (opsInBatch >= BATCH_LIMIT - reservedSlots && isLastChunk) {
+        break
+      }
+
+      const comp = components[opIndex]
+      const ref = db.collection("components").doc(comp.id)
+      batch.set(ref, comp)
+      opsInBatch++
+      opIndex++
+    }
+
+    // Add metadata to the last chunk
+    if (chunkNum === totalChunks) {
+      const metadataRef = db.collection("_metadata").doc("seed")
+      batch.set(metadataRef, {
+        version: "1.0.0",
+        seededAt: new Date().toISOString(),
+        componentCount: components.length,
+      })
+      opsInBatch++
+    }
+
+    await batch.commit()
+    console.log(`Batch ${chunkNum}/${totalChunks} committed (${opsInBatch} operations)`)
+  }
+
+  console.log(`Seeded ${components.length} components to Firestore.`)
+  console.log("Metadata written to _metadata/seed.")
+}
+
+// ------ Main ------
+
+async function main() {
+  const isDryRun = process.argv.includes("--dry-run")
+  const dataDir = resolve(import.meta.dirname ?? ".", "../src/data/components")
+
+  if (isDryRun) console.log("DRY RUN — validating only, no Firestore writes\n")
+
+  let components: Component[]
+  try {
+    components = loadAndValidateComponents(dataDir)
+  } catch {
+    console.error("\nAborting: validation failed on one or more files.")
+    process.exit(1)
+  }
 
   if (isDryRun) {
     console.log("Dry run complete — all files valid.")
     return
   }
 
-  // 2. Initialize Firebase Admin
+  // Initialize Firebase Admin
   const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
   if (!credPath) {
     console.error("ERROR: GOOGLE_APPLICATION_CREDENTIALS env var not set.")
-    console.error("Options:")
-    console.error("  1. Set it to your Firebase service account JSON path")
-    console.error("  2. Start Firebase emulator: firebase emulators:start")
+    console.error("Set it to your Firebase service account JSON path.")
     process.exit(1)
   }
 
@@ -87,28 +173,14 @@ async function main() {
   initializeApp({ credential: cert(serviceAccount) })
   const db = getFirestore()
 
-  // 3. Batch write components
-  const batch = db.batch()
-
-  for (const comp of components) {
-    const ref = db.collection("components").doc(comp.id)
-    batch.set(ref, comp)
-  }
-
-  // Write metadata
-  const metadataRef = db.collection("_metadata").doc("seed")
-  batch.set(metadataRef, {
-    version: "1.0.0",
-    seededAt: new Date().toISOString(),
-    componentCount: components.length,
-  })
-
-  await batch.commit()
-  console.log(`Seeded ${components.length} components to Firestore.`)
-  console.log("Metadata written to _metadata/seed.")
+  await seedToFirestore(db, components)
 }
 
-main().catch((err) => {
-  console.error("Seed failed:", err)
-  process.exit(1)
-})
+// Only auto-execute when run directly (not when imported by tests)
+const __filename = fileURLToPath(import.meta.url)
+if (process.argv[1] && resolve(process.argv[1]) === __filename) {
+  main().catch((err) => {
+    console.error("Seed failed:", err)
+    process.exit(1)
+  })
+}
