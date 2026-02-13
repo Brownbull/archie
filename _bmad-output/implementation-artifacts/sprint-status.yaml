@@ -64,7 +64,7 @@ development_status:
   td-1-5a-inspector-polish: done
   td-1-5b-selector-and-test-polish: done
   1-6-in-place-component-swapping: done
-  td-1-6a-swapper-robustness: review
+  td-1-6a-swapper-robustness: done
   epic-1-retrospective: optional
 
   # ============================================================================

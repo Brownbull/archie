@@ -12,6 +12,7 @@ import {
   MAX_CANVAS_NODES,
   NODE_TYPE_COMPONENT,
   NODE_WIDTH,
+  POSITION_EPSILON,
   type ComponentCategoryId,
 } from "@/lib/constants"
 
@@ -37,8 +38,6 @@ function snapToGrid(value: number): number {
 }
 
 const NODE_GAP = CANVAS_GRID_SIZE * 2 // 32px between nodes
-
-const POSITION_EPSILON = 1 // px tolerance for floating-point comparison (TD-1-4a Item 6)
 
 function findNextAvailablePosition(nodes: ArchieNode[]): { x: number; y: number } {
   if (nodes.length === 0) return { x: 0, y: 0 }
@@ -147,7 +146,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
               data: {
                 ...n.data,
                 archieComponentId: newComponentId,
-                activeConfigVariantId: newComponent.configVariants[0]?.id || "",
+                activeConfigVariantId: newComponent.configVariants[0].id,
                 componentName: newComponent.name,
                 componentCategory: (newComponent.category in COMPONENT_CATEGORIES
                   ? newComponent.category

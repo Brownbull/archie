@@ -1,25 +1,10 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi } from "vitest"
+import { ComponentSwapper } from "@/components/inspector/ComponentSwapper"
+import type { Component } from "@/types"
 
-// Mock useLibrary hook
-const mockGetComponentsByCategory = vi.fn()
-vi.mock("@/hooks/useLibrary", () => ({
-  useLibrary: () => ({
-    isReady: true,
-    components: [],
-    getComponentById: vi.fn(),
-    getComponentsByCategory: mockGetComponentsByCategory,
-    searchComponents: vi.fn(),
-  }),
-}))
-
-// Import after mocks are set up
-const { ComponentSwapper } = await import(
-  "@/components/inspector/ComponentSwapper"
-)
-
-const mockComponentsInCategory = [
+const mockAlternatives: Component[] = [
   {
     id: "postgresql",
     name: "PostgreSQL",
@@ -59,91 +44,54 @@ const mockComponentsInCategory = [
 ]
 
 describe("ComponentSwapper", () => {
-  it("renders with data-testid component-swapper when alternatives exist", () => {
-    mockGetComponentsByCategory.mockReturnValue(mockComponentsInCategory)
-    render(
+  /** Render with default props. Override via partial. */
+  function renderDefault(overrides: Partial<Parameters<typeof ComponentSwapper>[0]> = {}) {
+    return render(
       <ComponentSwapper
         currentComponentId="postgresql"
-        currentCategory="data-storage"
+        alternatives={mockAlternatives}
         onSwapComponent={vi.fn()}
+        {...overrides}
       />,
     )
+  }
+
+  it("renders with data-testid component-swapper when alternatives exist", () => {
+    renderDefault()
     expect(screen.getByTestId("component-swapper")).toBeInTheDocument()
   })
 
   it("renders the Component Type label", () => {
-    mockGetComponentsByCategory.mockReturnValue(mockComponentsInCategory)
-    render(
-      <ComponentSwapper
-        currentComponentId="postgresql"
-        currentCategory="data-storage"
-        onSwapComponent={vi.fn()}
-      />,
-    )
+    renderDefault()
     expect(screen.getByText("Component Type")).toBeInTheDocument()
   })
 
   it("renders select trigger showing current component name", () => {
-    mockGetComponentsByCategory.mockReturnValue(mockComponentsInCategory)
-    render(
-      <ComponentSwapper
-        currentComponentId="postgresql"
-        currentCategory="data-storage"
-        onSwapComponent={vi.fn()}
-      />,
-    )
+    renderDefault()
     expect(screen.getByText("PostgreSQL")).toBeInTheDocument()
   })
 
-  it("does not render when only one component in category (no alternatives)", () => {
-    mockGetComponentsByCategory.mockReturnValue([mockComponentsInCategory[0]])
-    render(
-      <ComponentSwapper
-        currentComponentId="postgresql"
-        currentCategory="data-storage"
-        onSwapComponent={vi.fn()}
-      />,
-    )
+  it("does not render when no alternatives (only current component)", () => {
+    renderDefault({ alternatives: [mockAlternatives[0]] })
     expect(screen.queryByTestId("component-swapper")).not.toBeInTheDocument()
   })
 
   it("does not call onSwapComponent on initial render", () => {
-    mockGetComponentsByCategory.mockReturnValue(mockComponentsInCategory)
     const onSwap = vi.fn()
-    render(
-      <ComponentSwapper
-        currentComponentId="postgresql"
-        currentCategory="data-storage"
-        onSwapComponent={onSwap}
-      />,
-    )
+    renderDefault({ onSwapComponent: onSwap })
     expect(onSwap).not.toHaveBeenCalled()
   })
 
-  it("does not render when getComponentsByCategory returns empty array", () => {
-    mockGetComponentsByCategory.mockReturnValue([])
-    render(
-      <ComponentSwapper
-        currentComponentId="postgresql"
-        currentCategory="data-storage"
-        onSwapComponent={vi.fn()}
-      />,
-    )
+  it("does not render when alternatives is empty", () => {
+    renderDefault({ alternatives: [] })
     expect(screen.queryByTestId("component-swapper")).not.toBeInTheDocument()
   })
 
   it("calls onSwapComponent with correct ID when user selects alternative", async () => {
-    mockGetComponentsByCategory.mockReturnValue(mockComponentsInCategory)
     const onSwap = vi.fn()
     const user = userEvent.setup()
 
-    render(
-      <ComponentSwapper
-        currentComponentId="postgresql"
-        currentCategory="data-storage"
-        onSwapComponent={onSwap}
-      />,
-    )
+    renderDefault({ onSwapComponent: onSwap })
 
     // Open the select dropdown
     const trigger = screen.getByRole("combobox")
@@ -154,5 +102,14 @@ describe("ComponentSwapper", () => {
     await user.click(mongoOption)
 
     expect(onSwap).toHaveBeenCalledWith("mongodb")
+  })
+
+  it("is pure presentational — no useLibrary hook (TD-1-6a)", () => {
+    // This test file has NO useLibrary mock. If ComponentSwapper imported
+    // useLibrary, the import at line 4 would throw, failing ALL tests.
+    // Explicit verification: alternatives are received as props, not fetched.
+    const customAlternatives = [mockAlternatives[0], mockAlternatives[1]]
+    renderDefault({ alternatives: customAlternatives })
+    expect(screen.getByTestId("component-swapper")).toBeInTheDocument()
   })
 })

@@ -1,6 +1,6 @@
 # Story: TD-1-6a Component Swapper Robustness
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 1 — Architecture Canvas & Component Library
 ## Source: Code review of Story 1-6 (2026-02-13)
 
@@ -28,16 +28,16 @@ Tech debt from Story 1-6 code review. Addresses two design robustness issues in 
 ## Tasks / Subtasks
 
 ### Task 1: Lift `useLibrary()` Call to Parent
-- [ ] 1.1 Move `getComponentsByCategory()` call from `ComponentSwapper` to `ComponentDetail`
-- [ ] 1.2 Pass `alternatives` array as a new prop to `ComponentSwapper`
-- [ ] 1.3 Remove `useLibrary` import from `ComponentSwapper`
-- [ ] 1.4 Update `ComponentSwapper` unit tests to pass `alternatives` directly
-- [ ] 1.5 Update `ComponentDetail` unit tests to verify it passes alternatives
+- [x] 1.1 Move `getComponentsByCategory()` call from `ComponentSwapper` to `ComponentDetail`
+- [x] 1.2 Pass `alternatives` array as a new prop to `ComponentSwapper`
+- [x] 1.3 Remove `useLibrary` import from `ComponentSwapper`
+- [x] 1.4 Update `ComponentSwapper` unit tests to pass `alternatives` directly
+- [x] 1.5 Update `ComponentDetail` unit tests to verify it passes alternatives
 
 ### Task 2: Guard Against Empty ConfigVariants
-- [ ] 2.1 Add guard in `swapNodeComponent`: if `newComponent.configVariants.length === 0`, early-return (no-op) with `console.warn`
-- [ ] 2.2 Add unit test: swap to component with empty `configVariants` is a no-op
-- [ ] 2.3 Verify existing unit test for empty `configVariants` is updated
+- [x] 2.1 Add guard in `swapNodeComponent`: if `newComponent.configVariants.length === 0`, early-return (no-op) with `console.warn`
+- [x] 2.2 Add unit test: swap to component with empty `configVariants` is a no-op
+- [x] 2.3 Verify existing unit test for empty `configVariants` is updated
 
 ## Dev Notes
 
@@ -50,3 +50,25 @@ Tech debt from Story 1-6 code review. Addresses two design robustness issues in 
 - Complexity: Low
 - Sizing: SMALL (2 tasks, 8 subtasks, 4 files)
 - Source: Code review finding #1 + #2 from Story 1-6
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-13
+**Classification:** SIMPLE
+**Agents:** code-reviewer (Sonnet), tdd-guide (Haiku)
+
+### Overall: APPROVED 9/10
+
+| Agent | Score | Status |
+|-------|-------|--------|
+| Code Quality | 9/10 | APPROVE |
+| Testing | 8.9/10 | APPROVE |
+
+### AC Verification
+- AC-1 Pure Presentational ComponentSwapper: **PASS**
+- AC-2 Empty ConfigVariants Guard: **PASS**
+
+### Quick Fixes Applied (3 LOW)
+1. Removed redundant optional chaining on `configVariants[0]` after length guard (architectureStore.ts)
+2. Tightened warn message assertion from `stringContaining` to exact match (architectureStore.test.ts)
+3. Improved "pure presentational" test description and assertion clarity (ComponentSwapper.test.tsx)

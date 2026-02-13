@@ -936,7 +936,7 @@ describe("architectureStore", () => {
       const nodeId = useArchitectureStore.getState().nodes[0].id
       useArchitectureStore.getState().swapNodeComponent(nodeId, "empty-variants")
       expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining("empty-variants"),
+        'swapNodeComponent: "empty-variants" has no configVariants — swap rejected',
       )
       warnSpy.mockRestore()
     })
