@@ -99,3 +99,5 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-02-14 20:24,346435e4-f23,ecc-dev-story,2-2,19min,179,2,26,"opus, sonnet",243,1415,1175443,16964827,16.77,3.46,20.23
 2026-02-14 20:52,2a9829d3-6a4,ecc-create-story,2-5,6min,50,2,18,"opus, sonnet",141,544,624871,3565022,6.69,0.81,7.50
 2026-02-14 20:49,7b9b9ea0-dea,ecc-code-review,2-2,10min,87,4,15,"haiku, opus, sonnet",140,573,668293,7866787,8.73,0.78,9.50
+2026-02-14 21:05,8147e64c-af4,ecc-dev-story,story-2-3,18min,114,5,149,"opus, sonnet",509,1305,1107646,13617874,8.33,9.48,17.82
+2026-02-14 21:24,0216f9f9-722,ecc-code-review,story-2-3,9min,81,4,29,"haiku, opus, sonnet",5200,796,574615,6967762,7.50,0.84,8.34

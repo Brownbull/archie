@@ -1,36 +1,42 @@
 {
-  "generated": "2026-02-14T18:00:08.823693",
+  "generated": "2026-02-14T18:33:39.254870",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 63,
-  "total_cost": 1022.15,
+  "total_sessions": 65,
+  "total_cost": 1048.31,
   "averages": {
-    "overall": 16.22,
-    "last_10": 8.93,
-    "last_20": 7.77
+    "overall": 16.13,
+    "last_10": 10.65,
+    "last_20": 7.85
   },
   "percentiles": {
     "p50": 10.49,
-    "p75": 17.54,
-    "p90": 27.65,
-    "p95": 39.82
+    "p75": 17.82,
+    "p90": 27.64,
+    "p95": 39.11
   },
   "thresholds": {
-    "warning": 17.54,
-    "high": 27.65
+    "warning": 17.82,
+    "high": 27.64
   },
-  "trend_last10_vs_prev10_pct": 35.0,
+  "trend_last10_vs_prev10_pct": 110.4,
   "recent_outliers": [
     {
       "date": "2026-02-14 20:24",
       "session_id": "346435e4-f23",
       "cost": 20.23,
       "ratio": 2.6
+    },
+    {
+      "date": "2026-02-14 21:05",
+      "session_id": "8147e64c-af4",
+      "cost": 17.82,
+      "ratio": 2.3
     }
   ],
   "by_model": {
     "opus, sonnet": {
-      "count": 27,
-      "total_cost": 371.44000000000005
+      "count": 28,
+      "total_cost": 389.26000000000005
     },
     "opus": {
       "count": 16,
@@ -49,8 +55,8 @@
       "total_cost": 18.87
     },
     "haiku, opus, sonnet": {
-      "count": 7,
-      "total_cost": 62.09
+      "count": 8,
+      "total_cost": 70.43
     },
     "<synthetic>, haiku, opus, sonnet": {
       "count": 1,
@@ -68,22 +74,22 @@
       "p90": 13.41
     },
     "ecc-dev-story": {
-      "count": 18,
-      "total_cost": 284.75,
-      "avg": 15.82,
-      "avg_last_10": 11.51,
-      "p50": 15.96,
-      "p75": 21.81,
+      "count": 19,
+      "total_cost": 302.57,
+      "avg": 15.92,
+      "avg_last_10": 10.53,
+      "p50": 16.8,
+      "p75": 21.29,
       "p90": 27.61
     },
     "ecc-code-review": {
-      "count": 17,
-      "total_cost": 286.64,
-      "avg": 16.86,
-      "avg_last_10": 5.54,
-      "p50": 9.5,
-      "p75": 25.2,
-      "p90": 42.04
+      "count": 18,
+      "total_cost": 294.98,
+      "avg": 16.39,
+      "avg_last_10": 5.94,
+      "p50": 9.05,
+      "p75": 22.4,
+      "p90": 39.87
     },
     "ecc-e2e": {
       "count": 2,

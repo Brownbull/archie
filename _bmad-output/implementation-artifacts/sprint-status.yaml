@@ -79,7 +79,8 @@ development_status:
   2-2-bottleneck-heatmap: done
   td-2-2a-canvas-heatmap-toggle-tests: ready-for-dev
   td-2-2b-heatmap-robustness: ready-for-dev
-  2-3-scoring-dashboard: ready-for-dev
+  2-3-scoring-dashboard: done
+  td-2-3a-aggregate-score-tests: ready-for-dev
   2-4-architecture-tier-system: ready-for-dev
   2-5-settings-and-preferences: ready-for-dev
   epic-2-retrospective: optional
