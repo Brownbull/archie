@@ -142,15 +142,30 @@ function CanvasViewInner() {
     deselectAll()
   }, [clearSelection, deselectAll])
 
-  // Escape key listener scoped to canvas container (AC-ARCH-PATTERN-13, AC-ARCH-NO-6)
+  // Keyboard listeners scoped to canvas container (AC-ARCH-PATTERN-7, AC-ARCH-NO-5)
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Skip keyboard shortcuts when user is typing in an input
+      const target = event.target as HTMLElement
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
+        return
+      }
+
       if (event.key === "Escape") {
         clearSelection()
         deselectAll()
+      }
+      // H key toggles heatmap — guard against modifier keys (AC-ARCH-PATTERN-8)
+      if (
+        (event.key === "h" || event.key === "H") &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey
+      ) {
+        useUiStore.getState().toggleHeatmap()
       }
     }
 
