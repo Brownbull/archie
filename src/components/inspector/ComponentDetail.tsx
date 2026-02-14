@@ -2,6 +2,7 @@ import { useMemo } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { useLibrary } from "@/hooks/useLibrary"
+import { useArchitectureStore } from "@/stores/architectureStore"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -15,6 +16,7 @@ interface ComponentDetailProps {
   onVariantChange: (variantId: string) => void
   currentCategory: string
   onSwapComponent: (newComponentId: string) => void
+  nodeId?: string
 }
 
 export function ComponentDetail({
@@ -23,26 +25,35 @@ export function ComponentDetail({
   onVariantChange,
   currentCategory,
   onSwapComponent,
+  nodeId,
 }: ComponentDetailProps) {
   const { getComponentsByCategory } = useLibrary()
   const alternatives = getComponentsByCategory(currentCategory)
+
+  // Use computed metrics from recalculation engine when available (AC-7),
+  // fall back to library variant metrics for nodes not yet recalculated
+  const computedMetrics = useArchitectureStore(
+    (s) => (nodeId ? s.computedMetrics.get(nodeId) : undefined),
+  )
 
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
   )
 
   const metricsByCategory = useMemo(() => {
-    if (!activeVariant) return new Map<string, MetricValue[]>()
+    // Prefer computed metrics from recalculation engine
+    const metricsSource = computedMetrics?.metrics ?? activeVariant?.metrics
+    if (!metricsSource) return new Map<string, MetricValue[]>()
 
     const grouped = new Map<string, MetricValue[]>()
-    for (const metric of activeVariant.metrics) {
+    for (const metric of metricsSource) {
       if (!grouped.has(metric.category)) {
         grouped.set(metric.category, [])
       }
       grouped.get(metric.category)!.push(metric)
     }
     return grouped
-  }, [activeVariant])
+  }, [computedMetrics, activeVariant])
 
   const categoryMeta = component.category in COMPONENT_CATEGORIES
     ? COMPONENT_CATEGORIES[component.category as ComponentCategoryId]

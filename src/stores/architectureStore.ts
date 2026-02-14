@@ -5,6 +5,8 @@ import { toast } from "sonner"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
+import { recalculationService } from "@/services/recalculationService"
+import type { RecalculatedMetrics } from "@/engine/recalculator"
 import {
   CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
@@ -13,6 +15,7 @@ import {
   NODE_TYPE_COMPONENT,
   NODE_WIDTH,
   POSITION_EPSILON,
+  RIPPLE_ANIMATION_DURATION_MS,
   type ComponentCategoryId,
 } from "@/lib/constants"
 
@@ -56,6 +59,10 @@ function findNextAvailablePosition(nodes: ArchieNode[]): { x: number; y: number 
 interface ArchitectureState {
   nodes: ArchieNode[]
   edges: ArchieEdge[]
+  computedMetrics: Map<string, RecalculatedMetrics>
+  previousMetrics: Map<string, RecalculatedMetrics>
+  rippleActiveNodeIds: Set<string>
+  recalcGeneration: number
   addNode: (componentId: string, position: { x: number; y: number }) => void
   addNodeSmartPosition: (componentId: string) => void
   updateNodePosition: (
@@ -68,6 +75,7 @@ interface ArchitectureState {
   removeNodes: (nodeIds: string[]) => void
   addEdge: (connection: Connection) => void
   removeEdges: (edgeIds: string[]) => void
+  triggerRecalculation: (changedNodeId: string) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
@@ -77,6 +85,68 @@ interface ArchitectureState {
 export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   nodes: [],
   edges: [],
+  computedMetrics: new Map<string, RecalculatedMetrics>(),
+  previousMetrics: new Map<string, RecalculatedMetrics>(),
+  rippleActiveNodeIds: new Set<string>(),
+  recalcGeneration: 0,
+
+  triggerRecalculation: (changedNodeId) => {
+    const generation = get().recalcGeneration + 1
+    set({
+      recalcGeneration: generation,
+      previousMetrics: new Map(get().computedMetrics),
+    })
+
+    const { nodes, edges } = get()
+    const result = recalculationService.run(nodes, edges, changedNodeId)
+
+    // Immediate update for changed node (hop 0)
+    const changedNodeMetrics = result.metrics.get(changedNodeId)
+    if (changedNodeMetrics) {
+      set({
+        computedMetrics: new Map([
+          ...get().computedMetrics,
+          [changedNodeId, changedNodeMetrics],
+        ]),
+      })
+    }
+
+    // Sequential ripple for remaining nodes
+    for (const hop of result.propagationHops.filter(
+      (h) => h.hopIndex > 0,
+    )) {
+      const hopMetrics = result.metrics.get(hop.nodeId)
+      if (!hopMetrics) continue
+
+      setTimeout(() => {
+        // Stale check — skip if a newer recalculation has started
+        if (get().recalcGeneration !== generation) return
+        // Node existence check — skip if node was deleted during propagation
+        if (!get().nodes.some((n) => n.id === hop.nodeId)) return
+
+        set((state) => ({
+          computedMetrics: new Map([
+            ...state.computedMetrics,
+            [hop.nodeId, hopMetrics],
+          ]),
+          rippleActiveNodeIds: new Set([
+            ...state.rippleActiveNodeIds,
+            hop.nodeId,
+          ]),
+        }))
+
+        // Clear ripple indicator after animation
+        setTimeout(() => {
+          if (get().recalcGeneration !== generation) return
+          set((state) => {
+            const next = new Set(state.rippleActiveNodeIds)
+            next.delete(hop.nodeId)
+            return { rippleActiveNodeIds: next }
+          })
+        }, RIPPLE_ANIMATION_DURATION_MS)
+      }, hop.delayMs)
+    }
+  },
 
   addNodeSmartPosition: (componentId) => {
     // Early exit avoids unnecessary position calculation when canvas is full (TD-1-3a)
@@ -121,8 +191,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({ nodes: [...get().nodes, newNode] })
   },
 
-  // NOTE: Edge compatibility is NOT re-evaluated on swap.
-  // Recalculation deferred to Epic 2 (Story 2-1).
   swapNodeComponent: (nodeId, newComponentId) => {
     const newComponent = componentLibrary.getComponent(newComponentId)
     if (!newComponent) return
@@ -156,6 +224,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
           : n,
       ),
     })
+    get().triggerRecalculation(nodeId)
   },
 
   updateNodeConfigVariant: (nodeId, variantId) => {
@@ -169,6 +238,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
           : n,
       ),
     })
+    get().triggerRecalculation(nodeId)
   },
 
   updateNodePosition: (nodeId, position) => {
@@ -209,12 +279,31 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         useUiStore.getState().setSelectedEdgeId(null)
       }
     }
+    // Capture neighbor node IDs BEFORE removal (Story 2-1)
+    const neighborNodeIds = new Set<string>()
+    for (const edge of get().edges) {
+      if (edge.source === nodeId) neighborNodeIds.add(edge.target)
+      if (edge.target === nodeId) neighborNodeIds.add(edge.source)
+    }
     set({
       nodes: get().nodes.filter((n) => n.id !== nodeId),
       edges: get().edges.filter(
         (e) => e.source !== nodeId && e.target !== nodeId,
       ),
     })
+    // Clean up computedMetrics for the removed node
+    const currentComputed = get().computedMetrics
+    if (currentComputed.has(nodeId)) {
+      const next = new Map(currentComputed)
+      next.delete(nodeId)
+      set({ computedMetrics: next })
+    }
+    // Trigger recalculation for surviving neighbors AFTER removal
+    for (const neighborId of neighborNodeIds) {
+      if (get().nodes.some((n) => n.id === neighborId)) {
+        get().triggerRecalculation(neighborId)
+      }
+    }
   },
 
   removeNodes: (nodeIds) => {
@@ -283,11 +372,25 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
 
     set({ edges: [...get().edges, newEdge] })
+    get().triggerRecalculation(connection.source)
+    get().triggerRecalculation(connection.target)
   },
 
   removeEdges: (edgeIds) => {
     const idsToRemove = new Set(edgeIds)
+    // Capture affected endpoint nodes BEFORE filtering (Story 2-1)
+    const affectedNodeIds = new Set<string>()
+    for (const edge of get().edges) {
+      if (idsToRemove.has(edge.id)) {
+        affectedNodeIds.add(edge.source)
+        affectedNodeIds.add(edge.target)
+      }
+    }
     set({ edges: get().edges.filter((e) => !idsToRemove.has(e.id)) })
+    // Trigger recalculation for affected endpoints AFTER edge removal
+    for (const nodeId of affectedNodeIds) {
+      get().triggerRecalculation(nodeId)
+    }
   },
 
   setNodes: (nodes) => set({ nodes }),

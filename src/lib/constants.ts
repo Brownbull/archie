@@ -48,3 +48,7 @@ export const MAX_CANVAS_NODES = 50
 
 // Canvas spatial tolerances
 export const POSITION_EPSILON = 1 // px tolerance for floating-point position comparison
+
+// Recalculation ripple animation (UX3, Story 2-1)
+export const RIPPLE_DELAY_MS = 100 // ms delay per BFS hop for visual ripple propagation
+export const RIPPLE_ANIMATION_DURATION_MS = 200 // ms duration of the CSS pulse animation per node

@@ -10,3 +10,11 @@ export type { Stack } from "@/schemas/stackSchema"
 export type { Blueprint } from "@/schemas/blueprintSchema"
 export type { ArchieEdgeData } from "@/stores/architectureStore"
 export type { CompatibilityResult } from "@/engine/compatibilityChecker"
+export type {
+  RecalculatedMetrics,
+  ArchitectureMetrics,
+  ConnectedNodeInfo,
+  MetricAdjustment,
+} from "@/engine/recalculator"
+export type { PropagationHop } from "@/engine/propagator"
+export type { RecalculationResult } from "@/services/recalculationService"

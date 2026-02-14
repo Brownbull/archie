@@ -1,24 +1,24 @@
 {
-  "generated": "2026-02-13T13:55:29.155896",
+  "generated": "2026-02-14T17:22:06.443705",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 58,
-  "total_cost": 958.19,
+  "total_sessions": 60,
+  "total_cost": 984.92,
   "averages": {
-    "overall": 16.52,
-    "last_10": 4.97,
-    "last_20": 7.69
+    "overall": 16.42,
+    "last_10": 6.94,
+    "last_20": 7.75
   },
   "percentiles": {
-    "p50": 10.25,
-    "p75": 17.9,
-    "p90": 29.24,
-    "p95": 42.71
+    "p50": 11.04,
+    "p75": 17.17,
+    "p90": 28.19,
+    "p95": 41.26
   },
   "thresholds": {
-    "warning": 17.9,
-    "high": 29.24
+    "warning": 17.17,
+    "high": 28.19
   },
-  "trend_last10_vs_prev10_pct": -52.3,
+  "trend_last10_vs_prev10_pct": -18.9,
   "recent_outliers": [
     {
       "date": "2026-02-13 09:43",
@@ -49,8 +49,8 @@
       "total_cost": 18.87
     },
     "haiku, opus, sonnet": {
-      "count": 4,
-      "total_cost": 25.86
+      "count": 6,
+      "total_cost": 52.59
     },
     "<synthetic>, haiku, opus, sonnet": {
       "count": 1,
@@ -68,22 +68,22 @@
       "p90": 13.45
     },
     "ecc-dev-story": {
-      "count": 16,
-      "total_cost": 249.39,
-      "avg": 15.59,
-      "avg_last_10": 11.48,
-      "p50": 13.64,
-      "p75": 22.75,
-      "p90": 27.63
+      "count": 17,
+      "total_cost": 264.52,
+      "avg": 15.56,
+      "avg_last_10": 11.32,
+      "p50": 15.13,
+      "p75": 22.34,
+      "p90": 27.62
     },
     "ecc-code-review": {
-      "count": 15,
-      "total_cost": 265.54,
-      "avg": 17.7,
-      "avg_last_10": 6.21,
-      "p50": 8.61,
-      "p75": 29.05,
-      "p90": 46.37
+      "count": 16,
+      "total_cost": 277.14,
+      "avg": 17.32,
+      "avg_last_10": 6.0,
+      "p50": 10.11,
+      "p75": 27.12,
+      "p90": 44.2
     },
     "ecc-e2e": {
       "count": 2,
