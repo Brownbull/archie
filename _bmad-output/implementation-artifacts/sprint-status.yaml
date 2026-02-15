@@ -68,15 +68,24 @@ development_status:
   epic-1-retrospective: optional
 
   # ============================================================================
-  # Epic 2: Trade-off Intelligence & Visualization (4 stories)
+  # Epic 2: Trade-off Intelligence & Visualization (5 stories)
   # User sees trade-offs visually -- recalculation, heatmap, dashboard, tier system
+  # Plus settings/preferences (gear icon, theme, font)
   # FRs: FR13-FR22 | NFRs: NFR2, NFR3
   # ============================================================================
-  epic-2: backlog
-  2-1-recalculation-engine-and-metric-propagation: backlog
-  2-2-bottleneck-heatmap: backlog
-  2-3-scoring-dashboard: backlog
-  2-4-architecture-tier-system: backlog
+  epic-2: in-progress
+  2-1-recalculation-engine-and-metric-propagation: done
+  td-2-1a-recalc-robustness: done
+  2-2-bottleneck-heatmap: done
+  td-2-2a-canvas-heatmap-toggle-tests: done
+  td-2-2b-heatmap-robustness: done
+  td-2-2c-timeout-test-coverage: done
+  2-3-scoring-dashboard: done
+  td-2-3a-aggregate-score-tests: done
+  2-4-architecture-tier-system: done
+  td-2-4a-overlay-z-index: done
+  2-5-settings-and-preferences: done
+  td-2-5a-settings-test-polish: done
   epic-2-retrospective: optional
 
   # ============================================================================

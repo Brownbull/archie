@@ -4,8 +4,11 @@ import { AuthProvider } from "@/hooks/useAuth"
 import { LoginPage } from "@/components/auth/LoginPage"
 import { AuthGuard } from "@/components/auth/AuthGuard"
 import { AppLayout } from "@/components/layout/AppLayout"
+import { usePreferencesEffect } from "@/hooks/usePreferencesEffect"
 
 export function App() {
+  usePreferencesEffect()
+
   return (
     <AuthProvider>
       <BrowserRouter>

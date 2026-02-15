@@ -6,6 +6,7 @@ import { CommandPalette } from "@/components/toolbox/CommandPalette"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
+import { DashboardPanel } from "@/components/dashboard/DashboardPanel"
 // NOTE: Direct service import for initialization only (not data access).
 // Data reads go through useLibrary hook per AC-ARCH-NO-2.
 import { componentLibrary } from "@/services/componentLibrary"
@@ -80,10 +81,10 @@ export function AppLayout() {
 
       <footer
         data-testid="dashboard"
-        className="flex items-center justify-center border-t border-archie-border bg-panel text-text-secondary"
+        className="border-t border-archie-border bg-panel"
         style={{ height: `${DASHBOARD_HEIGHT}px` }}
       >
-        Dashboard
+        <DashboardPanel />
       </footer>
 
       <CommandPalette />

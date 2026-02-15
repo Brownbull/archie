@@ -38,12 +38,12 @@ export function ComponentTab() {
                   />
                 )}
                 <h3
-                  className="text-[11px] font-semibold uppercase tracking-wider"
+                  className="text-[0.6875rem] font-semibold uppercase tracking-wider"
                   style={{ color: category?.color }}
                 >
                   {category?.label ?? categoryId}
                 </h3>
-                <span className="text-[10px] text-text-secondary">({comps.length})</span>
+                <span className="text-[0.625rem] text-text-secondary">({comps.length})</span>
               </div>
               <div className="space-y-2">
                 {comps.map((comp) => (

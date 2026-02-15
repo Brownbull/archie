@@ -1,40 +1,52 @@
 {
-  "generated": "2026-02-13T13:55:29.155896",
+  "generated": "2026-02-15T07:58:21.560614",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 58,
-  "total_cost": 958.19,
+  "total_sessions": 79,
+  "total_cost": 1144.86,
   "averages": {
-    "overall": 16.52,
-    "last_10": 4.97,
-    "last_20": 7.69
+    "overall": 14.49,
+    "last_10": 6.54,
+    "last_20": 8.58
   },
   "percentiles": {
-    "p50": 10.25,
-    "p75": 17.9,
-    "p90": 29.24,
-    "p95": 42.71
+    "p50": 9.23,
+    "p75": 16.0,
+    "p90": 25.68,
+    "p95": 34.09
   },
   "thresholds": {
-    "warning": 17.9,
-    "high": 29.24
+    "warning": 16.0,
+    "high": 25.68
   },
-  "trend_last10_vs_prev10_pct": -52.3,
+  "trend_last10_vs_prev10_pct": -38.4,
   "recent_outliers": [
     {
-      "date": "2026-02-13 09:43",
-      "session_id": "576a246d-467",
-      "cost": 27.67,
-      "ratio": 3.6
+      "date": "2026-02-14 20:24",
+      "session_id": "346435e4-f23",
+      "cost": 20.23,
+      "ratio": 2.4
+    },
+    {
+      "date": "2026-02-14 21:05",
+      "session_id": "8147e64c-af4",
+      "cost": 17.82,
+      "ratio": 2.1
+    },
+    {
+      "date": "2026-02-15 09:46",
+      "session_id": "030ca220-1bd",
+      "cost": 18.45,
+      "ratio": 2.2
     }
   ],
   "by_model": {
     "opus, sonnet": {
-      "count": 25,
-      "total_cost": 343.71000000000004
+      "count": 37,
+      "total_cost": 449.38000000000005
     },
     "opus": {
-      "count": 16,
-      "total_cost": 218.31
+      "count": 17,
+      "total_cost": 236.76
     },
     "haiku, opus": {
       "count": 6,
@@ -49,8 +61,8 @@
       "total_cost": 18.87
     },
     "haiku, opus, sonnet": {
-      "count": 4,
-      "total_cost": 25.86
+      "count": 12,
+      "total_cost": 88.41000000000003
     },
     "<synthetic>, haiku, opus, sonnet": {
       "count": 1,
@@ -59,31 +71,31 @@
   },
   "by_workflow": {
     "ecc-create-story": {
-      "count": 6,
-      "total_cost": 57.24,
-      "avg": 9.54,
-      "avg_last_10": 9.54,
-      "p50": 9.14,
-      "p75": 12.25,
-      "p90": 13.45
+      "count": 7,
+      "total_cost": 64.74,
+      "avg": 9.25,
+      "avg_last_10": 9.25,
+      "p50": 9.05,
+      "p75": 11.24,
+      "p90": 13.41
     },
     "ecc-dev-story": {
-      "count": 16,
-      "total_cost": 249.39,
-      "avg": 15.59,
-      "avg_last_10": 11.48,
-      "p50": 13.64,
-      "p75": 22.75,
-      "p90": 27.63
+      "count": 24,
+      "total_cost": 359.97,
+      "avg": 15.0,
+      "avg_last_10": 12.59,
+      "p50": 15.07,
+      "p75": 19.56,
+      "p90": 26.5
     },
     "ecc-code-review": {
-      "count": 15,
-      "total_cost": 265.54,
-      "avg": 17.7,
-      "avg_last_10": 6.21,
-      "p50": 8.61,
-      "p75": 29.05,
-      "p90": 46.37
+      "count": 27,
+      "total_cost": 334.13,
+      "avg": 12.38,
+      "avg_last_10": 4.75,
+      "p50": 5.65,
+      "p75": 12.7,
+      "p90": 33.08
     },
     "ecc-e2e": {
       "count": 2,

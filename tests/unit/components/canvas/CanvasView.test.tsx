@@ -241,6 +241,72 @@ describe("CanvasView", () => {
     expect(props.deleteKeyCode).toEqual(["Backspace", "Delete"])
   })
 
+  describe("H key heatmap toggle", () => {
+    it("H key triggers toggleHeatmap on canvas container", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "h" })
+      expect(useUiStore.getState().heatmapEnabled).toBe(true)
+    })
+
+    it("uppercase H key also triggers toggleHeatmap", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "H" })
+      expect(useUiStore.getState().heatmapEnabled).toBe(true)
+    })
+
+    it("H key ignored with Ctrl modifier", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "h", ctrlKey: true })
+      expect(useUiStore.getState().heatmapEnabled).toBe(false)
+    })
+
+    it("H key ignored with Alt modifier", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "h", altKey: true })
+      expect(useUiStore.getState().heatmapEnabled).toBe(false)
+    })
+
+    it("H key ignored with Meta modifier", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "h", metaKey: true })
+      expect(useUiStore.getState().heatmapEnabled).toBe(false)
+    })
+
+    it("H key ignored when target is INPUT element", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+
+      const input = document.createElement("input")
+      panel.appendChild(input)
+      fireEvent.keyDown(input, { key: "h", bubbles: true })
+
+      expect(useUiStore.getState().heatmapEnabled).toBe(false)
+    })
+
+    it("H key ignored when target is TEXTAREA element", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+
+      const textarea = document.createElement("textarea")
+      panel.appendChild(textarea)
+      fireEvent.keyDown(textarea, { key: "h", bubbles: true })
+
+      expect(useUiStore.getState().heatmapEnabled).toBe(false)
+    })
+  })
+
   it("onConnect creates edge but onEdgesChange does not", () => {
     // Verify the architectural invariant: edge creation only via onConnect, not onEdgesChange
     const addEdgeSpy = vi.spyOn(useArchitectureStore.getState(), "addEdge")

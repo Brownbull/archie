@@ -72,6 +72,15 @@
   --color-cat-monitoring: #eab308;
   --color-cat-search: #14b8a6;
   --color-cat-devops: #8b5cf6;
+
+  /* Metric category colors */
+  --color-metric-performance: #3b82f6;
+  --color-metric-reliability: #22c55e;
+  --color-metric-scalability: #06b6d4;
+  --color-metric-security: #ef4444;
+  --color-metric-ops: #f97316;
+  --color-metric-cost: #eab308;
+  --color-metric-dx: #a855f7;
 }
 
 :root {
@@ -169,7 +178,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-family: var(--archie-font-family, "Inter", system-ui, sans-serif);
   }
 }
 
@@ -180,6 +189,11 @@
 }
 .react-flow__node:hover .react-flow__handle {
   opacity: 1;
+}
+
+/* Heatmap glow transition (Story 2-2, AC-ARCH-PATTERN-13) */
+[data-testid="archie-node"] {
+  transition: box-shadow 300ms ease;
 }
 
 /* React Flow controls & minimap dark theme */

@@ -85,6 +85,7 @@ export function InspectorPanel() {
           onVariantChange={handleVariantChange}
           currentCategory={component.category}
           onSwapComponent={handleSwapComponent}
+          nodeId={selectedNodeId}
         />
       </div>
     </div>
