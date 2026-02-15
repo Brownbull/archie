@@ -6,7 +6,13 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
+import { computeCategoryScores } from "@/engine/dashboardCalculator"
+import { evaluateTier } from "@/engine/tierEvaluator"
+import type { TierCategoryScore } from "@/engine/tierEvaluator"
+import { DEFAULT_TIER_DEFINITIONS } from "@/lib/tierDefinitions"
+import type { TierResult } from "@/lib/tierDefinitions"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
+import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import {
   CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
@@ -61,8 +67,11 @@ interface ArchitectureState {
   edges: ArchieEdge[]
   computedMetrics: Map<string, RecalculatedMetrics>
   previousMetrics: Map<string, RecalculatedMetrics>
+  heatmapColors: Map<string, HeatmapStatus>
+  edgeHeatmapColors: Map<string, HeatmapStatus>
   rippleActiveNodeIds: Set<string>
   recalcGeneration: number
+  currentTier: TierResult | null
   addNode: (componentId: string, position: { x: number; y: number }) => void
   addNodeSmartPosition: (componentId: string) => void
   updateNodePosition: (
@@ -82,16 +91,68 @@ interface ArchitectureState {
   onNodesChange: (changes: NodeChange<ArchieNode>[]) => void
 }
 
+/**
+ * Module-level helper: evaluates tier from current architecture state and sets result.
+ * Called from triggerRecalculation (with overrideMetrics), addNode, removeNode/removeNodes.
+ * Uses computeCategoryScores from dashboardCalculator (pure function cross-engine import).
+ */
+function evaluateAndSetTier(
+  get: () => ArchitectureState,
+  set: (partial: Partial<ArchitectureState>) => void,
+  overrideMetrics?: Map<string, RecalculatedMetrics>,
+): void {
+  const { nodes } = get()
+  if (nodes.length === 0) {
+    set({ currentTier: null })
+    return
+  }
+  try {
+    const metrics = overrideMetrics ?? get().computedMetrics
+    const categoryScores = computeCategoryScores(metrics)
+    const tierCategoryScores: TierCategoryScore[] = categoryScores.map((cs) => ({
+      categoryId: cs.categoryId,
+      score: cs.score,
+      hasData: cs.hasData,
+    }))
+    const nodeSummaries = nodes.map((n) => ({
+      id: n.id,
+      category: n.data.componentCategory,
+    }))
+    const result = evaluateTier(nodeSummaries, tierCategoryScores, DEFAULT_TIER_DEFINITIONS)
+    set({ currentTier: result })
+  } catch {
+    set({ currentTier: null })
+  }
+}
+
+// Module-level tracking for ripple setTimeout IDs (TD-2-2b)
+// Kept outside store state to avoid triggering subscriber re-renders on timeout bookkeeping
+const pendingRippleTimeouts = new Set<ReturnType<typeof setTimeout>>()
+
+function clearPendingRippleTimeouts() {
+  for (const id of pendingRippleTimeouts) {
+    clearTimeout(id)
+  }
+  pendingRippleTimeouts.clear()
+}
+
 export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   nodes: [],
   edges: [],
   computedMetrics: new Map<string, RecalculatedMetrics>(),
   previousMetrics: new Map<string, RecalculatedMetrics>(),
+  heatmapColors: new Map<string, HeatmapStatus>(),
+  edgeHeatmapColors: new Map<string, HeatmapStatus>(),
   rippleActiveNodeIds: new Set<string>(),
   recalcGeneration: 0,
+  currentTier: null,
 
   triggerRecalculation: (changedNodeId) => {
+    // Cancel pending ripple timeouts from previous recalculation (TD-2-2b)
+    clearPendingRippleTimeouts()
+
     const generation = get().recalcGeneration + 1
+    const isStale = () => get().recalcGeneration !== generation
     set({
       recalcGeneration: generation,
       previousMetrics: new Map(get().computedMetrics),
@@ -103,13 +164,30 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     // Immediate update for changed node (hop 0)
     const changedNodeMetrics = result.metrics.get(changedNodeId)
     if (changedNodeMetrics) {
+      const changedNodeHeatmap = result.nodeHeatmap.get(changedNodeId)
       set({
         computedMetrics: new Map([
           ...get().computedMetrics,
           [changedNodeId, changedNodeMetrics],
         ]),
+        // Update heatmap for changed node immediately
+        heatmapColors: new Map([
+          ...get().heatmapColors,
+          ...(changedNodeHeatmap
+            ? ([[changedNodeId, changedNodeHeatmap]] as [string, HeatmapStatus][])
+            : []),
+        ]),
+        // Edge heatmap updates fully (edges may span multiple hops)
+        edgeHeatmapColors: result.edgeHeatmap,
       })
     }
+
+    // Tier evaluation: merge ALL service results with existing metrics for full picture
+    const fullMetrics = new Map(get().computedMetrics)
+    for (const [nodeId, nodeMetrics] of result.metrics) {
+      fullMetrics.set(nodeId, nodeMetrics)
+    }
+    evaluateAndSetTier(get, set, fullMetrics)
 
     // Sequential ripple for remaining nodes
     for (const hop of result.propagationHops.filter(
@@ -118,9 +196,11 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       const hopMetrics = result.metrics.get(hop.nodeId)
       if (!hopMetrics) continue
 
-      setTimeout(() => {
-        // Stale check — skip if a newer recalculation has started
-        if (get().recalcGeneration !== generation) return
+      const hopHeatmap = result.nodeHeatmap.get(hop.nodeId)
+
+      const rippleId = setTimeout(() => {
+        pendingRippleTimeouts.delete(rippleId)
+        if (isStale()) return
         // Node existence check — skip if node was deleted during propagation
         if (!get().nodes.some((n) => n.id === hop.nodeId)) return
 
@@ -129,6 +209,13 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
             ...state.computedMetrics,
             [hop.nodeId, hopMetrics],
           ]),
+          // Update heatmap for this node in same set() call (AC-ARCH-PATTERN-12)
+          heatmapColors: new Map([
+            ...state.heatmapColors,
+            ...(hopHeatmap
+              ? ([[hop.nodeId, hopHeatmap]] as [string, HeatmapStatus][])
+              : []),
+          ]),
           rippleActiveNodeIds: new Set([
             ...state.rippleActiveNodeIds,
             hop.nodeId,
@@ -136,15 +223,18 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         }))
 
         // Clear ripple indicator after animation
-        setTimeout(() => {
-          if (get().recalcGeneration !== generation) return
+        const clearId = setTimeout(() => {
+          pendingRippleTimeouts.delete(clearId)
+          if (isStale()) return
           set((state) => {
             const next = new Set(state.rippleActiveNodeIds)
             next.delete(hop.nodeId)
             return { rippleActiveNodeIds: next }
           })
         }, RIPPLE_ANIMATION_DURATION_MS)
+        pendingRippleTimeouts.add(clearId)
       }, hop.delayMs)
+      pendingRippleTimeouts.add(rippleId)
     }
   },
 
@@ -189,6 +279,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
 
     set({ nodes: [...get().nodes, newNode] })
+    evaluateAndSetTier(get, set)
   },
 
   swapNodeComponent: (nodeId, newComponentId) => {
@@ -298,11 +389,26 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       next.delete(nodeId)
       set({ computedMetrics: next })
     }
+    // Clean up heatmapColors for the removed node
+    const currentHeatmap = get().heatmapColors
+    if (currentHeatmap.has(nodeId)) {
+      const nextHeatmap = new Map(currentHeatmap)
+      nextHeatmap.delete(nodeId)
+      set({ heatmapColors: nextHeatmap })
+    }
+    // Tier: clear if canvas is empty, otherwise neighbor recalculation handles it
+    if (get().nodes.length === 0) {
+      set({ currentTier: null })
+    }
     // Trigger recalculation for surviving neighbors AFTER removal
     for (const neighborId of neighborNodeIds) {
       if (get().nodes.some((n) => n.id === neighborId)) {
         get().triggerRecalculation(neighborId)
       }
+    }
+    // Re-evaluate tier when no neighbors triggered recalculation (e.g., isolated node removal)
+    if (neighborNodeIds.size === 0 && get().nodes.length > 0) {
+      evaluateAndSetTier(get, set)
     }
   },
 
@@ -332,6 +438,28 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       nodes: get().nodes.filter((n) => !idsToRemove.has(n.id)),
       edges: survivingEdges,
     })
+
+    // Clean up computedMetrics and heatmapColors for removed nodes (parity with removeNode)
+    const currentComputed = get().computedMetrics
+    const currentHeatmap = get().heatmapColors
+    const hasComputedToClean = [...idsToRemove].some(
+      (id) => currentComputed.has(id) || currentHeatmap.has(id),
+    )
+    if (hasComputedToClean) {
+      const nextComputed = new Map(currentComputed)
+      const nextHeatmap = new Map(currentHeatmap)
+      for (const id of idsToRemove) {
+        nextComputed.delete(id)
+        nextHeatmap.delete(id)
+      }
+      set({ computedMetrics: nextComputed, heatmapColors: nextHeatmap })
+    }
+    // Tier: clear if canvas is empty, otherwise re-evaluate
+    if (get().nodes.length === 0) {
+      set({ currentTier: null })
+    } else {
+      evaluateAndSetTier(get, set)
+    }
   },
 
   addEdge: (connection) => {

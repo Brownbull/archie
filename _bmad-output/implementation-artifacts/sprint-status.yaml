@@ -78,7 +78,8 @@ development_status:
   td-2-1a-recalc-robustness: done
   2-2-bottleneck-heatmap: done
   td-2-2a-canvas-heatmap-toggle-tests: done
-  td-2-2b-heatmap-robustness: review
+  td-2-2b-heatmap-robustness: done
+  td-2-2c-timeout-test-coverage: ready-for-dev
   2-3-scoring-dashboard: done
   td-2-3a-aggregate-score-tests: done
   2-4-architecture-tier-system: done

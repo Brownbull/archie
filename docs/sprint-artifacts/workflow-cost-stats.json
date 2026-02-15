@@ -1,30 +1,30 @@
 {
-  "generated": "2026-02-15T07:12:15.403210",
+  "generated": "2026-02-15T07:25:56.325235",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 73,
-  "total_cost": 1122.2,
+  "total_sessions": 75,
+  "total_cost": 1129.62,
   "averages": {
-    "overall": 15.37,
-    "last_10": 10.0,
-    "last_20": 9.47
+    "overall": 15.06,
+    "last_10": 8.13,
+    "last_20": 9.39
   },
   "percentiles": {
-    "p50": 10.01,
-    "p75": 16.8,
-    "p90": 27.11,
-    "p95": 36.24
+    "p50": 9.73,
+    "p75": 16.49,
+    "p90": 26.63,
+    "p95": 35.52
   },
   "thresholds": {
-    "warning": 16.8,
-    "high": 27.11
+    "warning": 16.49,
+    "high": 26.63
   },
-  "trend_last10_vs_prev10_pct": 12.1,
+  "trend_last10_vs_prev10_pct": -23.6,
   "recent_outliers": [
     {
       "date": "2026-02-14 20:24",
       "session_id": "346435e4-f23",
       "cost": 20.23,
-      "ratio": 2.1
+      "ratio": 2.2
     },
     {
       "date": "2026-02-14 21:05",
@@ -36,13 +36,13 @@
       "date": "2026-02-15 09:46",
       "session_id": "030ca220-1bd",
       "cost": 18.45,
-      "ratio": 1.9
+      "ratio": 2.0
     }
   ],
   "by_model": {
     "opus, sonnet": {
-      "count": 33,
-      "total_cost": 434.71000000000004
+      "count": 34,
+      "total_cost": 437.45000000000005
     },
     "opus": {
       "count": 17,
@@ -61,8 +61,8 @@
       "total_cost": 18.87
     },
     "haiku, opus, sonnet": {
-      "count": 10,
-      "total_cost": 80.42000000000002
+      "count": 11,
+      "total_cost": 85.10000000000002
     },
     "<synthetic>, haiku, opus, sonnet": {
       "count": 1,
@@ -89,13 +89,13 @@
       "p90": 26.86
     },
     "ecc-code-review": {
-      "count": 22,
-      "total_cost": 316.18,
-      "avg": 14.37,
-      "avg_last_10": 6.37,
-      "p50": 7.96,
-      "p75": 13.96,
-      "p90": 33.32
+      "count": 24,
+      "total_cost": 323.6,
+      "avg": 13.48,
+      "avg_last_10": 6.3,
+      "p50": 7.45,
+      "p75": 13.84,
+      "p90": 33.23
     },
     "ecc-e2e": {
       "count": 2,

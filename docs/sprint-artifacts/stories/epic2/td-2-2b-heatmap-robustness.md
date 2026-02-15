@@ -1,6 +1,6 @@
 # Story: TD-2-2b Heatmap Robustness
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 2 — Trade-off Intelligence & Visualization
 ## Source: Code Review of Story 2-2 (Findings #7, #8)
 
@@ -27,15 +27,15 @@ Address two robustness improvements identified during Story 2-2 code review:
 ## Tasks / Subtasks
 
 ### Task 1: setTimeout Cleanup
-- [ ] 1.1 Track ripple timeout IDs in architectureStore (array or Set)
-- [ ] 1.2 Clear pending timeouts at the start of `triggerRecalculation` before scheduling new ones
-- [ ] 1.3 Clear pending timeouts on node removal
-- [ ] 1.4 Write tests: rapid recalculation cancels previous ripple, no stale updates after cancellation
+- [x] 1.1 Track ripple timeout IDs in architectureStore (array or Set)
+- [x] 1.2 Clear pending timeouts at the start of `triggerRecalculation` before scheduling new ones
+- [x] 1.3 Clear pending timeouts on node removal
+- [x] 1.4 Write tests: rapid recalculation cancels previous ripple, no stale updates after cancellation
 
 ### Task 2: Accessibility Indicator
-- [ ] 2.1 Add `aria-label` to ArchieNode container that includes heatmap status when enabled
-- [ ] 2.2 Write test: aria-label includes status when heatmap enabled, omits status when disabled
-- [ ] 2.3 Verify screen reader compatibility (manual testing)
+- [x] 2.1 Add `aria-label` to ArchieNode container that includes heatmap status when enabled
+- [x] 2.2 Write test: aria-label includes status when heatmap enabled, omits status when disabled
+- [x] 2.3 Verify screen reader compatibility (manual testing)
 
 ## File Specification
 
@@ -55,3 +55,20 @@ Address two robustness improvements identified during Story 2-2 code review:
 - Risk Level: LOW
 - Complexity: Simple
 - Sizing: SMALL (2 tasks, 7 subtasks, 4 files)
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-15 | **Classification:** SIMPLE | **Agents:** code-reviewer, tdd-guide
+
+| Agent | Score | Status |
+|-------|-------|--------|
+| Code Quality | 7/10 | CHANGES REQUESTED |
+| Testing | 5/10 | CHANGES REQUESTED |
+| **OVERALL** | **6/10** | **APPROVED w/ TD** |
+
+**Quick Fixes Applied:**
+- Extracted `isStale()` helper in `triggerRecalculation` to reduce generation-check repetition
+- Expanded module-level `pendingRippleTimeouts` comment to explain why not in store state
+
+**Tech Debt Created:**
+- **TD-2-2c** (timeout-test-coverage): AC-1 setTimeout cleanup has zero test coverage — needs `vi.useFakeTimers()` suite for rapid recalc cancellation, stale generation guard, and node deletion during propagation
