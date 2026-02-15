@@ -117,3 +117,5 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-02-15 10:50,fe05772a-0d0,ecc-code-review,td-2-5a,7min,55,2,5,"opus, sonnet",87,607,297078,3262774,4.10,0.31,4.41
 2026-02-15 18:29,1b91517e-c4e,ecc-dev-story,td-cross-1-shared-test-infrastructure,68min,130,4,143,"opus, sonnet",333,1607,1567439,21157237,11.16,15.09,26.24
 2026-02-15 19:42,5ddc79c0-685,ecc-code-review,td-cross-1,8min,95,4,47,"haiku, opus, sonnet",2807,995,835240,9698252,8.83,3.25,12.08
+2026-02-15 19:53,48107682-7c4,ecc-dev-story,3-1-yaml-import-pipeline,44min,239,2,61,"opus, sonnet",429,2098,1181385,23779435,17.85,4.95,22.79
+2026-02-15 20:46,f87071fa-0e6,ecc-code-review,3-1,27min,94,4,34,"haiku, opus, sonnet",268,882,1313030,6698258,13.63,1.15,14.78

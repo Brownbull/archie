@@ -41,6 +41,7 @@ export const CANVAS_GRID_SIZE = 16
 export const CANVAS_MIN_ZOOM = 0.5
 export const CANVAS_MAX_ZOOM = 2
 export const NODE_TYPE_COMPONENT = "archie-component" as const
+export const NODE_TYPE_PLACEHOLDER = "placeholder" as const
 export const EDGE_TYPE_CONNECTION = "archie-connection" as const
 
 // Canvas node limit — defense-in-depth against client-side performance degradation (TD-1-3a)

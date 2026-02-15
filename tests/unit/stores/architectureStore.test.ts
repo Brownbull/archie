@@ -1336,4 +1336,119 @@ describe("architectureStore", () => {
       expect(useArchitectureStore.getState().currentTier).not.toBeNull()
     })
   })
+
+  describe("loadArchitecture", () => {
+    const importedNodes = [
+      {
+        id: "imported-node-1",
+        type: NODE_TYPE_COMPONENT as typeof NODE_TYPE_COMPONENT,
+        position: { x: 100, y: 200 },
+        data: {
+          archieComponentId: "postgresql",
+          activeConfigVariantId: "default",
+          componentName: "PostgreSQL",
+          componentCategory: "data-storage" as const,
+        },
+        width: NODE_WIDTH,
+      },
+      {
+        id: "imported-node-2",
+        type: NODE_TYPE_COMPONENT as typeof NODE_TYPE_COMPONENT,
+        position: { x: 300, y: 200 },
+        data: {
+          archieComponentId: "redis",
+          activeConfigVariantId: "default",
+          componentName: "Redis",
+          componentCategory: "caching" as const,
+        },
+        width: NODE_WIDTH,
+      },
+    ]
+
+    const importedEdges: ArchieEdge[] = [
+      {
+        id: "imported-edge-1",
+        source: "imported-node-1",
+        target: "imported-node-2",
+        type: EDGE_TYPE_CONNECTION,
+        data: {
+          isIncompatible: false,
+          incompatibilityReason: null,
+          sourceArchieComponentId: "postgresql",
+          targetArchieComponentId: "redis",
+        },
+      },
+    ]
+
+    it("replaces existing canvas with imported architecture", () => {
+      // Add existing node first
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      expect(useArchitectureStore.getState().nodes).toHaveLength(1)
+
+      // Load new architecture
+      useArchitectureStore.getState().loadArchitecture(importedNodes, importedEdges)
+
+      const state = useArchitectureStore.getState()
+      expect(state.nodes).toHaveLength(2)
+      expect(state.nodes[0].id).toBe("imported-node-1")
+      expect(state.nodes[1].id).toBe("imported-node-2")
+      expect(state.edges).toHaveLength(1)
+      expect(state.edges[0].id).toBe("imported-edge-1")
+    })
+
+    it("clears computed state on load", () => {
+      // Add a node to generate computed metrics
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      const nodeId = useArchitectureStore.getState().nodes[0].id
+      useArchitectureStore.getState().triggerRecalculation(nodeId)
+
+      // Load new architecture — computed state should be cleared then recalculated
+      useArchitectureStore.getState().loadArchitecture(importedNodes, importedEdges)
+
+      const state = useArchitectureStore.getState()
+      // Previous nodes' metrics should be gone
+      expect(state.computedMetrics.has(nodeId)).toBe(false)
+    })
+
+    it("clears uiStore selection state", () => {
+      useUiStore.setState({ selectedNodeId: "some-node", selectedEdgeId: "some-edge" })
+
+      useArchitectureStore.getState().loadArchitecture(importedNodes, importedEdges)
+
+      expect(useUiStore.getState().selectedNodeId).toBeNull()
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+
+    it("triggers recalculation for imported nodes", () => {
+      useArchitectureStore.getState().loadArchitecture(importedNodes, importedEdges)
+
+      // Recalculation should have run — computedMetrics should have entries for imported nodes
+      const state = useArchitectureStore.getState()
+      expect(state.computedMetrics.size).toBeGreaterThan(0)
+    })
+
+    it("handles empty architecture (clear canvas)", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      expect(useArchitectureStore.getState().nodes).toHaveLength(1)
+
+      useArchitectureStore.getState().loadArchitecture([], [])
+
+      const state = useArchitectureStore.getState()
+      expect(state.nodes).toHaveLength(0)
+      expect(state.edges).toHaveLength(0)
+      expect(state.computedMetrics.size).toBe(0)
+      expect(state.currentTier).toBeNull()
+    })
+
+    it("clears currentTier before recalculation", () => {
+      // Build up a tier first
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+
+      // Load empty architecture — tier should be null
+      useArchitectureStore.getState().loadArchitecture([], [])
+      expect(useArchitectureStore.getState().currentTier).toBeNull()
+    })
+  })
 })

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { recalculationService, type RecalculationResult } from "@/services/recalculationService"
+import { recalculationService } from "@/services/recalculationService"
 import { componentLibrary } from "@/services/componentLibrary"
-import type { MetricValue } from "@/schemas/metricSchema"
 import type { Component } from "@/schemas/componentSchema"
+import { makeMetric, makeComponent } from "../../helpers/factories"
 
 // --- Mock componentLibrary ---
 
@@ -13,32 +13,6 @@ vi.mock("@/services/componentLibrary", () => ({
     getComponent: vi.fn((id: string) => mockComponents.get(id)),
   },
 }))
-
-// --- Test Helpers ---
-
-function makeMetric(
-  id: string,
-  numericValue: number,
-  category: string,
-): MetricValue {
-  const value =
-    numericValue <= 3 ? "low" : numericValue <= 7 ? "medium" : "high"
-  return { id, value, numericValue, category }
-}
-
-function makeComponent(overrides: Partial<Component> & { id: string; category: string }): Component {
-  return {
-    name: overrides.id,
-    description: "test",
-    is: "test",
-    gain: ["test"],
-    cost: ["test"],
-    tags: [],
-    baseMetrics: [],
-    configVariants: [{ id: "default", name: "Default", metrics: [] }],
-    ...overrides,
-  }
-}
 
 // --- Tests ---
 
@@ -55,7 +29,7 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -76,16 +50,16 @@ describe("recalculationService", () => {
         id: "pg",
         category: "data-storage",
         baseMetrics: [
-          makeMetric("read-latency", 5, "performance"),
-          makeMetric("write-throughput", 5, "performance"),
-          makeMetric("data-durability", 9, "reliability"),
+          makeMetric({ id: "read-latency", numericValue: 5, category: "performance" }),
+          makeMetric({ id: "write-throughput", numericValue: 5, category: "performance" }),
+          makeMetric({ id: "data-durability", numericValue: 9, category: "reliability" }),
         ],
         configVariants: [
           {
             id: "primary-replica",
             name: "Primary-Replica",
             metrics: [
-              makeMetric("read-latency", 2, "performance"), // overrides base
+              makeMetric({ id: "read-latency", numericValue: 2, category: "performance" }), // overrides base
               // write-throughput NOT overridden — base value should persist
             ],
           },
@@ -121,13 +95,13 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
       mockComponents.set("redis-cache", makeComponent({
         id: "redis-cache",
         category: "caching",
-        baseMetrics: [makeMetric("cache-hit-latency", 1, "performance")],
+        baseMetrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -149,19 +123,19 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
       mockComponents.set("redis-cache", makeComponent({
         id: "redis-cache",
         category: "caching",
-        baseMetrics: [makeMetric("cache-hit-latency", 1, "performance")],
+        baseMetrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
       mockComponents.set("express", makeComponent({
         id: "express",
         category: "compute",
-        baseMetrics: [makeMetric("request-latency", 4, "performance")],
+        baseMetrics: [makeMetric({ id: "request-latency", numericValue: 4, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -192,7 +166,7 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -215,8 +189,8 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
-        configVariants: [{ id: "default", name: "Default", metrics: [makeMetric("read-latency", 3, "performance")] }],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
+        configVariants: [{ id: "default", name: "Default", metrics: [makeMetric({ id: "read-latency", numericValue: 3, category: "performance" })] }],
       }))
 
       const nodes = [{
@@ -234,13 +208,13 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 8, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 8, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
       mockComponents.set("redis-cache", makeComponent({
         id: "redis-cache",
         category: "caching",
-        baseMetrics: [makeMetric("cache-hit-latency", 2, "performance")],
+        baseMetrics: [makeMetric({ id: "cache-hit-latency", numericValue: 2, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -274,7 +248,7 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -298,13 +272,13 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
-        configVariants: [{ id: "default", name: "Default", metrics: [makeMetric("read-latency", 3, "performance")] }],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
+        configVariants: [{ id: "default", name: "Default", metrics: [makeMetric({ id: "read-latency", numericValue: 3, category: "performance" })] }],
       }))
       mockComponents.set("redis-cache", makeComponent({
         id: "redis-cache",
         category: "caching",
-        baseMetrics: [makeMetric("cache-hit-latency", 2, "performance")],
+        baseMetrics: [makeMetric({ id: "cache-hit-latency", numericValue: 2, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -331,7 +305,7 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 
@@ -367,13 +341,13 @@ describe("recalculationService", () => {
       mockComponents.set("pg", makeComponent({
         id: "pg",
         category: "data-storage",
-        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        baseMetrics: [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
       mockComponents.set("express", makeComponent({
         id: "express",
         category: "compute",
-        baseMetrics: [makeMetric("request-latency", 4, "performance")],
+        baseMetrics: [makeMetric({ id: "request-latency", numericValue: 4, category: "performance" })],
         configVariants: [{ id: "default", name: "Default", metrics: [] }],
       }))
 

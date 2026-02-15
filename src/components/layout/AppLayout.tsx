@@ -7,6 +7,7 @@ import { CanvasView } from "@/components/canvas/CanvasView"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel"
+import { ImportProvider } from "@/components/import-export/ImportDialog"
 // NOTE: Direct service import for initialization only (not data access).
 // Data reads go through useLibrary hook per AC-ARCH-NO-2.
 import { componentLibrary } from "@/services/componentLibrary"
@@ -49,45 +50,47 @@ export function AppLayout() {
   }, [])
 
   return (
-    <div className="flex h-screen flex-col bg-canvas">
-      <Toolbar />
+    <ImportProvider>
+      <div className="flex h-screen flex-col bg-canvas">
+        <Toolbar />
 
-      <div className="flex flex-1 overflow-hidden">
-        <aside
-          data-testid="toolbox"
-          className="flex flex-col border-r border-archie-border bg-panel"
-          style={{ width: `${TOOLBOX_WIDTH}px` }}
-        >
-          {libraryReady ? <ToolboxPanel /> : <ToolboxSkeleton />}
-        </aside>
+        <div className="flex flex-1 overflow-hidden">
+          <aside
+            data-testid="toolbox"
+            className="flex flex-col border-r border-archie-border bg-panel"
+            style={{ width: `${TOOLBOX_WIDTH}px` }}
+          >
+            {libraryReady ? <ToolboxPanel /> : <ToolboxSkeleton />}
+          </aside>
 
-        <main
-          data-testid="canvas"
-          className="flex-1 overflow-hidden bg-canvas"
-        >
-          <CanvasErrorBoundary>
-            <CanvasView />
-          </CanvasErrorBoundary>
-        </main>
+          <main
+            data-testid="canvas"
+            className="flex-1 overflow-hidden bg-canvas"
+          >
+            <CanvasErrorBoundary>
+              <CanvasView />
+            </CanvasErrorBoundary>
+          </main>
 
-        <aside
-          data-testid="inspector"
-          className="overflow-hidden border-l border-archie-border bg-panel transition-[width] duration-200 ease-in-out"
-          style={{ width: `${inspectorWidth}px` }}
+          <aside
+            data-testid="inspector"
+            className="overflow-hidden border-l border-archie-border bg-panel transition-[width] duration-200 ease-in-out"
+            style={{ width: `${inspectorWidth}px` }}
+          >
+            <InspectorPanel />
+          </aside>
+        </div>
+
+        <footer
+          data-testid="dashboard"
+          className="border-t border-archie-border bg-panel"
+          style={{ height: `${DASHBOARD_HEIGHT}px` }}
         >
-          <InspectorPanel />
-        </aside>
+          <DashboardPanel />
+        </footer>
+
+        <CommandPalette />
       </div>
-
-      <footer
-        data-testid="dashboard"
-        className="border-t border-archie-border bg-panel"
-        style={{ height: `${DASHBOARD_HEIGHT}px` }}
-      >
-        <DashboardPanel />
-      </footer>
-
-      <CommandPalette />
-    </div>
+    </ImportProvider>
   )
 }

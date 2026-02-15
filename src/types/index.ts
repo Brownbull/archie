@@ -26,3 +26,8 @@ export type {
   TierGap,
   TierRequirement,
 } from "@/lib/tierDefinitions"
+export type {
+  ArchitectureFile,
+  ArchitectureFileNode,
+  ArchitectureFileEdge,
+} from "@/schemas/architectureFileSchema"

@@ -85,6 +85,7 @@ interface ArchitectureState {
   addEdge: (connection: Connection) => void
   removeEdges: (edgeIds: string[]) => void
   triggerRecalculation: (changedNodeId: string) => void
+  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[]) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
@@ -518,6 +519,34 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     // Trigger recalculation for affected endpoints AFTER edge removal
     for (const nodeId of affectedNodeIds) {
       get().triggerRecalculation(nodeId)
+    }
+  },
+
+  loadArchitecture: (nodes, edges) => {
+    // Cancel pending ripple timeouts from previous architecture
+    clearPendingRippleTimeouts()
+
+    // Clear all computed state and set new architecture
+    set({
+      nodes,
+      edges,
+      computedMetrics: new Map(),
+      previousMetrics: new Map(),
+      heatmapColors: new Map(),
+      edgeHeatmapColors: new Map(),
+      rippleActiveNodeIds: new Set(),
+      recalcGeneration: get().recalcGeneration + 1,
+      currentTier: null,
+    })
+
+    // Clear uiStore selection state (cross-store pattern from removeNode)
+    useUiStore.getState().setSelectedNodeId(null)
+    useUiStore.getState().setSelectedEdgeId(null)
+
+    // Trigger full-graph recalculation for each node
+    // Each triggerRecalculation handles its own BFS propagation
+    for (const node of nodes) {
+      get().triggerRecalculation(node.id)
     }
   },
 

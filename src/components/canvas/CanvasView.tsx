@@ -25,8 +25,10 @@ import {
   type ArchieEdge as ArchieEdgeType,
 } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { useImportAction } from "@/components/import-export/ImportDialog"
 import { ArchieNode } from "@/components/canvas/ArchieNode"
 import { ArchieEdge } from "@/components/canvas/ArchieEdge"
+import { PlaceholderNode } from "@/components/canvas/PlaceholderNode"
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState"
 import {
   CANVAS_GRID_SIZE,
@@ -34,10 +36,12 @@ import {
   CANVAS_MAX_ZOOM,
   EDGE_TYPE_CONNECTION,
   NODE_TYPE_COMPONENT,
+  NODE_TYPE_PLACEHOLDER,
 } from "@/lib/constants"
 
 const nodeTypes: NodeTypes = {
   [NODE_TYPE_COMPONENT]: ArchieNode,
+  [NODE_TYPE_PLACEHOLDER]: PlaceholderNode,
 }
 
 function CanvasViewInner() {
@@ -54,6 +58,7 @@ function CanvasViewInner() {
   const clearSelection = useUiStore((s) => s.clearSelection)
   const deselectAll = useArchitectureStore((s) => s.deselectAll)
   const { screenToFlowPosition } = useReactFlow()
+  const { handleFileDrop } = useImportAction()
   const containerRef = useRef<HTMLDivElement>(null)
 
   const edgeTypes: EdgeTypes = useMemo(
@@ -124,6 +129,18 @@ function CanvasViewInner() {
   const handleDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
       event.preventDefault()
+
+      // Check for YAML file drop first
+      const file = event.dataTransfer.files?.[0]
+      if (file) {
+        const name = file.name.toLowerCase()
+        if (name.endsWith(".yaml") || name.endsWith(".yml")) {
+          handleFileDrop(file)
+          return
+        }
+      }
+
+      // Fall through to component drag-and-drop
       const componentId = event.dataTransfer.getData("application/archie-component")
       if (!componentId || componentId.length > 100 || !/^[a-z0-9-]+$/.test(componentId)) return
 
@@ -134,7 +151,7 @@ function CanvasViewInner() {
 
       addNode(componentId, position)
     },
-    [screenToFlowPosition, addNode],
+    [screenToFlowPosition, addNode, handleFileDrop],
   )
 
   const handlePaneClick = useCallback(() => {
@@ -177,6 +194,7 @@ function CanvasViewInner() {
     <div
       ref={containerRef}
       data-testid="canvas-panel"
+      data-drop-zone="import-drop-zone"
       className="relative h-full w-full"
       tabIndex={-1}
       onDragOver={handleDragOver}
