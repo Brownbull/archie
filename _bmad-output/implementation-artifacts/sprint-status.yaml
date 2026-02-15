@@ -89,14 +89,17 @@ development_status:
   epic-2-retrospective: optional
 
   # ============================================================================
-  # Epic 3: YAML Workflow & Content Library (3 stories)
+  # Epic 3: YAML Workflow & Content Library (3 user + 2 TD + 1 cross-cutting = 6 stories)
   # User can import/export YAML, use AI round-trip, explore examples
-  # FRs: FR23-FR30 | NFRs: NFR4, NFR6-NFR11
+  # FRs: FR23-FR30 | NFRs: NFR4, NFR6-NFR11 | ARs: AR9, AR10
   # ============================================================================
-  epic-3: backlog
-  3-1-yaml-import-pipeline: backlog
-  3-2-yaml-export-and-round-trip: backlog
-  3-3-example-architectures-and-ai-prompt-template: backlog
+  epic-3: in-progress
+  td-cross-1-shared-test-infrastructure: done
+  3-1-yaml-import-pipeline: ready-for-dev
+  td-3-1a-import-pipeline-robustness: ready-for-dev
+  3-2-yaml-export-and-round-trip: ready-for-dev
+  3-3-example-architectures-and-ai-prompt-template: ready-for-dev
+  td-3-3a-seed-blueprint-hardening: ready-for-dev
   epic-3-retrospective: optional
 
   # ============================================================================

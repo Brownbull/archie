@@ -3,85 +3,103 @@ import { useArchitectureStore, type ArchieEdge } from "@/stores/architectureStor
 import { useUiStore } from "@/stores/uiStore"
 import { CANVAS_GRID_SIZE, EDGE_TYPE_CONNECTION, MAX_CANVAS_NODES, NODE_TYPE_COMPONENT, NODE_WIDTH } from "@/lib/constants"
 
+// vi.hoisted runs before imports, so we define a local factory for use inside vi.mock.
+// This mirrors makeComponent from tests/helpers/factories but is self-contained for hoisting.
+// IMPORTANT: If makeComponent defaults change in tests/helpers/factories.ts, update buildComponent below to match.
+const { testComponentMap } = vi.hoisted(() => {
+  type TestComponent = {
+    id: string
+    name: string
+    category: string
+    description: string
+    is: string
+    gain: string[]
+    cost: string[]
+    tags: string[]
+    baseMetrics: never[]
+    configVariants: { id: string; name: string; metrics: never[] }[]
+    compatibility?: Record<string, string>
+  }
+
+  function buildComponent(overrides: Partial<TestComponent> & { id: string }): TestComponent {
+    return {
+      name: "Test Component",
+      category: "compute",
+      description: "A test component",
+      is: "A test component for unit tests",
+      gain: ["Test gain"],
+      cost: ["Test cost"],
+      tags: [],
+      baseMetrics: [],
+      configVariants: [{ id: "default", name: "Default", metrics: [] }],
+      ...overrides,
+    }
+  }
+
+  const map = new Map<string, TestComponent>()
+  map.set("postgresql", buildComponent({
+    id: "postgresql",
+    name: "PostgreSQL",
+    category: "data-storage",
+    description: "Relational database",
+    is: "An open-source relational database",
+    gain: ["ACID compliance"],
+    cost: ["Higher memory usage"],
+    tags: ["database"],
+  }))
+  map.set("redis", buildComponent({
+    id: "redis",
+    name: "Redis",
+    category: "caching",
+    description: "In-memory cache",
+    is: "An in-memory data store",
+    gain: ["Low latency"],
+    cost: ["Memory cost"],
+    tags: ["cache"],
+    compatibility: { "data-storage": "Caching layer may cause stale reads" },
+  }))
+  map.set("nginx", buildComponent({
+    id: "nginx",
+    name: "Nginx",
+    category: "delivery-network",
+    description: "Reverse proxy",
+    is: "A reverse proxy server",
+    gain: ["Load balancing"],
+    cost: ["Config complexity"],
+    tags: ["proxy"],
+  }))
+  map.set("mongodb", buildComponent({
+    id: "mongodb",
+    name: "MongoDB",
+    category: "data-storage",
+    description: "Document database",
+    is: "A NoSQL document database",
+    gain: ["Schema flexibility"],
+    cost: ["Eventual consistency"],
+    tags: ["database", "nosql"],
+    configVariants: [
+      { id: "replica-set", name: "Replica Set", metrics: [] },
+      { id: "sharded", name: "Sharded", metrics: [] },
+    ],
+  }))
+  map.set("empty-variants", buildComponent({
+    id: "empty-variants",
+    name: "Empty Variants",
+    category: "data-storage",
+    description: "Component with no variants",
+    is: "Test component",
+    gain: [],
+    cost: [],
+    tags: [],
+    configVariants: [],
+  }))
+
+  return { testComponentMap: map }
+})
+
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
-    getComponent: vi.fn((id: string) => {
-      if (id === "postgresql") {
-        return {
-          id: "postgresql",
-          name: "PostgreSQL",
-          category: "data-storage",
-          description: "Relational database",
-          is: "An open-source relational database",
-          gain: ["ACID compliance"],
-          cost: ["Higher memory usage"],
-          tags: ["database"],
-          baseMetrics: [],
-          configVariants: [{ id: "default", name: "Default", metrics: [] }],
-        }
-      }
-      if (id === "redis") {
-        return {
-          id: "redis",
-          name: "Redis",
-          category: "caching",
-          description: "In-memory cache",
-          is: "An in-memory data store",
-          gain: ["Low latency"],
-          cost: ["Memory cost"],
-          tags: ["cache"],
-          baseMetrics: [],
-          configVariants: [{ id: "default", name: "Default", metrics: [] }],
-          compatibility: { "data-storage": "Caching layer may cause stale reads" },
-        }
-      }
-      if (id === "nginx") {
-        return {
-          id: "nginx",
-          name: "Nginx",
-          category: "delivery-network",
-          description: "Reverse proxy",
-          is: "A reverse proxy server",
-          gain: ["Load balancing"],
-          cost: ["Config complexity"],
-          tags: ["proxy"],
-          baseMetrics: [],
-          configVariants: [{ id: "default", name: "Default", metrics: [] }],
-        }
-      }
-      if (id === "mongodb") {
-        return {
-          id: "mongodb",
-          name: "MongoDB",
-          category: "data-storage",
-          description: "Document database",
-          is: "A NoSQL document database",
-          gain: ["Schema flexibility"],
-          cost: ["Eventual consistency"],
-          tags: ["database", "nosql"],
-          baseMetrics: [],
-          configVariants: [
-            { id: "replica-set", name: "Replica Set", metrics: [] },
-            { id: "sharded", name: "Sharded", metrics: [] },
-          ],
-        }
-      }
-      if (id === "empty-variants") {
-        return {
-          id: "empty-variants",
-          name: "Empty Variants",
-          category: "data-storage",
-          description: "Component with no variants",
-          is: "Test component",
-          gain: [],
-          cost: [],
-          tags: [],
-          baseMetrics: [],
-          configVariants: [],
-        }
-      }
-      return undefined
-    }),
+    getComponent: vi.fn((id: string) => testComponentMap.get(id)),
     isInitialized: () => true,
     reset: vi.fn(),
   },
@@ -1186,16 +1204,10 @@ describe("architectureStore", () => {
       useArchitectureStore.getState().triggerRecalculation(nodes[0].id)
       const gen1 = useArchitectureStore.getState().recalcGeneration
 
-      // Snapshot metrics after gen1's immediate update (hop 0)
-      const metricsAfterGen1 = new Map(useArchitectureStore.getState().computedMetrics)
-
       // Second recalculation before first's timeouts fire
       useArchitectureStore.getState().triggerRecalculation(nodes[0].id)
       const gen2 = useArchitectureStore.getState().recalcGeneration
       expect(gen2).toBeGreaterThan(gen1)
-
-      // Snapshot metrics after gen2's immediate update (hop 0)
-      const metricsAfterGen2 = new Map(useArchitectureStore.getState().computedMetrics)
 
       // Advance timers — gen1's stale timeouts should be skipped
       vi.advanceTimersByTime(500)
