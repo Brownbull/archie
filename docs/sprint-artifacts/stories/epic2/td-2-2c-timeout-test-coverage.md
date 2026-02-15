@@ -1,6 +1,6 @@
 # Story: TD-2-2c Timeout Test Coverage
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 2 — Trade-off Intelligence & Visualization
 ## Source: Code Review of TD-2-2b (Findings #1, #2)
 
@@ -30,12 +30,12 @@ This TD adds the missing test suite using `vi.useFakeTimers()` to verify timeout
 ## Tasks / Subtasks
 
 ### Task 1: setTimeout Cleanup Test Suite
-- [ ] 1.1 Add `vi.useFakeTimers()` setup in `architectureStore-heatmap.test.ts` (new describe block)
-- [ ] 1.2 Test: `clearPendingRippleTimeouts` is called at start of triggerRecalculation (verify via spy or timer cancellation)
-- [ ] 1.3 Test: Rapid recalculation cancels previous pending ripple timeouts
-- [ ] 1.4 Test: Stale generation check prevents old ripple from executing
-- [ ] 1.5 Test: Node deletion during propagation skips ripple callback
-- [ ] 1.6 Restore real timers in afterEach to prevent test contamination
+- [x] 1.1 Add `vi.useFakeTimers()` setup in `architectureStore-heatmap.test.ts` (new describe block)
+- [x] 1.2 Test: `clearPendingRippleTimeouts` is called at start of triggerRecalculation (verify via spy or timer cancellation)
+- [x] 1.3 Test: Rapid recalculation cancels previous pending ripple timeouts
+- [x] 1.4 Test: Stale generation check prevents old ripple from executing
+- [x] 1.5 Test: Node deletion during propagation skips ripple callback
+- [x] 1.6 Restore real timers in afterEach to prevent test contamination
 
 ## File Specification
 
@@ -54,3 +54,14 @@ This TD adds the missing test suite using `vi.useFakeTimers()` to verify timeout
 - Risk Level: LOW
 - Complexity: Simple
 - Sizing: SMALL (1 task, 6 subtasks, 1 file)
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-15
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer, tdd-guide
+- **Score:** 9/10 — APPROVED
+- **Findings:** 2 LOW (both fixed in-session)
+  1. Replaced bare `toHaveBeenCalled()` with specific `toBeGreaterThan(0)` assertion
+  2. Replaced magic number `999` with relative `currentGen + 100` for stale generation test
+- **TD Stories Created:** 0
+- **Status:** done

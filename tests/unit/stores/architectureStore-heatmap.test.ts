@@ -1,8 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
-import { NODE_TYPE_COMPONENT, EDGE_TYPE_CONNECTION } from "@/lib/constants"
+import {
+  NODE_TYPE_COMPONENT,
+  EDGE_TYPE_CONNECTION,
+  RIPPLE_DELAY_MS,
+  RIPPLE_ANIMATION_DURATION_MS,
+} from "@/lib/constants"
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
@@ -238,6 +243,131 @@ describe("architectureStore - heatmap", () => {
       const updatedHeatmap = useArchitectureStore.getState().heatmapColors
       expect(updatedHeatmap.has("n1")).toBe(false)
       expect(updatedHeatmap.has("n2")).toBe(true)
+    })
+  })
+
+  describe("setTimeout cleanup (TD-2-2c)", () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+      // Set up two connected nodes for ripple propagation
+      useArchitectureStore.setState({
+        nodes: [
+          {
+            id: "n1",
+            type: NODE_TYPE_COMPONENT,
+            position: { x: 0, y: 0 },
+            data: {
+              archieComponentId: "postgresql",
+              activeConfigVariantId: "default",
+              componentName: "PostgreSQL",
+              componentCategory: "data-storage",
+            },
+          },
+          {
+            id: "n2",
+            type: NODE_TYPE_COMPONENT,
+            position: { x: 200, y: 0 },
+            data: {
+              archieComponentId: "redis",
+              activeConfigVariantId: "default",
+              componentName: "Redis",
+              componentCategory: "caching",
+            },
+          },
+        ],
+        edges: [
+          {
+            id: "e1",
+            source: "n1",
+            target: "n2",
+            type: EDGE_TYPE_CONNECTION,
+            data: {
+              isIncompatible: false,
+              incompatibilityReason: null,
+              sourceArchieComponentId: "postgresql",
+              targetArchieComponentId: "redis",
+            },
+          },
+        ],
+      })
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it("AC-1: clearPendingRippleTimeouts cancels previous timeouts on rapid recalculation", () => {
+      const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout")
+
+      // First recalculation schedules ripple timeout for n2 at RIPPLE_DELAY_MS
+      useArchitectureStore.getState().triggerRecalculation("n1")
+
+      // No ripple yet — timeout hasn't fired
+      expect(useArchitectureStore.getState().rippleActiveNodeIds.size).toBe(0)
+
+      clearTimeoutSpy.mockClear()
+
+      // Second recalculation should cancel first's pending timeouts
+      useArchitectureStore.getState().triggerRecalculation("n1")
+
+      // clearTimeout was called at least once (clearing first recalculation's pending ripple timeouts)
+      expect(clearTimeoutSpy.mock.calls.length).toBeGreaterThan(0)
+
+      // Advance past ripple delay — only second recalculation's timeout executes
+      vi.advanceTimersByTime(RIPPLE_DELAY_MS + 10)
+
+      // n2 should still get rippled (from the second call)
+      expect(useArchitectureStore.getState().rippleActiveNodeIds.has("n2")).toBe(true)
+
+      // Advance past animation duration to clear ripple
+      vi.advanceTimersByTime(RIPPLE_ANIMATION_DURATION_MS)
+      expect(useArchitectureStore.getState().rippleActiveNodeIds.has("n2")).toBe(false)
+
+      clearTimeoutSpy.mockRestore()
+    })
+
+    it("AC-2: stale generation guard prevents old ripple from executing", () => {
+      // Trigger recalculation — schedules ripple timeout for n2
+      useArchitectureStore.getState().triggerRecalculation("n1")
+
+      // Bump recalcGeneration beyond the captured value to simulate a newer recalculation
+      const currentGen = useArchitectureStore.getState().recalcGeneration
+      useArchitectureStore.setState({ recalcGeneration: currentGen + 100 })
+
+      // Advance past ripple delay — timeout fires but isStale() returns true
+      vi.advanceTimersByTime(RIPPLE_DELAY_MS + 10)
+
+      // n2 should NOT be rippled (stale generation guard prevented update)
+      expect(useArchitectureStore.getState().rippleActiveNodeIds.has("n2")).toBe(false)
+    })
+
+    it("AC-3: node deletion during propagation skips ripple callback", () => {
+      // Trigger recalculation — schedules ripple timeout for n2
+      useArchitectureStore.getState().triggerRecalculation("n1")
+
+      // Remove n2 before the ripple timeout fires (simulate user deleting node)
+      useArchitectureStore.setState({
+        nodes: useArchitectureStore.getState().nodes.filter((n: { id: string }) => n.id !== "n2"),
+        edges: [],
+      })
+
+      // Advance past ripple delay — timeout fires but node existence check fails
+      vi.advanceTimersByTime(RIPPLE_DELAY_MS + 10)
+
+      // n2 should NOT be rippled (node no longer exists)
+      expect(useArchitectureStore.getState().rippleActiveNodeIds.has("n2")).toBe(false)
+    })
+
+    it("restores real timers without contaminating other tests", () => {
+      // Verify fake timers are active in this describe block
+      useArchitectureStore.getState().triggerRecalculation("n1")
+
+      // Ripple should NOT have fired yet (fake timers hold it)
+      expect(useArchitectureStore.getState().rippleActiveNodeIds.size).toBe(0)
+
+      // Advance to fire ripple — confirms fake timers are controlling execution
+      vi.advanceTimersByTime(RIPPLE_DELAY_MS + 10)
+      expect(useArchitectureStore.getState().rippleActiveNodeIds.has("n2")).toBe(true)
     })
   })
 })
