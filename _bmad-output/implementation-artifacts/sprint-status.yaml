@@ -75,14 +75,16 @@ development_status:
   # ============================================================================
   epic-2: in-progress
   2-1-recalculation-engine-and-metric-propagation: done
-  td-2-1a-recalc-robustness: ready-for-dev
+  td-2-1a-recalc-robustness: done
   2-2-bottleneck-heatmap: done
-  td-2-2a-canvas-heatmap-toggle-tests: ready-for-dev
-  td-2-2b-heatmap-robustness: ready-for-dev
+  td-2-2a-canvas-heatmap-toggle-tests: review
+  td-2-2b-heatmap-robustness: review
   2-3-scoring-dashboard: done
   td-2-3a-aggregate-score-tests: done
-  2-4-architecture-tier-system: ready-for-dev
-  2-5-settings-and-preferences: ready-for-dev
+  2-4-architecture-tier-system: done
+  td-2-4a-overlay-z-index: review
+  2-5-settings-and-preferences: done
+  td-2-5a-settings-test-polish: review
   epic-2-retrospective: optional
 
   # ============================================================================

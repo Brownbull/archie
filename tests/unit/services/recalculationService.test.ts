@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { recalculationService, type RecalculationResult } from "@/services/recalculationService"
+import { componentLibrary } from "@/services/componentLibrary"
 import type { MetricValue } from "@/schemas/metricSchema"
 import type { Component } from "@/schemas/componentSchema"
 
@@ -44,6 +45,9 @@ function makeComponent(overrides: Partial<Component> & { id: string; category: s
 describe("recalculationService", () => {
   beforeEach(() => {
     mockComponents.clear()
+    vi.mocked(componentLibrary.getComponent).mockImplementation(
+      (id: string) => mockComponents.get(id),
+    )
   })
 
   describe("run", () => {
@@ -58,7 +62,7 @@ describe("recalculationService", () => {
       const nodes = [
         { id: "n1", data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" } },
       ] as { id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentName: string; componentCategory: string } }[]
-      const edges: { source: string; target: string }[] = []
+      const edges: { id: string; source: string; target: string }[] = []
 
       const result = recalculationService.run(nodes, edges, "n1")
       expect(result.metrics).toBeDefined()
@@ -92,7 +96,7 @@ describe("recalculationService", () => {
         id: "n1",
         data: { archieComponentId: "pg", activeConfigVariantId: "primary-replica", componentName: "PG", componentCategory: "data-storage" },
       }]
-      const edges: { source: string; target: string }[] = []
+      const edges: { id: string; source: string; target: string }[] = []
 
       const result = recalculationService.run(nodes, edges, "n1")
       const nodeMetrics = result.metrics.get("n1")!
@@ -131,7 +135,7 @@ describe("recalculationService", () => {
         { id: "n1", data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" } },
         { id: "n2", data: { archieComponentId: "redis-cache", activeConfigVariantId: "default", componentName: "Redis Cache", componentCategory: "caching" } },
       ]
-      const edges = [{ source: "n2", target: "n1" }]
+      const edges = [{ id: "e1", source: "n2", target: "n1" }]
 
       const result = recalculationService.run(nodes, edges, "n1")
 
@@ -168,8 +172,8 @@ describe("recalculationService", () => {
       ]
       // Chain: n1 → n2 → n3
       const edges = [
-        { source: "n1", target: "n2" },
-        { source: "n2", target: "n3" },
+        { id: "e1", source: "n1", target: "n2" },
+        { id: "e2", source: "n2", target: "n3" },
       ]
 
       const result = recalculationService.run(nodes, edges, "n1")
@@ -196,7 +200,7 @@ describe("recalculationService", () => {
         { id: "n1", data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" } },
         { id: "n2", data: { archieComponentId: "unknown-comp", activeConfigVariantId: "default", componentName: "Unknown", componentCategory: "compute" } },
       ]
-      const edges = [{ source: "n1", target: "n2" }]
+      const edges = [{ id: "e1", source: "n1", target: "n2" }]
 
       // Should not throw
       const result = recalculationService.run(nodes, edges, "n1")
@@ -224,6 +228,46 @@ describe("recalculationService", () => {
       const n1Metrics = result.metrics.get("n1")!
       // Should use base metrics since variant not found
       expect(n1Metrics.metrics[0].numericValue).toBe(5)
+    })
+
+    it("includes nodeHeatmap and edgeHeatmap in result", () => {
+      mockComponents.set("pg", makeComponent({
+        id: "pg",
+        category: "data-storage",
+        baseMetrics: [makeMetric("read-latency", 8, "performance")],
+        configVariants: [{ id: "default", name: "Default", metrics: [] }],
+      }))
+      mockComponents.set("redis-cache", makeComponent({
+        id: "redis-cache",
+        category: "caching",
+        baseMetrics: [makeMetric("cache-hit-latency", 2, "performance")],
+        configVariants: [{ id: "default", name: "Default", metrics: [] }],
+      }))
+
+      const nodes = [
+        { id: "n1", data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" } },
+        { id: "n2", data: { archieComponentId: "redis-cache", activeConfigVariantId: "default", componentName: "Redis", componentCategory: "caching" } },
+      ]
+      const edges = [{ id: "e1", source: "n1", target: "n2" }]
+
+      const result = recalculationService.run(nodes, edges, "n1")
+
+      // nodeHeatmap should have entries for both nodes
+      expect(result.nodeHeatmap).toBeInstanceOf(Map)
+      expect(result.nodeHeatmap.size).toBe(2)
+      expect(result.nodeHeatmap.has("n1")).toBe(true)
+      expect(result.nodeHeatmap.has("n2")).toBe(true)
+
+      // edgeHeatmap should have entry for the edge
+      expect(result.edgeHeatmap).toBeInstanceOf(Map)
+      expect(result.edgeHeatmap.size).toBe(1)
+      expect(result.edgeHeatmap.has("e1")).toBe(true)
+
+      // Verify node heatmap values are valid HeatmapStatus values
+      const validStatuses = ["healthy", "warning", "bottleneck"]
+      expect(validStatuses).toContain(result.nodeHeatmap.get("n1"))
+      expect(validStatuses).toContain(result.nodeHeatmap.get("n2"))
+      expect(validStatuses).toContain(result.edgeHeatmap.get("e1"))
     })
 
     it("returns complete RecalculationResult structure", () => {
@@ -268,7 +312,7 @@ describe("recalculationService", () => {
         { id: "n1", data: { archieComponentId: "pg", activeConfigVariantId: "nonexistent-variant", componentName: "PG", componentCategory: "data-storage" } },
         { id: "n2", data: { archieComponentId: "redis-cache", activeConfigVariantId: "default", componentName: "Redis", componentCategory: "caching" } },
       ]
-      const edges = [{ source: "n1", target: "n2" }]
+      const edges = [{ id: "e1", source: "n1", target: "n2" }]
 
       // Should not throw — n1 falls back to base metrics
       const result = recalculationService.run(nodes, edges, "n1")
@@ -281,6 +325,99 @@ describe("recalculationService", () => {
       // n2 should still be recalculated
       const n2Metrics = result.metrics.get("n2")!
       expect(n2Metrics.metrics.length).toBeGreaterThan(0)
+    })
+
+    it("handles componentLibrary.getComponent() throwing an exception gracefully", () => {
+      mockComponents.set("pg", makeComponent({
+        id: "pg",
+        category: "data-storage",
+        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        configVariants: [{ id: "default", name: "Default", metrics: [] }],
+      }))
+
+      // Override mock to throw for a specific ID
+      vi.mocked(componentLibrary.getComponent).mockImplementation((id: string) => {
+        if (id === "corrupted-comp") {
+          throw new Error("Cache corruption: invalid entry")
+        }
+        return mockComponents.get(id)
+      })
+
+      const nodes = [
+        { id: "n1", data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" } },
+        { id: "n2", data: { archieComponentId: "corrupted-comp", activeConfigVariantId: "default", componentName: "Corrupted", componentCategory: "compute" } },
+      ]
+      const edges = [{ id: "e1", source: "n1", target: "n2" }]
+
+      // Should NOT throw — error is caught internally
+      const result = recalculationService.run(nodes, edges, "n1")
+      expect(result.metrics.size).toBe(2)
+
+      // Corrupted component gets empty metrics
+      const n2Metrics = result.metrics.get("n2")!
+      expect(n2Metrics.metrics).toEqual([])
+
+      // Valid component still recalculates normally
+      const n1Metrics = result.metrics.get("n1")!
+      expect(n1Metrics.metrics.length).toBeGreaterThan(0)
+
+    })
+
+    it("3-node chain: middle node throws, outer nodes still recalculate", () => {
+      mockComponents.set("pg", makeComponent({
+        id: "pg",
+        category: "data-storage",
+        baseMetrics: [makeMetric("read-latency", 5, "performance")],
+        configVariants: [{ id: "default", name: "Default", metrics: [] }],
+      }))
+      mockComponents.set("express", makeComponent({
+        id: "express",
+        category: "compute",
+        baseMetrics: [makeMetric("request-latency", 4, "performance")],
+        configVariants: [{ id: "default", name: "Default", metrics: [] }],
+      }))
+
+      // Override mock: "broken-cache" throws
+      vi.mocked(componentLibrary.getComponent).mockImplementation((id: string) => {
+        if (id === "broken-cache") {
+          throw new Error("Firestore deserialization error")
+        }
+        return mockComponents.get(id)
+      })
+
+      const nodes = [
+        { id: "n1", data: { archieComponentId: "pg", activeConfigVariantId: "default", componentName: "PG", componentCategory: "data-storage" } },
+        { id: "n2", data: { archieComponentId: "broken-cache", activeConfigVariantId: "default", componentName: "Broken Cache", componentCategory: "caching" } },
+        { id: "n3", data: { archieComponentId: "express", activeConfigVariantId: "default", componentName: "Express", componentCategory: "compute" } },
+      ]
+      // Chain: n1 -> n2 -> n3
+      const edges = [
+        { id: "e1", source: "n1", target: "n2" },
+        { id: "e2", source: "n2", target: "n3" },
+      ]
+
+      const result = recalculationService.run(nodes, edges, "n1")
+
+      // All 3 nodes should have entries
+      expect(result.metrics.size).toBe(3)
+
+      // n1 (valid) should have real metrics
+      const n1Metrics = result.metrics.get("n1")!
+      expect(n1Metrics.metrics.length).toBeGreaterThan(0)
+
+      // n2 (broken) should have empty metrics but not crash
+      const n2Metrics = result.metrics.get("n2")!
+      expect(n2Metrics.metrics).toEqual([])
+      expect(n2Metrics.overallScore).toBe(0)
+
+      // n3 (valid) should still recalculate
+      const n3Metrics = result.metrics.get("n3")!
+      expect(n3Metrics.metrics.length).toBeGreaterThan(0)
+
+      // Heatmaps should still be computed for all nodes
+      expect(result.nodeHeatmap.size).toBe(3)
+      expect(result.edgeHeatmap.size).toBe(2)
+
     })
   })
 })

@@ -1,6 +1,6 @@
 # Story: TD-2-1a Recalculation Robustness
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 2 — Trade-off Intelligence & Visualization
 ## Source: Code review of Story 2-1 (2026-02-14)
 
@@ -29,16 +29,16 @@ Tech debt from Story 2-1 code review. Addresses two robustness improvements to t
 ## Tasks / Subtasks
 
 ### Task 1: Error Path Tests
-- [ ] 1.1 Add test in `recalculationService.test.ts`: mock `componentLibrary.getComponent()` to throw for one specific component ID
-- [ ] 1.2 Verify the service handles the error (either try/catch with empty metrics or letting it propagate)
-- [ ] 1.3 If the current code does NOT handle exceptions, add a try/catch in `getEffectiveMetrics()` that logs and returns `[]`
-- [ ] 1.4 Add integration test: 3-node chain where middle node's component throws — verify outer nodes still recalculate
+- [x] 1.1 Add test in `recalculationService.test.ts`: mock `componentLibrary.getComponent()` to throw for one specific component ID
+- [x] 1.2 Verify the service handles the error (either try/catch with empty metrics or letting it propagate)
+- [x] 1.3 If the current code does NOT handle exceptions, add a try/catch in `getEffectiveMetrics()` that logs and returns `[]`
+- [x] 1.4 Add integration test: 3-node chain where middle node's component throws — verify outer nodes still recalculate
 
 ### Task 2: Rule Lookup Optimization
-- [ ] 2.1 Profile `recalculateNode` with a 20-node graph (add benchmark test)
-- [ ] 2.2 Introduce `categoryPairCache` Map inside `recalculateNode` to memoize rule lookups per category pair
-- [ ] 2.3 Verify existing tests still pass (determinism not affected)
-- [ ] 2.4 Add a test with 5+ connections of same category to verify cache works
+- [x] 2.1 Profile `recalculateNode` with a 20-node graph (add benchmark test)
+- [x] 2.2 Introduce `categoryPairCache` Map inside `recalculateNode` to memoize rule lookups per category pair
+- [x] 2.3 Verify existing tests still pass (determinism not affected)
+- [x] 2.4 Add a test with 5+ connections of same category to verify cache works
 
 ## Dev Notes
 
@@ -50,3 +50,15 @@ Tech debt from Story 2-1 code review. Addresses two robustness improvements to t
 - Risk Level: LOW
 - Complexity: Low-Medium
 - Sizing: SMALL (2 tasks, ~8 subtasks, 3 files)
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-15
+- **Classification:** TRIVIAL (1 agent)
+- **Agents:** code-reviewer
+- **Score:** 9/10
+- **Status:** APPROVED
+- **AC-1 (Error Path Tests):** PASS — try/catch in getEffectiveMetrics, validated by exception test + 3-node chain integration test
+- **AC-2 (Rule Lookup Cache):** PASS — ruleCache Map in recalculateNode, validated by 5-connection + 20-node hub-and-spoke tests
+- **Quick Fixes Applied:** 1 (mock reset pattern — moved to beforeEach for test isolation)
+- **TD Stories Created:** 0
+- **Session Cost:** $3.63

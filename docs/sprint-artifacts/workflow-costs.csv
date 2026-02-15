@@ -101,3 +101,11 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-02-14 20:49,7b9b9ea0-dea,ecc-code-review,2-2,10min,87,4,15,"haiku, opus, sonnet",140,573,668293,7866787,8.73,0.78,9.50
 2026-02-14 21:05,8147e64c-af4,ecc-dev-story,story-2-3,18min,114,5,149,"opus, sonnet",509,1305,1107646,13617874,8.33,9.48,17.82
 2026-02-14 21:24,0216f9f9-722,ecc-code-review,story-2-3,9min,81,4,29,"haiku, opus, sonnet",5200,796,574615,6967762,7.50,0.84,8.34
+2026-02-14 22:00,e203ea73-5a5,ecc-dev-story,td-2-3a,7min,55,3,38,"opus, sonnet",4419,564,425264,3502004,3.48,2.43,5.91
+2026-02-14 22:09,9b59eafc-2e7,ecc-code-review,td-2-3a,3min,38,2,13,"haiku, opus, sonnet",108,349,225324,1988087,2.42,0.26,2.68
+2026-02-14 22:14,ad513046-6ae,ecc-dev-story,story-2-4,13min,147,2,41,"opus, sonnet",3856,1308,756901,15389134,11.07,3.96,15.02
+2026-02-14 22:29,80a9eb6e-4af,ecc-code-review,2-4,7min,67,2,5,"opus, sonnet",96,517,502589,5547025,7.23,0.35,7.58
+2026-02-14 22:50,9be3ba80-9a8,ecc-dev-story,story-2-5,13min,177,2,33,"opus, sonnet",268,1690,491078,17047236,11.51,1.80,13.31
+2026-02-14 22:49,43faae82-224,ecc-code-review,2-5,25min,73,4,13,"haiku, opus, sonnet",138,646,522563,5789661,6.73,0.58,7.31
+2026-02-15 09:46,030ca220-1bd,ecc-dev-story,"td-2-1a,td-2-2a,td-2-2b,td-2-4a,td-2-5a",19min,229,1,21,opus,266,2262,530902,26164451,16.87,1.58,18.45
+2026-02-15 10:06,495470d1-aab,ecc-code-review,td-2-1a,6min,47,1,4,"opus, sonnet",118,334,228744,3031337,3.35,0.28,3.63
