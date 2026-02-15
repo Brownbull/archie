@@ -5,6 +5,9 @@ import {
 } from "@xyflow/react"
 import type { EdgeProps } from "@xyflow/react"
 import type { ArchieEdge as ArchieEdgeType } from "@/stores/architectureStore"
+import { useArchitectureStore } from "@/stores/architectureStore"
+import { useUiStore } from "@/stores/uiStore"
+import { HEATMAP_COLORS } from "@/lib/constants"
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
 
 export function ArchieEdge({
@@ -28,22 +31,29 @@ export function ArchieEdge({
     targetPosition,
   })
 
+  // Heatmap state
+  const edgeHeatmapStatus = useArchitectureStore((s) => s.edgeHeatmapColors.get(id))
+  const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
+
   const isIncompatible = data?.isIncompatible ?? false
 
+  // Edge color priority logic (Story 2-2 Dev Notes, AC-ARCH-PATTERN-10)
   let strokeColor = "var(--archie-border)"
   let strokeWidth = 1.5
   let strokeDasharray: string | undefined
 
-  if (isIncompatible) {
+  if (heatmapEnabled && edgeHeatmapStatus) {
+    strokeColor = HEATMAP_COLORS[edgeHeatmapStatus]
+    strokeWidth = 2
+    if (isIncompatible) strokeDasharray = "5 3"
+  } else if (isIncompatible) {
     strokeColor = "var(--color-heatmap-yellow)"
     strokeDasharray = "5 3"
   }
 
   if (selected) {
-    strokeColor = isIncompatible
-      ? "var(--color-heatmap-yellow)"
-      : "var(--archie-accent)"
     strokeWidth = 2.5
+    if (!heatmapEnabled && !isIncompatible) strokeColor = "var(--archie-accent)"
   }
 
   return (
@@ -56,6 +66,7 @@ export function ArchieEdge({
           stroke: strokeColor,
           strokeWidth,
           strokeDasharray,
+          transition: "stroke 300ms ease, stroke-width 300ms ease",
         }}
         data-testid="archie-edge"
       />

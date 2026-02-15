@@ -12,12 +12,14 @@ interface UiState {
   selectedNodeId: string | null
   selectedEdgeId: string | null
   inspectorCollapsed: boolean
+  heatmapEnabled: boolean
   setToolboxTab: (tab: ToolboxTab) => void
   setSearchQuery: (query: string) => void
   setCommandPaletteOpen: (open: boolean) => void
   setSelectedNodeId: (id: string | null) => void
   setSelectedEdgeId: (id: string | null) => void
   setInspectorCollapsed: (collapsed: boolean) => void
+  toggleHeatmap: () => void
   clearSelection: () => void
 }
 
@@ -28,11 +30,13 @@ export const useUiStore = create<UiState>()((set) => ({
   selectedNodeId: null,
   selectedEdgeId: null,
   inspectorCollapsed: false,
+  heatmapEnabled: true,
   setToolboxTab: (tab) => set({ toolboxTab: tab }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),
   setSelectedEdgeId: (id) => set({ selectedEdgeId: id, selectedNodeId: null }),
   setInspectorCollapsed: (collapsed) => set({ inspectorCollapsed: collapsed }),
+  toggleHeatmap: () => set((state) => ({ heatmapEnabled: !state.heatmapEnabled })),
   clearSelection: () => set({ selectedNodeId: null, selectedEdgeId: null }),
 }))

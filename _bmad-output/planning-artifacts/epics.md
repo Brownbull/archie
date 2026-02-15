@@ -209,11 +209,12 @@ User can build architectures by browsing components, dragging them onto a canvas
 **Key UX:** UX1, UX4-UX9, UX11-UX17
 
 ### Epic 2: Trade-off Intelligence & Visualization
-User can see trade-offs visually -- when they change a configuration, metrics recalculate across connected components, the heatmap shows bottlenecks, the dashboard scores the architecture across 7 categories, and the tier system evaluates where the architecture stands. The core "aha moment" loop works. Journey 3 becomes genuinely valuable.
+User can see trade-offs visually -- when they change a configuration, metrics recalculate across connected components, the heatmap shows bottlenecks, the dashboard scores the architecture across 7 categories, and the tier system evaluates where the architecture stands. Plus settings/preferences (gear icon, theme, font). The core "aha moment" loop works. Journey 3 becomes genuinely valuable.
 **FRs covered:** FR13, FR14, FR15, FR16, FR17, FR18, FR19, FR20, FR21, FR22
 **NFRs addressed:** NFR2, NFR3
 **Key ARs:** AR17-AR19
 **Key UX:** UX2, UX3, UX13, UX18
+**Stories:** 2.1 Recalculation Engine, 2.2 Heatmap, 2.3 Dashboard, 2.4 Tier System, 2.5 Settings
 
 ### Epic 3: YAML Workflow & Content Library
 User can import/export architectures as YAML files, use the AI-Archie round-trip workflow, and explore pre-built example architectures (WhatsApp, Telegram). Journey 1 (AI Round-Trip) and Journey 2 (Explorer) work end-to-end.
@@ -535,6 +536,37 @@ So that I have a concrete measure of completeness and a clear path for improveme
 **When** the recalculation completes
 **Then** the tier indicator updates to show the new tier
 **And** the change is visually noticeable (color shift, state change)
+
+### Story 2.5: Settings & Preferences
+
+As a user,
+I want to access a settings menu via a gear icon next to my profile name,
+So that I can customize the visual experience including font style, font size, and switching between dark and light themes.
+
+**Acceptance Criteria:**
+
+**Given** I am authenticated and on the main app
+**When** I view the toolbar
+**Then** I see a gear icon next to my display name
+
+**Given** I see the gear icon
+**When** I click it
+**Then** a dropdown menu opens with settings options
+
+**Given** the settings dropdown is open
+**When** I switch the theme from dark to light (or vice versa)
+**Then** the entire application theme changes immediately
+**And** my theme preference is saved and persists on page reload
+
+**Given** the settings dropdown is open
+**When** I select a different font size (Small, Medium, Large)
+**Then** the application text size adjusts accordingly
+**And** my font size preference persists on page reload
+
+**Given** the settings dropdown is open
+**When** I select a different font style
+**Then** the application font changes to the selected style
+**And** my font style preference persists on page reload
 
 ---
 

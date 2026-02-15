@@ -114,10 +114,10 @@ describe("AppLayout", () => {
     expect(screen.getByTestId("inspector")).toBeInTheDocument()
   })
 
-  it("renders the dashboard region", () => {
+  it("renders the dashboard region with DashboardPanel", () => {
     renderAppLayout()
     expect(screen.getByTestId("dashboard")).toBeInTheDocument()
-    expect(screen.getByText("Dashboard")).toBeInTheDocument()
+    expect(screen.getByTestId("dashboard-panel")).toBeInTheDocument()
   })
 
   it("applies correct dimensions from constants", () => {

@@ -1,5 +1,19 @@
 import "@testing-library/jest-dom"
 
+// Polyfill localStorage for Node.js 22+ (built-in localStorage has broken setItem)
+// Zustand persist middleware needs a working localStorage at module init time
+if (typeof globalThis.localStorage === "undefined" || typeof globalThis.localStorage.setItem !== "function") {
+  const store: Record<string, string> = {}
+  globalThis.localStorage = {
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => { store[key] = value },
+    removeItem: (key: string) => { delete store[key] },
+    clear: () => { Object.keys(store).forEach((key) => delete store[key]) },
+    get length() { return Object.keys(store).length },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+  } as Storage
+}
+
 // Polyfill ResizeObserver for jsdom (needed by cmdk/command palette)
 if (typeof globalThis.ResizeObserver === "undefined") {
   globalThis.ResizeObserver = class ResizeObserver {

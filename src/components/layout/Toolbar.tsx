@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
+import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 
 export function Toolbar() {
@@ -19,6 +20,7 @@ export function Toolbar() {
             {user.displayName}
           </span>
         )}
+        <SettingsMenu />
         <Button variant="ghost" size="sm" onClick={signOut}>
           Sign out
         </Button>
