@@ -9,6 +9,11 @@ import {
   getPropagationHops,
   type PropagationHop,
 } from "@/engine/propagator"
+import {
+  computeArchitectureHeatmap,
+  computeEdgeHeatmapStatus,
+  type HeatmapStatus,
+} from "@/engine/heatmapCalculator"
 import type { MetricValue } from "@/schemas/metricSchema"
 
 // --- Types ---
@@ -16,6 +21,8 @@ import type { MetricValue } from "@/schemas/metricSchema"
 export interface RecalculationResult {
   metrics: ArchitectureMetrics
   propagationHops: PropagationHop[]
+  nodeHeatmap: Map<string, HeatmapStatus>
+  edgeHeatmap: Map<string, HeatmapStatus>
 }
 
 // Node shape expected by the service (matches architectureStore node.data)
@@ -55,7 +62,17 @@ function mergeMetrics(
  * Gets effective metrics for a node by merging base + active variant.
  */
 function getEffectiveMetrics(node: ServiceNode): MetricValue[] {
-  const component = componentLibrary.getComponent(node.data.archieComponentId)
+  let component
+  try {
+    component = componentLibrary.getComponent(node.data.archieComponentId)
+  } catch (error) {
+    console.warn(
+      `recalculationService: getComponent threw for "${node.data.archieComponentId}" (node "${node.id}"):`,
+      error,
+    )
+    return []
+  }
+
   if (!component) {
     console.warn(
       `recalculationService: component "${node.data.archieComponentId}" not found for node "${node.id}"`,
@@ -86,7 +103,7 @@ export const recalculationService = {
    */
   run(
     nodes: ServiceNode[],
-    edges: { source: string; target: string }[],
+    edges: { id: string; source: string; target: string }[],
     changedNodeId: string,
   ): RecalculationResult {
     // Build lookup maps
@@ -149,6 +166,20 @@ export const recalculationService = {
       metrics.set(nodeId, recalculated)
     }
 
-    return { metrics, propagationHops }
+    // Compute node heatmap from metrics (synchronous — NFR3)
+    const nodeHeatmap = computeArchitectureHeatmap(metrics)
+
+    // Compute edge heatmap (worst-case of endpoints)
+    const edgeHeatmap = new Map<string, HeatmapStatus>()
+    for (const edge of edges) {
+      const sourceStatus = nodeHeatmap.get(edge.source)
+      const targetStatus = nodeHeatmap.get(edge.target)
+      edgeHeatmap.set(
+        edge.id,
+        computeEdgeHeatmapStatus(sourceStatus, targetStatus),
+      )
+    }
+
+    return { metrics, propagationHops, nodeHeatmap, edgeHeatmap }
   },
 }

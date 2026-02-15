@@ -498,6 +498,98 @@ describe("recalculator", () => {
     })
   })
 
+  describe("category pair cache optimization", () => {
+    it("correctly accumulates adjustments from 5+ connections of same category", () => {
+      // 5 caching nodes connected to a compute node
+      // caching→compute rule: request-latency adjustment = -2
+      // 5 connections * -2 = -10 adjustment on base value 8 => clamped to 1
+      const metrics = [makeMetric("request-latency", 8, "performance")]
+      const connectedNodes: ConnectedNodeInfo[] = Array.from({ length: 5 }, (_, i) => ({
+        nodeId: `cache-${i}`,
+        category: "caching",
+        metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+      }))
+      const edges = connectedNodes.map((cn) => ({
+        source: cn.nodeId,
+        target: "node-1",
+      }))
+
+      const result = recalculateNode(
+        "node-1",
+        "compute",
+        metrics,
+        connectedNodes,
+        edges,
+      )
+
+      const cachingRule = INTERACTION_RULES["caching→compute"]
+      expect(cachingRule).toBeDefined()
+      const reqLatAdj = cachingRule.find((a) => a.metricId === "request-latency")
+      expect(reqLatAdj).toBeDefined()
+
+      // 5 connections * adjustment, clamped to [1, 10]
+      const expectedRaw = 8 + reqLatAdj!.adjustment * 5
+      const expected = Math.max(1, Math.min(10, expectedRaw))
+      const resultMetric = result.metrics.find((m) => m.id === "request-latency")
+      expect(resultMetric!.numericValue).toBe(expected) // should be 1 (clamped from -2)
+    })
+
+    it("handles 20-node hub-and-spoke graph correctly", () => {
+      const hubMetrics = [
+        makeMetric("request-latency", 5, "performance"),
+        makeMetric("horizontal-scalability", 5, "scalability"),
+        makeMetric("operational-complexity", 5, "operational-complexity"),
+        makeMetric("concurrent-connections", 5, "performance"),
+        makeMetric("data-durability", 5, "reliability"),
+      ]
+
+      const categories = [
+        "caching", "data-storage", "messaging", "delivery-network",
+        "monitoring", "real-time", "caching", "data-storage",
+        "messaging", "caching", "data-storage", "monitoring",
+        "delivery-network", "real-time", "caching", "messaging",
+        "data-storage", "caching", "monitoring",
+      ]
+
+      const connectedNodes: ConnectedNodeInfo[] = categories.map((cat, i) => ({
+        nodeId: `spoke-${i}`,
+        category: cat,
+        metrics: [makeMetric("some-metric", 5, "performance")],
+      }))
+
+      const edges = categories.map((_, i) => ({
+        source: `spoke-${i}`,
+        target: "hub",
+      }))
+
+      const result = recalculateNode(
+        "hub",
+        "compute",
+        hubMetrics,
+        connectedNodes,
+        edges,
+      )
+
+      // Should complete without error
+      expect(result.nodeId).toBe("hub")
+      expect(result.metrics).toHaveLength(5)
+      // All metrics should be clamped within 1-10
+      for (const m of result.metrics) {
+        expect(m.numericValue).toBeGreaterThanOrEqual(1)
+        expect(m.numericValue).toBeLessThanOrEqual(10)
+      }
+      // Determinism check: running again should produce identical results
+      const result2 = recalculateNode(
+        "hub",
+        "compute",
+        hubMetrics,
+        connectedNodes,
+        edges,
+      )
+      expect(result).toEqual(result2)
+    })
+  })
+
   describe("value enum boundary precision", () => {
     it("numericValue 3 derives 'low'", () => {
       const result = recalculateNode("n1", "compute", [makeMetric("m1", 3, "perf")], [], [])

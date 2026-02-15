@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { ArchieNode } from "@/components/canvas/ArchieNode"
-import { NODE_WIDTH } from "@/lib/constants"
+import { HEATMAP_COLORS, NODE_WIDTH } from "@/lib/constants"
+import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 
 vi.mock("@xyflow/react", () => ({
   Handle: ({ type, position, ...props }: Record<string, unknown>) => (
@@ -13,6 +14,22 @@ vi.mock("@xyflow/react", () => ({
 vi.mock("@/lib/firebase", () => ({
   auth: { currentUser: null },
   db: {},
+}))
+
+// Mock Zustand stores for heatmap integration
+const mockHeatmapColors = new Map<string, HeatmapStatus>()
+let mockHeatmapEnabled = false
+
+vi.mock("@/stores/architectureStore", () => ({
+  useArchitectureStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ heatmapColors: mockHeatmapColors }),
+  ),
+}))
+
+vi.mock("@/stores/uiStore", () => ({
+  useUiStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ heatmapEnabled: mockHeatmapEnabled }),
+  ),
 }))
 
 const defaultProps = {
@@ -27,6 +44,11 @@ const defaultProps = {
 } as Parameters<typeof ArchieNode>[0]
 
 describe("ArchieNode", () => {
+  beforeEach(() => {
+    mockHeatmapColors.clear()
+    mockHeatmapEnabled = false
+  })
+
   it("renders component name", () => {
     render(<ArchieNode {...defaultProps} />)
     expect(screen.getByText("PostgreSQL")).toBeInTheDocument()
@@ -45,7 +67,6 @@ describe("ArchieNode", () => {
 
   it("renders category icon", () => {
     render(<ArchieNode {...defaultProps} />)
-    // Lucide icons render as SVG elements
     const node = screen.getByTestId("archie-node")
     const svg = node.querySelector("svg")
     expect(svg).toBeInTheDocument()
@@ -76,7 +97,80 @@ describe("ArchieNode", () => {
   it("does NOT render description or metrics", () => {
     render(<ArchieNode {...defaultProps} />)
     const node = screen.getByTestId("archie-node")
-    // Only name text should exist — no description, no metrics
     expect(node.textContent).toBe("PostgreSQL")
+  })
+
+  describe("heatmap glow", () => {
+    it("renders box-shadow glow when heatmap enabled and status is healthy", () => {
+      mockHeatmapEnabled = true
+      mockHeatmapColors.set("node-1", "healthy")
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.style.boxShadow).toBe(`0 0 8px 2px ${HEATMAP_COLORS.healthy}`)
+    })
+
+    it("renders box-shadow glow when heatmap enabled and status is warning", () => {
+      mockHeatmapEnabled = true
+      mockHeatmapColors.set("node-1", "warning")
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.style.boxShadow).toBe(`0 0 8px 2px ${HEATMAP_COLORS.warning}`)
+    })
+
+    it("renders box-shadow glow when heatmap enabled and status is bottleneck", () => {
+      mockHeatmapEnabled = true
+      mockHeatmapColors.set("node-1", "bottleneck")
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.style.boxShadow).toBe(`0 0 8px 2px ${HEATMAP_COLORS.bottleneck}`)
+    })
+
+    it("renders no box-shadow when heatmap disabled", () => {
+      mockHeatmapEnabled = false
+      mockHeatmapColors.set("node-1", "healthy")
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.style.boxShadow).toBe("")
+    })
+
+    it("renders no box-shadow when status is undefined (no metrics yet)", () => {
+      mockHeatmapEnabled = true
+      // Don't set any heatmap color for node-1
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.style.boxShadow).toBe("")
+    })
+
+    it("sets aria-label with heatmap status when heatmap enabled", () => {
+      mockHeatmapEnabled = true
+      mockHeatmapColors.set("node-1", "warning")
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("aria-label", "PostgreSQL — warning")
+    })
+
+    it("sets aria-label without heatmap status when heatmap disabled", () => {
+      mockHeatmapEnabled = false
+      mockHeatmapColors.set("node-1", "warning")
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("aria-label", "PostgreSQL")
+    })
+
+    it("sets aria-label without heatmap status when no heatmap data", () => {
+      mockHeatmapEnabled = true
+      // Don't set any heatmap color for node-1
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("aria-label", "PostgreSQL")
+    })
+
+    it("category stripe backgroundColor unchanged when heatmap active", () => {
+      mockHeatmapEnabled = true
+      mockHeatmapColors.set("node-1", "bottleneck")
+      render(<ArchieNode {...defaultProps} />)
+      const stripe = screen.getByTestId("archie-node-stripe")
+      expect(stripe).toHaveStyle({ backgroundColor: "var(--color-cat-data-storage)" })
+    })
   })
 })

@@ -17,7 +17,8 @@ export function usePreferencesEffect() {
     else html.classList.remove("dark")
     const fontSizeValue = fontSize in FONT_SIZE_PRESETS ? FONT_SIZE_PRESETS[fontSize] : FONT_SIZE_PRESETS.medium
     const fontFamilyValue = fontFamily in FONT_FAMILY_PRESETS ? FONT_FAMILY_PRESETS[fontFamily] : FONT_FAMILY_PRESETS.inter
-    html.style.setProperty("--archie-font-size", fontSizeValue)
+    // Set root font-size directly so rem-based Tailwind classes scale proportionally
+    html.style.fontSize = fontSizeValue
     html.style.setProperty("--archie-font-family", fontFamilyValue)
   }, [theme, fontSize, fontFamily])
 }

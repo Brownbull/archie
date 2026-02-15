@@ -52,3 +52,59 @@ export const POSITION_EPSILON = 1 // px tolerance for floating-point position co
 // Recalculation ripple animation (UX3, Story 2-1)
 export const RIPPLE_DELAY_MS = 100 // ms delay per BFS hop for visual ripple propagation
 export const RIPPLE_ANIMATION_DURATION_MS = 200 // ms duration of the CSS pulse animation per node
+
+// Metric categories (Story 2-3, Dashboard)
+export const METRIC_CATEGORIES = [
+  { id: "performance", name: "Performance", shortName: "Perf", iconName: "Gauge", color: "var(--color-metric-performance)" },
+  { id: "reliability", name: "Reliability", shortName: "Rel", iconName: "ShieldCheck", color: "var(--color-metric-reliability)" },
+  { id: "scalability", name: "Scalability", shortName: "Scale", iconName: "TrendingUp", color: "var(--color-metric-scalability)" },
+  { id: "security", name: "Security", shortName: "Sec", iconName: "Lock", color: "var(--color-metric-security)" },
+  { id: "operational-complexity", name: "Operational Simplicity", shortName: "Ops", iconName: "Wrench", color: "var(--color-metric-ops)" },
+  { id: "cost-efficiency", name: "Cost Efficiency", shortName: "Cost", iconName: "DollarSign", color: "var(--color-metric-cost)" },
+  { id: "developer-experience", name: "Developer Experience", shortName: "DX", iconName: "Code", color: "var(--color-metric-dx)" },
+] as const
+
+export type MetricCategoryId = (typeof METRIC_CATEGORIES)[number]["id"]
+
+// Font presets (Story 2-5)
+// These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally
+// Browser default root is 16px; medium preserves that, small/large shift by ±2px
+export const FONT_SIZE_PRESETS = {
+  small: "14px",
+  medium: "16px",
+  large: "18px",
+} as const
+
+export const FONT_FAMILY_PRESETS = {
+  inter: '"Inter", system-ui, sans-serif',
+  outfit: '"Outfit", system-ui, sans-serif',
+  "space-grotesk": '"Space Grotesk", system-ui, sans-serif',
+  "fira-sans": '"Fira Sans", system-ui, sans-serif',
+  "dm-sans": '"DM Sans", system-ui, sans-serif',
+  "source-sans-3": '"Source Sans 3", system-ui, sans-serif',
+  "jetbrains-mono": '"JetBrains Mono", monospace',
+  system: 'system-ui, -apple-system, sans-serif',
+} as const
+
+// Heatmap thresholds (Story 2-2)
+// overallScore >= 6 = healthy, >= 4 = warning, < 4 = bottleneck
+// Aligns with MetricValue enum: low=1-3, medium=4-7, high=8-10
+export const HEATMAP_THRESHOLD_WARNING = 6
+export const HEATMAP_THRESHOLD_BOTTLENECK = 4
+
+// Heatmap colors — performance overlay, separate from category identity (UX18)
+export const HEATMAP_COLORS = {
+  healthy: "var(--color-heatmap-green)",
+  warning: "var(--color-heatmap-yellow)",
+  bottleneck: "var(--color-heatmap-red)",
+} as const
+
+// Z-index scale — prevents stacking conflicts as overlays are added (TD-2-4a)
+// shadcn UI components (dialog, select, dropdown-menu) use z-50 by default
+export const Z_INDEX = {
+  CANVAS_OVERLAY: "z-10", // EmptyCanvasState, canvas watermarks
+  DROPDOWN: "z-40", // Custom dropdowns, popovers
+  OVERLAY: "z-50", // Detail panels, tier popover, tooltips
+  MODAL: "z-50", // Modals, dialogs (shadcn default)
+  TOAST: "z-[70]", // Toast notifications (above everything)
+} as const

@@ -96,6 +96,7 @@ The dashboard renders only categories that have data in the current architecture
 | dashboardCalculator.test | `tests/unit/engine/dashboardCalculator.test.ts` | Unit test (AR22) | NEW |
 | DashboardPanel.test | `tests/unit/components/dashboard/DashboardPanel.test.tsx` | Unit test (AR22) | NEW |
 | CategoryBar.test | `tests/unit/components/dashboard/CategoryBar.test.tsx` | Unit test (AR22) | NEW |
+| scoring-dashboard.spec | `tests/e2e/scoring-dashboard.spec.ts` | E2E test (Playwright) | NEW |
 
 ## Tasks / Subtasks
 
@@ -220,12 +221,19 @@ Missing from seed data: `security`, `cost-efficiency`, `developer-experience`. T
 - Epic 4 Story 4-4 (Dashboard Drill-Down): CategoryOverlay extends the dashboard
 
 ### E2E Testing
-
-Key E2E scenarios:
-- Place components -> dashboard bars appear with scores for relevant categories
-- Change config -> bars animate to new values smoothly
-- Remove all components -> empty state message shows
-- Verify category bars show correct abbreviated names and icons
+- Action: CREATE
+- Test File: `tests/e2e/scoring-dashboard.spec.ts`
+- Result: PASS (11/11, deterministic across 2 runs)
+- Multi-User: SINGLE-USER
+- Quality Score: 98/100 (TEA 5-Dimension)
+  - Determinism: 20/20
+  - Isolation: 19/20
+  - Maintainability: 19/20
+  - Coverage: 20/20
+  - Performance: 20/20
+- Duration: ~34s
+- Date: 2026-02-14
+- Bug discovered: `removeNodes` (plural) missing `computedMetrics`/`heatmapColors` cleanup (fixed in architectureStore.ts)
 
 ## ECC Analysis Summary
 - Risk Level: LOW

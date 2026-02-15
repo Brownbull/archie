@@ -1207,6 +1207,29 @@ describe("architectureStore", () => {
       expect(useArchitectureStore.getState().rippleActiveNodeIds.size).toBe(0)
     })
 
+    it("rapid recalculation clears pending ripple timeouts", () => {
+      const clearTimeoutSpy = vi.spyOn(global, "clearTimeout")
+
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      useArchitectureStore.getState().addEdge({
+        source: nodes[0].id, target: nodes[1].id, sourceHandle: null, targetHandle: null,
+      })
+
+      // First explicit recalculation — schedules ripple timeouts
+      useArchitectureStore.getState().triggerRecalculation(nodes[0].id)
+
+      // Clear spy AFTER first recalculation to isolate the second call
+      clearTimeoutSpy.mockClear()
+
+      // Second recalculation — should clear previous ripple timeouts
+      useArchitectureStore.getState().triggerRecalculation(nodes[0].id)
+      expect(clearTimeoutSpy).toHaveBeenCalled()
+
+      clearTimeoutSpy.mockRestore()
+    })
+
     it("computedMetrics uses new Map instances (immutability)", () => {
       useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
       const nodeId = useArchitectureStore.getState().nodes[0].id
@@ -1216,6 +1239,89 @@ describe("architectureStore", () => {
       const mapAfter = useArchitectureStore.getState().computedMetrics
 
       expect(mapBefore).not.toBe(mapAfter)
+    })
+  })
+
+  describe("currentTier (Story 2-4)", () => {
+    it("is null initially", () => {
+      expect(useArchitectureStore.getState().currentTier).toBeNull()
+    })
+
+    it("updates after addNode when enough components from enough categories", () => {
+      // Foundation tier requires >=3 components from >=2 categories
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+
+      const tier = useArchitectureStore.getState().currentTier
+      expect(tier).not.toBeNull()
+      expect(tier!.tierId).toBe("foundation")
+    })
+
+    it("remains null with fewer than 3 components", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+
+      expect(useArchitectureStore.getState().currentTier).toBeNull()
+    })
+
+    it("becomes null when all nodes removed via removeNode", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+
+      // Should have Foundation tier
+      expect(useArchitectureStore.getState().currentTier).not.toBeNull()
+
+      // Remove all nodes one by one
+      const nodes = useArchitectureStore.getState().nodes
+      for (const node of nodes) {
+        useArchitectureStore.getState().removeNode(node.id)
+      }
+
+      expect(useArchitectureStore.getState().currentTier).toBeNull()
+    })
+
+    it("becomes null when all nodes removed via removeNodes", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+
+      expect(useArchitectureStore.getState().currentTier).not.toBeNull()
+
+      const nodeIds = useArchitectureStore.getState().nodes.map((n) => n.id)
+      useArchitectureStore.getState().removeNodes(nodeIds)
+
+      expect(useArchitectureStore.getState().currentTier).toBeNull()
+    })
+
+    it("updates after triggerRecalculation", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+
+      const nodeId = useArchitectureStore.getState().nodes[0].id
+      useArchitectureStore.getState().triggerRecalculation(nodeId)
+
+      // Should still have a tier (Foundation at minimum)
+      expect(useArchitectureStore.getState().currentTier).not.toBeNull()
+    })
+
+    it("re-evaluates on removeNode of isolated node (no neighbor recalculation)", () => {
+      // Add 4 isolated nodes (no edges), 3 categories
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      useArchitectureStore.getState().addNode("nginx", { x: 400, y: 0 })
+      useArchitectureStore.getState().addNode("postgresql", { x: 600, y: 0 })
+
+      expect(useArchitectureStore.getState().currentTier).not.toBeNull()
+
+      // Remove one isolated node — should still have Foundation (3 remaining, 3 categories)
+      const nodeToRemove = useArchitectureStore.getState().nodes[3].id
+      useArchitectureStore.getState().removeNode(nodeToRemove)
+
+      expect(useArchitectureStore.getState().nodes).toHaveLength(3)
+      expect(useArchitectureStore.getState().currentTier).not.toBeNull()
     })
   })
 })

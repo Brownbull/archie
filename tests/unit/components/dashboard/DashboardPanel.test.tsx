@@ -43,7 +43,7 @@ const mockUseArchitectureStore = vi.mocked(useArchitectureStore)
 
 function mockEmptyStore() {
   mockUseArchitectureStore.mockImplementation((selector: unknown) => {
-    const state = { computedMetrics: new Map() }
+    const state = { computedMetrics: new Map(), currentTier: null }
     return (selector as (s: typeof state) => unknown)(state)
   })
 }
@@ -73,7 +73,7 @@ function mockPopulatedStore(
   metricsMap: Map<string, RecalculatedMetrics>,
 ) {
   mockUseArchitectureStore.mockImplementation((selector: unknown) => {
-    const state = { computedMetrics: metricsMap }
+    const state = { computedMetrics: metricsMap, currentTier: null }
     return (selector as (s: typeof state) => unknown)(state)
   })
 }

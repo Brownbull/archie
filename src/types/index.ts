@@ -18,3 +18,11 @@ export type {
 } from "@/engine/recalculator"
 export type { PropagationHop } from "@/engine/propagator"
 export type { RecalculationResult } from "@/services/recalculationService"
+export type { HeatmapStatus } from "@/engine/heatmapCalculator"
+export type { CategoryScore } from "@/engine/dashboardCalculator"
+export type {
+  TierDefinition,
+  TierResult,
+  TierGap,
+  TierRequirement,
+} from "@/lib/tierDefinitions"

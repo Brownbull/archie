@@ -88,13 +88,23 @@ export function recalculateNode(
   // Build adjustment accumulator: metricId → total adjustment
   const adjustments = new Map<string, number>()
 
+  // Cache rule lookups by category pair to avoid redundant lookups
+  // when multiple connected nodes share the same category
+  const ruleCache = new Map<string, MetricAdjustment[] | undefined>()
+  const getCachedRules = (key: string): MetricAdjustment[] | undefined => {
+    if (ruleCache.has(key)) return ruleCache.get(key)
+    const rules = INTERACTION_RULES[key]
+    ruleCache.set(key, rules)
+    return rules
+  }
+
   for (const connected of connectedNodes) {
     // Check both directions of the category pair
     const key1 = `${connected.category}→${nodeCategory}`
     const key2 = `${nodeCategory}→${connected.category}`
 
-    const rules1 = INTERACTION_RULES[key1]
-    const rules2 = INTERACTION_RULES[key2]
+    const rules1 = getCachedRules(key1)
+    const rules2 = getCachedRules(key2)
 
     if (rules1) {
       for (const adj of rules1) {

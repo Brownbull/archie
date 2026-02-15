@@ -52,13 +52,13 @@ export function ComponentCard({ component }: ComponentCardProps) {
 
       <div className="mt-1.5 space-y-1.5">
         <div>
-          <span className="text-[10px] font-semibold uppercase text-text-secondary">IS</span>
-          <p className="text-[13px] leading-tight text-text-primary">{component.is}</p>
+          <span className="text-[0.625rem] font-semibold uppercase text-text-secondary">IS</span>
+          <p className="text-[0.8125rem] leading-tight text-text-primary">{component.is}</p>
         </div>
 
         <div>
-          <span className="text-[10px] font-semibold uppercase text-text-secondary">GAIN</span>
-          <ul className="ml-3 list-disc text-[13px] leading-tight text-text-primary">
+          <span className="text-[0.625rem] font-semibold uppercase text-text-secondary">GAIN</span>
+          <ul className="ml-3 list-disc text-[0.8125rem] leading-tight text-text-primary">
             {component.gain.map((g, i) => (
               <li key={i}>{g}</li>
             ))}
@@ -66,8 +66,8 @@ export function ComponentCard({ component }: ComponentCardProps) {
         </div>
 
         <div>
-          <span className="text-[10px] font-semibold uppercase text-text-secondary">COST</span>
-          <ul className="ml-3 list-disc text-[13px] leading-tight text-text-primary">
+          <span className="text-[0.625rem] font-semibold uppercase text-text-secondary">COST</span>
+          <ul className="ml-3 list-disc text-[0.8125rem] leading-tight text-text-primary">
             {component.cost.map((c, i) => (
               <li key={i}>{c}</li>
             ))}
@@ -76,7 +76,7 @@ export function ComponentCard({ component }: ComponentCardProps) {
 
         <div className="flex flex-wrap gap-1 pt-1">
           {component.tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-[10px]">
+            <Badge key={tag} variant="secondary" className="text-[0.625rem]">
               {tag}
             </Badge>
           ))}

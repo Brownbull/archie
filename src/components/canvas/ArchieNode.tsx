@@ -2,20 +2,40 @@ import { memo } from "react"
 import { Handle, Position } from "@xyflow/react"
 import type { NodeProps } from "@xyflow/react"
 import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
-import { COMPONENT_CATEGORIES, NODE_WIDTH, type ComponentCategoryId } from "@/lib/constants"
+import { useArchitectureStore } from "@/stores/architectureStore"
+import { useUiStore } from "@/stores/uiStore"
+import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 
-function ArchieNodeComponent({ data }: NodeProps<ArchieNodeType>) {
+function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const category = COMPONENT_CATEGORIES[data.componentCategory as ComponentCategoryId]
   const color = category?.color ?? "var(--color-muted)"
   const IconComponent = category ? CATEGORY_ICONS[category.iconName] : undefined
+
+  // Heatmap state — targeted selectors (AC-ARCH-PATTERN-5, AC-ARCH-NO-6)
+  const heatmapStatus = useArchitectureStore((s) => s.heatmapColors.get(id))
+  const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
+
+  // Box-shadow glow for heatmap (AC-ARCH-PATTERN-6) — separate from category stripe
+  const boxShadow =
+    heatmapEnabled && heatmapStatus
+      ? `0 0 8px 2px ${HEATMAP_COLORS[heatmapStatus]}`
+      : undefined
+
+  // Accessibility: include heatmap status in aria-label for screen readers (TD-2-2b)
+  const ariaLabel =
+    heatmapEnabled && heatmapStatus
+      ? `${data.componentName} \u2014 ${heatmapStatus}`
+      : data.componentName
 
   return (
     <div
       data-testid="archie-node"
       className="rounded-md border border-archie-border bg-panel shadow-sm"
-      style={{ width: `${NODE_WIDTH}px` }}
+      style={{ width: `${NODE_WIDTH}px`, boxShadow }}
+      aria-label={ariaLabel}
     >
+      {/* Category stripe — identity, never heatmap (UX18, AC-ARCH-NO-9) */}
       <div
         className="h-1 w-full rounded-t-md"
         style={{ backgroundColor: color }}

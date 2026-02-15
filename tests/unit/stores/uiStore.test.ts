@@ -10,6 +10,7 @@ describe("uiStore", () => {
       selectedNodeId: null,
       selectedEdgeId: null,
       inspectorCollapsed: false,
+      heatmapEnabled: true,
     })
   })
 
@@ -108,6 +109,29 @@ describe("uiStore", () => {
       useUiStore.getState().setInspectorCollapsed(true)
       useUiStore.getState().setInspectorCollapsed(false)
       expect(useUiStore.getState().inspectorCollapsed).toBe(false)
+    })
+  })
+
+  describe("heatmapEnabled", () => {
+    it("defaults to true", () => {
+      expect(useUiStore.getState().heatmapEnabled).toBe(true)
+    })
+
+    it("toggleHeatmap toggles from true to false", () => {
+      useUiStore.getState().toggleHeatmap()
+      expect(useUiStore.getState().heatmapEnabled).toBe(false)
+    })
+
+    it("toggleHeatmap toggles from false to true", () => {
+      useUiStore.setState({ heatmapEnabled: false })
+      useUiStore.getState().toggleHeatmap()
+      expect(useUiStore.getState().heatmapEnabled).toBe(true)
+    })
+
+    it("toggleHeatmap twice returns to original state", () => {
+      useUiStore.getState().toggleHeatmap()
+      useUiStore.getState().toggleHeatmap()
+      expect(useUiStore.getState().heatmapEnabled).toBe(true)
     })
   })
 

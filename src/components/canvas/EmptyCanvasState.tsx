@@ -1,4 +1,5 @@
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { Z_INDEX } from "@/lib/constants"
 import { FileUp, LayoutTemplate, GripVertical } from "lucide-react"
 
 const SUGGESTIONS = [
@@ -15,7 +16,7 @@ export function EmptyCanvasState() {
   return (
     <div
       data-testid="canvas-empty-state"
-      className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+      className={`pointer-events-none absolute inset-0 ${Z_INDEX.CANVAS_OVERLAY} flex items-center justify-center`}
     >
       <div className="pointer-events-auto rounded-lg border border-archie-border bg-panel/90 p-6 shadow-lg backdrop-blur-sm">
         <h3 className="mb-4 text-center text-sm font-semibold text-text-primary">
