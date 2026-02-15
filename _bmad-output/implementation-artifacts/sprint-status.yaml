@@ -45,7 +45,7 @@ development_status:
   # User can build architectures by browsing, dragging, wiring, configuring, inspecting
   # FRs: FR1-FR12 | NFRs: NFR1, NFR5, NFR8, NFR10
   # ============================================================================
-  epic-1: in-progress
+  epic-1: done
   1-1-project-foundation-and-authentication: done
   1-2-component-data-pipeline-and-toolbox-browsing: done
   td-1-2a-schema-alignment: done
@@ -73,7 +73,7 @@ development_status:
   # Plus settings/preferences (gear icon, theme, font)
   # FRs: FR13-FR22 | NFRs: NFR2, NFR3
   # ============================================================================
-  epic-2: in-progress
+  epic-2: done
   2-1-recalculation-engine-and-metric-propagation: done
   td-2-1a-recalc-robustness: done
   2-2-bottleneck-heatmap: done
