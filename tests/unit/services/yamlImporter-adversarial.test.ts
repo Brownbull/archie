@@ -276,7 +276,8 @@ edges: []
       const result = importYamlString(yaml)
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.errors[0].code).toBe("VERSION_TOO_OLD")
+        expect(result.errors[0].code).toBe("INVALID_VERSION_FORMAT")
+        expect(result.errors[0].message).toContain("not-semver")
       }
     })
 

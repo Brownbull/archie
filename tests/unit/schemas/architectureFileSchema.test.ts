@@ -7,6 +7,7 @@ import {
   CURRENT_SCHEMA_VERSION,
   MIGRATIONS,
   checkSchemaVersion,
+  type VersionStatus,
 } from "@/schemas/architectureFileSchema"
 
 const validNode = {
@@ -303,37 +304,79 @@ describe("ArchitectureFileYamlSchema (snake_case to camelCase)", () => {
 })
 
 describe("checkSchemaVersion", () => {
-  it("returns 'compatible' for same version", () => {
-    expect(checkSchemaVersion("1.0.0", "1.0.0")).toBe("compatible")
+  it("returns compatible for same version", () => {
+    expect(checkSchemaVersion("1.0.0", "1.0.0")).toEqual({ status: "compatible" })
   })
 
-  it("returns 'compatible' for newer minor version", () => {
-    expect(checkSchemaVersion("1.0.0", "1.2.0")).toBe("compatible")
+  it("returns compatible for newer minor version", () => {
+    expect(checkSchemaVersion("1.0.0", "1.2.0")).toEqual({ status: "compatible" })
   })
 
-  it("returns 'compatible' for newer patch version", () => {
-    expect(checkSchemaVersion("1.0.0", "1.0.5")).toBe("compatible")
+  it("returns compatible for newer patch version", () => {
+    expect(checkSchemaVersion("1.0.0", "1.0.5")).toEqual({ status: "compatible" })
   })
 
-  it("returns 'compatible' for older minor (same major)", () => {
-    expect(checkSchemaVersion("1.2.0", "1.0.0")).toBe("compatible")
+  it("returns compatible for older minor (same major)", () => {
+    expect(checkSchemaVersion("1.2.0", "1.0.0")).toEqual({ status: "compatible" })
   })
 
-  it("returns 'too-new' when file major is newer than app major", () => {
-    expect(checkSchemaVersion("2.0.0", "1.0.0")).toBe("too-new")
+  it("returns too-new when file major is newer than app major", () => {
+    expect(checkSchemaVersion("2.0.0", "1.0.0")).toEqual({ status: "too-new" })
   })
 
-  it("returns 'too-old' when file major is older and no migration", () => {
-    expect(checkSchemaVersion("0.5.0", "1.0.0")).toBe("too-old")
+  it("returns too-old when file major is older and no migration", () => {
+    expect(checkSchemaVersion("0.5.0", "1.0.0")).toEqual({ status: "too-old" })
   })
 
-  it("returns 'migrate' when file major is older and migration exists", () => {
-    // Temporarily add a migration for testing
+  it("returns migrate with migrationKey when file major is older and migration exists", () => {
     const originalMigrations = { ...MIGRATIONS }
     ;(MIGRATIONS as Record<string, (data: unknown) => unknown>)["0"] = (d) => d
-    expect(checkSchemaVersion("0.5.0", "1.0.0")).toBe("migrate")
+    expect(checkSchemaVersion("0.5.0", "1.0.0")).toEqual({ status: "migrate", migrationKey: 0 })
     // Clean up
     delete (MIGRATIONS as Record<string, (data: unknown) => unknown>)["0"]
     expect(MIGRATIONS).toEqual(originalMigrations)
+  })
+
+  it("returns invalid-format for non-numeric file major version", () => {
+    const result = checkSchemaVersion("abc.0.0", "1.0.0")
+    expect(result.status).toBe("invalid-format")
+    if (result.status === "invalid-format") {
+      expect(result.reason).toContain("abc.0.0")
+    }
+  })
+
+  it("returns invalid-format for non-numeric app major version", () => {
+    const result = checkSchemaVersion("1.0.0", "xyz.0.0")
+    expect(result.status).toBe("invalid-format")
+    if (result.status === "invalid-format") {
+      expect(result.reason).toContain("xyz.0.0")
+    }
+  })
+
+  it("returns too-old for empty file version (defensive — Zod min(1) prevents this in practice)", () => {
+    // Number("") → 0, which passes the isNaN guard. Major 0 < 1 → too-old.
+    // In the real pipeline, Zod's min(1) rejects empty strings before this function runs.
+    const result = checkSchemaVersion("", "1.0.0")
+    expect(result).toEqual({ status: "too-old" })
+  })
+
+  it("VersionStatus discriminated union is exhaustive (compile-time check)", () => {
+    // This test exists to verify the VersionStatus type covers all variants.
+    // If a variant is added to VersionStatus without updating this switch,
+    // TypeScript will error on the `never` assignment below.
+    const result: VersionStatus = checkSchemaVersion("1.0.0", "1.0.0")
+    switch (result.status) {
+      case "compatible":
+      case "too-new":
+      case "too-old":
+      case "migrate":
+      case "invalid-format":
+        expect(result.status).toBe("compatible")
+        break
+      default: {
+        const _exhaustive: never = result
+        void _exhaustive
+      }
+    }
   })
 })

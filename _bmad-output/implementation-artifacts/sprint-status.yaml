@@ -97,7 +97,8 @@ development_status:
   td-cross-1-shared-test-infrastructure: done
   3-1-yaml-import-pipeline: done
   td-3-1a-import-pipeline-robustness: done
-  td-3-1a-b-version-handling-type-safety: ready-for-dev
+  td-3-1a-b-version-handling-type-safety: done
+  td-3-1a-c-migration-test-isolation: ready-for-dev
   3-2-yaml-export-and-round-trip: ready-for-dev
   3-3-example-architectures-and-ai-prompt-template: ready-for-dev
   td-3-3a-seed-blueprint-hardening: ready-for-dev

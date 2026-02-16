@@ -164,31 +164,45 @@ export function importYamlString(text: string): ImportResult {
     }
   }
 
-  // Step 5: Version check
+  // Step 5: Version check (discriminated union — exhaustive switch)
   const versionStatus = checkSchemaVersion(data.schemaVersion, CURRENT_SCHEMA_VERSION)
-  if (versionStatus === "too-new") {
-    return {
-      success: false,
-      errors: [{
-        code: "VERSION_TOO_NEW",
-        message: `This file was created with a newer version of Archie (schema ${data.schemaVersion}). Please update Archie.`,
-      }],
+  switch (versionStatus.status) {
+    case "compatible":
+      break
+    case "too-new":
+      return {
+        success: false,
+        errors: [{
+          code: "VERSION_TOO_NEW",
+          message: `This file was created with a newer version of Archie (schema ${data.schemaVersion}). Please update Archie.`,
+        }],
+      }
+    case "too-old":
+      return {
+        success: false,
+        errors: [{
+          code: "VERSION_TOO_OLD",
+          message: `Schema version ${data.schemaVersion} is no longer supported. No migration available.`,
+        }],
+      }
+    case "migrate": {
+      const migrateFn = MIGRATIONS[versionStatus.migrationKey]
+      if (migrateFn) {
+        Object.assign(data, migrateFn(data))
+      }
+      break
     }
-  }
-  if (versionStatus === "too-old") {
-    return {
-      success: false,
-      errors: [{
-        code: "VERSION_TOO_OLD",
-        message: `Schema version ${data.schemaVersion} is no longer supported. No migration available.`,
-      }],
-    }
-  }
-  if (versionStatus === "migrate") {
-    const migrationKey = String(data.schemaVersion.split(".")[0])
-    const migrateFn = MIGRATIONS[migrationKey]
-    if (migrateFn) {
-      Object.assign(data, migrateFn(data))
+    case "invalid-format":
+      return {
+        success: false,
+        errors: [{
+          code: "INVALID_VERSION_FORMAT",
+          message: versionStatus.reason,
+        }],
+      }
+    default: {
+      const _exhaustive: never = versionStatus
+      return _exhaustive
     }
   }
 

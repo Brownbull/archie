@@ -1,6 +1,6 @@
 # Story: TD-3-1a-b Version Handling Type Safety
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: Code review of td-3-1a (2026-02-15)
 
@@ -25,17 +25,17 @@ Tech debt from td-3-1a code review. Two pre-existing type safety issues in the Y
 ## Tasks / Subtasks
 
 ### Task 1: Version Status Type Safety
-- [ ] 1.1 Define `VersionStatus` discriminated union in `architectureFileSchema.ts`
-- [ ] 1.2 Update `checkSchemaVersion()` return type to `VersionStatus`
-- [ ] 1.3 Update all consumers in `yamlImporter.ts` to use discriminated union
-- [ ] 1.4 Add tests for exhaustive version status handling
+- [x] 1.1 Define `VersionStatus` discriminated union in `architectureFileSchema.ts`
+- [x] 1.2 Update `checkSchemaVersion()` return type to `VersionStatus`
+- [x] 1.3 Update all consumers in `yamlImporter.ts` to use discriminated union
+- [x] 1.4 Add tests for exhaustive version status handling
 
 ### Task 2: Migration Key Validation
-- [ ] 2.1 Add `parseInt` validation before migration key lookup in `yamlImporter.ts`
-- [ ] 2.2 Return `INVALID_VERSION_FORMAT` error for non-numeric major versions
-- [ ] 2.3 Add test for non-numeric major version in migration branch
-- [ ] 2.4 Run `npx tsc --noEmit` — no type errors
-- [ ] 2.5 Run `npm run test:quick` — all tests pass
+- [x] 2.1 Add `isNaN` validation in `checkSchemaVersion()` (centralized, not duplicated in consumer)
+- [x] 2.2 Return `INVALID_VERSION_FORMAT` error for non-numeric major versions
+- [x] 2.3 Add test for non-numeric major version in migration branch
+- [x] 2.4 Run `npx tsc --noEmit` — no type errors
+- [x] 2.5 Run `npm run test:quick` — all tests pass (961/961)
 
 ## Dev Notes
 
@@ -43,6 +43,29 @@ Tech debt from td-3-1a code review. Two pre-existing type safety issues in the Y
 - Current magic strings: "current", "too-new", "too-old", "migrate" — replace with tagged union
 - Migration key extraction: `String(data.schemaVersion.split(".")[0])` — add `parseInt` + `isNaN` guard
 - Low risk — these are type-level improvements with no behavioral change for valid inputs
+
+## Tech Debt Created
+- [td-3-1a-c-migration-test-isolation](td-3-1a-c-migration-test-isolation.md) — MIGRATIONS test isolation + integration migrate test
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-15 | **Classification:** SIMPLE | **Agents:** code-reviewer, tdd-guide
+
+| Agent | Score | Status |
+|-------|-------|--------|
+| Code Quality | 8.5/10 | APPROVE (after fixes) |
+| Testing | 8/10 | APPROVE |
+| **OVERALL** | **8.3/10** | **APPROVED** |
+
+**Quick Fixes Applied (6):**
+1. Removed unnecessary `String()` coercion in yamlImporter.ts migrate branch
+2. Added test for non-numeric app version (symmetric with file version test)
+3. Added `reason` field assertion in adversarial "not-semver" test
+4. Improved empty version test comment clarity
+5. Replaced generic `expect(status).toBeDefined()` with meaningful assertion in exhaustive check test
+6. Git staging verified at commit time
+
+**TD Created:** td-3-1a-c-migration-test-isolation (MIGRATIONS test isolation + integration migrate test)
 
 ## ECC Analysis Summary
 - Risk Level: LOW (type safety improvements, no behavioral changes)

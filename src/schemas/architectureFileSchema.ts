@@ -71,28 +71,39 @@ export type ArchitectureFile = z.infer<typeof ArchitectureFileSchema>
 export type ArchitectureFileNode = z.infer<typeof ArchitectureFileNodeSchema>
 export type ArchitectureFileEdge = z.infer<typeof ArchitectureFileEdgeSchema>
 
+/** Discriminated union for schema version check results */
+export type VersionStatus =
+  | { status: "compatible" }
+  | { status: "too-new" }
+  | { status: "migrate"; migrationKey: number }
+  | { status: "too-old" }
+  | { status: "invalid-format"; reason: string }
+
 /**
  * Compares a file's schema version against the app's current version.
- * Returns:
- * - "compatible": same major version (minor/patch differences are fine)
- * - "too-new": file major > app major (created with newer Archie)
- * - "migrate": file major < app major and migration exists
- * - "too-old": file major < app major and no migration
+ * Returns a discriminated union so callers get exhaustive TypeScript checking.
  */
 export function checkSchemaVersion(
   fileVersion: string,
   appVersion: string,
-): "compatible" | "migrate" | "too-new" | "too-old" {
+): VersionStatus {
   const fileParts = fileVersion.split(".").map(Number)
   const appParts = appVersion.split(".").map(Number)
-  const fileMajor = fileParts[0] ?? 0
-  const appMajor = appParts[0] ?? 0
+  const fileMajor = fileParts[0]
+  const appMajor = appParts[0]
 
-  if (fileMajor === appMajor) return "compatible"
-  if (fileMajor > appMajor) return "too-new"
+  if (fileMajor === undefined || isNaN(fileMajor)) {
+    return { status: "invalid-format", reason: `Invalid file schema version: "${fileVersion}"` }
+  }
+  if (appMajor === undefined || isNaN(appMajor)) {
+    return { status: "invalid-format", reason: `Invalid app schema version: "${appVersion}"` }
+  }
+
+  if (fileMajor === appMajor) return { status: "compatible" }
+  if (fileMajor > appMajor) return { status: "too-new" }
 
   // File is older major — check for migration
   const migrationKey = String(fileMajor)
-  if (migrationKey in MIGRATIONS) return "migrate"
-  return "too-old"
+  if (migrationKey in MIGRATIONS) return { status: "migrate", migrationKey: fileMajor }
+  return { status: "too-old" }
 }

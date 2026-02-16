@@ -338,6 +338,16 @@ edges: []
       const result = importYamlString(yaml)
       expect(result.success).toBe(true)
     })
+
+    it("rejects non-numeric major version with INVALID_VERSION_FORMAT", () => {
+      const yaml = 'schema_version: "abc.0.0"\nnodes: []\nedges: []\n'
+      const result = importYamlString(yaml)
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_VERSION_FORMAT")
+      expect(result.errors[0].message).toContain("abc.0.0")
+    })
   })
 
   describe("importYamlString — unknown component handling", () => {
