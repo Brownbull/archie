@@ -31,6 +31,7 @@ export function ImportProvider({ children }: ImportProviderProps) {
   const loadArchitecture = useArchitectureStore((s) => s.loadArchitecture)
 
   const handleFile = useCallback(async (file: File) => {
+    if (isImporting) return // Guard against concurrent imports (TD-3-1a AC-4)
     setIsImporting(true)
     try {
       const result = await importYaml(file)
@@ -53,15 +54,16 @@ export function ImportProvider({ children }: ImportProviderProps) {
           duration: 8000,
         })
       }
-    } catch {
-      toast.error("Unexpected error during import")
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : "Unknown error"
+      toast.error("Unexpected error during import", { description: detail })
     } finally {
       setIsImporting(false)
       if (fileInputRef.current) {
         fileInputRef.current.value = ""
       }
     }
-  }, [loadArchitecture])
+  }, [loadArchitecture, isImporting])
 
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

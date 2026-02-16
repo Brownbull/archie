@@ -13,6 +13,7 @@ import {
   CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
   EDGE_TYPE_CONNECTION,
+  MAX_CANVAS_NODES,
   MAX_FILE_SIZE,
   NODE_TYPE_COMPONENT,
   NODE_TYPE_PLACEHOLDER,
@@ -40,6 +41,13 @@ export type ImportResult =
 
 const VALID_EXTENSIONS = [".yaml", ".yml"]
 
+let importInProgress = false
+
+/** @internal — exposed for test cleanup only */
+export function _resetImportGuard(): void {
+  importInProgress = false
+}
+
 function snapToGrid(value: number): number {
   return Math.round(value / CANVAS_GRID_SIZE) * CANVAS_GRID_SIZE
 }
@@ -51,29 +59,42 @@ function snapToGrid(value: number): number {
  * → version check → sanitize strings → hydrate from library → build edges
  */
 export async function importYaml(file: File): Promise<ImportResult> {
-  // Step 1: File size check
-  if (file.size > MAX_FILE_SIZE) {
+  // Concurrent import guard (TD-3-1a AC-4)
+  if (importInProgress) {
     return {
       success: false,
-      errors: [{ code: "FILE_TOO_LARGE", message: `File too large (max ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB)` }],
+      errors: [{ code: "IMPORT_IN_PROGRESS", message: "An import is already in progress" }],
     }
   }
 
-  // Step 2: Extension check
-  const fileName = file.name.toLowerCase()
-  const hasValidExtension = VALID_EXTENSIONS.some((ext) => fileName.endsWith(ext))
-  if (!hasValidExtension) {
-    return {
-      success: false,
-      errors: [{ code: "INVALID_EXTENSION", message: "Only .yaml and .yml files are accepted" }],
+  importInProgress = true
+  try {
+    // Step 1: File size check
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        success: false,
+        errors: [{ code: "FILE_TOO_LARGE", message: `File too large (max ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB)` }],
+      }
     }
+
+    // Step 2: Extension check
+    const fileName = file.name.toLowerCase()
+    const hasValidExtension = VALID_EXTENSIONS.some((ext) => fileName.endsWith(ext))
+    if (!hasValidExtension) {
+      return {
+        success: false,
+        errors: [{ code: "INVALID_EXTENSION", message: "Only .yaml and .yml files are accepted" }],
+      }
+    }
+
+    // Step 3: Read file content
+    const text = await file.text()
+
+    // Delegate to core import logic
+    return importYamlString(text)
+  } finally {
+    importInProgress = false
   }
-
-  // Step 3: Read file content
-  const text = await file.text()
-
-  // Delegate to core import logic
-  return importYamlString(text)
 }
 
 /**
@@ -113,6 +134,36 @@ export function importYamlString(text: string): ImportResult {
 
   const data: ArchitectureFile = schemaResult.data
 
+  // Step 4b: Node count check (defense-in-depth — reject at import, not just canvas)
+  if (data.nodes.length > MAX_CANVAS_NODES) {
+    return {
+      success: false,
+      errors: [{
+        code: "TOO_MANY_NODES",
+        message: `Architecture has ${data.nodes.length} components (max ${MAX_CANVAS_NODES}). Reduce before importing.`,
+      }],
+    }
+  }
+
+  // Step 4c: Duplicate node ID detection
+  const nodeIds = new Set<string>()
+  const duplicateIds: string[] = []
+  for (const node of data.nodes) {
+    if (nodeIds.has(node.id)) {
+      duplicateIds.push(node.id)
+    }
+    nodeIds.add(node.id)
+  }
+  if (duplicateIds.length > 0) {
+    return {
+      success: false,
+      errors: [{
+        code: "DUPLICATE_NODE_IDS",
+        message: `Duplicate node IDs found: ${duplicateIds.join(", ")}`,
+      }],
+    }
+  }
+
   // Step 5: Version check
   const versionStatus = checkSchemaVersion(data.schemaVersion, CURRENT_SCHEMA_VERSION)
   if (versionStatus === "too-new") {
@@ -149,7 +200,9 @@ export function importYamlString(text: string): ImportResult {
   const placeholderIds: string[] = []
 
   for (const yamlNode of data.nodes) {
-    const component = componentLibrary.getComponent(yamlNode.componentId)
+    // NFC-normalize componentId to prevent Unicode mismatch (TD-3-1a AC-3)
+    const normalizedComponentId = yamlNode.componentId.normalize("NFC")
+    const component = componentLibrary.getComponent(normalizedComponentId)
 
     if (!component) {
       // Create placeholder node for unknown component
@@ -162,13 +215,13 @@ export function importYamlString(text: string): ImportResult {
           y: snapToGrid(yamlNode.position.y),
         },
         data: {
-          archieComponentId: yamlNode.componentId,
+          archieComponentId: normalizedComponentId,
           activeConfigVariantId: "",
           componentName: yamlNode.componentId,
           componentCategory: "compute" as ComponentCategoryId,
         } as ArchieNodeData,
         width: NODE_WIDTH,
-      } as ArchieNode)
+      } as unknown as ArchieNode)
       continue
     }
 
@@ -186,7 +239,7 @@ export function importYamlString(text: string): ImportResult {
         y: snapToGrid(yamlNode.position.y),
       },
       data: {
-        archieComponentId: component.id,
+        archieComponentId: normalizedComponentId,
         activeConfigVariantId: variant?.id ?? "",
         componentName: sanitizeDisplayString(component.name),
         componentCategory: (component.category in COMPONENT_CATEGORIES

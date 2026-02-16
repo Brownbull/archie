@@ -1,6 +1,6 @@
 # Story: TD-3-1a Import Pipeline Robustness
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: Hardening analysis during Epic 3 story creation (2026-02-15)
 
@@ -58,26 +58,26 @@ Story 3-1 builds the core import pipeline with schema validation, sanitization, 
 ## Tasks / Subtasks
 
 ### Task 1: Adversarial Input Test Suite
-- [ ] 1.1 Create `tests/unit/services/yamlImporter-adversarial.test.ts` (separate file to keep test suite organized)
-- [ ] 1.2 Test: deeply nested YAML object (50+ levels) — verify no stack overflow, graceful handling
-- [ ] 1.3 Test: nodes array with MAX_CANVAS_NODES+1 entries — verify rejection with clear error
-- [ ] 1.4 Test: nodes array with 500 entries (under file size limit) — verify pipeline performance (should complete <2s)
-- [ ] 1.5 Test: Unicode homoglyph in component_id (Cyrillic "а" vs Latin "a") — verify NFC normalization prevents mismatch
-- [ ] 1.6 Test: schema_version edge cases — empty string, "not-semver", "0.0.0", "999.0.0", null, undefined, number instead of string
-- [ ] 1.7 Test: empty nodes/edges arrays — verify successful import to empty canvas
-- [ ] 1.8 Test: single node at position {x: 0, y: 0} — verify placement at origin works
-- [ ] 1.9 Test: node with negative position values — verify grid-snap handles negatives
-- [ ] 1.10 Test: duplicate node IDs in the YAML — verify detection and rejection (or dedup behavior)
-- [ ] 1.11 Test: edge referencing non-existent node IDs — verify graceful handling (skip edge, not crash)
-- [ ] 1.12 Test: YAML with only whitespace/comments — verify clean rejection
+- [x] 1.1 Create `tests/unit/services/yamlImporter-adversarial.test.ts` (separate file to keep test suite organized)
+- [x] 1.2 Test: deeply nested YAML object (50+ levels) — verify no stack overflow, graceful handling
+- [x] 1.3 Test: nodes array with MAX_CANVAS_NODES+1 entries — verify rejection with clear error
+- [x] 1.4 Test: nodes array with 500 entries (under file size limit) — verify pipeline performance (should complete <2s)
+- [x] 1.5 Test: Unicode homoglyph in component_id (Cyrillic "а" vs Latin "a") — verify NFC normalization prevents mismatch
+- [x] 1.6 Test: schema_version edge cases — empty string, "not-semver", "0.0.0", "999.0.0", null, undefined, number instead of string
+- [x] 1.7 Test: empty nodes/edges arrays — verify successful import to empty canvas
+- [x] 1.8 Test: single node at position {x: 0, y: 0} — verify placement at origin works
+- [x] 1.9 Test: node with negative position values — verify grid-snap handles negatives
+- [x] 1.10 Test: duplicate node IDs in the YAML — verify detection and rejection (or dedup behavior)
+- [x] 1.11 Test: edge referencing non-existent node IDs — verify graceful handling (skip edge, not crash)
+- [x] 1.12 Test: YAML with only whitespace/comments — verify clean rejection
 
 ### Task 2: Concurrent Import Guard & Integration
-- [ ] 2.1 Add import-in-progress guard to `yamlImporter.ts` or `ImportDialog.tsx` — prevent concurrent imports
-- [ ] 2.2 Disable Import button while import is processing (loading state)
-- [ ] 2.3 Test: rapid double-import attempt — verify only one executes
-- [ ] 2.4 Test: import while previous import is still hydrating — verify rejection message
-- [ ] 2.5 Run `npx tsc --noEmit` — no type errors
-- [ ] 2.6 Run `npm run test:quick` — all tests pass
+- [x] 2.1 Add import-in-progress guard to `yamlImporter.ts` or `ImportDialog.tsx` — prevent concurrent imports
+- [x] 2.2 Disable Import button while import is processing (loading state)
+- [x] 2.3 Test: rapid double-import attempt — verify only one executes
+- [x] 2.4 Test: import while previous import is still hydrating — verify rejection message
+- [x] 2.5 Run `npx tsc --noEmit` — no type errors
+- [x] 2.6 Run `npm run test:quick` — all tests pass (952 tests, 63 files)
 
 ## Dev Notes
 
@@ -102,3 +102,27 @@ Story 3-1 builds the core import pipeline with schema validation, sanitization, 
 - Sizing: SMALL (2 tasks, ~14 subtasks, ~3 files)
 - Agents consulted: Architect, Security Reviewer
 - Key patterns: Pattern 1 (data pipeline edge cases), Pattern 3 (input sanitization adversarial testing)
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-15 | **Classification:** SIMPLE | **Agents:** code-reviewer (Sonnet), tdd-guide (Haiku)
+
+| Agent | Score | Status |
+|-------|-------|--------|
+| Code Quality | 8/10 | CHANGES REQUESTED |
+| Testing | 9/10 | APPROVE |
+| **OVERALL** | **8.5/10** | **APPROVED** |
+
+**Quick fixes applied (7):**
+1. Added 5 missing test cases (FILE_TOO_LARGE, INVALID_EXTENSION, variant fallback, multiple placeholders, partial edge reference)
+2. Adjusted performance threshold margin (2000ms → 1500ms)
+3. Added error details to ImportDialog catch block
+4. Total tests: 29 (up from 24), full suite: 957 pass / 63 files
+
+**Deferred to TD story (td-3-1a-b):**
+- Version status magic strings → discriminated union (pre-existing, multi-file)
+- Migration key validation (pre-existing, implicit semver assumption)
+
+**E2E:** Gap detected for `import-file-input` testid — recommend covering in Story 3-2 round-trip E2E
+
+**Session cost:** $5.77 | **Duration:** 11 min
