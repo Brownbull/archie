@@ -102,8 +102,8 @@ development_status:
   td-3-1a-d-migration-error-path-coverage: done
   3-2-yaml-export-and-round-trip: done
   td-3-2a-blob-url-unmount-cleanup: done
-  td-3-2b-test-helper-dedup: in-progress
-  td-3-2c-strict-mode-anchor-click-test: ready-for-dev
+  td-3-2b-test-helper-dedup: done
+  td-3-2c-strict-mode-anchor-click-test: review
   3-3-example-architectures-and-ai-prompt-template: ready-for-dev
   td-3-3a-seed-blueprint-hardening: ready-for-dev
   epic-3-retrospective: optional

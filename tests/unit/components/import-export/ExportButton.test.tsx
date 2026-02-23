@@ -1,5 +1,7 @@
+import { StrictMode } from "react"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
+import { toast } from "sonner"
 import { ExportButton, BLOB_REVOKE_DELAY_MS } from "@/components/import-export/ExportButton"
 
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
@@ -103,6 +105,86 @@ describe("ExportButton", () => {
       // Timer was cleared — advancing past the delay must not double-revoke
       vi.advanceTimersByTime(BLOB_REVOKE_DELAY_MS)
       expect(mockRevokeObjectURL).toHaveBeenCalledTimes(1)
+    })
+
+    it("does not revoke Blob URL when unmounted without a prior export", () => {
+      const { unmount } = render(<ExportButton />)
+      unmount()
+      expect(mockRevokeObjectURL).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("Rapid-click guard", () => {
+    it("revokes previous Blob URL immediately when export is triggered again before timer fires", () => {
+      mockCreateObjectURL.mockReturnValueOnce("blob:url-1").mockReturnValueOnce("blob:url-2")
+
+      render(<ExportButton />)
+      fireEvent.click(screen.getByTestId("export-button"))
+      expect(mockRevokeObjectURL).not.toHaveBeenCalled()
+
+      // Second export before timer fires — previous URL must be revoked immediately
+      fireEvent.click(screen.getByTestId("export-button"))
+      expect(mockRevokeObjectURL).toHaveBeenCalledTimes(1)
+      expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:url-1")
+    })
+  })
+
+  describe("Error handling", () => {
+    it("calls toast.error and does not create a Blob URL when export fails", () => {
+      mockExportArchitecture.mockImplementation(() => {
+        throw new Error("yaml serialization failed")
+      })
+
+      render(<ExportButton />)
+      fireEvent.click(screen.getByTestId("export-button"))
+
+      expect(toast.error).toHaveBeenCalledWith("Export failed", {
+        description: "yaml serialization failed",
+      })
+      expect(mockCreateObjectURL).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("Programmatic guard", () => {
+    it("does not create a Blob URL when skeleton returns empty nodes", () => {
+      mockGetArchitectureSkeleton.mockReturnValue({ nodes: [], edges: [] })
+
+      render(<ExportButton />)
+      fireEvent.click(screen.getByTestId("export-button"))
+
+      expect(mockCreateObjectURL).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("Strict Mode double-invocation (AC-1, AC-2, AC-3)", () => {
+    it("calls anchor.click() exactly once and revokeObjectURL exactly once under React Strict Mode", () => {
+      // Spy on prototype so all anchor instances created inside handleExport are intercepted
+      const anchorClickSpy = vi
+        .spyOn(HTMLAnchorElement.prototype, "click")
+        .mockImplementation(() => {})
+      try {
+        render(
+          <StrictMode>
+            <ExportButton />
+          </StrictMode>,
+        )
+
+        fireEvent.click(screen.getByTestId("export-button"))
+
+        // AC-2: anchor.click() fires exactly once — Strict Mode effect re-run does not trigger a second download
+        expect(anchorClickSpy).toHaveBeenCalledTimes(1)
+
+        // revokeObjectURL not triggered yet — timer still pending
+        expect(mockRevokeObjectURL).not.toHaveBeenCalled()
+
+        vi.advanceTimersByTime(BLOB_REVOKE_DELAY_MS)
+
+        // AC-3: revokeObjectURL fires exactly once — Strict Mode cleanup does not double-revoke
+        expect(mockRevokeObjectURL).toHaveBeenCalledTimes(1)
+        expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:mock-url")
+      } finally {
+        anchorClickSpy.mockRestore()
+      }
     })
   })
 })
