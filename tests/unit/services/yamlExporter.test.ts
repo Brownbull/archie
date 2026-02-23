@@ -2,51 +2,14 @@ import { describe, it, expect } from "vitest"
 import { load } from "js-yaml"
 import { exportArchitecture } from "@/services/yamlExporter"
 import { ArchitectureFileYamlSchema, CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
-import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
+import { makeNode, makeEdge } from "../../helpers"
 
 // No mocks needed — yamlExporter is a pure function (no external service dependencies)
-
-function makeNode(overrides: {
-  id: string
-  archieComponentId: string
-  activeConfigVariantId?: string
-  x?: number
-  y?: number
-  nodeType?: string
-}): ArchieNode {
-  return {
-    id: overrides.id,
-    type: (overrides.nodeType ?? "component") as "component",
-    position: { x: overrides.x ?? 96, y: overrides.y ?? 208 },
-    data: {
-      archieComponentId: overrides.archieComponentId,
-      activeConfigVariantId: overrides.activeConfigVariantId ?? "default",
-      componentName: "Test Component",
-      componentCategory: "compute" as const,
-    },
-    width: 200,
-  } as unknown as ArchieNode
-}
-
-function makeEdge(id: string, source: string, target: string): ArchieEdge {
-  return {
-    id,
-    source,
-    target,
-    type: "connection",
-    data: {
-      isIncompatible: false,
-      incompatibilityReason: null,
-      sourceArchieComponentId: source,
-      targetArchieComponentId: target,
-    },
-  } as unknown as ArchieEdge
-}
 
 describe("yamlExporter", () => {
   describe("exportArchitecture", () => {
     it("returns a string for a single node export", () => {
-      const nodes = [makeNode({ id: "node-1", archieComponentId: "postgresql" })]
+      const nodes = [makeNode({ id: "node-1", data: { archieComponentId: "postgresql" } })]
       const result = exportArchitecture(nodes, [])
 
       expect(typeof result).toBe("string")
@@ -54,7 +17,7 @@ describe("yamlExporter", () => {
     })
 
     it("includes schema_version matching CURRENT_SCHEMA_VERSION", () => {
-      const nodes = [makeNode({ id: "node-1", archieComponentId: "postgresql" })]
+      const nodes = [makeNode({ id: "node-1", data: { archieComponentId: "postgresql" } })]
       const result = exportArchitecture(nodes, [])
 
       const parsed = load(result) as Record<string, unknown>
@@ -63,13 +26,13 @@ describe("yamlExporter", () => {
 
     it("exports multi-node with edges", () => {
       const nodes = [
-        makeNode({ id: "node-1", archieComponentId: "postgresql", x: 96, y: 208 }),
-        makeNode({ id: "node-2", archieComponentId: "redis", x: 352, y: 208 }),
-        makeNode({ id: "node-3", archieComponentId: "nginx", x: 608, y: 208 }),
+        makeNode({ id: "node-1", position: { x: 96, y: 208 }, data: { archieComponentId: "postgresql" } }),
+        makeNode({ id: "node-2", position: { x: 352, y: 208 }, data: { archieComponentId: "redis" } }),
+        makeNode({ id: "node-3", position: { x: 608, y: 208 }, data: { archieComponentId: "nginx" } }),
       ]
       const edges = [
-        makeEdge("edge-1", "node-1", "node-2"),
-        makeEdge("edge-2", "node-2", "node-3"),
+        makeEdge({ id: "edge-1", source: "node-1", target: "node-2" }),
+        makeEdge({ id: "edge-2", source: "node-2", target: "node-3" }),
       ]
 
       const result = exportArchitecture(nodes, edges)
@@ -90,7 +53,7 @@ describe("yamlExporter", () => {
     })
 
     it("excludes runtime state fields from exported YAML", () => {
-      const nodes = [makeNode({ id: "node-1", archieComponentId: "postgresql" })]
+      const nodes = [makeNode({ id: "node-1", data: { archieComponentId: "postgresql" } })]
       const result = exportArchitecture(nodes, [])
       const parsed = load(result) as Record<string, unknown>
 
@@ -114,13 +77,11 @@ describe("yamlExporter", () => {
       const nodes = [
         makeNode({
           id: "node-1",
-          archieComponentId: "postgresql",
-          activeConfigVariantId: "single-node",
-          x: 96,
-          y: 208,
+          position: { x: 96, y: 208 },
+          data: { archieComponentId: "postgresql", activeConfigVariantId: "single-node" },
         }),
       ]
-      const edges = [makeEdge("edge-1", "node-1", "node-1")]
+      const edges = [makeEdge({ id: "edge-1", source: "node-1", target: "node-1" })]
 
       const result = exportArchitecture(nodes, edges)
       const parsed = load(result) as {
@@ -149,8 +110,7 @@ describe("yamlExporter", () => {
       const nodes = [
         makeNode({
           id: "node-1",
-          archieComponentId: "placeholder-comp",
-          activeConfigVariantId: "",
+          data: { archieComponentId: "placeholder-comp", activeConfigVariantId: "" },
         }),
       ]
       const result = exportArchitecture(nodes, [])
@@ -164,9 +124,8 @@ describe("yamlExporter", () => {
       const nodes = [
         makeNode({
           id: "node-1",
-          archieComponentId: "unknown-future-component",
-          nodeType: "placeholder",
-          activeConfigVariantId: "",
+          type: "placeholder" as "component",
+          data: { archieComponentId: "unknown-future-component", activeConfigVariantId: "" },
         }),
       ]
 
@@ -182,20 +141,16 @@ describe("yamlExporter", () => {
       const nodes = [
         makeNode({
           id: "node-1",
-          archieComponentId: "postgresql",
-          activeConfigVariantId: "single-node",
-          x: 96,
-          y: 208,
+          position: { x: 96, y: 208 },
+          data: { archieComponentId: "postgresql", activeConfigVariantId: "single-node" },
         }),
         makeNode({
           id: "node-2",
-          archieComponentId: "redis",
-          activeConfigVariantId: "default",
-          x: 352,
-          y: 208,
+          position: { x: 352, y: 208 },
+          data: { archieComponentId: "redis", activeConfigVariantId: "default" },
         }),
       ]
-      const edges = [makeEdge("edge-1", "node-1", "node-2")]
+      const edges = [makeEdge({ id: "edge-1", source: "node-1", target: "node-2" })]
 
       const result = exportArchitecture(nodes, edges)
       const parsed = load(result)
@@ -205,8 +160,8 @@ describe("yamlExporter", () => {
     })
 
     it("preserves node and edge IDs exactly", () => {
-      const nodes = [makeNode({ id: "abc-123", archieComponentId: "postgresql" })]
-      const edges = [makeEdge("edge-xyz", "abc-123", "abc-123")]
+      const nodes = [makeNode({ id: "abc-123", data: { archieComponentId: "postgresql" } })]
+      const edges = [makeEdge({ id: "edge-xyz", source: "abc-123", target: "abc-123" })]
 
       const result = exportArchitecture(nodes, edges)
       const parsed = load(result) as {
@@ -219,7 +174,7 @@ describe("yamlExporter", () => {
     })
 
     it("preserves node positions exactly", () => {
-      const nodes = [makeNode({ id: "node-1", archieComponentId: "postgresql", x: 160, y: 320 })]
+      const nodes = [makeNode({ id: "node-1", position: { x: 160, y: 320 }, data: { archieComponentId: "postgresql" } })]
       const result = exportArchitecture(nodes, [])
       const parsed = load(result) as { nodes: { position: { x: number; y: number } }[] }
 

@@ -4,7 +4,8 @@ import { exportArchitecture } from "@/services/yamlExporter"
 import { importYamlString } from "@/services/yamlImporter"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import { CANVAS_GRID_SIZE } from "@/lib/constants"
-import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
+import type { ArchieNode } from "@/stores/architectureStore"
+import { makeNode, makeEdge } from "../helpers"
 
 // --- Mock setup (same pattern as yamlImporter.test.ts) ---
 
@@ -76,46 +77,7 @@ vi.mock("@/lib/firebase", () => ({
   db: {},
 }))
 
-// --- Test Helpers ---
-
-function makeNode(overrides: {
-  id: string
-  archieComponentId: string
-  activeConfigVariantId?: string
-  x?: number
-  y?: number
-  nodeType?: string
-}): ArchieNode {
-  return {
-    id: overrides.id,
-    type: (overrides.nodeType ?? "component") as "component",
-    // Positions must be on-grid (multiples of CANVAS_GRID_SIZE = 16)
-    // so that snapToGrid() in importYamlString is a no-op
-    position: { x: overrides.x ?? 96, y: overrides.y ?? 208 },
-    data: {
-      archieComponentId: overrides.archieComponentId,
-      activeConfigVariantId: overrides.activeConfigVariantId ?? "default",
-      componentName: overrides.archieComponentId,
-      componentCategory: "compute" as const,
-    },
-    width: 200,
-  } as unknown as ArchieNode
-}
-
-function makeEdge(id: string, source: string, target: string): ArchieEdge {
-  return {
-    id,
-    source,
-    target,
-    type: "connection",
-    data: {
-      isIncompatible: false,
-      incompatibilityReason: null,
-      sourceArchieComponentId: source,
-      targetArchieComponentId: target,
-    },
-  } as unknown as ArchieEdge
-}
+// --- Local helper (position comparison) ---
 
 function expectPositionClose(
   actual: { x: number; y: number },
@@ -135,13 +97,13 @@ describe("YAML round-trip (integration)", () => {
 
   it("full round-trip: 3 nodes + 2 edges preserves structural equality", () => {
     const nodes = [
-      makeNode({ id: "node-1", archieComponentId: "postgresql", activeConfigVariantId: "single-node", x: 96, y: 208 }),
-      makeNode({ id: "node-2", archieComponentId: "redis", activeConfigVariantId: "default", x: 352, y: 208 }),
-      makeNode({ id: "node-3", archieComponentId: "nginx", activeConfigVariantId: "default", x: 608, y: 208 }),
+      makeNode({ id: "node-1", position: { x: 96, y: 208 }, data: { archieComponentId: "postgresql", activeConfigVariantId: "single-node" } }),
+      makeNode({ id: "node-2", position: { x: 352, y: 208 }, data: { archieComponentId: "redis" } }),
+      makeNode({ id: "node-3", position: { x: 608, y: 208 }, data: { archieComponentId: "nginx" } }),
     ]
     const edges = [
-      makeEdge("edge-1", "node-1", "node-2"),
-      makeEdge("edge-2", "node-2", "node-3"),
+      makeEdge({ id: "edge-1", source: "node-1", target: "node-2" }),
+      makeEdge({ id: "edge-2", source: "node-2", target: "node-3" }),
     ]
 
     const yaml = exportArchitecture(nodes, edges)
@@ -172,7 +134,7 @@ describe("YAML round-trip (integration)", () => {
   it("modification round-trip: changed variant is preserved after re-export and reimport", () => {
     // Start with single-node variant
     const originalNodes = [
-      makeNode({ id: "node-1", archieComponentId: "postgresql", activeConfigVariantId: "single-node", x: 96, y: 208 }),
+      makeNode({ id: "node-1", position: { x: 96, y: 208 }, data: { archieComponentId: "postgresql", activeConfigVariantId: "single-node" } }),
     ]
 
     // Export original
@@ -200,8 +162,8 @@ describe("YAML round-trip (integration)", () => {
   it("structural equality: positions preserved within grid-snap tolerance", () => {
     // On-grid positions: multiples of CANVAS_GRID_SIZE (16)
     const nodes = [
-      makeNode({ id: "node-1", archieComponentId: "postgresql", x: 96, y: 208 }),
-      makeNode({ id: "node-2", archieComponentId: "redis", x: 352, y: 208 }),
+      makeNode({ id: "node-1", position: { x: 96, y: 208 }, data: { archieComponentId: "postgresql" } }),
+      makeNode({ id: "node-2", position: { x: 352, y: 208 }, data: { archieComponentId: "redis" } }),
     ]
 
     const yaml = exportArchitecture(nodes, [])
@@ -219,9 +181,9 @@ describe("YAML round-trip (integration)", () => {
 
   it("exported YAML contains no computed/runtime fields", () => {
     const nodes = [
-      makeNode({ id: "node-1", archieComponentId: "postgresql", activeConfigVariantId: "single-node" }),
+      makeNode({ id: "node-1", data: { archieComponentId: "postgresql", activeConfigVariantId: "single-node" } }),
     ]
-    const edges = [makeEdge("edge-1", "node-1", "node-1")]
+    const edges = [makeEdge({ id: "edge-1", source: "node-1", target: "node-1" })]
 
     const yaml = exportArchitecture(nodes, edges)
     const parsed = load(yaml) as Record<string, unknown>
@@ -264,11 +226,9 @@ describe("YAML round-trip (integration)", () => {
     const nodes = [
       makeNode({
         id: "node-placeholder",
-        archieComponentId: unknownId,
-        nodeType: "placeholder",
-        activeConfigVariantId: "",
-        x: 96,
-        y: 208,
+        type: "placeholder" as "component",
+        position: { x: 96, y: 208 },
+        data: { archieComponentId: unknownId, activeConfigVariantId: "" },
       }),
     ]
 
@@ -289,7 +249,7 @@ describe("YAML round-trip (integration)", () => {
   })
 
   it("schema_version in exported YAML matches CURRENT_SCHEMA_VERSION", () => {
-    const nodes = [makeNode({ id: "node-1", archieComponentId: "postgresql" })]
+    const nodes = [makeNode({ id: "node-1", data: { archieComponentId: "postgresql" } })]
     const yaml = exportArchitecture(nodes, [])
     const parsed = load(yaml) as Record<string, unknown>
 
