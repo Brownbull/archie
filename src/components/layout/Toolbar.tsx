@@ -2,6 +2,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { useImportAction } from "@/components/import-export/ImportDialog"
+import { ExportButton } from "@/components/import-export/ExportButton"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 import { FileUp } from "lucide-react"
 
@@ -28,6 +29,7 @@ export function Toolbar() {
           <FileUp className="h-3.5 w-3.5" />
           Import
         </Button>
+        <ExportButton />
       </div>
 
       <div className="flex items-center gap-3">

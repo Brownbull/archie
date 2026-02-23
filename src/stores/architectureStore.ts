@@ -567,3 +567,12 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({ nodes: applyNodeChanges(changes, get().nodes) })
   },
 }))
+
+/**
+ * Pure selector: extracts the skeleton (nodes + edges) from the current store state.
+ * Called on export button click — non-reactive read, not a store action.
+ */
+export function getArchitectureSkeleton(): { nodes: ArchieNode[]; edges: ArchieEdge[] } {
+  const state = useArchitectureStore.getState()
+  return { nodes: state.nodes, edges: state.edges }
+}

@@ -1,6 +1,6 @@
 # Story: 3-2 YAML Export & Round-Trip
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 3 — YAML Workflow & Content Library
 
 ## Overview
@@ -100,45 +100,45 @@ This story creates the YAML export service (dehydrate canvas state → skeleton 
 ## Tasks / Subtasks
 
 ### Task 1: YAML Export Service
-- [ ] 1.1 Create `src/services/yamlExporter.ts` with `exportArchitecture(nodes, edges): string` — returns YAML string
-- [ ] 1.2 Extract skeleton data from each ArchieNode: `{ id, component_id: data.archieComponentId, config_variant_id: data.activeConfigVariantId, position: { x, y } }`
-- [ ] 1.3 Extract skeleton data from each ArchieEdge: `{ id, source_node_id: source, target_node_id: target }`
-- [ ] 1.4 Apply camelCase→snake_case transform for YAML output (matching import's inverse)
-- [ ] 1.5 Add `schema_version: CURRENT_SCHEMA_VERSION` to the output
-- [ ] 1.6 Validate the output against `ArchitectureFileYamlSchema.safeParse()` before returning — catch serialization bugs
-- [ ] 1.7 Serialize to YAML string using `js-yaml dump()` with default options
-- [ ] 1.8 Handle placeholder nodes: include them with their original `component_id` (preserves round-trip fidelity for unknown components)
-- [ ] 1.9 Write unit tests: single node export, multi-node with edges, empty canvas (empty arrays), skeleton-only (no metrics/descriptions in output), schema version present, placeholder node handling, round-trip field mapping (camelCase↔snake_case)
+- [x] 1.1 Create `src/services/yamlExporter.ts` with `exportArchitecture(nodes, edges): string` — returns YAML string
+- [x] 1.2 Extract skeleton data from each ArchieNode: `{ id, component_id: data.archieComponentId, config_variant_id: data.activeConfigVariantId, position: { x, y } }`
+- [x] 1.3 Extract skeleton data from each ArchieEdge: `{ id, source_node_id: source, target_node_id: target }`
+- [x] 1.4 Apply camelCase→snake_case transform for YAML output (matching import's inverse)
+- [x] 1.5 Add `schema_version: CURRENT_SCHEMA_VERSION` to the output
+- [x] 1.6 Validate the output against `ArchitectureFileYamlSchema.safeParse()` before returning — catch serialization bugs
+- [x] 1.7 Serialize to YAML string using `js-yaml dump()` with default options
+- [x] 1.8 Handle placeholder nodes: include them with their original `component_id` (preserves round-trip fidelity for unknown components)
+- [x] 1.9 Write unit tests: single node export, multi-node with edges, empty canvas (empty arrays), skeleton-only (no metrics/descriptions in output), schema version present, placeholder node handling, round-trip field mapping (camelCase↔snake_case)
 
 ### Task 2: Export UI Component
-- [ ] 2.1 Create `src/components/import-export/ExportButton.tsx` with download trigger
-- [ ] 2.2 Create Blob from YAML string, generate download URL with `URL.createObjectURL()`
-- [ ] 2.3 Create hidden `<a>` element with `download` attribute, click it programmatically
-- [ ] 2.4 Revoke Blob URL after download using `setTimeout(() => URL.revokeObjectURL(url), 1000)` — delay ensures download starts
-- [ ] 2.5 Generate filename: `archie-{name or "architecture"}-{timestamp}.yaml`
-- [ ] 2.6 Disable export button when canvas is empty (no nodes) — use store selector
-- [ ] 2.7 Add `data-testid="export-button"` attribute
-- [ ] 2.8 Add Export button to `src/components/layout/Toolbar.tsx` next to Import button
+- [x] 2.1 Create `src/components/import-export/ExportButton.tsx` with download trigger
+- [x] 2.2 Create Blob from YAML string, generate download URL with `URL.createObjectURL()`
+- [x] 2.3 Create hidden `<a>` element with `download` attribute, click it programmatically
+- [x] 2.4 Revoke Blob URL after download using `setTimeout(() => URL.revokeObjectURL(url), 1000)` — delay ensures download starts
+- [x] 2.5 Generate filename: `archie-{name or "architecture"}-{timestamp}.yaml`
+- [x] 2.6 Disable export button when canvas is empty (no nodes) — use store selector
+- [x] 2.7 Add `data-testid="export-button"` attribute
+- [x] 2.8 Add Export button to `src/components/layout/Toolbar.tsx` next to Import button
 
 ### Task 3: Store Integration
-- [ ] 3.1 Add `getArchitectureSkeleton()` selector function (not a store action — pure extraction from current state)
-- [ ] 3.2 The selector returns `{ nodes: ArchieNode[], edges: ArchieEdge[] }` from current store state — ExportButton reads this
+- [x] 3.1 Add `getArchitectureSkeleton()` selector function (not a store action — pure extraction from current state)
+- [x] 3.2 The selector returns `{ nodes: ArchieNode[], edges: ArchieEdge[] }` from current store state — ExportButton reads this
 
 ### Task 4: Round-Trip Integration Test
-- [ ] 4.1 Create `tests/integration/yamlRoundTrip.test.ts`
-- [ ] 4.2 Test: create architecture (3 nodes, 2 edges, specific configs) → export → import → verify structural equality
-- [ ] 4.3 Test: import → modify (change variant) → export → reimport → verify modification preserved
-- [ ] 4.4 Test: structural equality assertion — node count, edge count, component IDs match, variant IDs match, positions within CANVAS_GRID_SIZE snap tolerance
-- [ ] 4.5 Test: computed values NOT in exported YAML (no metrics, no heatmap, no tier)
-- [ ] 4.6 Test: empty architecture round-trip (export empty → import empty → no crash)
+- [x] 4.1 Create `tests/integration/yamlRoundTrip.test.ts`
+- [x] 4.2 Test: create architecture (3 nodes, 2 edges, specific configs) → export → import → verify structural equality
+- [x] 4.3 Test: import → modify (change variant) → export → reimport → verify modification preserved
+- [x] 4.4 Test: structural equality assertion — node count, edge count, component IDs match, variant IDs match, positions within CANVAS_GRID_SIZE snap tolerance
+- [x] 4.5 Test: computed values NOT in exported YAML (no metrics, no heatmap, no tier)
+- [x] 4.6 Test: empty architecture round-trip (export empty → import empty → no crash)
 
 ### Task 5: E2E & Build Verification
-- [ ] 5.1 Update `tests/e2e/import-export.spec.ts` with export scenarios: export from populated canvas, export button disabled on empty canvas
-- [ ] 5.2 Add round-trip E2E: import example → export → verify file downloaded
-- [ ] 5.3 Add `data-testid` attributes to export-related elements
-- [ ] 5.4 Save screenshots at export steps
-- [ ] 5.5 Run `npx tsc --noEmit` — no type errors
-- [ ] 5.6 Run `npm run test:quick` — all tests pass
+- [x] 5.1 Update `tests/e2e/import-export.spec.ts` with export scenarios: export from populated canvas, export button disabled on empty canvas
+- [x] 5.2 Add round-trip E2E: import example → export → verify file downloaded
+- [x] 5.3 Add `data-testid` attributes to export-related elements
+- [x] 5.4 Save screenshots at export steps
+- [x] 5.5 Run `npx tsc --noEmit` — no type errors
+- [x] 5.6 Run `npm run test:quick` — all tests pass
 
 ## Dev Notes
 
