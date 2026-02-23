@@ -1,0 +1,71 @@
+id: whatsapp-messaging
+name: "WhatsApp-style Messaging"
+description: "High-throughput real-time messaging architecture optimized for massive scale. Uses distributed event streaming, clustered WebSocket connections, read-replica database, and global CDN delivery."
+skeleton:
+  schema_version: "1.0.0"
+  name: "WhatsApp-style Messaging"
+  nodes:
+    - id: wa-cdn
+      component_id: cloudflare-cdn
+      config_variant_id: full-site
+      position:
+        x: 96
+        y: 192
+    - id: wa-nginx
+      component_id: nginx
+      config_variant_id: load-balancer
+      position:
+        x: 352
+        y: 192
+    - id: wa-node-api
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 608
+        y: 192
+    - id: wa-kafka
+      component_id: kafka
+      config_variant_id: multi-broker
+      position:
+        x: 864
+        y: 96
+    - id: wa-websocket
+      component_id: websocket-server
+      config_variant_id: clustered
+      position:
+        x: 864
+        y: 304
+    - id: wa-redis-cache
+      component_id: redis-cache
+      config_variant_id: distributed-cache
+      position:
+        x: 608
+        y: 416
+    - id: wa-postgresql
+      component_id: postgresql
+      config_variant_id: primary-replica
+      position:
+        x: 864
+        y: 512
+  edges:
+    - id: wa-edge-cdn-nginx
+      source_node_id: wa-cdn
+      target_node_id: wa-nginx
+    - id: wa-edge-nginx-api
+      source_node_id: wa-nginx
+      target_node_id: wa-node-api
+    - id: wa-edge-api-kafka
+      source_node_id: wa-node-api
+      target_node_id: wa-kafka
+    - id: wa-edge-api-ws
+      source_node_id: wa-node-api
+      target_node_id: wa-websocket
+    - id: wa-edge-api-cache
+      source_node_id: wa-node-api
+      target_node_id: wa-redis-cache
+    - id: wa-edge-cache-db
+      source_node_id: wa-redis-cache
+      target_node_id: wa-postgresql
+    - id: wa-edge-kafka-ws
+      source_node_id: wa-kafka
+      target_node_id: wa-websocket

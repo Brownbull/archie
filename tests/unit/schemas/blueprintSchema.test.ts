@@ -1,5 +1,162 @@
 import { describe, it, expect } from "vitest"
-import { BlueprintSchema, BlueprintYamlSchema } from "@/schemas/blueprintSchema"
+import { BlueprintSchema, BlueprintYamlSchema, BlueprintFullSchema, BlueprintFullYamlSchema } from "@/schemas/blueprintSchema"
+
+const validSkeleton = {
+  schemaVersion: "1.0.0",
+  nodes: [
+    { id: "node-1", componentId: "nginx", configVariantId: "load-balancer", position: { x: 96, y: 192 } },
+  ],
+  edges: [
+    { id: "edge-1", sourceNodeId: "node-1", targetNodeId: "node-2" },
+  ],
+}
+
+const validSkeletonYaml = {
+  schema_version: "1.0.0",
+  nodes: [
+    { id: "node-1", component_id: "nginx", config_variant_id: "load-balancer", position: { x: 96, y: 192 } },
+  ],
+  edges: [
+    { id: "edge-1", source_node_id: "node-1", target_node_id: "node-2" },
+  ],
+}
+
+describe("BlueprintFullSchema", () => {
+  const validBlueprintFull = {
+    id: "whatsapp-messaging",
+    name: "WhatsApp-style Messaging",
+    description: "High-throughput real-time messaging architecture",
+    skeleton: validSkeleton,
+  }
+
+  it("accepts valid blueprint with skeleton", () => {
+    const result = BlueprintFullSchema.safeParse(validBlueprintFull)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.id).toBe("whatsapp-messaging")
+      expect(result.data.skeleton.schemaVersion).toBe("1.0.0")
+    }
+  })
+
+  it("accepts blueprint with optional tier", () => {
+    const result = BlueprintFullSchema.safeParse({ ...validBlueprintFull, tier: 2 })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.tier).toBe(2)
+    }
+  })
+
+  it("requires skeleton field", () => {
+    const { skeleton: _s, ...withoutSkeleton } = validBlueprintFull
+    const result = BlueprintFullSchema.safeParse(withoutSkeleton)
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts skeleton with empty nodes and edges arrays", () => {
+    const result = BlueprintFullSchema.safeParse({
+      ...validBlueprintFull,
+      skeleton: { schemaVersion: "1.0.0", nodes: [], edges: [] },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects skeleton with invalid node (missing componentId)", () => {
+    const result = BlueprintFullSchema.safeParse({
+      ...validBlueprintFull,
+      skeleton: {
+        schemaVersion: "1.0.0",
+        nodes: [{ id: "node-1", position: { x: 0, y: 0 } }],
+        edges: [],
+      },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects skeleton with invalid edge (missing sourceNodeId)", () => {
+    const result = BlueprintFullSchema.safeParse({
+      ...validBlueprintFull,
+      skeleton: {
+        schemaVersion: "1.0.0",
+        nodes: [],
+        edges: [{ id: "edge-1", targetNodeId: "node-2" }],
+      },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects unknown keys at root level (strict)", () => {
+    const result = BlueprintFullSchema.safeParse({ ...validBlueprintFull, extra: "field" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects missing id", () => {
+    const { id: _id, ...withoutId } = validBlueprintFull
+    const result = BlueprintFullSchema.safeParse(withoutId)
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects missing name", () => {
+    const { name: _name, ...withoutName } = validBlueprintFull
+    const result = BlueprintFullSchema.safeParse(withoutName)
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("BlueprintFullYamlSchema", () => {
+  const validBlueprintFullYaml = {
+    id: "whatsapp-messaging",
+    name: "WhatsApp-style Messaging",
+    description: "High-throughput real-time messaging architecture",
+    skeleton: validSkeletonYaml,
+  }
+
+  it("transforms snake_case skeleton to camelCase", () => {
+    const result = BlueprintFullYamlSchema.safeParse(validBlueprintFullYaml)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.skeleton.schemaVersion).toBe("1.0.0")
+      expect(result.data.skeleton.nodes[0]?.componentId).toBe("nginx")
+      expect(result.data.skeleton.nodes[0]?.configVariantId).toBe("load-balancer")
+      expect(result.data.skeleton.edges[0]?.sourceNodeId).toBe("node-1")
+    }
+  })
+
+  it("round-trip: YAML output matches BlueprintFullSchema shape", () => {
+    const result = BlueprintFullYamlSchema.safeParse(validBlueprintFullYaml)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const baseResult = BlueprintFullSchema.safeParse(result.data)
+      expect(baseResult.success).toBe(true)
+    }
+  })
+
+  it("accepts blueprint with optional tier", () => {
+    const result = BlueprintFullYamlSchema.safeParse({ ...validBlueprintFullYaml, tier: 3 })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.tier).toBe(3)
+    }
+  })
+
+  it("requires skeleton field", () => {
+    const { skeleton: _s, ...withoutSkeleton } = validBlueprintFullYaml
+    const result = BlueprintFullYamlSchema.safeParse(withoutSkeleton)
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects invalid skeleton (missing schema_version)", () => {
+    const result = BlueprintFullYamlSchema.safeParse({
+      ...validBlueprintFullYaml,
+      skeleton: { nodes: [], edges: [] },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects unknown keys at root level (strict)", () => {
+    const result = BlueprintFullYamlSchema.safeParse({ ...validBlueprintFullYaml, extra: "field" })
+    expect(result.success).toBe(false)
+  })
+})
 
 describe("BlueprintSchema", () => {
   const validBlueprint = {

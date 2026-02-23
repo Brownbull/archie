@@ -3,12 +3,12 @@ import { stackRepository } from "@/repositories/stackRepository"
 import { blueprintRepository } from "@/repositories/blueprintRepository"
 import type { Component } from "@/schemas/componentSchema"
 import type { Stack } from "@/schemas/stackSchema"
-import type { Blueprint } from "@/schemas/blueprintSchema"
+import type { BlueprintFull } from "@/schemas/blueprintSchema"
 
 let componentMap = new Map<string, Component>()
 let categoryMap = new Map<string, Component[]>()
 let stacks: Stack[] = []
-let blueprints: Blueprint[] = []
+let blueprintMap = new Map<string, BlueprintFull>()
 let initialized = false
 let initPromise: Promise<void> | null = null
 
@@ -26,6 +26,7 @@ export const componentLibrary = {
 
       const newComponentMap = new Map<string, Component>()
       const newCategoryMap = new Map<string, Component[]>()
+      const newBlueprintMap = new Map<string, BlueprintFull>()
 
       for (const comp of components) {
         newComponentMap.set(comp.id, comp)
@@ -33,10 +34,14 @@ export const componentLibrary = {
         newCategoryMap.set(comp.category, [...existing, comp])
       }
 
+      for (const bp of blueprintData) {
+        newBlueprintMap.set(bp.id, bp)
+      }
+
       componentMap = newComponentMap
       categoryMap = newCategoryMap
       stacks = stackData
-      blueprints = blueprintData
+      blueprintMap = newBlueprintMap
       initialized = true
     })().catch((error) => {
       initPromise = null // Allow retry on failure
@@ -76,15 +81,24 @@ export const componentLibrary = {
     return stacks
   },
 
-  getBlueprints(): Blueprint[] {
-    return blueprints
+  /** @deprecated Use getAllBlueprints() — kept for backward compatibility */
+  getBlueprints(): BlueprintFull[] {
+    return Array.from(blueprintMap.values())
+  },
+
+  getAllBlueprints(): BlueprintFull[] {
+    return Array.from(blueprintMap.values())
+  },
+
+  getBlueprint(id: string): BlueprintFull | undefined {
+    return blueprintMap.get(id)
   },
 
   reset(): void {
     componentMap = new Map()
     categoryMap = new Map()
     stacks = []
-    blueprints = []
+    blueprintMap = new Map()
     initialized = false
     initPromise = null
   },

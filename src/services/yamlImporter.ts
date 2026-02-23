@@ -186,7 +186,9 @@ export function importYamlString(text: string): ImportResult {
         }],
       }
     case "migrate": {
-      const migrateFn = MIGRATIONS[versionStatus.migrationKey]
+      // Explicit String() mirrors checkSchemaVersion's own String(fileMajor) — aligns types
+      const migrationKey = String(versionStatus.migrationKey)
+      const migrateFn = MIGRATIONS[migrationKey]
       if (migrateFn) {
         // try/catch: a migration function that throws must not propagate uncaught
         let migratedData: unknown
@@ -205,11 +207,13 @@ export function importYamlString(text: string): ImportResult {
             success: false,
             errors: [{
               code: "MIGRATION_NULL_RESULT",
-              message: `Migration function for version ${versionStatus.migrationKey} returned null or undefined`,
+              message: `Migration function for version ${migrationKey} returned null or undefined`,
             }],
           }
         }
-        // Note: Object.assign mutates data in-place — intentional for migration merging
+        // KNOWN GAP: migratedData is not re-validated against ArchitectureFileSchema.
+        // Accepted for now — migrations are internal, not user-provided. If migrations
+        // ever become plugin-provided, add: ArchitectureFileSchema.safeParse({...data, ...migratedData})
         Object.assign(data, migratedData)
       }
       break
@@ -228,10 +232,18 @@ export function importYamlString(text: string): ImportResult {
     }
   }
 
-  // Step 6: Sanitize strings
+  // Step 6-9: Delegate to shared hydration pipeline
+  return hydrateArchitectureSkeleton(data)
+}
+
+/**
+ * Hydrates a validated ArchitectureFile into nodes and edges.
+ * Shared by YAML import and blueprint loading — single hydration code path (AC-ARCH-NO-2).
+ */
+export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResult {
   const sanitizedName = data.name ? sanitizeDisplayString(data.name) : undefined
 
-  // Step 7: Hydrate nodes from component library
+  // Hydrate nodes from component library
   const hydratedNodes: ArchieNode[] = []
   const placeholderIds: string[] = []
 
@@ -286,7 +298,7 @@ export function importYamlString(text: string): ImportResult {
     })
   }
 
-  // Step 8: Build edges with compatibility check
+  // Build edges with compatibility check
   const nodeMap = new Map(hydratedNodes.map((n) => [n.id, n]))
   const hydratedEdges: ArchieEdge[] = []
 
@@ -320,7 +332,6 @@ export function importYamlString(text: string): ImportResult {
     })
   }
 
-  // Step 9: Return hydrated architecture
   return {
     success: true,
     architecture: {

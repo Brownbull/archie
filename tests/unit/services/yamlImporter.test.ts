@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
-import { importYaml, importYamlString } from "@/services/yamlImporter"
+import { importYaml, importYamlString, hydrateArchitectureSkeleton } from "@/services/yamlImporter"
 import { MIGRATIONS } from "@/schemas/architectureFileSchema"
 import { MAX_FILE_SIZE } from "@/lib/constants"
 
@@ -487,9 +487,45 @@ edges: []
       expect(result.errors[0].code).toBe("MIGRATION_NULL_RESULT")
     })
 
+    it("returns MIGRATION_NULL_RESULT when migration function returns undefined", () => {
+      migrationSpy.mockReturnValue(undefined)
+
+      const yaml = `
+schema_version: "0.5.0"
+nodes: []
+edges: []
+`
+      const result = importYamlString(yaml)
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("MIGRATION_NULL_RESULT")
+    })
+
+    it("returns MIGRATION_ERROR with fallback message when migration throws a non-Error value", () => {
+      migrationSpy.mockImplementation(() => {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw "string error"
+      })
+
+      const yaml = `
+schema_version: "0.5.0"
+nodes: []
+edges: []
+`
+      const result = importYamlString(yaml)
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("MIGRATION_ERROR")
+      expect(result.errors[0].message).toBe("Migration function threw an error")
+    })
+
     it("transformed nodes from migration appear in hydrated output", () => {
       migrationSpy.mockImplementation((data) => ({
         ...(data as object),
+        // Migration functions receive and must return camelCase ArchitectureFile shape —
+        // Zod has already transformed snake_case input before this point
         nodes: [
           {
             id: "node-1",
@@ -518,5 +554,52 @@ edges: []
       expect(result.architecture.nodes).toHaveLength(1)
       expect(result.architecture.nodes[0].data.archieComponentId).toBe("redis")
     })
+  })
+})
+
+describe("hydrateArchitectureSkeleton", () => {
+  it("hydrates a valid ArchitectureFile directly (no YAML parsing)", () => {
+    const data = {
+      schemaVersion: "1.0.0",
+      nodes: [
+        { id: "node-1", componentId: "nginx", configVariantId: "load-balancer", position: { x: 96, y: 192 } },
+      ],
+      edges: [],
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes).toHaveLength(1)
+    expect(result.architecture.nodes[0].data.archieComponentId).toBe("nginx")
+  })
+
+  it("returns placeholder for unknown component ID", () => {
+    const data = {
+      schemaVersion: "1.0.0",
+      nodes: [
+        { id: "node-1", componentId: "unknown-component", configVariantId: "default", position: { x: 96, y: 192 } },
+      ],
+      edges: [],
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.placeholderIds).toContain("node-1")
+  })
+
+  it("builds edges for the hydrated architecture", () => {
+    const data = {
+      schemaVersion: "1.0.0",
+      nodes: [
+        { id: "n1", componentId: "nginx", configVariantId: "load-balancer", position: { x: 96, y: 192 } },
+        { id: "n2", componentId: "redis", configVariantId: "standalone", position: { x: 320, y: 192 } },
+      ],
+      edges: [{ id: "e1", sourceNodeId: "n1", targetNodeId: "n2" }],
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.edges).toHaveLength(1)
+    expect(result.architecture.edges[0].id).toBe("e1")
   })
 })

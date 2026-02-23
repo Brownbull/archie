@@ -1,6 +1,6 @@
 import type { Component } from "@/schemas/componentSchema"
 import type { Stack } from "@/schemas/stackSchema"
-import type { Blueprint } from "@/schemas/blueprintSchema"
+import type { BlueprintFull } from "@/schemas/blueprintSchema"
 
 export interface ComponentRepository {
   getAll(): Promise<Component[]>
@@ -13,5 +13,5 @@ export interface StackRepository {
 }
 
 export interface BlueprintRepository {
-  getAll(): Promise<Blueprint[]>
+  getAll(): Promise<BlueprintFull[]>
 }

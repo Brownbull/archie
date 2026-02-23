@@ -1,17 +1,17 @@
 import { collection, getDocs } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { BlueprintSchema } from "@/schemas/blueprintSchema"
-import type { Blueprint } from "@/schemas/blueprintSchema"
+import { BlueprintFullSchema } from "@/schemas/blueprintSchema"
+import type { BlueprintFull } from "@/schemas/blueprintSchema"
 import type { BlueprintRepository } from "@/repositories/types"
 
 const COLLECTION = "blueprints"
 
 class FirestoreBlueprintRepository implements BlueprintRepository {
-  async getAll(): Promise<Blueprint[]> {
+  async getAll(): Promise<BlueprintFull[]> {
     const snapshot = await getDocs(collection(db, COLLECTION))
-    const blueprints: Blueprint[] = []
+    const blueprints: BlueprintFull[] = []
     for (const docSnap of snapshot.docs) {
-      const result = BlueprintSchema.safeParse(docSnap.data())
+      const result = BlueprintFullSchema.safeParse(docSnap.data())
       if (result.success) {
         blueprints.push(result.data)
       } else {

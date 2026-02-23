@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import "./seed-mocks"
-import { seedToFirestore } from "../../../scripts/seed-firestore"
-import { createMockDb, makeComponent, noopLogger } from "./seed-helpers"
+import { seedToFirestore, seedBlueprintsToFirestore } from "../../../scripts/seed-firestore"
+import { createMockDb, makeComponent, makeBlueprintFull, noopLogger } from "./seed-helpers"
 
 function createSpyLogger() {
   return { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
@@ -148,5 +148,53 @@ describe("seedToFirestore", () => {
     // Only metadata set, no component sets
     expect(mocks.setFn).toHaveBeenCalledTimes(1)
     expect(mocks.collectionFn).toHaveBeenCalledWith("_metadata")
+  })
+})
+
+describe("seedBlueprintsToFirestore", () => {
+  it("writes blueprints to blueprints collection", async () => {
+    const { db, mocks } = createMockDb()
+    const blueprints = [makeBlueprintFull("whatsapp-messaging"), makeBlueprintFull("telegram-messaging")]
+
+    await seedBlueprintsToFirestore(db, blueprints, noopLogger)
+
+    expect(mocks.collectionFn).toHaveBeenCalledWith("blueprints")
+    expect(mocks.setFn).toHaveBeenCalledTimes(2)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(1)
+  })
+
+  it("uses blueprint id as document ID", async () => {
+    const { db, mocks } = createMockDb()
+    const blueprints = [makeBlueprintFull("whatsapp-messaging")]
+
+    await seedBlueprintsToFirestore(db, blueprints, noopLogger)
+
+    expect(mocks.docFn).toHaveBeenCalledWith("whatsapp-messaging")
+  })
+
+  it("returns count of written blueprints", async () => {
+    const { db } = createMockDb()
+    const blueprints = [makeBlueprintFull("bp-1"), makeBlueprintFull("bp-2")]
+
+    const result = await seedBlueprintsToFirestore(db, blueprints, noopLogger)
+    expect(result).toBe(2)
+  })
+
+  it("handles empty blueprints array (no writes, returns 0)", async () => {
+    const { db, mocks } = createMockDb()
+
+    const result = await seedBlueprintsToFirestore(db, [], noopLogger)
+
+    expect(result).toBe(0)
+    expect(mocks.batchFn).not.toHaveBeenCalled()
+  })
+
+  it("rejects when batch commit fails", async () => {
+    const { db, mocks } = createMockDb()
+    mocks.commitFn.mockRejectedValueOnce(new Error("Firestore unavailable"))
+
+    await expect(
+      seedBlueprintsToFirestore(db, [makeBlueprintFull("bp-1")], noopLogger),
+    ).rejects.toThrow("Firestore unavailable")
   })
 })

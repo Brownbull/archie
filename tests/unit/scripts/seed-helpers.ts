@@ -11,6 +11,7 @@
 import { vi } from "vitest"
 import { dump } from "js-yaml"
 import type { Component } from "@/schemas/componentSchema"
+import type { BlueprintFull } from "@/schemas/blueprintSchema"
 import type { seedToFirestore, SeedLogger } from "../../../scripts/seed-firestore"
 
 /** No-op logger that suppresses all output. Use in tests that don't check log messages. */
@@ -103,6 +104,52 @@ export function mockStatResult(size: number) {
  */
 export function mockDirEntries(...files: string[]) {
   return files as unknown as ReturnType<typeof import("node:fs").readdirSync>
+}
+
+/**
+ * Creates a BlueprintFull object for seedBlueprintsToFirestore tests.
+ */
+export function makeBlueprintFull(id: string): BlueprintFull {
+  return {
+    id,
+    name: `Blueprint ${id}`,
+    description: `Description for blueprint ${id}`,
+    skeleton: {
+      schemaVersion: "1.0.0",
+      nodes: [
+        {
+          id: "node-1",
+          componentId: "nginx",
+          configVariantId: "load-balancer",
+          position: { x: 96, y: 192 },
+        },
+      ],
+      edges: [],
+    },
+  }
+}
+
+/**
+ * Creates a valid blueprint YAML string that passes BlueprintFullYamlSchema validation.
+ */
+export function makeBlueprintYaml(id: string): string {
+  return dump({
+    id,
+    name: `Blueprint ${id}`,
+    description: `Description for blueprint ${id}`,
+    skeleton: {
+      schema_version: "1.0.0",
+      nodes: [
+        {
+          id: "node-1",
+          component_id: "nginx",
+          config_variant_id: "load-balancer",
+          position: { x: 96, y: 192 },
+        },
+      ],
+      edges: [],
+    },
+  })
 }
 
 /**

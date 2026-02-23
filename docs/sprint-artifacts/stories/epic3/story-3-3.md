@@ -1,6 +1,6 @@
 # Story: 3-3 Example Architectures & AI Prompt Template
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 3 — YAML Workflow & Content Library
 
 ## Overview
@@ -111,62 +111,62 @@ This story creates 2 example architecture blueprints (WhatsApp-style Messaging, 
 ## Tasks / Subtasks
 
 ### Task 1: Blueprint Schema Extension
-- [ ] 1.1 Extend `src/schemas/blueprintSchema.ts` to include a `skeleton` field containing the architecture file structure (nodes, edges, schema_version) — reuse types from `architectureFileSchema.ts`
-- [ ] 1.2 Add YAML variant for blueprint seeding (snake_case input)
-- [ ] 1.3 Define `BlueprintFull` type: `{ id, name, description, tier?, skeleton: ArchitectureFile }`
-- [ ] 1.4 Write unit tests: schema validates, skeleton field required, rejects invalid skeleton
+- [x] 1.1 Extend `src/schemas/blueprintSchema.ts` to include a `skeleton` field containing the architecture file structure (nodes, edges, schema_version) — reuse types from `architectureFileSchema.ts`
+- [x] 1.2 Add YAML variant for blueprint seeding (snake_case input)
+- [x] 1.3 Define `BlueprintFull` type: `{ id, name, description, tier?, skeleton: ArchitectureFile }`
+- [x] 1.4 Write unit tests: schema validates, skeleton field required, rejects invalid skeleton
 
 ### Task 2: Example Architecture YAML Files
-- [ ] 2.1 Create `src/data/blueprints/whatsapp-messaging.yaml` with WhatsApp-style architecture: 5-7 components (e.g., API Gateway/compute, PostgreSQL/data-storage, Redis/caching, Kafka/messaging, CDN/delivery-network, WebSocket server/real-time), connections between them, specific config variants chosen
-- [ ] 2.2 Create `src/data/blueprints/telegram-messaging.yaml` with Telegram-style architecture: 5-7 components with different choices (e.g., different messaging queue, different caching strategy), making trade-off differences visible
-- [ ] 2.3 Validate both YAML files against `ArchitectureFileYamlSchema` — must parse cleanly
-- [ ] 2.4 Ensure all component_ids and config_variant_ids reference actual components in the seed data (`src/data/components/*.yaml`)
-- [ ] 2.5 Layout positions: arrange components in a readable flow (left-to-right or top-to-bottom), no overlapping, snapped to grid
+- [x] 2.1 Create `src/data/blueprints/whatsapp-messaging.yaml` with WhatsApp-style architecture: 5-7 components (e.g., API Gateway/compute, PostgreSQL/data-storage, Redis/caching, Kafka/messaging, CDN/delivery-network, WebSocket server/real-time), connections between them, specific config variants chosen
+- [x] 2.2 Create `src/data/blueprints/telegram-messaging.yaml` with Telegram-style architecture: 5-7 components with different choices (e.g., different messaging queue, different caching strategy), making trade-off differences visible
+- [x] 2.3 Validate both YAML files against `ArchitectureFileYamlSchema` — must parse cleanly
+- [x] 2.4 Ensure all component_ids and config_variant_ids reference actual components in the seed data (`src/data/components/*.yaml`)
+- [x] 2.5 Layout positions: arrange components in a readable flow (left-to-right or top-to-bottom), no overlapping, snapped to grid
 
 ### Task 3: Seed Script Update
-- [ ] 3.1 Update `scripts/seed-firestore.ts` to read blueprint YAML files from `src/data/blueprints/`
-- [ ] 3.2 Validate each blueprint against `BlueprintYamlSchema` before writing to Firestore
-- [ ] 3.3 Write to `blueprints` collection in Firestore with document ID = blueprint id
-- [ ] 3.4 Respect Firestore 500-operation batch limit (batch chunking if needed — unlikely for 2 blueprints but pattern in place)
-- [ ] 3.5 Add error handling: log which blueprints succeeded/failed, continue on individual failures
+- [x] 3.1 Update `scripts/seed-firestore.ts` to read blueprint YAML files from `src/data/blueprints/`
+- [x] 3.2 Validate each blueprint against `BlueprintYamlSchema` before writing to Firestore
+- [x] 3.3 Write to `blueprints` collection in Firestore with document ID = blueprint id
+- [x] 3.4 Respect Firestore 500-operation batch limit (batch chunking if needed — unlikely for 2 blueprints but pattern in place)
+- [x] 3.5 Add error handling: log which blueprints succeeded/failed, continue on individual failures
 
 ### Task 4: Component Library Extension
-- [ ] 4.1 Extend `src/services/componentLibrary.ts` to load and cache blueprint data from Firestore `blueprints` collection
-- [ ] 4.2 Add `getAllBlueprints(): BlueprintFull[]` method (sync, from cache)
-- [ ] 4.3 Add `getBlueprint(id: string): BlueprintFull | undefined` method (sync, from cache)
-- [ ] 4.4 Load blueprints during `initialize()` alongside components — same two-layer caching pattern
-- [ ] 4.5 Write unit tests: blueprints loaded into cache, getBlueprint returns correct data, getAllBlueprints returns all, missing blueprint returns undefined
+- [x] 4.1 Extend `src/services/componentLibrary.ts` to load and cache blueprint data from Firestore `blueprints` collection
+- [x] 4.2 Add `getAllBlueprints(): BlueprintFull[]` method (sync, from cache)
+- [x] 4.3 Add `getBlueprint(id: string): BlueprintFull | undefined` method (sync, from cache)
+- [x] 4.4 Load blueprints during `initialize()` alongside components — same two-layer caching pattern
+- [x] 4.5 Write unit tests: blueprints loaded into cache, getBlueprint returns correct data, getAllBlueprints returns all, missing blueprint returns undefined
 
 ### Task 5: Blueprint Tab & Loading UI
-- [ ] 5.1 Rewrite `src/components/toolbox/BlueprintTab.tsx` to display blueprint cards from componentLibrary
-- [ ] 5.2 Each card shows: name, description, component count (from skeleton.nodes.length)
-- [ ] 5.3 Add "Load" button on each card — calls `architectureStore.loadArchitecture()` with the blueprint's skeleton data (hydrated through the import pipeline)
-- [ ] 5.4 Add loading state (skeleton/spinner) while blueprints are being fetched from cache
-- [ ] 5.5 Add empty state when no blueprints available: "No example architectures available"
-- [ ] 5.6 Add confirmation if canvas has existing components: "Loading a blueprint will replace your current architecture. Continue?"
-- [ ] 5.7 Add `data-testid` attributes: `blueprint-card`, `blueprint-load-button`, `blueprint-tab-empty`, `blueprint-tab-loading`
-- [ ] 5.8 Wrap BlueprintTab with ErrorBoundary — Firestore/cache failures show fallback UI
+- [x] 5.1 Rewrite `src/components/toolbox/BlueprintTab.tsx` to display blueprint cards from componentLibrary
+- [x] 5.2 Each card shows: name, description, component count (from skeleton.nodes.length)
+- [x] 5.3 Add "Load" button on each card — calls `architectureStore.loadArchitecture()` with the blueprint's skeleton data (hydrated through the import pipeline)
+- [x] 5.4 Add loading state (skeleton/spinner) while blueprints are being fetched from cache
+- [x] 5.5 Add empty state when no blueprints available: "No example architectures available"
+- [x] 5.6 Add confirmation if canvas has existing components: "Loading a blueprint will replace your current architecture. Continue?"
+- [x] 5.7 Add `data-testid` attributes: `blueprint-card`, `blueprint-load-button`, `blueprint-tab-empty`, `blueprint-tab-loading`
+- [x] 5.8 Wrap BlueprintTab with ErrorBoundary — Firestore/cache failures show fallback UI
 
 ### Task 6: AI Prompt Template
-- [ ] 6.1 Create `src/data/prompt-template.md` with the AI prompt template explaining:
+- [x] 6.1 Create `src/data/prompt-template.md` with the AI prompt template explaining:
   - YAML schema structure (schema_version, nodes, edges)
   - Field definitions (component_id, config_variant_id, position)
   - Available component IDs and their config variant IDs (or a reference to where to find them)
   - An example valid YAML file
   - Instructions for the AI to generate Archie-compatible output
-- [ ] 6.2 Create `src/components/import-export/PromptTemplateDialog.tsx` — displays the template in a readable format with a "Copy to Clipboard" button
-- [ ] 6.3 Add "AI Prompt" button to `src/components/layout/Toolbar.tsx` next to Import/Export buttons
-- [ ] 6.4 Template is loaded as a static import at build time (import from `@/data/prompt-template.md?raw` using Vite raw import)
-- [ ] 6.5 Add `data-testid` attributes: `prompt-template-button`, `prompt-template-dialog`, `prompt-template-copy`
+- [x] 6.2 Create `src/components/import-export/PromptTemplateDialog.tsx` — displays the template in a readable format with a "Copy to Clipboard" button
+- [x] 6.3 Add "AI Prompt" button to `src/components/layout/Toolbar.tsx` next to Import/Export buttons
+- [x] 6.4 Template is loaded as a static import at build time (import from `@/data/prompt-template.md?raw` using Vite raw import)
+- [x] 6.5 Add `data-testid` attributes: `prompt-template-button`, `prompt-template-dialog`, `prompt-template-copy`
 
 ### Task 7: E2E & Build Verification
 - [ ] 7.1 Create E2E scenarios in `tests/e2e/import-export.spec.ts`: browse blueprints tab, load blueprint onto canvas, verify components render
 - [ ] 7.2 Add E2E: load blueprint → interact (change config) → verify recalculation works
 - [ ] 7.3 Add E2E: access AI prompt template → verify content visible → copy to clipboard
 - [ ] 7.4 Save screenshots at blueprint loading steps
-- [ ] 7.5 Run `npx tsc --noEmit` — no type errors
-- [ ] 7.6 Run `npm run test:quick` — all tests pass
-- [ ] 7.7 Verify coverage meets thresholds
+- [x] 7.5 Run `npx tsc --noEmit` — no type errors
+- [x] 7.6 Run `npm run test:quick` — all tests pass (1069/1069)
+- [x] 7.7 Verify coverage meets thresholds
 
 ## Dev Notes
 

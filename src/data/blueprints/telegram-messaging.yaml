@@ -1,0 +1,53 @@
+id: telegram-messaging
+name: "Telegram-style Messaging"
+description: "Operationally simple messaging architecture prioritizing cost efficiency and maintainability. Uses a lightweight message broker, simpler database setup, and fewer infrastructure components compared to the WhatsApp example."
+skeleton:
+  schema_version: "1.0.0"
+  name: "Telegram-style Messaging"
+  nodes:
+    - id: tg-nginx
+      component_id: nginx
+      config_variant_id: reverse-proxy
+      position:
+        x: 96
+        y: 192
+    - id: tg-node-api
+      component_id: node-express
+      config_variant_id: single-process
+      position:
+        x: 352
+        y: 192
+    - id: tg-rabbitmq
+      component_id: rabbitmq
+      config_variant_id: single-node
+      position:
+        x: 608
+        y: 96
+    - id: tg-redis
+      component_id: redis
+      config_variant_id: standalone
+      position:
+        x: 608
+        y: 304
+    - id: tg-postgresql
+      component_id: postgresql
+      config_variant_id: single-node
+      position:
+        x: 864
+        y: 192
+  edges:
+    - id: tg-edge-nginx-api
+      source_node_id: tg-nginx
+      target_node_id: tg-node-api
+    - id: tg-edge-api-rabbitmq
+      source_node_id: tg-node-api
+      target_node_id: tg-rabbitmq
+    - id: tg-edge-api-redis
+      source_node_id: tg-node-api
+      target_node_id: tg-redis
+    - id: tg-edge-rabbitmq-db
+      source_node_id: tg-rabbitmq
+      target_node_id: tg-postgresql
+    - id: tg-edge-redis-db
+      source_node_id: tg-redis
+      target_node_id: tg-postgresql

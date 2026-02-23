@@ -1,14 +1,17 @@
+import { useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { useImportAction } from "@/components/import-export/ImportDialog"
 import { ExportButton } from "@/components/import-export/ExportButton"
+import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
-import { FileUp } from "lucide-react"
+import { FileUp, BrainCircuit } from "lucide-react"
 
 export function Toolbar() {
   const { user, signOut } = useAuth()
   const { triggerFilePicker, isImporting } = useImportAction()
+  const [promptOpen, setPromptOpen] = useState(false)
 
   return (
     <header
@@ -30,6 +33,16 @@ export function Toolbar() {
           Import
         </Button>
         <ExportButton />
+        <Button
+          data-testid="prompt-template-button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setPromptOpen(true)}
+          className="gap-1.5"
+        >
+          <BrainCircuit className="h-3.5 w-3.5" />
+          AI Prompt
+        </Button>
       </div>
 
       <div className="flex items-center gap-3">
@@ -43,6 +56,8 @@ export function Toolbar() {
           Sign out
         </Button>
       </div>
+
+      <PromptTemplateDialog open={promptOpen} onOpenChange={setPromptOpen} />
     </header>
   )
 }
