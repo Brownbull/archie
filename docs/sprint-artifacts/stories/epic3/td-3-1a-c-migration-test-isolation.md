@@ -1,6 +1,6 @@
 # Story: TD-3-1a-c Migration Test Isolation
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: Code review of td-3-1a-b (2026-02-15)
 
@@ -25,14 +25,14 @@ Tech debt from td-3-1a-b code review. Two related test quality issues: (1) the M
 ## Tasks / Subtasks
 
 ### Task 1: Refactor MIGRATIONS Test Pattern
-- [ ] 1.1 Replace direct MIGRATIONS mutation in `architectureFileSchema.test.ts` with `vi.mock` or `beforeEach`/`afterEach` pattern
-- [ ] 1.2 Verify all existing migration-related tests still pass
-- [ ] 1.3 Run `npm run test:quick` — all tests pass
+- [x] 1.1 Replace direct MIGRATIONS mutation in `architectureFileSchema.test.ts` with `vi.mock` or `beforeEach`/`afterEach` pattern
+- [x] 1.2 Verify all existing migration-related tests still pass
+- [x] 1.3 Run `npm run test:quick` — all tests pass
 
 ### Task 2: Add Integration Migrate Test
-- [ ] 2.1 Add test in `yamlImporter.test.ts` that sets up a migration function and imports older-version YAML
-- [ ] 2.2 Verify the migration function is called and transforms data correctly
-- [ ] 2.3 Run `npm run test:quick` — all tests pass
+- [x] 2.1 Add test in `yamlImporter.test.ts` that sets up a migration function and imports older-version YAML
+- [x] 2.2 Verify the migration function is called and transforms data correctly
+- [x] 2.3 Run `npm run test:quick` — all tests pass
 
 ## Dev Notes
 

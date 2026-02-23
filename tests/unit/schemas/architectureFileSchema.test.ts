@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import {
   ArchitectureFileSchema,
   ArchitectureFileYamlSchema,
@@ -328,13 +328,17 @@ describe("checkSchemaVersion", () => {
     expect(checkSchemaVersion("0.5.0", "1.0.0")).toEqual({ status: "too-old" })
   })
 
-  it("returns migrate with migrationKey when file major is older and migration exists", () => {
-    const originalMigrations = { ...MIGRATIONS }
-    ;(MIGRATIONS as Record<string, (data: unknown) => unknown>)["0"] = (d) => d
-    expect(checkSchemaVersion("0.5.0", "1.0.0")).toEqual({ status: "migrate", migrationKey: 0 })
-    // Clean up
-    delete (MIGRATIONS as Record<string, (data: unknown) => unknown>)["0"]
-    expect(MIGRATIONS).toEqual(originalMigrations)
+  describe("returns migrate with migrationKey when file major is older and migration exists", () => {
+    beforeEach(() => {
+      MIGRATIONS["0"] = (d) => d
+    })
+    afterEach(() => {
+      delete MIGRATIONS["0"]
+    })
+
+    it("returns migrate status with correct migrationKey", () => {
+      expect(checkSchemaVersion("0.5.0", "1.0.0")).toEqual({ status: "migrate", migrationKey: 0 })
+    })
   })
 
   it("returns invalid-format for non-numeric file major version", () => {

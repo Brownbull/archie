@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { importYaml, importYamlString } from "@/services/yamlImporter"
+import { MIGRATIONS } from "@/schemas/architectureFileSchema"
 import { MAX_FILE_SIZE } from "@/lib/constants"
 
 const { testComponentMap } = vi.hoisted(() => {
@@ -417,6 +418,35 @@ edges:
       expect(result.architecture.edges).toHaveLength(1)
       expect(result.architecture.edges[0].source).toBe("node-1")
       expect(result.architecture.edges[0].target).toBe("does-not-exist")
+    })
+  })
+
+  describe("importYamlString — migration", () => {
+    let migrationSpy = vi.fn()
+
+    beforeEach(() => {
+      migrationSpy = vi.fn((data) => ({
+        ...(data as object),
+        name: "migrated-architecture",
+      }))
+      MIGRATIONS["0"] = migrationSpy
+    })
+
+    afterEach(() => {
+      delete MIGRATIONS["0"]
+    })
+
+    it("calls migration function and reflects transformed data in output", () => {
+      const yaml = `schema_version: "0.5.0"\nnodes: []\nedges: []\n`
+      const result = importYamlString(yaml)
+
+      expect(result.success).toBe(true)
+      if (!result.success) return
+
+      expect(migrationSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ schemaVersion: "0.5.0", nodes: [], edges: [] }),
+      )
+      expect(result.architecture.name).toBe("migrated-architecture")
     })
   })
 })
