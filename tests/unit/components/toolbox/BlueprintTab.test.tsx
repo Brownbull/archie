@@ -185,4 +185,15 @@ describe("BlueprintTab", () => {
     expect(mockLoadArchitecture).not.toHaveBeenCalled()
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
   })
+
+  it("shows error banner when hydration fails and does not call loadArchitecture", async () => {
+    mockHydrate.mockReturnValue({ success: false, errors: ["Component not found: unknown-component"] })
+    setupMocks()
+    const { BlueprintTab } = await import("@/components/toolbox/BlueprintTab")
+    render(<BlueprintTab />)
+    const loadButtons = screen.getAllByTestId("blueprint-load-button")
+    fireEvent.click(loadButtons[0])
+    expect(mockLoadArchitecture).not.toHaveBeenCalled()
+    expect(screen.getByTestId("blueprint-load-error")).toBeInTheDocument()
+  })
 })

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { render, screen, fireEvent, act } from "@testing-library/react"
 
 vi.mock("@/data/prompt-template.md?raw", () => ({
   default: "# Archie AI Prompt Template\n\nThis is the template content.",
@@ -21,7 +21,12 @@ import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateD
 describe("PromptTemplateDialog", () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.useFakeTimers()
     mockWriteText.mockResolvedValue(undefined)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it("renders the dialog with correct testid when open", () => {
@@ -49,5 +54,34 @@ describe("PromptTemplateDialog", () => {
     const copyButton = screen.getByTestId("prompt-template-copy")
     fireEvent.click(copyButton)
     expect(mockWriteText).toHaveBeenCalledWith(expect.stringContaining("Archie AI Prompt Template"))
+  })
+
+  it("copy button reverts from Copied back to Copy after 2000ms", async () => {
+    render(<PromptTemplateDialog open onOpenChange={vi.fn()} />)
+    const copyButton = screen.getByTestId("prompt-template-copy")
+
+    await act(async () => {
+      fireEvent.click(copyButton)
+      await Promise.resolve() // flush microtask (clipboard .then)
+    })
+    expect(copyButton).toHaveTextContent("Copied")
+
+    await act(async () => {
+      vi.advanceTimersByTime(2000)
+    })
+    expect(copyButton).toHaveTextContent("Copy")
+  })
+
+  it("does not update state when clipboard write fails", async () => {
+    mockWriteText.mockRejectedValue(new Error("Permission denied"))
+    render(<PromptTemplateDialog open onOpenChange={vi.fn()} />)
+    const copyButton = screen.getByTestId("prompt-template-copy")
+
+    await act(async () => {
+      fireEvent.click(copyButton)
+      await Promise.resolve() // flush rejection
+    })
+    // Should stay in "Copy" state — no Copied transition on failure
+    expect(copyButton).toHaveTextContent("Copy")
   })
 })

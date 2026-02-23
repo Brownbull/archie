@@ -81,7 +81,11 @@ export function validateServiceAccountFile(credPath: string): ServiceAccount {
     }
   }
 
-  return parsed as ServiceAccount
+  return {
+    project_id: sa.project_id as string,
+    private_key: sa.private_key as string,
+    client_email: sa.client_email as string,
+  } as ServiceAccount
 }
 
 /**
@@ -150,6 +154,8 @@ export function loadAndValidateComponents(dataDir: string, logger: SeedLogger = 
 export function loadAndValidateBlueprints(dataDir: string, logger: SeedLogger = console): BlueprintFull[] {
   const files = readdirSync(dataDir).filter((f) => f.endsWith(".yaml"))
 
+  logger.log(`Found ${files.length} YAML files in ${dataDir}`)
+
   if (files.length === 0) {
     logger.warn("WARNING: No blueprint YAML files found in directory.")
     return []
@@ -198,6 +204,44 @@ export function loadAndValidateBlueprints(dataDir: string, logger: SeedLogger = 
 
   logger.log(`\nValidated ${blueprints.length} blueprints.`)
   return blueprints
+}
+
+/**
+ * Validate blueprint node references against the component library.
+ * Warns on unknown component IDs and unknown config variant IDs.
+ * Returns total warning count — blueprints still seed (references are warnings, not blockers).
+ */
+export function validateBlueprintReferences(
+  blueprints: BlueprintFull[],
+  components: Component[],
+  logger: SeedLogger = console,
+): number {
+  const componentMap = new Map(components.map((c) => [c.id, c]))
+  let warningCount = 0
+
+  for (const bp of blueprints) {
+    for (const node of bp.skeleton.nodes) {
+      const comp = componentMap.get(node.componentId)
+      if (!comp) {
+        logger.warn(
+          `WARNING: Blueprint '${bp.id}' node '${node.id}' references unknown component '${node.componentId}'`,
+        )
+        warningCount++
+        continue
+      }
+      if (node.configVariantId) {
+        const variantIds = new Set(comp.configVariants.map((v) => v.id))
+        if (!variantIds.has(node.configVariantId)) {
+          logger.warn(
+            `WARNING: Blueprint '${bp.id}' node '${node.id}' references unknown config variant '${node.configVariantId}' for component '${node.componentId}'`,
+          )
+          warningCount++
+        }
+      }
+    }
+  }
+
+  return warningCount
 }
 
 /**
@@ -315,6 +359,12 @@ async function main() {
   } catch {
     console.error("\nAborting: validation failed on one or more blueprint files.")
     process.exit(1)
+  }
+
+  // Cross-reference validation (warnings only — blueprints still seed, runtime uses placeholders)
+  const refWarnings = validateBlueprintReferences(blueprints, components)
+  if (refWarnings > 0) {
+    console.warn(`\n${refWarnings} reference warning(s) found. Blueprints will still seed (runtime uses placeholders for unknown components).`)
   }
 
   if (isDryRun) {

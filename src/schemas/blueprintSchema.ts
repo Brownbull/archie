@@ -1,18 +1,22 @@
 import { z } from "zod"
 import { ArchitectureFileSchema, ArchitectureFileYamlSchema } from "@/schemas/architectureFileSchema"
 
+const bpId = z.string().min(1).max(100)
+const bpName = z.string().min(1).max(200)
+const bpDescription = z.string().min(1).max(1000)
+
 export const BlueprintSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().min(1),
+  id: bpId,
+  name: bpName,
+  description: bpDescription,
   tier: z.number().optional(),
 }).strict()
 
 // YAML input variant: identity transform (establishes pattern for future snake_case fields)
 export const BlueprintYamlSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().min(1),
+  id: bpId,
+  name: bpName,
+  description: bpDescription,
   tier: z.number().optional(),
 }).strict().transform((data) => ({
   id: data.id,
@@ -23,9 +27,9 @@ export const BlueprintYamlSchema = z.object({
 
 /** Full blueprint with skeleton — what Firestore stores and componentLibrary caches */
 export const BlueprintFullSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().min(1),
+  id: bpId,
+  name: bpName,
+  description: bpDescription,
   tier: z.number().optional(),
   skeleton: ArchitectureFileSchema,
 }).strict()
@@ -36,9 +40,9 @@ export const BlueprintFullSchema = z.object({
  * Used by the seed script to read blueprint YAML files from src/data/blueprints/.
  */
 export const BlueprintFullYamlSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().min(1),
+  id: bpId,
+  name: bpName,
+  description: bpDescription,
   tier: z.number().optional(),
   skeleton: ArchitectureFileYamlSchema,
 }).strict().transform((data) => ({

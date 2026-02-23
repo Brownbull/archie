@@ -1,6 +1,6 @@
 # Story: TD-3-3a Seed & Blueprint Hardening
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: Hardening analysis during Epic 3 story creation (2026-02-15)
 
