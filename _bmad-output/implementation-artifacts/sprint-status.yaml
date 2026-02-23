@@ -100,7 +100,9 @@ development_status:
   td-3-1a-b-version-handling-type-safety: done
   td-3-1a-c-migration-test-isolation: done
   td-3-1a-d-migration-error-path-coverage: done
-  3-2-yaml-export-and-round-trip: review
+  3-2-yaml-export-and-round-trip: done
+  td-3-2a-blob-url-unmount-cleanup: review
+  td-3-2b-test-helper-dedup: ready-for-dev
   3-3-example-architectures-and-ai-prompt-template: ready-for-dev
   td-3-3a-seed-blueprint-hardening: ready-for-dev
   epic-3-retrospective: optional
