@@ -422,7 +422,7 @@ edges:
   })
 
   describe("importYamlString — migration", () => {
-    let migrationSpy = vi.fn()
+    let migrationSpy: ReturnType<typeof vi.fn>
 
     beforeEach(() => {
       migrationSpy = vi.fn((data) => ({
@@ -437,16 +437,86 @@ edges:
     })
 
     it("calls migration function and reflects transformed data in output", () => {
-      const yaml = `schema_version: "0.5.0"\nnodes: []\nedges: []\n`
+      const yaml = `
+schema_version: "0.5.0"
+nodes: []
+edges: []
+`
       const result = importYamlString(yaml)
 
       expect(result.success).toBe(true)
       if (!result.success) return
 
+      expect(migrationSpy).toHaveBeenCalledTimes(1)
       expect(migrationSpy).toHaveBeenCalledWith(
         expect.objectContaining({ schemaVersion: "0.5.0", nodes: [], edges: [] }),
       )
       expect(result.architecture.name).toBe("migrated-architecture")
+    })
+
+    it("returns MIGRATION_ERROR when migration function throws", () => {
+      migrationSpy.mockImplementation(() => {
+        throw new Error("migration blew up")
+      })
+
+      const yaml = `
+schema_version: "0.5.0"
+nodes: []
+edges: []
+`
+      const result = importYamlString(yaml)
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("MIGRATION_ERROR")
+      expect(result.errors[0].message).toBe("migration blew up")
+    })
+
+    it("returns MIGRATION_NULL_RESULT when migration function returns null", () => {
+      migrationSpy.mockReturnValue(null)
+
+      const yaml = `
+schema_version: "0.5.0"
+nodes: []
+edges: []
+`
+      const result = importYamlString(yaml)
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("MIGRATION_NULL_RESULT")
+    })
+
+    it("transformed nodes from migration appear in hydrated output", () => {
+      migrationSpy.mockImplementation((data) => ({
+        ...(data as object),
+        nodes: [
+          {
+            id: "node-1",
+            componentId: "redis",
+            position: { x: 0, y: 0 },
+          },
+        ],
+        edges: [],
+      }))
+
+      const yaml = `
+schema_version: "0.5.0"
+nodes:
+  - id: "node-1"
+    component_id: "postgresql"
+    config_variant_id: "single-node"
+    position:
+      x: 100
+      y: 200
+edges: []
+`
+      const result = importYamlString(yaml)
+
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      expect(result.architecture.nodes).toHaveLength(1)
+      expect(result.architecture.nodes[0].data.archieComponentId).toBe("redis")
     })
   })
 })

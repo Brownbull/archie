@@ -188,7 +188,29 @@ export function importYamlString(text: string): ImportResult {
     case "migrate": {
       const migrateFn = MIGRATIONS[versionStatus.migrationKey]
       if (migrateFn) {
-        Object.assign(data, migrateFn(data))
+        // try/catch: a migration function that throws must not propagate uncaught
+        let migratedData: unknown
+        try {
+          migratedData = migrateFn(data)
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Migration function threw an error"
+          return {
+            success: false,
+            errors: [{ code: "MIGRATION_ERROR", message }],
+          }
+        }
+        // null/undefined guard: Object.assign(data, null) is a JS no-op — catch it explicitly
+        if (migratedData == null) {
+          return {
+            success: false,
+            errors: [{
+              code: "MIGRATION_NULL_RESULT",
+              message: `Migration function for version ${versionStatus.migrationKey} returned null or undefined`,
+            }],
+          }
+        }
+        // Note: Object.assign mutates data in-place — intentional for migration merging
+        Object.assign(data, migratedData)
       }
       break
     }
