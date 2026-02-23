@@ -1,6 +1,6 @@
 # Story: TD-3-1a-d Migration Error-Path Coverage
 
-## Status: review
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: Code review of td-3-1a-c (2026-02-23)
 

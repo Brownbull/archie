@@ -66,8 +66,8 @@ function BlueprintCard({ blueprint, onLoad }: BlueprintCardProps) {
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-text-primary truncate">{blueprint.name}</p>
-          <p className="text-xs text-text-secondary line-clamp-2 mt-0.5">{blueprint.description}</p>
+          <p data-testid="blueprint-card-name" className="text-sm font-medium text-text-primary truncate">{blueprint.name}</p>
+          <p data-testid="blueprint-card-description" className="text-xs text-text-secondary line-clamp-2 mt-0.5">{blueprint.description}</p>
         </div>
       </div>
       <div className="flex items-center justify-between">
@@ -93,6 +93,7 @@ function BlueprintCard({ blueprint, onLoad }: BlueprintCardProps) {
 function BlueprintTabInner() {
   const { isReady } = useLibrary()
   const [confirmingBlueprint, setConfirmingBlueprint] = useState<BlueprintFull | null>(null)
+  const [hydrateError, setHydrateError] = useState<string | null>(null)
   const loadArchitecture = useArchitectureStore((s) => s.loadArchitecture)
   const nodes = useArchitectureStore((s) => s.nodes)
 
@@ -121,9 +122,13 @@ function BlueprintTabInner() {
   const doLoad = (blueprint: BlueprintFull) => {
     const result = hydrateArchitectureSkeleton(blueprint.skeleton)
     if (result.success) {
+      setHydrateError(null)
       loadArchitecture(result.architecture.nodes, result.architecture.edges)
-    } else if (import.meta.env.DEV) {
-      console.error("Blueprint hydration failed:", result.errors)
+    } else {
+      setHydrateError("Could not load blueprint — some components may not be available.")
+      if (import.meta.env.DEV) {
+        console.error("Blueprint hydration failed:", result.errors)
+      }
     }
   }
 
@@ -148,6 +153,14 @@ function BlueprintTabInner() {
 
   return (
     <>
+      {hydrateError && (
+        <div
+          data-testid="blueprint-load-error"
+          className="mx-3 mt-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive"
+        >
+          {hydrateError}
+        </div>
+      )}
       <ScrollArea data-testid="blueprint-tab" className="h-full">
         <div className="space-y-3 p-3">
           {blueprints.map((bp) => (

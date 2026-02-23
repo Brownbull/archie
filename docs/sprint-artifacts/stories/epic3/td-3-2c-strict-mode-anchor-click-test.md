@@ -1,6 +1,6 @@
 # Tech Debt Story TD-3-2c: Strict Mode Anchor Click Test for ExportButton
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-23) on story td-3-2a
 > **Priority:** LOW | **Estimated Effort:** Small (1-2h)

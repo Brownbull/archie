@@ -15,6 +15,8 @@ interface PromptTemplateDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+const COPIED_FEEDBACK_MS = 2000
+
 export function PromptTemplateDialog({ open, onOpenChange }: PromptTemplateDialogProps) {
   const [copied, setCopied] = useState(false)
 
@@ -22,7 +24,7 @@ export function PromptTemplateDialog({ open, onOpenChange }: PromptTemplateDialo
     navigator.clipboard.writeText(template)
       .then(() => {
         setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
+        setTimeout(() => setCopied(false), COPIED_FEEDBACK_MS)
       })
       .catch(() => {
         if (import.meta.env.DEV) console.warn("Clipboard write failed — clipboard unavailable or permission denied")
@@ -33,7 +35,7 @@ export function PromptTemplateDialog({ open, onOpenChange }: PromptTemplateDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid="prompt-template-dialog"
-        className="max-w-2xl max-h-[80vh] flex flex-col"
+        className="max-w-2xl max-h-[80vh] flex flex-col overflow-hidden"
       >
         <DialogHeader>
           <div className="flex items-center justify-between">

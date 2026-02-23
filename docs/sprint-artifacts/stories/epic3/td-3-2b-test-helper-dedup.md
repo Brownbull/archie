@@ -1,6 +1,6 @@
 # Tech Debt Story TD-3-2b: Deduplicate makeNode/makeEdge Test Helpers
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-23) on story 3-2
 > **Priority:** LOW | **Estimated Effort:** Small (1h)

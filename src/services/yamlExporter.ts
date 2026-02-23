@@ -45,9 +45,7 @@ export function exportArchitecture(nodes: ArchieNode[], edges: ArchieEdge[]): st
   // internally but we only check .success (discard .data)
   const validation = ArchitectureFileYamlSchema.safeParse(exportObj)
   if (!validation.success) {
-    throw new Error(
-      `Export validation failed: ${validation.error.issues.map((i) => i.message).join(", ")}`,
-    )
+    throw new Error("Architecture data is invalid and cannot be exported.")
   }
 
   // Safe serialization — js-yaml dump() with default options (AC-7, AC-ARCH-NO-4)

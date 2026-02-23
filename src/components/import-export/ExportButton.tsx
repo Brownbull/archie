@@ -50,6 +50,16 @@ export function ExportButton() {
 
       const blob = new Blob([yamlString], { type: "application/x-yaml" })
       const url = URL.createObjectURL(blob)
+
+      // Clear any in-flight timer and previous URL before starting new export (rapid-click guard)
+      if (revokeTimeoutRef.current !== null) {
+        clearTimeout(revokeTimeoutRef.current)
+        revokeTimeoutRef.current = null
+      }
+      if (blobUrlRef.current !== null) {
+        URL.revokeObjectURL(blobUrlRef.current)
+        blobUrlRef.current = null
+      }
       blobUrlRef.current = url
 
       const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19)

@@ -156,9 +156,12 @@ describe("ExportButton", () => {
     })
   })
 
-  describe("Strict Mode double-invocation (AC-1, AC-2, AC-3)", () => {
+  describe("Strict Mode double-invocation (AC-2, AC-3)", () => {
     it("calls anchor.click() exactly once and revokeObjectURL exactly once under React Strict Mode", () => {
-      // Spy on prototype so all anchor instances created inside handleExport are intercepted
+      // Spy on prototype so all anchor instances created inside handleExport are intercepted.
+      // React Strict Mode mounts → unmounts → remounts in dev, which re-runs the useEffect cleanup.
+      // The cleanup only clears the timer (no download has happened yet), so the re-mount is harmless —
+      // this test confirms empirically that neither anchor.click() nor revokeObjectURL fires twice.
       const anchorClickSpy = vi
         .spyOn(HTMLAnchorElement.prototype, "click")
         .mockImplementation(() => {})

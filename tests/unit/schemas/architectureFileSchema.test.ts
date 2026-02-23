@@ -328,7 +328,7 @@ describe("checkSchemaVersion", () => {
     expect(checkSchemaVersion("0.5.0", "1.0.0")).toEqual({ status: "too-old" })
   })
 
-  describe("returns migrate with migrationKey when file major is older and migration exists", () => {
+  describe("migrate branch", () => {
     beforeEach(() => {
       MIGRATIONS["0"] = (d) => d
     })

@@ -1,6 +1,6 @@
 # Story: TD-3-1a-c Migration Test Isolation
 
-## Status: review
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: Code review of td-3-1a-b (2026-02-15)
 
@@ -40,6 +40,12 @@ Tech debt from td-3-1a-b code review. Two related test quality issues: (1) the M
 - Risk: if the test assertion fails or throws, the `delete` cleanup never runs, polluting subsequent tests
 - Safer approach: use `vi.spyOn` or wrap in `beforeEach`/`afterEach` with guaranteed cleanup
 - For integration test: temporarily register a migration for major version 0, import YAML with `schema_version: "0.5.0"`, verify import succeeds
+
+## Deferred Item Tracking (from code review 2026-02-23)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| [td-3-1a-d](./td-3-1a-d-migration-error-path-coverage.md) | Migration error paths: throw, null return, non-empty data | LOW | CREATED |
 
 ## ECC Analysis Summary
 - Risk Level: LOW (test-only changes, no production code)

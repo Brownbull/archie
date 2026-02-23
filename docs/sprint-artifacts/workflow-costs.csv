@@ -123,3 +123,8 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-02-16 00:34,565d5821-4d6,ecc-code-review,td-3-1a,11min,64,2,11,"haiku, opus, sonnet",132,559,446964,4574555,5.15,0.62,5.77
 2026-02-16 00:52,4da6872f-930,ecc-dev-story,td-3-1a-b,10min,100,2,16,"opus, sonnet",568,936,464314,7646507,7.06,1.38,8.45
 2026-02-16 01:04,c040909c-9df,ecc-code-review,td-3-1a-b,22min,67,2,17,"haiku, opus, sonnet",2995,566,517527,5217294,6.11,0.81,6.93
+2026-02-23 15:50,4b5e7c3a-80b,ecc-dev-story,td-3-2a,42min,138,2,18,sonnet,8590,1542,349750,11690609,8.52,0.90,9.42
+2026-02-23 16:32,85025f2b-257,ecc-code-review,td-3-2a,10min,80,2,12,"opus, sonnet",115,729,318561,5388798,4.82,1.08,5.90
+2026-02-23 17:06,9d90eae1-f79,ecc-code-review,td-3-2b,60min,66,2,7,sonnet,82,630,293513,4170256,4.46,0.58,5.04
+2026-02-23 18:07,f38c3ef5-b18,ecc-dev-story,td-3-2c,7min,78,1,9,"haiku, sonnet",126,704,284086,5215207,4.79,0.13,4.93
+2026-02-23 18:17,0a64eb65-6be,ecc-code-review,td-3-2c,5min,61,1,4,sonnet,92,484,224312,3407104,3.55,0.41,3.96

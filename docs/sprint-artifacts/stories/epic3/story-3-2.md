@@ -1,6 +1,6 @@
 # Story: 3-2 YAML Export & Round-Trip
 
-## Status: review
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 
 ## Overview
@@ -200,6 +200,16 @@ Key E2E scenarios:
 - Export from canvas with components → YAML file downloaded
 - Export button disabled on empty canvas
 - Import → export → reimport → verify canvas looks the same (visual round-trip)
+
+## Code Review Deferred Items (TD Tracking)
+
+> ECC Code Review: 2026-02-23 | Score: 8.5/10 | APPROVED
+> Quick fixes applied: #1 (Zod error disclosure), #2 (double store read), #3 (magic number constant), #6 (E2E auth comment)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| [TD-3-2a](./td-3-2a-blob-url-unmount-cleanup.md) | Blob URL revoke cleanup on component unmount | LOW | CREATED |
+| [TD-3-2b](./td-3-2b-test-helper-dedup.md) | Deduplicate makeNode/makeEdge test helpers into shared barrel | LOW | CREATED |
 
 ## ECC Analysis Summary
 - Risk Level: LOW (exports trusted in-memory state, not user input)

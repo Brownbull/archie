@@ -1,5 +1,10 @@
 {
   "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "mcp__ast-grep_*"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -11,9 +16,29 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/_ecc/hooks/pre-write-guard.py\"",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/_ecc/hooks/post-bash-script-guard.sh\"",
+            "timeout": 10
+          }
+        ]
+      },
       {
         "matcher": "Edit",
         "hooks": [
@@ -41,6 +66,66 @@
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/_ecc/hooks/ecc-post-memory-notify.sh\"",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cozempic guard --daemon --cwd \"$CLAUDE_PROJECT_DIR\" -rx gentle --threshold 50 --no-reload",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/_ecc/hooks/session-start.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cozempic treat current -rx gentle --execute",
+            "timeout": 30
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/_ecc/hooks/session-budget.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cozempic checkpoint current 2>/dev/null || true",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/_ecc/hooks/session-stop.sh\"",
+            "timeout": 10
           }
         ]
       }
