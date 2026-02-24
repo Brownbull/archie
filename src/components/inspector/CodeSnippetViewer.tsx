@@ -7,20 +7,30 @@ import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql"
 import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash"
 import type { CodeSnippet } from "@/types"
 
-SyntaxHighlighter.registerLanguage("typescript", typescript)
-SyntaxHighlighter.registerLanguage("javascript", javascript)
-SyntaxHighlighter.registerLanguage("yaml", yaml)
-SyntaxHighlighter.registerLanguage("sql", sql)
-SyntaxHighlighter.registerLanguage("bash", bash)
+const LANGUAGE_MAP: Record<string, typeof typescript> = {
+  typescript,
+  javascript,
+  yaml,
+  sql,
+  bash,
+}
 
-const ALLOWED_LANGUAGES = ["typescript", "javascript", "yaml", "sql", "bash"] as const
-type AllowedLanguage = (typeof ALLOWED_LANGUAGES)[number]
-const MAX_CODE_SNIPPET_BYTES = 10_000
+Object.entries(LANGUAGE_MAP).forEach(([name, grammar]) => {
+  SyntaxHighlighter.registerLanguage(name, grammar)
+})
 
-function getSafeLanguage(lang: string): AllowedLanguage | undefined {
-  return (ALLOWED_LANGUAGES as readonly string[]).includes(lang)
-    ? (lang as AllowedLanguage)
-    : undefined
+const ALLOWED_LANGUAGES = Object.keys(LANGUAGE_MAP) as readonly string[]
+const MAX_CODE_SNIPPET_CHARS = 10_000
+
+// Strip RTL overrides, zero-width chars, and other Unicode control characters
+const UNSAFE_DISPLAY_CHARS = /[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g
+
+function sanitizeDisplayLabel(label: string): string {
+  return label.replace(UNSAFE_DISPLAY_CHARS, "")
+}
+
+function getSafeLanguage(lang: string): string | undefined {
+  return ALLOWED_LANGUAGES.includes(lang) ? lang : undefined
 }
 
 interface CodeSnippetViewerProps {
@@ -31,11 +41,11 @@ export function CodeSnippetViewer({ codeSnippet }: CodeSnippetViewerProps) {
   if (!codeSnippet) return null
 
   const safeLanguage = getSafeLanguage(codeSnippet.language)
-  const isTooLarge = codeSnippet.code.length > MAX_CODE_SNIPPET_BYTES
+  const isTooLarge = codeSnippet.code.length > MAX_CODE_SNIPPET_CHARS
 
   return (
     <div data-testid="code-snippet-section" className="space-y-1 text-xs">
-      <span className="text-text-secondary">{codeSnippet.language}</span>
+      <span className="text-text-secondary">{sanitizeDisplayLabel(codeSnippet.language)}</span>
       <div className="overflow-hidden rounded-md">
         {isTooLarge ? (
           <p

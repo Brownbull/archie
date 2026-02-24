@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-1a: CodeSnippetViewer Input Trust Boundary Hardening
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-24) on story 4-1
 > **Priority:** LOW | **Estimated Effort:** 1–2 tasks
@@ -44,3 +44,19 @@ As a **developer**, I want the `CodeSnippetViewer` to validate its inputs at the
 - **Note on finding #1:** Current risk is LOW (admin-seeded data, controlled language values). Becomes MEDIUM if/when community library or YAML import routes component data through the same type path.
 - **Note on finding #4:** PrismLight renders code as DOM text nodes — 10KB of code will not crash but may cause visible jank in the inspector panel. A render-side guard is a performance safety net.
 - **Do NOT** sanitize the code string itself — per AC-ARCH-NO-4, `<`, `>`, `{`, `}` must be preserved.
+
+## Deferred Items (from code review 2026-02-24)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-1b | Language registration/allowlist consolidation + label sanitization | LOW | CREATED |
+
+## Senior Developer Review (ECC)
+
+- **Date:** 2026-02-24
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Overall Score:** 8.0/10
+- **Outcome:** APPROVED — 7 quick fixes applied, 2 items deferred to td-4-1b
+- **Quick fixes applied:** renamed `MAX_CODE_SNIPPET_BYTES` → `MAX_CODE_SNIPPET_CHARS`, improved test assertion idiom, added empty-string language test, added combined guard test, added `toHaveTextContent` assertion, added `afterEach(vi.resetAllMocks)`
+- **Schema note:** `CodeSnippetSchema.language` is `z.string()` (unconstrained). Component guard is the only defense. Acceptable for admin-seeded data; revisit when community data flows through.

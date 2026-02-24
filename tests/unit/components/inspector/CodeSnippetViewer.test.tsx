@@ -48,6 +48,10 @@ const yamlSnippet: CodeSnippet = {
 }
 
 describe("CodeSnippetViewer", () => {
+  afterEach(() => {
+    vi.resetAllMocks()
+  })
+
   it("renders nothing when codeSnippet is undefined", () => {
     const { container } = render(<CodeSnippetViewer codeSnippet={undefined} />)
     expect(container.firstChild).toBeNull()
@@ -91,7 +95,14 @@ describe("CodeSnippetViewer", () => {
     const unknownSnippet: CodeSnippet = { language: "cobol", code: "DISPLAY 'Hello'" }
     render(<CodeSnippetViewer codeSnippet={unknownSnippet} />)
     const highlighter = screen.getByTestId("syntax-highlighter")
-    expect(highlighter.getAttribute("data-language")).toBeNull()
+    expect(highlighter).not.toHaveAttribute("data-language")
+  })
+
+  it("falls back to plain text for empty string language", () => {
+    const emptyLangSnippet: CodeSnippet = { language: "", code: "some code" }
+    render(<CodeSnippetViewer codeSnippet={emptyLangSnippet} />)
+    const highlighter = screen.getByTestId("syntax-highlighter")
+    expect(highlighter).not.toHaveAttribute("data-language")
   })
 
   it("renders placeholder when code exceeds 10KB", () => {
@@ -100,6 +111,40 @@ describe("CodeSnippetViewer", () => {
       code: "x".repeat(10_001),
     }
     render(<CodeSnippetViewer codeSnippet={largeSnippet} />)
+    expect(screen.getByTestId("code-snippet-too-large")).toHaveTextContent(
+      "Code snippet too large to display",
+    )
+    expect(screen.queryByTestId("syntax-highlighter")).not.toBeInTheDocument()
+  })
+
+  // TD-4-1b: Display safety tests
+
+  it("strips RTL overrides and zero-width characters from language label", () => {
+    const craftedSnippet: CodeSnippet = {
+      language: "type\u200Bscr\u202Eipt\uFEFF",
+      code: "const x = 1",
+    }
+    render(<CodeSnippetViewer codeSnippet={craftedSnippet} />)
+    const label = screen.getByTestId("code-snippet-section").querySelector("span")
+    expect(label?.textContent).toBe("typescript")
+  })
+
+  it("strips control characters from language label", () => {
+    const controlSnippet: CodeSnippet = {
+      language: "java\u200Fscript\u202B",
+      code: "let x = 1",
+    }
+    render(<CodeSnippetViewer codeSnippet={controlSnippet} />)
+    const label = screen.getByTestId("code-snippet-section").querySelector("span")
+    expect(label?.textContent).toBe("javascript")
+  })
+
+  it("renders too-large placeholder even when language is also unknown", () => {
+    const combinedSnippet: CodeSnippet = {
+      language: "cobol",
+      code: "x".repeat(10_001),
+    }
+    render(<CodeSnippetViewer codeSnippet={combinedSnippet} />)
     expect(screen.getByTestId("code-snippet-too-large")).toBeInTheDocument()
     expect(screen.queryByTestId("syntax-highlighter")).not.toBeInTheDocument()
   })
