@@ -196,4 +196,27 @@ describe("BlueprintTab", () => {
     expect(mockLoadArchitecture).not.toHaveBeenCalled()
     expect(screen.getByTestId("blueprint-load-error")).toBeInTheDocument()
   })
+
+  it("BlueprintErrorBoundary renders error fallback when a child throws", async () => {
+    setupMocks()
+    const { BlueprintErrorBoundary } = await import("@/components/toolbox/BlueprintTab")
+
+    function ThrowOnRender(): never {
+      throw new Error("Test error")
+    }
+
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
+
+    try {
+      render(
+        <BlueprintErrorBoundary>
+          <ThrowOnRender />
+        </BlueprintErrorBoundary>
+      )
+      expect(screen.getByTestId("blueprint-tab-error")).toBeInTheDocument()
+      expect(screen.getByTestId("blueprint-tab-error")).toHaveTextContent("Could not load blueprints")
+    } finally {
+      consoleErrorSpy.mockRestore()
+    }
+  })
 })

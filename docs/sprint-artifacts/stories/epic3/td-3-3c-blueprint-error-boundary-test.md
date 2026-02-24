@@ -19,9 +19,9 @@ As a **developer**, I want a unit test for the `BlueprintErrorBoundary` error st
 
 ## Tasks / Subtasks
 
-- [ ] 1. Export `BlueprintErrorBoundary` from `BlueprintTab.tsx` (or test via a re-export) — needed to instantiate it directly
-- [ ] 2. Add test to `tests/unit/components/toolbox/BlueprintTab.test.tsx` covering the ErrorBoundary fallback
-- [ ] 3. Run `npm run test:quick` — all tests pass
+- [x] 1. Export `BlueprintErrorBoundary` from `BlueprintTab.tsx` (or test via a re-export) — needed to instantiate it directly
+- [x] 2. Add test to `tests/unit/components/toolbox/BlueprintTab.test.tsx` covering the ErrorBoundary fallback
+- [x] 3. Run `npm run test:quick` — all tests pass
 
 ## Dev Notes
 

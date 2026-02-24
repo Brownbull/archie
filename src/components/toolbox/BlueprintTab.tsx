@@ -22,7 +22,7 @@ interface ErrorBoundaryState {
   hasError: boolean
 }
 
-class BlueprintErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+export class BlueprintErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false }
 
   static getDerivedStateFromError(): ErrorBoundaryState {
