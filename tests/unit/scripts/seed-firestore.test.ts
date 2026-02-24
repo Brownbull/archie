@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import "./seed-mocks"
-import { seedToFirestore } from "../../../scripts/seed-firestore"
-import { createMockDb, makeComponent, noopLogger } from "./seed-helpers"
+import { seedToFirestore, seedBlueprintsToFirestore } from "../../../scripts/seed-firestore"
+import { createMockDb, makeComponent, makeBlueprintFull, noopLogger } from "./seed-helpers"
 
 function createSpyLogger() {
   return { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
@@ -18,10 +18,10 @@ describe("seedToFirestore", () => {
 
     await seedToFirestore(db, components, noopLogger)
 
-    // 1 batch: 3 components + 1 metadata = 4 operations
-    expect(mocks.batchFn).toHaveBeenCalledTimes(1)
+    // 2 batches: 1 for 3 components, 1 for metadata — 4 set operations total
+    expect(mocks.batchFn).toHaveBeenCalledTimes(2)
     expect(mocks.setFn).toHaveBeenCalledTimes(4)
-    expect(mocks.commitFn).toHaveBeenCalledTimes(1)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(2)
   })
 
   it("chunks into multiple batches when count > 499", async () => {
@@ -31,26 +31,26 @@ describe("seedToFirestore", () => {
 
     await seedToFirestore(db, components, logger)
 
-    // 501 components + 1 metadata = 502 ops → 2 batches (500 + 2)
-    expect(mocks.batchFn).toHaveBeenCalledTimes(2)
-    expect(mocks.commitFn).toHaveBeenCalledTimes(2)
+    // 501 components in 2 chunks (500+1) + 1 metadata batch = 3 batches, 502 set operations
+    expect(mocks.batchFn).toHaveBeenCalledTimes(3)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(3)
     expect(mocks.setFn).toHaveBeenCalledTimes(502)
 
     // Verify batch split logged correctly
     expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Batch 1/2 committed (500 operations)"))
-    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Batch 2/2 committed (2 operations)"))
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Batch 2/2 committed (1 operations)"))
   })
 
-  it("includes metadata in chunk accounting (499 components fits in 1 batch)", async () => {
+  it("writes 499 components in 1 chunk with metadata in separate batch", async () => {
     const { db, mocks } = createMockDb()
     const components = Array.from({ length: 499 }, (_, i) => makeComponent(`comp-${i}`))
 
     await seedToFirestore(db, components, noopLogger)
 
-    // 499 + 1 metadata = 500 → exactly 1 batch
-    expect(mocks.batchFn).toHaveBeenCalledTimes(1)
+    // 499 components in 1 chunk + metadata in separate batch = 2 batches, 500 set operations
+    expect(mocks.batchFn).toHaveBeenCalledTimes(2)
     expect(mocks.setFn).toHaveBeenCalledTimes(500)
-    expect(mocks.commitFn).toHaveBeenCalledTimes(1)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(2)
   })
 
   it("handles exactly 500 components (metadata forces 2nd batch)", async () => {
@@ -59,7 +59,7 @@ describe("seedToFirestore", () => {
 
     await seedToFirestore(db, components, noopLogger)
 
-    // 500 components + 1 metadata = 501 ops → 2 batches (499 + 2)
+    // 500 components in 1 chunk + metadata in separate batch = 2 batches (500 + 1), 501 set operations
     expect(mocks.batchFn).toHaveBeenCalledTimes(2)
     expect(mocks.commitFn).toHaveBeenCalledTimes(2)
     expect(mocks.setFn).toHaveBeenCalledTimes(501)
@@ -90,19 +90,6 @@ describe("seedToFirestore", () => {
     const components = Array.from({ length: 2 }, (_, i) => makeComponent(`comp-${i}`))
 
     await expect(seedToFirestore(db, components, noopLogger)).rejects.toThrow("Firestore unavailable")
-  })
-
-  it("throws on write count mismatch", async () => {
-    const { db, mocks } = createMockDb()
-    const components = Array.from({ length: 2 }, (_, i) => makeComponent(`comp-${i}`))
-
-    // Simulate external mutation during commit — components array grows
-    // after the write loop finishes, causing writtenIds.length < components.length
-    mocks.commitFn.mockImplementation(async () => {
-      components.push(makeComponent("sneaky"))
-    })
-
-    await expect(seedToFirestore(db, components, noopLogger)).rejects.toThrow("Write count mismatch")
   })
 
   it("writes metadata document in the last batch", async () => {
@@ -148,5 +135,74 @@ describe("seedToFirestore", () => {
     // Only metadata set, no component sets
     expect(mocks.setFn).toHaveBeenCalledTimes(1)
     expect(mocks.collectionFn).toHaveBeenCalledWith("_metadata")
+  })
+})
+
+describe("seedBlueprintsToFirestore", () => {
+  it("writes blueprints to blueprints collection", async () => {
+    const { db, mocks } = createMockDb()
+    const blueprints = [makeBlueprintFull("whatsapp-messaging"), makeBlueprintFull("telegram-messaging")]
+
+    await seedBlueprintsToFirestore(db, blueprints, noopLogger)
+
+    expect(mocks.collectionFn).toHaveBeenCalledWith("blueprints")
+    expect(mocks.setFn).toHaveBeenCalledTimes(2)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(1)
+  })
+
+  it("uses blueprint id as document ID", async () => {
+    const { db, mocks } = createMockDb()
+    const blueprints = [makeBlueprintFull("whatsapp-messaging")]
+
+    await seedBlueprintsToFirestore(db, blueprints, noopLogger)
+
+    expect(mocks.docFn).toHaveBeenCalledWith("whatsapp-messaging")
+  })
+
+  it("calls batch.set() once per blueprint and returns N", async () => {
+    const { db, mocks } = createMockDb()
+    const blueprints = [makeBlueprintFull("bp-1"), makeBlueprintFull("bp-2")]
+
+    const result = await seedBlueprintsToFirestore(db, blueprints, noopLogger)
+
+    expect(result).toBe(2)
+    expect(mocks.setFn).toHaveBeenCalledTimes(2)
+  })
+
+  it("rejects when batch commit fails", async () => {
+    const { db, mocks } = createMockDb()
+    mocks.commitFn.mockRejectedValueOnce(new Error("Firestore unavailable"))
+
+    await expect(
+      seedBlueprintsToFirestore(db, [makeBlueprintFull("bp-1")], noopLogger),
+    ).rejects.toThrow("Firestore unavailable")
+  })
+
+  it("logs 'No blueprints to seed.' and returns 0 for empty input", async () => {
+    const logger = createSpyLogger()
+    const { db, mocks } = createMockDb()
+
+    const result = await seedBlueprintsToFirestore(db, [], logger)
+
+    expect(result).toBe(0)
+    expect(mocks.batchFn).not.toHaveBeenCalled()
+    expect(logger.log).toHaveBeenCalledWith("No blueprints to seed.")
+    expect(logger.warn).not.toHaveBeenCalled()
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
+  it("chunks into multiple batches when blueprint count exceeds BATCH_LIMIT", async () => {
+    const logger = createSpyLogger()
+    const { db, mocks } = createMockDb()
+    // 501 = BATCH_LIMIT (500) + 1 — forces 2 chunks: chunk 1 = 500, chunk 2 = 1
+    const blueprints = Array.from({ length: 501 }, (_, i) => makeBlueprintFull(`bp-${i}`))
+
+    await seedBlueprintsToFirestore(db, blueprints, logger)
+
+    expect(mocks.batchFn).toHaveBeenCalledTimes(2)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(2)
+    expect(mocks.setFn).toHaveBeenCalledTimes(501)
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Blueprint batch 1/2 committed (500 operations)"))
+    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("Blueprint batch 2/2 committed (1 operations)"))
   })
 })

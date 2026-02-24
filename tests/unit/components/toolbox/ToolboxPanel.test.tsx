@@ -23,11 +23,22 @@ vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
     isInitialized: () => true,
     getAllComponents: () => [],
+    getAllBlueprints: () => [],
+    getBlueprint: vi.fn(),
     getComponent: vi.fn(),
     getComponentsByCategory: vi.fn(() => []),
     searchComponents: vi.fn(() => []),
     reset: vi.fn(),
   },
+}))
+
+vi.mock("@/services/yamlImporter", () => ({
+  hydrateArchitectureSkeleton: vi.fn(),
+}))
+
+vi.mock("@/stores/architectureStore", () => ({
+  useArchitectureStore: (selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ nodes: [], loadArchitecture: vi.fn() }),
 }))
 
 describe("ToolboxPanel", () => {
@@ -57,9 +68,9 @@ describe("ToolboxPanel", () => {
     expect(screen.getByText("Coming in Phase 2")).toBeInTheDocument()
   })
 
-  it("shows blueprint placeholder when Blueprints tab is clicked", async () => {
+  it("shows blueprint empty state when Blueprints tab is clicked (no blueprints loaded)", async () => {
     render(<ToolboxPanel />)
     await userEvent.click(screen.getByText("Blueprints"))
-    expect(screen.getByText("Populated in Epic 3 Story 3.3")).toBeInTheDocument()
+    expect(screen.getByTestId("blueprint-tab-empty")).toBeInTheDocument()
   })
 })

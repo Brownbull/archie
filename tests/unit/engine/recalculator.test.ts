@@ -3,24 +3,9 @@ import {
   recalculateNode,
   recalculateArchitecture,
   INTERACTION_RULES,
-  type RecalculatedMetrics,
-  type ArchitectureMetrics,
   type ConnectedNodeInfo,
-  type MetricAdjustment,
 } from "@/engine/recalculator"
-import type { MetricValue } from "@/schemas/metricSchema"
-
-// --- Test Helpers ---
-
-function makeMetric(
-  id: string,
-  numericValue: number,
-  category: string,
-): MetricValue {
-  const value =
-    numericValue <= 3 ? "low" : numericValue <= 7 ? "medium" : "high"
-  return { id, value, numericValue, category } as MetricValue
-}
+import { makeMetric } from "../../helpers/factories"
 
 // --- Tests ---
 
@@ -59,8 +44,8 @@ describe("recalculator", () => {
   describe("recalculateNode", () => {
     it("returns effective metrics unchanged when node has no connections", () => {
       const metrics = [
-        makeMetric("read-latency", 5, "performance"),
-        makeMetric("write-throughput", 6, "performance"),
+        makeMetric({ id: "read-latency", numericValue: 5, category: "performance" }),
+        makeMetric({ id: "write-throughput", numericValue: 6, category: "performance" }),
       ]
       const result = recalculateNode(
         "node-1",
@@ -76,7 +61,7 @@ describe("recalculator", () => {
     })
 
     it("does not mutate input effectiveMetrics array", () => {
-      const metrics = [makeMetric("read-latency", 5, "performance")]
+      const metrics = [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })]
       const original = [...metrics.map((m) => ({ ...m }))]
       recalculateNode("node-1", "data-storage", metrics, [], [])
       expect(metrics).toEqual(original)
@@ -87,14 +72,14 @@ describe("recalculator", () => {
         {
           nodeId: "node-2",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
       ]
       const originalConnected = JSON.parse(JSON.stringify(connected))
       recalculateNode(
         "node-1",
         "data-storage",
-        [makeMetric("read-latency", 5, "performance")],
+        [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })],
         connected,
         [{ source: "node-2", target: "node-1" }],
       )
@@ -104,14 +89,14 @@ describe("recalculator", () => {
     it("applies interaction rule adjustments for matching category pair", () => {
       // caching→data-storage rule should apply when recalculating data-storage connected to caching
       const metrics = [
-        makeMetric("read-latency", 5, "performance"),
-        makeMetric("operational-complexity", 5, "operational-complexity"),
+        makeMetric({ id: "read-latency", numericValue: 5, category: "performance" }),
+        makeMetric({ id: "operational-complexity", numericValue: 5, category: "operational-complexity" }),
       ]
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "cache-node",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
       ]
       const edges = [{ source: "cache-node", target: "node-1" }]
@@ -142,12 +127,12 @@ describe("recalculator", () => {
 
     it("leaves metrics unchanged when no matching interaction rule exists", () => {
       // auth-security→search has no rule defined
-      const metrics = [makeMetric("query-latency", 5, "performance")]
+      const metrics = [makeMetric({ id: "query-latency", numericValue: 5, category: "performance" })]
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "auth-node",
           category: "auth-security",
-          metrics: [makeMetric("operational-complexity", 3, "operational-complexity")],
+          metrics: [makeMetric({ id: "operational-complexity", numericValue: 3, category: "operational-complexity" })],
         },
       ]
       const edges = [{ source: "auth-node", target: "node-1" }]
@@ -163,12 +148,12 @@ describe("recalculator", () => {
 
     it("skips adjustments for metric IDs not present in effective metrics", () => {
       // caching→data-storage has read-latency adjustment, but node only has write-throughput
-      const metrics = [makeMetric("write-throughput", 5, "performance")]
+      const metrics = [makeMetric({ id: "write-throughput", numericValue: 5, category: "performance" })]
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "cache-node",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
       ]
       const edges = [{ source: "cache-node", target: "node-1" }]
@@ -188,13 +173,13 @@ describe("recalculator", () => {
 
     it("clamps numericValue at lower bound (1)", () => {
       // Create a scenario where adjustment would push below 1
-      const metrics = [makeMetric("read-latency", 1, "performance")]
+      const metrics = [makeMetric({ id: "read-latency", numericValue: 1, category: "performance" })]
       // Find a rule with negative adjustment for read-latency
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "cache-node",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
       ]
       const edges = [{ source: "cache-node", target: "node-1" }]
@@ -212,14 +197,14 @@ describe("recalculator", () => {
     it("clamps numericValue at upper bound (10)", () => {
       // Create scenario where adjustment would push above 10
       const metrics = [
-        makeMetric("horizontal-scalability", 10, "scalability"),
+        makeMetric({ id: "horizontal-scalability", numericValue: 10, category: "scalability" }),
       ]
       // messaging→compute adds +2 to horizontal-scalability
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "msg-node",
           category: "messaging",
-          metrics: [makeMetric("message-throughput", 8, "performance")],
+          metrics: [makeMetric({ id: "message-throughput", numericValue: 8, category: "performance" })],
         },
       ]
       const edges = [{ source: "msg-node", target: "node-1" }]
@@ -238,13 +223,13 @@ describe("recalculator", () => {
     })
 
     it("derives value enum 'low' for numericValue 1-3", () => {
-      const metrics = [makeMetric("read-latency", 5, "performance")]
+      const metrics = [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })]
       // caching→data-storage: read-latency adjustment=-2 → 5-2=3 → "low"
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "cache-node",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
       ]
       const edges = [{ source: "cache-node", target: "node-1" }]
@@ -262,14 +247,14 @@ describe("recalculator", () => {
     })
 
     it("derives value enum 'medium' for numericValue 4-7", () => {
-      const metrics = [makeMetric("request-latency", 6, "performance")]
+      const metrics = [makeMetric({ id: "request-latency", numericValue: 6, category: "performance" })]
       const result = recalculateNode("node-1", "compute", metrics, [], [])
       expect(result.metrics[0].value).toBe("medium")
       expect(result.metrics[0].numericValue).toBe(6)
     })
 
     it("derives value enum 'high' for numericValue 8-10", () => {
-      const metrics = [makeMetric("data-durability", 9, "reliability")]
+      const metrics = [makeMetric({ id: "data-durability", numericValue: 9, category: "reliability" })]
       const result = recalculateNode(
         "node-1",
         "data-storage",
@@ -282,9 +267,9 @@ describe("recalculator", () => {
 
     it("computes overallScore as average of all numericValues", () => {
       const metrics = [
-        makeMetric("read-latency", 4, "performance"),
-        makeMetric("write-throughput", 6, "performance"),
-        makeMetric("data-durability", 8, "reliability"),
+        makeMetric({ id: "read-latency", numericValue: 4, category: "performance" }),
+        makeMetric({ id: "write-throughput", numericValue: 6, category: "performance" }),
+        makeMetric({ id: "data-durability", numericValue: 8, category: "reliability" }),
       ]
       const result = recalculateNode(
         "node-1",
@@ -304,14 +289,14 @@ describe("recalculator", () => {
 
     it("is deterministic — same inputs produce same output", () => {
       const metrics = [
-        makeMetric("read-latency", 5, "performance"),
-        makeMetric("operational-complexity", 5, "operational-complexity"),
+        makeMetric({ id: "read-latency", numericValue: 5, category: "performance" }),
+        makeMetric({ id: "operational-complexity", numericValue: 5, category: "operational-complexity" }),
       ]
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "cache-node",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
       ]
       const edges = [{ source: "cache-node", target: "node-1" }]
@@ -337,14 +322,14 @@ describe("recalculator", () => {
       // When recalculating compute connected to data-storage:
       // check "data-storage→compute" AND "compute→data-storage"
       const metrics = [
-        makeMetric("operational-complexity", 5, "operational-complexity"),
-        makeMetric("data-durability", 5, "reliability"),
+        makeMetric({ id: "operational-complexity", numericValue: 5, category: "operational-complexity" }),
+        makeMetric({ id: "data-durability", numericValue: 5, category: "reliability" }),
       ]
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "db-node",
           category: "data-storage",
-          metrics: [makeMetric("read-latency", 3, "performance")],
+          metrics: [makeMetric({ id: "read-latency", numericValue: 3, category: "performance" })],
         },
       ]
       const edges = [{ source: "node-1", target: "db-node" }]
@@ -378,17 +363,17 @@ describe("recalculator", () => {
 
     it("accumulates adjustments from multiple connected nodes", () => {
       // Connect a compute node to TWO caching nodes — adjustments should stack
-      const metrics = [makeMetric("request-latency", 8, "performance")]
+      const metrics = [makeMetric({ id: "request-latency", numericValue: 8, category: "performance" })]
       const connected: ConnectedNodeInfo[] = [
         {
           nodeId: "cache-1",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
         {
           nodeId: "cache-2",
           category: "caching",
-          metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+          metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
         },
       ]
       const edges = [
@@ -439,9 +424,9 @@ describe("recalculator", () => {
       const edges = [{ source: "node-1", target: "node-2" }]
       const getMetrics = (nodeId: string): MetricValue[] => {
         if (nodeId === "node-1")
-          return [makeMetric("read-latency", 5, "performance")]
+          return [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })]
         if (nodeId === "node-2")
-          return [makeMetric("cache-hit-latency", 1, "performance")]
+          return [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })]
         return []
       }
 
@@ -454,7 +439,7 @@ describe("recalculator", () => {
     it("each entry is a valid RecalculatedMetrics with nodeId, metrics, and overallScore", () => {
       const nodes = [{ id: "node-1", category: "compute" }]
       const getMetrics = (): MetricValue[] => [
-        makeMetric("request-latency", 4, "performance"),
+        makeMetric({ id: "request-latency", numericValue: 4, category: "performance" }),
       ]
 
       const result = recalculateArchitecture(nodes, [], getMetrics)
@@ -472,8 +457,8 @@ describe("recalculator", () => {
       const edges = [{ source: "node-2", target: "node-1" }]
       const getMetrics = (nodeId: string): MetricValue[] => {
         if (nodeId === "node-1")
-          return [makeMetric("read-latency", 5, "performance")]
-        return [makeMetric("cache-hit-latency", 1, "performance")]
+          return [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })]
+        return [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })]
       }
 
       const result1 = recalculateArchitecture(nodes, edges, getMetrics)
@@ -488,7 +473,7 @@ describe("recalculator", () => {
     it("handles single node with no connections", () => {
       const nodes = [{ id: "solo", category: "compute" }]
       const getMetrics = (): MetricValue[] => [
-        makeMetric("request-latency", 3, "performance"),
+        makeMetric({ id: "request-latency", numericValue: 3, category: "performance" }),
       ]
 
       const result = recalculateArchitecture(nodes, [], getMetrics)
@@ -503,11 +488,11 @@ describe("recalculator", () => {
       // 5 caching nodes connected to a compute node
       // caching→compute rule: request-latency adjustment = -2
       // 5 connections * -2 = -10 adjustment on base value 8 => clamped to 1
-      const metrics = [makeMetric("request-latency", 8, "performance")]
+      const metrics = [makeMetric({ id: "request-latency", numericValue: 8, category: "performance" })]
       const connectedNodes: ConnectedNodeInfo[] = Array.from({ length: 5 }, (_, i) => ({
         nodeId: `cache-${i}`,
         category: "caching",
-        metrics: [makeMetric("cache-hit-latency", 1, "performance")],
+        metrics: [makeMetric({ id: "cache-hit-latency", numericValue: 1, category: "performance" })],
       }))
       const edges = connectedNodes.map((cn) => ({
         source: cn.nodeId,
@@ -536,11 +521,11 @@ describe("recalculator", () => {
 
     it("handles 20-node hub-and-spoke graph correctly", () => {
       const hubMetrics = [
-        makeMetric("request-latency", 5, "performance"),
-        makeMetric("horizontal-scalability", 5, "scalability"),
-        makeMetric("operational-complexity", 5, "operational-complexity"),
-        makeMetric("concurrent-connections", 5, "performance"),
-        makeMetric("data-durability", 5, "reliability"),
+        makeMetric({ id: "request-latency", numericValue: 5, category: "performance" }),
+        makeMetric({ id: "horizontal-scalability", numericValue: 5, category: "scalability" }),
+        makeMetric({ id: "operational-complexity", numericValue: 5, category: "operational-complexity" }),
+        makeMetric({ id: "concurrent-connections", numericValue: 5, category: "performance" }),
+        makeMetric({ id: "data-durability", numericValue: 5, category: "reliability" }),
       ]
 
       const categories = [
@@ -554,7 +539,7 @@ describe("recalculator", () => {
       const connectedNodes: ConnectedNodeInfo[] = categories.map((cat, i) => ({
         nodeId: `spoke-${i}`,
         category: cat,
-        metrics: [makeMetric("some-metric", 5, "performance")],
+        metrics: [makeMetric({ id: "some-metric", numericValue: 5, category: "performance" })],
       }))
 
       const edges = categories.map((_, i) => ({
@@ -592,32 +577,32 @@ describe("recalculator", () => {
 
   describe("value enum boundary precision", () => {
     it("numericValue 3 derives 'low'", () => {
-      const result = recalculateNode("n1", "compute", [makeMetric("m1", 3, "perf")], [], [])
+      const result = recalculateNode("n1", "compute", [makeMetric({ id: "m1", numericValue: 3, category: "perf" })], [], [])
       expect(result.metrics[0].value).toBe("low")
     })
 
     it("numericValue 4 derives 'medium'", () => {
-      const result = recalculateNode("n1", "compute", [makeMetric("m1", 4, "perf")], [], [])
+      const result = recalculateNode("n1", "compute", [makeMetric({ id: "m1", numericValue: 4, category: "perf" })], [], [])
       expect(result.metrics[0].value).toBe("medium")
     })
 
     it("numericValue 7 derives 'medium'", () => {
-      const result = recalculateNode("n1", "compute", [makeMetric("m1", 7, "perf")], [], [])
+      const result = recalculateNode("n1", "compute", [makeMetric({ id: "m1", numericValue: 7, category: "perf" })], [], [])
       expect(result.metrics[0].value).toBe("medium")
     })
 
     it("numericValue 8 derives 'high'", () => {
-      const result = recalculateNode("n1", "compute", [makeMetric("m1", 8, "perf")], [], [])
+      const result = recalculateNode("n1", "compute", [makeMetric({ id: "m1", numericValue: 8, category: "perf" })], [], [])
       expect(result.metrics[0].value).toBe("high")
     })
 
     it("numericValue 1 derives 'low' (minimum)", () => {
-      const result = recalculateNode("n1", "compute", [makeMetric("m1", 1, "perf")], [], [])
+      const result = recalculateNode("n1", "compute", [makeMetric({ id: "m1", numericValue: 1, category: "perf" })], [], [])
       expect(result.metrics[0].value).toBe("low")
     })
 
     it("numericValue 10 derives 'high' (maximum)", () => {
-      const result = recalculateNode("n1", "compute", [makeMetric("m1", 10, "perf")], [], [])
+      const result = recalculateNode("n1", "compute", [makeMetric({ id: "m1", numericValue: 10, category: "perf" })], [], [])
       expect(result.metrics[0].value).toBe("high")
     })
   })

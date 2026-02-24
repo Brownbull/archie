@@ -37,7 +37,7 @@ ecc_orchestration:
       purpose: "Analyze requirements, identify risks, plan implementation approach"
     architect:
       subagent_type: "everything-claude-code:architect"
-      model_standard: "sonnet"
+      model_default: "sonnet"
       model_complex: "opus"
       max_turns: 5
       purpose: "Technical design, pattern recommendations, dependency analysis"

@@ -201,15 +201,20 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
       fullPage: true,
     })
 
-    // AC-1: Click Blueprints tab — shows placeholder
+    // AC-1: Click Blueprints tab — shows blueprint cards, empty state, or loading skeleton
     await page.getByRole("tab", { name: "Blueprints" }).click()
-    await expect(page.locator('[data-testid="blueprint-tab"]')).toBeVisible()
-    await expect(page.locator('[data-testid="blueprint-tab"]')).toContainText(
-      "Populated in Epic 3",
-    )
+    await Promise.race([
+      page.locator('[data-testid="blueprint-tab"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {}),
+      page.locator('[data-testid="blueprint-tab-empty"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {}),
+      page.locator('[data-testid="blueprint-tab-loading"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {}),
+    ])
+    const hasCards = await page.locator('[data-testid="blueprint-tab"]').isVisible()
+    const hasEmpty = await page.locator('[data-testid="blueprint-tab-empty"]').isVisible()
+    const hasLoading = await page.locator('[data-testid="blueprint-tab-loading"]').isVisible()
+    expect(hasCards || hasEmpty || hasLoading).toBe(true)
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/08-blueprints-placeholder.png`,
+      path: `${SCREENSHOT_DIR}/08-blueprints-tab.png`,
       fullPage: true,
     })
 

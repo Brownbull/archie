@@ -16,6 +16,10 @@ vi.mock("@/lib/firebase", () => ({
   auth: { currentUser: null },
 }))
 
+vi.mock("@/data/prompt-template.md?raw", () => ({
+  default: "# Archie AI Prompt Template\n\nMock template content.",
+}))
+
 function renderToolbar() {
   return render(
     <MemoryRouter>
@@ -74,5 +78,17 @@ describe("Toolbar", () => {
 
     renderToolbar()
     expect(screen.queryByText("Test User")).not.toBeInTheDocument()
+  })
+
+  it("renders AI Prompt button with correct testid", () => {
+    renderToolbar()
+    expect(screen.getByTestId("prompt-template-button")).toBeInTheDocument()
+  })
+
+  it("AI Prompt button opens prompt template dialog", async () => {
+    const user = userEvent.setup()
+    renderToolbar()
+    await user.click(screen.getByTestId("prompt-template-button"))
+    expect(screen.getByTestId("prompt-template-dialog")).toBeInTheDocument()
   })
 })

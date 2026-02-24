@@ -12,13 +12,17 @@ ecc_orchestration:
   agents:
     planner:
       subagent_type: "everything-claude-code:planner"
-      model: "opus"
+      model_default: "sonnet"
+      model_complex: "opus"
+      complexity_source: "story_sizing"
       max_turns: 7
       purpose: "Implementation planning and risk assessment"
     tdd-guide:
       subagent_type: "everything-claude-code:tdd-guide"
-      model: "opus"
-      # No max_turns — iterative implementation needs many turns
+      model_default: "sonnet"
+      model_complex: "opus"
+      complexity_source: "story_sizing"
+      max_turns: 15
       purpose: "Test-driven development, RED-GREEN-REFACTOR cycle"
     build-error-resolver:
       subagent_type: "everything-claude-code:build-error-resolver"

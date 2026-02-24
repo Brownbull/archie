@@ -1,0 +1,2 @@
+date,spec,action,result,note
+2026-02-23,tests/e2e/import-export.spec.ts,EXTEND,PASS,5 passed / 3 skipped (no Firestore seed in dev) — deterministic across 2 runs

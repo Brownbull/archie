@@ -20,6 +20,11 @@ const validBlueprint = {
   id: "whatsapp-clone",
   name: "WhatsApp Clone",
   description: "A messaging app architecture",
+  skeleton: {
+    schemaVersion: "1.0.0",
+    nodes: [{ id: "n1", componentId: "nginx", configVariantId: "load-balancer", position: { x: 96, y: 192 } }],
+    edges: [],
+  },
 }
 
 function createMockSnapshot(docs: Array<{ id: string; data: Record<string, unknown> }>) {
@@ -52,6 +57,15 @@ describe("blueprintRepository", () => {
 
       const result = await blueprintRepository.getAll()
       expect(result).toHaveLength(1)
+    })
+
+    it("includes skeleton in returned blueprint", async () => {
+      mockGetDocs.mockResolvedValue(createMockSnapshot([{ id: "whatsapp-clone", data: validBlueprint }]))
+
+      const result = await blueprintRepository.getAll()
+      expect(result[0].skeleton).toBeDefined()
+      expect(result[0].skeleton.schemaVersion).toBe("1.0.0")
+      expect(result[0].skeleton.nodes).toHaveLength(1)
     })
 
     it("throws on Firestore error", async () => {
