@@ -1,14 +1,17 @@
-import { useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { computeRecommendations } from "@/engine/recommendationEngine"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ComponentSwapper } from "@/components/inspector/ComponentSwapper"
 import { ConfigSelector } from "@/components/inspector/ConfigSelector"
 import { MetricCard } from "@/components/inspector/MetricCard"
+import { MetricFilter } from "@/components/inspector/MetricFilter"
+import { VariantRecommendation } from "@/components/inspector/VariantRecommendation"
 import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 
 interface ComponentDetailProps {
@@ -79,6 +82,38 @@ export function ComponentDetail({
     }
     return map
   }, [computedMetrics, previousMetrics])
+
+  // --- Metric filter state (AC-ARCH-PATTERN-3, AC-ARCH-NO-1: local useState, NOT Zustand) ---
+  const [hiddenMetricIds, setHiddenMetricIds] = useState<Set<string>>(new Set())
+
+  // Reset filter when inspecting a different component (AC-FUNC-3)
+  useEffect(() => {
+    setHiddenMetricIds(new Set())
+  }, [nodeId])
+
+  const allMetricIds = useMemo(() => {
+    const metricsSource = computedMetrics?.metrics ?? activeVariant?.metrics
+    if (!metricsSource) return []
+    return metricsSource.map((m) => ({ id: m.id, name: m.name ?? m.id }))
+  }, [computedMetrics, activeVariant])
+
+  const handleToggleMetric = useCallback((metricId: string) => {
+    setHiddenMetricIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(metricId)) {
+        next.delete(metricId)
+      } else {
+        next.add(metricId)
+      }
+      return next
+    })
+  }, [])
+
+  // --- Variant recommendations (AC-FUNC-1, AC-FUNC-2) ---
+  const recommendations = useMemo(() => {
+    if (component.configVariants.length < 2) return []
+    return computeRecommendations(component, activeVariantId)
+  }, [component, activeVariantId])
 
   const categoryMeta = component.category in COMPONENT_CATEGORIES
     ? COMPONENT_CATEGORIES[component.category as ComponentCategoryId]
@@ -163,12 +198,30 @@ export function ComponentDetail({
           </ul>
         </div>
 
+        {/* Recommendations (Story 4-2b, AC-FUNC-1/2) */}
+        {recommendations.length > 0 && (
+          <div className="space-y-1.5" data-testid="recommendations-section">
+            <h3 className="text-xs font-medium text-text-primary">Recommendations</h3>
+            {recommendations.map((rec) => (
+              <VariantRecommendation
+                key={`${rec.weakMetricId}-${rec.improvedVariantId}`}
+                recommendation={rec}
+              />
+            ))}
+          </div>
+        )}
+
         {/* Metrics by category */}
         {metricsByCategory.size > 0 && (
           <>
             <Separator />
             <div className="space-y-2">
               <h3 className="text-xs font-medium text-text-primary">Metrics</h3>
+              <MetricFilter
+                allMetricIds={allMetricIds}
+                hiddenMetricIds={hiddenMetricIds}
+                onToggleMetric={handleToggleMetric}
+              />
               {Object.entries(COMPONENT_CATEGORIES).map(([catId, catMeta]) => {
                 const metrics = metricsByCategory.get(catId)
                 if (!metrics || metrics.length === 0) return null
@@ -182,6 +235,7 @@ export function ComponentDetail({
                     metrics={metrics}
                     metricExplanations={activeVariant?.metricExplanations}
                     deltaMap={deltaMap}
+                    hiddenMetricIds={hiddenMetricIds}
                   />
                 )
               })}
@@ -198,6 +252,7 @@ export function ComponentDetail({
                     metrics={metrics}
                     metricExplanations={activeVariant?.metricExplanations}
                     deltaMap={deltaMap}
+                    hiddenMetricIds={hiddenMetricIds}
                   />
                 ))}
             </div>

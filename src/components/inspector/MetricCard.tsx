@@ -10,6 +10,7 @@ interface MetricCardProps {
   metrics: MetricValue[]
   metricExplanations?: Record<string, MetricExplanation>
   deltaMap?: Map<string, number>
+  hiddenMetricIds?: Set<string>
 }
 
 export function MetricCard({
@@ -20,8 +21,14 @@ export function MetricCard({
   metrics,
   metricExplanations,
   deltaMap,
+  hiddenMetricIds,
 }: MetricCardProps) {
   const IconComponent = CATEGORY_ICONS[categoryIconName as keyof typeof CATEGORY_ICONS]
+  const visibleMetrics = hiddenMetricIds
+    ? metrics.filter((m) => !hiddenMetricIds.has(m.id))
+    : metrics
+
+  if (visibleMetrics.length === 0) return null
 
   return (
     <div
@@ -40,7 +47,7 @@ export function MetricCard({
         </span>
       </div>
       <div className="space-y-0.5 px-2 py-1.5">
-        {metrics.map((metric) => (
+        {visibleMetrics.map((metric) => (
           <MetricBar
             key={metric.id}
             metric={metric}

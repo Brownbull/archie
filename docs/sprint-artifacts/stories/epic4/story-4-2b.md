@@ -1,6 +1,6 @@
 # Story: 4-2b-metric-filter-and-recommendation-ui
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 4: Deep Intelligence & Polish
 ## Parent: 4-2-variant-recommendations-and-metric-tools (split)
 ## Depends on: 4-2a-recommendation-engine-and-delta-indicators
@@ -61,22 +61,22 @@ And the filtered view persists while inspecting the current component (resets on
 
 ## Tasks / Subtasks
 
-- [ ] **Task 3: Metric filter component**
-  - [ ] 3.1 Create `MetricFilter.tsx` — collapsible panel listing all metric names with checkboxes
-  - [ ] 3.2 Initialize filter state from all metric IDs (all visible by default)
-  - [ ] 3.3 Expose `hiddenMetricIds: Set<string>` to parent `ComponentDetail`
-  - [ ] 3.4 Thread `hiddenMetricIds` through `MetricCard` → filter `metrics` before rendering `MetricBar`
+- [x] **Task 3: Metric filter component**
+  - [x] 3.1 Create `MetricFilter.tsx` — collapsible panel listing all metric names with checkboxes
+  - [x] 3.2 Initialize filter state from all metric IDs (all visible by default)
+  - [x] 3.3 Expose `hiddenMetricIds: Set<string>` to parent `ComponentDetail`
+  - [x] 3.4 Thread `hiddenMetricIds` through `MetricCard` → filter `metrics` before rendering `MetricBar`
 
-- [ ] **Task 4: VariantRecommendation component**
-  - [ ] 4.1 Create `VariantRecommendation.tsx` — compact card showing "Consider [Variant]" with improvement metric and trade-off metric
-  - [ ] 4.2 Integrate `computeRecommendations()` call in `ComponentDetail` — pass `component` and `activeVariantId`
-  - [ ] 4.3 Render recommendation cards above the metrics section (only when recommendations array is non-empty)
+- [x] **Task 4: VariantRecommendation component**
+  - [x] 4.1 Create `VariantRecommendation.tsx` — compact card showing "Consider [Variant]" with improvement metric and trade-off metric
+  - [x] 4.2 Integrate `computeRecommendations()` call in `ComponentDetail` — pass `component` and `activeVariantId`
+  - [x] 4.3 Render recommendation cards above the metrics section (only when recommendations array is non-empty)
 
-- [ ] **Task 5: Exports, tests, and git staging**
-  - [ ] 5.1 Export `VariantRecommendation` and `MetricFilter` from `src/components/inspector/index.ts`
-  - [ ] 5.2 Write `MetricFilter.test.tsx` — toggle visibility, all hidden, all visible scenarios
-  - [ ] 5.3 Run `npm run test:quick` — all tests pass
-  - [ ] 5.4 Verify all new and modified files are staged: `git status --porcelain | grep "^??"` → no untracked relevant files
+- [x] **Task 5: Exports, tests, and git staging**
+  - [x] 5.1 Export `VariantRecommendation` and `MetricFilter` from `src/components/inspector/index.ts`
+  - [x] 5.2 Write `MetricFilter.test.tsx` — toggle visibility, all hidden, all visible scenarios
+  - [x] 5.3 Run `npm run test:quick` — all tests pass
+  - [x] 5.4 Verify all new and modified files are staged: `git status --porcelain | grep "^??"` → no untracked relevant files
 
 ## Dev Notes
 

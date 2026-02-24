@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Component } from "@/types"
 import { useArchitectureStore } from "@/stores/architectureStore"
@@ -330,6 +331,92 @@ describe("ComponentDetail", () => {
       const delta = screen.getByTestId("metric-bar-delta")
       expect(delta).toHaveTextContent("-3")
       expect(delta).toHaveClass("text-red-500")
+    })
+  })
+
+  // --- Metric filter integration tests (Story 4-2b) ---
+
+  describe("metric filter", () => {
+    it("renders the metric filter panel", () => {
+      renderDefault()
+      expect(screen.getByTestId("metric-filter")).toBeInTheDocument()
+    })
+
+    it("hides metrics when filter checkbox is unchecked", async () => {
+      const user = userEvent.setup()
+      renderDefault()
+      // Initially 4 metric bars visible
+      expect(screen.getAllByTestId("metric-bar")).toHaveLength(4)
+      // Expand filter
+      await user.click(screen.getByTestId("metric-filter-expand"))
+      // Toggle off "memory" metric
+      await user.click(screen.getByTestId("metric-filter-toggle-memory"))
+      // Now 3 metric bars visible
+      expect(screen.getAllByTestId("metric-bar")).toHaveLength(3)
+    })
+
+    it("restores hidden metrics when toggled back on", async () => {
+      const user = userEvent.setup()
+      renderDefault()
+      await user.click(screen.getByTestId("metric-filter-expand"))
+      // Hide and re-show
+      await user.click(screen.getByTestId("metric-filter-toggle-memory"))
+      expect(screen.getAllByTestId("metric-bar")).toHaveLength(3)
+      await user.click(screen.getByTestId("metric-filter-toggle-memory"))
+      expect(screen.getAllByTestId("metric-bar")).toHaveLength(4)
+    })
+  })
+
+  // --- Recommendation integration tests (Story 4-2b) ---
+
+  describe("recommendations", () => {
+    it("renders recommendation cards when weak metrics exist", () => {
+      // mockComponent "standard" has memory=3 (< RECOMMENDATION_THRESHOLD=5)
+      // "high-perf" has memory=5 — improvement exists
+      renderDefault()
+      expect(screen.getByTestId("recommendations-section")).toBeInTheDocument()
+      expect(screen.getAllByTestId("variant-recommendation").length).toBeGreaterThanOrEqual(1)
+    })
+
+    it("shows recommended variant name in the card", () => {
+      renderDefault()
+      expect(screen.getByText(/High Performance/)).toBeInTheDocument()
+    })
+
+    it("does not render recommendations for single-variant component", () => {
+      const singleVariant: Component = {
+        ...mockComponent,
+        configVariants: [mockComponent.configVariants[0]],
+      }
+      renderDefault({ component: singleVariant })
+      expect(screen.queryByTestId("recommendations-section")).not.toBeInTheDocument()
+    })
+
+    it("does not render recommendations when all metrics are healthy", () => {
+      // All metrics above threshold (5)
+      const healthyComponent: Component = {
+        ...mockComponent,
+        configVariants: [
+          {
+            id: "standard",
+            name: "Standard",
+            metrics: [
+              { id: "query-perf", value: "high", numericValue: 8, category: "performance" },
+              { id: "scalability", value: "high", numericValue: 7, category: "scalability" },
+            ],
+          },
+          {
+            id: "alt",
+            name: "Alt",
+            metrics: [
+              { id: "query-perf", value: "medium", numericValue: 6, category: "performance" },
+              { id: "scalability", value: "medium", numericValue: 6, category: "scalability" },
+            ],
+          },
+        ],
+      }
+      renderDefault({ component: healthyComponent })
+      expect(screen.queryByTestId("recommendations-section")).not.toBeInTheDocument()
     })
   })
 })

@@ -112,4 +112,29 @@ describe("MetricCard", () => {
     renderDefault({ deltaMap })
     expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
   })
+
+  // --- hiddenMetricIds filtering tests (Story 4-2b) ---
+
+  it("renders all metrics when hiddenMetricIds is not provided", () => {
+    renderDefault()
+    expect(screen.getAllByTestId("metric-bar")).toHaveLength(3)
+  })
+
+  it("renders all metrics when hiddenMetricIds is empty", () => {
+    renderDefault({ hiddenMetricIds: new Set() })
+    expect(screen.getAllByTestId("metric-bar")).toHaveLength(3)
+  })
+
+  it("hides metrics whose IDs are in hiddenMetricIds", () => {
+    renderDefault({ hiddenMetricIds: new Set(["write-throughput"]) })
+    expect(screen.getAllByTestId("metric-bar")).toHaveLength(2)
+    expect(screen.queryByText("write-throughput")).not.toBeInTheDocument()
+  })
+
+  it("returns null when all metrics are hidden", () => {
+    const { container } = renderDefault({
+      hiddenMetricIds: new Set(["query-performance", "write-throughput", "index-speed"]),
+    })
+    expect(container.innerHTML).toBe("")
+  })
 })
