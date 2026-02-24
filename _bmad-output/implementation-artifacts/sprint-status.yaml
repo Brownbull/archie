@@ -93,7 +93,7 @@ development_status:
   # User can import/export YAML, use AI round-trip, explore examples
   # FRs: FR23-FR30 | NFRs: NFR4, NFR6-NFR11 | ARs: AR9, AR10
   # ============================================================================
-  epic-3: in-progress
+  epic-3: done  # deployed to production 2026-02-24 — PR #8 (dev) + PR #9 (main)
   td-cross-1-shared-test-infrastructure: done
   3-1-yaml-import-pipeline: done
   td-3-1a-import-pipeline-robustness: done
