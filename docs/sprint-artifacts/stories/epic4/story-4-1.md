@@ -1,6 +1,6 @@
 # Story 4-1: Code Snippets & Metric Explanations
 
-## Status: review
+## Status: done
 ## Epic: Epic 4 — Deep Intelligence & Polish
 ## Branch: feature/epic-4
 
@@ -246,6 +246,24 @@ config_variants:
 ### E2E Testing
 E2E coverage recommended — run `/ecc-e2e 4-1` after implementation.
 Verify: code snippet renders for known component, metric expands on click.
+
+## Senior Developer Review (ECC)
+
+**Date:** 2026-02-24 | **Agents:** code-reviewer, security-reviewer (opus), architect (opus), tdd-guide
+**Classification:** COMPLEX (17 files) | **Overall Score:** 8.5/10 | **Outcome:** APPROVED
+
+**Quick fixes applied (3):**
+- Finding 2: `key={factor}` → index-based key in contributing factors list (MetricBar.tsx:55)
+- Finding 3: Trailing space in className → `explanation ? "py-0.5 cursor-pointer" : "py-0.5"` (MetricBar.tsx:25)
+- Finding 5: Added `vi.resetAllMocks()` guard to MetricBar test suite (MetricBar.test.tsx)
+
+**Tech Debt Tracking:**
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| [td-4-1a](./td-4-1a-code-snippet-trust-boundary.md) | CodeSnippetViewer language allowlist + code size guard | LOW | CREATED |
+
+**Tests post-fix:** 79/79 inspector unit tests pass.
 
 ## ECC Analysis Summary
 - Risk Level: LOW

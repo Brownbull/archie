@@ -22,7 +22,7 @@ export function MetricBar({ metric, explanation }: MetricBarProps) {
 
   return (
     <div
-      className={`py-0.5 ${explanation ? "cursor-pointer" : ""}`}
+      className={explanation ? "py-0.5 cursor-pointer" : "py-0.5"}
       data-testid="metric-bar"
       data-metric-id={metric.id}
       onClick={explanation ? () => setIsExpanded((prev) => !prev) : undefined}
@@ -52,8 +52,8 @@ export function MetricBar({ metric, explanation }: MetricBarProps) {
           <p>{explanation.reason}</p>
           {explanation.contributingFactors.length > 0 && (
             <ul className="list-inside list-disc space-y-0.5">
-              {explanation.contributingFactors.map((factor) => (
-                <li key={factor}>{factor}</li>
+              {explanation.contributingFactors.map((factor, i) => (
+                <li key={i}>{factor}</li>
               ))}
             </ul>
           )}

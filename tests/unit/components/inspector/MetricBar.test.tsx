@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { MetricBar } from "@/components/inspector/MetricBar"
 import type { MetricValue, MetricExplanation } from "@/types"
 
@@ -34,6 +34,10 @@ const sampleExplanation: MetricExplanation = {
 }
 
 describe("MetricBar", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
   /** Render with default props (highMetric). Override via partial. */
   function renderDefault(overrides: Partial<Parameters<typeof MetricBar>[0]> = {}) {
     return render(
