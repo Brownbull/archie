@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import "./seed-mocks"
 import { dump } from "js-yaml"
 import { loadAndValidateBlueprints } from "../../../scripts/seed-firestore"
-import { noopLogger, makeBlueprintYaml, mockStatResult, mockDirEntries } from "./seed-helpers"
+import { noopLogger, makeBlueprintYaml, mockStatResult, mockDirEntries, assertFailFastBehavior } from "./seed-helpers"
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
 
@@ -61,7 +61,7 @@ describe("loadAndValidateBlueprints", () => {
       description: "Missing skeleton",
     }))
 
-    expect(() => loadAndValidateBlueprints("/fake/dir", noopLogger)).toThrow()
+    expect(() => loadAndValidateBlueprints("/fake/dir", noopLogger)).toThrow("Validation failed")
   })
 
   it("rejects files over 1MB size limit", () => {
@@ -85,18 +85,26 @@ describe("loadAndValidateBlueprints", () => {
 
   it("aborts entirely when any file fails — valid blueprints are not returned (fail-fast)", () => {
     // Fail-fast contract (TD-3-3e): if ANY file fails validation, the function throws and
-    // returns nothing. Valid files are processed and logged, but not seeded. This is intentional:
+    // returns nothing. Valid files are processed but not seeded. This is intentional:
     // a seed script should fail loudly on any data quality issue rather than partially seed.
-    mockedReaddirSync.mockReturnValue(mockDirEntries("valid.yaml", "bad.yaml"))
-    mockedStatSync.mockReturnValue(mockStatResult(500))
-    mockedReadFileSync.mockImplementation((filePath) => {
-      if (String(filePath).includes("valid")) return makeBlueprintYaml("valid-bp")
-      return dump({ id: "bad", name: "Bad Blueprint" }) // missing required skeleton field
-    })
+    assertFailFastBehavior(
+      loadAndValidateBlueprints,
+      makeBlueprintYaml("valid-bp"),
+      dump({ id: "bad", name: "Bad Blueprint" }), // missing required skeleton field
+    )
+  })
+
+  it("collects errors from all files before aborting — not just the first one (collect-all)", () => {
+    // AC-1 (TD-3-3e): the loop uses continue, not early throw, so every file is processed
+    // to surface ALL errors before aborting. Two bad files → two error log entries.
+    mockedReaddirSync.mockReturnValue(mockDirEntries("bad1.yaml", "bad2.yaml"))
+    mockedStatSync.mockReturnValue(mockStatResult(100))
+    mockedReadFileSync.mockImplementation(() => dump({ id: "bad", name: "Missing skeleton" }))
 
     const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
     expect(() => loadAndValidateBlueprints("/fake/dir", logger)).toThrow("Validation failed")
-    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed"))
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed — bad1.yaml"))
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed — bad2.yaml"))
   })
 
   it("skeleton has camelCase structure after transform", () => {

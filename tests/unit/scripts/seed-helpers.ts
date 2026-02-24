@@ -8,8 +8,9 @@
  * - CamelCase Component objects (for seedToFirestore tests)
  */
 
-import { vi } from "vitest"
+import { vi, expect } from "vitest"
 import { dump } from "js-yaml"
+import { readdirSync, readFileSync, statSync } from "node:fs"
 import type { Component } from "@/schemas/componentSchema"
 import type { BlueprintFull } from "@/schemas/blueprintSchema"
 import type { seedToFirestore, SeedLogger } from "../../../scripts/seed-firestore"
@@ -150,6 +151,41 @@ export function makeBlueprintYaml(id: string): string {
       edges: [],
     },
   })
+}
+
+/**
+ * Asserts fail-fast behavior for a loader function.
+ *
+ * Sets up two fixture files (valid.yaml + bad.yaml), calls the loader, and asserts:
+ * - The loader throws "Validation failed" (not abort-on-first but collect-then-throw)
+ * - The valid file was logged successfully (stringContaining "valid")
+ * - The invalid file produced a Zod validation error log
+ *
+ * Requires: the test file must import "./seed-mocks" before calling this helper,
+ * so that node:fs is already mocked via vi.mock.
+ *
+ * @param loader - The loader function under test (e.g., loadAndValidateBlueprints)
+ * @param validYaml - Valid YAML string for the "valid.yaml" fixture file
+ * @param invalidYaml - Invalid YAML string for the "bad.yaml" fixture file
+ * @param dir - Optional directory arg passed to the loader (default: "/fake/dir")
+ */
+export function assertFailFastBehavior(
+  loader: (dir: string, logger: SeedLogger) => unknown,
+  validYaml: string,
+  invalidYaml: string,
+  dir = "/fake/dir",
+): void {
+  vi.mocked(readdirSync).mockReturnValue(mockDirEntries("valid.yaml", "bad.yaml"))
+  vi.mocked(statSync).mockReturnValue(mockStatResult(500))
+  vi.mocked(readFileSync).mockImplementation((filePath) => {
+    if (String(filePath).includes("valid")) return validYaml
+    return invalidYaml
+  })
+
+  const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
+  expect(() => loader(dir, logger)).toThrow("Validation failed")
+  expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("valid"))
+  expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed"))
 }
 
 /**

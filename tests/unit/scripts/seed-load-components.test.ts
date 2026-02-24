@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import "./seed-mocks"
 import { dump } from "js-yaml"
 import { loadAndValidateComponents } from "../../../scripts/seed-firestore"
-import { makeComponentYaml, mockDirEntries, mockStatResult, noopLogger } from "./seed-helpers"
+import { makeComponentYaml, mockDirEntries, mockStatResult, noopLogger, assertFailFastBehavior } from "./seed-helpers"
 
 import { readdirSync, readFileSync, statSync } from "node:fs"
 
@@ -70,16 +70,25 @@ describe("loadAndValidateComponents", () => {
   it("aborts entirely when any file fails — valid components are not returned (fail-fast)", () => {
     // Fail-fast contract (TD-3-3e): mirrors loadAndValidateBlueprints behavior.
     // If ANY component file fails validation, the function throws and returns nothing.
-    mockedReaddirSync.mockReturnValue(mockDirEntries("valid.yaml", "bad.yaml"))
-    mockedStatSync.mockReturnValue(mockStatResult(500))
-    mockedReadFileSync.mockImplementation((filePath) => {
-      if (String(filePath).includes("valid")) return makeComponentYaml("valid-comp")
-      return dump({ id: "bad" }) // missing required fields
-    })
+    assertFailFastBehavior(
+      loadAndValidateComponents,
+      makeComponentYaml("valid-comp"),
+      dump({ id: "bad" }), // missing required fields
+      "/fake/data",
+    )
+  })
+
+  it("collects errors from all files before aborting — not just the first one (collect-all)", () => {
+    // AC-1 (TD-3-3e): the loop uses continue, not early throw, so every file is processed
+    // to surface ALL errors before aborting. Two bad files → two error log entries.
+    mockedReaddirSync.mockReturnValue(mockDirEntries("bad1.yaml", "bad2.yaml"))
+    mockedStatSync.mockReturnValue(mockStatResult(100))
+    mockedReadFileSync.mockImplementation(() => dump({ id: "bad" }))
 
     const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
     expect(() => loadAndValidateComponents("/fake/data", logger)).toThrow("Validation failed")
-    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed"))
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed — bad1.yaml"))
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed — bad2.yaml"))
   })
 
   it("rejects YAML with empty required string fields", () => {
