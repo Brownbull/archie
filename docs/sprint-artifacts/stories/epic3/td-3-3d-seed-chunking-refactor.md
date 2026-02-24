@@ -1,6 +1,6 @@
 # Story: TD-3-3d Seed Script Chunking Refactor
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: ECC Code Review (2026-02-23) on story td-3-3a
 
@@ -43,6 +43,21 @@ As a **developer**, I want `seedToFirestore` to use the same clean `slice`-based
 - No behavior changes — same end state in Firestore, just cleaner implementation
 - The `writtenIds.length !== components.length` assertion can be simplified once the loop is cleaner
 - **AC-3 test note (2026-02-23):** AC-3 said "tests pass unchanged" but AC-2 required separate metadata batch, which changed batch-count expectations in 3 tests. Updated: (1) small count test 1→2 batches, (2) 501 count test 2→3 batches + "1 operations" log, (3) 499 count test renamed + 1→2 batches. Removed: "throws on write count mismatch" test (writtenIds tracking eliminated). All 1079 tests pass.
+
+## Review (2026-02-23) — APPROVED 9/10
+
+**Classification:** TRIVIAL | **Agents:** code-reviewer
+
+**Findings — 3 fixed inline, 1 deferred:**
+
+| # | Sev | Finding | Action |
+|---|-----|---------|--------|
+| 1 | LOW | `variantMap.get()!` non-null assertion lacks explanatory comment | FIXED — comment added at seed-firestore.ts:235 |
+| 2 | LOW | "1 operations" log message grammatically incorrect | DEFERRED — needs consistent fix in both functions |
+| 3 | LOW | `seedToFirestore` lacks comment explaining intentional metadata-always write vs seedBlueprintsToFirestore early return | FIXED — comment added at seed-firestore.ts:254 |
+| 4 | LOW | Empty blueprints test missing `batchFn.not.toHaveBeenCalled()` assertion | FIXED — assertion added to seed-firestore.test.ts |
+
+**Test health:** 1079/1079 pass, no regressions.
 
 ## Deferred From
 

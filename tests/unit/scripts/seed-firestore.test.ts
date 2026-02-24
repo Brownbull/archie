@@ -180,11 +180,12 @@ describe("seedBlueprintsToFirestore", () => {
 
   it("logs 'No blueprints to seed.' and returns 0 for empty input", async () => {
     const logger = createSpyLogger()
-    const { db } = createMockDb()
+    const { db, mocks } = createMockDb()
 
     const result = await seedBlueprintsToFirestore(db, [], logger)
 
     expect(result).toBe(0)
+    expect(mocks.batchFn).not.toHaveBeenCalled()
     expect(logger.log).toHaveBeenCalledWith("No blueprints to seed.")
     expect(logger.warn).not.toHaveBeenCalled()
     expect(logger.error).not.toHaveBeenCalled()

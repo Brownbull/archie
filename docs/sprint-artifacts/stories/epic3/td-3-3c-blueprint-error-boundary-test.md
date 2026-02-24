@@ -1,6 +1,6 @@
 # Tech Debt Story TD-3-3c: BlueprintErrorBoundary Error State Unit Test
 
-Status: ready-for-dev
+Status: done
 
 > **Source:** ECC Code Review (2026-02-23) on story 3-3
 > **Priority:** LOW | **Estimated Effort:** Small (< 1h)
@@ -33,3 +33,19 @@ As a **developer**, I want a unit test for the `BlueprintErrorBoundary` error st
 - Pattern reference: React error boundary testing with a "ThrowOnRender" helper component — standard pattern in `@testing-library/react` ecosystem
 - Note: React error boundaries cannot be tested as functional components; must render a class component (BlueprintErrorBoundary) wrapping a component that throws
 - Suppress `console.error` during the test: React logs the caught error to console even when caught by the boundary
+
+## ECC Code Review (2026-02-23)
+
+**Decision:** APPROVED | **Score:** 9/10 | **Agents:** code-reviewer, tdd-guide
+
+**Quick fixes applied (6):**
+1. Removed unnecessary `setupMocks()` from error boundary test — no dependencies on `useLibrary`/`componentLibrary`
+2. Moved `ThrowOnRender` helper to module level (describe-block scope, near `setupMocks`)
+3. Extracted `const errorEl` to avoid double DOM query on lines 216-217
+4. Added `// exported for testing` comment on `BlueprintErrorBoundary` class export
+5. Added `componentDidCatch` behavioral assertion: `expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining("BlueprintTab error:"), ...)`
+6. Changed `toHaveTextContent` to full exact message: `"Could not load blueprints. Try refreshing the page."`
+
+**Accepted gap (finding #7):** No direct happy-path test for `BlueprintErrorBoundary.render()` — indirectly covered by all 11 existing `BlueprintTab` tests. No TD story created.
+
+**Deferred items:** None

@@ -88,8 +88,12 @@ def main():
 
     # --- Churn count check (A4 / L2-004) ---
     # Gravity-well files: warn at 20 touches, BLOCK at 40.
+    # Exclusions: tracking/artifact files that are expected to have high churn.
+    CHURN_EXCLUSIONS = {
+        "sprint-status.yaml",
+    }
 
-    if file_path and os.path.isfile(file_path):
+    if file_path and os.path.isfile(file_path) and os.path.basename(file_path) not in CHURN_EXCLUSIONS:
         try:
             repo_result = subprocess.run(
                 ["git", "rev-parse", "--show-toplevel"],

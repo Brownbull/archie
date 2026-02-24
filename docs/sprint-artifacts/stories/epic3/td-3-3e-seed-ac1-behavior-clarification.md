@@ -1,6 +1,6 @@
 # Story: TD-3-3e Seed Script AC-1 Behavior Clarification
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: ECC Code Review (2026-02-23) on story td-3-3a
 
@@ -53,6 +53,22 @@ The commit message for TD-3-3a notes subtask 1.5 ("blueprint with missing requir
 - The same question applies to `loadAndValidateComponents` — if blueprints skip-and-continue, components should too for consistency
 - Fail-fast is safer for a seed script (you want to know ALL problems, not just the ones after the first error) — but it contradicts the AC text
 - If fail-fast is chosen, no code change is needed — just update the story AC text
+
+## ECC Code Review — 2026-02-24
+
+**Result: APPROVED 8/10** (code-reviewer only — TRIVIAL classification)
+
+Quick fixes applied (findings 1, 2, 4, 5):
+- Add spied-logger comment in fail-fast tests explaining why spy vs noopLogger
+- Add `logger.log` assertion verifying valid file was actually processed before abort
+- Upgrade `.toThrow()` to `.toThrow("Validation failed")` in blueprints test (contract consistency)
+- Add collect-all test: 2 bad files → 2 error log entries (confirms AC-1 "all files surfaced" claim)
+
+Deferred to TD stories:
+
+| TD Story | Description | Priority | Action |
+|---|---|---|---|
+| td-3-3f | Shared `assertFailFastBehavior` helper to dedup the two fail-fast tests (finding #3) | LOW | CREATED |
 
 ## Deferred From
 

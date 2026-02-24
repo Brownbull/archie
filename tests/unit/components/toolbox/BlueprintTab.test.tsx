@@ -76,6 +76,12 @@ function setupMocks({
   }))
 }
 
+// --- Throwing helper for error boundary tests ---
+
+function ThrowOnRender(): never {
+  throw new Error("Test error")
+}
+
 // --- Tests ---
 
 describe("BlueprintTab", () => {
@@ -198,13 +204,7 @@ describe("BlueprintTab", () => {
   })
 
   it("BlueprintErrorBoundary renders error fallback when a child throws", async () => {
-    setupMocks()
     const { BlueprintErrorBoundary } = await import("@/components/toolbox/BlueprintTab")
-
-    function ThrowOnRender(): never {
-      throw new Error("Test error")
-    }
-
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
 
     try {
@@ -213,8 +213,14 @@ describe("BlueprintTab", () => {
           <ThrowOnRender />
         </BlueprintErrorBoundary>
       )
-      expect(screen.getByTestId("blueprint-tab-error")).toBeInTheDocument()
-      expect(screen.getByTestId("blueprint-tab-error")).toHaveTextContent("Could not load blueprints")
+      const errorEl = screen.getByTestId("blueprint-tab-error")
+      expect(errorEl).toBeInTheDocument()
+      expect(errorEl).toHaveTextContent("Could not load blueprints. Try refreshing the page.")
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        expect.stringContaining("BlueprintTab error:"),
+        expect.any(Error),
+        expect.anything()
+      )
     } finally {
       consoleErrorSpy.mockRestore()
     }

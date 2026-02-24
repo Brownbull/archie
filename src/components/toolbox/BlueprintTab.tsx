@@ -22,6 +22,7 @@ interface ErrorBoundaryState {
   hasError: boolean
 }
 
+// exported for testing — allows direct unit testing of the error state
 export class BlueprintErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false }
 

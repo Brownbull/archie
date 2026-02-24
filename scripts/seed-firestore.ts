@@ -231,7 +231,8 @@ export function validateBlueprintReferences(
         continue
       }
       if (node.configVariantId) {
-        const variantIds = variantMap.get(node.componentId)!
+        // Safe: componentMap.has() passed above, variantMap built from same components array
+      const variantIds = variantMap.get(node.componentId)!
         if (!variantIds.has(node.configVariantId)) {
           logger.warn(
             `WARNING: Blueprint '${bp.id}' node '${node.id}' references unknown config variant '${node.configVariantId}' for component '${node.componentId}'`,
@@ -251,6 +252,8 @@ export function validateBlueprintReferences(
  * Metadata is committed in its own separate batch after all component writes.
  */
 export async function seedToFirestore(db: FirestoreSubset, components: Component[], logger: SeedLogger = console): Promise<number> {
+  // Note: unlike seedBlueprintsToFirestore, we always write metadata even when components is empty,
+  // so the seed document records componentCount: 0 as a valid seed state.
   const totalChunks = Math.ceil(components.length / BATCH_LIMIT)
 
   for (let chunkNum = 1; chunkNum <= totalChunks; chunkNum++) {

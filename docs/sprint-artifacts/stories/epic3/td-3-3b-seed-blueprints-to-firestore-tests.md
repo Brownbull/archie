@@ -1,6 +1,6 @@
 # Tech Debt Story TD-3-3b: Unit Tests for seedBlueprintsToFirestore
 
-Status: ready-for-dev
+Status: done
 
 > **Source:** ECC Code Review (2026-02-23) on story 3-3
 > **Priority:** LOW | **Estimated Effort:** Small (1-2h)
@@ -26,6 +26,21 @@ As a **developer**, I want unit tests for `seedBlueprintsToFirestore` in `seed-f
 - [x] 3. Implement AC-2: N blueprints → N batch.set calls, returns N
 - [x] 4. Implement AC-3: > BATCH_LIMIT (500) → multiple batch.commit() calls
 - [x] 5. Run `npm run test:quick` — all tests pass
+
+## Code Review (2026-02-23)
+
+**Decision: APPROVED 8.8/10** | Agents: code-reviewer + security-reviewer (STANDARD)
+
+4 quick fixes applied during review:
+
+| # | Sev | Finding | Action |
+|---|-----|---------|--------|
+| 1 | MEDIUM | AC-2: renamed + extended "returns count" test to assert both `setFn` N times and return N | FIXED |
+| 2 | LOW | AC-3: swapped `noopLogger` for spy + added chunk-progress log assertions | FIXED |
+| 3 | LOW | Removed duplicate "handles empty blueprints array" test (subsumed by AC-1 spy test) | FIXED |
+| 4 | LOW | AC-3 comment: added last-chunk size annotation | FIXED |
+
+Post-fix: 1079/1079 tests green.
 
 ## Dev Notes
 
