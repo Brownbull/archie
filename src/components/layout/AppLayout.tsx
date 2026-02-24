@@ -36,7 +36,9 @@ export function AppLayout() {
   const [libraryReady, setLibraryReady] = useState(false)
   const inspectorCollapsed = useUiStore((s) => s.inspectorCollapsed)
   const selectedNodeId = useUiStore((s) => s.selectedNodeId)
-  const inspectorWidth = selectedNodeId
+  const selectedEdgeId = useUiStore((s) => s.selectedEdgeId)
+  const hasSelection = selectedNodeId !== null || selectedEdgeId !== null
+  const inspectorWidth = hasSelection
     ? (inspectorCollapsed ? INSPECTOR_COLLAPSED_WIDTH : INSPECTOR_WIDTH)
     : 0
 

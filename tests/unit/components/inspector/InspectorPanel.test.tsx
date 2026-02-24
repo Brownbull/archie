@@ -1,8 +1,9 @@
 import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useUiStore } from "@/stores/uiStore"
-import { useArchitectureStore, type ArchieNode } from "@/stores/architectureStore"
+import { useArchitectureStore, type ArchieNode, type ArchieEdge } from "@/stores/architectureStore"
 import { NODE_TYPE_COMPONENT } from "@/lib/constants"
+import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 
 // Mock useLibrary hook
 const mockGetComponentById = vi.fn()
@@ -73,26 +74,30 @@ describe("InspectorPanel", () => {
     useArchitectureStore.setState({ nodes: [], edges: [] })
   })
 
-  it("renders null when no node is selected", () => {
+  it("renders null when no selection exists (no node, no edge)", () => {
     const { container } = render(<InspectorPanel />)
     expect(container.innerHTML).toBe("")
   })
 
-  it("renders null when selected node is not found in store", () => {
+  it("renders panel shell but no detail when selected node is not found in store", () => {
     useUiStore.setState({ selectedNodeId: "nonexistent-node" })
     useArchitectureStore.setState({ nodes: [mockNode] })
 
-    const { container } = render(<InspectorPanel />)
-    expect(container.innerHTML).toBe("")
+    render(<InspectorPanel />)
+    // Panel shell renders (selection exists) but NodeInspectorContent returns null
+    expect(screen.getByTestId("inspector-panel")).toBeInTheDocument()
+    expect(screen.queryByText("PostgreSQL")).not.toBeInTheDocument()
   })
 
-  it("renders null when component is not found in library", () => {
+  it("renders panel shell but no detail when component is not found in library", () => {
     useUiStore.setState({ selectedNodeId: "node-1" })
     useArchitectureStore.setState({ nodes: [mockNode] })
     mockGetComponentById.mockReturnValue(undefined)
 
-    const { container } = render(<InspectorPanel />)
-    expect(container.innerHTML).toBe("")
+    render(<InspectorPanel />)
+    // Panel shell renders but component lookup fails inside NodeInspectorContent
+    expect(screen.getByTestId("inspector-panel")).toBeInTheDocument()
+    expect(screen.queryByText("PostgreSQL")).not.toBeInTheDocument()
   })
 
   it("renders component detail when node is selected and component found", () => {
@@ -187,5 +192,76 @@ describe("InspectorPanel", () => {
     useArchitectureStore.getState().updateNodeConfigVariant("node-1", "standard")
     // No-op guard: same variant should not create new array reference
     expect(useArchitectureStore.getState().nodes).toBe(nodesBefore)
+  })
+
+  describe("edge selection (AC-ARCH-PATTERN-1)", () => {
+    const mockEdge: ArchieEdge = {
+      id: "edge-1",
+      source: "node-1",
+      target: "node-2",
+      data: {
+        isIncompatible: false,
+        incompatibilityReason: null,
+        sourceArchieComponentId: "postgresql",
+        targetArchieComponentId: "redis",
+      },
+    }
+
+    const mockSourceComponent = {
+      ...mockComponent,
+      id: "postgresql",
+      connectionProperties: {
+        protocol: "TCP",
+        communicationPatterns: ["request-response"],
+        typicalLatency: "1-5ms",
+        coLocationPotential: true,
+      },
+    }
+
+    it("renders ConnectionDetail when edge is selected (AC-ARCH-PATTERN-1)", () => {
+      useUiStore.setState({ selectedEdgeId: "edge-1", selectedNodeId: null })
+      useArchitectureStore.setState({
+        nodes: [mockNode],
+        edges: [mockEdge],
+        heatmapColors: new Map<string, HeatmapStatus>(),
+        edgeHeatmapColors: new Map<string, HeatmapStatus>(),
+      })
+      mockGetComponentById.mockImplementation((id: string) => {
+        if (id === "postgresql") return mockSourceComponent
+        return undefined
+      })
+
+      render(<InspectorPanel />)
+      expect(screen.getByTestId("inspector-panel")).toBeInTheDocument()
+      expect(screen.getByTestId("connection-detail")).toBeInTheDocument()
+    })
+
+    it("renders ComponentDetail for node, not ConnectionDetail (mutual exclusion)", () => {
+      useUiStore.setState({ selectedNodeId: "node-1", selectedEdgeId: null })
+      useArchitectureStore.setState({ nodes: [mockNode], edges: [mockEdge] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      expect(screen.getByTestId("inspector-panel")).toBeInTheDocument()
+      expect(screen.queryByTestId("connection-detail")).not.toBeInTheDocument()
+      expect(screen.getByText("PostgreSQL")).toBeInTheDocument()
+    })
+
+    it("collapsed state works with edge selection", () => {
+      useUiStore.setState({ selectedEdgeId: "edge-1", selectedNodeId: null, inspectorCollapsed: true })
+      useArchitectureStore.setState({
+        nodes: [mockNode],
+        edges: [mockEdge],
+        heatmapColors: new Map<string, HeatmapStatus>(),
+        edgeHeatmapColors: new Map<string, HeatmapStatus>(),
+      })
+      mockGetComponentById.mockReturnValue(mockSourceComponent)
+
+      render(<InspectorPanel />)
+      expect(screen.getByTestId("inspector-panel")).toBeInTheDocument()
+      expect(screen.getByTestId("inspector-collapse-btn")).toBeInTheDocument()
+      // Collapsed: ConnectionDetail content should not be visible
+      expect(screen.queryByTestId("connection-detail")).not.toBeInTheDocument()
+    })
   })
 })

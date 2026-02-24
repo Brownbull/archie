@@ -1,5 +1,6 @@
 export { InspectorPanel } from "./InspectorPanel"
 export { ComponentDetail } from "./ComponentDetail"
+export { ConnectionDetail } from "./ConnectionDetail"
 export { ComponentSwapper } from "./ComponentSwapper"
 export { ConfigSelector } from "./ConfigSelector"
 export { MetricCard } from "./MetricCard"

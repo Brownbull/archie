@@ -25,11 +25,15 @@ vi.mock("@xyflow/react", () => ({
 
 // Mock Zustand stores for heatmap integration
 const mockEdgeHeatmapColors = new Map<string, HeatmapStatus>()
+const mockUpdateEdgeLabelOffset = vi.fn()
 let mockHeatmapEnabled = false
 
 vi.mock("@/stores/architectureStore", () => ({
   useArchitectureStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
-    selector({ edgeHeatmapColors: mockEdgeHeatmapColors }),
+    selector({
+      edgeHeatmapColors: mockEdgeHeatmapColors,
+      updateEdgeLabelOffset: mockUpdateEdgeLabelOffset,
+    }),
   ),
 }))
 
@@ -37,6 +41,15 @@ vi.mock("@/stores/uiStore", () => ({
   useUiStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
     selector({ heatmapEnabled: mockHeatmapEnabled }),
   ),
+}))
+
+// Mock componentLibrary for protocol label lookup
+const mockGetComponent = vi.fn()
+vi.mock("@/services/componentLibrary", () => ({
+  componentLibrary: {
+    getComponent: (...args: unknown[]) => mockGetComponent(...args),
+    isInitialized: () => true,
+  },
 }))
 
 function createEdgeProps(
@@ -68,6 +81,8 @@ describe("ArchieEdge", () => {
   beforeEach(() => {
     mockEdgeHeatmapColors.clear()
     mockHeatmapEnabled = false
+    mockGetComponent.mockReset()
+    mockUpdateEdgeLabelOffset.mockReset()
   })
 
   it("renders edge path", () => {
@@ -304,6 +319,94 @@ describe("ArchieEdge", () => {
         stroke: "var(--archie-accent)",
         strokeWidth: 2.5,
       })
+    })
+  })
+
+  describe("protocol label", () => {
+    it("renders protocol label when source component has connectionProperties", () => {
+      mockGetComponent.mockReturnValue({
+        connectionProperties: {
+          protocol: "gRPC",
+          communicationPatterns: ["streaming"],
+          typicalLatency: "1ms",
+          coLocationPotential: true,
+        },
+      })
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      expect(screen.getByTestId("edge-label-edge-1")).toBeInTheDocument()
+      expect(screen.getByText("gRPC")).toBeInTheDocument()
+    })
+
+    it("does not render protocol label when source component has no connectionProperties", () => {
+      mockGetComponent.mockReturnValue({ connectionProperties: undefined })
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      expect(screen.queryByTestId("edge-label-edge-1")).not.toBeInTheDocument()
+    })
+
+    it("does not render protocol label when source component not found", () => {
+      mockGetComponent.mockReturnValue(undefined)
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      expect(screen.queryByTestId("edge-label-edge-1")).not.toBeInTheDocument()
+    })
+
+    it("protocol label applies stored labelOffset to position", () => {
+      mockGetComponent.mockReturnValue({
+        connectionProperties: {
+          protocol: "TCP",
+          communicationPatterns: [],
+          typicalLatency: "5ms",
+          coLocationPotential: false,
+        },
+      })
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: false,
+                incompatibilityReason: null,
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                labelOffset: { x: 20, y: -10 },
+              },
+            })}
+          />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      // labelX=50, labelY=50 (from getSmoothStepPath mock) + offset
+      expect(label.style.transform).toContain("70px")
+      expect(label.style.transform).toContain("40px")
+    })
+
+    it("protocol label has pointer-events-auto class for drag interaction", () => {
+      mockGetComponent.mockReturnValue({
+        connectionProperties: {
+          protocol: "HTTP",
+          communicationPatterns: [],
+          typicalLatency: "10ms",
+          coLocationPotential: false,
+        },
+      })
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      expect(label.getAttribute("class")).toContain("pointer-events-auto")
     })
   })
 })

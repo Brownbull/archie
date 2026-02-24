@@ -100,34 +100,34 @@ And the endpoint health section still shows health status for both endpoints
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: ConnectionDetail component**
-  - [ ] 1.1 Define `ConnectionDetail` props interface: `{ edgeId: string }` — derives all data internally via store selectors
-  - [ ] 1.2 Implement component: read `edge` from `architectureStore.edges`, look up source + target components via `componentLibrary.getComponent()`
-  - [ ] 1.3 Display connection properties section: protocol, communicationPatterns (as list), typicalLatency, coLocationPotential — with "No properties available" fallback
-  - [ ] 1.4 Display endpoint health section: source component name + heatmap status, target component name + heatmap status (from `architectureStore.heatmapColors`)
-  - [ ] 1.5 Display overall connection heatmap: `architectureStore.edgeHeatmapColors.get(edgeId)`
+- [x] **Task 1: ConnectionDetail component**
+  - [x] 1.1 Define `ConnectionDetail` props interface: `{ edgeId: string }` — derives all data internally via store selectors
+  - [x] 1.2 Implement component: read `edge` from `architectureStore.edges`, look up source + target components via `componentLibrary.getComponent()`
+  - [x] 1.3 Display connection properties section: protocol, communicationPatterns (as list), typicalLatency, coLocationPotential — with "No properties available" fallback
+  - [x] 1.4 Display endpoint health section: source component name + heatmap status, target component name + heatmap status (from `architectureStore.heatmapColors`)
+  - [x] 1.5 Display overall connection heatmap: `architectureStore.edgeHeatmapColors.get(edgeId)`
 
-- [ ] **Task 2: InspectorPanel edge mode**
-  - [ ] 2.1 Read `selectedEdgeId` from `uiStore`
-  - [ ] 2.2 Add conditional branch: if `selectedEdgeId` → render `ConnectionDetail`, if `selectedNodeId` → render existing `ComponentDetail`, if neither → return null
-  - [ ] 2.3 Ensure collapsed state works correctly for both node and edge selection
+- [x] **Task 2: InspectorPanel edge mode**
+  - [x] 2.1 Read `selectedEdgeId` from `uiStore`
+  - [x] 2.2 Add conditional branch: if `selectedEdgeId` → render `ConnectionDetail`, if `selectedNodeId` → render existing `ComponentDetail`, if neither → return null
+  - [x] 2.3 Ensure collapsed state works correctly for both node and edge selection
 
-- [ ] **Task 3: ArchieEdgeData labelOffset + store action**
-  - [ ] 3.1 Add `labelOffset?: { x: number; y: number }` to `ArchieEdgeData` interface in `architectureStore.ts`
-  - [ ] 3.2 Add `updateEdgeLabelOffset(edgeId: string, offset: { x: number; y: number }): void` action to store
-  - [ ] 3.3 Update `yamlExporter.ts` to explicitly exclude `labelOffset` from edge data in exported YAML (strip it when building the export payload)
+- [x] **Task 3: ArchieEdgeData labelOffset + store action**
+  - [x] 3.1 Add `labelOffset?: { x: number; y: number }` to `ArchieEdgeData` interface in `architectureStore.ts`
+  - [x] 3.2 Add `updateEdgeLabelOffset(edgeId: string, offset: { x: number; y: number }): void` action to store
+  - [x] 3.3 Update `yamlExporter.ts` to explicitly exclude `labelOffset` from edge data in exported YAML (strip it when building the export payload)
 
-- [ ] **Task 4: Draggable edge label in ArchieEdge**
-  - [ ] 4.1 Render a protocol label via `EdgeLabelRenderer` for all edges where source component has `connectionProperties` (show protocol string)
-  - [ ] 4.2 Apply stored `labelOffset` to label position: `transform: translate(-50%, -50%) translate(${labelX + offset.x}px, ${labelY + offset.y}px)`
-  - [ ] 4.3 Implement drag handler: `onPointerDown` starts drag, `onPointerMove` computes delta from drag start, `onPointerUp` calls `updateEdgeLabelOffset(edgeId, newOffset)` and releases pointer capture
-  - [ ] 4.4 Use `setPointerCapture` on pointer down for smooth drag (prevents label from losing capture on fast movement)
-  - [ ] 4.5 Add `data-testid="edge-label-{id}"` to draggable label div
+- [x] **Task 4: Draggable edge label in ArchieEdge**
+  - [x] 4.1 Render a protocol label via `EdgeLabelRenderer` for all edges where source component has `connectionProperties` (show protocol string)
+  - [x] 4.2 Apply stored `labelOffset` to label position: `transform: translate(-50%, -50%) translate(${labelX + offset.x}px, ${labelY + offset.y}px)`
+  - [x] 4.3 Implement drag handler: `onPointerDown` starts drag, `onPointerMove` computes delta from drag start, `onPointerUp` calls `updateEdgeLabelOffset(edgeId, newOffset)` and releases pointer capture
+  - [x] 4.4 Use `setPointerCapture` on pointer down for smooth drag (prevents label from losing capture on fast movement)
+  - [x] 4.5 Add `data-testid="edge-label-{id}"` to draggable label div
 
-- [ ] **Task 5: Exports, tests, and git staging**
-  - [ ] 5.1 Export `ConnectionDetail` from `src/components/inspector/index.ts`
-  - [ ] 5.2 Write `ConnectionDetail.test.tsx` — renders properties, renders "no properties" fallback, shows endpoint health
-  - [ ] 5.3 Write/update `ArchieEdge.test.tsx` — label renders when connectionProperties present, label absent when no connectionProperties, label position applies offset
+- [x] **Task 5: Exports, tests, and git staging**
+  - [x] 5.1 Export `ConnectionDetail` from `src/components/inspector/index.ts`
+  - [x] 5.2 Write `ConnectionDetail.test.tsx` — renders properties, renders "no properties" fallback, shows endpoint health
+  - [x] 5.3 Write/update `ArchieEdge.test.tsx` — label renders when connectionProperties present, label absent when no connectionProperties, label position applies offset
   - [ ] 5.4 Run `npm run test:quick` — all tests pass
   - [ ] 5.5 Verify all new and modified files staged: `git status --porcelain | grep "^??"` → no untracked relevant files (AC-MUST-CHECK-1)
 
