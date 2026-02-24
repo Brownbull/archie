@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { Component } from "@/schemas/componentSchema"
+import type { BlueprintFull } from "@/schemas/blueprintSchema"
 
 const { mockComponentRepo, mockStackRepo, mockBlueprintRepo } = vi.hoisted(() => ({
   mockComponentRepo: {
@@ -152,6 +153,50 @@ describe("componentLibrary", () => {
     mockBlueprintRepo.getAll.mockResolvedValue(mockBlueprints)
     await componentLibrary.initialize()
     expect(componentLibrary.getBlueprints()).toEqual(mockBlueprints)
+  })
+
+  it("getAllBlueprints returns all blueprints with skeleton from repository", async () => {
+    const mockBlueprintFull: BlueprintFull = {
+      id: "whatsapp-messaging",
+      name: "WhatsApp-style Messaging",
+      description: "High-throughput messaging",
+      skeleton: { schemaVersion: "1.0.0", nodes: [], edges: [] },
+    }
+    mockBlueprintRepo.getAll.mockResolvedValue([mockBlueprintFull])
+    await componentLibrary.initialize()
+    const result = componentLibrary.getAllBlueprints()
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe("whatsapp-messaging")
+  })
+
+  it("getBlueprint returns correct blueprint by ID", async () => {
+    const mockBlueprintFull: BlueprintFull = {
+      id: "whatsapp-messaging",
+      name: "WhatsApp-style Messaging",
+      description: "High-throughput messaging",
+      skeleton: { schemaVersion: "1.0.0", nodes: [], edges: [] },
+    }
+    mockBlueprintRepo.getAll.mockResolvedValue([mockBlueprintFull])
+    await componentLibrary.initialize()
+    const bp = componentLibrary.getBlueprint("whatsapp-messaging")
+    expect(bp?.name).toBe("WhatsApp-style Messaging")
+    expect(bp?.skeleton.schemaVersion).toBe("1.0.0")
+  })
+
+  it("getBlueprint returns undefined for unknown ID", async () => {
+    const mockBlueprintFull: BlueprintFull = {
+      id: "whatsapp-messaging",
+      name: "WhatsApp-style Messaging",
+      description: "High-throughput messaging",
+      skeleton: { schemaVersion: "1.0.0", nodes: [], edges: [] },
+    }
+    mockBlueprintRepo.getAll.mockResolvedValue([mockBlueprintFull])
+    await componentLibrary.initialize()
+    expect(componentLibrary.getBlueprint("nonexistent")).toBeUndefined()
+  })
+
+  it("getAllBlueprints returns empty array before initialization", () => {
+    expect(componentLibrary.getAllBlueprints()).toEqual([])
   })
 
   it("allows retry after initialization failure", async () => {

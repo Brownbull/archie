@@ -45,7 +45,7 @@ development_status:
   # User can build architectures by browsing, dragging, wiring, configuring, inspecting
   # FRs: FR1-FR12 | NFRs: NFR1, NFR5, NFR8, NFR10
   # ============================================================================
-  epic-1: in-progress
+  epic-1: done
   1-1-project-foundation-and-authentication: done
   1-2-component-data-pipeline-and-toolbox-browsing: done
   td-1-2a-schema-alignment: done
@@ -73,7 +73,7 @@ development_status:
   # Plus settings/preferences (gear icon, theme, font)
   # FRs: FR13-FR22 | NFRs: NFR2, NFR3
   # ============================================================================
-  epic-2: in-progress
+  epic-2: done
   2-1-recalculation-engine-and-metric-propagation: done
   td-2-1a-recalc-robustness: done
   2-2-bottleneck-heatmap: done
@@ -89,14 +89,29 @@ development_status:
   epic-2-retrospective: optional
 
   # ============================================================================
-  # Epic 3: YAML Workflow & Content Library (3 stories)
+  # Epic 3: YAML Workflow & Content Library (3 user + 2 TD + 1 cross-cutting = 6 stories)
   # User can import/export YAML, use AI round-trip, explore examples
-  # FRs: FR23-FR30 | NFRs: NFR4, NFR6-NFR11
+  # FRs: FR23-FR30 | NFRs: NFR4, NFR6-NFR11 | ARs: AR9, AR10
   # ============================================================================
-  epic-3: backlog
-  3-1-yaml-import-pipeline: backlog
-  3-2-yaml-export-and-round-trip: backlog
-  3-3-example-architectures-and-ai-prompt-template: backlog
+  epic-3: in-progress
+  td-cross-1-shared-test-infrastructure: done
+  3-1-yaml-import-pipeline: done
+  td-3-1a-import-pipeline-robustness: done
+  td-3-1a-b-version-handling-type-safety: done
+  td-3-1a-c-migration-test-isolation: done
+  td-3-1a-d-migration-error-path-coverage: done
+  3-2-yaml-export-and-round-trip: done
+  td-3-2a-blob-url-unmount-cleanup: done
+  td-3-2b-test-helper-dedup: done
+  td-3-2c-strict-mode-anchor-click-test: done
+  3-3-example-architectures-and-ai-prompt-template: done
+  td-3-3a-seed-blueprint-hardening: done
+  td-3-3b-seed-blueprints-to-firestore-tests: done
+  td-3-3c-blueprint-error-boundary-test: done
+  td-3-3d-seed-chunking-refactor: done
+  td-3-3e-seed-ac1-behavior-clarification: done
+  td-3-3f-seed-test-helper-dedup: done
+  td-3-3g-seed-helpers-quality: done
   epic-3-retrospective: optional
 
   # ============================================================================

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""ECC PostToolUse Warnings for Edit — Content-based checks.
+"""PostToolUse:Edit warnings — Test content-based checks.
 
 Reads tool input JSON from stdin. Checks for test anti-patterns.
 Exit 0 = no issues. Exit 1 = non-blocking warning.
 
 Checks:
-  1. toHaveBeenCalled in test files (prefer toHaveBeenCalledWith)
-  2. E2E test missing cleanup pattern
+  1. toHaveBeenCalled without toHaveBeenCalledWith → warn
+  2. E2E test missing cleanup pattern → warn
 """
 import json
+import os
 import sys
 
 
@@ -24,12 +25,11 @@ def main():
 
     warnings = []
 
-    # 1. toHaveBeenCalled warning (test files only)
+    # 1. toHaveBeenCalled without specificity (test files only)
     if file_path.endswith((".test.ts", ".test.tsx")):
         if "toHaveBeenCalled" in new_string and "toHaveBeenCalledWith" not in new_string:
             warnings.append(
-                "\u26a0\ufe0f  toHaveBeenCalled detected. Per .claude/rules/testing.md, "
-                "prefer toHaveBeenCalledWith over bare toHaveBeenCalled."
+                "toHaveBeenCalled detected. Prefer toHaveBeenCalledWith for specificity."
             )
 
     # 2. E2E cleanup reminder
@@ -39,16 +39,15 @@ def main():
                 content = f.read().lower()
             if "cleanup" not in content and "afterall" not in content and "aftereach" not in content:
                 warnings.append(
-                    "\u26a0\ufe0f  E2E test may be missing cleanup. "
-                    "Always delete test data at end of spec."
+                    "E2E test may be missing cleanup. Always delete test data at end."
                 )
         except OSError:
             pass
 
     if warnings:
         for w in warnings:
-            print(w, file=sys.stderr)
-        sys.exit(1)  # Non-blocking warning
+            print(f"  {w}", file=sys.stderr)
+        sys.exit(1)
 
     sys.exit(0)
 

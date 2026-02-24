@@ -1,9 +1,7 @@
 #!/bin/bash
-# ECC PostToolUse Auto Type-Check — runs tsc after .ts/.tsx edits.
-#
-# Only runs for TypeScript files. Shows first 20 lines of errors.
+# PostToolUse:Edit — TypeScript type check after .ts/.tsx edits.
+# Shows first 20 lines of errors. Non-blocking (exit 1 = warn).
 
-# Read stdin JSON, extract file_path
 FILE_PATH=$(python3 -c "
 import sys, json
 try:
@@ -13,13 +11,12 @@ except:
     print('')
 ")
 
-# Only type-check TypeScript files
 if [[ "$FILE_PATH" =~ \.(ts|tsx)$ ]]; then
     cd "${CLAUDE_PROJECT_DIR:-.}" 2>/dev/null || true
     OUTPUT=$(npx tsc --noEmit 2>&1 | head -20)
     if [ $? -ne 0 ] && [ -n "$OUTPUT" ]; then
         echo "$OUTPUT" >&2
-        exit 1  # Non-blocking warning
+        exit 1
     fi
 fi
 

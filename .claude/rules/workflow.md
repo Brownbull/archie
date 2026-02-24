@@ -58,20 +58,23 @@ Sequential handoff: pass context documents between dependent agents.
 - Auth, user input, API endpoints, sensitive data -> spawn **security-reviewer**
 
 **Model selection for subagents:**
-- Haiku: lightweight exploration, quick searches, simple tasks, test coverage review
-- Sonnet: main development, orchestration, planning, code review, security review
-- Opus: complex architecture, deep reasoning
+- Sonnet: default for most agents — development, planning, code review, security review, TDD
+- Opus: escalation for complex stories — architecture, deep reasoning, security-sensitive epics
+- Haiku: lightweight exploration, quick searches, simple tasks
+
+**Dual-model pattern:** Many agents use `model_default` (sonnet) and `model_complex` (opus).
+The orchestrator selects the model based on `complexity_source` (story sizing, adaptive review classification, or security patterns). Standard/simple stories get sonnet; complex/large stories get opus.
 
 **Code review agent models** (configured in `_ecc/workflows/ecc-code-review/workflow.yaml`):
 - `code-reviewer`: Sonnet (code quality doesn't need deep reasoning)
-- `security-reviewer`: Sonnet (OWASP checklist is pattern matching)
-- `architect`: Opus (architecture compliance needs deep reasoning)
-- `tdd-guide`: Haiku (test coverage gaps are straightforward)
+- `security-reviewer`: Sonnet/Opus dual (sonnet default, opus for complex reviews)
+- `architect`: Sonnet/Opus dual (sonnet default, opus for complex reviews)
+- `tdd-guide`: Sonnet (test coverage analysis)
 - All agents: `max_turns: 5`, file contents pre-loaded (agents do NOT read files)
 
 **Dev story agent models** (configured in `_ecc/workflows/ecc-dev-story/workflow.yaml`):
-- `planner`: Opus, max_turns: 7 (implementation planning from story + architecture)
-- `tdd-guide`: Opus, no max_turns (iterative implementation needs many turns)
+- `planner`: Sonnet/Opus dual, max_turns: 7 (sonnet default, opus for large/complex stories)
+- `tdd-guide`: Sonnet/Opus dual, max_turns: 15 (sonnet default, opus for large/complex stories)
 - `build-error-resolver`: Sonnet, max_turns: 5 (surgical fixes)
 - `code-reviewer` (self-review): Sonnet, max_turns: 7, file contents pre-loaded
 - Step 6 is code-reviewer only — full review (security, architecture) runs via `/ecc-code-review`
@@ -79,8 +82,12 @@ Sequential handoff: pass context documents between dependent agents.
 **Epic/story creation agent models** (configured in `_ecc/workflows/ecc-create-epics-and-stories/workflow.yaml`):
 - `planner`: Opus, max_turns: 7 (epic design + story breakdown with risk flags)
 - `architect`: Opus, max_turns: 5 (hardening analysis + story file generation)
-- `security-reviewer`: Sonnet, max_turns: 5 (security surface analysis, parallel with architect)
+- `security-reviewer`: Sonnet/Opus dual, max_turns: 5 (sonnet default, opus for security-heavy epics)
 - Hardening patterns: `_ecc/knowledge/hardening-patterns.md` (6 patterns from Epic 1 retrospective)
+
+**E2E testing agent models** (configured in `_ecc/workflows/ecc-e2e/workflow.yaml`):
+- `e2e-runner`: Sonnet (E2E test writing is mechanical)
+- `code-reviewer`: Sonnet (E2E test quality review)
 
 ## ECC Hooks
 

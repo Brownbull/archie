@@ -22,7 +22,9 @@ ecc_orchestration:
       purpose: "Hardening analysis, file specs, architectural ACs, story file generation"
     security-reviewer:
       subagent_type: "everything-claude-code:security-reviewer"
-      model: "sonnet"
+      model_default: "sonnet"
+      model_complex: "opus"
+      complexity_source: "epic_security_patterns"
       max_turns: 5
       purpose: "Security surface analysis per story (parallel with architect)"
 
