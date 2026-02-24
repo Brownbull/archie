@@ -111,7 +111,7 @@ development_status:
   td-3-3d-seed-chunking-refactor: done
   td-3-3e-seed-ac1-behavior-clarification: done
   td-3-3f-seed-test-helper-dedup: done
-  td-3-3g-seed-helpers-quality: review
+  td-3-3g-seed-helpers-quality: done
   epic-3-retrospective: optional
 
   # ============================================================================

@@ -140,3 +140,5 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-02-24 03:21,1027d36a-093,ecc-code-review,td-3-3e,8min,79,1,4,sonnet,97,633,300914,5312048,5.36,0.33,5.68
 2026-02-24 03:32,89b6f834-a73,ecc-dev-story,td-3-3f-seed-test-helper-dedup,10min,110,1,3,sonnet,129,1030,247269,8368302,6.43,0.25,6.68
 2026-02-24 03:44,ff1d1a69-35f,ecc-code-review,td-3-3f-seed-test-helper-dedup,9min,69,1,5,sonnet,89,620,263000,4253602,4.39,0.38,4.77
+2026-02-24 03:55,f333545a-09e,ecc-dev-story,td-3-3g,11min,105,3,27,sonnet,145,1035,321806,7345190,5.39,1.53,6.92
+2026-02-24 04:06,b0887d3f-eb8,ecc-code-review,td-3-3g,5min,72,1,3,sonnet,83,645,230116,4092404,4.09,0.27,4.36

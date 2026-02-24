@@ -197,6 +197,9 @@ export function assertFailFastBehavior(
   } catch (err) {
     caughtError = err
   }
+  if (caughtError === undefined) {
+    throw new Error("assertFailFastBehavior: loader did not throw — fail-fast contract violated")
+  }
   expect(caughtError).toBeInstanceOf(Error)
   expect((caughtError as Error).message).toContain("Validation failed")
   expect(result).toBeUndefined()
