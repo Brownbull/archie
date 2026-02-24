@@ -83,6 +83,22 @@ describe("loadAndValidateBlueprints", () => {
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("YAML parse failed"))
   })
 
+  it("aborts entirely when any file fails — valid blueprints are not returned (fail-fast)", () => {
+    // Fail-fast contract (TD-3-3e): if ANY file fails validation, the function throws and
+    // returns nothing. Valid files are processed and logged, but not seeded. This is intentional:
+    // a seed script should fail loudly on any data quality issue rather than partially seed.
+    mockedReaddirSync.mockReturnValue(mockDirEntries("valid.yaml", "bad.yaml"))
+    mockedStatSync.mockReturnValue(mockStatResult(500))
+    mockedReadFileSync.mockImplementation((filePath) => {
+      if (String(filePath).includes("valid")) return makeBlueprintYaml("valid-bp")
+      return dump({ id: "bad", name: "Bad Blueprint" }) // missing required skeleton field
+    })
+
+    const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
+    expect(() => loadAndValidateBlueprints("/fake/dir", logger)).toThrow("Validation failed")
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed"))
+  })
+
   it("skeleton has camelCase structure after transform", () => {
     mockedReaddirSync.mockReturnValue(mockDirEntries("whatsapp-messaging.yaml"))
     mockedStatSync.mockReturnValue(mockStatResult(500))

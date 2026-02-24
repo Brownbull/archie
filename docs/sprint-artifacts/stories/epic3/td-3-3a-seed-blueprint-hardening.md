@@ -1,6 +1,6 @@
 # Story: TD-3-3a Seed & Blueprint Hardening
 
-## Status: review
+## Status: done
 ## Epic: Epic 3 — YAML Workflow & Content Library
 ## Source: Hardening analysis during Epic 3 story creation (2026-02-15)
 
@@ -12,12 +12,14 @@ Story 3-3 builds the blueprint seed pipeline and loading UI with basic error han
 
 ## Functional Acceptance Criteria
 
-**AC-1: Seed Script Blueprint Validation**
-**Given** a blueprint YAML file with invalid content (referencing non-existent component IDs, malformed skeleton, missing required fields)
-**When** the seed script processes it
-**Then** the invalid blueprint is skipped with a clear error log (component ID X not found in seed data)
-**And** other valid blueprints still seed successfully
-**And** the exit code reflects partial failure
+**AC-1: Seed Script Blueprint Validation (Fail-Fast)**
+**Given** one or more blueprint YAML files with invalid content (missing required fields, malformed skeleton, YAML parse errors)
+**When** the seed script processes them
+**Then** all files are processed in one pass to log every validation error (no early termination per file)
+**And** if ANY blueprint fails validation, the seed script aborts — no blueprints are seeded
+**And** the exit code is 1 (non-zero) indicating failure
+
+> **Design note (TD-3-3e):** AC-1 was originally written as "skip-and-continue" but fail-fast was confirmed as the correct design. A seed script should fail loudly on any data quality issue rather than partially populate Firestore. The loop processes ALL files to surface every error before aborting — not just the first one.
 
 **AC-2: Seed Script Cross-Reference Check**
 **Given** the seed script processes blueprint YAML files
@@ -85,3 +87,20 @@ Story 3-3 builds the blueprint seed pipeline and loading UI with basic error han
 - Sizing: SMALL (2 tasks, ~13 subtasks, ~4 files)
 - Agents consulted: Architect, Security Reviewer
 - Key patterns: Pattern 1 (seed script hardening, cross-reference validation), Pattern 5 (empty state handling for blueprints)
+
+## ECC Code Review — 2026-02-23
+
+**Result: APPROVED 8/10** (code-reviewer 7/10 + security-reviewer 9/10)
+
+Quick fixes applied (findings 4–9):
+- Pre-computed variant ID sets in `validateBlueprintReferences` (variantMap)
+- Shared `bpBaseShape` in blueprintSchema.ts (DRY)
+- `catch (err)` + error logging in `main()` catch blocks
+- `resolve(rawCredPath)` for credential path canonicalization
+
+Deferred to TD stories:
+
+| TD Story | Description | Priority | Action |
+|---|---|---|---|
+| td-3-3d | seedToFirestore chunking refactor (findings #1, #2) | LOW | CREATED |
+| td-3-3e | AC-1 fail-fast vs skip-and-continue behavior (finding #3) | LOW | CREATED |

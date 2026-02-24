@@ -108,8 +108,8 @@ development_status:
   td-3-3a-seed-blueprint-hardening: done
   td-3-3b-seed-blueprints-to-firestore-tests: done
   td-3-3c-blueprint-error-boundary-test: done
-  td-3-3d-seed-chunking-refactor: review
-  td-3-3e-seed-ac1-behavior-clarification: ready-for-dev
+  td-3-3d-seed-chunking-refactor: done
+  td-3-3e-seed-ac1-behavior-clarification: review
   epic-3-retrospective: optional
 
   # ============================================================================

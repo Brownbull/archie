@@ -67,6 +67,21 @@ describe("loadAndValidateComponents", () => {
     expect(() => loadAndValidateComponents("/fake/data", noopLogger)).toThrow("Validation failed")
   })
 
+  it("aborts entirely when any file fails — valid components are not returned (fail-fast)", () => {
+    // Fail-fast contract (TD-3-3e): mirrors loadAndValidateBlueprints behavior.
+    // If ANY component file fails validation, the function throws and returns nothing.
+    mockedReaddirSync.mockReturnValue(mockDirEntries("valid.yaml", "bad.yaml"))
+    mockedStatSync.mockReturnValue(mockStatResult(500))
+    mockedReadFileSync.mockImplementation((filePath) => {
+      if (String(filePath).includes("valid")) return makeComponentYaml("valid-comp")
+      return dump({ id: "bad" }) // missing required fields
+    })
+
+    const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
+    expect(() => loadAndValidateComponents("/fake/data", logger)).toThrow("Validation failed")
+    expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed"))
+  })
+
   it("rejects YAML with empty required string fields", () => {
     mockedReaddirSync.mockReturnValue(mockDirEntries("empty-name.yaml"))
     mockedReadFileSync.mockReturnValue(dump({
