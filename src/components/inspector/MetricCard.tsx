@@ -1,4 +1,4 @@
-import type { MetricValue } from "@/types"
+import type { MetricValue, MetricExplanation } from "@/types"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { MetricBar } from "@/components/inspector/MetricBar"
 
@@ -8,6 +8,7 @@ interface MetricCardProps {
   categoryColor: string
   categoryIconName: string
   metrics: MetricValue[]
+  metricExplanations?: Record<string, MetricExplanation>
 }
 
 export function MetricCard({
@@ -16,6 +17,7 @@ export function MetricCard({
   categoryColor,
   categoryIconName,
   metrics,
+  metricExplanations,
 }: MetricCardProps) {
   const IconComponent = CATEGORY_ICONS[categoryIconName as keyof typeof CATEGORY_ICONS]
 
@@ -37,7 +39,11 @@ export function MetricCard({
       </div>
       <div className="space-y-0.5 px-2 py-1.5">
         {metrics.map((metric) => (
-          <MetricBar key={metric.id} metric={metric} />
+          <MetricBar
+            key={metric.id}
+            metric={metric}
+            explanation={metricExplanations?.[metric.id]}
+          />
         ))}
       </div>
     </div>

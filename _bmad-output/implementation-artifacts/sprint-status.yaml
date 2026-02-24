@@ -120,10 +120,10 @@ development_status:
   # connection inspection, dashboard drill-down, flow particles, legend
   # FRs: FR31-FR43
   # ============================================================================
-  epic-4: backlog
-  4-1-code-snippets-and-metric-explanations: backlog
-  4-2-variant-recommendations-and-metric-tools: backlog
-  4-3-connection-inspection-system: backlog
-  4-4-dashboard-drill-down-and-issues-navigation: backlog
-  4-5-canvas-visual-polish: backlog
+  epic-4: in-progress
+  4-1-code-snippets-and-metric-explanations: review
+  4-2-variant-recommendations-and-metric-tools: ready-for-dev
+  4-3-connection-inspection-system: ready-for-dev
+  4-4-dashboard-drill-down-and-issues-navigation: ready-for-dev
+  4-5-canvas-visual-polish: ready-for-dev
   epic-4-retrospective: optional

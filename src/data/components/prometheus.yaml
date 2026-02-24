@@ -41,6 +41,43 @@ config_variants:
         value: low
         numeric_value: 3
         category: operational-complexity
+    code_snippet:
+      language: yaml
+      code: |
+        # Prometheus - Standalone configuration
+        # prometheus.yml
+
+        global:
+          scrape_interval: 15s
+          evaluation_interval: 15s
+
+        scrape_configs:
+          - job_name: 'node-exporter'
+            static_configs:
+              - targets: ['localhost:9100']
+
+          - job_name: 'my-app'
+            static_configs:
+              - targets: ['app:3000']
+            metrics_path: '/metrics'
+
+        alerting:
+          alertmanagers:
+            - static_configs:
+                - targets: ['alertmanager:9093']
+    metric_explanations:
+      storage-efficiency:
+        reason: Standalone Prometheus stores all time-series data on local disk with TSDB compression, but retention is limited by single-node disk capacity.
+        contributing_factors:
+          - TSDB chunks compress 3-5x but local disk is the ceiling
+          - Default 15-day retention deletes older data automatically
+          - High-cardinality label sets can cause storage exhaustion
+      operational-complexity:
+        reason: Standalone Prometheus is a single binary with a flat config file, making initial setup and operation straightforward.
+        contributing_factors:
+          - Single binary with no external dependencies for basic operation
+          - YAML configuration with clear scrape target syntax
+          - Grafana integration is a separate service but well-documented
   - id: federated
     name: Federated
     metrics:
@@ -52,6 +89,39 @@ config_variants:
         value: high
         numeric_value: 7
         category: operational-complexity
+    code_snippet:
+      language: yaml
+      code: |
+        # Prometheus - Federated Setup
+        # Global prometheus.yml (aggregator)
+
+        scrape_configs:
+          - job_name: 'federate'
+            scrape_interval: 15s
+            honor_labels: true
+            metrics_path: '/federate'
+            params:
+              match[]:
+                - '{job="node-exporter"}'
+                - '{job="my-app"}'
+                - '{__name__=~"up|scrape_.*"}'
+            static_configs:
+              - targets:
+                  - 'prometheus-datacenter-1:9090'
+                  - 'prometheus-datacenter-2:9090'
+    metric_explanations:
+      storage-efficiency:
+        reason: Federated Prometheus aggregates selected metrics from regional instances, reducing global storage by only pulling rolled-up or cross-cluster metrics.
+        contributing_factors:
+          - Regional instances store full-resolution data locally
+          - Global instance stores only federated subset reducing cardinality
+          - Double storage footprint requires careful metric selection for federation
+      operational-complexity:
+        reason: Federated Prometheus requires operating multiple Prometheus instances with coordinated scrape configs, federation rules, and Alertmanager routing.
+        contributing_factors:
+          - Multiple Prometheus instances must be deployed and monitored independently
+          - Federation configuration must specify match expressions precisely
+          - Alert deduplication across regional and global instances requires Alertmanager mesh
 connection_properties:
   protocol: HTTP
   communication_patterns:

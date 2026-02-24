@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { ComponentSwapper } from "@/components/inspector/ComponentSwapper"
 import { ConfigSelector } from "@/components/inspector/ConfigSelector"
 import { MetricCard } from "@/components/inspector/MetricCard"
+import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 
 interface ComponentDetailProps {
   component: Component
@@ -99,6 +100,11 @@ export function ComponentDetail({
           />
         )}
 
+        {/* Code Snippet */}
+        {activeVariant?.codeSnippet && (
+          <CodeSnippetViewer codeSnippet={activeVariant.codeSnippet} />
+        )}
+
         <Separator />
 
         {/* IS section */}
@@ -150,6 +156,7 @@ export function ComponentDetail({
                     categoryColor={catMeta.color}
                     categoryIconName={catMeta.iconName}
                     metrics={metrics}
+                    metricExplanations={activeVariant?.metricExplanations}
                   />
                 )
               })}
@@ -164,6 +171,7 @@ export function ComponentDetail({
                     categoryColor="var(--color-text-secondary)"
                     categoryIconName=""
                     metrics={metrics}
+                    metricExplanations={activeVariant?.metricExplanations}
                   />
                 ))}
             </div>

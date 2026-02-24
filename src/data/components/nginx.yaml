@@ -41,6 +41,41 @@ config_variants:
         value: high
         numeric_value: 9
         category: scalability
+    code_snippet:
+      language: bash
+      code: |
+        # Nginx - Reverse Proxy configuration
+        # /etc/nginx/sites-available/app.conf
+
+        server {
+            listen 80;
+            server_name example.com;
+
+            location / {
+                proxy_pass http://localhost:3000;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_cache_bypass $http_upgrade;
+            }
+
+            location ~* \.(js|css|png|jpg|gif|ico)$ {
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+            }
+        }
+    metric_explanations:
+      request-latency:
+        reason: Nginx reverse proxy forwards requests to upstream in microseconds using non-blocking I/O, adding minimal overhead to the request path.
+        contributing_factors:
+          - Event-driven architecture handles proxying without thread overhead
+          - Keep-alive connections to upstream reduce handshake latency
+          - In-process static file serving bypasses upstream entirely
+      concurrent-connections:
+        reason: Nginx's event-driven model handles tens of thousands of simultaneous connections using a small number of worker processes.
+        contributing_factors:
+          - Epoll/kqueue I/O multiplexing scales with connections not threads
+          - Worker process count matched to CPU cores for optimal throughput
+          - Memory per connection is minimal compared to thread-per-connection servers
   - id: load-balancer
     name: Load Balancer
     metrics:
@@ -52,6 +87,41 @@ config_variants:
         value: high
         numeric_value: 9
         category: scalability
+    code_snippet:
+      language: bash
+      code: |
+        # Nginx - Load Balancer configuration
+        # /etc/nginx/nginx.conf (upstream block)
+
+        upstream app_servers {
+            least_conn;
+            server app-1:3000 weight=1;
+            server app-2:3000 weight=1;
+            server app-3:3000 weight=1;
+            keepalive 32;
+        }
+
+        server {
+            listen 80;
+            location / {
+                proxy_pass http://app_servers;
+                proxy_http_version 1.1;
+                proxy_set_header Connection "";
+            }
+        }
+    metric_explanations:
+      request-latency:
+        reason: Load balancing adds upstream selection overhead and the least_conn algorithm requires checking upstream state before forwarding each request.
+        contributing_factors:
+          - Upstream selection algorithm adds a small routing decision step
+          - Health check polling and upstream state tracking have minor CPU cost
+          - Keep-alive connections to upstreams amortize connection overhead
+      concurrent-connections:
+        reason: Load balancer Nginx distributes connections across upstreams, effectively multiplying the total concurrent capacity of the system.
+        contributing_factors:
+          - Each upstream server handles its own connection pool independently
+          - Nginx fan-out multiplies effective concurrent capacity
+          - Health checks remove failed upstreams automatically
 connection_properties:
   protocol: HTTP
   communication_patterns:

@@ -49,6 +49,35 @@ config_variants:
         value: low
         numeric_value: 2
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // Redis - Standalone via ioredis
+        import Redis from 'ioredis'
+
+        const redis = new Redis(process.env.REDIS_URL)
+
+        export async function get(key: string) {
+          return redis.get(key)
+        }
+
+        export async function set(key: string, value: string, ttl?: number) {
+          if (ttl) return redis.set(key, value, 'EX', ttl)
+          return redis.set(key, value)
+        }
+    metric_explanations:
+      read-latency:
+        reason: Standalone Redis reads from a single in-memory instance, delivering sub-millisecond latency with no network hops.
+        contributing_factors:
+          - All data stored in RAM eliminates disk I/O
+          - Single server has no network routing overhead
+          - Predictable response time without replica sync delay
+      horizontal-scalability:
+        reason: Standalone Redis cannot distribute load across multiple nodes — all operations hit one instance bound by RAM and CPU.
+        contributing_factors:
+          - Single instance RAM ceiling limits dataset size
+          - No automatic data partitioning available
+          - Scaling requires migration to Cluster variant
   - id: sentinel
     name: Sentinel HA
     metrics:
@@ -60,6 +89,36 @@ config_variants:
         value: medium
         numeric_value: 5
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // Redis - Sentinel HA via ioredis
+        import Redis from 'ioredis'
+
+        const redis = new Redis({
+          sentinels: [
+            { host: process.env.SENTINEL_1, port: 26379 },
+            { host: process.env.SENTINEL_2, port: 26379 },
+          ],
+          name: 'mymaster',
+        })
+
+        export async function get(key: string) {
+          return redis.get(key)
+        }
+    metric_explanations:
+      read-latency:
+        reason: Sentinel adds failover management overhead and replica reads introduce slight replication lag compared to standalone.
+        contributing_factors:
+          - Sentinel connection lookup adds one extra network step
+          - Replica reads may return slightly stale data due to async replication
+          - Failover detection adds brief unavailability window
+      horizontal-scalability:
+        reason: Sentinel provides high availability via replicas but does not shard data — read scaling is limited to replica count.
+        contributing_factors:
+          - Replicas can serve read traffic to distribute read load
+          - Write traffic remains on single master instance
+          - Dataset size still bounded by single node RAM
   - id: cluster
     name: Redis Cluster
     metrics:
@@ -71,6 +130,38 @@ config_variants:
         value: high
         numeric_value: 8
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // Redis - Cluster mode via ioredis
+        import Redis from 'ioredis'
+
+        const cluster = new Redis.Cluster([
+          { host: process.env.NODE_1, port: 6379 },
+          { host: process.env.NODE_2, port: 6379 },
+          { host: process.env.NODE_3, port: 6379 },
+        ])
+
+        export async function get(key: string) {
+          return cluster.get(key)
+        }
+
+        export async function set(key: string, value: string) {
+          return cluster.set(key, value)
+        }
+    metric_explanations:
+      read-latency:
+        reason: Redis Cluster routes keys to specific shards, adding one slot-lookup step compared to standalone but still operating in memory.
+        contributing_factors:
+          - Slot routing adds minimal overhead per command
+          - Cross-slot multi-key operations require additional coordination
+          - In-memory execution keeps overall latency very low
+      horizontal-scalability:
+        reason: Redis Cluster shards data across nodes automatically, enabling true horizontal scaling of both reads and writes.
+        contributing_factors:
+          - 16384 hash slots distributed across cluster nodes
+          - New nodes added to cluster absorb rebalanced slots
+          - Each master has replicas for read scaling and failover
 connection_properties:
   protocol: TCP
   communication_patterns:

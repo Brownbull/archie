@@ -1,0 +1,87 @@
+import { render, screen } from "@testing-library/react"
+import { describe, it, expect, vi } from "vitest"
+import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
+import type { CodeSnippet } from "@/types"
+
+// Mock react-syntax-highlighter — the default export must have registerLanguage as a static method
+vi.mock("react-syntax-highlighter/dist/esm/prism-light", async () => {
+  const React = (await import("react")).default
+  function MockHighlighter({
+    children,
+    language,
+  }: {
+    children: string
+    language: string
+    style?: unknown
+    showLineNumbers?: boolean
+    wrapLongLines?: boolean
+    customStyle?: unknown
+  }) {
+    return React.createElement(
+      "pre",
+      { "data-testid": "syntax-highlighter", "data-language": language },
+      children,
+    )
+  }
+  MockHighlighter.registerLanguage = vi.fn()
+  return { default: MockHighlighter }
+})
+
+vi.mock("react-syntax-highlighter/dist/esm/styles/prism/vsc-dark-plus", () => ({
+  default: {},
+}))
+
+vi.mock("react-syntax-highlighter/dist/esm/languages/prism/typescript", () => ({ default: {} }))
+vi.mock("react-syntax-highlighter/dist/esm/languages/prism/javascript", () => ({ default: {} }))
+vi.mock("react-syntax-highlighter/dist/esm/languages/prism/yaml", () => ({ default: {} }))
+vi.mock("react-syntax-highlighter/dist/esm/languages/prism/sql", () => ({ default: {} }))
+vi.mock("react-syntax-highlighter/dist/esm/languages/prism/bash", () => ({ default: {} }))
+
+const typescriptSnippet: CodeSnippet = {
+  language: "typescript",
+  code: "const x: number = 42",
+}
+
+const yamlSnippet: CodeSnippet = {
+  language: "yaml",
+  code: "key: value",
+}
+
+describe("CodeSnippetViewer", () => {
+  it("renders nothing when codeSnippet is undefined", () => {
+    const { container } = render(<CodeSnippetViewer codeSnippet={undefined} />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  it("renders code-snippet-section wrapper when codeSnippet is provided", () => {
+    render(<CodeSnippetViewer codeSnippet={typescriptSnippet} />)
+    expect(screen.getByTestId("code-snippet-section")).toBeInTheDocument()
+  })
+
+  it("renders the language label above the code block", () => {
+    render(<CodeSnippetViewer codeSnippet={typescriptSnippet} />)
+    expect(screen.getByText("typescript")).toBeInTheDocument()
+  })
+
+  it("renders the language label for yaml snippet", () => {
+    render(<CodeSnippetViewer codeSnippet={yamlSnippet} />)
+    expect(screen.getByText("yaml")).toBeInTheDocument()
+  })
+
+  it("renders the code content inside the highlighter", () => {
+    render(<CodeSnippetViewer codeSnippet={typescriptSnippet} />)
+    expect(screen.getByText("const x: number = 42")).toBeInTheDocument()
+  })
+
+  it("passes language to syntax highlighter", () => {
+    render(<CodeSnippetViewer codeSnippet={typescriptSnippet} />)
+    const highlighter = screen.getByTestId("syntax-highlighter")
+    expect(highlighter.getAttribute("data-language")).toBe("typescript")
+  })
+
+  it("does not use dangerouslySetInnerHTML — code is passed as children", () => {
+    const { container } = render(<CodeSnippetViewer codeSnippet={typescriptSnippet} />)
+    const pre = container.querySelector("pre")
+    expect(pre?.textContent).toContain("const x: number = 42")
+  })
+})
