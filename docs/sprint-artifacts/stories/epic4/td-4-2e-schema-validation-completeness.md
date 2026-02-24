@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-2e: Schema Validation Completeness
 
-Status: ready-for-dev
+Status: review
 
 > **Source:** ECC Code Review (2026-02-24) on story td-4-2c
 > **Priority:** LOW | **Estimated Effort:** Small (1 task, 3 subtasks, 2 files)
@@ -18,10 +18,10 @@ As a **developer**, I want **the YAML inline schema to reuse MetricExplanationSc
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Schema DRY and bounds hardening**
-  - [ ] 1.1 Extract `MAX_REASON_LENGTH` and `MAX_FACTOR_LENGTH` constants; use in both `MetricExplanationSchema` and `ConfigVariantYamlSchema` inline object
-  - [ ] 1.2 Add `.max()` constraints to `CodeSnippetSchema.language` and `CodeSnippetSchema.code`
-  - [ ] 1.3 Add at least one test asserting `result.error.issues[0].code === "too_big"` for over-length rejection
+- [x] **Task 1: Schema DRY and bounds hardening**
+  - [x] 1.1 Extract `MAX_REASON_LENGTH` and `MAX_FACTOR_LENGTH` constants; use in both `MetricExplanationSchema` and `ConfigVariantYamlSchema` inline object
+  - [x] 1.2 Add `.max()` constraints to `CodeSnippetSchema.language` and `CodeSnippetSchema.code`
+  - [x] 1.3 Add at least one test asserting `result.error.issues[0].code === "too_big"` for over-length rejection
 
 ## Dev Notes
 - Source story: [td-4-2c](./td-4-2c-inspector-schema-validation.md)

@@ -4,6 +4,9 @@ import {
   ConfigVariantSchema,
   ConnectionPropertiesSchema,
   ComponentYamlSchema,
+  CodeSnippetSchema,
+  MAX_REASON_LENGTH,
+  MAX_FACTOR_LENGTH,
 } from "@/schemas/componentSchema"
 
 const validVariant = {
@@ -107,6 +110,47 @@ describe("ConfigVariantSchema", () => {
           contributingFactors: ["a".repeat(200)],
         },
       },
+    })
+    expect(result.success).toBe(true)
+  })
+})
+
+describe("CodeSnippetSchema", () => {
+  it("accepts valid code snippet", () => {
+    const result = CodeSnippetSchema.safeParse({ language: "typescript", code: "const x = 1;" })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects language exceeding 50 characters with too_big error code", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "a".repeat(51),
+      code: "const x = 1;",
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects code exceeding 10000 characters with too_big error code", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "typescript",
+      code: "a".repeat(10001),
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("accepts language at exactly 50 characters", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "a".repeat(50),
+      code: "const x = 1;",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts code at exactly 10000 characters", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "typescript",
+      code: "a".repeat(10000),
     })
     expect(result.success).toBe(true)
   })

@@ -1,14 +1,17 @@
 import { z } from "zod"
 import { MetricValueSchema, MetricValueYamlSchema } from "@/schemas/metricSchema"
 
+export const MAX_REASON_LENGTH = 500
+export const MAX_FACTOR_LENGTH = 200
+
 export const CodeSnippetSchema = z.object({
-  language: z.string(),
-  code: z.string(),
+  language: z.string().max(50),
+  code: z.string().max(10000),
 }).strict()
 
 export const MetricExplanationSchema = z.object({
-  reason: z.string().min(1).max(500),
-  contributingFactors: z.array(z.string().max(200)),
+  reason: z.string().min(1).max(MAX_REASON_LENGTH),
+  contributingFactors: z.array(z.string().max(MAX_FACTOR_LENGTH)),
 }).strict()
 
 export const ConfigVariantSchema = z.object({
@@ -48,8 +51,8 @@ const ConfigVariantYamlSchema = z.object({
   metrics: z.array(MetricValueYamlSchema),
   code_snippet: CodeSnippetSchema.optional(),
   metric_explanations: z.record(z.string(), z.object({
-    reason: z.string().min(1).max(500),
-    contributing_factors: z.array(z.string().max(200)),
+    reason: z.string().min(1).max(MAX_REASON_LENGTH),
+    contributing_factors: z.array(z.string().max(MAX_FACTOR_LENGTH)),
   }).strict().transform((d) => ({
     reason: d.reason,
     contributingFactors: d.contributing_factors,
