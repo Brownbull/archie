@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-1b: CodeSnippetViewer Display Safety
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-24) on story td-4-1a
 > **Priority:** LOW | **Estimated Effort:** 1–2 tasks
@@ -34,3 +34,17 @@ As a **developer**, I want the `CodeSnippetViewer` language registration and all
 - Files affected: `src/components/inspector/CodeSnippetViewer.tsx`, `tests/unit/components/inspector/CodeSnippetViewer.test.tsx`
 - **Note on finding #1:** Current risk is LOW — registration and allowlist are 3 lines apart in the same file. But a single-source pattern eliminates the category of error entirely.
 - **Note on finding #2:** React JSX escapes `<`, `>`, `&` by default. Risk is limited to visual confusion (RTL overrides, zero-width chars) not XSS. Becomes relevant when community library data flows through `CodeSnippet.language`.
+
+## Review: APPROVED 7.75/10
+
+**Review date:** 2026-02-24 | **Classification:** SIMPLE | **Agents:** code-reviewer, tdd-guide
+
+### Fixed in review (9 quick fixes)
+- Added clarifying comment about dual-path intent (raw allowlist + sanitized display)
+- Corrected regex comment to match actual Unicode ranges covered
+- Added explicit `afterEach` import in test file
+- Added 6 tests: registration assertion (5 languages), isolate chars, all-unsafe-chars edge, dual-path interaction, sql/bash allowlist coverage
+
+### Accepted tradeoffs (not bugs — no TD story needed)
+- `typeof typescript` as LANGUAGE_MAP value type is loose but sufficient for 5 static imports
+- `as readonly string[]` widens vs original `as const` union — acceptable DRY tradeoff

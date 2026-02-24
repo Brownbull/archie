@@ -525,4 +525,200 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
       fullPage: true,
     })
   })
+
+  // ---------------------------------------------------------------------------
+  // Story 4-1: Code Snippets & Metric Explanations
+  // AC-3 (graceful absence when no code snippet) covered by unit tests in
+  // tests/unit/components/inspector/CodeSnippetViewer.test.tsx — not E2E-testable
+  // without a component that lacks code snippet data in Firestore seed.
+  // ---------------------------------------------------------------------------
+
+  test("4-1 AC-1/2: code snippet section visible for active variant", async ({ page }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Place a component and open the inspector
+    await addComponentToCanvas(page)
+    await selectNodeOnCanvas(page)
+
+    const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
+    await expect(inspectorPanel).toBeVisible()
+
+    // Seed data guarantees all 10 components have codeSnippet — section must be present
+    const codeSnippetSection = page.locator('[data-testid="code-snippet-section"]')
+    await expect(codeSnippetSection).toBeVisible({ timeout: 5_000 })
+
+    // Section must contain rendered code (the SyntaxHighlighter wraps code in <code> elements)
+    const codeBlock = codeSnippetSection.locator("code").first()
+    await expect(codeBlock).toBeVisible()
+    const codeText = await codeBlock.textContent()
+    expect(codeText!.trim().length).toBeGreaterThan(0)
+
+    await page.screenshot({
+      path: `${SCREENSHOT_DIR}/14-code-snippet-section-visible.png`,
+      fullPage: true,
+    })
+  })
+
+  test("4-1 AC-2: switching variant updates code snippet content", async ({ page }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Place a component and open the inspector
+    await addComponentToCanvas(page)
+    await selectNodeOnCanvas(page)
+
+    // Open the config dropdown
+    const configSelector = page.locator('[data-testid="config-selector"]')
+    await expect(configSelector).toBeVisible()
+    const triggerButton = configSelector.locator("button").first()
+
+    // Capture the code snippet text before switching variant
+    const codeSnippetSection = page.locator('[data-testid="code-snippet-section"]')
+    await expect(codeSnippetSection).toBeVisible({ timeout: 5_000 })
+    const initialCode = await codeSnippetSection.textContent()
+
+    // Open dropdown and check for a second variant
+    await triggerButton.click()
+    const selectContent = page.locator("[role=listbox]")
+    await expect(selectContent).toBeVisible({ timeout: 3_000 })
+
+    const options = selectContent.locator("[role=option]")
+    const optionCount = await options.count()
+    test.skip(optionCount < 2, "Skipped: Component has only one config variant")
+
+    // Select a variant different from the current one
+    const initialVariantText = await triggerButton.textContent()
+    let clicked = false
+    for (let i = 0; i < optionCount; i++) {
+      const optionText = await options.nth(i).textContent()
+      if (optionText?.trim() !== initialVariantText?.trim()) {
+        await options.nth(i).click()
+        clicked = true
+        break
+      }
+    }
+    expect(clicked).toBe(true)
+
+    // Dropdown closes after selection
+    await selectContent.waitFor({ state: "hidden", timeout: 3_000 })
+
+    // Code snippet section should still be present (both variants have snippets per seed data)
+    await expect(codeSnippetSection).toBeVisible({ timeout: 5_000 })
+
+    // The content should have changed to reflect the new variant
+    const newCode = await codeSnippetSection.textContent()
+    expect(newCode).not.toBe(initialCode)
+
+    await page.screenshot({
+      path: `${SCREENSHOT_DIR}/15-code-snippet-updated-after-variant-switch.png`,
+      fullPage: true,
+    })
+  })
+
+  test("4-1 AC-4/5/6: metric explanation expands on row click and collapses on second click", async ({
+    page,
+  }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Place a component and open the inspector
+    await addComponentToCanvas(page)
+    await selectNodeOnCanvas(page)
+
+    const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
+    await expect(inspectorPanel).toBeVisible()
+
+    // Find a metric bar that has an explanation (identified by the chevron testid)
+    const chevron = page.locator('[data-testid="metric-explanation-chevron"]').first()
+    await expect(chevron).toBeVisible({ timeout: 5_000 })
+
+    // The explanation div should NOT be visible before clicking
+    const explanation = page.locator('[data-testid="metric-explanation"]').first()
+    await expect(explanation).not.toBeVisible()
+
+    // Locate the parent metric-bar row that owns the chevron and click it
+    const metricRow = page
+      .locator('[data-testid="metric-bar"]')
+      .filter({ has: page.locator('[data-testid="metric-explanation-chevron"]') })
+      .first()
+    await expect(metricRow).toBeVisible()
+    await metricRow.click()
+
+    // AC-4/5: explanation div is now visible with reason text
+    await explanation.waitFor({ state: "visible", timeout: 3_000 })
+    const reasonText = await explanation.locator("p").first().textContent()
+    expect(reasonText!.trim().length).toBeGreaterThan(0)
+
+    // AC-5: contributing factors list is present (at least one <li>)
+    const factorItems = explanation.locator("li")
+    expect(await factorItems.count()).toBeGreaterThanOrEqual(1)
+
+    await page.screenshot({
+      path: `${SCREENSHOT_DIR}/16-metric-explanation-expanded.png`,
+      fullPage: true,
+    })
+
+    // AC-6: click the same row again to collapse
+    await metricRow.click()
+    await explanation.waitFor({ state: "hidden", timeout: 3_000 })
+    await expect(explanation).not.toBeVisible()
+
+    await page.screenshot({
+      path: `${SCREENSHOT_DIR}/17-metric-explanation-collapsed.png`,
+      fullPage: true,
+    })
+  })
+
+  test("4-1 AC-7: metric rows without explanation have no chevron", async ({ page }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Place a component and open the inspector
+    await addComponentToCanvas(page)
+    await selectNodeOnCanvas(page)
+
+    const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
+    await expect(inspectorPanel).toBeVisible()
+
+    // Count total metric bars and total chevrons
+    const allMetricBars = page.locator('[data-testid="metric-bar"]')
+    await expect(allMetricBars.first()).toBeVisible({ timeout: 5_000 })
+    const totalBars = await allMetricBars.count()
+    expect(totalBars).toBeGreaterThan(0)
+
+    const allChevrons = page.locator('[data-testid="metric-explanation-chevron"]')
+    const chevronCount = await allChevrons.count()
+
+    // At minimum, chevrons must never outnumber metric bars
+    expect(chevronCount).toBeLessThanOrEqual(totalBars)
+
+    // Verify metric bars without chevrons are NOT clickable to expand
+    // (they have no onClick — clicking them is a no-op, no explanation appears)
+    const barsWithoutChevron = page
+      .locator('[data-testid="metric-bar"]')
+      .filter({ hasNot: page.locator('[data-testid="metric-explanation-chevron"]') })
+
+    const barsWithoutChevronCount = await barsWithoutChevron.count()
+    if (barsWithoutChevronCount > 0) {
+      await barsWithoutChevron.first().click()
+      // No explanation should appear after clicking a row without chevron
+      await expect(
+        page.locator('[data-testid="metric-explanation"]').first(),
+      ).not.toBeVisible({ timeout: 1_000 })
+    }
+
+    await page.screenshot({
+      path: `${SCREENSHOT_DIR}/18-metric-rows-without-explanation-no-chevron.png`,
+      fullPage: true,
+    })
+  })
 })

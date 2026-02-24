@@ -45,15 +45,18 @@ export function computeRecommendations(
     (v) => v.id !== activeVariantId,
   )
 
+  // Pre-build metric maps once per candidate (avoids rebuilding per weak metric)
+  const candidateMetricMaps = new Map(
+    otherVariants.map((v) => [v.id, new Map<string, MetricValue>(v.metrics.map((m) => [m.id, m]))]),
+  )
+
   const recommendations: VariantRecommendation[] = []
 
   for (const weakMetric of weakMetrics) {
     let bestRec: VariantRecommendation | null = null
 
     for (const candidate of otherVariants) {
-      const candidateMetricMap = new Map<string, MetricValue>(
-        candidate.metrics.map((m) => [m.id, m]),
-      )
+      const candidateMetricMap = candidateMetricMaps.get(candidate.id)!
 
       const candidateWeak = candidateMetricMap.get(weakMetric.id)
       if (

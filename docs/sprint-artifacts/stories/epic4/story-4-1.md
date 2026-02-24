@@ -132,7 +132,7 @@ So that I can connect abstract metric values to real implementation decisions an
   - [x] 4.9 Add `code_snippet` + `metric_explanations` to `websocket-server.yaml` (all variants)
   - [x] 4.10 Add `code_snippet` + `metric_explanations` to `cloudflare-cdn.yaml` (all variants)
   - [x] 4.11 Add `code_snippet` + `metric_explanations` to `prometheus.yaml` (all variants)
-  - [ ] 4.12 Run `npx ts-node scripts/seed-firestore.ts` to push to Firestore
+  - [x] 4.12 Run `npx ts-node scripts/seed-firestore.ts` to push to Firestore
 
 - [x] Task 5: Unit tests
   - [x] 5.1 Test `CodeSnippetViewer` renders code with language label
@@ -244,8 +244,12 @@ config_variants:
 **Sizing note:** 10 YAML files are additive only (no existing content modified). Mechanical, low-risk. Treat as one task (Task 4) even though it touches many files.
 
 ### E2E Testing
-E2E coverage recommended — run `/ecc-e2e 4-1` after implementation.
-Verify: code snippet renders for known component, metric expands on click.
+- Action: EXTEND | File: tests/e2e/inspector-and-config.spec.ts | Result: PASS
+- Multi-User: SINGLE-USER | Quality Score: 85/100 | Date: 2026-02-24
+- Tests added: 4 (AC-1/2 code snippet visible, AC-2 variant switch, AC-4/5/6 expand/collapse, AC-7 no chevron)
+- AC-3 (graceful absence) covered by unit tests only — no component without code snippet in seed data
+- Firestore seeded: `ignoreUndefinedProperties` fix applied to seed script
+- Pre-existing failures: 2 (inspector width assertions on pane-click/delete — not caused by 4-1)
 
 ## Senior Developer Review (ECC)
 

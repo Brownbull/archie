@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect, vi } from "vitest"
+import { afterEach, describe, it, expect, vi } from "vitest"
 import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 import type { CodeSnippet } from "@/types"
 
@@ -50,6 +50,15 @@ const yamlSnippet: CodeSnippet = {
 describe("CodeSnippetViewer", () => {
   afterEach(() => {
     vi.resetAllMocks()
+  })
+
+  it("registers all LANGUAGE_MAP languages with the highlighter", async () => {
+    const mod = await import("react-syntax-highlighter/dist/esm/prism-light")
+    const MockHighlighter = mod.default as unknown as { registerLanguage: ReturnType<typeof vi.fn> }
+    expect(MockHighlighter.registerLanguage).toHaveBeenCalledTimes(5)
+    for (const lang of ["typescript", "javascript", "yaml", "sql", "bash"]) {
+      expect(MockHighlighter.registerLanguage).toHaveBeenCalledWith(lang, expect.anything())
+    }
   })
 
   it("renders nothing when codeSnippet is undefined", () => {
@@ -147,6 +156,54 @@ describe("CodeSnippetViewer", () => {
     render(<CodeSnippetViewer codeSnippet={combinedSnippet} />)
     expect(screen.getByTestId("code-snippet-too-large")).toBeInTheDocument()
     expect(screen.queryByTestId("syntax-highlighter")).not.toBeInTheDocument()
+  })
+
+  it("strips Unicode isolate characters from language label", () => {
+    const isolateSnippet: CodeSnippet = {
+      language: "sql\u2066injection\u2069",
+      code: "SELECT 1",
+    }
+    render(<CodeSnippetViewer codeSnippet={isolateSnippet} />)
+    const label = screen.getByTestId("code-snippet-section").querySelector("span")
+    expect(label?.textContent).toBe("sqlinjection")
+  })
+
+  it("renders empty label when language is entirely unsafe characters", () => {
+    const allUnsafeSnippet: CodeSnippet = {
+      language: "\u200B\u202E\uFEFF",
+      code: "x = 1",
+    }
+    render(<CodeSnippetViewer codeSnippet={allUnsafeSnippet} />)
+    const label = screen.getByTestId("code-snippet-section").querySelector("span")
+    expect(label?.textContent).toBe("")
+  })
+
+  it("rejects crafted allowlist-like string and sanitizes label in same render", () => {
+    const craftedSnippet: CodeSnippet = {
+      language: "bash\u200B",
+      code: "echo hello",
+    }
+    render(<CodeSnippetViewer codeSnippet={craftedSnippet} />)
+    // Allowlist rejects "bash\u200B" (not exact match) — falls back to plain text
+    const highlighter = screen.getByTestId("syntax-highlighter")
+    expect(highlighter).not.toHaveAttribute("data-language")
+    // Display label is sanitized — shows "bash" without invisible chars
+    const label = screen.getByTestId("code-snippet-section").querySelector("span")
+    expect(label?.textContent).toBe("bash")
+  })
+
+  it("passes sql language to syntax highlighter", () => {
+    const sqlSnippet: CodeSnippet = { language: "sql", code: "SELECT 1" }
+    render(<CodeSnippetViewer codeSnippet={sqlSnippet} />)
+    const highlighter = screen.getByTestId("syntax-highlighter")
+    expect(highlighter.getAttribute("data-language")).toBe("sql")
+  })
+
+  it("passes bash language to syntax highlighter", () => {
+    const bashSnippet: CodeSnippet = { language: "bash", code: "echo hello" }
+    render(<CodeSnippetViewer codeSnippet={bashSnippet} />)
+    const highlighter = screen.getByTestId("syntax-highlighter")
+    expect(highlighter.getAttribute("data-language")).toBe("bash")
   })
 
   it("renders syntax highlighter when code is exactly at 10KB limit", () => {

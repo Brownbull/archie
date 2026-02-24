@@ -148,3 +148,5 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-02-24 15:41,9a0eaa7c-495,ecc-dev-story,4-1,38min,213,2,31,sonnet,270,2780,584348,23193268,15.66,1.85,17.51
 2026-02-24 15:41,9a0eaa7c-495,ecc-dev-story,4-1,39min,217,2,31,sonnet,60,319,219471,484982,0.60,1.85,2.45
 2026-02-24 16:23,7c6f0c0c-09d,ecc-code-review,4-1,18min,120,4,18,"opus, sonnet",161,1262,586655,11319039,10.08,1.48,11.56
+2026-02-24 19:50,79200531-03d,ecc-dev-story,4-2a,36min,200,2,57,"opus, sonnet",90,1328,275292,2647578,1.27,2.84,4.11
+2026-02-24 20:27,c56de41f-0bb,ecc-code-review,4-2a,8min,86,2,7,"opus, sonnet",13607,719,396727,6534415,6.48,0.84,7.32

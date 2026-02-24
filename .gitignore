@@ -64,3 +64,4 @@ tests/e2e/.auth/
 
 # MCP server config (machine-specific absolute paths)
 .mcp.json
+__pycache__

@@ -126,8 +126,9 @@ development_status:
   td-4-1a-code-snippet-trust-boundary: done
   td-4-1b-code-snippet-display-safety: done
   4-2-variant-recommendations-and-metric-tools: split
-  4-2a-recommendation-engine-and-delta-indicators: review
+  4-2a-recommendation-engine-and-delta-indicators: done
   4-2b-metric-filter-and-recommendation-ui: ready-for-dev
+  td-4-2c-inspector-schema-validation: ready-for-dev
   4-3-connection-inspection-system: ready-for-dev
   4-4-dashboard-drill-down-and-issues-navigation: ready-for-dev
   4-5-canvas-visual-polish: ready-for-dev

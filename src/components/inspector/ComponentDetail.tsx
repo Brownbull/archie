@@ -74,7 +74,7 @@ export function ComponentDetail({
     for (const current of computedMetrics.metrics) {
       const prevMetric = previousMetricMap.get(current.id)
       if (prevMetric !== undefined) {
-        map.set(current.id, current.numericValue - prevMetric.numericValue)
+        map.set(current.id, Math.round(current.numericValue - prevMetric.numericValue))
       }
     }
     return map

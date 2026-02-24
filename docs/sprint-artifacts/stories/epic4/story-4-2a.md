@@ -1,6 +1,6 @@
 # Story: 4-2a-recommendation-engine-and-delta-indicators
 
-## Status: review
+## Status: done
 ## Epic: Epic 4: Deep Intelligence & Polish
 ## Parent: 4-2-variant-recommendations-and-metric-tools (split)
 
@@ -139,6 +139,24 @@ interface MetricBarProps {
 
 - `RECOMMENDATION_THRESHOLD` aligns directionally with `HEATMAP_THRESHOLD_BOTTLENECK = 4` and `HEATMAP_THRESHOLD_WARNING = 6`. Setting it to `5` targets the medium/low boundary — catches "marginal" metrics before they become bottlenecks.
 - If a component has only one variant, `computeRecommendations` returns `[]` (no alternatives to recommend).
+
+## Code Review Deferred Items (2026-02-24)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-2c | Inspector schema validation (metric name length, explanation caps) | LOW | CREATED |
+| — | `categoryColor` style prop validation (pre-existing, constant source) | N/A | NOTE ONLY |
+| — | `tradeCostMetricId` null sentinel, formatDelta helper, barrel export, constant assertion | N/A | NOTE ONLY — minor suggestions |
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-24
+- **Classification:** STANDARD
+- **Agents:** code-reviewer (sonnet), security-reviewer (sonnet)
+- **Score:** 8.5/10
+- **Outcome:** APPROVED — 2 quick fixes applied, 1 TD story created
+- **Quick fixes:** Pre-built metric maps (#2), Math.round delta (#3)
+- **TD stories:** td-4-2c (inspector schema validation)
+- **Tests:** 1140/1140 pass post-fix
 
 ## ECC Analysis Summary
 - Risk Level: LOW-MEDIUM

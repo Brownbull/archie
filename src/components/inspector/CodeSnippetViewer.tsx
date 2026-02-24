@@ -22,7 +22,8 @@ Object.entries(LANGUAGE_MAP).forEach(([name, grammar]) => {
 const ALLOWED_LANGUAGES = Object.keys(LANGUAGE_MAP) as readonly string[]
 const MAX_CODE_SNIPPET_CHARS = 10_000
 
-// Strip RTL overrides, zero-width chars, and other Unicode control characters
+// Strip RTL overrides (U+202A-202E), zero-width chars (U+200B-200F),
+// isolate chars (U+2066-2069), and BOM (U+FEFF) from display labels
 const UNSAFE_DISPLAY_CHARS = /[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g
 
 function sanitizeDisplayLabel(label: string): string {
@@ -40,6 +41,9 @@ interface CodeSnippetViewerProps {
 export function CodeSnippetViewer({ codeSnippet }: CodeSnippetViewerProps) {
   if (!codeSnippet) return null
 
+  // getSafeLanguage receives the raw string — crafted strings with invisible
+  // chars fail the allowlist and fall back to plain text (safe default).
+  // sanitizeDisplayLabel cleans only the visible label above the code block.
   const safeLanguage = getSafeLanguage(codeSnippet.language)
   const isTooLarge = codeSnippet.code.length > MAX_CODE_SNIPPET_CHARS
 
