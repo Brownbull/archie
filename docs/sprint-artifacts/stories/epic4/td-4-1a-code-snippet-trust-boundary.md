@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-1a: CodeSnippetViewer Input Trust Boundary Hardening
 
-Status: ready-for-dev
+Status: review
 
 > **Source:** ECC Code Review (2026-02-24) on story 4-1
 > **Priority:** LOW | **Estimated Effort:** 1–2 tasks
@@ -19,22 +19,22 @@ As a **developer**, I want the `CodeSnippetViewer` to validate its inputs at the
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Language allowlist validation
-  - [ ] 1.1 Define `ALLOWED_LANGUAGES` constant (`const ALLOWED_LANGUAGES = ["typescript", "javascript", "yaml", "sql", "bash"] as const`)
-  - [ ] 1.2 Add `getSafeLanguage(lang: string): AllowedLanguage | undefined` helper — returns undefined for unknown values
-  - [ ] 1.3 Pass `getSafeLanguage(codeSnippet.language)` to `SyntaxHighlighter language=` prop — undefined falls back to plain text
-  - [ ] 1.4 Update language label span to show `codeSnippet.language` (original, for display) regardless of allowlist result
+- [x] Task 1: Language allowlist validation
+  - [x] 1.1 Define `ALLOWED_LANGUAGES` constant (`const ALLOWED_LANGUAGES = ["typescript", "javascript", "yaml", "sql", "bash"] as const`)
+  - [x] 1.2 Add `getSafeLanguage(lang: string): AllowedLanguage | undefined` helper — returns undefined for unknown values
+  - [x] 1.3 Pass `getSafeLanguage(codeSnippet.language)` to `SyntaxHighlighter language=` prop — undefined falls back to plain text
+  - [x] 1.4 Update language label span to show `codeSnippet.language` (original, for display) regardless of allowlist result
 
-- [ ] Task 2: Code size guard
-  - [ ] 2.1 Define `MAX_CODE_SNIPPET_BYTES = 10_000` constant
-  - [ ] 2.2 In `CodeSnippetViewer`, check `codeSnippet.code.length > MAX_CODE_SNIPPET_BYTES`
-  - [ ] 2.3 If over limit, render a placeholder: "Code snippet too large to display" instead of passing to SyntaxHighlighter
+- [x] Task 2: Code size guard
+  - [x] 2.1 Define `MAX_CODE_SNIPPET_BYTES = 10_000` constant
+  - [x] 2.2 In `CodeSnippetViewer`, check `codeSnippet.code.length > MAX_CODE_SNIPPET_BYTES`
+  - [x] 2.3 If over limit, render a placeholder: "Code snippet too large to display" instead of passing to SyntaxHighlighter
 
-- [ ] Task 3: Unit tests
-  - [ ] 3.1 Test: unknown language → SyntaxHighlighter receives no language prop (plain text fallback)
-  - [ ] 3.2 Test: known language → SyntaxHighlighter receives correct language prop
-  - [ ] 3.3 Test: code over 10KB → placeholder text rendered, SyntaxHighlighter not rendered
-  - [ ] 3.4 Test: code exactly at limit → renders normally
+- [x] Task 3: Unit tests
+  - [x] 3.1 Test: unknown language → SyntaxHighlighter receives no language prop (plain text fallback)
+  - [x] 3.2 Test: known language → SyntaxHighlighter receives correct language prop (covered by existing test line 76)
+  - [x] 3.3 Test: code over 10KB → placeholder text rendered, SyntaxHighlighter not rendered
+  - [x] 3.4 Test: code exactly at limit → renders normally
 
 ## Dev Notes
 

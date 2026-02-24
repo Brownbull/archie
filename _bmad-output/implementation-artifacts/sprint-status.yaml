@@ -115,16 +115,18 @@ development_status:
   epic-3-retrospective: optional
 
   # ============================================================================
-  # Epic 4: Deep Intelligence & Polish (5 stories)
+  # Epic 4: Deep Intelligence & Polish (6 stories)
   # User gets rich insights -- code snippets, explanations, recommendations,
-  # connection inspection, dashboard drill-down, flow particles, legend
+  # connection inspection, dashboard drill-down, flow particles, legend,
+  # inspector UX polish (resize, overlay, navigation)
   # FRs: FR31-FR43
   # ============================================================================
   epic-4: in-progress
   4-1-code-snippets-and-metric-explanations: done
-  td-4-1a-code-snippet-trust-boundary: ready-for-dev
+  td-4-1a-code-snippet-trust-boundary: review
   4-2-variant-recommendations-and-metric-tools: ready-for-dev
   4-3-connection-inspection-system: ready-for-dev
   4-4-dashboard-drill-down-and-issues-navigation: ready-for-dev
   4-5-canvas-visual-polish: ready-for-dev
+  4-6-inspector-ux-polish: ready-for-dev
   epic-4-retrospective: optional

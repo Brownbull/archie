@@ -84,4 +84,33 @@ describe("CodeSnippetViewer", () => {
     const pre = container.querySelector("pre")
     expect(pre?.textContent).toContain("const x: number = 42")
   })
+
+  // TD-4-1a: Trust boundary hardening tests
+
+  it("falls back to plain text for unknown languages", () => {
+    const unknownSnippet: CodeSnippet = { language: "cobol", code: "DISPLAY 'Hello'" }
+    render(<CodeSnippetViewer codeSnippet={unknownSnippet} />)
+    const highlighter = screen.getByTestId("syntax-highlighter")
+    expect(highlighter.getAttribute("data-language")).toBeNull()
+  })
+
+  it("renders placeholder when code exceeds 10KB", () => {
+    const largeSnippet: CodeSnippet = {
+      language: "typescript",
+      code: "x".repeat(10_001),
+    }
+    render(<CodeSnippetViewer codeSnippet={largeSnippet} />)
+    expect(screen.getByTestId("code-snippet-too-large")).toBeInTheDocument()
+    expect(screen.queryByTestId("syntax-highlighter")).not.toBeInTheDocument()
+  })
+
+  it("renders syntax highlighter when code is exactly at 10KB limit", () => {
+    const boundarySnippet: CodeSnippet = {
+      language: "typescript",
+      code: "x".repeat(10_000),
+    }
+    render(<CodeSnippetViewer codeSnippet={boundarySnippet} />)
+    expect(screen.getByTestId("syntax-highlighter")).toBeInTheDocument()
+    expect(screen.queryByTestId("code-snippet-too-large")).not.toBeInTheDocument()
+  })
 })

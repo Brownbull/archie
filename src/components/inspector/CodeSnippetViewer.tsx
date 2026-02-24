@@ -13,6 +13,16 @@ SyntaxHighlighter.registerLanguage("yaml", yaml)
 SyntaxHighlighter.registerLanguage("sql", sql)
 SyntaxHighlighter.registerLanguage("bash", bash)
 
+const ALLOWED_LANGUAGES = ["typescript", "javascript", "yaml", "sql", "bash"] as const
+type AllowedLanguage = (typeof ALLOWED_LANGUAGES)[number]
+const MAX_CODE_SNIPPET_BYTES = 10_000
+
+function getSafeLanguage(lang: string): AllowedLanguage | undefined {
+  return (ALLOWED_LANGUAGES as readonly string[]).includes(lang)
+    ? (lang as AllowedLanguage)
+    : undefined
+}
+
 interface CodeSnippetViewerProps {
   codeSnippet?: CodeSnippet
 }
@@ -20,19 +30,31 @@ interface CodeSnippetViewerProps {
 export function CodeSnippetViewer({ codeSnippet }: CodeSnippetViewerProps) {
   if (!codeSnippet) return null
 
+  const safeLanguage = getSafeLanguage(codeSnippet.language)
+  const isTooLarge = codeSnippet.code.length > MAX_CODE_SNIPPET_BYTES
+
   return (
     <div data-testid="code-snippet-section" className="space-y-1 text-xs">
       <span className="text-text-secondary">{codeSnippet.language}</span>
       <div className="overflow-hidden rounded-md">
-        <SyntaxHighlighter
-          language={codeSnippet.language}
-          style={vscDarkPlus}
-          showLineNumbers={false}
-          wrapLongLines
-          customStyle={{ margin: 0, fontSize: "0.7rem" }}
-        >
-          {codeSnippet.code}
-        </SyntaxHighlighter>
+        {isTooLarge ? (
+          <p
+            data-testid="code-snippet-too-large"
+            className="text-text-secondary italic"
+          >
+            Code snippet too large to display
+          </p>
+        ) : (
+          <SyntaxHighlighter
+            language={safeLanguage}
+            style={vscDarkPlus}
+            showLineNumbers={false}
+            wrapLongLines
+            customStyle={{ margin: 0, fontSize: "0.7rem" }}
+          >
+            {codeSnippet.code}
+          </SyntaxHighlighter>
+        )}
       </div>
     </div>
   )
