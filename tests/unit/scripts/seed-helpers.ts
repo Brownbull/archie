@@ -158,11 +158,15 @@ export function makeBlueprintYaml(id: string): string {
  *
  * Sets up two fixture files (valid.yaml + bad.yaml), calls the loader, and asserts:
  * - The loader throws "Validation failed" (not abort-on-first but collect-then-throw)
+ * - The loader did NOT return a partial result (no-partial-return contract):
+ *   `result` must be `undefined` when the loader throws.
  * - The valid file was logged successfully (stringContaining "valid")
  * - The invalid file produced a Zod validation error log
  *
  * Requires: the test file must import "./seed-mocks" before calling this helper,
  * so that node:fs is already mocked via vi.mock.
+ * IMPORTANT: Call this only inside an `it()` body — NOT in beforeEach, otherwise
+ * vi.resetAllMocks() will clear the mocks before the assertions run.
  *
  * @param loader - The loader function under test (e.g., loadAndValidateBlueprints)
  * @param validYaml - Valid YAML string for the "valid.yaml" fixture file
@@ -183,8 +187,20 @@ export function assertFailFastBehavior(
   })
 
   const logger = { log: vi.fn(), warn: vi.fn(), error: vi.fn() }
-  expect(() => loader(dir, logger)).toThrow("Validation failed")
-  expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("valid"))
+
+  // Explicit no-partial-return contract: the loader must throw and must never
+  // hand back a partial result. Wrapping in try/catch lets us assert both.
+  let result: unknown
+  let caughtError: unknown
+  try {
+    result = loader(dir, logger)
+  } catch (err) {
+    caughtError = err
+  }
+  expect(caughtError).toBeInstanceOf(Error)
+  expect((caughtError as Error).message).toContain("Validation failed")
+  expect(result).toBeUndefined()
+  expect(logger.log).toHaveBeenCalledWith(expect.stringContaining("valid.yaml"))
   expect(logger.error).toHaveBeenCalledWith(expect.stringContaining("Zod validation failed"))
 }
 
