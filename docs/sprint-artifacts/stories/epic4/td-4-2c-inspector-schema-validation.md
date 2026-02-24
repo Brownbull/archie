@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-2c: Inspector Schema Validation Hardening
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-24) on story 4-2a
 > **Priority:** LOW | **Estimated Effort:** Small (1 task, 2 subtasks, 2 files)
@@ -27,3 +27,18 @@ As a **developer**, I want **length and charset validation on Firestore-sourced 
 - Review findings: #8 (metric name length), #9 (explanation length caps)
 - Files affected: `src/schemas/metricSchema.ts`, `src/schemas/componentSchema.ts`
 - React JSX escaping already prevents XSS — this is a defense-in-depth measure for UI layout overflow
+
+## Deferred Items (Code Review 2026-02-24)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-2e | Schema validation completeness (DRY constraints, CodeSnippet bounds, error code tests) | LOW | CREATED |
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-24
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Overall Score:** 8.5/10 (post-fix)
+- **Outcome:** APPROVED — 7 quick fixes applied, 1 TD story created
+- **Fixes:** .min(1) on reason (1), boundary tests (4), regex anchor (1), YAML-path tests (2)
+- **TD Stories:** td-4-2e (schema DRY + CodeSnippet bounds + error code tests)

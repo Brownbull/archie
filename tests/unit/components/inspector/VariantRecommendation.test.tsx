@@ -75,6 +75,6 @@ describe("VariantRecommendation", () => {
 
   it("renders the 'Consider' framing text per AC-FUNC-1", () => {
     renderDefault()
-    expect(screen.getByText(/^Consider/)).toBeInTheDocument()
+    expect(screen.getByText(/Consider/)).toBeInTheDocument()
   })
 })

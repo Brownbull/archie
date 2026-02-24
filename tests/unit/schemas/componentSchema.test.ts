@@ -84,6 +84,32 @@ describe("ConfigVariantSchema", () => {
     })
     expect(result.success).toBe(false)
   })
+
+  it("accepts metricExplanation reason at exactly 500 characters", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "a".repeat(500),
+          contributingFactors: ["pooling"],
+        },
+      },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts metricExplanation contributingFactor item at exactly 200 characters", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "Valid reason",
+          contributingFactors: ["a".repeat(200)],
+        },
+      },
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("ConnectionPropertiesSchema", () => {
@@ -231,6 +257,40 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
       expect(result.data.connectionProperties?.typicalLatency).toBe("1-5ms")
       expect(result.data.connectionProperties?.coLocationPotential).toBe(true)
     }
+  })
+
+  it("rejects YAML metric_explanations reason exceeding 500 characters", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInput,
+      config_variants: [
+        {
+          id: "default",
+          name: "Default",
+          metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+          metric_explanations: {
+            latency: { reason: "a".repeat(501), contributing_factors: ["pooling"] },
+          },
+        },
+      ],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects YAML metric_explanations contributing_factor item exceeding 200 characters", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInput,
+      config_variants: [
+        {
+          id: "default",
+          name: "Default",
+          metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+          metric_explanations: {
+            latency: { reason: "Valid", contributing_factors: ["a".repeat(201)] },
+          },
+        },
+      ],
+    })
+    expect(result.success).toBe(false)
   })
 
   it("round-trip: YAML output matches ComponentSchema shape", () => {

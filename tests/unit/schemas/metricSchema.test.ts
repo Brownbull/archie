@@ -120,6 +120,17 @@ describe("MetricValueYamlSchema", () => {
     })
     expect(result.success).toBe(false)
   })
+
+  it("accepts name at exactly 100 characters (YAML variant)", () => {
+    const result = MetricValueYamlSchema.safeParse({
+      id: "latency",
+      value: "medium",
+      numeric_value: 5,
+      category: "performance",
+      name: "a".repeat(100),
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("MetricCategorySchema", () => {

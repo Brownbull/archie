@@ -7,7 +7,7 @@ export const CodeSnippetSchema = z.object({
 }).strict()
 
 export const MetricExplanationSchema = z.object({
-  reason: z.string().max(500),
+  reason: z.string().min(1).max(500),
   contributingFactors: z.array(z.string().max(200)),
 }).strict()
 
@@ -48,7 +48,7 @@ const ConfigVariantYamlSchema = z.object({
   metrics: z.array(MetricValueYamlSchema),
   code_snippet: CodeSnippetSchema.optional(),
   metric_explanations: z.record(z.string(), z.object({
-    reason: z.string().max(500),
+    reason: z.string().min(1).max(500),
     contributing_factors: z.array(z.string().max(200)),
   }).strict().transform((d) => ({
     reason: d.reason,

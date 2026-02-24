@@ -49,19 +49,25 @@ export function ComponentDetail({
     (v) => v.id === activeVariantId,
   )
 
-  const metricsByCategory = useMemo(() => {
-    // Prefer computed metrics from recalculation engine
+  const { metricsByCategory, allMetricIds } = useMemo(() => {
     const metricsSource = computedMetrics?.metrics ?? activeVariant?.metrics
-    if (!metricsSource) return new Map<string, MetricValue[]>()
+    if (!metricsSource) {
+      return {
+        metricsByCategory: new Map<string, MetricValue[]>(),
+        allMetricIds: [] as { id: string; name: string }[],
+      }
+    }
 
     const grouped = new Map<string, MetricValue[]>()
+    const ids: { id: string; name: string }[] = []
     for (const metric of metricsSource) {
       if (!grouped.has(metric.category)) {
         grouped.set(metric.category, [])
       }
       grouped.get(metric.category)!.push(metric)
+      ids.push({ id: metric.id, name: metric.name ?? metric.id })
     }
-    return grouped
+    return { metricsByCategory: grouped, allMetricIds: ids }
   }, [computedMetrics, activeVariant])
 
   // Compute delta map: current - previous metric values (AC-ARCH-NO-4).
@@ -90,12 +96,6 @@ export function ComponentDetail({
   useEffect(() => {
     setHiddenMetricIds(new Set())
   }, [nodeId])
-
-  const allMetricIds = useMemo(() => {
-    const metricsSource = computedMetrics?.metrics ?? activeVariant?.metrics
-    if (!metricsSource) return []
-    return metricsSource.map((m) => ({ id: m.id, name: m.name ?? m.id }))
-  }, [computedMetrics, activeVariant])
 
   const handleToggleMetric = useCallback((metricId: string) => {
     setHiddenMetricIds((prev) => {
