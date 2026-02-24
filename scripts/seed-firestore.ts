@@ -217,12 +217,13 @@ export function validateBlueprintReferences(
   logger: SeedLogger = console,
 ): number {
   const componentMap = new Map(components.map((c) => [c.id, c]))
+  // Pre-compute variant ID sets once per component — avoids rebuilding on every node iteration
+  const variantMap = new Map(components.map((c) => [c.id, new Set(c.configVariants.map((v) => v.id))]))
   let warningCount = 0
 
   for (const bp of blueprints) {
     for (const node of bp.skeleton.nodes) {
-      const comp = componentMap.get(node.componentId)
-      if (!comp) {
+      if (!componentMap.has(node.componentId)) {
         logger.warn(
           `WARNING: Blueprint '${bp.id}' node '${node.id}' references unknown component '${node.componentId}'`,
         )
@@ -230,7 +231,7 @@ export function validateBlueprintReferences(
         continue
       }
       if (node.configVariantId) {
-        const variantIds = new Set(comp.configVariants.map((v) => v.id))
+        const variantIds = variantMap.get(node.componentId)!
         if (!variantIds.has(node.configVariantId)) {
           logger.warn(
             `WARNING: Blueprint '${bp.id}' node '${node.id}' references unknown config variant '${node.configVariantId}' for component '${node.componentId}'`,
@@ -247,61 +248,34 @@ export function validateBlueprintReferences(
 /**
  * Write components to Firestore using chunked batch writes.
  * Respects the 500-operation-per-batch Firestore limit.
- * The metadata write is included in chunk accounting.
+ * Metadata is committed in its own separate batch after all component writes.
  */
 export async function seedToFirestore(db: FirestoreSubset, components: Component[], logger: SeedLogger = console): Promise<number> {
-  // Reserve 1 slot in the last chunk for the metadata write
-  const totalOps = components.length + 1 // +1 for metadata
-  const totalChunks = Math.ceil(totalOps / BATCH_LIMIT)
-
-  let opIndex = 0
-  const writtenIds: string[] = []
+  const totalChunks = Math.ceil(components.length / BATCH_LIMIT)
 
   for (let chunkNum = 1; chunkNum <= totalChunks; chunkNum++) {
+    const start = (chunkNum - 1) * BATCH_LIMIT
+    const chunk = components.slice(start, start + BATCH_LIMIT)
     const batch = db.batch()
-    let opsInBatch = 0
-
-    // Add component writes to this chunk
-    while (opIndex < components.length && opsInBatch < BATCH_LIMIT) {
-      // If this is the last chunk, reserve 1 slot for metadata
-      const isLastChunk = chunkNum === totalChunks
-      const reservedSlots = isLastChunk ? 1 : 0
-      if (opsInBatch >= BATCH_LIMIT - reservedSlots && isLastChunk) {
-        break
-      }
-
-      const comp = components[opIndex]
+    for (const comp of chunk) {
       const ref = db.collection("components").doc(comp.id)
       batch.set(ref, comp)
-      writtenIds.push(comp.id)
-      opsInBatch++
-      opIndex++
     }
-
-    // Add metadata to the last chunk
-    if (chunkNum === totalChunks) {
-      const metadataRef = db.collection("_metadata").doc("seed")
-      batch.set(metadataRef, {
-        version: "1.0.0",
-        seededAt: new Date().toISOString(),
-        componentCount: components.length,
-      })
-      opsInBatch++
-    }
-
     await batch.commit()
-    logger.log(`Batch ${chunkNum}/${totalChunks} committed (${opsInBatch} operations)`)
+    logger.log(`Batch ${chunkNum}/${totalChunks} committed (${chunk.length} operations)`)
   }
 
-  if (writtenIds.length !== components.length) {
-    throw new Error(
-      `Write count mismatch — expected ${components.length}, tracked ${writtenIds.length}`,
-    )
-  }
+  const metaBatch = db.batch()
+  metaBatch.set(db.collection("_metadata").doc("seed"), {
+    version: "1.0.0",
+    seededAt: new Date().toISOString(),
+    componentCount: components.length,
+  })
+  await metaBatch.commit()
 
-  logger.log(`Seeded ${writtenIds.length} components to Firestore.`)
+  logger.log(`Seeded ${components.length} components to Firestore.`)
   logger.log("Metadata written to _metadata/seed.")
-  return writtenIds.length
+  return components.length
 }
 
 /**
@@ -348,16 +322,18 @@ async function main() {
   let components: Component[]
   try {
     components = loadAndValidateComponents(componentsDir)
-  } catch {
+  } catch (err) {
     console.error("\nAborting: validation failed on one or more component files.")
+    console.error(err instanceof Error ? err.message : String(err))
     process.exit(1)
   }
 
   let blueprints: BlueprintFull[]
   try {
     blueprints = loadAndValidateBlueprints(blueprintsDir)
-  } catch {
+  } catch (err) {
     console.error("\nAborting: validation failed on one or more blueprint files.")
+    console.error(err instanceof Error ? err.message : String(err))
     process.exit(1)
   }
 
@@ -373,12 +349,13 @@ async function main() {
   }
 
   // Initialize Firebase Admin
-  const credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
-  if (!credPath) {
+  const rawCredPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+  if (!rawCredPath) {
     console.error("ERROR: GOOGLE_APPLICATION_CREDENTIALS env var not set.")
     console.error("Set it to your Firebase service account JSON path.")
     process.exit(1)
   }
+  const credPath = resolve(rawCredPath)
 
   let serviceAccount: ServiceAccount
   try {
