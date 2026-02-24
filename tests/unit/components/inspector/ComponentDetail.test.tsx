@@ -365,6 +365,45 @@ describe("ComponentDetail", () => {
       await user.click(screen.getByTestId("metric-filter-toggle-memory"))
       expect(screen.getAllByTestId("metric-bar")).toHaveLength(4)
     })
+
+    it("resets filter state when nodeId changes (AC-FUNC-3)", async () => {
+      const user = userEvent.setup()
+      const { rerender } = render(
+        <ComponentDetail
+          component={mockComponent}
+          activeVariantId="standard"
+          onVariantChange={vi.fn()}
+          nodeId="node-A"
+          {...defaultSwapperProps}
+        />,
+      )
+      // Hide a metric
+      await user.click(screen.getByTestId("metric-filter-expand"))
+      await user.click(screen.getByTestId("metric-filter-toggle-memory"))
+      expect(screen.getAllByTestId("metric-bar")).toHaveLength(3)
+      // Switch to a different node — filter should reset
+      rerender(
+        <ComponentDetail
+          component={mockComponent}
+          activeVariantId="standard"
+          onVariantChange={vi.fn()}
+          nodeId="node-B"
+          {...defaultSwapperProps}
+        />,
+      )
+      expect(screen.getAllByTestId("metric-bar")).toHaveLength(4)
+    })
+
+    it("does not store filter state in Zustand (AC-ARCH-NO-1)", async () => {
+      const user = userEvent.setup()
+      renderDefault()
+      const storeBefore = useArchitectureStore.getState()
+      await user.click(screen.getByTestId("metric-filter-expand"))
+      await user.click(screen.getByTestId("metric-filter-toggle-memory"))
+      const storeAfter = useArchitectureStore.getState()
+      // Store state should be unchanged after toggling filter
+      expect(storeAfter).toEqual(storeBefore)
+    })
   })
 
   // --- Recommendation integration tests (Story 4-2b) ---

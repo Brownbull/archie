@@ -1,6 +1,6 @@
 # Story: 4-2b-metric-filter-and-recommendation-ui
 
-## Status: review
+## Status: done
 ## Epic: Epic 4: Deep Intelligence & Polish
 ## Parent: 4-2-variant-recommendations-and-metric-tools (split)
 ## Depends on: 4-2a-recommendation-engine-and-delta-indicators
@@ -95,6 +95,21 @@ And the filtered view persists while inspecting the current component (resets on
 
 ### E2E Testing
 E2E coverage recommended — run `/ecc-e2e 4-2b-metric-filter-and-recommendation-ui` after implementation.
+
+## Deferred Items (Code Review 2026-02-24)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-2d | ComponentDetail dual useMemo consolidation | LOW | CREATED |
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-24
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Overall Score:** 8.5/10 (post-fix)
+- **Outcome:** APPROVED — 10 quick fixes applied, 1 TD story created
+- **Fixes:** sanitization (3), Math.round (2), missing tests (3), comment (1), hasTradeCost doc (1)
+- **TD Stories:** td-4-2d (memo consolidation)
 
 ## ECC Analysis Summary
 - Risk Level: LOW

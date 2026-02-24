@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-2c: Inspector Schema Validation Hardening
 
-Status: ready-for-dev
+Status: review
 
 > **Source:** ECC Code Review (2026-02-24) on story 4-2a
 > **Priority:** LOW | **Estimated Effort:** Small (1 task, 2 subtasks, 2 files)
@@ -18,9 +18,9 @@ As a **developer**, I want **length and charset validation on Firestore-sourced 
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Add length constraints to Zod schemas**
-  - [ ] 1.1 Add `.max()` constraints to `metricSchema.ts` for `name` field
-  - [ ] 1.2 Add `.max()` constraints to `componentSchema.ts` for `MetricExplanation.reason` and `contributingFactors` items
+- [x] **Task 1: Add length constraints to Zod schemas**
+  - [x] 1.1 Add `.max()` constraints to `metricSchema.ts` for `name` field
+  - [x] 1.2 Add `.max()` constraints to `componentSchema.ts` for `MetricExplanation.reason` and `contributingFactors` items
 
 ## Dev Notes
 - Source story: [4-2a](./story-4-2a.md)

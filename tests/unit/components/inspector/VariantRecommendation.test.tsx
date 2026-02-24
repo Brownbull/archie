@@ -72,4 +72,9 @@ describe("VariantRecommendation", () => {
     })
     expect(screen.queryByTestId("recommendation-tradeoff")).not.toBeInTheDocument()
   })
+
+  it("renders the 'Consider' framing text per AC-FUNC-1", () => {
+    renderDefault()
+    expect(screen.getByText(/^Consider/)).toBeInTheDocument()
+  })
 })

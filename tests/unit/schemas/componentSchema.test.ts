@@ -58,6 +58,32 @@ describe("ConfigVariantSchema", () => {
     const result = ConfigVariantSchema.safeParse(withoutMetrics)
     expect(result.success).toBe(false)
   })
+
+  it("rejects metricExplanation reason exceeding 500 characters", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "a".repeat(501),
+          contributingFactors: ["pooling"],
+        },
+      },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects metricExplanation contributingFactor item exceeding 200 characters", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "Valid reason",
+          contributingFactors: ["a".repeat(201)],
+        },
+      },
+    })
+    expect(result.success).toBe(false)
+  })
 })
 
 describe("ConnectionPropertiesSchema", () => {

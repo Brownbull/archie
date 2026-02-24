@@ -67,6 +67,22 @@ describe("MetricValueSchema", () => {
     const result = MetricValueSchema.safeParse({ ...validMetric, numericValue: 5.5 })
     expect(result.success).toBe(false)
   })
+
+  it("rejects name exceeding 100 characters", () => {
+    const result = MetricValueSchema.safeParse({
+      ...validMetric,
+      name: "a".repeat(101),
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts name at exactly 100 characters", () => {
+    const result = MetricValueSchema.safeParse({
+      ...validMetric,
+      name: "a".repeat(100),
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("MetricValueYamlSchema", () => {
@@ -90,6 +106,17 @@ describe("MetricValueYamlSchema", () => {
       value: "medium",
       numericValue: 5,
       category: "performance",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects name exceeding 100 characters (YAML variant)", () => {
+    const result = MetricValueYamlSchema.safeParse({
+      id: "latency",
+      value: "medium",
+      numeric_value: 5,
+      category: "performance",
+      name: "a".repeat(101),
     })
     expect(result.success).toBe(false)
   })

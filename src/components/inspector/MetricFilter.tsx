@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { ChevronDown, ChevronUp } from "lucide-react"
+import { sanitizeDisplayString } from "@/lib/sanitize"
 
 interface MetricFilterProps {
   allMetricIds: Array<{ id: string; name: string }>
@@ -44,7 +45,7 @@ export function MetricFilter({
                 checked={!hiddenMetricIds.has(metric.id)}
                 onChange={() => onToggleMetric(metric.id)}
               />
-              {metric.name}
+              {sanitizeDisplayString(metric.name, 100)}
             </label>
           ))}
         </div>
