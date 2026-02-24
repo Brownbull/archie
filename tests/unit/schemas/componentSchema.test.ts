@@ -7,6 +7,8 @@ import {
   CodeSnippetSchema,
   MAX_REASON_LENGTH,
   MAX_FACTOR_LENGTH,
+  MAX_LANGUAGE_LENGTH,
+  MAX_CODE_LENGTH,
 } from "@/schemas/componentSchema"
 
 const validVariant = {
@@ -62,38 +64,40 @@ describe("ConfigVariantSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  it("rejects metricExplanation reason exceeding 500 characters", () => {
+  it("rejects metricExplanation reason exceeding max length with too_big error code", () => {
     const result = ConfigVariantSchema.safeParse({
       ...validVariant,
       metricExplanations: {
         latency: {
-          reason: "a".repeat(501),
+          reason: "a".repeat(MAX_REASON_LENGTH + 1),
           contributingFactors: ["pooling"],
         },
       },
     })
     expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
   })
 
-  it("rejects metricExplanation contributingFactor item exceeding 200 characters", () => {
+  it("rejects metricExplanation contributingFactor item exceeding max length with too_big error code", () => {
     const result = ConfigVariantSchema.safeParse({
       ...validVariant,
       metricExplanations: {
         latency: {
           reason: "Valid reason",
-          contributingFactors: ["a".repeat(201)],
+          contributingFactors: ["a".repeat(MAX_FACTOR_LENGTH + 1)],
         },
       },
     })
     expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
   })
 
-  it("accepts metricExplanation reason at exactly 500 characters", () => {
+  it("accepts metricExplanation reason at exactly max length", () => {
     const result = ConfigVariantSchema.safeParse({
       ...validVariant,
       metricExplanations: {
         latency: {
-          reason: "a".repeat(500),
+          reason: "a".repeat(MAX_REASON_LENGTH),
           contributingFactors: ["pooling"],
         },
       },
@@ -101,13 +105,13 @@ describe("ConfigVariantSchema", () => {
     expect(result.success).toBe(true)
   })
 
-  it("accepts metricExplanation contributingFactor item at exactly 200 characters", () => {
+  it("accepts metricExplanation contributingFactor item at exactly max length", () => {
     const result = ConfigVariantSchema.safeParse({
       ...validVariant,
       metricExplanations: {
         latency: {
           reason: "Valid reason",
-          contributingFactors: ["a".repeat(200)],
+          contributingFactors: ["a".repeat(MAX_FACTOR_LENGTH)],
         },
       },
     })
@@ -121,36 +125,46 @@ describe("CodeSnippetSchema", () => {
     expect(result.success).toBe(true)
   })
 
-  it("rejects language exceeding 50 characters with too_big error code", () => {
+  it("rejects empty language", () => {
+    const result = CodeSnippetSchema.safeParse({ language: "", code: "const x = 1;" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty code", () => {
+    const result = CodeSnippetSchema.safeParse({ language: "typescript", code: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects language exceeding max length with too_big error code", () => {
     const result = CodeSnippetSchema.safeParse({
-      language: "a".repeat(51),
+      language: "a".repeat(MAX_LANGUAGE_LENGTH + 1),
       code: "const x = 1;",
     })
     expect(result.success).toBe(false)
     expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
   })
 
-  it("rejects code exceeding 10000 characters with too_big error code", () => {
+  it("rejects code exceeding max length with too_big error code", () => {
     const result = CodeSnippetSchema.safeParse({
       language: "typescript",
-      code: "a".repeat(10001),
+      code: "a".repeat(MAX_CODE_LENGTH + 1),
     })
     expect(result.success).toBe(false)
     expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
   })
 
-  it("accepts language at exactly 50 characters", () => {
+  it("accepts language at exactly max length", () => {
     const result = CodeSnippetSchema.safeParse({
-      language: "a".repeat(50),
+      language: "a".repeat(MAX_LANGUAGE_LENGTH),
       code: "const x = 1;",
     })
     expect(result.success).toBe(true)
   })
 
-  it("accepts code at exactly 10000 characters", () => {
+  it("accepts code at exactly max length", () => {
     const result = CodeSnippetSchema.safeParse({
       language: "typescript",
-      code: "a".repeat(10000),
+      code: "a".repeat(MAX_CODE_LENGTH),
     })
     expect(result.success).toBe(true)
   })
@@ -303,7 +317,7 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
     }
   })
 
-  it("rejects YAML metric_explanations reason exceeding 500 characters", () => {
+  it("rejects YAML metric_explanations reason exceeding max length", () => {
     const result = ComponentYamlSchema.safeParse({
       ...yamlInput,
       config_variants: [
@@ -312,7 +326,7 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
           name: "Default",
           metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
           metric_explanations: {
-            latency: { reason: "a".repeat(501), contributing_factors: ["pooling"] },
+            latency: { reason: "a".repeat(MAX_REASON_LENGTH + 1), contributing_factors: ["pooling"] },
           },
         },
       ],
@@ -320,7 +334,7 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
     expect(result.success).toBe(false)
   })
 
-  it("rejects YAML metric_explanations contributing_factor item exceeding 200 characters", () => {
+  it("rejects YAML metric_explanations contributing_factor item exceeding max length", () => {
     const result = ComponentYamlSchema.safeParse({
       ...yamlInput,
       config_variants: [
@@ -329,7 +343,7 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
           name: "Default",
           metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
           metric_explanations: {
-            latency: { reason: "Valid", contributing_factors: ["a".repeat(201)] },
+            latency: { reason: "Valid", contributing_factors: ["a".repeat(MAX_FACTOR_LENGTH + 1)] },
           },
         },
       ],

@@ -3,16 +3,26 @@ import { MetricValueSchema, MetricValueYamlSchema } from "@/schemas/metricSchema
 
 export const MAX_REASON_LENGTH = 500
 export const MAX_FACTOR_LENGTH = 200
+export const MAX_LANGUAGE_LENGTH = 50
+export const MAX_CODE_LENGTH = 10000
 
 export const CodeSnippetSchema = z.object({
-  language: z.string().max(50),
-  code: z.string().max(10000),
+  language: z.string().min(1).max(MAX_LANGUAGE_LENGTH),
+  code: z.string().min(1).max(MAX_CODE_LENGTH),
 }).strict()
 
 export const MetricExplanationSchema = z.object({
   reason: z.string().min(1).max(MAX_REASON_LENGTH),
   contributingFactors: z.array(z.string().max(MAX_FACTOR_LENGTH)),
 }).strict()
+
+const MetricExplanationYamlSchema = z.object({
+  reason: z.string().min(1).max(MAX_REASON_LENGTH),
+  contributing_factors: z.array(z.string().max(MAX_FACTOR_LENGTH)),
+}).strict().transform((data) => ({
+  reason: data.reason,
+  contributingFactors: data.contributing_factors,
+}))
 
 export const ConfigVariantSchema = z.object({
   id: z.string().min(1),
@@ -50,13 +60,7 @@ const ConfigVariantYamlSchema = z.object({
   name: z.string().min(1),
   metrics: z.array(MetricValueYamlSchema),
   code_snippet: CodeSnippetSchema.optional(),
-  metric_explanations: z.record(z.string(), z.object({
-    reason: z.string().min(1).max(MAX_REASON_LENGTH),
-    contributing_factors: z.array(z.string().max(MAX_FACTOR_LENGTH)),
-  }).strict().transform((d) => ({
-    reason: d.reason,
-    contributingFactors: d.contributing_factors,
-  }))).optional(),
+  metric_explanations: z.record(z.string(), MetricExplanationYamlSchema).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
