@@ -218,4 +218,35 @@ describe("MetricBar", () => {
     await user.click(screen.getByTestId("metric-bar"))
     expect(screen.queryByTestId("metric-explanation")).not.toBeInTheDocument()
   })
+
+  // --- Delta indicator tests (Story 4-2a) ---
+
+  it("renders no delta indicator when delta prop is absent", () => {
+    renderDefault()
+    expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+  })
+
+  it("renders no delta indicator when delta is 0", () => {
+    renderDefault({ delta: 0 })
+    expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+  })
+
+  it("renders positive delta indicator in green", () => {
+    renderDefault({ delta: 3 })
+    const indicator = screen.getByTestId("metric-bar-delta")
+    expect(indicator).toHaveTextContent("+3")
+    expect(indicator).toHaveClass("text-green-500")
+  })
+
+  it("renders negative delta indicator in red", () => {
+    renderDefault({ delta: -2 })
+    const indicator = screen.getByTestId("metric-bar-delta")
+    expect(indicator).toHaveTextContent("-2")
+    expect(indicator).toHaveClass("text-red-500")
+  })
+
+  it("renders delta=1 with + prefix", () => {
+    renderDefault({ delta: 1 })
+    expect(screen.getByTestId("metric-bar-delta")).toHaveTextContent("+1")
+  })
 })

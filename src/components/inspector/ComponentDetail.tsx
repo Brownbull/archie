@@ -37,6 +37,11 @@ export function ComponentDetail({
     (s) => (nodeId ? s.computedMetrics.get(nodeId) : undefined),
   )
 
+  // Read previous metrics for delta computation (Story 4-2a, AC-ARCH-PATTERN-2)
+  const previousMetrics = useArchitectureStore(
+    (s) => (nodeId ? s.previousMetrics.get(nodeId) : undefined),
+  )
+
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
   )
@@ -55,6 +60,25 @@ export function ComponentDetail({
     }
     return grouped
   }, [computedMetrics, activeVariant])
+
+  // Compute delta map: current - previous metric values (AC-ARCH-NO-4).
+  // Only populated when previousMetrics exists for this node.
+  const deltaMap = useMemo(() => {
+    if (!previousMetrics || !computedMetrics) return undefined
+
+    const previousMetricMap = new Map(
+      previousMetrics.metrics.map((m) => [m.id, m]),
+    )
+
+    const map = new Map<string, number>()
+    for (const current of computedMetrics.metrics) {
+      const prevMetric = previousMetricMap.get(current.id)
+      if (prevMetric !== undefined) {
+        map.set(current.id, current.numericValue - prevMetric.numericValue)
+      }
+    }
+    return map
+  }, [computedMetrics, previousMetrics])
 
   const categoryMeta = component.category in COMPONENT_CATEGORIES
     ? COMPONENT_CATEGORIES[component.category as ComponentCategoryId]
@@ -157,6 +181,7 @@ export function ComponentDetail({
                     categoryIconName={catMeta.iconName}
                     metrics={metrics}
                     metricExplanations={activeVariant?.metricExplanations}
+                    deltaMap={deltaMap}
                   />
                 )
               })}
@@ -172,6 +197,7 @@ export function ComponentDetail({
                     categoryIconName=""
                     metrics={metrics}
                     metricExplanations={activeVariant?.metricExplanations}
+                    deltaMap={deltaMap}
                   />
                 ))}
             </div>

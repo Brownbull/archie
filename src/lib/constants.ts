@@ -93,6 +93,11 @@ export const FONT_FAMILY_PRESETS = {
 export const HEATMAP_THRESHOLD_WARNING = 6
 export const HEATMAP_THRESHOLD_BOTTLENECK = 4
 
+// Recommendation threshold (Story 4-2a)
+// Metrics scoring below this value are weak and eligible for variant recommendations.
+// Between BOTTLENECK (4) and WARNING (6) to catch marginal metrics early.
+export const RECOMMENDATION_THRESHOLD = 5
+
 // Heatmap colors — performance overlay, separate from category identity (UX18)
 export const HEATMAP_COLORS = {
   healthy: "var(--color-heatmap-green)",

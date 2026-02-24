@@ -9,6 +9,7 @@ interface MetricCardProps {
   categoryIconName: string
   metrics: MetricValue[]
   metricExplanations?: Record<string, MetricExplanation>
+  deltaMap?: Map<string, number>
 }
 
 export function MetricCard({
@@ -18,6 +19,7 @@ export function MetricCard({
   categoryIconName,
   metrics,
   metricExplanations,
+  deltaMap,
 }: MetricCardProps) {
   const IconComponent = CATEGORY_ICONS[categoryIconName as keyof typeof CATEGORY_ICONS]
 
@@ -43,6 +45,7 @@ export function MetricCard({
             key={metric.id}
             metric={metric}
             explanation={metricExplanations?.[metric.id]}
+            delta={deltaMap?.get(metric.id)}
           />
         ))}
       </div>

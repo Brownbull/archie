@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Component } from "@/types"
+import { useArchitectureStore } from "@/stores/architectureStore"
 
 // Mock useLibrary hook (used by ComponentSwapper internally)
 const mockGetComponentsByCategory = vi.fn()
@@ -216,5 +217,119 @@ describe("ComponentDetail", () => {
     mockGetComponentsByCategory.mockReturnValue([mockComponent])
     renderDefault()
     expect(screen.queryByTestId("component-swapper")).not.toBeInTheDocument()
+  })
+
+  // --- Delta indicator tests (Story 4-2a) ---
+
+  describe("delta indicators", () => {
+    afterEach(() => {
+      // Reset store state to defaults after delta tests
+      useArchitectureStore.setState({
+        computedMetrics: new Map(),
+        previousMetrics: new Map(),
+      })
+    })
+
+    it("shows no delta indicators when previousMetrics is empty for the node", () => {
+      const nodeId = "node-1"
+      useArchitectureStore.setState({
+        computedMetrics: new Map([
+          [nodeId, {
+            nodeId,
+            overallScore: 7,
+            metrics: [
+              { id: "query-perf", value: "high" as const, numericValue: 8, category: "performance" },
+            ],
+          }],
+        ]),
+        previousMetrics: new Map(),
+      })
+      renderDefault({ nodeId })
+      expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+    })
+
+    it("shows delta indicators when previousMetrics has data for the node", () => {
+      const nodeId = "node-1"
+      useArchitectureStore.setState({
+        computedMetrics: new Map([
+          [nodeId, {
+            nodeId,
+            overallScore: 7,
+            metrics: [
+              { id: "query-perf", value: "high" as const, numericValue: 10, category: "performance" },
+            ],
+          }],
+        ]),
+        previousMetrics: new Map([
+          [nodeId, {
+            nodeId,
+            overallScore: 5,
+            metrics: [
+              { id: "query-perf", value: "high" as const, numericValue: 8, category: "performance" },
+            ],
+          }],
+        ]),
+      })
+      renderDefault({ nodeId })
+      // delta = 10 - 8 = +2
+      const delta = screen.getByTestId("metric-bar-delta")
+      expect(delta).toHaveTextContent("+2")
+      expect(delta).toHaveClass("text-green-500")
+    })
+
+    it("shows no delta indicators when nodeId is not provided", () => {
+      useArchitectureStore.setState({
+        computedMetrics: new Map([
+          ["node-1", {
+            nodeId: "node-1",
+            overallScore: 7,
+            metrics: [
+              { id: "query-perf", value: "high" as const, numericValue: 10, category: "performance" },
+            ],
+          }],
+        ]),
+        previousMetrics: new Map([
+          ["node-1", {
+            nodeId: "node-1",
+            overallScore: 5,
+            metrics: [
+              { id: "query-perf", value: "high" as const, numericValue: 8, category: "performance" },
+            ],
+          }],
+        ]),
+      })
+      // No nodeId prop → no delta
+      renderDefault()
+      expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+    })
+
+    it("shows negative delta in red", () => {
+      const nodeId = "node-1"
+      useArchitectureStore.setState({
+        computedMetrics: new Map([
+          [nodeId, {
+            nodeId,
+            overallScore: 4,
+            metrics: [
+              { id: "query-perf", value: "medium" as const, numericValue: 5, category: "performance" },
+            ],
+          }],
+        ]),
+        previousMetrics: new Map([
+          [nodeId, {
+            nodeId,
+            overallScore: 6,
+            metrics: [
+              { id: "query-perf", value: "high" as const, numericValue: 8, category: "performance" },
+            ],
+          }],
+        ]),
+      })
+      renderDefault({ nodeId })
+      // delta = 5 - 8 = -3
+      const delta = screen.getByTestId("metric-bar-delta")
+      expect(delta).toHaveTextContent("-3")
+      expect(delta).toHaveClass("text-red-500")
+    })
   })
 })

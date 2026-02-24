@@ -87,4 +87,29 @@ describe("MetricCard", () => {
     await user.click(wtBar)
     expect(screen.queryByTestId("metric-explanation")).not.toBeInTheDocument()
   })
+
+  // --- Delta map threading tests (Story 4-2a) ---
+
+  it("passes delta from deltaMap to matching MetricBar", () => {
+    const deltaMap = new Map([
+      ["query-performance", 2],
+      ["write-throughput", -1],
+    ])
+    renderDefault({ deltaMap })
+    const deltas = screen.getAllByTestId("metric-bar-delta")
+    expect(deltas).toHaveLength(2)
+    expect(deltas[0]).toHaveTextContent("+2")
+    expect(deltas[1]).toHaveTextContent("-1")
+  })
+
+  it("does not show delta indicator when deltaMap is absent", () => {
+    renderDefault()
+    expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+  })
+
+  it("does not show delta indicator for metrics with delta=0", () => {
+    const deltaMap = new Map([["query-performance", 0]])
+    renderDefault({ deltaMap })
+    expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+  })
 })

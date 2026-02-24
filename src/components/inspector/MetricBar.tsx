@@ -12,9 +12,10 @@ function getBarColor(numericValue: number): string {
 interface MetricBarProps {
   metric: MetricValue
   explanation?: MetricExplanation
+  delta?: number
 }
 
-export function MetricBar({ metric, explanation }: MetricBarProps) {
+export function MetricBar({ metric, explanation, delta }: MetricBarProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const clamped = Math.max(0, Math.min(METRIC_MAX_VALUE, metric.numericValue))
   const widthPercent = (clamped / METRIC_MAX_VALUE) * 100
@@ -41,6 +42,16 @@ export function MetricBar({ metric, explanation }: MetricBarProps) {
         <span className="w-12 shrink-0 text-right text-xs text-text-secondary">
           {metric.value}
         </span>
+        {delta !== undefined && delta !== 0 && (
+          <span
+            data-testid="metric-bar-delta"
+            className={`w-8 shrink-0 text-right text-xs font-medium ${
+              delta > 0 ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {delta > 0 ? `+${delta}` : `${delta}`}
+          </span>
+        )}
         {explanation && (
           isExpanded
             ? <ChevronUp data-testid="metric-explanation-chevron" className="h-3 w-3 shrink-0 text-text-secondary" />
