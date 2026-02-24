@@ -105,9 +105,11 @@ development_status:
   td-3-2b-test-helper-dedup: done
   td-3-2c-strict-mode-anchor-click-test: done
   3-3-example-architectures-and-ai-prompt-template: done
-  td-3-3a-seed-blueprint-hardening: review
-  td-3-3b-seed-blueprints-to-firestore-tests: ready-for-dev
+  td-3-3a-seed-blueprint-hardening: done
+  td-3-3b-seed-blueprints-to-firestore-tests: review
   td-3-3c-blueprint-error-boundary-test: ready-for-dev
+  td-3-3d-seed-chunking-refactor: ready-for-dev
+  td-3-3e-seed-ac1-behavior-clarification: ready-for-dev
   epic-3-retrospective: optional
 
   # ============================================================================

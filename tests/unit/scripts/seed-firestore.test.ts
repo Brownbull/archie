@@ -197,4 +197,28 @@ describe("seedBlueprintsToFirestore", () => {
       seedBlueprintsToFirestore(db, [makeBlueprintFull("bp-1")], noopLogger),
     ).rejects.toThrow("Firestore unavailable")
   })
+
+  it("logs 'No blueprints to seed.' and returns 0 for empty input", async () => {
+    const logger = createSpyLogger()
+    const { db } = createMockDb()
+
+    const result = await seedBlueprintsToFirestore(db, [], logger)
+
+    expect(result).toBe(0)
+    expect(logger.log).toHaveBeenCalledWith("No blueprints to seed.")
+    expect(logger.warn).not.toHaveBeenCalled()
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
+  it("chunks into multiple batches when blueprint count exceeds BATCH_LIMIT", async () => {
+    const { db, mocks } = createMockDb()
+    // 501 = BATCH_LIMIT (500) + 1 — forces 2 chunks: first 500, then 1
+    const blueprints = Array.from({ length: 501 }, (_, i) => makeBlueprintFull(`bp-${i}`))
+
+    await seedBlueprintsToFirestore(db, blueprints, noopLogger)
+
+    expect(mocks.batchFn).toHaveBeenCalledTimes(2)
+    expect(mocks.commitFn).toHaveBeenCalledTimes(2)
+    expect(mocks.setFn).toHaveBeenCalledTimes(501)
+  })
 })

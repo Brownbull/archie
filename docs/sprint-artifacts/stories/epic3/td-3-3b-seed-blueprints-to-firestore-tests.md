@@ -21,11 +21,11 @@ As a **developer**, I want unit tests for `seedBlueprintsToFirestore` in `seed-f
 
 ## Tasks / Subtasks
 
-- [ ] 1. Add test file `tests/unit/scripts/seed-blueprints-to-firestore.test.ts` (or extend `seed-firestore.test.ts`)
-- [ ] 2. Implement AC-1: empty input returns 0
-- [ ] 3. Implement AC-2: N blueprints → N batch.set calls, returns N
-- [ ] 4. Implement AC-3: > BATCH_LIMIT (500) → multiple batch.commit() calls
-- [ ] 5. Run `npm run test:quick` — all tests pass
+- [x] 1. Add test file `tests/unit/scripts/seed-blueprints-to-firestore.test.ts` (or extend `seed-firestore.test.ts`)
+- [x] 2. Implement AC-1: empty input returns 0
+- [x] 3. Implement AC-2: N blueprints → N batch.set calls, returns N
+- [x] 4. Implement AC-3: > BATCH_LIMIT (500) → multiple batch.commit() calls
+- [x] 5. Run `npm run test:quick` — all tests pass
 
 ## Dev Notes
 
