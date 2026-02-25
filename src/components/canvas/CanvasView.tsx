@@ -56,8 +56,9 @@ function CanvasViewInner() {
   const setSelectedNodeId = useUiStore((s) => s.setSelectedNodeId)
   const setSelectedEdgeId = useUiStore((s) => s.setSelectedEdgeId)
   const clearSelection = useUiStore((s) => s.clearSelection)
+  const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId)
   const deselectAll = useArchitectureStore((s) => s.deselectAll)
-  const { screenToFlowPosition } = useReactFlow()
+  const { screenToFlowPosition, fitView } = useReactFlow()
   const { handleFileDrop } = useImportAction()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -189,6 +190,14 @@ function CanvasViewInner() {
     container.addEventListener("keydown", handleKeyDown)
     return () => container.removeEventListener("keydown", handleKeyDown)
   }, [clearSelection, deselectAll])
+
+  // Navigate to a node when pendingNavNodeId is set (from IssuesSummary click)
+  useEffect(() => {
+    if (!pendingNavNodeId) return
+    useUiStore.getState().setPendingNavNodeId(null)
+    setSelectedNodeId(pendingNavNodeId)
+    fitView({ nodes: [{ id: pendingNavNodeId }], duration: 400, padding: 0.5 })
+  }, [pendingNavNodeId, setSelectedNodeId, fitView])
 
   return (
     <div

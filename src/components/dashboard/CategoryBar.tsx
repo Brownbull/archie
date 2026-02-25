@@ -8,6 +8,7 @@ interface CategoryBarProps {
   iconName: string
   categoryColor: string
   score: number
+  onClick?: () => void
 }
 
 export function CategoryBar({
@@ -16,6 +17,7 @@ export function CategoryBar({
   iconName,
   categoryColor,
   score,
+  onClick,
 }: CategoryBarProps) {
   const widthPercent = Math.min(100, (score / METRIC_MAX_VALUE) * 100)
   const fillColor = getScoreColor(score)
@@ -28,7 +30,11 @@ export function CategoryBar({
       aria-valuenow={score}
       aria-valuemin={0}
       aria-valuemax={METRIC_MAX_VALUE}
-      className="flex min-w-[120px] flex-1 flex-col justify-center gap-1 px-2"
+      aria-label={shortName}
+      className={`flex min-w-[120px] flex-1 flex-col justify-center gap-1 px-2${onClick ? " cursor-pointer rounded hover:bg-muted/50" : ""}`}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick() } } : undefined}
+      tabIndex={onClick ? 0 : undefined}
     >
       <div className="flex items-center gap-1.5">
         {IconComponent && (

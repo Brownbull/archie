@@ -1,6 +1,6 @@
 # Story: 4-4 — Dashboard Drill-Down & Issues Navigation
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 4 — Canvas Intelligence & UX Polish
 
 ## Overview
@@ -153,3 +153,10 @@ Key journeys: (1) open overlay → verify all 7 categories render → close via 
 - Complexity: Complex
 - Classification: COMPLEX
 - Agents consulted: orchestrator (planner + architect analysis inlined)
+
+## Tech Debt Tracking (Code Review 2026-02-25)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-4a | Dashboard component test coverage (CategoryInfoPopup + CategoryBar) | MEDIUM | CREATED |
+| td-4-4b | Schema contiguous range validation + repository error wrapping | LOW | CREATED |
