@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
 
 // Mock categoryIcons to avoid importing Lucide components in test env
@@ -37,6 +37,10 @@ const defaultProps = {
 }
 
 describe("CategoryBar", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
   it("renders short name and score", () => {
     render(<CategoryBar {...defaultProps} />)
 
@@ -126,5 +130,116 @@ describe("CategoryBar", () => {
 
     const icon = screen.getByTestId("icon-Gauge")
     expect(icon).toHaveStyle({ color: "var(--color-metric-performance)" })
+  })
+
+  it("clamps fill width to 100% for scores above METRIC_MAX_VALUE", () => {
+    render(<CategoryBar {...defaultProps} score={15} />)
+
+    const fill = screen.getByTestId("category-bar-fill-performance")
+    // Math.min(100, 15/10*100) = 100%
+    expect(fill).toHaveStyle({ width: "100%" })
+  })
+
+  // --- onClick handler (AC-FUNC-4) ---
+
+  describe("onClick handler (AC-FUNC-4)", () => {
+    it("fires onClick when clicked", () => {
+      const handleClick = vi.fn()
+      render(<CategoryBar {...defaultProps} onClick={handleClick} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      fireEvent.click(bar)
+
+      expect(handleClick).toHaveBeenCalledTimes(1)
+    })
+
+    it("does not throw when clicked without onClick", () => {
+      render(<CategoryBar {...defaultProps} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      expect(() => fireEvent.click(bar)).not.toThrow()
+    })
+
+    it("has cursor-pointer class when onClick is provided", () => {
+      const handleClick = vi.fn()
+      render(<CategoryBar {...defaultProps} onClick={handleClick} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      expect(bar.className).toContain("cursor-pointer")
+    })
+
+    it("does not have cursor-pointer class when onClick is not provided", () => {
+      render(<CategoryBar {...defaultProps} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      expect(bar.className).not.toContain("cursor-pointer")
+    })
+  })
+
+  // --- Keyboard accessibility ---
+
+  describe("keyboard accessibility", () => {
+    it("triggers onClick on Enter key", () => {
+      const handleClick = vi.fn()
+      render(<CategoryBar {...defaultProps} onClick={handleClick} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      fireEvent.keyDown(bar, { key: "Enter" })
+
+      expect(handleClick).toHaveBeenCalledTimes(1)
+    })
+
+    it("triggers onClick on Space key", () => {
+      const handleClick = vi.fn()
+      render(<CategoryBar {...defaultProps} onClick={handleClick} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      fireEvent.keyDown(bar, { key: " " })
+
+      expect(handleClick).toHaveBeenCalledTimes(1)
+    })
+
+    it("does not trigger onClick on other keys", () => {
+      const handleClick = vi.fn()
+      render(<CategoryBar {...defaultProps} onClick={handleClick} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      fireEvent.keyDown(bar, { key: "Tab" })
+
+      expect(handleClick).not.toHaveBeenCalled()
+    })
+
+    it("has tabIndex=0 when onClick is provided", () => {
+      const handleClick = vi.fn()
+      render(<CategoryBar {...defaultProps} onClick={handleClick} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      expect(bar).toHaveAttribute("tabindex", "0")
+    })
+
+    it("does not have tabIndex when onClick is not provided", () => {
+      render(<CategoryBar {...defaultProps} />)
+
+      const bar = screen.getByTestId("category-bar-performance")
+      expect(bar).not.toHaveAttribute("tabindex")
+    })
+  })
+
+  // --- aria-label on role="meter" ---
+
+  describe("aria-label on role='meter'", () => {
+    it("has aria-label matching shortName", () => {
+      render(<CategoryBar {...defaultProps} shortName="Perf" />)
+
+      const meter = screen.getByRole("meter")
+      expect(meter).toHaveAttribute("aria-label", "Perf")
+    })
+
+    it("aria-label updates with different shortName", () => {
+      render(<CategoryBar {...defaultProps} shortName="Reliability" />)
+
+      const meter = screen.getByRole("meter")
+      expect(meter).toHaveAttribute("aria-label", "Reliability")
+    })
   })
 })

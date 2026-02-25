@@ -138,7 +138,7 @@ development_status:
   td-4-3c-connection-detail-useshallow-restoration: done
   td-4-3d-code-style-consistency: done
   4-4-dashboard-drill-down-and-issues-navigation: done
-  td-4-4a-dashboard-component-test-coverage: ready-for-dev
+  td-4-4a-dashboard-component-test-coverage: review
   td-4-4b-schema-and-repository-hardening: ready-for-dev
   4-5-canvas-visual-polish: ready-for-dev
   4-6-inspector-ux-polish: ready-for-dev
