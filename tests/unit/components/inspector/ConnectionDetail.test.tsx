@@ -236,4 +236,36 @@ describe("ConnectionDetail", () => {
 
     expect(renderCount).toBe(rendersAfterMount)
   })
+
+  it("re-renders when edge data structurally changes (negative case for useShallow)", () => {
+    useArchitectureStore.setState({ edges: [mockEdge] })
+    mockGetComponentById.mockImplementation((id: string) => {
+      if (id === "comp-source") return mockSourceComponent
+      if (id === "comp-target") return mockTargetComponent
+      return undefined
+    })
+
+    let renderCount = 0
+    const onRender: ProfilerOnRenderCallback = () => {
+      renderCount++
+    }
+
+    render(
+      <Profiler id="connection-detail-profiler" onRender={onRender}>
+        <ConnectionDetail edgeId="edge-1" />
+      </Profiler>,
+    )
+
+    const rendersAfterMount = renderCount
+
+    // Replace with a structurally DIFFERENT edge (changed source).
+    // useShallow should detect the property difference and trigger a re-render.
+    act(() => {
+      useArchitectureStore.setState({
+        edges: [{ ...mockEdge, source: "node-99" }],
+      })
+    })
+
+    expect(renderCount).toBeGreaterThan(rendersAfterMount)
+  })
 })

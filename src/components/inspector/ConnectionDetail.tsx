@@ -23,6 +23,9 @@ function HeatmapBadge({ status }: { status: HeatmapStatus | undefined }) {
 }
 
 export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
+  // useShallow: shallow-compares edge properties one level deep. Prevents re-renders
+  // when edges array is replaced with structurally-equal objects (e.g., deselectAll()).
+  // If a future store action rebuilds edge.data itself, useShallow won't catch the diff.
   const edge = useArchitectureStore(
     useShallow((s) => s.edges.find((e) => e.id === edgeId)),
   )

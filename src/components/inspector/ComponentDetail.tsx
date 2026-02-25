@@ -35,12 +35,14 @@ export function ComponentDetail({
   const alternatives = getComponentsByCategory(currentCategory)
 
   // Use computed metrics from recalculation engine when available (AC-7),
-  // fall back to library variant metrics for nodes not yet recalculated
+  // fall back to library variant metrics for nodes not yet recalculated.
+  // No useShallow needed: Map.get() returns the same object ref until the Map is replaced.
   const computedMetrics = useArchitectureStore(
     (s) => (nodeId ? s.computedMetrics.get(nodeId) : undefined),
   )
 
-  // Read previous metrics for delta computation (Story 4-2a, AC-ARCH-PATTERN-2)
+  // Read previous metrics for delta computation (Story 4-2a, AC-ARCH-PATTERN-2).
+  // No useShallow needed: same Map.get() reference-stability reasoning as above.
   const previousMetrics = useArchitectureStore(
     (s) => (nodeId ? s.previousMetrics.get(nodeId) : undefined),
   )
@@ -50,6 +52,7 @@ export function ComponentDetail({
   )
 
   const { metricsByCategory, allMetricIds } = useMemo(() => {
+    // Prefer computed metrics from recalculation engine over static variant metrics
     const metricsSource = computedMetrics?.metrics ?? activeVariant?.metrics
     if (!metricsSource) {
       return {

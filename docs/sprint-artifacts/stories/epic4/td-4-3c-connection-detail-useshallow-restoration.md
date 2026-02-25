@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-3c: ConnectionDetail useShallow Restoration
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-24) on story td-4-3b
 > **Priority:** LOW | **Estimated Effort:** Small (1-2 tasks)
@@ -40,3 +40,14 @@ Then any selector returning a derived object should use `useShallow` for shallow
   - `ConnectionDetail.tsx:26` — `edges.find()` (fixed)
   - `InspectorPanel.tsx:16` — `nodes.find()` (already had `useShallow`)
 - `Map.get()` selectors (`ComponentDetail`, `ArchieEdge`, `ArchieNode`) return primitives or are out of `.find()/.filter()` scope
+
+### Senior Developer Review (ECC) — 2026-02-25
+- **Agents:** code-reviewer (sonnet), security-reviewer (sonnet)
+- **Classification:** STANDARD | **Score:** 9.5/10
+- **Outcome:** APPROVE — 3 quick fixes applied (clarifying comments + negative-case test), 3 suggestions deferred
+- **Quick fixes:** useShallow constraint comment, Map.get() rationale comments, negative re-render test
+- **Deferred:** TD-4-3d (code style consistency — constant unification, transform style, E2E helper docs)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| TD-4-3d | Code style consistency cleanup (constants, transforms, E2E docs) | LOW | CREATED |
