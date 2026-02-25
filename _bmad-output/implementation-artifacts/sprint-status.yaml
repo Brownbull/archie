@@ -136,7 +136,7 @@ development_status:
   td-4-3a-edge-drag-ux-hardening: done
   td-4-3b-library-data-rendering-hardening: done
   td-4-3c-connection-detail-useshallow-restoration: done
-  td-4-3d-code-style-consistency: drafted  # DEPENDS: td-4-3c
+  td-4-3d-code-style-consistency: review
   4-4-dashboard-drill-down-and-issues-navigation: ready-for-dev
   4-5-canvas-visual-polish: ready-for-dev
   4-6-inspector-ux-polish: ready-for-dev

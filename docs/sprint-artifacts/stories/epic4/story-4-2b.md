@@ -94,7 +94,10 @@ And the filtered view persists while inspecting the current component (resets on
 - Recommendation engine (`computeRecommendations`) is already implemented in story 4-2a — import from `src/engine/recommendationEngine.ts`.
 
 ### E2E Testing
-E2E coverage recommended — run `/ecc-e2e 4-2b-metric-filter-and-recommendation-ui` after implementation.
+- Action: CREATE | File: `tests/e2e/metric-filter-and-recommendations.spec.ts` | Result: PASS
+- Multi-User: SINGLE-USER | Quality Score: 84/100 | Date: 2026-02-24
+- Tests: AC-FUNC-1 (recommendation cards), AC-FUNC-2 (no recs when healthy), AC-FUNC-3 (metric filter toggle)
+- Shared helpers extracted to `tests/e2e/helpers/canvas-helpers.ts`
 
 ## Deferred Items (Code Review 2026-02-24)
 

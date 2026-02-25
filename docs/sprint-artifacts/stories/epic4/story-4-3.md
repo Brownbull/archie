@@ -1,6 +1,6 @@
 # Story: 4-3-connection-inspection-system
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 4: Deep Intelligence & Polish
 
 ## Overview
@@ -200,7 +200,27 @@ const { labelOffset: _labelOffset, ...exportableData } = edge.data
 - `useShallow` from zustand/react/shallow SHOULD be used when reading the edge object (to prevent unnecessary re-renders when unrelated store fields change) — follow the `selectedNode` pattern from `InspectorPanel.tsx`.
 
 ### E2E Testing
-E2E coverage recommended — run `/ecc-e2e 4-3-connection-inspection-system` after implementation.
+- Action: CREATE + EXTEND | File: `tests/e2e/connection-inspection.spec.ts` | Result: PASS
+- Extended: `tests/e2e/inspector-and-config.spec.ts` (fixed outdated edge-selection test)
+- Multi-User: N/A (single-user) | Quality Score: 79/100 | Date: 2026-02-24
+- ACs covered: AC-FUNC-1, AC-FUNC-3, AC-FUNC-4, AC-FUNC-5, AC-FUNC-7, plus node/edge switching & collapse/expand
+- AC-FUNC-6 (label persists through recalculation): not E2E-tested — unit coverage sufficient
+- Source change: added `data-testid="endpoint-health-row"` to `ConnectionDetail.tsx` endpoint rows
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-24
+- **Agents:** code-reviewer (sonnet), security-reviewer (sonnet)
+- **Classification:** STANDARD
+- **Outcome:** APPROVE (8.5/10)
+- **Quick fixes applied:** 4 (schema max-length, useShallow removal, endDrag dedup, constant extraction)
+- **TD stories created:** 2 (td-4-3a, td-4-3b)
+
+## Code Review Deferred Items (2026-02-24)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-3a | Edge drag UX hardening — throttle per-pixel updates, bounds clamping, drag interaction tests | MEDIUM | CREATED |
+| td-4-3b | Library-sourced data rendering hardening — reactivity model, incompatibilityReason length, MUST CHECK #7 | LOW | CREATED |
 
 ## ECC Analysis Summary
 - Risk Level: MEDIUM

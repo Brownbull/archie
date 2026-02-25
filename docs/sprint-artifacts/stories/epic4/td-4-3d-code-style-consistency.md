@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-3d: Code Style Consistency Cleanup
 
-Status: drafted
+Status: review
 
 > **Source:** ECC Code Review (2026-02-25) on story td-4-3c
 > **Priority:** LOW | **Estimated Effort:** Small (1 task)
@@ -26,10 +26,10 @@ When reviewing canvas-helpers.ts
 Then add a JSDoc note documenting this assumption
 
 ## Tasks / Subtasks
-- [ ] 1.1 Decide: unify constants or add comment explaining separate constants
-- [ ] 1.2 Align YAML schema transform style (destructured or data.field — pick one)
-- [ ] 1.3 Add JSDoc note on `addComponentToCanvas` sequential usage assumption
-- [ ] 1.4 Run `npm run test:quick` — all tests pass
+- [x] 1.1 Decide: add comment explaining separate constants (semantically different fields)
+- [x] 1.2 Align YAML schema transform style (data.field — matches all other schemas)
+- [x] 1.3 Add JSDoc note on `addComponentToCanvas` sequential usage + restore `dragComponentToCanvas` JSDoc
+- [x] 1.4 Run `npm run test:quick` — 1228/1228 passed
 
 ## Dev Notes
 - Source story: [td-4-3c](./td-4-3c-connection-detail-useshallow-restoration.md)

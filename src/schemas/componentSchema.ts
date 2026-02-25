@@ -13,12 +13,12 @@ export const CodeSnippetSchema = z.object({
 
 export const MetricExplanationSchema = z.object({
   reason: z.string().min(1).max(MAX_REASON_LENGTH),
-  contributingFactors: z.array(z.string().max(MAX_FACTOR_LENGTH)),
+  contributingFactors: z.array(z.string().min(1).max(MAX_FACTOR_LENGTH)),
 }).strict()
 
 const MetricExplanationYamlSchema = z.object({
   reason: z.string().min(1).max(MAX_REASON_LENGTH),
-  contributing_factors: z.array(z.string().max(MAX_FACTOR_LENGTH)),
+  contributing_factors: z.array(z.string().min(1).max(MAX_FACTOR_LENGTH)),
 }).strict().transform((data) => ({
   reason: data.reason,
   contributingFactors: data.contributing_factors,
@@ -32,10 +32,16 @@ export const ConfigVariantSchema = z.object({
   metricExplanations: z.record(z.string(), MetricExplanationSchema).optional(),
 }).strict()
 
+// Separate constants per field — values match today but may diverge
+// as schema evolves (protocol, latency, and pattern have different semantics).
+export const MAX_PROTOCOL_LENGTH = 100
+export const MAX_LATENCY_LENGTH = 100
+export const MAX_PATTERN_LENGTH = 100
+
 export const ConnectionPropertiesSchema = z.object({
-  protocol: z.string().min(1),
-  communicationPatterns: z.array(z.string()),
-  typicalLatency: z.string().min(1),
+  protocol: z.string().min(1).max(MAX_PROTOCOL_LENGTH),
+  communicationPatterns: z.array(z.string().min(1).max(MAX_PATTERN_LENGTH)),
+  typicalLatency: z.string().min(1).max(MAX_LATENCY_LENGTH),
   coLocationPotential: z.boolean(),
 }).strict()
 
@@ -70,9 +76,9 @@ const ConfigVariantYamlSchema = z.object({
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({
-  protocol: z.string().min(1),
-  communication_patterns: z.array(z.string()),
-  typical_latency: z.string().min(1),
+  protocol: z.string().min(1).max(MAX_PROTOCOL_LENGTH),
+  communication_patterns: z.array(z.string().min(1).max(MAX_PATTERN_LENGTH)),
+  typical_latency: z.string().min(1).max(MAX_LATENCY_LENGTH),
   co_location_potential: z.boolean(),
 }).strict().transform((data) => ({
   protocol: data.protocol,

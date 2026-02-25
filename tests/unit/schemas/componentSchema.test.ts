@@ -9,6 +9,9 @@ import {
   MAX_FACTOR_LENGTH,
   MAX_LANGUAGE_LENGTH,
   MAX_CODE_LENGTH,
+  MAX_PROTOCOL_LENGTH,
+  MAX_LATENCY_LENGTH,
+  MAX_PATTERN_LENGTH,
 } from "@/schemas/componentSchema"
 
 const validVariant = {
@@ -117,6 +120,19 @@ describe("ConfigVariantSchema", () => {
     })
     expect(result.success).toBe(true)
   })
+
+  it("rejects empty contributingFactor item", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "Valid reason",
+          contributingFactors: [""],
+        },
+      },
+    })
+    expect(result.success).toBe(false)
+  })
 })
 
 describe("CodeSnippetSchema", () => {
@@ -186,6 +202,41 @@ describe("ConnectionPropertiesSchema", () => {
   it("rejects missing protocol", () => {
     const { protocol: _protocol, ...withoutProtocol } = validConnection
     const result = ConnectionPropertiesSchema.safeParse(withoutProtocol)
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects protocol exceeding max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      protocol: "a".repeat(MAX_PROTOCOL_LENGTH + 1),
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects typicalLatency exceeding max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      typicalLatency: "a".repeat(MAX_LATENCY_LENGTH + 1),
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects communicationPatterns item exceeding max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      communicationPatterns: ["a".repeat(MAX_PATTERN_LENGTH + 1)],
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects empty communicationPatterns item", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      communicationPatterns: [""],
+    })
     expect(result.success).toBe(false)
   })
 })
@@ -314,6 +365,28 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
       expect(result.data.connectionProperties?.communicationPatterns).toEqual(["request-response"])
       expect(result.data.connectionProperties?.typicalLatency).toBe("1-5ms")
       expect(result.data.connectionProperties?.coLocationPotential).toBe(true)
+    }
+  })
+
+  it("transforms YAML metric_explanations contributing_factors to contributingFactors", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInput,
+      config_variants: [
+        {
+          id: "default",
+          name: "Default",
+          metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+          metric_explanations: {
+            latency: { reason: "Pooling helps", contributing_factors: ["connection pooling"] },
+          },
+        },
+      ],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const explanations = result.data.configVariants[0].metricExplanations
+      expect(explanations?.latency.contributingFactors).toEqual(["connection pooling"])
+      expect(explanations?.latency).not.toHaveProperty("contributing_factors")
     }
   })
 

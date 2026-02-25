@@ -1,40 +1,11 @@
 import { test, expect } from "@playwright/test"
-import { waitForComponentLibrary } from "./helpers/canvas-helpers"
+import {
+  waitForComponentLibrary,
+  addComponentToCanvas,
+  selectNodeOnCanvas,
+} from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/inspector-and-config"
-
-/**
- * Helper: place a component on the canvas via the Add to Canvas button.
- * Returns the index (0-based) of the button clicked.
- */
-async function addComponentToCanvas(
-  page: import("@playwright/test").Page,
-  buttonIndex = 0,
-) {
-  const addBtn = page.locator('[data-testid^="add-to-canvas-"]').nth(buttonIndex)
-  await expect(addBtn).toBeVisible()
-  await addBtn.click()
-  // Wait for the node to appear
-  const expectedCount = buttonIndex + 1
-  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(expectedCount, {
-    timeout: 5_000,
-  })
-}
-
-/**
- * Helper: click a canvas node to select it and open the inspector.
- * Waits for the inspector panel to become visible.
- */
-async function selectNodeOnCanvas(
-  page: import("@playwright/test").Page,
-  nodeIndex = 0,
-) {
-  const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
-  await expect(node).toBeVisible()
-  await node.click()
-  // Wait for inspector panel to appear
-  await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
-}
 
 test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
   test("AC-1: click component node opens inspector with detail card", async ({ page }) => {
@@ -389,7 +360,7 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     })
   })
 
-  test("edge selection does NOT show component inspector", async ({ page }) => {
+  test("edge selection shows connection inspector (not component inspector)", async ({ page }) => {
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -433,17 +404,15 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Click the edge path to select it (force: true for SVG elements)
     await edges.first().click({ force: true })
 
-    // Assertion-based wait: panel hidden confirms no inspector for edges (TD-1-5a Item 1)
-    await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible({ timeout: 3_000 })
+    // Story 4-3: edge selection now opens ConnectionDetail in the inspector
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+    await expect(page.locator('[data-testid="connection-detail"]')).toBeVisible({ timeout: 3_000 })
 
-    // Inspector should NOT show component details (edge selection sets selectedEdgeId,
-    // which clears selectedNodeId — InspectorPanel returns null)
-    const inspector = page.locator('[data-testid="inspector"]')
-    const inspectorWidth = await inspector.evaluate((el) => el.getBoundingClientRect().width)
-    expect(inspectorWidth).toBeLessThanOrEqual(1)
+    // Component-specific elements should NOT be visible (mutually exclusive selection)
+    await expect(page.locator('[data-testid="config-selector"]')).not.toBeVisible()
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/10-edge-click-no-inspector.png`,
+      path: `${SCREENSHOT_DIR}/10-edge-click-shows-connection-inspector.png`,
       fullPage: true,
     })
   })

@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-3a: Edge Drag UX Hardening
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-24) on story 4-3-connection-inspection-system
 > **Priority:** MEDIUM | **Estimated Effort:** Small (3-5 tasks)
@@ -42,3 +42,12 @@ And the tests assert `releasePointerCapture` is invoked on pointerup/pointercanc
 - Source story: [4-3-connection-inspection-system](./story-4-3.md)
 - Review findings: #1 (throttle), #7 (test coverage), #10 (bounds clamping)
 - Files affected: `src/components/canvas/ArchieEdge.tsx`, `src/lib/constants.ts`, `tests/unit/components/canvas/ArchieEdge.test.tsx`
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-24
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer, tdd-guide
+- **Outcome:** APPROVE (8/10)
+- **Quick fixes applied:** 2 (stray pointerup guard test, exact boundary clamping test)
+- **TD stories created:** 0
+- **Tests:** 31/31 passing
