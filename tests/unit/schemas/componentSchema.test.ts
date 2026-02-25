@@ -239,6 +239,30 @@ describe("ConnectionPropertiesSchema", () => {
     })
     expect(result.success).toBe(false)
   })
+
+  it("accepts protocol at exactly max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      protocol: "a".repeat(MAX_PROTOCOL_LENGTH),
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts typicalLatency at exactly max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      typicalLatency: "a".repeat(MAX_LATENCY_LENGTH),
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts communicationPatterns item at exactly max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      communicationPatterns: ["a".repeat(MAX_PATTERN_LENGTH)],
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("ComponentSchema", () => {
@@ -365,6 +389,10 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
       expect(result.data.connectionProperties?.communicationPatterns).toEqual(["request-response"])
       expect(result.data.connectionProperties?.typicalLatency).toBe("1-5ms")
       expect(result.data.connectionProperties?.coLocationPotential).toBe(true)
+      // Snake_case keys must not survive the transform
+      expect(result.data.connectionProperties).not.toHaveProperty("communication_patterns")
+      expect(result.data.connectionProperties).not.toHaveProperty("typical_latency")
+      expect(result.data.connectionProperties).not.toHaveProperty("co_location_potential")
     }
   })
 

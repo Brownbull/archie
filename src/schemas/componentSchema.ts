@@ -6,6 +6,12 @@ export const MAX_FACTOR_LENGTH = 200
 export const MAX_LANGUAGE_LENGTH = 50
 export const MAX_CODE_LENGTH = 10000
 
+// Separate constants per field — values match today but may diverge
+// as schema evolves (protocol, latency, and pattern have different semantics).
+export const MAX_PROTOCOL_LENGTH = 100
+export const MAX_LATENCY_LENGTH = 100
+export const MAX_PATTERN_LENGTH = 100
+
 export const CodeSnippetSchema = z.object({
   language: z.string().min(1).max(MAX_LANGUAGE_LENGTH),
   code: z.string().min(1).max(MAX_CODE_LENGTH),
@@ -31,12 +37,6 @@ export const ConfigVariantSchema = z.object({
   codeSnippet: CodeSnippetSchema.optional(),
   metricExplanations: z.record(z.string(), MetricExplanationSchema).optional(),
 }).strict()
-
-// Separate constants per field — values match today but may diverge
-// as schema evolves (protocol, latency, and pattern have different semantics).
-export const MAX_PROTOCOL_LENGTH = 100
-export const MAX_LATENCY_LENGTH = 100
-export const MAX_PATTERN_LENGTH = 100
 
 export const ConnectionPropertiesSchema = z.object({
   protocol: z.string().min(1).max(MAX_PROTOCOL_LENGTH),
