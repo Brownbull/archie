@@ -134,7 +134,8 @@ development_status:
   td-4-2f-metric-explanation-yaml-schema-extraction: done
   4-3-connection-inspection-system: done
   td-4-3a-edge-drag-ux-hardening: done
-  td-4-3b-library-data-rendering-hardening: review
+  td-4-3b-library-data-rendering-hardening: done
+  td-4-3c-connection-detail-useshallow-restoration: ready-for-dev  # DEPENDS: td-4-3b
   4-4-dashboard-drill-down-and-issues-navigation: ready-for-dev
   4-5-canvas-visual-polish: ready-for-dev
   4-6-inspector-ux-polish: ready-for-dev

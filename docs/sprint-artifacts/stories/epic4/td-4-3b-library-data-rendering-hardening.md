@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-3b: Library-Sourced Data Rendering Hardening
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-24) on story 4-3-connection-inspection-system
 > **Priority:** LOW | **Estimated Effort:** Small (3-4 tasks)
@@ -34,6 +34,29 @@ And a code comment documents this decision at the rendering boundary (acknowledg
 - [x] 2.1 Add max-length clamping for `incompatibilityReason` in `checkCompatibility` return value
 - [x] 3.1 Add MUST CHECK #7 acknowledgement comments at rendering boundaries in `ConnectionDetail.tsx` and `ArchieEdge.tsx`
 - [x] 3.2 Run `npm run test:quick` — all tests pass
+
+## Code Review Deferred Items (2026-02-24)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-3c | ConnectionDetail useShallow restoration — prevent unnecessary re-renders from unrelated store updates | LOW | CREATED |
+
+## Code Review Quick Fixes Applied (2026-02-24)
+- clampReason ellipsis indicator (compatibilityChecker.ts)
+- Unique data-testid for endpoint health rows (ConnectionDetail.tsx)
+- getComponentById assertion with `toHaveBeenCalledWith` (ArchieEdge.test.tsx)
+- LABEL_INCOMPATIBILITY_OFFSET combined state test (ArchieEdge.test.tsx)
+- Empty-string reason edge case test (compatibilityChecker.test.ts)
+- E2E selector update for renamed testids (connection-inspection.spec.ts)
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-24
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Outcome:** APPROVE (8/10)
+- **Quick fixes applied:** 6
+- **TD stories created:** 1 (td-4-3c)
+- **Session cost:** $8.68
 
 ## Dev Notes
 - Source story: [4-3-connection-inspection-system](./story-4-3.md)

@@ -163,24 +163,22 @@ describe("checkCompatibility", () => {
       expect(result.reason).toBe(shortReason)
     })
 
-    it("truncates reason to MAX_INCOMPATIBILITY_REASON_LENGTH when over limit (source direction)", () => {
+    it("truncates reason with ellipsis when over limit (source direction)", () => {
       const longReason = "x".repeat(MAX_INCOMPATIBILITY_REASON_LENGTH + 100)
       const result = checkCompatibility(
         { category: "data-storage", compatibility: { caching: longReason } },
         { category: "caching" },
       )
-      expect(result.reason).toHaveLength(MAX_INCOMPATIBILITY_REASON_LENGTH)
-      expect(result.reason).toBe(longReason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH))
+      expect(result.reason).toBe(longReason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH) + "…")
     })
 
-    it("truncates reason to MAX_INCOMPATIBILITY_REASON_LENGTH when over limit (target direction)", () => {
+    it("truncates reason with ellipsis when over limit (target direction)", () => {
       const longReason = "y".repeat(MAX_INCOMPATIBILITY_REASON_LENGTH + 50)
       const result = checkCompatibility(
         { category: "compute" },
         { category: "caching", compatibility: { compute: longReason } },
       )
-      expect(result.reason).toHaveLength(MAX_INCOMPATIBILITY_REASON_LENGTH)
-      expect(result.reason).toBe(longReason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH))
+      expect(result.reason).toBe(longReason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH) + "…")
     })
 
     it("does not truncate reason at exact MAX_INCOMPATIBILITY_REASON_LENGTH boundary", () => {
@@ -191,6 +189,14 @@ describe("checkCompatibility", () => {
       )
       expect(result.reason).toHaveLength(MAX_INCOMPATIBILITY_REASON_LENGTH)
       expect(result.reason).toBe(exactReason)
+    })
+
+    it("returns incompatible with empty reason when compatibility value is empty string", () => {
+      const result = checkCompatibility(
+        { category: "data-storage", compatibility: { caching: "" } },
+        { category: "caching" },
+      )
+      expect(result).toEqual({ isCompatible: false, reason: "" })
     })
   })
 })

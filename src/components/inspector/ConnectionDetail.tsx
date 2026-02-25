@@ -108,11 +108,11 @@ export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
         <div data-testid="endpoint-health" className="space-y-2">
           <h3 className="text-xs font-medium text-text-primary">Endpoint Health</h3>
           <div className="space-y-1.5">
-            <div data-testid="endpoint-health-row" className="flex items-center justify-between text-xs">
+            <div data-testid="endpoint-health-source" className="flex items-center justify-between text-xs">
               <span className="text-text-secondary">{sourceName}</span>
               <HeatmapBadge status={sourceHeatmap} />
             </div>
-            <div data-testid="endpoint-health-row" className="flex items-center justify-between text-xs">
+            <div data-testid="endpoint-health-target" className="flex items-center justify-between text-xs">
               <span className="text-text-secondary">{targetName}</span>
               <HeatmapBadge status={targetHeatmap} />
             </div>

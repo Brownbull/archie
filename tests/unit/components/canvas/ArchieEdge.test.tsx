@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { ArchieEdge } from "@/components/canvas/ArchieEdge"
-import { HEATMAP_COLORS, MAX_LABEL_OFFSET } from "@/lib/constants"
+import { HEATMAP_COLORS, MAX_LABEL_OFFSET, LABEL_INCOMPATIBILITY_OFFSET } from "@/lib/constants"
 import type { ArchieEdgeData } from "@/stores/architectureStore"
 import type { EdgeProps, Position } from "@xyflow/react"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
@@ -351,6 +351,7 @@ describe("ArchieEdge", () => {
       )
       expect(screen.getByTestId("edge-label-edge-1")).toBeInTheDocument()
       expect(screen.getByText("gRPC")).toBeInTheDocument()
+      expect(mockGetComponentById).toHaveBeenCalledWith("comp-1")
     })
 
     it("does not render protocol label when source component has no connectionProperties", () => {
@@ -401,6 +402,34 @@ describe("ArchieEdge", () => {
       // labelX=50, labelY=50 (from getSmoothStepPath mock) + offset
       expect(label.style.transform).toContain("70px")
       expect(label.style.transform).toContain("40px")
+    })
+
+    it("protocol label shifts up by LABEL_INCOMPATIBILITY_OFFSET when incompatible", () => {
+      mockGetComponentById.mockReturnValue({
+        connectionProperties: {
+          protocol: "gRPC",
+          communicationPatterns: ["streaming"],
+          typicalLatency: "1ms",
+          coLocationPotential: true,
+        },
+      })
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: true,
+                incompatibilityReason: "Stale reads",
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+              },
+            })}
+          />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      // labelY=50 (from getSmoothStepPath mock) - LABEL_INCOMPATIBILITY_OFFSET = 34
+      expect(label.style.transform).toContain(`${50 - LABEL_INCOMPATIBILITY_OFFSET}px`)
     })
 
     it("protocol label has pointer-events-auto class for drag interaction", () => {

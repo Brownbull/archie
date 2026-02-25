@@ -12,7 +12,7 @@ interface CompatibilityInput {
 
 function clampReason(reason: string): string {
   return reason.length > MAX_INCOMPATIBILITY_REASON_LENGTH
-    ? reason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH)
+    ? reason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH) + "…"
     : reason
 }
 
