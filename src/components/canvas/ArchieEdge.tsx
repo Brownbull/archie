@@ -8,9 +8,11 @@ import type { EdgeProps } from "@xyflow/react"
 import type { ArchieEdge as ArchieEdgeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
-import { HEATMAP_COLORS } from "@/lib/constants"
+import { HEATMAP_COLORS, LABEL_INCOMPATIBILITY_OFFSET, MAX_LABEL_OFFSET } from "@/lib/constants"
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
 import { componentLibrary } from "@/services/componentLibrary"
+
+const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
 export function ArchieEdge({
   id,
@@ -48,12 +50,17 @@ export function ArchieEdge({
     : undefined
   const connectionProps = sourceComponent?.connectionProperties
 
-  // Drag state for label repositioning (AC-ARCH-PATTERN-5)
+  // Drag state for label repositioning (AC-ARCH-PATTERN-5, TD-4-3a)
+  // liveOffset tracks visual position during drag; store is committed once on pointerup
   const [dragState, setDragState] = useState<{
     startX: number
     startY: number
     originOffset: { x: number; y: number }
+    liveOffset: { x: number; y: number }
   } | null>(null)
+
+  // During drag, use liveOffset for smooth visual tracking; otherwise use the persisted store value
+  const displayOffset = dragState ? dragState.liveOffset : currentLabelOffset
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.stopPropagation()
@@ -62,26 +69,34 @@ export function ArchieEdge({
       startX: e.clientX,
       startY: e.clientY,
       originOffset: { ...currentLabelOffset },
+      liveOffset: { ...currentLabelOffset },
     })
   }
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!dragState) return
-    const dx = e.clientX - dragState.startX
-    const dy = e.clientY - dragState.startY
-    updateEdgeLabelOffset(id, {
-      x: dragState.originOffset.x + dx,
-      y: dragState.originOffset.y + dy,
+    setDragState((prev) => {
+      if (!prev) return prev
+      const dx = e.clientX - prev.startX
+      const dy = e.clientY - prev.startY
+      return {
+        ...prev,
+        liveOffset: {
+          x: prev.originOffset.x + dx,
+          y: prev.originOffset.y + dy,
+        },
+      }
     })
   }
 
-  const handlePointerUp = (e: React.PointerEvent) => {
+  const endDrag = (e: React.PointerEvent) => {
     e.currentTarget.releasePointerCapture(e.pointerId)
-    setDragState(null)
-  }
-
-  const handlePointerCancel = (e: React.PointerEvent) => {
-    e.currentTarget.releasePointerCapture(e.pointerId)
+    if (dragState) {
+      updateEdgeLabelOffset(id, {
+        x: clamp(dragState.liveOffset.x, -MAX_LABEL_OFFSET, MAX_LABEL_OFFSET),
+        y: clamp(dragState.liveOffset.y, -MAX_LABEL_OFFSET, MAX_LABEL_OFFSET),
+      })
+    }
     setDragState(null)
   }
 
@@ -105,7 +120,6 @@ export function ArchieEdge({
   }
 
   // Shift protocol label up when incompatibility warning is also present at (labelX, labelY)
-  const LABEL_INCOMPATIBILITY_OFFSET = 16
   const protocolLabelBaseY = isIncompatible ? labelY - LABEL_INCOMPATIBILITY_OFFSET : labelY
 
   return (
@@ -141,12 +155,12 @@ export function ArchieEdge({
             data-testid={`edge-label-${id}`}
             className="pointer-events-auto nodrag nopan absolute cursor-grab select-none rounded bg-panel px-1.5 py-0.5 text-[10px] text-text-secondary shadow-sm border border-archie-border"
             style={{
-              transform: `translate(-50%, -50%) translate(${labelX + currentLabelOffset.x}px, ${protocolLabelBaseY + currentLabelOffset.y}px)`,
+              transform: `translate(-50%, -50%) translate(${labelX + displayOffset.x}px, ${protocolLabelBaseY + displayOffset.y}px)`,
             }}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerCancel}
+            onPointerUp={endDrag}
+            onPointerCancel={endDrag}
           >
             {connectionProps.protocol}
           </div>

@@ -132,7 +132,9 @@ development_status:
   td-4-2d-componentdetail-memo-consolidation: done
   td-4-2e-schema-validation-completeness: done
   td-4-2f-metric-explanation-yaml-schema-extraction: done
-  4-3-connection-inspection-system: review
+  4-3-connection-inspection-system: done
+  td-4-3a-edge-drag-ux-hardening: review
+  td-4-3b-library-data-rendering-hardening: ready-for-dev
   4-4-dashboard-drill-down-and-issues-navigation: ready-for-dev
   4-5-canvas-visual-polish: ready-for-dev
   4-6-inspector-ux-polish: ready-for-dev

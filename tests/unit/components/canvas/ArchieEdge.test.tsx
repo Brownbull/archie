@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { ArchieEdge } from "@/components/canvas/ArchieEdge"
-import { HEATMAP_COLORS } from "@/lib/constants"
+import { HEATMAP_COLORS, MAX_LABEL_OFFSET } from "@/lib/constants"
 import type { ArchieEdgeData } from "@/stores/architectureStore"
 import type { EdgeProps, Position } from "@xyflow/react"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
@@ -77,12 +77,21 @@ function createEdgeProps(
   } as EdgeProps<ArchieEdgeData>
 }
 
+// jsdom does not implement setPointerCapture/releasePointerCapture
+const mockSetPointerCapture = vi.fn()
+const mockReleasePointerCapture = vi.fn()
+
 describe("ArchieEdge", () => {
   beforeEach(() => {
     mockEdgeHeatmapColors.clear()
     mockHeatmapEnabled = false
     mockGetComponent.mockReset()
     mockUpdateEdgeLabelOffset.mockReset()
+    mockSetPointerCapture.mockReset()
+    mockReleasePointerCapture.mockReset()
+    // Use Element.prototype — label div inside <svg> may be in SVG namespace in jsdom
+    Element.prototype.setPointerCapture = mockSetPointerCapture as unknown as (pointerId: number) => void
+    Element.prototype.releasePointerCapture = mockReleasePointerCapture as unknown as (pointerId: number) => void
   })
 
   it("renders edge path", () => {
@@ -407,6 +416,140 @@ describe("ArchieEdge", () => {
       )
       const label = screen.getByTestId("edge-label-edge-1")
       expect(label.getAttribute("class")).toContain("pointer-events-auto")
+    })
+  })
+
+  describe("drag interaction", () => {
+    const connectionProps = {
+      protocol: "gRPC",
+      communicationPatterns: ["streaming"],
+      typicalLatency: "1ms",
+      coLocationPotential: true,
+    }
+
+    beforeEach(() => {
+      mockGetComponent.mockReturnValue({ connectionProperties: connectionProps })
+    })
+
+    it("pointerdown captures pointer on the label element", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 100, clientY: 100, pointerId: 1 })
+      expect(mockSetPointerCapture).toHaveBeenCalledWith(1)
+    })
+
+    it("pointermove does NOT call updateEdgeLabelOffset during drag", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 100, clientY: 100, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: 130, clientY: 110, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: 150, clientY: 120, pointerId: 1 })
+      expect(mockUpdateEdgeLabelOffset).not.toHaveBeenCalled()
+    })
+
+    it("pointerup commits offset to store exactly once with correct delta", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 100, clientY: 100, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: 130, clientY: 110, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: 150, clientY: 120, pointerId: 1 })
+      fireEvent.pointerUp(label, { clientX: 150, clientY: 120, pointerId: 1 })
+      expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledTimes(1)
+      expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledWith("edge-1", { x: 50, y: 20 })
+    })
+
+    it("pointerup calls releasePointerCapture", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 100, clientY: 100, pointerId: 1 })
+      fireEvent.pointerUp(label, { clientX: 120, clientY: 100, pointerId: 1 })
+      expect(mockReleasePointerCapture).toHaveBeenCalledWith(1)
+    })
+
+    it("clamps positive offset to MAX_LABEL_OFFSET before store commit", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 0, clientY: 0, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: 999, clientY: 999, pointerId: 1 })
+      fireEvent.pointerUp(label, { clientX: 999, clientY: 999, pointerId: 1 })
+      expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledWith("edge-1", {
+        x: MAX_LABEL_OFFSET,
+        y: MAX_LABEL_OFFSET,
+      })
+    })
+
+    it("clamps negative offset to -MAX_LABEL_OFFSET before store commit", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 0, clientY: 0, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: -999, clientY: -999, pointerId: 1 })
+      fireEvent.pointerUp(label, { clientX: -999, clientY: -999, pointerId: 1 })
+      expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledWith("edge-1", {
+        x: -MAX_LABEL_OFFSET,
+        y: -MAX_LABEL_OFFSET,
+      })
+    })
+
+    it("incorporates existing labelOffset into drag delta", () => {
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: false,
+                incompatibilityReason: null,
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                labelOffset: { x: 10, y: -5 },
+              },
+            })}
+          />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 100, clientY: 100, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: 120, clientY: 90, pointerId: 1 })
+      fireEvent.pointerUp(label, { clientX: 120, clientY: 90, pointerId: 1 })
+      // originOffset (10, -5) + delta (20, -10) = (30, -15)
+      expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledWith("edge-1", { x: 30, y: -15 })
+    })
+
+    it("commits store on pointercancel (same as pointerup)", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 100, clientY: 100, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: 130, clientY: 110, pointerId: 1 })
+      fireEvent.pointerCancel(label, { clientX: 130, clientY: 110, pointerId: 1 })
+      expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledTimes(1)
+      expect(mockReleasePointerCapture).toHaveBeenCalledWith(1)
     })
   })
 })

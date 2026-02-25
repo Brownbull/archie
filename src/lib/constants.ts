@@ -105,6 +105,12 @@ export const HEATMAP_COLORS = {
   bottleneck: "var(--color-heatmap-red)",
 } as const
 
+// Edge label offset when incompatibility warning is present (Story 4-3)
+export const LABEL_INCOMPATIBILITY_OFFSET = 16
+
+// Maximum px offset for draggable edge labels — prevents labels disappearing off-screen (TD-4-3a)
+export const MAX_LABEL_OFFSET = 500
+
 // Z-index scale — prevents stacking conflicts as overlays are added (TD-2-4a)
 // shadcn UI components (dialog, select, dropdown-menu) use z-50 by default
 export const Z_INDEX = {
