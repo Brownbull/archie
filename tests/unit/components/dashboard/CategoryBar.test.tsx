@@ -90,6 +90,20 @@ describe("CategoryBar", () => {
     expect(fill.className).toContain("bg-red-500")
   })
 
+  it("applies yellow at exact threshold score=4", () => {
+    render(<CategoryBar {...defaultProps} score={4} />)
+
+    const fill = screen.getByTestId("category-bar-fill-performance")
+    expect(fill.className).toContain("bg-yellow-500")
+  })
+
+  it("applies red at score=3.99 (just below yellow threshold)", () => {
+    render(<CategoryBar {...defaultProps} score={3.99} />)
+
+    const fill = screen.getByTestId("category-bar-fill-performance")
+    expect(fill.className).toContain("bg-red-500")
+  })
+
   it("has role=meter with correct ARIA attributes", () => {
     render(<CategoryBar {...defaultProps} score={7} />)
 
@@ -136,8 +150,16 @@ describe("CategoryBar", () => {
     render(<CategoryBar {...defaultProps} score={15} />)
 
     const fill = screen.getByTestId("category-bar-fill-performance")
-    // Math.min(100, 15/10*100) = 100%
     expect(fill).toHaveStyle({ width: "100%" })
+    const meter = screen.getByRole("meter")
+    expect(meter).toHaveAttribute("aria-valuenow", "15")
+  })
+
+  it("clamps fill width to 0% for negative scores", () => {
+    render(<CategoryBar {...defaultProps} score={-1} />)
+
+    const fill = screen.getByTestId("category-bar-fill-performance")
+    expect(fill).toHaveStyle({ width: "0%" })
   })
 
   // --- onClick handler (AC-FUNC-4) ---

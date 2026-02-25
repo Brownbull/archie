@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-4a: Dashboard Component Test Coverage
 
-Status: in-progress
+Status: done
 
 > **Source:** ECC Code Review (2026-02-25) on story 4-4
 > **Priority:** MEDIUM | **Estimated Effort:** Small (2 tasks, 2 new files)
@@ -39,3 +39,15 @@ As a **developer**, I want **dedicated unit tests for CategoryInfoPopup and Cate
 - Source story: [story-4-4](./story-4-4.md)
 - Review findings: #10, #11
 - Files affected: `tests/unit/components/dashboard/CategoryInfoPopup.test.tsx` (CREATE), `tests/unit/components/dashboard/CategoryBar.test.tsx` (CREATE+EXTEND)
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-25
+- **Agents:** code-reviewer, tdd-guide (SIMPLE classification)
+- **Outcome:** APPROVE 9/10, 4 quick fixes applied
+- **Fixes applied:**
+  1. Source bug: negative score clamp added to CategoryBar.tsx `widthPercent`
+  2. AC-FUNC-6: Popover mock updated with close trigger, `onOpenChange(false)` test added
+  3. Threshold boundary tests added (score=4, score=3.99)
+  4. `aria-valuenow` assertion added to score=15 clamp test
+- **TD stories created:** 0
+- **Test health:** All green (80 files, 1297 tests)

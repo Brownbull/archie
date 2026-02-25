@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
 import type { MetricCategory } from "@/schemas/metricCategorySchema"
 
@@ -8,10 +8,21 @@ vi.mock("@/components/ui/popover", () => ({
   Popover: ({
     children,
     open,
+    onOpenChange,
   }: {
     children: React.ReactNode
     open: boolean
-  }) => (open ? <div data-testid="popover-root">{children}</div> : null),
+    onOpenChange?: (open: boolean) => void
+  }) =>
+    open ? (
+      <div data-testid="popover-root">
+        <button
+          data-testid="popover-close-trigger"
+          onClick={() => onOpenChange?.(false)}
+        />
+        {children}
+      </div>
+    ) : null,
   PopoverTrigger: ({
     children,
   }: {
@@ -316,9 +327,7 @@ describe("CategoryInfoPopup", () => {
   // --- AC-FUNC-6: Close behavior ---
 
   describe("close behavior (AC-FUNC-6)", () => {
-    it("passes onOpenChange to Popover for close handling", () => {
-      // The component delegates close (Escape/outside-click) to the Popover component.
-      // We verify the onOpenChange prop is correctly wired.
+    it("renders popup content when open=true", () => {
       render(
         <CategoryInfoPopup
           category={makeCategory()}
@@ -330,7 +339,6 @@ describe("CategoryInfoPopup", () => {
         </CategoryInfoPopup>,
       )
 
-      // Popover content is rendered when open=true
       expect(screen.getByTestId("category-info-popup")).toBeInTheDocument()
     })
 
@@ -346,10 +354,26 @@ describe("CategoryInfoPopup", () => {
         </CategoryInfoPopup>,
       )
 
-      // Our mock Popover returns null when open=false
       expect(
         screen.queryByTestId("category-info-popup"),
       ).not.toBeInTheDocument()
+    })
+
+    it("calls onOpenChange(false) when Popover requests close", () => {
+      render(
+        <CategoryInfoPopup
+          category={makeCategory()}
+          score={5}
+          open={true}
+          onOpenChange={mockOnOpenChange}
+        >
+          <button>trigger</button>
+        </CategoryInfoPopup>,
+      )
+
+      fireEvent.click(screen.getByTestId("popover-close-trigger"))
+
+      expect(mockOnOpenChange).toHaveBeenCalledWith(false)
     })
   })
 })

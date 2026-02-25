@@ -19,7 +19,7 @@ export function CategoryBar({
   score,
   onClick,
 }: CategoryBarProps) {
-  const widthPercent = Math.min(100, (score / METRIC_MAX_VALUE) * 100)
+  const widthPercent = Math.max(0, Math.min(100, (score / METRIC_MAX_VALUE) * 100))
   const fillColor = getScoreColor(score)
   const IconComponent = CATEGORY_ICONS[iconName as keyof typeof CATEGORY_ICONS]
 
