@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
+import { MAX_INCOMPATIBILITY_REASON_LENGTH } from "@/lib/constants"
 
 describe("checkCompatibility", () => {
   it("returns compatible when source is undefined", () => {
@@ -149,6 +150,47 @@ describe("checkCompatibility", () => {
         { category: "caching", compatibility: {} },
       )
       expect(result).toEqual({ isCompatible: true, reason: "" })
+    })
+  })
+
+  describe("incompatibilityReason clamping (TD-4-3b AC-2)", () => {
+    it("returns reason unchanged when under the max-length limit", () => {
+      const shortReason = "Short reason"
+      const result = checkCompatibility(
+        { category: "data-storage", compatibility: { caching: shortReason } },
+        { category: "caching" },
+      )
+      expect(result.reason).toBe(shortReason)
+    })
+
+    it("truncates reason to MAX_INCOMPATIBILITY_REASON_LENGTH when over limit (source direction)", () => {
+      const longReason = "x".repeat(MAX_INCOMPATIBILITY_REASON_LENGTH + 100)
+      const result = checkCompatibility(
+        { category: "data-storage", compatibility: { caching: longReason } },
+        { category: "caching" },
+      )
+      expect(result.reason).toHaveLength(MAX_INCOMPATIBILITY_REASON_LENGTH)
+      expect(result.reason).toBe(longReason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH))
+    })
+
+    it("truncates reason to MAX_INCOMPATIBILITY_REASON_LENGTH when over limit (target direction)", () => {
+      const longReason = "y".repeat(MAX_INCOMPATIBILITY_REASON_LENGTH + 50)
+      const result = checkCompatibility(
+        { category: "compute" },
+        { category: "caching", compatibility: { compute: longReason } },
+      )
+      expect(result.reason).toHaveLength(MAX_INCOMPATIBILITY_REASON_LENGTH)
+      expect(result.reason).toBe(longReason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH))
+    })
+
+    it("does not truncate reason at exact MAX_INCOMPATIBILITY_REASON_LENGTH boundary", () => {
+      const exactReason = "z".repeat(MAX_INCOMPATIBILITY_REASON_LENGTH)
+      const result = checkCompatibility(
+        { category: "data-storage", compatibility: { caching: exactReason } },
+        { category: "caching" },
+      )
+      expect(result.reason).toHaveLength(MAX_INCOMPATIBILITY_REASON_LENGTH)
+      expect(result.reason).toBe(exactReason)
     })
   })
 })

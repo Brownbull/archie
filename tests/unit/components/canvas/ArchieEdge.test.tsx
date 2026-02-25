@@ -43,13 +43,16 @@ vi.mock("@/stores/uiStore", () => ({
   ),
 }))
 
-// Mock componentLibrary for protocol label lookup
-const mockGetComponent = vi.fn()
-vi.mock("@/services/componentLibrary", () => ({
-  componentLibrary: {
-    getComponent: (...args: unknown[]) => mockGetComponent(...args),
-    isInitialized: () => true,
-  },
+// Mock useLibrary hook for protocol label lookup (TD-4-3b AC-1)
+const mockGetComponentById = vi.fn()
+vi.mock("@/hooks/useLibrary", () => ({
+  useLibrary: () => ({
+    isReady: true,
+    components: [],
+    getComponentById: mockGetComponentById,
+    getComponentsByCategory: vi.fn(),
+    searchComponents: vi.fn(),
+  }),
 }))
 
 function createEdgeProps(
@@ -85,7 +88,7 @@ describe("ArchieEdge", () => {
   beforeEach(() => {
     mockEdgeHeatmapColors.clear()
     mockHeatmapEnabled = false
-    mockGetComponent.mockReset()
+    mockGetComponentById.mockReset()
     mockUpdateEdgeLabelOffset.mockReset()
     mockSetPointerCapture.mockReset()
     mockReleasePointerCapture.mockReset()
@@ -333,7 +336,7 @@ describe("ArchieEdge", () => {
 
   describe("protocol label", () => {
     it("renders protocol label when source component has connectionProperties", () => {
-      mockGetComponent.mockReturnValue({
+      mockGetComponentById.mockReturnValue({
         connectionProperties: {
           protocol: "gRPC",
           communicationPatterns: ["streaming"],
@@ -351,7 +354,7 @@ describe("ArchieEdge", () => {
     })
 
     it("does not render protocol label when source component has no connectionProperties", () => {
-      mockGetComponent.mockReturnValue({ connectionProperties: undefined })
+      mockGetComponentById.mockReturnValue({ connectionProperties: undefined })
       render(
         <svg>
           <ArchieEdge {...createEdgeProps()} />
@@ -361,7 +364,7 @@ describe("ArchieEdge", () => {
     })
 
     it("does not render protocol label when source component not found", () => {
-      mockGetComponent.mockReturnValue(undefined)
+      mockGetComponentById.mockReturnValue(undefined)
       render(
         <svg>
           <ArchieEdge {...createEdgeProps()} />
@@ -371,7 +374,7 @@ describe("ArchieEdge", () => {
     })
 
     it("protocol label applies stored labelOffset to position", () => {
-      mockGetComponent.mockReturnValue({
+      mockGetComponentById.mockReturnValue({
         connectionProperties: {
           protocol: "TCP",
           communicationPatterns: [],
@@ -401,7 +404,7 @@ describe("ArchieEdge", () => {
     })
 
     it("protocol label has pointer-events-auto class for drag interaction", () => {
-      mockGetComponent.mockReturnValue({
+      mockGetComponentById.mockReturnValue({
         connectionProperties: {
           protocol: "HTTP",
           communicationPatterns: [],
@@ -428,7 +431,7 @@ describe("ArchieEdge", () => {
     }
 
     beforeEach(() => {
-      mockGetComponent.mockReturnValue({ connectionProperties: connectionProps })
+      mockGetComponentById.mockReturnValue({ connectionProperties: connectionProps })
     })
 
     it("pointerdown captures pointer on the label element", () => {
@@ -550,6 +553,34 @@ describe("ArchieEdge", () => {
       fireEvent.pointerCancel(label, { clientX: 130, clientY: 110, pointerId: 1 })
       expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledTimes(1)
       expect(mockReleasePointerCapture).toHaveBeenCalledWith(1)
+    })
+
+    it("does not call updateEdgeLabelOffset on pointerup without prior pointerdown", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerUp(label, { clientX: 50, clientY: 50, pointerId: 1 })
+      expect(mockUpdateEdgeLabelOffset).not.toHaveBeenCalled()
+      expect(mockReleasePointerCapture).toHaveBeenCalledWith(1)
+    })
+
+    it("passes through offset at exact MAX_LABEL_OFFSET boundary without clamping", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const label = screen.getByTestId("edge-label-edge-1")
+      fireEvent.pointerDown(label, { clientX: 0, clientY: 0, pointerId: 1 })
+      fireEvent.pointerMove(label, { clientX: MAX_LABEL_OFFSET, clientY: -MAX_LABEL_OFFSET, pointerId: 1 })
+      fireEvent.pointerUp(label, { clientX: MAX_LABEL_OFFSET, clientY: -MAX_LABEL_OFFSET, pointerId: 1 })
+      expect(mockUpdateEdgeLabelOffset).toHaveBeenCalledWith("edge-1", {
+        x: MAX_LABEL_OFFSET,
+        y: -MAX_LABEL_OFFSET,
+      })
     })
   })
 })

@@ -111,6 +111,9 @@ export const LABEL_INCOMPATIBILITY_OFFSET = 16
 // Maximum px offset for draggable edge labels — prevents labels disappearing off-screen (TD-4-3a)
 export const MAX_LABEL_OFFSET = 500
 
+// Maximum character length for incompatibility reason strings (TD-4-3b AC-2)
+export const MAX_INCOMPATIBILITY_REASON_LENGTH = 500
+
 // Z-index scale — prevents stacking conflicts as overlays are added (TD-2-4a)
 // shadcn UI components (dialog, select, dropdown-menu) use z-50 by default
 export const Z_INDEX = {

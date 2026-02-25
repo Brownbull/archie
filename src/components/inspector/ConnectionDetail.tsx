@@ -1,4 +1,3 @@
-import { useShallow } from "zustand/react/shallow"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useLibrary } from "@/hooks/useLibrary"
 import { HEATMAP_COLORS } from "@/lib/constants"
@@ -24,7 +23,7 @@ function HeatmapBadge({ status }: { status: HeatmapStatus | undefined }) {
 
 export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
   const edge = useArchitectureStore(
-    useShallow((s) => s.edges.find((e) => e.id === edgeId)),
+    (s) => s.edges.find((e) => e.id === edgeId),
   )
   const sourceHeatmap = useArchitectureStore(
     (s) => s.heatmapColors.get(edge?.source ?? ""),
@@ -62,7 +61,8 @@ export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
 
         <Separator />
 
-        {/* Connection Properties */}
+        {/* Connection Properties — MUST CHECK #7: library-sourced strings (protocol, typicalLatency,
+           communicationPatterns) rendered via JSX; React auto-escaping prevents injection (TD-4-3b AC-3) */}
         {connectionProps ? (
           <div data-testid="connection-properties" className="space-y-2">
             <h3 className="text-xs font-medium text-text-primary">Properties</h3>
@@ -108,11 +108,11 @@ export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
         <div data-testid="endpoint-health" className="space-y-2">
           <h3 className="text-xs font-medium text-text-primary">Endpoint Health</h3>
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs">
+            <div data-testid="endpoint-health-row" className="flex items-center justify-between text-xs">
               <span className="text-text-secondary">{sourceName}</span>
               <HeatmapBadge status={sourceHeatmap} />
             </div>
-            <div className="flex items-center justify-between text-xs">
+            <div data-testid="endpoint-health-row" className="flex items-center justify-between text-xs">
               <span className="text-text-secondary">{targetName}</span>
               <HeatmapBadge status={targetHeatmap} />
             </div>
@@ -130,7 +130,8 @@ export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
           </div>
         </div>
 
-        {/* Incompatibility Warning */}
+        {/* Incompatibility Warning — MUST CHECK #7: incompatibilityReason is engine-sourced,
+           clamped at MAX_INCOMPATIBILITY_REASON_LENGTH; React auto-escaping prevents injection (TD-4-3b AC-3) */}
         {edge.data.isIncompatible && edge.data.incompatibilityReason && (
           <>
             <Separator />

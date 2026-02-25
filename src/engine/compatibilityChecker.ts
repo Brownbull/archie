@@ -1,3 +1,5 @@
+import { MAX_INCOMPATIBILITY_REASON_LENGTH } from "@/lib/constants"
+
 export interface CompatibilityResult {
   isCompatible: boolean
   reason: string
@@ -6,6 +8,12 @@ export interface CompatibilityResult {
 interface CompatibilityInput {
   category: string
   compatibility?: Record<string, string>
+}
+
+function clampReason(reason: string): string {
+  return reason.length > MAX_INCOMPATIBILITY_REASON_LENGTH
+    ? reason.slice(0, MAX_INCOMPATIBILITY_REASON_LENGTH)
+    : reason
 }
 
 export function checkCompatibility(
@@ -21,7 +29,7 @@ export function checkCompatibility(
   if (sourceCompat && Object.keys(sourceCompat).length > 0) {
     const reason = sourceCompat[targetComponent.category]
     if (reason !== undefined) {
-      return { isCompatible: false, reason }
+      return { isCompatible: false, reason: clampReason(reason) }
     }
   }
 
@@ -30,7 +38,7 @@ export function checkCompatibility(
   if (targetCompat && Object.keys(targetCompat).length > 0) {
     const reason = targetCompat[sourceComponent.category]
     if (reason !== undefined) {
-      return { isCompatible: false, reason }
+      return { isCompatible: false, reason: clampReason(reason) }
     }
   }
 

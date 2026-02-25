@@ -10,7 +10,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { HEATMAP_COLORS, LABEL_INCOMPATIBILITY_OFFSET, MAX_LABEL_OFFSET } from "@/lib/constants"
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
-import { componentLibrary } from "@/services/componentLibrary"
+import { useLibrary } from "@/hooks/useLibrary"
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
@@ -43,10 +43,11 @@ export function ArchieEdge({
   const isIncompatible = data?.isIncompatible ?? false
   const currentLabelOffset = data?.labelOffset ?? { x: 0, y: 0 }
 
-  // Look up source component's connectionProperties for protocol label
+  // Look up source component's connectionProperties for protocol label (TD-4-3b AC-1: useLibrary for reactivity)
+  const { getComponentById } = useLibrary()
   const sourceComponentId = data?.sourceArchieComponentId ?? ""
   const sourceComponent = sourceComponentId
-    ? componentLibrary.getComponent(sourceComponentId)
+    ? getComponentById(sourceComponentId)
     : undefined
   const connectionProps = sourceComponent?.connectionProperties
 
@@ -149,6 +150,7 @@ export function ArchieEdge({
           </div>
         </EdgeLabelRenderer>
       )}
+      {/* MUST CHECK #7: connectionProps.protocol is library-sourced; React JSX auto-escaping prevents injection (TD-4-3b AC-3) */}
       {connectionProps && (
         <EdgeLabelRenderer>
           <div
