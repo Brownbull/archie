@@ -1,3 +1,4 @@
+import { useShallow } from "zustand/react/shallow"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useLibrary } from "@/hooks/useLibrary"
 import { HEATMAP_COLORS } from "@/lib/constants"
@@ -23,7 +24,7 @@ function HeatmapBadge({ status }: { status: HeatmapStatus | undefined }) {
 
 export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
   const edge = useArchitectureStore(
-    (s) => s.edges.find((e) => e.id === edgeId),
+    useShallow((s) => s.edges.find((e) => e.id === edgeId)),
   )
   const sourceHeatmap = useArchitectureStore(
     (s) => s.heatmapColors.get(edge?.source ?? ""),

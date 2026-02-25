@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, act } from "@testing-library/react"
+import { Profiler, type ProfilerOnRenderCallback } from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useArchitectureStore, type ArchieEdge } from "@/stores/architectureStore"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
@@ -197,5 +198,42 @@ describe("ConnectionDetail", () => {
 
     expect(screen.getByTestId("connection-detail")).toBeInTheDocument()
     expect(screen.getByTestId("no-connection-properties")).toBeInTheDocument()
+  })
+
+  it("does not re-render when edges array is replaced with structurally-equal edge objects", () => {
+    useArchitectureStore.setState({ edges: [mockEdge] })
+    mockGetComponentById.mockImplementation((id: string) => {
+      if (id === "comp-source") return mockSourceComponent
+      if (id === "comp-target") return mockTargetComponent
+      return undefined
+    })
+
+    let renderCount = 0
+    const onRender: ProfilerOnRenderCallback = () => {
+      renderCount++
+    }
+
+    render(
+      <Profiler id="connection-detail-profiler" onRender={onRender}>
+        <ConnectionDetail edgeId="edge-1" />
+      </Profiler>,
+    )
+
+    expect(screen.getByTestId("connection-detail")).toBeInTheDocument()
+    const rendersAfterMount = renderCount
+    expect(rendersAfterMount).toBeGreaterThanOrEqual(1)
+
+    // Replace edges array with a new edge object that has the same property values.
+    // This mirrors real Zustand patterns like deselectAll() which spreads edges:
+    //   edges.map(e => e.selected ? { ...e, selected: false } : e)
+    // Without useShallow: Object.is(oldEdge, newEdge) is false → re-render
+    // With useShallow: shallow comparison of properties → equal → no re-render
+    act(() => {
+      useArchitectureStore.setState({
+        edges: [{ ...mockEdge }],
+      })
+    })
+
+    expect(renderCount).toBe(rendersAfterMount)
   })
 })
