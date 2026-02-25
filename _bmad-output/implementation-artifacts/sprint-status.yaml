@@ -139,7 +139,7 @@ development_status:
   td-4-3d-code-style-consistency: done
   4-4-dashboard-drill-down-and-issues-navigation: done
   td-4-4a-dashboard-component-test-coverage: done
-  td-4-4b-schema-and-repository-hardening: ready-for-dev
+  td-4-4b-schema-and-repository-hardening: review
   4-5-canvas-visual-polish: ready-for-dev
   4-6-inspector-ux-polish: ready-for-dev
   epic-4-retrospective: optional
