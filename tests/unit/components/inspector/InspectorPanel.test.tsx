@@ -70,6 +70,8 @@ describe("InspectorPanel", () => {
       selectedNodeId: null,
       selectedEdgeId: null,
       inspectorCollapsed: false,
+      inspectorWidth: 300,
+      inspectorOverlay: false,
     })
     useArchitectureStore.setState({ nodes: [], edges: [] })
   })
@@ -192,6 +194,119 @@ describe("InspectorPanel", () => {
     useArchitectureStore.getState().updateNodeConfigVariant("node-1", "standard")
     // No-op guard: same variant should not create new array reference
     expect(useArchitectureStore.getState().nodes).toBe(nodesBefore)
+  })
+
+  describe("expand toggle (AC-1)", () => {
+    it("renders expand toggle button", () => {
+      useUiStore.setState({ selectedNodeId: "node-1", inspectorCollapsed: false })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      expect(screen.getByTestId("inspector-expand-toggle")).toBeInTheDocument()
+    })
+
+    it("clicking toggle sets width to 500 (INSPECTOR_EXPANDED_WIDTH)", () => {
+      useUiStore.setState({ selectedNodeId: "node-1", inspectorWidth: 300 })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      fireEvent.click(screen.getByTestId("inspector-expand-toggle"))
+      expect(useUiStore.getState().inspectorWidth).toBe(500)
+    })
+
+    it("clicking toggle again returns to 300 (INSPECTOR_DEFAULT_WIDTH)", () => {
+      useUiStore.setState({ selectedNodeId: "node-1", inspectorWidth: 500 })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      fireEvent.click(screen.getByTestId("inspector-expand-toggle"))
+      expect(useUiStore.getState().inspectorWidth).toBe(300)
+    })
+
+    it("toggle from intermediate drag width (420) compacts to 300", () => {
+      useUiStore.setState({ selectedNodeId: "node-1", inspectorWidth: 420 })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      // 420 > 300 (INSPECTOR_DEFAULT_WIDTH) → isExpanded = true → toggle compacts
+      fireEvent.click(screen.getByTestId("inspector-expand-toggle"))
+      expect(useUiStore.getState().inspectorWidth).toBe(300)
+    })
+
+    it("renders maximize button for full-screen overlay", () => {
+      useUiStore.setState({ selectedNodeId: "node-1" })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      expect(screen.getByTestId("inspector-maximize-btn")).toBeInTheDocument()
+    })
+
+    it("clicking maximize sets inspectorOverlay to true", () => {
+      useUiStore.setState({ selectedNodeId: "node-1" })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      fireEvent.click(screen.getByTestId("inspector-maximize-btn"))
+      expect(useUiStore.getState().inspectorOverlay).toBe(true)
+    })
+  })
+
+  describe("section anchor navigation (AC-6)", () => {
+    it("renders section nav when node is selected", () => {
+      useUiStore.setState({ selectedNodeId: "node-1" })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      expect(screen.getByTestId("inspector-section-nav")).toBeInTheDocument()
+    })
+
+    it("section nav has Code, Details, Metrics buttons", () => {
+      useUiStore.setState({ selectedNodeId: "node-1" })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      expect(screen.getByText("Code")).toBeInTheDocument()
+      expect(screen.getByText("Details")).toBeInTheDocument()
+      expect(screen.getByText("Metrics")).toBeInTheDocument()
+    })
+
+    it("does not render section nav when edge is selected", () => {
+      useUiStore.setState({ selectedEdgeId: "edge-1", selectedNodeId: null })
+      useArchitectureStore.setState({ nodes: [mockNode], edges: [] })
+
+      render(<InspectorPanel />)
+      expect(screen.queryByTestId("inspector-section-nav")).not.toBeInTheDocument()
+    })
+
+    it("clicking section button calls scrollIntoView on target (AC-ARCH-PATTERN-5)", () => {
+      useUiStore.setState({ selectedNodeId: "node-1" })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      // Create a mock element with data-section attribute in the DOM
+      const mockSection = document.createElement("div")
+      mockSection.setAttribute("data-section", "metrics")
+      mockSection.scrollIntoView = vi.fn()
+      document.body.appendChild(mockSection)
+
+      render(<InspectorPanel />)
+      fireEvent.click(screen.getByText("Metrics"))
+
+      expect(mockSection.scrollIntoView).toHaveBeenCalledWith({
+        behavior: "smooth",
+        block: "start",
+      })
+
+      document.body.removeChild(mockSection)
+    })
   })
 
   describe("edge selection (AC-ARCH-PATTERN-1)", () => {

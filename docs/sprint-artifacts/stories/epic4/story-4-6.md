@@ -1,6 +1,6 @@
 # Story 4-6: Inspector UX Polish
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 4 — Deep Intelligence & Polish
 ## Branch: feature/epic-4
 
@@ -119,45 +119,45 @@ Expanding from collapsed restores the previous non-collapsed width.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: State management updates
-  - [ ] 1.1 Add `inspectorWidth: number` (default 300) and `inspectorOverlay: boolean` (default false) to uiStore
-  - [ ] 1.2 Add `setInspectorWidth()` and `setInspectorOverlay()` actions
-  - [ ] 1.3 Update `INSPECTOR_WIDTH` to `INSPECTOR_DEFAULT_WIDTH`, add `INSPECTOR_EXPANDED_WIDTH`, `INSPECTOR_MIN_WIDTH`, `INSPECTOR_MAX_WIDTH` constants
-  - [ ] 1.4 Update `AppLayout.tsx` width calculation: use `inspectorWidth` from uiStore instead of hardcoded `INSPECTOR_WIDTH`
+- [x] Task 1: State management updates
+  - [x] 1.1 Add `inspectorWidth: number` (default 300) and `inspectorOverlay: boolean` (default false) to uiStore
+  - [x] 1.2 Add `setInspectorWidth()` and `setInspectorOverlay()` actions
+  - [x] 1.3 Update `INSPECTOR_WIDTH` to `INSPECTOR_DEFAULT_WIDTH`, add `INSPECTOR_EXPANDED_WIDTH`, `INSPECTOR_MIN_WIDTH`, `INSPECTOR_MAX_WIDTH` constants
+  - [x] 1.4 Update `AppLayout.tsx` width calculation: use `inspectorWidth` from uiStore instead of hardcoded `INSPECTOR_WIDTH`
 
-- [ ] Task 2: Toggle expand/compact button
-  - [ ] 2.1 Add toggle button (Maximize2/Minimize2 icons from lucide-react) to InspectorPanel header bar
-  - [ ] 2.2 On click: toggle between `INSPECTOR_DEFAULT_WIDTH` (300) and `INSPECTOR_EXPANDED_WIDTH` (500)
-  - [ ] 2.3 Add `data-testid="inspector-expand-toggle"` to the button
+- [x] Task 2: Toggle expand/compact button
+  - [x] 2.1 Add toggle button (Maximize2/Minimize2 icons from lucide-react) to InspectorPanel header bar
+  - [x] 2.2 On click: toggle between `INSPECTOR_DEFAULT_WIDTH` (300) and `INSPECTOR_EXPANDED_WIDTH` (500)
+  - [x] 2.3 Add `data-testid="inspector-expand-toggle"` to the button
 
-- [ ] Task 3: Drag resize handle
-  - [ ] 3.1 Create `InspectorResizeHandle.tsx` — 4px-wide div on inspector's left edge
-  - [ ] 3.2 Implement `onPointerDown` → `setPointerCapture` → `onPointerMove` updates `inspectorWidth` → `onPointerUp` releases
-  - [ ] 3.3 Clamp width between `INSPECTOR_MIN_WIDTH` (200) and `INSPECTOR_MAX_WIDTH` (700)
-  - [ ] 3.4 Show `cursor-col-resize` on hover, highlight line on active drag
-  - [ ] 3.5 Add `data-testid="inspector-resize-handle"` to the handle
-  - [ ] 3.6 Render handle in `AppLayout.tsx` adjacent to the inspector `<aside>`
+- [x] Task 3: Drag resize handle
+  - [x] 3.1 Create `InspectorResizeHandle.tsx` — 4px-wide div on inspector's left edge
+  - [x] 3.2 Implement `onPointerDown` → `setPointerCapture` → `onPointerMove` updates `inspectorWidth` → `onPointerUp` releases
+  - [x] 3.3 Clamp width between `INSPECTOR_MIN_WIDTH` (200) and `INSPECTOR_MAX_WIDTH` (700)
+  - [x] 3.4 Show `cursor-col-resize` on hover, highlight line on active drag
+  - [x] 3.5 Add `data-testid="inspector-resize-handle"` to the handle
+  - [x] 3.6 Render handle in `AppLayout.tsx` adjacent to the inspector `<aside>`
 
-- [ ] Task 4: Full-screen overlay mode
-  - [ ] 4.1 Create `InspectorOverlay.tsx` — portal to `document.body`
-  - [ ] 4.2 Overlay: fixed position, covers viewport minus toolbox width, semi-transparent backdrop
-  - [ ] 4.3 Close on: close button click, Escape key press
-  - [ ] 4.4 On close: set `inspectorOverlay: false` (returns to previous inline width)
-  - [ ] 4.5 Add maximize button to InspectorPanel header (Maximize icon from lucide-react)
-  - [ ] 4.6 Add `data-testid="inspector-overlay"`, `data-testid="inspector-overlay-close"`, `data-testid="inspector-maximize-btn"`
+- [x] Task 4: Full-screen overlay mode
+  - [x] 4.1 Create `InspectorOverlay.tsx` — portal to `document.body`
+  - [x] 4.2 Overlay: fixed position, covers viewport minus toolbox width, semi-transparent backdrop
+  - [x] 4.3 Close on: close button click, Escape key press
+  - [x] 4.4 On close: set `inspectorOverlay: false` (returns to previous inline width)
+  - [x] 4.5 Add maximize button to InspectorPanel header (Maximize icon from lucide-react)
+  - [x] 4.6 Add `data-testid="inspector-overlay"`, `data-testid="inspector-overlay-close"`, `data-testid="inspector-maximize-btn"`
 
-- [ ] Task 5: Section anchor navigation
-  - [ ] 5.1 Add `data-section="code"`, `data-section="metrics"`, `data-section="details"` attributes to section headings in ComponentDetail
-  - [ ] 5.2 Add 3 small anchor buttons in InspectorPanel header (below the title bar)
-  - [ ] 5.3 On click: `document.querySelector('[data-section="X"]').scrollIntoView({ behavior: 'smooth', block: 'start' })`
-  - [ ] 5.4 Add `data-testid="inspector-section-nav"` to the nav container
+- [x] Task 5: Section anchor navigation
+  - [x] 5.1 Add `data-section="code"`, `data-section="metrics"`, `data-section="details"` attributes to section headings in ComponentDetail
+  - [x] 5.2 Add 3 small anchor buttons in InspectorPanel header (below the title bar)
+  - [x] 5.3 On click: `document.querySelector('[data-section="X"]').scrollIntoView({ behavior: 'smooth', block: 'start' })`
+  - [x] 5.4 Add `data-testid="inspector-section-nav"` to the nav container
 
-- [ ] Task 6: Unit tests
-  - [ ] 6.1 Test InspectorResizeHandle: pointer events update width within bounds
-  - [ ] 6.2 Test InspectorOverlay: renders portal, closes on Escape, closes on button click
-  - [ ] 6.3 Test InspectorPanel: toggle button switches width, section anchors scroll
-  - [ ] 6.4 Test uiStore: inspectorWidth persists across node selections, overlay state toggles
-  - [ ] 6.5 Run `npm run test:quick` — all tests pass
+- [x] Task 6: Unit tests
+  - [x] 6.1 Test InspectorResizeHandle: pointer events update width within bounds
+  - [x] 6.2 Test InspectorOverlay: renders portal, closes on Escape, closes on button click
+  - [x] 6.3 Test InspectorPanel: toggle button switches width, section anchors scroll
+  - [x] 6.4 Test uiStore: inspectorWidth persists across node selections, overlay state toggles
+  - [x] 6.5 Run `npm run test:quick` — all tests pass
 
 ## Dev Notes
 
@@ -211,6 +211,20 @@ const onPointerMove = (e: React.PointerEvent) => {
 ### E2E Testing
 E2E coverage recommended — run `/ecc-e2e 4-6` after implementation.
 Key journeys: toggle button switches width, drag handle resizes, overlay opens/closes, section anchors scroll, collapse still works in all modes.
+
+## Deferred Items (Code Review 2026-02-26)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-4-6a | Overlay scroll-target scoping — scope querySelector to nearest container | LOW | CREATED |
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-26
+- **Classification:** COMPLEX (14 files)
+- **Agents:** code-reviewer (sonnet), security-reviewer (sonnet), architect (sonnet), tdd-guide (sonnet)
+- **Outcome:** APPROVE 9.25/10, 8 quick fixes applied, 1 TD story created
+- **Quick fixes:** merged import, Z_INDEX.INSPECTOR_OVERLAY, aria-hidden on backdrop, type="button" on nav, imperative getState() for drag perf, backdrop-click test, uiStore beforeEach isolation, missing constants tests, intermediate-width toggle test
+- **Session cost:** $14.60
 
 ## ECC Analysis Summary
 - Risk Level: LOW

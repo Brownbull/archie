@@ -10,6 +10,8 @@ describe("uiStore", () => {
       selectedNodeId: null,
       selectedEdgeId: null,
       inspectorCollapsed: false,
+      inspectorWidth: 300,
+      inspectorOverlay: false,
       heatmapEnabled: true,
     })
   })
@@ -109,6 +111,51 @@ describe("uiStore", () => {
       useUiStore.getState().setInspectorCollapsed(true)
       useUiStore.getState().setInspectorCollapsed(false)
       expect(useUiStore.getState().inspectorCollapsed).toBe(false)
+    })
+  })
+
+  describe("inspectorWidth (AC-ARCH-PATTERN-1)", () => {
+    it("defaults to 300 (INSPECTOR_DEFAULT_WIDTH)", () => {
+      expect(useUiStore.getState().inspectorWidth).toBe(300)
+    })
+
+    it("setInspectorWidth updates width", () => {
+      useUiStore.getState().setInspectorWidth(500)
+      expect(useUiStore.getState().inspectorWidth).toBe(500)
+    })
+
+    it("clamps width to INSPECTOR_MIN_WIDTH (200)", () => {
+      useUiStore.getState().setInspectorWidth(100)
+      expect(useUiStore.getState().inspectorWidth).toBe(200)
+    })
+
+    it("clamps width to INSPECTOR_MAX_WIDTH (700)", () => {
+      useUiStore.getState().setInspectorWidth(900)
+      expect(useUiStore.getState().inspectorWidth).toBe(700)
+    })
+
+    it("persists width across node selections (AC-7)", () => {
+      useUiStore.getState().setInspectorWidth(450)
+      useUiStore.getState().setSelectedNodeId("node-a")
+      useUiStore.getState().setSelectedNodeId("node-b")
+      expect(useUiStore.getState().inspectorWidth).toBe(450)
+    })
+  })
+
+  describe("inspectorOverlay", () => {
+    it("defaults to false", () => {
+      expect(useUiStore.getState().inspectorOverlay).toBe(false)
+    })
+
+    it("setInspectorOverlay toggles to true", () => {
+      useUiStore.getState().setInspectorOverlay(true)
+      expect(useUiStore.getState().inspectorOverlay).toBe(true)
+    })
+
+    it("setInspectorOverlay toggles back to false", () => {
+      useUiStore.getState().setInspectorOverlay(true)
+      useUiStore.getState().setInspectorOverlay(false)
+      expect(useUiStore.getState().inspectorOverlay).toBe(false)
     })
   })
 

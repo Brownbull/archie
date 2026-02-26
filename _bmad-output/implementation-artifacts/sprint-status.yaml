@@ -142,5 +142,6 @@ development_status:
   td-4-4b-schema-and-repository-hardening: done
   4-5-canvas-visual-polish: done
   td-4-5a-constants-type-conventions: done
-  4-6-inspector-ux-polish: ready-for-dev
+  4-6-inspector-ux-polish: done
+  td-4-6a-overlay-scroll-target-scoping: ready-for-dev
   epic-4-retrospective: optional

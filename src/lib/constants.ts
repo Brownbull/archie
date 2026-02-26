@@ -1,7 +1,10 @@
 // Layout dimensions (UX1)
 export const TOOLBAR_HEIGHT = 44
 export const TOOLBOX_WIDTH = 260
-export const INSPECTOR_WIDTH = 300
+export const INSPECTOR_DEFAULT_WIDTH = 300
+export const INSPECTOR_EXPANDED_WIDTH = 500
+export const INSPECTOR_MIN_WIDTH = 200
+export const INSPECTOR_MAX_WIDTH = 700
 export const INSPECTOR_COLLAPSED_WIDTH = 40
 export const DASHBOARD_HEIGHT = 100
 export const NODE_WIDTH = 140
@@ -134,5 +137,6 @@ export const Z_INDEX = {
   DROPDOWN: "z-40", // Custom dropdowns, popovers
   OVERLAY: "z-50", // Detail panels, tier popover, tooltips
   MODAL: "z-50", // Modals, dialogs (shadcn default)
+  INSPECTOR_OVERLAY: "z-[60]", // Full-screen inspector overlay (above panels, below toasts)
   TOAST: "z-[70]", // Toast notifications (above everything)
 } as const satisfies Record<string, TailwindZIndex>
