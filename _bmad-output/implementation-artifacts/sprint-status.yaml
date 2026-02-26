@@ -140,6 +140,7 @@ development_status:
   4-4-dashboard-drill-down-and-issues-navigation: done
   td-4-4a-dashboard-component-test-coverage: done
   td-4-4b-schema-and-repository-hardening: done
-  4-5-canvas-visual-polish: review
+  4-5-canvas-visual-polish: done
+  td-4-5a-constants-type-conventions: ready-for-dev
   4-6-inspector-ux-polish: ready-for-dev
   epic-4-retrospective: optional

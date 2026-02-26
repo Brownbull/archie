@@ -137,7 +137,7 @@ export function ArchieEdge({
         }}
         data-testid="archie-edge"
       />
-      {heatmapEnabled && edgeHeatmapStatus && (
+      {heatmapEnabled && edgeHeatmapStatus && edgeHeatmapStatus in HEATMAP_COLORS && (
         <path
           data-testid={`flow-particle-${id}`}
           d={edgePath}

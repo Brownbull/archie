@@ -63,4 +63,18 @@ describe("CanvasLegend", () => {
     const panel = screen.getByTestId("canvas-legend")
     expect(panel.getAttribute("class")).toContain("pointer-events-auto")
   })
+
+  it("toggleHeatmap resets legendDismissed when re-enabling heatmap (AC-FUNC-6)", () => {
+    // Dismiss the legend
+    useUiStore.setState({ legendDismissed: true })
+    expect(useUiStore.getState().legendDismissed).toBe(true)
+
+    // Turn heatmap off then back on — legendDismissed should reset to false
+    useUiStore.getState().toggleHeatmap() // off
+    expect(useUiStore.getState().heatmapEnabled).toBe(false)
+
+    useUiStore.getState().toggleHeatmap() // on again
+    expect(useUiStore.getState().heatmapEnabled).toBe(true)
+    expect(useUiStore.getState().legendDismissed).toBe(false)
+  })
 })

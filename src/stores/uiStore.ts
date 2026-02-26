@@ -13,6 +13,8 @@ interface UiState {
   selectedEdgeId: string | null
   inspectorCollapsed: boolean
   heatmapEnabled: boolean
+  // NOTE: legendDismissed is intentionally in-memory only (not persisted to localStorage).
+  // If persistence is needed in future, route through a store action — never raw storage calls (AC-ARCH-NO-4).
   legendDismissed: boolean
   pendingNavNodeId: string | null
   setToolboxTab: (tab: ToolboxTab) => void
@@ -43,13 +45,10 @@ export const useUiStore = create<UiState>()((set) => ({
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),
   setSelectedEdgeId: (id) => set({ selectedEdgeId: id, selectedNodeId: null }),
   setInspectorCollapsed: (collapsed) => set({ inspectorCollapsed: collapsed }),
-  toggleHeatmap: () => set((state) => {
-    const turningOn = !state.heatmapEnabled
-    return {
-      heatmapEnabled: turningOn,
-      ...(turningOn ? { legendDismissed: false } : {}),
-    }
-  }),
+  toggleHeatmap: () => set((state) => ({
+    heatmapEnabled: !state.heatmapEnabled,
+    legendDismissed: !state.heatmapEnabled ? false : state.legendDismissed,
+  })),
   setLegendDismissed: (dismissed) => set({ legendDismissed: dismissed }),
   setPendingNavNodeId: (id) => set({ pendingNavNodeId: id }),
   clearSelection: () => set({ selectedNodeId: null, selectedEdgeId: null }),

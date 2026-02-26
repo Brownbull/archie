@@ -1,6 +1,6 @@
 # Story: 4-5 — Canvas Visual Polish
 
-## Status: review
+## Status: done
 ## Epic: Epic 4 — Canvas Intelligence & UX Polish
 
 ## Overview
@@ -151,6 +151,22 @@ No specialized database or security review required. This story is purely CSS/Re
 ### E2E Testing
 E2E coverage recommended — run `/ecc-e2e 4-5` after implementation.
 Key journeys: (1) enable heatmap with mixed-status connections → verify particles visible at correct speeds, (2) verify legend appears and dismiss button hides it, (3) disable heatmap → verify no particles and no legend, (4) re-enable heatmap → verify legend reappears.
+
+## Tech Debt Tracking
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| TD-4-5a | Constants & type conventions cleanup (unused PARTICLE_SPEED_*_MS, Z_INDEX format) | LOW | CREATED |
+| (N/A) | Protocol field allowlist for YAML import | LOW | ALREADY_TRACKED (TD-4-3b AC-3 documents rendering defense) |
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-25
+- **Classification:** STANDARD
+- **Agents:** code-reviewer (sonnet), security-reviewer (sonnet)
+- **Outcome:** APPROVE 9.25/10
+- **Quick fixes applied:** 4 (allowlist guard, toggleHeatmap simplification, legendDismissed test, persistence constraint comment)
+- **TD stories created:** 1 (TD-4-5a)
+- **Test health:** All green (82 files, 1329 tests)
 
 ## ECC Analysis Summary
 - Risk Level: LOW
