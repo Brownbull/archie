@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-5a: Constants & Type Conventions Cleanup
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-25) on story 4-5
 > **Priority:** LOW | **Estimated Effort:** Small (2 tasks)
@@ -31,10 +31,19 @@ And optionally narrow the type to template literal types (e.g., `z-${number}` | 
 
 - [x] **Task 2: Document Z_INDEX convention**
   - [x] 2a. Added JSDoc on `Z_INDEX` constant documenting Tailwind class string convention and silent-break risk
-  - [x] 2b. Added `TailwindZIndex` template literal type + `satisfies` constraint (TS 5.9)
+  - [x] 2b. Added `TailwindZIndex` template literal type + `satisfies` constraint (TS 4.9+)
 
 ## Dev Notes
 - Source story: [4-5](./story-4-5.md)
 - Review findings: #1, #5
 - Files affected: `src/lib/constants.ts`, `src/index.css`
 - Finding #6 (protocol allowlist) deferred to YAML import story — covered by TD-4-3b AC-3 documentation for current rendering
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-25
+- **Classification:** TRIVIAL
+- **Agents:** code-reviewer
+- **Score:** 9.5/10
+- **Outcome:** APPROVE — 1 quick fix applied (TS version reference in doc)
+- **Deferred items:** 0 new (1 pre-existing, already tracked by TD-4-3b)
+- **Tests:** 1329 passed, 0 failed
