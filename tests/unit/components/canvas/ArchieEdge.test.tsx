@@ -334,6 +334,88 @@ describe("ArchieEdge", () => {
     })
   })
 
+  describe("flow particle", () => {
+    it("renders particle path when heatmap enabled and edgeHeatmapStatus exists", () => {
+      mockHeatmapEnabled = true
+      mockEdgeHeatmapColors.set("edge-1", "healthy")
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      expect(screen.getByTestId("flow-particle-edge-1")).toBeInTheDocument()
+    })
+
+    it("does NOT render particle path when heatmap disabled", () => {
+      mockHeatmapEnabled = false
+      mockEdgeHeatmapColors.set("edge-1", "healthy")
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      expect(screen.queryByTestId("flow-particle-edge-1")).not.toBeInTheDocument()
+    })
+
+    it("does NOT render particle path when edgeHeatmapStatus undefined", () => {
+      mockHeatmapEnabled = true
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      expect(screen.queryByTestId("flow-particle-edge-1")).not.toBeInTheDocument()
+    })
+
+    it("particle path has correct CSS class for healthy status", () => {
+      mockHeatmapEnabled = true
+      mockEdgeHeatmapColors.set("edge-1", "healthy")
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const particle = screen.getByTestId("flow-particle-edge-1")
+      expect(particle.getAttribute("class")).toContain("flow-particle-healthy")
+    })
+
+    it("particle path has correct CSS class for warning status", () => {
+      mockHeatmapEnabled = true
+      mockEdgeHeatmapColors.set("edge-1", "warning")
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const particle = screen.getByTestId("flow-particle-edge-1")
+      expect(particle.getAttribute("class")).toContain("flow-particle-warning")
+    })
+
+    it("particle path has correct CSS class for bottleneck status", () => {
+      mockHeatmapEnabled = true
+      mockEdgeHeatmapColors.set("edge-1", "bottleneck")
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const particle = screen.getByTestId("flow-particle-edge-1")
+      expect(particle.getAttribute("class")).toContain("flow-particle-bottleneck")
+    })
+
+    it("particle path uses same d attribute as BaseEdge", () => {
+      mockHeatmapEnabled = true
+      mockEdgeHeatmapColors.set("edge-1", "healthy")
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const particle = screen.getByTestId("flow-particle-edge-1")
+      expect(particle.getAttribute("d")).toBe("M 0 0 L 100 100")
+    })
+  })
+
   describe("protocol label", () => {
     it("renders protocol label when source component has connectionProperties", () => {
       mockGetComponentById.mockReturnValue({

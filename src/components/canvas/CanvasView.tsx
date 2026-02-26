@@ -30,6 +30,7 @@ import { ArchieNode } from "@/components/canvas/ArchieNode"
 import { ArchieEdge } from "@/components/canvas/ArchieEdge"
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode"
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState"
+import { CanvasLegend } from "@/components/canvas/CanvasLegend"
 import {
   CANVAS_GRID_SIZE,
   CANVAS_MIN_ZOOM,
@@ -236,6 +237,7 @@ function CanvasViewInner() {
         <Controls />
       </ReactFlow>
       <EmptyCanvasState />
+      <CanvasLegend />
     </div>
   )
 }

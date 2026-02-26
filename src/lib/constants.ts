@@ -105,6 +105,11 @@ export const HEATMAP_COLORS = {
   bottleneck: "var(--color-heatmap-red)",
 } as const
 
+// Flow particle animation speed per cycle (Story 4-5, AC-FUNC-2)
+export const PARTICLE_SPEED_HEALTHY_MS = 600
+export const PARTICLE_SPEED_WARNING_MS = 1400
+export const PARTICLE_SPEED_BOTTLENECK_MS = 3000
+
 // Edge label offset when incompatibility warning is present (Story 4-3)
 export const LABEL_INCOMPATIBILITY_OFFSET = 16
 

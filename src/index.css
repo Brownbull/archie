@@ -226,3 +226,18 @@
   fill: var(--archie-surface);
   stroke: var(--archie-border);
 }
+
+/* Flow particle animation (Story 4-5, AC-ARCH-LOC-2, AC-FUNC-4) */
+@keyframes flow-dash {
+  to { stroke-dashoffset: -24; }
+}
+.flow-particle {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 6 18;
+  animation: flow-dash linear infinite;
+  pointer-events: none;
+}
+.flow-particle-healthy   { stroke: var(--color-heatmap-green);  animation-duration: 0.6s; }
+.flow-particle-warning   { stroke: var(--color-heatmap-yellow); animation-duration: 1.4s; }
+.flow-particle-bottleneck { stroke: var(--color-heatmap-red);   animation-duration: 3.0s; }

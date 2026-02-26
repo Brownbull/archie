@@ -13,6 +13,7 @@ interface UiState {
   selectedEdgeId: string | null
   inspectorCollapsed: boolean
   heatmapEnabled: boolean
+  legendDismissed: boolean
   pendingNavNodeId: string | null
   setToolboxTab: (tab: ToolboxTab) => void
   setSearchQuery: (query: string) => void
@@ -21,6 +22,7 @@ interface UiState {
   setSelectedEdgeId: (id: string | null) => void
   setInspectorCollapsed: (collapsed: boolean) => void
   toggleHeatmap: () => void
+  setLegendDismissed: (dismissed: boolean) => void
   setPendingNavNodeId: (id: string | null) => void
   clearSelection: () => void
 }
@@ -33,6 +35,7 @@ export const useUiStore = create<UiState>()((set) => ({
   selectedEdgeId: null,
   inspectorCollapsed: false,
   heatmapEnabled: true,
+  legendDismissed: false,
   pendingNavNodeId: null,
   setToolboxTab: (tab) => set({ toolboxTab: tab }),
   setSearchQuery: (query) => set({ searchQuery: query }),
@@ -40,7 +43,14 @@ export const useUiStore = create<UiState>()((set) => ({
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),
   setSelectedEdgeId: (id) => set({ selectedEdgeId: id, selectedNodeId: null }),
   setInspectorCollapsed: (collapsed) => set({ inspectorCollapsed: collapsed }),
-  toggleHeatmap: () => set((state) => ({ heatmapEnabled: !state.heatmapEnabled })),
+  toggleHeatmap: () => set((state) => {
+    const turningOn = !state.heatmapEnabled
+    return {
+      heatmapEnabled: turningOn,
+      ...(turningOn ? { legendDismissed: false } : {}),
+    }
+  }),
+  setLegendDismissed: (dismissed) => set({ legendDismissed: dismissed }),
   setPendingNavNodeId: (id) => set({ pendingNavNodeId: id }),
   clearSelection: () => set({ selectedNodeId: null, selectedEdgeId: null }),
 }))

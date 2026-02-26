@@ -1,6 +1,6 @@
 # Story: 4-5 — Canvas Visual Polish
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 4 — Canvas Intelligence & UX Polish
 
 ## Overview
@@ -10,38 +10,38 @@ Implements FR42 (Flow Particle Animation on Connections) and FR43 (Canvas Legend
 
 ## Functional Acceptance Criteria
 
-- [ ] **AC-FUNC-1** — When the heatmap is enabled and a connection has a computed `edgeHeatmapStatus`, a flow particle animates along the connection path. The particle is a short dashed stroke traveling from source to target in a continuous loop.
-- [ ] **AC-FUNC-2** — Particle animation speed encodes heatmap status:
+- [x] **AC-FUNC-1** — When the heatmap is enabled and a connection has a computed `edgeHeatmapStatus`, a flow particle animates along the connection path. The particle is a short dashed stroke traveling from source to target in a continuous loop.
+- [x] **AC-FUNC-2** — Particle animation speed encodes heatmap status:
   - `healthy` (green): fast — ~0.6s per cycle
   - `warning` (yellow): medium — ~1.4s per cycle
   - `bottleneck` (red): slow — ~3.0s per cycle
-- [ ] **AC-FUNC-3** — When heatmap is disabled OR the connection has no `edgeHeatmapStatus`, NO particle is rendered (zero DOM overhead).
-- [ ] **AC-FUNC-4** — Particle animation runs on the CSS compositor thread (no JavaScript animation loop). Zero React re-renders during animation.
-- [ ] **AC-FUNC-5** — CanvasLegend renders as a non-blocking overlay in the bottom-left of the canvas when heatmap is enabled. It explains: color coding (green/yellow/red) and particle speed encoding (fast/slow meaning).
-- [ ] **AC-FUNC-6** — CanvasLegend has a dismiss button (X icon). Once dismissed, it stays hidden for the session (uiStore flag). It reappears if the user toggles heatmap off and back on.
-- [ ] **AC-FUNC-7** — CanvasLegend does NOT block canvas interactions (pan, zoom, drag, click). It is pointer-events-none on its container with pointer-events-auto on interactive children only.
-- [ ] **AC-FUNC-8** — Both features gracefully degrade: empty canvas = no particles rendered, no legend shown; heatmap disabled = no particles, no legend.
+- [x] **AC-FUNC-3** — When heatmap is disabled OR the connection has no `edgeHeatmapStatus`, NO particle is rendered (zero DOM overhead).
+- [x] **AC-FUNC-4** — Particle animation runs on the CSS compositor thread (no JavaScript animation loop). Zero React re-renders during animation.
+- [x] **AC-FUNC-5** — CanvasLegend renders as a non-blocking overlay in the bottom-left of the canvas when heatmap is enabled. It explains: color coding (green/yellow/red) and particle speed encoding (fast/slow meaning).
+- [x] **AC-FUNC-6** — CanvasLegend has a dismiss button (X icon). Once dismissed, it stays hidden for the session (uiStore flag). It reappears if the user toggles heatmap off and back on.
+- [x] **AC-FUNC-7** — CanvasLegend does NOT block canvas interactions (pan, zoom, drag, click). It is pointer-events-none on its container with pointer-events-auto on interactive children only.
+- [x] **AC-FUNC-8** — Both features gracefully degrade: empty canvas = no particles rendered, no legend shown; heatmap disabled = no particles, no legend.
 
 ## Architectural Acceptance Criteria (MANDATORY)
 > These ACs are MANDATORY and will be validated during code review.
 
 ### File Location Requirements
-- [ ] **AC-ARCH-LOC-1** — `CanvasLegend` component lives in `src/components/canvas/CanvasLegend.tsx`.
-- [ ] **AC-ARCH-LOC-2** — Flow particle CSS (`@keyframes flow-dash`, `.flow-particle`, `.flow-particle-healthy`, `.flow-particle-warning`, `.flow-particle-bottleneck`) lives in `src/index.css`.
-- [ ] **AC-ARCH-LOC-3** — Particle speed constants (`PARTICLE_SPEED_HEALTHY_MS`, `PARTICLE_SPEED_WARNING_MS`, `PARTICLE_SPEED_BOTTLENECK_MS`) live in `src/lib/constants.ts`.
+- [x] **AC-ARCH-LOC-1** — `CanvasLegend` component lives in `src/components/canvas/CanvasLegend.tsx`.
+- [x] **AC-ARCH-LOC-2** — Flow particle CSS (`@keyframes flow-dash`, `.flow-particle`, `.flow-particle-healthy`, `.flow-particle-warning`, `.flow-particle-bottleneck`) lives in `src/index.css`.
+- [x] **AC-ARCH-LOC-3** — Particle speed constants (`PARTICLE_SPEED_HEALTHY_MS`, `PARTICLE_SPEED_WARNING_MS`, `PARTICLE_SPEED_BOTTLENECK_MS`) live in `src/lib/constants.ts`.
 
 ### Pattern Requirements
-- [ ] **AC-ARCH-PAT-1** — Flow particle uses a second `<path>` element in `ArchieEdge.tsx` with the SAME `d={edgePath}` as `BaseEdge`. CSS classes drive the animation — no `style={{ animation }}` prop injection, no `requestAnimationFrame`, no `setInterval`.
-- [ ] **AC-ARCH-PAT-2** — `CanvasLegend` follows the `EmptyCanvasState` overlay pattern exactly: `pointer-events-none absolute bottom-4 left-4 z-[Z_INDEX.CANVAS_OVERLAY]` wrapper + `pointer-events-auto` inner panel.
-- [ ] **AC-ARCH-PAT-3** — `CanvasLegend` dismiss state lives in `uiStore` (new `legendDismissed: boolean` flag). It does NOT use `useState` for persistence across renders.
-- [ ] **AC-ARCH-PAT-4** — `CanvasLegend` reads heatmap colors from CSS variables (already defined in `src/index.css`: `--color-heatmap-green`, `--color-heatmap-yellow`, `--color-heatmap-red`) — NOT hardcoded hex values.
-- [ ] **AC-ARCH-PAT-5** — `ArchieEdge.tsx` renders the particle path ONLY when both `heatmapEnabled === true` AND `edgeHeatmapStatus` is defined (truthy guard). The guard prevents any DOM overhead on clean canvases.
+- [x] **AC-ARCH-PAT-1** — Flow particle uses a second `<path>` element in `ArchieEdge.tsx` with the SAME `d={edgePath}` as `BaseEdge`. CSS classes drive the animation — no `style={{ animation }}` prop injection, no `requestAnimationFrame`, no `setInterval`.
+- [x] **AC-ARCH-PAT-2** — `CanvasLegend` follows the `EmptyCanvasState` overlay pattern exactly: `pointer-events-none absolute bottom-4 left-4 z-[Z_INDEX.CANVAS_OVERLAY]` wrapper + `pointer-events-auto` inner panel.
+- [x] **AC-ARCH-PAT-3** — `CanvasLegend` dismiss state lives in `uiStore` (new `legendDismissed: boolean` flag). It does NOT use `useState` for persistence across renders.
+- [x] **AC-ARCH-PAT-4** — `CanvasLegend` reads heatmap colors from CSS variables (already defined in `src/index.css`: `--color-heatmap-green`, `--color-heatmap-yellow`, `--color-heatmap-red`) — NOT hardcoded hex values.
+- [x] **AC-ARCH-PAT-5** — `ArchieEdge.tsx` renders the particle path ONLY when both `heatmapEnabled === true` AND `edgeHeatmapStatus` is defined (truthy guard). The guard prevents any DOM overhead on clean canvases.
 
 ### Anti-Pattern Requirements (Must NOT Happen)
-- [ ] **AC-ARCH-NO-1** — NO JavaScript animation loop (`requestAnimationFrame`, `setInterval`, `setTimeout` in a loop) for particle movement. CSS `@keyframes` only.
-- [ ] **AC-ARCH-NO-2** — CanvasLegend MUST NOT use `position: fixed` — it must be positioned relative to the canvas container (`absolute` inside `position: relative` parent). Fixed positioning breaks on canvas zoom/scroll.
-- [ ] **AC-ARCH-NO-3** — Particle `<path>` element MUST NOT have any React `key` prop that changes on each render — this would cause remount and animation restart flicker.
-- [ ] **AC-ARCH-NO-4** — `legendDismissed` state MUST NOT be stored in `localStorage` or `sessionStorage` directly from the component. If persistence beyond session is desired in future, it goes through a store action — not raw storage calls.
+- [x] **AC-ARCH-NO-1** — NO JavaScript animation loop (`requestAnimationFrame`, `setInterval`, `setTimeout` in a loop) for particle movement. CSS `@keyframes` only.
+- [x] **AC-ARCH-NO-2** — CanvasLegend MUST NOT use `position: fixed` — it must be positioned relative to the canvas container (`absolute` inside `position: relative` parent). Fixed positioning breaks on canvas zoom/scroll.
+- [x] **AC-ARCH-NO-3** — Particle `<path>` element MUST NOT have any React `key` prop that changes on each render — this would cause remount and animation restart flicker.
+- [x] **AC-ARCH-NO-4** — `legendDismissed` state MUST NOT be stored in `localStorage` or `sessionStorage` directly from the component. If persistence beyond session is desired in future, it goes through a store action — not raw storage calls.
 
 ## File Specification
 
@@ -58,8 +58,8 @@ Implements FR42 (Flow Particle Animation on Connections) and FR43 (Canvas Legend
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: CSS particle animation**
-  - [ ] 1a. Add to `src/index.css`:
+- [x] **Task 1: CSS particle animation**
+  - [x]1a. Add to `src/index.css`:
     ```css
     @keyframes flow-dash {
       to { stroke-dashoffset: -24; }
@@ -75,16 +75,16 @@ Implements FR42 (Flow Particle Animation on Connections) and FR43 (Canvas Legend
     .flow-particle-warning  { stroke: var(--color-heatmap-yellow); animation-duration: 1.4s; }
     .flow-particle-bottleneck { stroke: var(--color-heatmap-red);  animation-duration: 3.0s; }
     ```
-  - [ ] 1b. Add to `src/lib/constants.ts`:
+  - [x]1b. Add to `src/lib/constants.ts`:
     ```typescript
     export const PARTICLE_SPEED_HEALTHY_MS = 600;
     export const PARTICLE_SPEED_WARNING_MS = 1400;
     export const PARTICLE_SPEED_BOTTLENECK_MS = 3000;
     ```
-  - [ ] 1c. Visual smoke test: verify animation plays in browser with correct speed/color for each status.
+  - [x]1c. Visual smoke test: verify animation plays in browser with correct speed/color for each status.
 
-- [ ] **Task 2: ArchieEdge particle integration**
-  - [ ] 2a. In `src/components/canvas/ArchieEdge.tsx`, after the existing `<BaseEdge>`, add:
+- [x] **Task 2: ArchieEdge particle integration**
+  - [x]2a. In `src/components/canvas/ArchieEdge.tsx`, after the existing `<BaseEdge>`, add:
     ```tsx
     {heatmapEnabled && edgeHeatmapStatus && (
       <path
@@ -93,38 +93,38 @@ Implements FR42 (Flow Particle Animation on Connections) and FR43 (Canvas Legend
       />
     )}
     ```
-  - [ ] 2b. Ensure `heatmapEnabled` is read from `uiStore` (already available via `useUiStore`).
-  - [ ] 2c. Ensure `edgeHeatmapStatus` is derived from edge data (existing pattern in ArchieEdge).
-  - [ ] 2d. Update `tests/unit/components/canvas/ArchieEdge.test.tsx`:
+  - [x]2b. Ensure `heatmapEnabled` is read from `uiStore` (already available via `useUiStore`).
+  - [x]2c. Ensure `edgeHeatmapStatus` is derived from edge data (existing pattern in ArchieEdge).
+  - [x]2d. Update `tests/unit/components/canvas/ArchieEdge.test.tsx`:
     - Add test: particle path renders when `heatmapEnabled=true` and `edgeHeatmapStatus='healthy'`.
     - Add test: NO particle path when `heatmapEnabled=false`.
     - Add test: NO particle path when `edgeHeatmapStatus` is undefined.
     - Add test: particle class reflects status (`flow-particle-warning`, `flow-particle-bottleneck`).
 
-- [ ] **Task 3: uiStore legendDismissed flag**
-  - [ ] 3a. Add `legendDismissed: boolean` (default `false`) and `setLegendDismissed: (val: boolean) => void` to `src/stores/uiStore.ts`.
-  - [ ] 3b. Verify uiStore TypeScript types remain strict (no `: any`).
+- [x] **Task 3: uiStore legendDismissed flag**
+  - [x]3a. Add `legendDismissed: boolean` (default `false`) and `setLegendDismissed: (val: boolean) => void` to `src/stores/uiStore.ts`.
+  - [x]3b. Verify uiStore TypeScript types remain strict (no `: any`).
 
-- [ ] **Task 4: CanvasLegend component**
-  - [ ] 4a. Create `src/components/canvas/CanvasLegend.tsx`.
+- [x] **Task 4: CanvasLegend component**
+  - [x]4a. Create `src/components/canvas/CanvasLegend.tsx`.
     - Wrapper: `pointer-events-none absolute bottom-4 left-4 z-[Z_INDEX.CANVAS_OVERLAY]`
     - Inner panel: `pointer-events-auto` — rounded card with dark background.
     - Renders when `heatmapEnabled === true && legendDismissed === false`.
     - Content: 3 color swatches (green/yellow/red) with labels ("Healthy", "Warning", "Bottleneck") + particle speed legend ("Fast ↔ Slow = Healthy ↔ Bottleneck").
     - Dismiss X button: calls `uiStore.setLegendDismissed(true)`.
     - When heatmap is toggled off then back on: `legendDismissed` resets to `false` (add this reset in the heatmap toggle action in `uiStore`).
-  - [ ] 4b. Add `data-testid="canvas-legend"` on the inner panel.
-  - [ ] 4c. Add `data-testid="canvas-legend-dismiss"` on the X button.
+  - [x]4b. Add `data-testid="canvas-legend"` on the inner panel.
+  - [x]4c. Add `data-testid="canvas-legend-dismiss"` on the X button.
 
-- [ ] **Task 5: CanvasView integration + tests**
-  - [ ] 5a. In `src/components/canvas/CanvasView.tsx`, render `<CanvasLegend />` as a sibling to the `<ReactFlow>` component inside the `canvas-panel` div (same level as `EmptyCanvasState`).
-  - [ ] 5b. Create `tests/unit/components/canvas/CanvasLegend.test.tsx`:
+- [x] **Task 5: CanvasView integration + tests**
+  - [x]5a. In `src/components/canvas/CanvasView.tsx`, render `<CanvasLegend />` as a sibling to the `<ReactFlow>` component inside the `canvas-panel` div (same level as `EmptyCanvasState`).
+  - [x]5b. Create `tests/unit/components/canvas/CanvasLegend.test.tsx`:
     - Test: renders when heatmap enabled and not dismissed.
     - Test: does NOT render when heatmap disabled.
     - Test: does NOT render when `legendDismissed = true`.
     - Test: clicking dismiss button calls `setLegendDismissed(true)`.
-  - [ ] 5c. Run `npm run test:story` — all tests pass.
-  - [ ] 5d. Run `npm run typecheck` — zero errors.
+  - [x]5c. Run `npm run test:story` — all tests pass.
+  - [x]5d. Run `npm run typecheck` — zero errors.
 
 ## Dev Notes
 

@@ -137,6 +137,13 @@ export function ArchieEdge({
         }}
         data-testid="archie-edge"
       />
+      {heatmapEnabled && edgeHeatmapStatus && (
+        <path
+          data-testid={`flow-particle-${id}`}
+          d={edgePath}
+          className={`flow-particle flow-particle-${edgeHeatmapStatus}`}
+        />
+      )}
       {isIncompatible && (
         <EdgeLabelRenderer>
           <div
