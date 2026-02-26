@@ -227,7 +227,9 @@
   stroke: var(--archie-border);
 }
 
-/* Flow particle animation (Story 4-5, AC-ARCH-LOC-2, AC-FUNC-4) */
+/* Flow particle animation (Story 4-5, AC-ARCH-LOC-2, AC-FUNC-4)
+   Durations below are the canonical source of truth — 0.6s healthy / 1.4s warning / 3.0s bottleneck.
+   Do NOT add TS constants for these; keep animation timing here so CSS and visuals stay in sync. */
 @keyframes flow-dash {
   to { stroke-dashoffset: -24; }
 }

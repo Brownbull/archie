@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-5a: Constants & Type Conventions Cleanup
 
-Status: ready-for-dev
+Status: review
 
 > **Source:** ECC Code Review (2026-02-25) on story 4-5
 > **Priority:** LOW | **Estimated Effort:** Small (2 tasks)
@@ -24,14 +24,14 @@ And optionally narrow the type to template literal types (e.g., `z-${number}` | 
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1: Resolve PARTICLE_SPEED_*_MS constants**
-  - [ ] 1a. Search codebase for any imports of `PARTICLE_SPEED_*_MS`
-  - [ ] 1b. If no consumers: remove the 3 constants from `constants.ts`
-  - [ ] 1c. Add a comment in `index.css` particle section noting CSS is the canonical source for animation durations
+- [x] **Task 1: Resolve PARTICLE_SPEED_*_MS constants**
+  - [x] 1a. Search codebase for any imports of `PARTICLE_SPEED_*_MS` — zero consumers found
+  - [x] 1b. Removed the 3 constants from `constants.ts`
+  - [x] 1c. Added source-of-truth comment in `index.css` particle section
 
-- [ ] **Task 2: Document Z_INDEX convention**
-  - [ ] 2a. Add JSDoc on `Z_INDEX` constant explaining values are Tailwind class strings for `className` interpolation
-  - [ ] 2b. Optionally add template literal type narrowing
+- [x] **Task 2: Document Z_INDEX convention**
+  - [x] 2a. Added JSDoc on `Z_INDEX` constant documenting Tailwind class string convention and silent-break risk
+  - [x] 2b. Added `TailwindZIndex` template literal type + `satisfies` constraint (TS 5.9)
 
 ## Dev Notes
 - Source story: [4-5](./story-4-5.md)
