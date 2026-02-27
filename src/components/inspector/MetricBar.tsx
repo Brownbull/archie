@@ -1,4 +1,6 @@
-import type { MetricValue } from "@/types"
+import { useState } from "react"
+import { ChevronDown, ChevronUp } from "lucide-react"
+import type { MetricValue, MetricExplanation } from "@/types"
 import { METRIC_MAX_VALUE } from "@/lib/constants"
 
 function getBarColor(numericValue: number): string {
@@ -9,32 +11,65 @@ function getBarColor(numericValue: number): string {
 
 interface MetricBarProps {
   metric: MetricValue
+  explanation?: MetricExplanation
+  delta?: number
 }
 
-export function MetricBar({ metric }: MetricBarProps) {
+export function MetricBar({ metric, explanation, delta }: MetricBarProps) {
+  const [isExpanded, setIsExpanded] = useState(false)
   const clamped = Math.max(0, Math.min(METRIC_MAX_VALUE, metric.numericValue))
   const widthPercent = (clamped / METRIC_MAX_VALUE) * 100
   const barColor = getBarColor(clamped)
 
   return (
     <div
-      className="flex items-center gap-2 py-0.5"
+      className={explanation ? "py-0.5 cursor-pointer" : "py-0.5"}
       data-testid="metric-bar"
       data-metric-id={metric.id}
+      onClick={explanation ? () => setIsExpanded((prev) => !prev) : undefined}
     >
-      <span className="w-28 shrink-0 truncate text-xs text-text-secondary">
-        {metric.name ?? metric.id}
-      </span>
-      <div className="h-2 flex-1 rounded-full bg-muted">
-        <div
-          data-testid="metric-bar-fill"
-          className={`h-full rounded-full ${barColor}`}
-          style={{ width: `${widthPercent}%` }}
-        />
+      <div className="flex items-center gap-2">
+        <span className="w-28 shrink-0 truncate text-xs text-text-secondary">
+          {metric.name ?? metric.id}
+        </span>
+        <div className="h-2 flex-1 rounded-full bg-muted">
+          <div
+            data-testid="metric-bar-fill"
+            className={`h-full rounded-full ${barColor}`}
+            style={{ width: `${widthPercent}%` }}
+          />
+        </div>
+        <span className="w-12 shrink-0 text-right text-xs text-text-secondary">
+          {metric.value}
+        </span>
+        {delta !== undefined && delta !== 0 && (
+          <span
+            data-testid="metric-bar-delta"
+            className={`w-8 shrink-0 text-right text-xs font-medium ${
+              delta > 0 ? "text-green-500" : "text-red-500"
+            }`}
+          >
+            {delta > 0 ? `+${delta}` : `${delta}`}
+          </span>
+        )}
+        {explanation && (
+          isExpanded
+            ? <ChevronUp data-testid="metric-explanation-chevron" className="h-3 w-3 shrink-0 text-text-secondary" />
+            : <ChevronDown data-testid="metric-explanation-chevron" className="h-3 w-3 shrink-0 text-text-secondary" />
+        )}
       </div>
-      <span className="w-12 shrink-0 text-right text-xs text-text-secondary">
-        {metric.value}
-      </span>
+      {isExpanded && explanation && (
+        <div data-testid="metric-explanation" className="mt-1 space-y-1 text-xs text-text-secondary">
+          <p>{explanation.reason}</p>
+          {explanation.contributingFactors.length > 0 && (
+            <ul className="list-inside list-disc space-y-0.5">
+              {explanation.contributingFactors.map((factor, i) => (
+                <li key={i}>{factor}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -27,6 +27,8 @@ export function exportArchitecture(nodes: ArchieNode[], edges: ArchieEdge[]): st
   }))
 
   // Extract skeleton from each edge (camelCase → snake_case transform)
+  // NOTE: edge.data (including labelOffset) is intentionally excluded —
+  // only structural IDs are part of the architecture skeleton (NFR11, AC-ARCH-PATTERN-4)
   const yamlEdges = edges.map((edge) => ({
     id: edge.id,
     source_node_id: edge.source,

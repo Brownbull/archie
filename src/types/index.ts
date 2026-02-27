@@ -1,4 +1,5 @@
-export type { MetricValue, MetricCategory } from "@/schemas/metricSchema"
+export type { MetricValue } from "@/schemas/metricSchema"
+export type { MetricCategory, ScoreInterpretation } from "@/schemas/metricCategorySchema"
 export type {
   Component,
   ConfigVariant,
@@ -19,7 +20,8 @@ export type {
 export type { PropagationHop } from "@/engine/propagator"
 export type { RecalculationResult } from "@/services/recalculationService"
 export type { HeatmapStatus } from "@/engine/heatmapCalculator"
-export type { CategoryScore } from "@/engine/dashboardCalculator"
+export type { CategoryScore, CategoryBreakdown, ComponentCategoryMetric } from "@/engine/dashboardCalculator"
+export type { VariantRecommendation } from "@/engine/recommendationEngine"
 export type {
   TierDefinition,
   TierResult,

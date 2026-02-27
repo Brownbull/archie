@@ -4,6 +4,14 @@ import {
   ConfigVariantSchema,
   ConnectionPropertiesSchema,
   ComponentYamlSchema,
+  CodeSnippetSchema,
+  MAX_REASON_LENGTH,
+  MAX_FACTOR_LENGTH,
+  MAX_LANGUAGE_LENGTH,
+  MAX_CODE_LENGTH,
+  MAX_PROTOCOL_LENGTH,
+  MAX_LATENCY_LENGTH,
+  MAX_PATTERN_LENGTH,
 } from "@/schemas/componentSchema"
 
 const validVariant = {
@@ -58,6 +66,124 @@ describe("ConfigVariantSchema", () => {
     const result = ConfigVariantSchema.safeParse(withoutMetrics)
     expect(result.success).toBe(false)
   })
+
+  it("rejects metricExplanation reason exceeding max length with too_big error code", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "a".repeat(MAX_REASON_LENGTH + 1),
+          contributingFactors: ["pooling"],
+        },
+      },
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects metricExplanation contributingFactor item exceeding max length with too_big error code", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "Valid reason",
+          contributingFactors: ["a".repeat(MAX_FACTOR_LENGTH + 1)],
+        },
+      },
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("accepts metricExplanation reason at exactly max length", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "a".repeat(MAX_REASON_LENGTH),
+          contributingFactors: ["pooling"],
+        },
+      },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts metricExplanation contributingFactor item at exactly max length", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "Valid reason",
+          contributingFactors: ["a".repeat(MAX_FACTOR_LENGTH)],
+        },
+      },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects empty contributingFactor item", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariant,
+      metricExplanations: {
+        latency: {
+          reason: "Valid reason",
+          contributingFactors: [""],
+        },
+      },
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("CodeSnippetSchema", () => {
+  it("accepts valid code snippet", () => {
+    const result = CodeSnippetSchema.safeParse({ language: "typescript", code: "const x = 1;" })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects empty language", () => {
+    const result = CodeSnippetSchema.safeParse({ language: "", code: "const x = 1;" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty code", () => {
+    const result = CodeSnippetSchema.safeParse({ language: "typescript", code: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects language exceeding max length with too_big error code", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "a".repeat(MAX_LANGUAGE_LENGTH + 1),
+      code: "const x = 1;",
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects code exceeding max length with too_big error code", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "typescript",
+      code: "a".repeat(MAX_CODE_LENGTH + 1),
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("accepts language at exactly max length", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "a".repeat(MAX_LANGUAGE_LENGTH),
+      code: "const x = 1;",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts code at exactly max length", () => {
+    const result = CodeSnippetSchema.safeParse({
+      language: "typescript",
+      code: "a".repeat(MAX_CODE_LENGTH),
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("ConnectionPropertiesSchema", () => {
@@ -77,6 +203,65 @@ describe("ConnectionPropertiesSchema", () => {
     const { protocol: _protocol, ...withoutProtocol } = validConnection
     const result = ConnectionPropertiesSchema.safeParse(withoutProtocol)
     expect(result.success).toBe(false)
+  })
+
+  it("rejects protocol exceeding max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      protocol: "a".repeat(MAX_PROTOCOL_LENGTH + 1),
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects typicalLatency exceeding max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      typicalLatency: "a".repeat(MAX_LATENCY_LENGTH + 1),
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects communicationPatterns item exceeding max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      communicationPatterns: ["a".repeat(MAX_PATTERN_LENGTH + 1)],
+    })
+    expect(result.success).toBe(false)
+    expect(result.success ? null : result.error.issues[0].code).toBe("too_big")
+  })
+
+  it("rejects empty communicationPatterns item", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      communicationPatterns: [""],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts protocol at exactly max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      protocol: "a".repeat(MAX_PROTOCOL_LENGTH),
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts typicalLatency at exactly max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      typicalLatency: "a".repeat(MAX_LATENCY_LENGTH),
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts communicationPatterns item at exactly max length", () => {
+    const result = ConnectionPropertiesSchema.safeParse({
+      ...validConnection,
+      communicationPatterns: ["a".repeat(MAX_PATTERN_LENGTH)],
+    })
+    expect(result.success).toBe(true)
   })
 })
 
@@ -204,7 +389,67 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
       expect(result.data.connectionProperties?.communicationPatterns).toEqual(["request-response"])
       expect(result.data.connectionProperties?.typicalLatency).toBe("1-5ms")
       expect(result.data.connectionProperties?.coLocationPotential).toBe(true)
+      // Snake_case keys must not survive the transform
+      expect(result.data.connectionProperties).not.toHaveProperty("communication_patterns")
+      expect(result.data.connectionProperties).not.toHaveProperty("typical_latency")
+      expect(result.data.connectionProperties).not.toHaveProperty("co_location_potential")
     }
+  })
+
+  it("transforms YAML metric_explanations contributing_factors to contributingFactors", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInput,
+      config_variants: [
+        {
+          id: "default",
+          name: "Default",
+          metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+          metric_explanations: {
+            latency: { reason: "Pooling helps", contributing_factors: ["connection pooling"] },
+          },
+        },
+      ],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const explanations = result.data.configVariants[0].metricExplanations
+      expect(explanations?.latency.contributingFactors).toEqual(["connection pooling"])
+      expect(explanations?.latency).not.toHaveProperty("contributing_factors")
+    }
+  })
+
+  it("rejects YAML metric_explanations reason exceeding max length", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInput,
+      config_variants: [
+        {
+          id: "default",
+          name: "Default",
+          metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+          metric_explanations: {
+            latency: { reason: "a".repeat(MAX_REASON_LENGTH + 1), contributing_factors: ["pooling"] },
+          },
+        },
+      ],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects YAML metric_explanations contributing_factor item exceeding max length", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInput,
+      config_variants: [
+        {
+          id: "default",
+          name: "Default",
+          metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+          metric_explanations: {
+            latency: { reason: "Valid", contributing_factors: ["a".repeat(MAX_FACTOR_LENGTH + 1)] },
+          },
+        },
+      ],
+    })
+    expect(result.success).toBe(false)
   })
 
   it("round-trip: YAML output matches ComponentSchema shape", () => {

@@ -45,6 +45,41 @@ config_variants:
         value: low
         numeric_value: 2
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // RabbitMQ - Single Node via amqplib
+        import amqp from 'amqplib'
+
+        const conn = await amqp.connect(process.env.RABBITMQ_URL ?? 'amqp://localhost')
+        const channel = await conn.createChannel()
+
+        const QUEUE = 'tasks'
+        await channel.assertQueue(QUEUE, { durable: true })
+
+        // Producer: send task
+        channel.sendToQueue(QUEUE, Buffer.from(JSON.stringify({ task: 'process' })),
+          { persistent: true })
+
+        // Consumer: process task with acknowledgment
+        channel.consume(QUEUE, (msg) => {
+          if (!msg) return
+          processTask(JSON.parse(msg.content.toString()))
+          channel.ack(msg)
+        })
+    metric_explanations:
+      message-throughput:
+        reason: Single-node RabbitMQ is bounded by one Erlang node's I/O capacity and the overhead of message persistence per acknowledgment.
+        contributing_factors:
+          - Durable message persistence adds fsync overhead per message
+          - Single node handles all exchange routing and queue operations
+          - Channel multiplexing over TCP amortizes connection cost
+      horizontal-scalability:
+        reason: Single RabbitMQ node cannot distribute queues across nodes — all queue state lives on one machine with no failover path.
+        contributing_factors:
+          - Queues are bound to the node where they were declared
+          - No automatic rebalancing of queue load to other nodes
+          - Adding consumers increases processing but not broker throughput ceiling
   - id: clustered
     name: Clustered
     metrics:
@@ -56,6 +91,42 @@ config_variants:
         value: medium
         numeric_value: 6
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // RabbitMQ - Clustered with quorum queues
+        import amqp from 'amqplib'
+
+        const conn = await amqp.connect([
+          process.env.RABBIT_NODE_1 ?? 'amqp://rabbit-1',
+          process.env.RABBIT_NODE_2 ?? 'amqp://rabbit-2',
+        ])
+        const channel = await conn.createChannel()
+
+        // Quorum queue for distributed durability
+        await channel.assertQueue('tasks', {
+          durable: true,
+          arguments: { 'x-queue-type': 'quorum' },
+        })
+
+        channel.consume('tasks', (msg) => {
+          if (!msg) return
+          processTask(JSON.parse(msg.content.toString()))
+          channel.ack(msg)
+        })
+    metric_explanations:
+      message-throughput:
+        reason: Clustered RabbitMQ distributes queue load across nodes, increasing aggregate throughput beyond what a single node can sustain.
+        contributing_factors:
+          - Multiple nodes process messages from their locally-homed queues
+          - Quorum queues replicate to a majority subset, not all nodes
+          - Network bandwidth between cluster nodes becomes the new bottleneck
+      horizontal-scalability:
+        reason: RabbitMQ clusters distribute queues across nodes, providing moderate horizontal scaling with quorum queues for fault tolerance.
+        contributing_factors:
+          - Queues can be defined on specific nodes or mirrored across cluster
+          - Quorum queues maintain consistency with Raft-based replication
+          - Adding nodes increases capacity but requires queue migration planning
 connection_properties:
   protocol: AMQP
   communication_patterns:

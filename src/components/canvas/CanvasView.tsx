@@ -30,6 +30,7 @@ import { ArchieNode } from "@/components/canvas/ArchieNode"
 import { ArchieEdge } from "@/components/canvas/ArchieEdge"
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode"
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState"
+import { CanvasLegend } from "@/components/canvas/CanvasLegend"
 import {
   CANVAS_GRID_SIZE,
   CANVAS_MIN_ZOOM,
@@ -56,8 +57,9 @@ function CanvasViewInner() {
   const setSelectedNodeId = useUiStore((s) => s.setSelectedNodeId)
   const setSelectedEdgeId = useUiStore((s) => s.setSelectedEdgeId)
   const clearSelection = useUiStore((s) => s.clearSelection)
+  const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId)
   const deselectAll = useArchitectureStore((s) => s.deselectAll)
-  const { screenToFlowPosition } = useReactFlow()
+  const { screenToFlowPosition, fitView } = useReactFlow()
   const { handleFileDrop } = useImportAction()
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -190,6 +192,14 @@ function CanvasViewInner() {
     return () => container.removeEventListener("keydown", handleKeyDown)
   }, [clearSelection, deselectAll])
 
+  // Navigate to a node when pendingNavNodeId is set (from IssuesSummary click)
+  useEffect(() => {
+    if (!pendingNavNodeId) return
+    useUiStore.getState().setPendingNavNodeId(null)
+    setSelectedNodeId(pendingNavNodeId)
+    fitView({ nodes: [{ id: pendingNavNodeId }], duration: 400, padding: 0.5 })
+  }, [pendingNavNodeId, setSelectedNodeId, fitView])
+
   return (
     <div
       ref={containerRef}
@@ -227,6 +237,7 @@ function CanvasViewInner() {
         <Controls />
       </ReactFlow>
       <EmptyCanvasState />
+      <CanvasLegend />
     </div>
   )
 }

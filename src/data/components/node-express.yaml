@@ -45,6 +45,37 @@ config_variants:
         value: low
         numeric_value: 3
         category: performance
+    code_snippet:
+      language: typescript
+      code: |
+        // Node.js + Express - Single Process
+        import express from 'express'
+
+        const app = express()
+        app.use(express.json())
+
+        app.get('/health', (_req, res) => res.json({ status: 'ok' }))
+
+        app.get('/users/:id', async (req, res) => {
+          const user = await db.findUser(req.params.id)
+          if (!user) return res.status(404).json({ error: 'Not found' })
+          res.json(user)
+        })
+
+        app.listen(3000, () => console.log('Server ready on :3000'))
+    metric_explanations:
+      concurrent-connections:
+        reason: Single-process Node.js uses one event loop on one CPU core, limiting concurrent request handling when CPU-bound work is present.
+        contributing_factors:
+          - One event loop processes all callbacks sequentially
+          - CPU-intensive handlers block other requests from being served
+          - I/O-only workloads handle more concurrency than the metric suggests
+      cpu-efficiency:
+        reason: A single process uses only one CPU core, leaving remaining cores idle and limiting CPU-bound throughput.
+        contributing_factors:
+          - JavaScript is single-threaded by design
+          - Worker threads needed for CPU work to avoid blocking the event loop
+          - Multi-core hardware is underutilized without clustering
   - id: cluster-mode
     name: Cluster Mode
     metrics:
@@ -56,6 +87,40 @@ config_variants:
         value: medium
         numeric_value: 6
         category: performance
+    code_snippet:
+      language: typescript
+      code: |
+        // Node.js + Express - Cluster Mode
+        import cluster from 'cluster'
+        import os from 'os'
+        import express from 'express'
+
+        if (cluster.isPrimary) {
+          const numCPUs = os.cpus().length
+          for (let i = 0; i < numCPUs; i++) cluster.fork()
+          cluster.on('exit', (worker) => {
+            console.log(`Worker ${worker.process.pid} died, restarting`)
+            cluster.fork()
+          })
+        } else {
+          const app = express()
+          app.use(express.json())
+          app.get('/health', (_req, res) => res.json({ pid: process.pid }))
+          app.listen(3000)
+        }
+    metric_explanations:
+      concurrent-connections:
+        reason: Cluster mode spawns one worker per CPU core, distributing incoming connections across processes and multiplying effective concurrency.
+        contributing_factors:
+          - OS round-robin load balances connections across worker processes
+          - Each worker has its own event loop for independent request handling
+          - Worker restart on crash maintains availability during failures
+      cpu-efficiency:
+        reason: Cluster mode utilizes all available CPU cores, improving CPU efficiency for compute-heavy workloads compared to single-process.
+        contributing_factors:
+          - One worker process per CPU core maximizes hardware utilization
+          - CPU-bound work in one worker does not block other workers
+          - Worker count can be tuned above CPU count for I/O-heavy workloads
 connection_properties:
   protocol: HTTP
   communication_patterns:

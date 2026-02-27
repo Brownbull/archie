@@ -1,15 +1,34 @@
 import { z } from "zod"
 import { MetricValueSchema, MetricValueYamlSchema } from "@/schemas/metricSchema"
 
+export const MAX_REASON_LENGTH = 500
+export const MAX_FACTOR_LENGTH = 200
+export const MAX_LANGUAGE_LENGTH = 50
+export const MAX_CODE_LENGTH = 10000
+
+// Separate constants per field — values match today but may diverge
+// as schema evolves (protocol, latency, and pattern have different semantics).
+export const MAX_PROTOCOL_LENGTH = 100
+export const MAX_LATENCY_LENGTH = 100
+export const MAX_PATTERN_LENGTH = 100
+
 export const CodeSnippetSchema = z.object({
-  language: z.string(),
-  code: z.string(),
+  language: z.string().min(1).max(MAX_LANGUAGE_LENGTH),
+  code: z.string().min(1).max(MAX_CODE_LENGTH),
 }).strict()
 
 export const MetricExplanationSchema = z.object({
-  reason: z.string(),
-  contributingFactors: z.array(z.string()),
+  reason: z.string().min(1).max(MAX_REASON_LENGTH),
+  contributingFactors: z.array(z.string().min(1).max(MAX_FACTOR_LENGTH)),
 }).strict()
+
+const MetricExplanationYamlSchema = z.object({
+  reason: z.string().min(1).max(MAX_REASON_LENGTH),
+  contributing_factors: z.array(z.string().min(1).max(MAX_FACTOR_LENGTH)),
+}).strict().transform((data) => ({
+  reason: data.reason,
+  contributingFactors: data.contributing_factors,
+}))
 
 export const ConfigVariantSchema = z.object({
   id: z.string().min(1),
@@ -20,9 +39,9 @@ export const ConfigVariantSchema = z.object({
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
-  protocol: z.string().min(1),
-  communicationPatterns: z.array(z.string()),
-  typicalLatency: z.string().min(1),
+  protocol: z.string().min(1).max(MAX_PROTOCOL_LENGTH),
+  communicationPatterns: z.array(z.string().min(1).max(MAX_PATTERN_LENGTH)),
+  typicalLatency: z.string().min(1).max(MAX_LATENCY_LENGTH),
   coLocationPotential: z.boolean(),
 }).strict()
 
@@ -47,13 +66,7 @@ const ConfigVariantYamlSchema = z.object({
   name: z.string().min(1),
   metrics: z.array(MetricValueYamlSchema),
   code_snippet: CodeSnippetSchema.optional(),
-  metric_explanations: z.record(z.string(), z.object({
-    reason: z.string(),
-    contributing_factors: z.array(z.string()),
-  }).strict().transform((d) => ({
-    reason: d.reason,
-    contributingFactors: d.contributing_factors,
-  }))).optional(),
+  metric_explanations: z.record(z.string(), MetricExplanationYamlSchema).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -63,9 +76,9 @@ const ConfigVariantYamlSchema = z.object({
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({
-  protocol: z.string().min(1),
-  communication_patterns: z.array(z.string()),
-  typical_latency: z.string().min(1),
+  protocol: z.string().min(1).max(MAX_PROTOCOL_LENGTH),
+  communication_patterns: z.array(z.string().min(1).max(MAX_PATTERN_LENGTH)),
+  typical_latency: z.string().min(1).max(MAX_LATENCY_LENGTH),
   co_location_potential: z.boolean(),
 }).strict().transform((data) => ({
   protocol: data.protocol,

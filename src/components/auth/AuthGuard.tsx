@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import {
   TOOLBAR_HEIGHT,
   TOOLBOX_WIDTH,
-  INSPECTOR_WIDTH,
+  INSPECTOR_DEFAULT_WIDTH,
   DASHBOARD_HEIGHT,
 } from "@/lib/constants"
 
@@ -23,7 +23,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
         <div className="flex flex-1">
           <Skeleton style={{ height: "100%", width: `${TOOLBOX_WIDTH}px` }} />
           <Skeleton className="h-full flex-1" />
-          <Skeleton style={{ height: "100%", width: `${INSPECTOR_WIDTH}px` }} />
+          <Skeleton style={{ height: "100%", width: `${INSPECTOR_DEFAULT_WIDTH}px` }} />
         </div>
         <Skeleton style={{ height: `${DASHBOARD_HEIGHT}px`, width: "100%" }} />
       </div>

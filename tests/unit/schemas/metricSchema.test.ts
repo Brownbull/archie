@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest"
 import {
   MetricValueSchema,
   MetricValueYamlSchema,
-  MetricCategorySchema,
 } from "@/schemas/metricSchema"
 
 describe("MetricValueSchema", () => {
@@ -67,6 +66,22 @@ describe("MetricValueSchema", () => {
     const result = MetricValueSchema.safeParse({ ...validMetric, numericValue: 5.5 })
     expect(result.success).toBe(false)
   })
+
+  it("rejects name exceeding 100 characters", () => {
+    const result = MetricValueSchema.safeParse({
+      ...validMetric,
+      name: "a".repeat(101),
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts name at exactly 100 characters", () => {
+    const result = MetricValueSchema.safeParse({
+      ...validMetric,
+      name: "a".repeat(100),
+    })
+    expect(result.success).toBe(true)
+  })
 })
 
 describe("MetricValueYamlSchema", () => {
@@ -93,32 +108,27 @@ describe("MetricValueYamlSchema", () => {
     })
     expect(result.success).toBe(false)
   })
-})
 
-describe("MetricCategorySchema", () => {
-  const validCategory = {
-    id: "performance",
-    name: "Performance",
-    description: "Measures system speed and responsiveness",
-  }
+  it("rejects name exceeding 100 characters (YAML variant)", () => {
+    const result = MetricValueYamlSchema.safeParse({
+      id: "latency",
+      value: "medium",
+      numeric_value: 5,
+      category: "performance",
+      name: "a".repeat(101),
+    })
+    expect(result.success).toBe(false)
+  })
 
-  it("accepts valid category data", () => {
-    const result = MetricCategorySchema.safeParse(validCategory)
+  it("accepts name at exactly 100 characters (YAML variant)", () => {
+    const result = MetricValueYamlSchema.safeParse({
+      id: "latency",
+      value: "medium",
+      numeric_value: 5,
+      category: "performance",
+      name: "a".repeat(100),
+    })
     expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data).toEqual(validCategory)
-    }
-  })
-
-  it("rejects missing name", () => {
-    const { name: _name, ...withoutName } = validCategory
-    const result = MetricCategorySchema.safeParse(withoutName)
-    expect(result.success).toBe(false)
-  })
-
-  it("rejects missing description", () => {
-    const { description: _desc, ...withoutDesc } = validCategory
-    const result = MetricCategorySchema.safeParse(withoutDesc)
-    expect(result.success).toBe(false)
   })
 })
+

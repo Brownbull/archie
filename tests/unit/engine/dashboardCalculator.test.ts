@@ -3,6 +3,7 @@ import {
   computeCategoryScores,
   computeAggregateScore,
   getScoreColor,
+  computeCategoryBreakdown,
   type CategoryScore,
 } from "@/engine/dashboardCalculator"
 import { METRIC_CATEGORIES } from "@/lib/constants"
@@ -302,5 +303,93 @@ describe("getScoreColor", () => {
     expect(getScoreColor(4.0)).toBe("bg-yellow-500")
     expect(getScoreColor(3.99)).toBe("bg-red-500")
     expect(getScoreColor(6.99)).toBe("bg-yellow-500")
+  })
+})
+
+// --- computeCategoryBreakdown ---
+
+describe("computeCategoryBreakdown", () => {
+  it("returns empty breakdown for empty metrics map", () => {
+    const result = computeCategoryBreakdown(new Map(), "performance")
+    expect(result.best).toEqual([])
+    expect(result.worst).toEqual([])
+    expect(result.totalComponents).toBe(0)
+    expect(result.categoryId).toBe("performance")
+  })
+
+  it("returns single node in both best and worst", () => {
+    const map = new Map([
+      ["node-1", makeNode("node-1", [
+        makeMetric({ id: "latency", category: "performance", numericValue: 7 }),
+      ])],
+    ])
+    const result = computeCategoryBreakdown(map, "performance")
+    expect(result.totalComponents).toBe(1)
+    expect(result.best).toHaveLength(1)
+    expect(result.worst).toHaveLength(1)
+    expect(result.best[0].nodeId).toBe("node-1")
+    expect(result.best[0].averageScore).toBe(7)
+  })
+
+  it("returns top-3 best (descending) and worst (ascending)", () => {
+    const map = new Map([
+      ["n1", makeNode("n1", [makeMetric({ id: "m1", category: "performance", numericValue: 9 })])],
+      ["n2", makeNode("n2", [makeMetric({ id: "m2", category: "performance", numericValue: 3 })])],
+      ["n3", makeNode("n3", [makeMetric({ id: "m3", category: "performance", numericValue: 7 })])],
+      ["n4", makeNode("n4", [makeMetric({ id: "m4", category: "performance", numericValue: 5 })])],
+      ["n5", makeNode("n5", [makeMetric({ id: "m5", category: "performance", numericValue: 1 })])],
+    ])
+
+    const result = computeCategoryBreakdown(map, "performance")
+    expect(result.totalComponents).toBe(5)
+
+    // Best: top 3 descending
+    expect(result.best).toHaveLength(3)
+    expect(result.best[0].nodeId).toBe("n1") // 9
+    expect(result.best[1].nodeId).toBe("n3") // 7
+    expect(result.best[2].nodeId).toBe("n4") // 5
+
+    // Worst: bottom 3 ascending
+    expect(result.worst).toHaveLength(3)
+    expect(result.worst[0].nodeId).toBe("n5") // 1
+    expect(result.worst[1].nodeId).toBe("n2") // 3
+    expect(result.worst[2].nodeId).toBe("n4") // 5
+  })
+
+  it("excludes nodes with no metrics in target category", () => {
+    const map = new Map([
+      ["n1", makeNode("n1", [makeMetric({ id: "m1", category: "performance", numericValue: 8 })])],
+      ["n2", makeNode("n2", [makeMetric({ id: "m2", category: "reliability", numericValue: 6 })])],
+    ])
+
+    const result = computeCategoryBreakdown(map, "performance")
+    expect(result.totalComponents).toBe(1)
+    expect(result.best).toHaveLength(1)
+    expect(result.best[0].nodeId).toBe("n1")
+  })
+
+  it("averages multiple metrics in same category for a node", () => {
+    const map = new Map([
+      ["n1", makeNode("n1", [
+        makeMetric({ id: "m1", category: "performance", numericValue: 8 }),
+        makeMetric({ id: "m2", category: "performance", numericValue: 4 }),
+      ])],
+    ])
+
+    const result = computeCategoryBreakdown(map, "performance")
+    expect(result.best[0].averageScore).toBe(6) // (8+4)/2
+  })
+
+  it("returns at most 3 in best and worst even with many nodes", () => {
+    const entries: [string, RecalculatedMetrics][] = Array.from({ length: 10 }, (_, i) => [
+      `n${i}`,
+      makeNode(`n${i}`, [makeMetric({ id: `m${i}`, category: "performance", numericValue: i + 1 })]),
+    ])
+    const map = new Map(entries)
+
+    const result = computeCategoryBreakdown(map, "performance")
+    expect(result.best).toHaveLength(3)
+    expect(result.worst).toHaveLength(3)
+    expect(result.totalComponents).toBe(10)
   })
 })

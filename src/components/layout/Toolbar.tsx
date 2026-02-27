@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
+import { IssuesSummary } from "@/components/layout/IssuesSummary"
 import { useImportAction } from "@/components/import-export/ImportDialog"
 import { ExportButton } from "@/components/import-export/ExportButton"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
@@ -51,6 +52,7 @@ export function Toolbar() {
             {user.displayName}
           </span>
         )}
+        <IssuesSummary />
         <SettingsMenu />
         <Button variant="ghost" size="sm" onClick={signOut}>
           Sign out

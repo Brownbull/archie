@@ -41,6 +41,41 @@ config_variants:
         value: low
         numeric_value: 3
         category: operational-complexity
+    code_snippet:
+      language: typescript
+      code: |
+        // WebSocket Server - Single Server via ws
+        import { WebSocketServer, WebSocket } from 'ws'
+
+        const wss = new WebSocketServer({ port: 8080 })
+        const clients = new Set<WebSocket>()
+
+        wss.on('connection', (ws) => {
+          clients.add(ws)
+          ws.on('message', (data) => {
+            const msg = JSON.parse(data.toString())
+            // Broadcast to all connected clients
+            for (const client of clients) {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(msg))
+              }
+            }
+          })
+          ws.on('close', () => clients.delete(ws))
+        })
+    metric_explanations:
+      concurrent-connections:
+        reason: A single WebSocket server holds all connections in memory, bounded by the server's file descriptor limit and available RAM per connection.
+        contributing_factors:
+          - Each persistent connection consumes a file descriptor and memory
+          - Default OS file descriptor limits cap concurrent connections
+          - In-memory client set requires linear broadcast for every message
+      operational-complexity:
+        reason: Single-server WebSocket setup requires no distributed coordination, keeping operational complexity low at the cost of scalability ceiling.
+        contributing_factors:
+          - No external pub/sub system needed for message routing
+          - Deployment requires only the server process and port mapping
+          - Load balancer not needed — single server handles all connections
   - id: clustered
     name: Clustered with Redis Pub/Sub
     metrics:
@@ -52,6 +87,44 @@ config_variants:
         value: high
         numeric_value: 7
         category: operational-complexity
+    code_snippet:
+      language: typescript
+      code: |
+        // WebSocket Server - Clustered with Redis Pub/Sub
+        import { WebSocketServer, WebSocket } from 'ws'
+        import Redis from 'ioredis'
+
+        const wss = new WebSocketServer({ port: 8080 })
+        const pub = new Redis(process.env.REDIS_URL)
+        const sub = new Redis(process.env.REDIS_URL)
+        const clients = new Map<string, WebSocket>()
+
+        sub.subscribe('broadcast')
+        sub.on('message', (_channel, data) => {
+          for (const ws of clients.values()) {
+            if (ws.readyState === WebSocket.OPEN) ws.send(data)
+          }
+        })
+
+        wss.on('connection', (ws, req) => {
+          const id = req.headers['x-user-id'] as string
+          clients.set(id, ws)
+          ws.on('message', (data) => pub.publish('broadcast', data.toString()))
+          ws.on('close', () => clients.delete(id))
+        })
+    metric_explanations:
+      concurrent-connections:
+        reason: Multiple WebSocket server instances share connection load behind a load balancer, with Redis Pub/Sub routing messages across instances.
+        contributing_factors:
+          - Horizontal scaling adds server instances to absorb more connections
+          - Sticky sessions or token-based routing keeps clients on one instance
+          - Redis fan-out broadcasts messages across all server instances
+      operational-complexity:
+        reason: Clustered WebSocket servers require Redis for inter-node messaging, sticky session load balancing, and connection state management across restarts.
+        contributing_factors:
+          - Redis Pub/Sub introduces a dependency that must be highly available
+          - Load balancer must support sticky sessions or WebSocket-aware routing
+          - Graceful shutdown must drain connections before terminating instances
 connection_properties:
   protocol: WebSocket
   communication_patterns:

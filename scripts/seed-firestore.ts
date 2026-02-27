@@ -370,6 +370,7 @@ async function main() {
 
   initializeApp({ credential: cert(serviceAccount) })
   const db = getFirestore()
+  db.settings({ ignoreUndefinedProperties: true })
 
   await seedToFirestore(db, components)
   await seedBlueprintsToFirestore(db, blueprints)

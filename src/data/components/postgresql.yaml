@@ -49,6 +49,34 @@ config_variants:
         value: low
         numeric_value: 2
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // PostgreSQL - Single Node via node-postgres
+        import { Pool } from 'pg'
+
+        const pool = new Pool({
+          connectionString: process.env.DATABASE_URL,
+          max: 10,
+        })
+
+        export async function query(text: string, params?: unknown[]) {
+          const { rows } = await pool.query(text, params)
+          return rows
+        }
+    metric_explanations:
+      read-latency:
+        reason: Single-node PostgreSQL routes all reads to one server with no load distribution, causing higher latency under concurrent load.
+        contributing_factors:
+          - Single server handles all read and write traffic concurrently
+          - No read replicas to offload query traffic
+          - Shared I/O causes contention on high-traffic tables
+      horizontal-scalability:
+        reason: A single PostgreSQL node cannot scale out horizontally — all traffic hits one instance with no distribution path.
+        contributing_factors:
+          - No built-in sharding or partitioning across nodes
+          - Vertical scaling only until hardware limits are reached
+          - Migration to distributed variant requires significant schema changes
   - id: primary-replica
     name: Primary-Replica
     metrics:
@@ -60,6 +88,37 @@ config_variants:
         value: medium
         numeric_value: 5
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // PostgreSQL - Primary-Replica with read/write split
+        import { Pool } from 'pg'
+
+        const writePool = new Pool({ connectionString: process.env.PRIMARY_URL })
+        const readPool = new Pool({ connectionString: process.env.REPLICA_URL })
+
+        export async function readQuery(text: string, params?: unknown[]) {
+          const { rows } = await readPool.query(text, params)
+          return rows
+        }
+
+        export async function writeQuery(text: string, params?: unknown[]) {
+          const { rows } = await writePool.query(text, params)
+          return rows
+        }
+    metric_explanations:
+      read-latency:
+        reason: Read replicas absorb SELECT queries, reducing primary load and improving read latency compared to single-node.
+        contributing_factors:
+          - Replica handles read traffic independently from primary writes
+          - Replication lag introduces small staleness window but not latency
+          - Connection pooling to replica reduces per-query overhead
+      horizontal-scalability:
+        reason: Adding read replicas distributes read load, providing moderate horizontal scalability for read-heavy workloads.
+        contributing_factors:
+          - Multiple replicas can be added to scale reads
+          - Write path remains single-primary and does not scale horizontally
+          - Read/write split requires application-level routing logic
   - id: citus-distributed
     name: Citus Distributed
     metrics:
@@ -71,6 +130,33 @@ config_variants:
         value: high
         numeric_value: 8
         category: scalability
+    code_snippet:
+      language: sql
+      code: |
+        -- PostgreSQL Citus - Distributed table setup
+        SELECT create_distributed_table('orders', 'user_id');
+
+        -- Queries automatically route to shards
+        SELECT count(*) FROM orders WHERE user_id = $1;
+
+        -- Aggregation across shards (coordinator merges)
+        SELECT user_id, sum(amount)
+        FROM orders
+        GROUP BY user_id
+        LIMIT 100;
+    metric_explanations:
+      read-latency:
+        reason: Citus distributes data across shards, so cross-shard queries require coordinator aggregation which adds latency compared to single-node reads.
+        contributing_factors:
+          - Multi-shard queries require network round-trips to coordinator
+          - Single-shard queries by distribution key remain fast
+          - Data co-location optimization reduces cross-shard overhead
+      horizontal-scalability:
+        reason: Citus shards data across worker nodes, enabling true horizontal scaling for both reads and writes at the cost of query complexity.
+        contributing_factors:
+          - Data sharded by distribution column across worker nodes
+          - New workers can be added to increase capacity
+          - Rebalancing shards requires careful planning to avoid downtime
 connection_properties:
   protocol: TCP
   communication_patterns:

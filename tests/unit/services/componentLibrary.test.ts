@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { Component } from "@/schemas/componentSchema"
 import type { BlueprintFull } from "@/schemas/blueprintSchema"
+import type { MetricCategory } from "@/schemas/metricCategorySchema"
 
-const { mockComponentRepo, mockStackRepo, mockBlueprintRepo } = vi.hoisted(() => ({
+const { mockComponentRepo, mockStackRepo, mockBlueprintRepo, mockMetricCategoryRepo } = vi.hoisted(() => ({
   mockComponentRepo: {
     getAll: vi.fn(),
     getById: vi.fn(),
@@ -12,6 +13,9 @@ const { mockComponentRepo, mockStackRepo, mockBlueprintRepo } = vi.hoisted(() =>
     getAll: vi.fn(),
   },
   mockBlueprintRepo: {
+    getAll: vi.fn(),
+  },
+  mockMetricCategoryRepo: {
     getAll: vi.fn(),
   },
 }))
@@ -26,6 +30,10 @@ vi.mock("@/repositories/stackRepository", () => ({
 
 vi.mock("@/repositories/blueprintRepository", () => ({
   blueprintRepository: mockBlueprintRepo,
+}))
+
+vi.mock("@/repositories/metricCategoryRepository", () => ({
+  metricCategoryRepository: mockMetricCategoryRepo,
 }))
 
 import { componentLibrary } from "@/services/componentLibrary"
@@ -67,6 +75,7 @@ describe("componentLibrary", () => {
     mockComponentRepo.getAll.mockResolvedValue([mockComponent, mockComponent2])
     mockStackRepo.getAll.mockResolvedValue([])
     mockBlueprintRepo.getAll.mockResolvedValue([])
+    mockMetricCategoryRepo.getAll.mockResolvedValue([])
   })
 
   it("isInitialized returns false before init", () => {
@@ -216,5 +225,67 @@ describe("componentLibrary", () => {
     const results = componentLibrary.searchComponents("caching")
     expect(results).toHaveLength(1)
     expect(results[0].id).toBe("redis")
+  })
+
+  describe("metricCategories", () => {
+    const mockMetricCategories: MetricCategory[] = [
+      {
+        id: "performance",
+        name: "Performance",
+        description: "Measures response times",
+        whyItMatters: "Performance matters",
+        icon: "Gauge",
+        scoreInterpretations: [
+          { minScore: 0, maxScore: 3.99, text: "Critical" },
+          { minScore: 4, maxScore: 6.99, text: "Moderate" },
+          { minScore: 7, maxScore: 10, text: "Strong" },
+        ],
+      },
+      {
+        id: "reliability",
+        name: "Reliability",
+        description: "Measures uptime",
+        whyItMatters: "Reliability matters",
+        icon: "ShieldCheck",
+        scoreInterpretations: [
+          { minScore: 0, maxScore: 3.99, text: "Critical" },
+          { minScore: 4, maxScore: 6.99, text: "Moderate" },
+          { minScore: 7, maxScore: 10, text: "Strong" },
+        ],
+      },
+    ]
+
+    it("initialize caches metricCategories from repository", async () => {
+      mockMetricCategoryRepo.getAll.mockResolvedValue(mockMetricCategories)
+      await componentLibrary.initialize()
+      expect(mockMetricCategoryRepo.getAll).toHaveBeenCalledTimes(1)
+      expect(componentLibrary.getAllMetricCategories()).toHaveLength(2)
+    })
+
+    it("getMetricCategory returns correct category by ID", async () => {
+      mockMetricCategoryRepo.getAll.mockResolvedValue(mockMetricCategories)
+      await componentLibrary.initialize()
+      const cat = componentLibrary.getMetricCategory("performance")
+      expect(cat?.name).toBe("Performance")
+      expect(cat?.scoreInterpretations).toHaveLength(3)
+    })
+
+    it("getMetricCategory returns undefined for unknown ID", async () => {
+      mockMetricCategoryRepo.getAll.mockResolvedValue(mockMetricCategories)
+      await componentLibrary.initialize()
+      expect(componentLibrary.getMetricCategory("nonexistent")).toBeUndefined()
+    })
+
+    it("reset clears metricCategories", async () => {
+      mockMetricCategoryRepo.getAll.mockResolvedValue(mockMetricCategories)
+      await componentLibrary.initialize()
+      expect(componentLibrary.getAllMetricCategories()).toHaveLength(2)
+      componentLibrary.reset()
+      expect(componentLibrary.getAllMetricCategories()).toEqual([])
+    })
+
+    it("getAllMetricCategories returns empty array before initialization", () => {
+      expect(componentLibrary.getAllMetricCategories()).toEqual([])
+    })
   })
 })

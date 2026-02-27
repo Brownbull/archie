@@ -41,6 +41,39 @@ config_variants:
         value: medium
         numeric_value: 6
         category: performance
+    code_snippet:
+      language: typescript
+      code: |
+        // Redis Cache - Simple Key-Value with TTL
+        import Redis from 'ioredis'
+
+        const redis = new Redis(process.env.REDIS_URL)
+        const TTL = 300 // 5 minutes
+
+        export async function getCached<T>(key: string, fetch: () => Promise<T>): Promise<T> {
+          const cached = await redis.get(key)
+          if (cached) return JSON.parse(cached) as T
+          const data = await fetch()
+          await redis.set(key, JSON.stringify(data), 'EX', TTL)
+          return data
+        }
+
+        export async function invalidate(key: string) {
+          await redis.del(key)
+        }
+    metric_explanations:
+      cache-hit-latency:
+        reason: Simple key-value cache reads directly from single-node RAM with no lookup complexity, delivering sub-millisecond hit latency.
+        contributing_factors:
+          - Direct memory read with O(1) key lookup
+          - No cross-node coordination required for reads
+          - In-process serialization/deserialization is the only overhead
+      cache-efficiency:
+        reason: Simple cache without tagging or layered keys has lower efficiency because related keys cannot be invalidated atomically on data changes.
+        contributing_factors:
+          - Key-by-key invalidation is error-prone for complex object graphs
+          - No built-in cache warming strategy on cold start
+          - TTL-based expiry can serve stale data near expiration boundary
   - id: distributed-cache
     name: Distributed Cache
     metrics:
@@ -52,6 +85,44 @@ config_variants:
         value: high
         numeric_value: 8
         category: performance
+    code_snippet:
+      language: typescript
+      code: |
+        // Redis Cache - Distributed with tag-based invalidation
+        import Redis from 'ioredis'
+
+        const cluster = new Redis.Cluster([
+          { host: process.env.CACHE_NODE_1, port: 6379 },
+          { host: process.env.CACHE_NODE_2, port: 6379 },
+        ])
+
+        export async function setWithTags(
+          key: string, value: unknown, tags: string[], ttl = 300
+        ) {
+          const pipeline = cluster.pipeline()
+          pipeline.set(key, JSON.stringify(value), 'EX', ttl)
+          for (const tag of tags) pipeline.sadd(`tag:${tag}`, key)
+          await pipeline.exec()
+        }
+
+        export async function invalidateByTag(tag: string) {
+          const keys = await cluster.smembers(`tag:${tag}`)
+          if (keys.length) await cluster.del(...keys)
+          await cluster.del(`tag:${tag}`)
+        }
+    metric_explanations:
+      cache-hit-latency:
+        reason: Distributed cache adds one slot-routing step compared to single-node, slightly increasing hit latency but still well under 1ms.
+        contributing_factors:
+          - Cluster slot routing adds one hash-slot lookup per command
+          - Pipeline batching amortizes network round-trips for multi-key sets
+          - Cross-slot tag invalidation requires coordinating multiple nodes
+      cache-efficiency:
+        reason: Tag-based invalidation groups related keys for atomic removal, enabling precise cache invalidation that matches application data boundaries.
+        contributing_factors:
+          - Tag sets map domain objects to all their cached representations
+          - Invalidating one entity removes all derived cached views atomically
+          - Cache warming on startup can pre-populate high-traffic key patterns
 connection_properties:
   protocol: TCP
   communication_patterns:

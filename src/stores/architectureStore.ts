@@ -37,6 +37,7 @@ export interface ArchieEdgeData extends Record<string, unknown> {
   incompatibilityReason: string | null
   sourceArchieComponentId: string
   targetArchieComponentId: string
+  labelOffset?: { x: number; y: number }
 }
 
 export type ArchieNode = Node<ArchieNodeData, typeof NODE_TYPE_COMPONENT>
@@ -89,6 +90,7 @@ interface ArchitectureState {
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
+  updateEdgeLabelOffset: (edgeId: string, offset: { x: number; y: number }) => void
   onNodesChange: (changes: NodeChange<ArchieNode>[]) => void
 }
 
@@ -560,6 +562,16 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({
       nodes: nodes.map((n) => (n.selected ? { ...n, selected: false } : n)),
       edges: edges.map((e) => (e.selected ? { ...e, selected: false } : e)),
+    })
+  },
+
+  updateEdgeLabelOffset: (edgeId, offset) => {
+    set({
+      edges: get().edges.map((e) =>
+        e.id === edgeId && e.data
+          ? { ...e, data: { ...e.data, labelOffset: offset } as ArchieEdgeData }
+          : e,
+      ),
     })
   },
 

@@ -1,13 +1,18 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import {
   computeCategoryScores,
   computeAggregateScore,
 } from "@/engine/dashboardCalculator"
 import { METRIC_CATEGORIES } from "@/lib/constants"
+import { componentLibrary } from "@/services/componentLibrary"
 import { AggregateScore } from "@/components/dashboard/AggregateScore"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
+import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
+import { DashboardOverlay } from "@/components/dashboard/DashboardOverlay"
 import { TierBadge } from "@/components/dashboard/TierBadge"
+import { Button } from "@/components/ui/button"
+import { Maximize2 } from "lucide-react"
 
 /** Lookup from categoryId to METRIC_CATEGORIES entry for icon/color/shortName. */
 const CATEGORY_LOOKUP = new Map<string, (typeof METRIC_CATEGORIES)[number]>(
@@ -33,6 +38,9 @@ export function DashboardPanel() {
     () => categoryScores.filter((cs) => cs.hasData),
     [categoryScores],
   )
+
+  const [infoCategoryId, setInfoCategoryId] = useState<string | null>(null)
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false)
 
   const isEmpty = computedMetrics.size === 0
 
@@ -63,19 +71,44 @@ export function DashboardPanel() {
               if (!catMeta) return null
 
               return (
-                <CategoryBar
+                <CategoryInfoPopup
                   key={cs.categoryId}
-                  categoryId={cs.categoryId}
-                  shortName={catMeta.shortName}
-                  iconName={catMeta.iconName}
-                  categoryColor={catMeta.color}
+                  category={componentLibrary.getMetricCategory(cs.categoryId)}
                   score={cs.score}
-                />
+                  open={infoCategoryId === cs.categoryId}
+                  onOpenChange={(open) =>
+                    setInfoCategoryId(open ? cs.categoryId : null)
+                  }
+                >
+                  <CategoryBar
+                    categoryId={cs.categoryId}
+                    shortName={catMeta.shortName}
+                    iconName={catMeta.iconName}
+                    categoryColor={catMeta.color}
+                    score={cs.score}
+                    onClick={() => setInfoCategoryId(cs.categoryId)}
+                  />
+                </CategoryInfoPopup>
               )
             })}
           </div>
+
+          <div className="self-stretch border-r border-archie-border" />
+
+          <Button
+            data-testid="dashboard-expand-button"
+            variant="ghost"
+            size="sm"
+            className="mx-1 shrink-0"
+            onClick={() => setIsOverlayOpen(true)}
+            aria-label="Expand dashboard"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+          </Button>
         </>
       )}
+
+      <DashboardOverlay open={isOverlayOpen} onOpenChange={setIsOverlayOpen} />
     </div>
   )
 }
