@@ -188,4 +188,48 @@ describe("MetricCategorySchema", () => {
     })
     expect(result.success).toBe(true)
   })
+
+  it("accepts single-item range covering [0, 10] exactly", () => {
+    const result = MetricCategorySchema.safeParse({
+      ...validCategory,
+      scoreInterpretations: [
+        { minScore: 0, maxScore: 10, text: "All" },
+      ],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects gap just over epsilon tolerance (0.021)", () => {
+    const result = MetricCategorySchema.safeParse({
+      ...validCategory,
+      scoreInterpretations: [
+        { minScore: 0, maxScore: 4, text: "Low" },
+        { minScore: 4.021, maxScore: 10, text: "High" },
+      ],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts gap within epsilon tolerance (0.019)", () => {
+    const result = MetricCategorySchema.safeParse({
+      ...validCategory,
+      scoreInterpretations: [
+        { minScore: 0, maxScore: 4, text: "Low" },
+        { minScore: 4.019, maxScore: 10, text: "High" },
+      ],
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts out-of-order ranges that are valid when sorted", () => {
+    const result = MetricCategorySchema.safeParse({
+      ...validCategory,
+      scoreInterpretations: [
+        { minScore: 7, maxScore: 10, text: "Strong" },
+        { minScore: 0, maxScore: 3.99, text: "Critical" },
+        { minScore: 4, maxScore: 6.99, text: "Moderate" },
+      ],
+    })
+    expect(result.success).toBe(true)
+  })
 })

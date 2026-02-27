@@ -209,8 +209,11 @@ const onPointerMove = (e: React.PointerEvent) => {
 - Section anchors only appear when content is long enough (more than one section visible)
 
 ### E2E Testing
-E2E coverage recommended — run `/ecc-e2e 4-6` after implementation.
-Key journeys: toggle button switches width, drag handle resizes, overlay opens/closes, section anchors scroll, collapse still works in all modes.
+- Action: EXTEND | File: tests/e2e/inspector-ux-polish.spec.ts | Result: PASS
+- Multi-User: SINGLE-USER | Quality Score: 90/100 | Date: 2026-02-27
+- Tests: 8 tests covering AC-1, AC-2 (visibility), AC-4, AC-5a/b, AC-6, AC-7, AC-8
+- AC-3 skipped (CSS-only, low E2E value)
+- AC-2 drag interaction tested in unit tests only (pointer capture limitation in Playwright)
 
 ## Deferred Items (Code Review 2026-02-26)
 

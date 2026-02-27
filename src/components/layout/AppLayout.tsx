@@ -6,6 +6,8 @@ import { CommandPalette } from "@/components/toolbox/CommandPalette"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
+import { InspectorResizeHandle } from "@/components/inspector/InspectorResizeHandle"
+import { InspectorOverlay } from "@/components/inspector/InspectorOverlay"
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel"
 import { ImportProvider } from "@/components/import-export/ImportDialog"
 // NOTE: Direct service import for initialization only (not data access).
@@ -15,7 +17,6 @@ import { useUiStore } from "@/stores/uiStore"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   TOOLBOX_WIDTH,
-  INSPECTOR_WIDTH,
   INSPECTOR_COLLAPSED_WIDTH,
   DASHBOARD_HEIGHT,
 } from "@/lib/constants"
@@ -35,12 +36,14 @@ function ToolboxSkeleton() {
 export function AppLayout() {
   const [libraryReady, setLibraryReady] = useState(false)
   const inspectorCollapsed = useUiStore((s) => s.inspectorCollapsed)
+  const inspectorOverlay = useUiStore((s) => s.inspectorOverlay)
+  const storeWidth = useUiStore((s) => s.inspectorWidth)
   const selectedNodeId = useUiStore((s) => s.selectedNodeId)
   const selectedEdgeId = useUiStore((s) => s.selectedEdgeId)
   const hasSelection = selectedNodeId !== null || selectedEdgeId !== null
-  const inspectorWidth = hasSelection
-    ? (inspectorCollapsed ? INSPECTOR_COLLAPSED_WIDTH : INSPECTOR_WIDTH)
-    : 0
+  const inspectorWidth = !hasSelection || inspectorOverlay
+    ? 0
+    : inspectorCollapsed ? INSPECTOR_COLLAPSED_WIDTH : storeWidth
 
   useEffect(() => {
     componentLibrary
@@ -74,6 +77,10 @@ export function AppLayout() {
             </CanvasErrorBoundary>
           </main>
 
+          {hasSelection && !inspectorCollapsed && !inspectorOverlay && (
+            <InspectorResizeHandle />
+          )}
+
           <aside
             data-testid="inspector"
             className="overflow-hidden border-l border-archie-border bg-panel transition-[width] duration-200 ease-in-out"
@@ -92,6 +99,12 @@ export function AppLayout() {
         </footer>
 
         <CommandPalette />
+
+        {hasSelection && (
+          <InspectorOverlay>
+            <InspectorPanel />
+          </InspectorOverlay>
+        )}
       </div>
     </ImportProvider>
   )

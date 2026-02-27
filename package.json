@@ -14,7 +14,8 @@
     "test:sprint": "vitest run --coverage --reporter=verbose",
     "test:e2e": "bash -c 'unset ${!VITE_FIREBASE_*} && playwright test'",
     "preview": "vite preview",
-    "seed:firestore": "tsx scripts/seed-firestore.ts"
+    "seed:firestore": "tsx scripts/seed-firestore.ts",
+    "seed:metric-categories": "tsx scripts/seed-metric-categories.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",

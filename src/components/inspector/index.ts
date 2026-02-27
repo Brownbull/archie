@@ -1,4 +1,6 @@
 export { InspectorPanel } from "./InspectorPanel"
+export { InspectorResizeHandle } from "./InspectorResizeHandle"
+export { InspectorOverlay } from "./InspectorOverlay"
 export { ComponentDetail } from "./ComponentDetail"
 export { ConnectionDetail } from "./ConnectionDetail"
 export { ComponentSwapper } from "./ComponentSwapper"

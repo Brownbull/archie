@@ -1,42 +1,7 @@
 import { test, expect } from "@playwright/test"
-import { waitForComponentLibrary, addComponentToCanvas } from "./helpers/canvas-helpers"
+import { waitForComponentLibrary, addComponentToCanvas, connectNodes } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/connection-inspection"
-
-/**
- * Helper: connect two nodes by dragging from source handle to target handle.
- * React Flow uses mouse events (not HTML5 drag) for port connections.
- */
-async function connectNodes(
-  page: import("@playwright/test").Page,
-  sourceNodeIndex: number,
-  targetNodeIndex: number,
-) {
-  // Hover source node to reveal handles (opacity transitions from 0 to 1)
-  await page.locator('[data-testid="archie-node"]').nth(sourceNodeIndex).hover()
-
-  const sourceHandle = page
-    .locator('[data-testid="archie-node-handle-source"]')
-    .nth(sourceNodeIndex)
-  const targetHandle = page
-    .locator('[data-testid="archie-node-handle-target"]')
-    .nth(targetNodeIndex)
-
-  const sourceBox = await sourceHandle.boundingBox()
-  const targetBox = await targetHandle.boundingBox()
-  if (!sourceBox || !targetBox) throw new Error("Handle bounding boxes not found")
-
-  const srcX = sourceBox.x + sourceBox.width / 2
-  const srcY = sourceBox.y + sourceBox.height / 2
-  const tgtX = targetBox.x + targetBox.width / 2
-  const tgtY = targetBox.y + targetBox.height / 2
-
-  await page.mouse.move(srcX, srcY)
-  await page.mouse.down()
-  await page.mouse.move((srcX + tgtX) / 2, (srcY + tgtY) / 2, { steps: 5 })
-  await page.mouse.move(tgtX, tgtY, { steps: 5 })
-  await page.mouse.up()
-}
 
 /**
  * Helper: place two components, connect them, and click the edge.

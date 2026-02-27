@@ -149,8 +149,11 @@ No specialized database or security review required. This story is purely CSS/Re
 - **CSS variables** — `--color-heatmap-green`, `--color-heatmap-yellow`, `--color-heatmap-red` are already defined in `src/index.css` and used by `HEATMAP_COLORS` in constants. CanvasLegend swatches should use `bg-[--color-heatmap-green]` Tailwind arbitrary value syntax or inline `style={{ backgroundColor: 'var(--color-heatmap-green)' }}`.
 
 ### E2E Testing
-E2E coverage recommended — run `/ecc-e2e 4-5` after implementation.
-Key journeys: (1) enable heatmap with mixed-status connections → verify particles visible at correct speeds, (2) verify legend appears and dismiss button hides it, (3) disable heatmap → verify no particles and no legend, (4) re-enable heatmap → verify legend reappears.
+- **Action:** CREATE | **File:** `tests/e2e/flow-particles-and-legend.spec.ts` | **Result:** PASS
+- **Multi-User:** SINGLE-USER | **Quality Score:** 82/100 | **Date:** 2026-02-25
+- **Tests:** 9 (4 legend + 3 particle + 1 combined + 1 no-connection guard)
+- **Determinism:** 2/2 consecutive runs passed, no flakiness
+- **Fixes applied:** Extracted `connectNodes`, `placeTwoComponents`, `triggerRecalcViaConfigChange` to shared `canvas-helpers.ts`; replaced bare `waitForTimeout` with assertion-based wait on particle element
 
 ## Tech Debt Tracking
 

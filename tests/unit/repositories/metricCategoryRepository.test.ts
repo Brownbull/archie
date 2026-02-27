@@ -88,7 +88,20 @@ describe("metricCategoryRepository", () => {
         expect.fail("Should have thrown")
       } catch (err) {
         expect(err).toBeInstanceOf(RepositoryError)
+        expect((err as RepositoryError).name).toBe("RepositoryError")
         expect((err as RepositoryError).cause).toBe(originalError)
+      }
+    })
+
+    it("RepositoryError wraps non-Error rejection cause", async () => {
+      mockGetDocs.mockRejectedValue("plain string error")
+
+      try {
+        await metricCategoryRepository.getAll()
+        expect.fail("Should have thrown")
+      } catch (err) {
+        expect(err).toBeInstanceOf(RepositoryError)
+        expect((err as RepositoryError).cause).toBe("plain string error")
       }
     })
 

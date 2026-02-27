@@ -164,13 +164,15 @@ export function ComponentDetail({
 
         {/* Code Snippet */}
         {activeVariant?.codeSnippet && (
-          <CodeSnippetViewer codeSnippet={activeVariant.codeSnippet} />
+          <div data-section="code">
+            <CodeSnippetViewer codeSnippet={activeVariant.codeSnippet} />
+          </div>
         )}
 
         <Separator />
 
         {/* IS section */}
-        <div>
+        <div data-section="details">
           <h3 className="mb-1 text-xs font-medium text-text-primary">What it is</h3>
           <p className="text-xs text-text-secondary">{component.is}</p>
         </div>
@@ -218,7 +220,7 @@ export function ComponentDetail({
         {metricsByCategory.size > 0 && (
           <>
             <Separator />
-            <div className="space-y-2">
+            <div className="space-y-2" data-section="metrics">
               <h3 className="text-xs font-medium text-text-primary">Metrics</h3>
               <MetricFilter
                 allMetricIds={allMetricIds}

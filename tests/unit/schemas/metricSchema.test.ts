@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest"
 import {
   MetricValueSchema,
   MetricValueYamlSchema,
-  MetricCategorySchema,
 } from "@/schemas/metricSchema"
 
 describe("MetricValueSchema", () => {
@@ -133,30 +132,3 @@ describe("MetricValueYamlSchema", () => {
   })
 })
 
-describe("MetricCategorySchema", () => {
-  const validCategory = {
-    id: "performance",
-    name: "Performance",
-    description: "Measures system speed and responsiveness",
-  }
-
-  it("accepts valid category data", () => {
-    const result = MetricCategorySchema.safeParse(validCategory)
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data).toEqual(validCategory)
-    }
-  })
-
-  it("rejects missing name", () => {
-    const { name: _name, ...withoutName } = validCategory
-    const result = MetricCategorySchema.safeParse(withoutName)
-    expect(result.success).toBe(false)
-  })
-
-  it("rejects missing description", () => {
-    const { description: _desc, ...withoutDesc } = validCategory
-    const result = MetricCategorySchema.safeParse(withoutDesc)
-    expect(result.success).toBe(false)
-  })
-})

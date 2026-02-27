@@ -67,6 +67,101 @@ export async function selectNodeOnCanvas(
  * Playwright does not natively support dataTransfer, so events are dispatched
  * via page.evaluate.
  */
+/**
+ * Place two components on the canvas using drag-and-drop.
+ * Drops the first card at 30% canvas width and the second at 70%.
+ * Returns the number of nodes placed (0 if fewer than 2 component cards available).
+ */
+export async function placeTwoComponents(page: Page): Promise<number> {
+  const canvasPanel = page.locator('[data-testid="canvas-panel"]')
+  const canvasBounds = await canvasPanel.boundingBox()
+  if (!canvasBounds) throw new Error("canvas-panel not found")
+
+  const cards = page.locator('[data-testid^="component-card-"]')
+  if ((await cards.count()) < 2) return 0
+
+  const firstTestId = await cards.nth(0).getAttribute("data-testid")
+  await dragComponentToCanvas(
+    page,
+    firstTestId!.replace("component-card-", ""),
+    canvasBounds.x + canvasBounds.width * 0.3,
+    canvasBounds.y + canvasBounds.height / 2,
+  )
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
+
+  const secondTestId = await cards.nth(1).getAttribute("data-testid")
+  await dragComponentToCanvas(
+    page,
+    secondTestId!.replace("component-card-", ""),
+    canvasBounds.x + canvasBounds.width * 0.7,
+    canvasBounds.y + canvasBounds.height / 2,
+  )
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
+  return 2
+}
+
+/**
+ * Connect two nodes by dragging from source handle to target handle.
+ * React Flow uses mouse events (not HTML5 drag) for port connections.
+ * Hovers the source node first to ensure handles are interactable.
+ */
+export async function connectNodes(
+  page: Page,
+  sourceIndex: number,
+  targetIndex: number,
+): Promise<void> {
+  await page.locator('[data-testid="archie-node"]').nth(sourceIndex).hover()
+
+  const sourceHandle = page.locator('[data-testid="archie-node-handle-source"]').nth(sourceIndex)
+  const targetHandle = page.locator('[data-testid="archie-node-handle-target"]').nth(targetIndex)
+
+  const sourceBox = await sourceHandle.boundingBox()
+  const targetBox = await targetHandle.boundingBox()
+  if (!sourceBox || !targetBox) throw new Error("Handle bounding boxes not found")
+
+  const srcX = sourceBox.x + sourceBox.width / 2
+  const srcY = sourceBox.y + sourceBox.height / 2
+  const tgtX = targetBox.x + targetBox.width / 2
+  const tgtY = targetBox.y + targetBox.height / 2
+
+  await page.mouse.move(srcX, srcY)
+  await page.mouse.down()
+  await page.mouse.move((srcX + tgtX) / 2, (srcY + tgtY) / 2, { steps: 5 })
+  await page.mouse.move(tgtX, tgtY, { steps: 5 })
+  await page.mouse.up()
+}
+
+/**
+ * Trigger recalculation by changing a node's config variant in the inspector.
+ * This populates computedMetrics and edgeHeatmapStatus on connections.
+ */
+export async function triggerRecalcViaConfigChange(
+  page: Page,
+  nodeIndex = 0,
+): Promise<void> {
+  await page.locator('[data-testid="archie-node"]').nth(nodeIndex).click()
+  await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+
+  const configTrigger = page.locator('[data-testid="config-selector"] button[role="combobox"]')
+  await expect(configTrigger).toBeVisible({ timeout: 3_000 })
+  await configTrigger.click()
+
+  await page.locator('[role="listbox"]').waitFor({ state: "visible", timeout: 3_000 })
+
+  const unchecked = page.locator('[role="option"][data-state="unchecked"]')
+  if ((await unchecked.count()) > 0) {
+    await unchecked.first().click()
+  } else {
+    await page.keyboard.press("Escape")
+  }
+  await page.waitForTimeout(500)
+}
+
+/**
+ * Simulate HTML5 drag-and-drop from toolbox to canvas via synthetic DragEvents.
+ * Playwright does not natively support dataTransfer, so events are dispatched
+ * via page.evaluate.
+ */
 export async function dragComponentToCanvas(
   page: Page,
   componentId: string,

@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-4b: Schema & Repository Hardening
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-25) on story 4-4
 > **Priority:** LOW | **Estimated Effort:** Small (3 tasks, 3 files)
@@ -34,3 +34,17 @@ As a **developer**, I want **contiguous score range validation in MetricCategory
 - Files unchanged: `src/services/componentLibrary.ts` (Task 3 was already correct)
 - New test file: `tests/unit/repositories/metricCategoryRepository.test.ts`
 - Epsilon tolerance (RANGE_GAP_EPSILON = 0.02) handles existing 3.99/4 boundary pattern in seed data
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-25
+- **Agents:** code-reviewer, tdd-guide (SIMPLE classification)
+- **Outcome:** APPROVE 8.5/10, 5 quick fixes applied
+- **Quick fixes applied:**
+  1. Test: single-item range `[{0, 10}]` degenerate case
+  2. Test: epsilon boundary precision (0.021 fail, 0.019 pass)
+  3. Test: out-of-order valid ranges confirmed sort step
+  4. Test: `RepositoryError.name` assertion
+  5. Test: non-Error rejection cause wrapping
+- **Deferred (INFO, no TD story):**
+  - Move `RepositoryError` to shared `errors.ts` when other repos adopt it
+  - Type-assertion test pattern (`const _*: Type = ...`) adds no runtime value
