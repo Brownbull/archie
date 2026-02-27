@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2, Maximize } from "lucide-react"
 import { INSPECTOR_DEFAULT_WIDTH, INSPECTOR_EXPANDED_WIDTH } from "@/lib/constants"
 import { useShallow } from "zustand/react/shallow"
@@ -60,6 +61,7 @@ export function InspectorPanel() {
   const setInspectorWidth = useUiStore((s) => s.setInspectorWidth)
   const setInspectorOverlay = useUiStore((s) => s.setInspectorOverlay)
 
+  const contentRef = useRef<HTMLDivElement>(null)
   const isExpanded = inspectorWidth > INSPECTOR_DEFAULT_WIDTH
 
   const handleToggleExpand = () => {
@@ -140,8 +142,8 @@ export function InspectorPanel() {
               type="button"
               className="rounded px-1.5 py-0.5 text-[10px] text-text-secondary hover:bg-surface hover:text-text-primary"
               onClick={() => {
-                document
-                  .querySelector(`[data-section="${section}"]`)
+                contentRef.current
+                  ?.querySelector(`[data-section="${section}"]`)
                   ?.scrollIntoView({ behavior: "smooth", block: "start" })
               }}
             >
@@ -150,7 +152,7 @@ export function InspectorPanel() {
           ))}
         </div>
       )}
-      <div className="flex-1 overflow-hidden">
+      <div ref={contentRef} data-testid="inspector-content" className="flex-1 overflow-hidden">
         {selectedEdgeId ? (
           <ConnectionDetail edgeId={selectedEdgeId} />
         ) : selectedNodeId ? (

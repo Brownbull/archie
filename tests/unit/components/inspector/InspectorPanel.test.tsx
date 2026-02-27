@@ -286,18 +286,21 @@ describe("InspectorPanel", () => {
       expect(screen.queryByTestId("inspector-section-nav")).not.toBeInTheDocument()
     })
 
-    it("clicking section button calls scrollIntoView on target (AC-ARCH-PATTERN-5)", () => {
+    it("clicking section button calls scrollIntoView scoped to panel container (AC-ARCH-PATTERN-5)", () => {
       useUiStore.setState({ selectedNodeId: "node-1" })
       useArchitectureStore.setState({ nodes: [mockNode] })
       mockGetComponentById.mockReturnValue(mockComponent)
 
-      // Create a mock element with data-section attribute in the DOM
+      render(<InspectorPanel />)
+
+      // Inject mock section element inside the panel's own content container
+      // so ref-scoped querySelector finds it (not document-global)
+      const contentContainer = screen.getByTestId("inspector-content")
       const mockSection = document.createElement("div")
       mockSection.setAttribute("data-section", "metrics")
       mockSection.scrollIntoView = vi.fn()
-      document.body.appendChild(mockSection)
+      contentContainer.appendChild(mockSection)
 
-      render(<InspectorPanel />)
       fireEvent.click(screen.getByText("Metrics"))
 
       expect(mockSection.scrollIntoView).toHaveBeenCalledWith({
@@ -305,7 +308,7 @@ describe("InspectorPanel", () => {
         block: "start",
       })
 
-      document.body.removeChild(mockSection)
+      contentContainer.removeChild(mockSection)
     })
   })
 

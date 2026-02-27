@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-6a: Overlay Scroll Target Scoping
 
-Status: ready-for-dev
+Status: review
 
 > **Source:** ECC Code Review (2026-02-26) on story 4-6
 > **Priority:** LOW | **Estimated Effort:** SMALL (1-2 files, ~30min)
@@ -19,10 +19,10 @@ In practice, the aside panel has `width: 0` when overlay is active, so the dupli
 - AC-3: Existing section anchor tests updated to verify scoped query
 
 ## Tasks / Subtasks
-- [ ] 1.1 Add a `useRef` to the InspectorPanel scrollable container
-- [ ] 1.2 Change `document.querySelector` to `ref.current.querySelector` in section nav click handler
-- [ ] 1.3 Update InspectorPanel.test.tsx section anchor test to verify scoped query
-- [ ] 1.4 Run test:quick — all tests pass
+- [x] 1.1 Add a `useRef` to the InspectorPanel scrollable container
+- [x] 1.2 Change `document.querySelector` to `ref.current.querySelector` in section nav click handler
+- [x] 1.3 Update InspectorPanel.test.tsx section anchor test to verify scoped query
+- [x] 1.4 Run test:quick — all tests pass
 
 ## Dev Notes
 - Source story: [4-6](./story-4-6.md)
