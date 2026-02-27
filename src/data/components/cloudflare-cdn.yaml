@@ -41,6 +41,40 @@ config_variants:
         value: high
         numeric_value: 9
         category: reliability
+    code_snippet:
+      language: yaml
+      code: |
+        # Cloudflare CDN - Static Asset Caching via Wrangler
+        # wrangler.toml
+
+        name = "my-app"
+        main = "src/worker.ts"
+        compatibility_date = "2024-01-01"
+
+        [site]
+        bucket = "./dist"
+
+        [[rules]]
+        type = "Data"
+        globs = ["**/*.js", "**/*.css", "**/*.png", "**/*.woff2"]
+        fallthrough = false
+
+        # Cache-Control headers set in worker
+        # Cache-Control: public, max-age=31536000, immutable (for hashed assets)
+        # Cache-Control: public, max-age=3600 (for HTML)
+    metric_explanations:
+      edge-latency:
+        reason: Static assets served from the nearest Cloudflare edge PoP deliver <5ms latency by eliminating long-haul network hops to the origin server.
+        contributing_factors:
+          - 300+ edge locations serve cached assets from geographic proximity
+          - HTTP/2 and HTTP/3 multiplexing reduces connection overhead
+          - Hashed asset filenames enable indefinite caching with zero revalidation
+      global-availability:
+        reason: Static asset caching distributes content across Cloudflare's global network, maintaining availability even during origin outages.
+        contributing_factors:
+          - Edge serves cached content independently from origin health
+          - Anycast routing automatically fails over to healthy PoPs
+          - 99.99% SLA backed by distributed edge infrastructure
   - id: full-site
     name: Full-Site Acceleration
     metrics:
@@ -52,6 +86,36 @@ config_variants:
         value: high
         numeric_value: 9
         category: reliability
+    code_snippet:
+      language: yaml
+      code: |
+        # Cloudflare CDN - Full-Site Acceleration
+        # Page Rules (via Cloudflare Dashboard or Terraform)
+
+        # Cache Level: Cache Everything for static pages
+        # URL: example.com/blog/*
+        # Cache Level: Cache Everything
+        # Edge Cache TTL: 4 hours
+
+        # API routes bypass cache
+        # URL: example.com/api/*
+        # Cache Level: Bypass
+
+        # HTML with Tiered Cache (Argo Smart Routing)
+        # Reduces origin requests by 72% via regional hub caching
+    metric_explanations:
+      edge-latency:
+        reason: Full-site acceleration caches HTML and dynamic responses at the edge, but cache misses and personalized content still route to origin adding some latency.
+        contributing_factors:
+          - Cache misses for uncacheable routes hit origin with full round-trip
+          - Personalized content bypasses cache and requires origin response
+          - Tiered Cache reduces origin load but adds one intermediate hop
+      global-availability:
+        reason: Full-site acceleration maintains the same high availability as static caching, with Cloudflare's network absorbing traffic during origin issues.
+        contributing_factors:
+          - Always-online mode serves stale cached content during origin downtime
+          - DDoS mitigation protects origin from traffic spikes
+          - Automatic failover between origin IPs via health checks
 connection_properties:
   protocol: HTTP
   communication_patterns:

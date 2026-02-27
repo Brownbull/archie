@@ -3,6 +3,18 @@ import type { RecalculatedMetrics } from "@/engine/recalculator"
 
 // --- Types ---
 
+export interface ComponentCategoryMetric {
+  nodeId: string
+  averageScore: number
+}
+
+export interface CategoryBreakdown {
+  categoryId: string
+  best: ComponentCategoryMetric[]
+  worst: ComponentCategoryMetric[]
+  totalComponents: number
+}
+
 export interface CategoryScore {
   categoryId: string
   categoryName: string
@@ -73,6 +85,44 @@ export function computeAggregateScore(categoryScores: CategoryScore[]): number {
   const mean = sum / withData.length
 
   return Math.round(mean * 10) / 10
+}
+
+/**
+ * Computes the top-3 best and worst components for a given metric category.
+ *
+ * For each node in computedMetrics, collects metrics matching `categoryId`,
+ * computes per-node average, and returns the top-3 highest and lowest scorers.
+ *
+ * Pure function -- no side effects, no imports from react/zustand/firebase/services/stores.
+ */
+export function computeCategoryBreakdown(
+  computedMetrics: Map<string, RecalculatedMetrics>,
+  categoryId: string,
+): CategoryBreakdown {
+  const nodeScores: ComponentCategoryMetric[] = []
+
+  for (const [nodeId, nodeMetrics] of computedMetrics) {
+    const categoryMetrics = nodeMetrics.metrics.filter((m) => m.category === categoryId)
+    if (categoryMetrics.length === 0) continue
+
+    const avg =
+      categoryMetrics.reduce((sum, m) => sum + m.numericValue, 0) / categoryMetrics.length
+
+    nodeScores.push({ nodeId, averageScore: avg })
+  }
+
+  if (nodeScores.length === 0) {
+    return { categoryId, best: [], worst: [], totalComponents: 0 }
+  }
+
+  const sorted = [...nodeScores].sort((a, b) => b.averageScore - a.averageScore)
+
+  return {
+    categoryId,
+    best: sorted.slice(0, 3),
+    worst: sorted.slice(-3).reverse(),
+    totalComponents: nodeScores.length,
+  }
 }
 
 /**

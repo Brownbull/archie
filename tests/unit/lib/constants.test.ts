@@ -4,7 +4,11 @@ import { describe, it, expect } from "vitest"
 import {
   TOOLBAR_HEIGHT,
   TOOLBOX_WIDTH,
-  INSPECTOR_WIDTH,
+  INSPECTOR_DEFAULT_WIDTH,
+  INSPECTOR_EXPANDED_WIDTH,
+  INSPECTOR_MIN_WIDTH,
+  INSPECTOR_MAX_WIDTH,
+  INSPECTOR_COLLAPSED_WIDTH,
   DASHBOARD_HEIGHT,
   NODE_WIDTH,
   BORDER_RADIUS,
@@ -25,8 +29,24 @@ describe("Layout Constants (UX1)", () => {
     expect(TOOLBOX_WIDTH).toBe(260)
   })
 
-  it("INSPECTOR_WIDTH matches UX spec", () => {
-    expect(INSPECTOR_WIDTH).toBe(300)
+  it("INSPECTOR_DEFAULT_WIDTH matches UX spec", () => {
+    expect(INSPECTOR_DEFAULT_WIDTH).toBe(300)
+  })
+
+  it("INSPECTOR_EXPANDED_WIDTH matches UX spec (Story 4-6)", () => {
+    expect(INSPECTOR_EXPANDED_WIDTH).toBe(500)
+  })
+
+  it("INSPECTOR_MIN_WIDTH matches UX spec (Story 4-6)", () => {
+    expect(INSPECTOR_MIN_WIDTH).toBe(200)
+  })
+
+  it("INSPECTOR_MAX_WIDTH matches UX spec (Story 4-6)", () => {
+    expect(INSPECTOR_MAX_WIDTH).toBe(700)
+  })
+
+  it("INSPECTOR_COLLAPSED_WIDTH matches UX spec", () => {
+    expect(INSPECTOR_COLLAPSED_WIDTH).toBe(40)
   })
 
   it("DASHBOARD_HEIGHT matches UX spec", () => {

@@ -5,6 +5,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 
 const mockScreenToFlowPosition = vi.fn((pos: { x: number; y: number }) => pos)
+const mockFitView = vi.fn()
 
 vi.mock("@xyflow/react", () => ({
   ReactFlow: ({
@@ -49,6 +50,7 @@ vi.mock("@xyflow/react", () => ({
   Controls: () => <div data-testid="react-flow-controls" />,
   useReactFlow: () => ({
     screenToFlowPosition: mockScreenToFlowPosition,
+    fitView: mockFitView,
   }),
   BackgroundVariant: { Dots: "dots" },
   Position: { Left: "left", Right: "right" },
@@ -305,6 +307,18 @@ describe("CanvasView", () => {
 
       expect(useUiStore.getState().heatmapEnabled).toBe(false)
     })
+  })
+
+  it("pendingNavNodeId selects node and calls fitView", () => {
+    useUiStore.setState({ pendingNavNodeId: "node-42" })
+    render(<CanvasView />)
+    expect(useUiStore.getState().selectedNodeId).toBe("node-42")
+    expect(mockFitView).toHaveBeenCalledWith({
+      nodes: [{ id: "node-42" }],
+      duration: 400,
+      padding: 0.5,
+    })
+    expect(useUiStore.getState().pendingNavNodeId).toBeNull()
   })
 
   it("onConnect creates edge but onEdgesChange does not", () => {

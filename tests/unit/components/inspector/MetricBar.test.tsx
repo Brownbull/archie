@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react"
-import { describe, it, expect } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { describe, it, expect, beforeEach, vi } from "vitest"
 import { MetricBar } from "@/components/inspector/MetricBar"
-import type { MetricValue } from "@/types"
+import type { MetricValue, MetricExplanation } from "@/types"
 
 const highMetric: MetricValue = {
   id: "query-performance",
@@ -24,7 +25,19 @@ const lowMetric: MetricValue = {
   category: "resource",
 }
 
+const sampleExplanation: MetricExplanation = {
+  reason: "Single-node PostgreSQL has higher read latency due to no read distribution.",
+  contributingFactors: [
+    "Single server handles all read and write traffic",
+    "No read replicas to distribute query load",
+  ],
+}
+
 describe("MetricBar", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+  })
+
   /** Render with default props (highMetric). Override via partial. */
   function renderDefault(overrides: Partial<Parameters<typeof MetricBar>[0]> = {}) {
     return render(
@@ -147,5 +160,93 @@ describe("MetricBar", () => {
     }
     renderDefault({ metric })
     expect(screen.getByText("query-performance")).toBeInTheDocument()
+  })
+
+  // --- Expandable explanation tests ---
+
+  it("shows no chevron when explanation prop is absent", () => {
+    renderDefault()
+    expect(screen.queryByTestId("metric-explanation-chevron")).not.toBeInTheDocument()
+  })
+
+  it("shows chevron when explanation prop is provided", () => {
+    renderDefault({ explanation: sampleExplanation })
+    expect(screen.getByTestId("metric-explanation-chevron")).toBeInTheDocument()
+  })
+
+  it("does not show explanation panel before clicking", () => {
+    renderDefault({ explanation: sampleExplanation })
+    expect(screen.queryByTestId("metric-explanation")).not.toBeInTheDocument()
+  })
+
+  it("shows explanation panel after clicking the metric row", async () => {
+    const user = userEvent.setup()
+    renderDefault({ explanation: sampleExplanation })
+    await user.click(screen.getByTestId("metric-bar"))
+    expect(screen.getByTestId("metric-explanation")).toBeInTheDocument()
+  })
+
+  it("shows reason text in expanded explanation", async () => {
+    const user = userEvent.setup()
+    renderDefault({ explanation: sampleExplanation })
+    await user.click(screen.getByTestId("metric-bar"))
+    expect(
+      screen.getByText("Single-node PostgreSQL has higher read latency due to no read distribution."),
+    ).toBeInTheDocument()
+  })
+
+  it("shows contributing factors in expanded explanation", async () => {
+    const user = userEvent.setup()
+    renderDefault({ explanation: sampleExplanation })
+    await user.click(screen.getByTestId("metric-bar"))
+    expect(screen.getByText("Single server handles all read and write traffic")).toBeInTheDocument()
+    expect(screen.getByText("No read replicas to distribute query load")).toBeInTheDocument()
+  })
+
+  it("collapses explanation on second click", async () => {
+    const user = userEvent.setup()
+    renderDefault({ explanation: sampleExplanation })
+    await user.click(screen.getByTestId("metric-bar"))
+    expect(screen.getByTestId("metric-explanation")).toBeInTheDocument()
+    await user.click(screen.getByTestId("metric-bar"))
+    expect(screen.queryByTestId("metric-explanation")).not.toBeInTheDocument()
+  })
+
+  it("does not expand when explanation is absent and row is clicked", async () => {
+    const user = userEvent.setup()
+    renderDefault()
+    await user.click(screen.getByTestId("metric-bar"))
+    expect(screen.queryByTestId("metric-explanation")).not.toBeInTheDocument()
+  })
+
+  // --- Delta indicator tests (Story 4-2a) ---
+
+  it("renders no delta indicator when delta prop is absent", () => {
+    renderDefault()
+    expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+  })
+
+  it("renders no delta indicator when delta is 0", () => {
+    renderDefault({ delta: 0 })
+    expect(screen.queryByTestId("metric-bar-delta")).not.toBeInTheDocument()
+  })
+
+  it("renders positive delta indicator in green", () => {
+    renderDefault({ delta: 3 })
+    const indicator = screen.getByTestId("metric-bar-delta")
+    expect(indicator).toHaveTextContent("+3")
+    expect(indicator).toHaveClass("text-green-500")
+  })
+
+  it("renders negative delta indicator in red", () => {
+    renderDefault({ delta: -2 })
+    const indicator = screen.getByTestId("metric-bar-delta")
+    expect(indicator).toHaveTextContent("-2")
+    expect(indicator).toHaveClass("text-red-500")
+  })
+
+  it("renders delta=1 with + prefix", () => {
+    renderDefault({ delta: 1 })
+    expect(screen.getByTestId("metric-bar-delta")).toHaveTextContent("+1")
   })
 })

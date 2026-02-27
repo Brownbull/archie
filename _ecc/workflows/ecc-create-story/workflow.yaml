@@ -33,13 +33,13 @@ ecc_orchestration:
     planner:
       subagent_type: "everything-claude-code:planner"
       model: "sonnet"
-      max_turns: 5
+      max_turns: 8
       purpose: "Analyze requirements, identify risks, plan implementation approach"
     architect:
       subagent_type: "everything-claude-code:architect"
       model_default: "sonnet"
       model_complex: "opus"
-      max_turns: 5
+      max_turns: 8
       purpose: "Technical design, pattern recommendations, dependency analysis"
     database-reviewer:
       subagent_type: "everything-claude-code:database-reviewer"

@@ -93,7 +93,7 @@ development_status:
   # User can import/export YAML, use AI round-trip, explore examples
   # FRs: FR23-FR30 | NFRs: NFR4, NFR6-NFR11 | ARs: AR9, AR10
   # ============================================================================
-  epic-3: in-progress
+  epic-3: done  # deployed to production 2026-02-24 — PR #8 (dev) + PR #9 (main)
   td-cross-1-shared-test-infrastructure: done
   3-1-yaml-import-pipeline: done
   td-3-1a-import-pipeline-robustness: done
@@ -115,15 +115,33 @@ development_status:
   epic-3-retrospective: optional
 
   # ============================================================================
-  # Epic 4: Deep Intelligence & Polish (5 stories)
+  # Epic 4: Deep Intelligence & Polish (6 stories)
   # User gets rich insights -- code snippets, explanations, recommendations,
-  # connection inspection, dashboard drill-down, flow particles, legend
+  # connection inspection, dashboard drill-down, flow particles, legend,
+  # inspector UX polish (resize, overlay, navigation)
   # FRs: FR31-FR43
   # ============================================================================
-  epic-4: backlog
-  4-1-code-snippets-and-metric-explanations: backlog
-  4-2-variant-recommendations-and-metric-tools: backlog
-  4-3-connection-inspection-system: backlog
-  4-4-dashboard-drill-down-and-issues-navigation: backlog
-  4-5-canvas-visual-polish: backlog
+  epic-4: in-progress
+  4-1-code-snippets-and-metric-explanations: done
+  td-4-1a-code-snippet-trust-boundary: done
+  td-4-1b-code-snippet-display-safety: done
+  4-2-variant-recommendations-and-metric-tools: split
+  4-2a-recommendation-engine-and-delta-indicators: done
+  4-2b-metric-filter-and-recommendation-ui: done
+  td-4-2c-inspector-schema-validation: done
+  td-4-2d-componentdetail-memo-consolidation: done
+  td-4-2e-schema-validation-completeness: done
+  td-4-2f-metric-explanation-yaml-schema-extraction: done
+  4-3-connection-inspection-system: done
+  td-4-3a-edge-drag-ux-hardening: done
+  td-4-3b-library-data-rendering-hardening: done
+  td-4-3c-connection-detail-useshallow-restoration: done
+  td-4-3d-code-style-consistency: done
+  4-4-dashboard-drill-down-and-issues-navigation: done
+  td-4-4a-dashboard-component-test-coverage: done
+  td-4-4b-schema-and-repository-hardening: done
+  4-5-canvas-visual-polish: done
+  td-4-5a-constants-type-conventions: done
+  4-6-inspector-ux-polish: done
+  td-4-6a-overlay-scroll-target-scoping: done
   epic-4-retrospective: optional

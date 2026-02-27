@@ -1,7 +1,10 @@
 // Layout dimensions (UX1)
 export const TOOLBAR_HEIGHT = 44
 export const TOOLBOX_WIDTH = 260
-export const INSPECTOR_WIDTH = 300
+export const INSPECTOR_DEFAULT_WIDTH = 300
+export const INSPECTOR_EXPANDED_WIDTH = 500
+export const INSPECTOR_MIN_WIDTH = 200
+export const INSPECTOR_MAX_WIDTH = 700
 export const INSPECTOR_COLLAPSED_WIDTH = 40
 export const DASHBOARD_HEIGHT = 100
 export const NODE_WIDTH = 140
@@ -93,6 +96,11 @@ export const FONT_FAMILY_PRESETS = {
 export const HEATMAP_THRESHOLD_WARNING = 6
 export const HEATMAP_THRESHOLD_BOTTLENECK = 4
 
+// Recommendation threshold (Story 4-2a)
+// Metrics scoring below this value are weak and eligible for variant recommendations.
+// Between BOTTLENECK (4) and WARNING (6) to catch marginal metrics early.
+export const RECOMMENDATION_THRESHOLD = 5
+
 // Heatmap colors — performance overlay, separate from category identity (UX18)
 export const HEATMAP_COLORS = {
   healthy: "var(--color-heatmap-green)",
@@ -100,12 +108,35 @@ export const HEATMAP_COLORS = {
   bottleneck: "var(--color-heatmap-red)",
 } as const
 
-// Z-index scale — prevents stacking conflicts as overlays are added (TD-2-4a)
-// shadcn UI components (dialog, select, dropdown-menu) use z-50 by default
+// Edge label offset when incompatibility warning is present (Story 4-3)
+export const LABEL_INCOMPATIBILITY_OFFSET = 16
+
+// Maximum px offset for draggable edge labels — prevents labels disappearing off-screen (TD-4-3a)
+export const MAX_LABEL_OFFSET = 500
+
+// Maximum character length for incompatibility reason strings (TD-4-3b AC-2)
+export const MAX_INCOMPATIBILITY_REASON_LENGTH = 500
+
+/**
+ * Z-index scale — prevents stacking conflicts as overlays are added (TD-2-4a).
+ *
+ * Values are **Tailwind class strings** (e.g. `"z-10"`, `"z-[70]"`), not raw numbers.
+ * They are interpolated directly into `className` props:
+ *   `className={\`absolute ${Z_INDEX.OVERLAY}\`}`
+ *
+ * IMPORTANT: If you change a value, it MUST remain a valid Tailwind `z-*` class.
+ * Changing to a raw number (e.g. `10`) will silently produce an invalid class
+ * and the z-index will stop working with no TypeScript or runtime error.
+ *
+ * shadcn UI components (dialog, select, dropdown-menu) use z-50 by default.
+ */
+export type TailwindZIndex = `z-${number}` | `z-[${number}]`
+
 export const Z_INDEX = {
   CANVAS_OVERLAY: "z-10", // EmptyCanvasState, canvas watermarks
   DROPDOWN: "z-40", // Custom dropdowns, popovers
   OVERLAY: "z-50", // Detail panels, tier popover, tooltips
   MODAL: "z-50", // Modals, dialogs (shadcn default)
+  INSPECTOR_OVERLAY: "z-[60]", // Full-screen inspector overlay (above panels, below toasts)
   TOAST: "z-[70]", // Toast notifications (above everything)
-} as const
+} as const satisfies Record<string, TailwindZIndex>

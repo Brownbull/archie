@@ -45,6 +45,38 @@ config_variants:
         value: low
         numeric_value: 3
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // Kafka - Single Broker via kafkajs
+        import { Kafka } from 'kafkajs'
+
+        const kafka = new Kafka({
+          brokers: [process.env.KAFKA_BROKER ?? 'localhost:9092'],
+        })
+
+        const producer = kafka.producer()
+        await producer.connect()
+
+        await producer.send({
+          topic: 'events',
+          messages: [{ value: JSON.stringify({ type: 'user.created', id: userId }) }],
+        })
+
+        await producer.disconnect()
+    metric_explanations:
+      message-throughput:
+        reason: A single Kafka broker handles all partitions on one machine, limiting throughput to that broker's I/O and CPU capacity.
+        contributing_factors:
+          - All topic partitions reside on one broker
+          - Disk I/O bottleneck limits sustained write throughput
+          - No partition replication reduces write amplification but eliminates failover
+      horizontal-scalability:
+        reason: Single-broker Kafka cannot distribute partitions across nodes — adding consumers does not increase producer throughput.
+        contributing_factors:
+          - Partitions cannot be moved to non-existent brokers
+          - Throughput ceiling is one machine's resources
+          - Migration to multi-broker requires topic reconfiguration
   - id: multi-broker
     name: Multi-Broker Cluster
     metrics:
@@ -56,6 +88,44 @@ config_variants:
         value: high
         numeric_value: 9
         category: scalability
+    code_snippet:
+      language: typescript
+      code: |
+        // Kafka - Multi-Broker Cluster via kafkajs
+        import { Kafka } from 'kafkajs'
+
+        const kafka = new Kafka({
+          clientId: 'my-service',
+          brokers: [
+            process.env.KAFKA_BROKER_1 ?? 'kafka-1:9092',
+            process.env.KAFKA_BROKER_2 ?? 'kafka-2:9092',
+            process.env.KAFKA_BROKER_3 ?? 'kafka-3:9092',
+          ],
+        })
+
+        const consumer = kafka.consumer({ groupId: 'my-consumer-group' })
+        await consumer.connect()
+        await consumer.subscribe({ topic: 'events', fromBeginning: false })
+
+        await consumer.run({
+          eachMessage: async ({ message }) => {
+            const event = JSON.parse(message.value?.toString() ?? '{}')
+            await processEvent(event)
+          },
+        })
+    metric_explanations:
+      message-throughput:
+        reason: Multi-broker Kafka distributes partitions across brokers, enabling millions of messages per second through parallel I/O on multiple machines.
+        contributing_factors:
+          - Partitions spread across brokers allow concurrent disk writes
+          - Consumer groups parallelize message processing across instances
+          - Replication is asynchronous and does not block producer acknowledgment
+      horizontal-scalability:
+        reason: Kafka scales horizontally by adding brokers that absorb rebalanced partitions, increasing both throughput and storage linearly.
+        contributing_factors:
+          - New brokers trigger automatic partition rebalancing
+          - Consumer group scaling adds processing capacity without producer changes
+          - Partition count is the parallelism ceiling — set generously at topic creation
 connection_properties:
   protocol: TCP
   communication_patterns:

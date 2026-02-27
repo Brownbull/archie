@@ -7,6 +7,14 @@ vi.mock("@/stores/architectureStore", () => ({
   useArchitectureStore: vi.fn(),
 }))
 
+// Mock componentLibrary (used by CategoryInfoPopup + DashboardOverlay)
+vi.mock("@/services/componentLibrary", () => ({
+  componentLibrary: {
+    getMetricCategory: vi.fn(() => undefined),
+    getAllMetricCategories: vi.fn(() => []),
+  },
+}))
+
 // Mock categoryIcons to avoid importing Lucide components in test env
 vi.mock("@/lib/categoryIcons", () => ({
   CATEGORY_ICONS: new Proxy(
@@ -43,7 +51,7 @@ const mockUseArchitectureStore = vi.mocked(useArchitectureStore)
 
 function mockEmptyStore() {
   mockUseArchitectureStore.mockImplementation((selector: unknown) => {
-    const state = { computedMetrics: new Map(), currentTier: null }
+    const state = { computedMetrics: new Map(), currentTier: null, nodes: [] }
     return (selector as (s: typeof state) => unknown)(state)
   })
 }
@@ -73,7 +81,7 @@ function mockPopulatedStore(
   metricsMap: Map<string, RecalculatedMetrics>,
 ) {
   mockUseArchitectureStore.mockImplementation((selector: unknown) => {
-    const state = { computedMetrics: metricsMap, currentTier: null }
+    const state = { computedMetrics: metricsMap, currentTier: null, nodes: [] }
     return (selector as (s: typeof state) => unknown)(state)
   })
 }
@@ -194,6 +202,27 @@ describe("DashboardPanel", () => {
         "aria-label",
         "Architecture scoring dashboard",
       )
+    })
+  })
+
+  // --- Expand button ---
+
+  describe("expand button (AC-FUNC-1)", () => {
+    it("renders expand button when metrics exist", () => {
+      const metrics = new Map([
+        ["node-1", makeNode("node-1", [makeMetric({ id: "latency", category: "performance", numericValue: 7 })])],
+      ])
+      mockPopulatedStore(metrics)
+      render(<DashboardPanel />)
+
+      expect(screen.getByTestId("dashboard-expand-button")).toBeInTheDocument()
+    })
+
+    it("does not render expand button when empty", () => {
+      mockEmptyStore()
+      render(<DashboardPanel />)
+
+      expect(screen.queryByTestId("dashboard-expand-button")).not.toBeInTheDocument()
     })
   })
 

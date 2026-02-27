@@ -1,14 +1,17 @@
 import { componentRepository } from "@/repositories/componentRepository"
 import { stackRepository } from "@/repositories/stackRepository"
 import { blueprintRepository } from "@/repositories/blueprintRepository"
+import { metricCategoryRepository } from "@/repositories/metricCategoryRepository"
 import type { Component } from "@/schemas/componentSchema"
 import type { Stack } from "@/schemas/stackSchema"
 import type { BlueprintFull } from "@/schemas/blueprintSchema"
+import type { MetricCategory } from "@/schemas/metricCategorySchema"
 
 let componentMap = new Map<string, Component>()
 let categoryMap = new Map<string, Component[]>()
 let stacks: Stack[] = []
 let blueprintMap = new Map<string, BlueprintFull>()
+let metricCategoryMap = new Map<string, MetricCategory>()
 let initialized = false
 let initPromise: Promise<void> | null = null
 
@@ -18,10 +21,11 @@ export const componentLibrary = {
     if (initPromise) return initPromise
 
     initPromise = (async () => {
-      const [components, stackData, blueprintData] = await Promise.all([
+      const [components, stackData, blueprintData, metricCategoryData] = await Promise.all([
         componentRepository.getAll(),
         stackRepository.getAll(),
         blueprintRepository.getAll(),
+        metricCategoryRepository.getAll(),
       ])
 
       const newComponentMap = new Map<string, Component>()
@@ -38,10 +42,16 @@ export const componentLibrary = {
         newBlueprintMap.set(bp.id, bp)
       }
 
+      const newMetricCategoryMap = new Map<string, MetricCategory>()
+      for (const mc of metricCategoryData) {
+        newMetricCategoryMap.set(mc.id, mc)
+      }
+
       componentMap = newComponentMap
       categoryMap = newCategoryMap
       stacks = stackData
       blueprintMap = newBlueprintMap
+      metricCategoryMap = newMetricCategoryMap
       initialized = true
     })().catch((error) => {
       initPromise = null // Allow retry on failure
@@ -94,11 +104,20 @@ export const componentLibrary = {
     return blueprintMap.get(id)
   },
 
+  getMetricCategory(id: string): MetricCategory | undefined {
+    return metricCategoryMap.get(id)
+  },
+
+  getAllMetricCategories(): MetricCategory[] {
+    return Array.from(metricCategoryMap.values())
+  },
+
   reset(): void {
     componentMap = new Map()
     categoryMap = new Map()
     stacks = []
     blueprintMap = new Map()
+    metricCategoryMap = new Map()
     initialized = false
     initPromise = null
   },

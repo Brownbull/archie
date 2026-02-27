@@ -5,7 +5,7 @@ import { AppLayout } from "@/components/layout/AppLayout"
 import { useUiStore } from "@/stores/uiStore"
 import {
   TOOLBOX_WIDTH,
-  INSPECTOR_WIDTH,
+  INSPECTOR_DEFAULT_WIDTH,
   INSPECTOR_COLLAPSED_WIDTH,
   DASHBOARD_HEIGHT,
 } from "@/lib/constants"
@@ -82,6 +82,8 @@ describe("AppLayout", () => {
       selectedNodeId: null,
       selectedEdgeId: null,
       inspectorCollapsed: false,
+      inspectorWidth: 300,
+      inspectorOverlay: false,
     })
   })
 
@@ -128,16 +130,28 @@ describe("AppLayout", () => {
     expect(screen.getByTestId("dashboard")).toHaveStyle({ height: `${DASHBOARD_HEIGHT}px` })
   })
 
-  it("shows inspector with INSPECTOR_WIDTH when node selected", () => {
+  it("shows inspector with INSPECTOR_DEFAULT_WIDTH when node selected", () => {
     useUiStore.setState({ selectedNodeId: "some-node" })
     renderAppLayout()
-    expect(screen.getByTestId("inspector")).toHaveStyle({ width: `${INSPECTOR_WIDTH}px` })
+    expect(screen.getByTestId("inspector")).toHaveStyle({ width: `${INSPECTOR_DEFAULT_WIDTH}px` })
   })
 
   it("shows inspector with INSPECTOR_COLLAPSED_WIDTH when collapsed", () => {
     useUiStore.setState({ selectedNodeId: "some-node", inspectorCollapsed: true })
     renderAppLayout()
     expect(screen.getByTestId("inspector")).toHaveStyle({ width: `${INSPECTOR_COLLAPSED_WIDTH}px` })
+  })
+
+  it("uses inspectorWidth from store when node selected (AC-7)", () => {
+    useUiStore.setState({ selectedNodeId: "some-node", inspectorWidth: 450 })
+    renderAppLayout()
+    expect(screen.getByTestId("inspector")).toHaveStyle({ width: "450px" })
+  })
+
+  it("inspector width is 0 when overlay is active (AC-4)", () => {
+    useUiStore.setState({ selectedNodeId: "some-node", inspectorOverlay: true })
+    renderAppLayout()
+    expect(screen.getByTestId("inspector")).toHaveStyle({ width: "0px" })
   })
 
   it("inspector aside has transition class", () => {
