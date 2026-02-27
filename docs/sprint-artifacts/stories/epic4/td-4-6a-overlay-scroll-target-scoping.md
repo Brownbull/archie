@@ -1,6 +1,6 @@
 # Tech Debt Story TD-4-6a: Overlay Scroll Target Scoping
 
-Status: review
+Status: done
 
 > **Source:** ECC Code Review (2026-02-26) on story 4-6
 > **Priority:** LOW | **Estimated Effort:** SMALL (1-2 files, ~30min)
@@ -23,6 +23,15 @@ In practice, the aside panel has `width: 0` when overlay is active, so the dupli
 - [x] 1.2 Change `document.querySelector` to `ref.current.querySelector` in section nav click handler
 - [x] 1.3 Update InspectorPanel.test.tsx section anchor test to verify scoped query
 - [x] 1.4 Run test:quick — all tests pass
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-02-27
+- **Classification:** TRIVIAL
+- **Agents:** code-reviewer (sonnet)
+- **Score:** 10/10
+- **Outcome:** APPROVE — surgical 4-line fix, scoped querySelector via useRef, test correctly validates scoped behavior
+- **Quick Fixes Applied:** 0
+- **TD Stories Created:** 0
 
 ## Dev Notes
 - Source story: [4-6](./story-4-6.md)
