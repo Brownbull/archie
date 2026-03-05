@@ -3,7 +3,7 @@
 # Returns systemMessage JSON so Claude tells the user what changed.
 # Exit 0 always (notification only).
 
-INPUT=$(cat)
+INPUT=$(cat 2>/dev/null || true)
 FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('tool_input',{}).get('file_path',''))" 2>/dev/null)
 
 [ -z "$FILE_PATH" ] && exit 0
