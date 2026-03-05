@@ -45,6 +45,9 @@ def main():
         )
 
     # --- File size checks ---
+    # ECC_SIZE_EXCLUDE: comma-separated basenames to skip 800-line BLOCK + churn BLOCK.
+    # Use for known large files that can't be split yet (e.g. App.tsx during migration).
+    size_exclude = {s.strip() for s in os.environ.get("ECC_SIZE_EXCLUDE", "").split(",") if s.strip()}
 
     if file_path and os.path.isfile(file_path):
         try:
@@ -53,8 +56,8 @@ def main():
         except OSError:
             line_count = 0
 
-        # BLOCK at 800 lines — hard limit, edit rejected
-        if line_count > 800:
+        # BLOCK at 800 lines — hard limit, edit rejected (unless excluded)
+        if line_count > 800 and os.path.basename(file_path) not in size_exclude:
             print(
                 f"BLOCKED: {os.path.basename(file_path)} is {line_count} lines "
                 f"(max 800). Split this file before adding more code.",
@@ -88,10 +91,30 @@ def main():
 
     # --- Churn count check (A4 / L2-004) ---
     # Gravity-well files: warn at 20 touches, BLOCK at 40.
-    # Exclusions: tracking/artifact files that are expected to have high churn.
+    # Exclusions: tracking/artifact files + ECC_SIZE_EXCLUDE files (known large/churny files).
     CHURN_EXCLUSIONS = {
         "sprint-status.yaml",
-    }
+    } | size_exclude
+
+    # Known gravity wells: project-specific files that ALWAYS block with decomposition hint.
+    # Maintained per-project in CLAUDE.md or .claude/rules/. Override via env var.
+    # Format: {"filename": "decomposition hint"}
+    GRAVITY_WELLS = {}
+    gw_env = os.environ.get("ECC_GRAVITY_WELLS", "")
+    if gw_env:
+        for entry in gw_env.split(";"):
+            if "=" in entry:
+                fname, hint = entry.split("=", 1)
+                GRAVITY_WELLS[fname.strip()] = hint.strip()
+
+    basename = os.path.basename(file_path) if file_path else ""
+    if basename in GRAVITY_WELLS:
+        print(
+            f"BLOCKED: {basename} is a known gravity well (L2-004). "
+            f"Decomposition required: {GRAVITY_WELLS[basename]}",
+            file=sys.stderr,
+        )
+        sys.exit(2)
 
     if file_path and os.path.isfile(file_path) and os.path.basename(file_path) not in CHURN_EXCLUSIONS:
         try:

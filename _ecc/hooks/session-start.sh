@@ -18,9 +18,8 @@ echo "$(date +%s)" > "/tmp/claude-session-start-${SESSION_KEY}"
 # 2. Initialize compaction counter
 echo "0" > "/tmp/claude-session-compactions-${SESSION_KEY}"
 
-# 3. Start cozempic guard (if available)
-if command -v cozempic &>/dev/null; then
-    cozempic guard --daemon --cwd "${CLAUDE_PROJECT_DIR:-.}" -rx gentle --threshold 50 --no-reload 2>/dev/null &
-fi
+# 3. Start cozempic guard — REMOVED from here.
+# Cozempic is already launched by the SessionStart hook in settings.json.
+# Running it twice caused duplicate daemon processes.
 
 exit 0

@@ -52,6 +52,18 @@ Spawn e2e-runner agent with full pre-flight context.
 
         **Story ACs relevant to E2E:** {{story_acs_relevant_to_e2e}}
 
+        **Intent Context:** {{intent_context}}
+
+        **Intent-Aware Testing (when intent available):**
+        The intent describes WHAT THE USER IS TRYING TO ACCOMPLISH, not just what the UI does.
+        - Mechanical test: "button click opens modal" — tests the door
+        - Intent-aware test: "user can complete the full import flow" — tests the exit
+        Use the intent to:
+        1. Prioritize ACs: intent-critical outcomes > nice-to-have interactions
+        2. Name test cases using intent language (e.g., "user sees proof sheet at a glance")
+        3. Test USER OUTCOMES described in the intent, not just individual UI interactions
+        4. When intent is missing, fall back to mechanical AC-based testing (no degradation)
+
         **Requirements:**
         1. Follow ALL conventions from E2E-TEST-CONVENTIONS.md
         2. Use data-testid selectors — NEVER bare text selectors

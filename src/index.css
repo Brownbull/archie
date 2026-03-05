@@ -243,3 +243,10 @@
 .flow-particle-healthy   { stroke: var(--color-heatmap-green);  animation-duration: 0.6s; }
 .flow-particle-warning   { stroke: var(--color-heatmap-yellow); animation-duration: 1.4s; }
 .flow-particle-bottleneck { stroke: var(--color-heatmap-red);   animation-duration: 3.0s; }
+
+/* Override Radix ScrollArea internal table wrapper to constrain content width.
+   All Archie scroll areas are vertical-only; the table display is only needed
+   for horizontal scroll detection which we don't use. */
+[data-radix-scroll-area-viewport] > div {
+  display: block !important;
+}

@@ -80,7 +80,7 @@ Classify story complexity for adaptive agent selection. Not every story needs pl
   <!-- SEMANTIC DRIFT CHECK (FF-B / L2 Pattern Library) -->
   <!-- Catches patterns the keyword gates above miss — same problem, different surface words. -->
   <!-- Reference: docs/layer2/l2-baseline.json (regenerate: python3 scripts/build-l2-baseline.py) -->
-  <action>Assess semantic similarity between this story and the 8 L2 patterns:
+  <action>Assess semantic similarity between this story and the 9 L2 patterns:
     L2-001 Wrong-Path Spiral — "build new distributed layer, new sync approach, real-time infra"
     L2-002 Blast-Radius Cleanup — "consolidate all tech debt, full codebase audit, extract shared pattern"
     L2-003 Context Thrashing — "fix multiple concerns at once, re-align everything, update all knowledge"
@@ -89,6 +89,7 @@ Classify story complexity for adaptive agent selection. Not every story needs pl
     L2-006 Sprint Overhead Spiral — "add process, more ceremony, improve workflow tooling"
     L2-007 E2E Sinkhole — "build e2e test suite, playwright infra, integration test framework"
     L2-008 Consensus Drift — "standardize patterns across all modules, align per-component conventions"
+    L2-009 Context Pollution — "load all knowledge, context loaded but unused, too much context, irrelevant for task"
     Rate each: NONE / MEDIUM / HIGH (HIGH = strongly resembles, even without exact keywords)</action>
 
   <check if="any pattern rates HIGH AND its FF-A gate has NOT already triggered above">
