@@ -121,7 +121,7 @@ development_status:
   # inspector UX polish (resize, overlay, navigation)
   # FRs: FR31-FR43
   # ============================================================================
-  epic-4: in-progress
+  epic-4: done
   4-1-code-snippets-and-metric-explanations: done
   td-4-1a-code-snippet-trust-boundary: done
   td-4-1b-code-snippet-display-safety: done

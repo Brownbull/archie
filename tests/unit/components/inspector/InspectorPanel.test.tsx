@@ -255,6 +255,17 @@ describe("InspectorPanel", () => {
       fireEvent.click(screen.getByTestId("inspector-maximize-btn"))
       expect(useUiStore.getState().inspectorOverlay).toBe(true)
     })
+
+    it("clicking collapse in overlay mode closes the overlay", () => {
+      useUiStore.setState({ selectedNodeId: "node-1", inspectorOverlay: true, inspectorCollapsed: false })
+      useArchitectureStore.setState({ nodes: [mockNode] })
+      mockGetComponentById.mockReturnValue(mockComponent)
+
+      render(<InspectorPanel />)
+      fireEvent.click(screen.getByTestId("inspector-collapse-btn"))
+      expect(useUiStore.getState().inspectorCollapsed).toBe(true)
+      expect(useUiStore.getState().inspectorOverlay).toBe(false)
+    })
   })
 
   describe("section anchor navigation (AC-6)", () => {

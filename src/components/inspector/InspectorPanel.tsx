@@ -59,6 +59,7 @@ export function InspectorPanel() {
   const setInspectorCollapsed = useUiStore((s) => s.setInspectorCollapsed)
   const inspectorWidth = useUiStore((s) => s.inspectorWidth)
   const setInspectorWidth = useUiStore((s) => s.setInspectorWidth)
+  const inspectorOverlay = useUiStore((s) => s.inspectorOverlay)
   const setInspectorOverlay = useUiStore((s) => s.setInspectorOverlay)
 
   const contentRef = useRef<HTMLDivElement>(null)
@@ -123,7 +124,10 @@ export function InspectorPanel() {
             variant="ghost"
             size="icon"
             data-testid="inspector-collapse-btn"
-            onClick={() => setInspectorCollapsed(true)}
+            onClick={() => {
+              setInspectorCollapsed(true)
+              if (inspectorOverlay) setInspectorOverlay(false)
+            }}
             aria-label="Collapse inspector"
             className="h-7 w-7"
           >

@@ -22,7 +22,7 @@ export function VariantRecommendation({
       <p className="text-xs font-medium text-text-primary">
         Consider <span className="font-semibold">{sanitizeDisplayString(recommendation.improvedVariantName, 100)}</span>
       </p>
-      <div className="mt-1 flex items-center gap-3 text-xs">
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
         <span
           data-testid="recommendation-improvement"
           className="text-green-500"

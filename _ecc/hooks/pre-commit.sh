@@ -20,7 +20,7 @@ done
 if command -v gitleaks >/dev/null 2>&1; then
   if ! gitleaks git --staged 2>/dev/null; then
     echo "[HOOK] SECRETS DETECTED. Commit blocked." >&2
-    echo "  Run: gitleaks detect --staged  for details" >&2
+    echo "  Run: gitleaks git --staged  for details" >&2
     exit 1
   fi
 else

@@ -124,7 +124,7 @@ export function ComponentDetail({
 
   return (
     <ScrollArea className="h-full">
-      <div className="space-y-3 p-3">
+      <div className="min-w-0 space-y-3 p-3">
         {/* Header: name + category badge */}
         <div>
           <h2 className="text-sm font-semibold text-text-primary">
@@ -182,9 +182,9 @@ export function ComponentDetail({
           <h3 className="mb-1 text-xs font-medium text-green-600">Gains</h3>
           <ul className="space-y-0.5">
             {component.gain.map((item, index) => (
-              <li key={`gain-${index}`} className="flex items-start gap-1 text-xs text-text-secondary">
-                <span className="mt-0.5 text-green-500">+</span>
-                {item}
+              <li key={`gain-${index}`} className="flex items-start gap-1 text-xs wrap-break-word text-text-secondary">
+                <span className="mt-0.5 shrink-0 text-green-500">+</span>
+                <span className="min-w-0">{item}</span>
               </li>
             ))}
           </ul>
@@ -195,9 +195,9 @@ export function ComponentDetail({
           <h3 className="mb-1 text-xs font-medium text-red-600">Costs</h3>
           <ul className="space-y-0.5">
             {component.cost.map((item, index) => (
-              <li key={`cost-${index}`} className="flex items-start gap-1 text-xs text-text-secondary">
-                <span className="mt-0.5 text-red-500">-</span>
-                {item}
+              <li key={`cost-${index}`} className="flex items-start gap-1 text-xs wrap-break-word text-text-secondary">
+                <span className="mt-0.5 shrink-0 text-red-500">-</span>
+                <span className="min-w-0">{item}</span>
               </li>
             ))}
           </ul>

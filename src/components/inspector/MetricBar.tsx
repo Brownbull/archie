@@ -28,8 +28,8 @@ export function MetricBar({ metric, explanation, delta }: MetricBarProps) {
       data-metric-id={metric.id}
       onClick={explanation ? () => setIsExpanded((prev) => !prev) : undefined}
     >
-      <div className="flex items-center gap-2">
-        <span className="w-28 shrink-0 truncate text-xs text-text-secondary">
+      <div className="flex min-w-0 items-center gap-1.5">
+        <span className="w-20 shrink-0 truncate text-xs text-text-secondary">
           {metric.name ?? metric.id}
         </span>
         <div className="h-2 flex-1 rounded-full bg-muted">
@@ -39,24 +39,27 @@ export function MetricBar({ metric, explanation, delta }: MetricBarProps) {
             style={{ width: `${widthPercent}%` }}
           />
         </div>
-        <span className="w-12 shrink-0 text-right text-xs text-text-secondary">
+        <span className="w-10 shrink-0 text-right text-xs text-text-secondary">
           {metric.value}
         </span>
         {delta !== undefined && delta !== 0 && (
           <span
             data-testid="metric-bar-delta"
-            className={`w-8 shrink-0 text-right text-xs font-medium ${
+            className={`w-7 shrink-0 text-right text-xs font-medium ${
               delta > 0 ? "text-green-500" : "text-red-500"
             }`}
           >
             {delta > 0 ? `+${delta}` : `${delta}`}
           </span>
         )}
-        {explanation && (
-          isExpanded
-            ? <ChevronUp data-testid="metric-explanation-chevron" className="h-3 w-3 shrink-0 text-text-secondary" />
-            : <ChevronDown data-testid="metric-explanation-chevron" className="h-3 w-3 shrink-0 text-text-secondary" />
-        )}
+        {/* Always allocate chevron space so all bar tracks align consistently */}
+        <span className="h-3 w-3 shrink-0">
+          {explanation && (
+            isExpanded
+              ? <ChevronUp data-testid="metric-explanation-chevron" className="h-3 w-3 text-text-secondary" />
+              : <ChevronDown data-testid="metric-explanation-chevron" className="h-3 w-3 text-text-secondary" />
+          )}
+        </span>
       </div>
       {isExpanded && explanation && (
         <div data-testid="metric-explanation" className="mt-1 space-y-1 text-xs text-text-secondary">
