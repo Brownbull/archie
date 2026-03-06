@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import {
   ArchitectureFileSchema,
   ArchitectureFileYamlSchema,
@@ -9,6 +9,7 @@ import {
   checkSchemaVersion,
   type VersionStatus,
 } from "@/schemas/architectureFileSchema"
+import { METRIC_CATEGORIES, MAX_CANVAS_NODES, MAX_EDGES } from "@/lib/constants"
 
 const validNode = {
   id: "node-1",
@@ -30,14 +31,15 @@ const validArchitectureFile = {
 }
 
 describe("CURRENT_SCHEMA_VERSION", () => {
-  it("is 1.0.0", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("1.0.0")
+  it("is 2.0.0", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("2.0.0")
   })
 })
 
 describe("MIGRATIONS", () => {
-  it("is an empty record for v1", () => {
-    expect(MIGRATIONS).toEqual({})
+  it("has v1-to-v2 migration registered", () => {
+    expect(MIGRATIONS).toHaveProperty("1")
+    expect(typeof MIGRATIONS["1"]).toBe("function")
   })
 })
 
@@ -300,6 +302,302 @@ describe("ArchitectureFileYamlSchema (snake_case to camelCase)", () => {
     if (result.success) {
       expect(result.data.nodes[0].configVariantId).toBeUndefined()
     }
+  })
+})
+
+describe("Defense-in-depth: PositionSchema numeric bounds (TD-5-1b)", () => {
+  it("rejects x value exceeding 10000", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: 10001, y: 200 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects y value exceeding 10000", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: 100, y: 10001 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects x value below -10000", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: -10001, y: 200 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects y value below -10000", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: 100, y: -10001 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects extreme float values like 1e308", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: 1e308, y: 200 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects -1e308", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: 100, y: -1e308 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts position at exactly -10000", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: -10000, y: -10000 },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts position at exactly 10000", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: 10000, y: 10000 },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects Infinity", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: Infinity, y: 200 },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects -Infinity", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({
+      ...validNode,
+      position: { x: 100, y: -Infinity },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("YAML variant also rejects out-of-bounds positions", () => {
+    const result = ArchitectureFileYamlSchema.safeParse({
+      schema_version: "1.0.0",
+      nodes: [{ id: "node-1", component_id: "pg", position: { x: 1e308, y: 0 } }],
+      edges: [],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("YAML variant rejects negative out-of-bounds positions", () => {
+    const result = ArchitectureFileYamlSchema.safeParse({
+      schema_version: "1.0.0",
+      nodes: [{ id: "node-1", component_id: "pg", position: { x: 0, y: -10001 } }],
+      edges: [],
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("Defense-in-depth: METRIC_CATEGORIES static assertion (TD-5-1a)", () => {
+  it("METRIC_CATEGORIES has exactly 7 entries", () => {
+    // This test mirrors the static assertion in architectureFileSchema.ts
+    // If METRIC_CATEGORIES changes length, both this test AND the module assertion will catch it
+    expect(METRIC_CATEGORIES).toHaveLength(7)
+  })
+})
+
+describe("Defense-in-depth: METRIC_CATEGORIES static assertion throw-path (TD-5-1b)", () => {
+  afterEach(() => {
+    vi.resetModules()
+    vi.restoreAllMocks()
+  })
+
+  it("throws when METRIC_CATEGORIES has wrong length", async () => {
+    vi.resetModules()
+    vi.doMock("@/lib/constants", async () => {
+      const actual = await vi.importActual<typeof import("@/lib/constants")>("@/lib/constants")
+      return {
+        ...actual,
+        METRIC_CATEGORIES: actual.METRIC_CATEGORIES.slice(0, 3),
+      }
+    })
+
+    await expect(
+      import("@/schemas/architectureFileSchema"),
+    ).rejects.toThrow("METRIC_CATEGORIES length changed to 3 (expected 7)")
+  })
+
+  it("throws when METRIC_CATEGORIES has more than 7 entries", async () => {
+    vi.resetModules()
+    vi.doMock("@/lib/constants", async () => {
+      const actual = await vi.importActual<typeof import("@/lib/constants")>("@/lib/constants")
+      return {
+        ...actual,
+        METRIC_CATEGORIES: [...actual.METRIC_CATEGORIES, { id: "extra", name: "Extra", shortName: "Ex", iconName: "Star", color: "var(--extra)" }],
+      }
+    })
+
+    await expect(
+      import("@/schemas/architectureFileSchema"),
+    ).rejects.toThrow("METRIC_CATEGORIES length changed to 8 (expected 7)")
+  })
+})
+
+describe("Defense-in-depth: string length limits (TD-5-1a)", () => {
+  const longString = "a".repeat(257)
+
+  it("rejects node id exceeding 256 chars", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, id: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects node componentId exceeding 256 chars", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, componentId: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects edge id exceeding 256 chars", () => {
+    const result = ArchitectureFileEdgeSchema.safeParse({ ...validEdge, id: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects edge sourceNodeId exceeding 256 chars", () => {
+    const result = ArchitectureFileEdgeSchema.safeParse({ ...validEdge, sourceNodeId: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects edge targetNodeId exceeding 256 chars", () => {
+    const result = ArchitectureFileEdgeSchema.safeParse({ ...validEdge, targetNodeId: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects schemaVersion exceeding 256 chars", () => {
+    const result = ArchitectureFileSchema.safeParse({ ...validArchitectureFile, schemaVersion: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects name exceeding 256 chars", () => {
+    const result = ArchitectureFileSchema.safeParse({ ...validArchitectureFile, name: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects libraryVersion exceeding 256 chars", () => {
+    const result = ArchitectureFileSchema.safeParse({ ...validArchitectureFile, libraryVersion: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts strings at exactly 256 chars", () => {
+    const maxString = "a".repeat(256)
+    const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, id: maxString, componentId: maxString })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects empty string for node id (.min(1))", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, id: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty string for edge sourceNodeId (.min(1))", () => {
+    const result = ArchitectureFileEdgeSchema.safeParse({ ...validEdge, sourceNodeId: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects configVariantId exceeding 256 chars", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, configVariantId: longString })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects non-string type for node id", () => {
+    const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, id: 123 })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects non-string type for edge id", () => {
+    const result = ArchitectureFileEdgeSchema.safeParse({ ...validEdge, id: 456 })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("Defense-in-depth: YAML variant string length parity (TD-5-1a)", () => {
+  const longString = "a".repeat(257)
+
+  it("rejects YAML node component_id exceeding 256 chars", () => {
+    const result = ArchitectureFileYamlSchema.safeParse({
+      schema_version: "1.0.0",
+      nodes: [{ id: "node-1", component_id: longString, position: { x: 0, y: 0 } }],
+      edges: [],
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects YAML edge source_node_id exceeding 256 chars", () => {
+    const result = ArchitectureFileYamlSchema.safeParse({
+      schema_version: "1.0.0",
+      nodes: [],
+      edges: [{ id: "edge-1", source_node_id: longString, target_node_id: "node-2" }],
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("Defense-in-depth: array size limits (TD-5-1a)", () => {
+  it("rejects nodes array exceeding MAX_CANVAS_NODES", () => {
+    const oversizedNodes = Array.from({ length: MAX_CANVAS_NODES + 1 }, (_, i) => ({
+      id: `node-${i}`,
+      componentId: `comp-${i}`,
+      position: { x: i * 10, y: i * 10 },
+    }))
+    const result = ArchitectureFileSchema.safeParse({
+      ...validArchitectureFile,
+      nodes: oversizedNodes,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts nodes array at exactly MAX_CANVAS_NODES", () => {
+    const maxNodes = Array.from({ length: MAX_CANVAS_NODES }, (_, i) => ({
+      id: `node-${i}`,
+      componentId: `comp-${i}`,
+      position: { x: i * 10, y: i * 10 },
+    }))
+    const result = ArchitectureFileSchema.safeParse({
+      ...validArchitectureFile,
+      nodes: maxNodes,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects edges array exceeding MAX_EDGES", () => {
+    const oversizedEdges = Array.from({ length: MAX_EDGES + 1 }, (_, i) => ({
+      id: `edge-${i}`,
+      sourceNodeId: `node-${i}`,
+      targetNodeId: `node-${i + 1}`,
+    }))
+    const result = ArchitectureFileSchema.safeParse({
+      ...validArchitectureFile,
+      edges: oversizedEdges,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts edges array at exactly MAX_EDGES", () => {
+    const maxEdges = Array.from({ length: MAX_EDGES }, (_, i) => ({
+      id: `edge-${i}`,
+      sourceNodeId: `node-${i}`,
+      targetNodeId: `node-${i + 1}`,
+    }))
+    const result = ArchitectureFileSchema.safeParse({
+      ...validArchitectureFile,
+      edges: maxEdges,
+    })
+    expect(result.success).toBe(true)
   })
 })
 

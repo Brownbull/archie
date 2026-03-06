@@ -151,8 +151,10 @@ development_status:
   # User adjusts 7 category weight sliders, sees architecture re-scored instantly
   # FRs: FR44-FR50, FR69-FR72 | NFRs: NFR12, NFR18, NFR19
   # ============================================================================
-  epic-5: backlog
-  5-1-yaml-schema-v2-weight-profile-foundation: ready-for-dev
+  epic-5: in-progress
+  5-1-yaml-schema-v2-weight-profile-foundation: done
+  td-5-1a-schema-defense-in-depth: done
+  td-5-1b-schema-hardening-followup: done  # DEPENDS: td-5-1a
   5-2-weighted-recalculation-pipeline: ready-for-dev
   5-3-priority-slider-ui: ready-for-dev
   5-4-yaml-weight-profile-export-import: ready-for-dev
