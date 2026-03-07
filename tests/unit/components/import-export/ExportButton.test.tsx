@@ -48,7 +48,7 @@ describe("ExportButton", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     setMockNodeCount(1)
-    mockGetArchitectureSkeleton.mockReturnValue({ nodes: [{}], edges: [] })
+    mockGetArchitectureSkeleton.mockReturnValue({ nodes: [{}], edges: [], weightProfile: { performance: 1, reliability: 1, scalability: 1, security: 1, "operational-complexity": 1, "cost-efficiency": 1, "developer-experience": 1 } })
     mockExportArchitecture.mockReturnValue("yaml: content")
     mockCreateObjectURL = vi.fn().mockReturnValue("blob:mock-url")
     mockRevokeObjectURL = vi.fn()
@@ -166,7 +166,7 @@ describe("ExportButton", () => {
 
   describe("Programmatic guard", () => {
     it("does not create a Blob URL when skeleton returns empty nodes", () => {
-      mockGetArchitectureSkeleton.mockReturnValue({ nodes: [], edges: [] })
+      mockGetArchitectureSkeleton.mockReturnValue({ nodes: [], edges: [], weightProfile: { performance: 1, reliability: 1, scalability: 1, security: 1, "operational-complexity": 1, "cost-efficiency": 1, "developer-experience": 1 } })
 
       render(<ExportButton />)
       fireEvent.click(screen.getByTestId("export-button"))

@@ -613,7 +613,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       rippleActiveNodeIds: new Set(),
       recalcGeneration: get().recalcGeneration + 1,
       currentTier: null,
-      weightProfile: weightProfile ?? { ...DEFAULT_WEIGHT_PROFILE },
+      weightProfile: weightProfile ?? get().weightProfile,
     })
 
     // Clear uiStore selection state (cross-store pattern from removeNode)
@@ -659,7 +659,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
  * Pure selector: extracts the skeleton (nodes + edges) from the current store state.
  * Called on export button click — non-reactive read, not a store action.
  */
-export function getArchitectureSkeleton(): { nodes: ArchieNode[]; edges: ArchieEdge[] } {
+export function getArchitectureSkeleton(): { nodes: ArchieNode[]; edges: ArchieEdge[]; weightProfile: WeightProfile } {
   const state = useArchitectureStore.getState()
-  return { nodes: state.nodes, edges: state.edges }
+  return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile }
 }

@@ -36,7 +36,7 @@ export interface HydratedArchitecture {
   edges: ArchieEdge[]
   placeholderIds: string[]
   name?: string
-  weightProfile?: WeightProfile
+  weightProfile: WeightProfile
 }
 
 export type ImportResult =
@@ -106,6 +106,14 @@ export async function importYaml(file: File): Promise<ImportResult> {
  * Separated from file handling for testability.
  */
 export function importYamlString(text: string): ImportResult {
+  // Size guard — mirrors importYaml's file.size check for direct callers (TD-5-4a AC-2)
+  if (text.length > MAX_FILE_SIZE) {
+    return {
+      success: false,
+      errors: [{ code: "FILE_TOO_LARGE", message: `Input too large (max ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB)` }],
+    }
+  }
+
   // Step 3: Parse YAML
   let parsed: unknown
   try {
@@ -247,29 +255,29 @@ export function importYamlString(text: string): ImportResult {
     }
   }
 
-  // Fill default weight profile when absent (AC-4, AC-ARCH-PATTERN-5)
-  if (!data.weightProfile) {
-    data.weightProfile = { ...DEFAULT_WEIGHT_PROFILE }
-  } else {
-    // AC-ARCH-PATTERN-4: Semantic guard — all-zero weights normalized to equal with warning
-    const allZero = Object.values(data.weightProfile).every((v) => v === 0)
-    if (allZero) {
-      if (import.meta.env.DEV) {
-        console.warn("All weight profile values are zero — normalizing to equal weights")
-      }
-      data.weightProfile = { ...DEFAULT_WEIGHT_PROFILE }
-    }
-  }
-
-  // Step 6-9: Delegate to shared hydration pipeline
+  // Step 6-9: Delegate to shared hydration pipeline (weight resolution moved there — TD-5-4a)
   return hydrateArchitectureSkeleton(data)
 }
 
 /**
  * Hydrates a validated ArchitectureFile into nodes and edges.
  * Shared by YAML import and blueprint loading — single hydration code path (AC-ARCH-NO-2).
+ *
+ * Weight profile resolution (TD-5-4a): fills default when absent, normalizes all-zero.
+ * This is the sole guarantee that HydratedArchitecture.weightProfile is always valid,
+ * covering both the importYamlString and BlueprintTab code paths.
  */
 export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResult {
+  // Resolve weight profile: default fill + all-zero normalization (AC-4, AC-ARCH-PATTERN-4/5)
+  let resolvedWeightProfile = data.weightProfile ?? { ...DEFAULT_WEIGHT_PROFILE }
+  const allZero = Object.values(resolvedWeightProfile).every((v) => v === 0)
+  if (allZero) {
+    if (import.meta.env.DEV) {
+      console.warn("All weight profile values are zero — normalizing to equal weights")
+    }
+    resolvedWeightProfile = { ...DEFAULT_WEIGHT_PROFILE }
+  }
+
   const sanitizedName = data.name ? sanitizeDisplayString(data.name) : undefined
 
   // Hydrate nodes from component library
@@ -368,7 +376,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       edges: hydratedEdges,
       placeholderIds,
       name: sanitizedName,
-      weightProfile: data.weightProfile,
+      weightProfile: resolvedWeightProfile,
     },
   }
 }

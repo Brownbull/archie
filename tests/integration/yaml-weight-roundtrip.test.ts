@@ -96,9 +96,8 @@ describe("YAML weight profile round-trip (integration)", () => {
       expect(result.success).toBe(true)
       if (!result.success) return
 
-      expect(result.architecture.weightProfile).toBeDefined()
-      expect(result.architecture.weightProfile!.performance).toBe(0.3)
-      expect(result.architecture.weightProfile!.scalability).toBe(0.7)
+      expect(result.architecture.weightProfile.performance).toBe(0.3)
+      expect(result.architecture.weightProfile.scalability).toBe(0.7)
     })
   })
 
@@ -116,8 +115,7 @@ describe("YAML weight profile round-trip (integration)", () => {
       if (!result.success) return
 
       // weightProfile should be default (filled by importer fallback)
-      expect(result.architecture.weightProfile).toBeDefined()
-      expect(result.architecture.weightProfile!.performance).toBe(1.0)
+      expect(result.architecture.weightProfile.performance).toBe(1.0)
     })
 
     it("imports v1 YAML (no weight_profile) with default weights", () => {
@@ -132,8 +130,7 @@ describe("YAML weight profile round-trip (integration)", () => {
       if (!result.success) return
 
       // v1 migration adds default weight profile
-      expect(result.architecture.weightProfile).toBeDefined()
-      expect(result.architecture.weightProfile!.performance).toBe(1.0)
+      expect(result.architecture.weightProfile.performance).toBe(1.0)
     })
   })
 
@@ -203,7 +200,7 @@ describe("YAML weight profile round-trip (integration)", () => {
       if (!result.success) return
 
       // All weights should be normalized to equal (1.0)
-      const wp = result.architecture.weightProfile!
+      const wp = result.architecture.weightProfile
       for (const key of Object.keys(DEFAULT_WEIGHT_PROFILE)) {
         expect(wp[key as keyof WeightProfile]).toBe(1.0)
       }
@@ -232,9 +229,9 @@ describe("YAML weight profile round-trip (integration)", () => {
       expect(result.architecture.edges).toHaveLength(1)
 
       // Step 4: Verify weight profile
-      expect(result.architecture.weightProfile!.performance).toBe(0.2)
-      expect(result.architecture.weightProfile!.scalability).toBe(0.8)
-      expect(result.architecture.weightProfile!.reliability).toBe(0.5)
+      expect(result.architecture.weightProfile.performance).toBe(0.2)
+      expect(result.architecture.weightProfile.scalability).toBe(0.8)
+      expect(result.architecture.weightProfile.reliability).toBe(0.5)
 
       // Step 5: Re-export and verify identical
       const reExport = exportArchitecture(
