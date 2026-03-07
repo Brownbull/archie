@@ -155,8 +155,9 @@ development_status:
   5-1-yaml-schema-v2-weight-profile-foundation: done
   td-5-1a-schema-defense-in-depth: done
   td-5-1b-schema-hardening-followup: done  # DEPENDS: td-5-1a
-  5-2-weighted-recalculation-pipeline: ready-for-dev
-  5-3-priority-slider-ui: ready-for-dev
+  5-2-weighted-recalculation-pipeline: done
+  5-3-priority-slider-ui: done
+  td-5-3a-dashboard-weight-dry-extraction: ready-for-dev  # DEPENDS: 5-3
   5-4-yaml-weight-profile-export-import: ready-for-dev
   5-5-e2e-priority-scoring-flow: ready-for-dev
   epic-5-retrospective: optional
