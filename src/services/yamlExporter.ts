@@ -1,6 +1,6 @@
 import { dump } from "js-yaml"
 import { ArchitectureFileYamlSchema, CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
-import { DEFAULT_WEIGHT_PROFILE } from "@/lib/constants"
+import { DEFAULT_WEIGHT_PROFILE, isDefaultWeightProfile } from "@/lib/constants"
 import type { WeightProfile } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
 
@@ -42,11 +42,15 @@ export function exportArchitecture(
   }))
 
   // Assemble root object in logical field order (schema_version first)
-  const exportObj = {
+  // AC-2 / AC-ARCH-PATTERN-1: omit weight_profile when all weights are default
+  const resolvedProfile = weightProfile ?? { ...DEFAULT_WEIGHT_PROFILE }
+  const exportObj: Record<string, unknown> = {
     schema_version: CURRENT_SCHEMA_VERSION,
     nodes: yamlNodes,
     edges: yamlEdges,
-    weight_profile: weightProfile ?? { ...DEFAULT_WEIGHT_PROFILE },
+  }
+  if (!isDefaultWeightProfile(resolvedProfile)) {
+    exportObj.weight_profile = resolvedProfile
   }
 
   // Validate against ArchitectureFileYamlSchema before serializing (AC-ARCH-PATTERN-3)

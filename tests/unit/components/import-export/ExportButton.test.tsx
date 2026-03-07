@@ -7,14 +7,33 @@ import { ExportButton, BLOB_REVOKE_DELAY_MS } from "@/components/import-export/E
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
 vi.mock("sonner", () => ({ toast: { error: vi.fn() } }))
 
-const mockGetArchitectureSkeleton = vi.fn()
-const mockExportArchitecture = vi.fn()
-let mockNodeCount = 1
+const { mockGetArchitectureSkeleton, mockExportArchitecture, setMockNodeCount, mockUseArchitectureStore } = vi.hoisted(() => {
+  const mockGetArchitectureSkeleton = vi.fn()
+  const mockExportArchitecture = vi.fn()
+  let mockNodeCount = 1
+  const mockStoreState = {
+    nodes: [] as unknown[],
+    weightProfile: { performance: 1, reliability: 1, scalability: 1, security: 1, "operational-complexity": 1, "cost-efficiency": 1, "developer-experience": 1 },
+  }
+  const mockUseArchitectureStore = Object.assign(
+    (selector: (s: Record<string, unknown>) => unknown) => {
+      mockStoreState.nodes = Array.from({ length: mockNodeCount })
+      return selector(mockStoreState as unknown as Record<string, unknown>)
+    },
+    { getState: () => mockStoreState },
+  )
+  return {
+    mockGetArchitectureSkeleton,
+    mockExportArchitecture,
+    mockStoreState,
+    getMockNodeCount: () => mockNodeCount,
+    setMockNodeCount: (n: number) => { mockNodeCount = n },
+    mockUseArchitectureStore,
+  }
+})
 
 vi.mock("@/stores/architectureStore", () => ({
-  useArchitectureStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
-    selector({ nodes: Array.from({ length: mockNodeCount }) }),
-  ),
+  useArchitectureStore: mockUseArchitectureStore,
   getArchitectureSkeleton: () => mockGetArchitectureSkeleton(),
 }))
 
@@ -28,7 +47,7 @@ describe("ExportButton", () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
-    mockNodeCount = 1
+    setMockNodeCount(1)
     mockGetArchitectureSkeleton.mockReturnValue({ nodes: [{}], edges: [] })
     mockExportArchitecture.mockReturnValue("yaml: content")
     mockCreateObjectURL = vi.fn().mockReturnValue("blob:mock-url")
@@ -56,7 +75,7 @@ describe("ExportButton", () => {
   })
 
   it("is disabled when canvas is empty", () => {
-    mockNodeCount = 0
+    setMockNodeCount(0)
     render(<ExportButton />)
     expect(screen.getByTestId("export-button")).toBeDisabled()
   })

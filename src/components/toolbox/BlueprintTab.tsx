@@ -124,7 +124,7 @@ function BlueprintTabInner() {
     const result = hydrateArchitectureSkeleton(blueprint.skeleton)
     if (result.success) {
       setHydrateError(null)
-      loadArchitecture(result.architecture.nodes, result.architecture.edges)
+      loadArchitecture(result.architecture.nodes, result.architecture.edges, result.architecture.weightProfile)
     } else {
       setHydrateError("Could not load blueprint — some components may not be available.")
       if (import.meta.env.DEV) {

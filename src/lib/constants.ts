@@ -87,6 +87,16 @@ export const DEFAULT_WEIGHT_PROFILE: Readonly<WeightProfile> = Object.freeze(
   Object.fromEntries(METRIC_CATEGORIES.map((c) => [c.id, 1.0])) as WeightProfile,
 )
 
+/** Floating-point epsilon for weight comparison (0.1-step sliders, Story 5-4 AC-ARCH-PATTERN-1) */
+const WEIGHT_EPSILON = 0.01
+
+/** Returns true if every category weight is within epsilon of the default (1.0). */
+export function isDefaultWeightProfile(profile: WeightProfile): boolean {
+  return METRIC_CATEGORIES.every(
+    (c) => Math.abs((profile[c.id] ?? 0) - 1.0) < WEIGHT_EPSILON,
+  )
+}
+
 // Font presets (Story 2-5)
 // These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally
 // Browser default root is 16px; medium preserves that, small/large shift by ±2px

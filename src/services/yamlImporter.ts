@@ -250,6 +250,15 @@ export function importYamlString(text: string): ImportResult {
   // Fill default weight profile when absent (AC-4, AC-ARCH-PATTERN-5)
   if (!data.weightProfile) {
     data.weightProfile = { ...DEFAULT_WEIGHT_PROFILE }
+  } else {
+    // AC-ARCH-PATTERN-4: Semantic guard — all-zero weights normalized to equal with warning
+    const allZero = Object.values(data.weightProfile).every((v) => v === 0)
+    if (allZero) {
+      if (import.meta.env.DEV) {
+        console.warn("All weight profile values are zero — normalizing to equal weights")
+      }
+      data.weightProfile = { ...DEFAULT_WEIGHT_PROFILE }
+    }
   }
 
   // Step 6-9: Delegate to shared hydration pipeline

@@ -46,7 +46,8 @@ export function ExportButton() {
     if (nodes.length === 0) return
 
     try {
-      const yamlString = exportArchitecture(nodes, edges)
+      const weightProfile = useArchitectureStore.getState().weightProfile
+      const yamlString = exportArchitecture(nodes, edges, weightProfile)
 
       const blob = new Blob([yamlString], { type: "application/x-yaml" })
       const url = URL.createObjectURL(blob)

@@ -159,7 +159,7 @@ development_status:
   5-3-priority-slider-ui: done
   td-5-3a-dashboard-weight-dry-extraction: done  # DEPENDS: 5-3
   td-5-3b-shared-utility-extraction: done  # DEPENDS: td-5-3a
-  5-4-yaml-weight-profile-export-import: ready-for-dev
+  5-4-yaml-weight-profile-export-import: review
   5-5-e2e-priority-scoring-flow: ready-for-dev
   epic-5-retrospective: optional
 
