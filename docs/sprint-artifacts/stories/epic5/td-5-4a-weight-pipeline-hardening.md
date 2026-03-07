@@ -1,6 +1,6 @@
 # Tech Debt Story TD-5-4a: Weight Pipeline Type Safety & Hardening
 
-Status: review
+Status: done
 
 > **Source:** KDBP Code Review (2026-03-06) on story 5-4
 > **Priority:** LOW | **Estimated Effort:** SMALL (1 pt)
@@ -49,6 +49,15 @@ Then it also comes from a consistent extraction helper (either extend getArchite
 - [x] Task 4: ExportButton extraction consistency
   - [x] 4.1 Extend getArchitectureSkeleton or create getExportData to include weightProfile
   - [x] 4.2 Update ExportButton to use the new extraction helper
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-06
+- **Agents:** code-reviewer, security-reviewer
+- **Classification:** STANDARD
+- **Outcome:** APPROVE 9/10
+- **Action items:** 0 (2 LOW findings accepted as-is)
+
+<!-- CITED: none -->
 
 ## Dev Notes
 - Source story: [5-4](./5-4.md)

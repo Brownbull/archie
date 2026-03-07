@@ -1,24 +1,24 @@
 {
-  "generated": "2026-03-06T23:23:35.846621",
+  "generated": "2026-03-06T23:40:17.863941",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 141,
-  "total_cost": 1655.47,
+  "total_sessions": 142,
+  "total_cost": 1662.36,
   "averages": {
-    "overall": 11.74,
-    "last_10": 9.97,
-    "last_20": 8.89
+    "overall": 11.71,
+    "last_10": 9.86,
+    "last_20": 8.91
   },
   "percentiles": {
-    "p50": 7.63,
+    "p50": 7.61,
     "p75": 13.32,
-    "p90": 20.23,
-    "p95": 27.59
+    "p90": 20.14,
+    "p95": 27.52
   },
   "thresholds": {
-    "warning": 13.34,
-    "high": 20.23
+    "warning": 13.37,
+    "high": 20.14
   },
-  "trend_last10_vs_prev10_pct": 27.5,
+  "trend_last10_vs_prev10_pct": 23.9,
   "recent_outliers": [
     {
       "date": "2026-02-26 03:40",
@@ -41,8 +41,8 @@
   ],
   "by_model": {
     "opus, sonnet": {
-      "count": 71,
-      "total_cost": 761.6900000000003
+      "count": 72,
+      "total_cost": 768.5800000000003
     },
     "opus": {
       "count": 21,
@@ -115,13 +115,13 @@
       "p90": 11.63
     },
     "kdbp-code-review": {
-      "count": 6,
-      "total_cost": 48.33,
-      "avg": 8.05,
-      "avg_last_10": 8.05,
-      "p50": 7.65,
-      "p75": 8.2,
-      "p90": 10.16
+      "count": 7,
+      "total_cost": 55.22,
+      "avg": 7.89,
+      "avg_last_10": 7.89,
+      "p50": 7.39,
+      "p75": 8.11,
+      "p90": 9.79
     },
     "kdbp-dev-story": {
       "count": 4,
