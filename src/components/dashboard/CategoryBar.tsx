@@ -1,13 +1,15 @@
 import { getScoreColor } from "@/engine/dashboardCalculator"
-import { METRIC_MAX_VALUE } from "@/lib/constants"
-import { CATEGORY_ICONS } from "@/lib/categoryIcons"
+import { METRIC_MAX_VALUE, type MetricCategoryId } from "@/lib/constants"
+import { getCategoryIcon } from "@/lib/categoryIcons"
 
 interface CategoryBarProps {
-  categoryId: string
+  categoryId: MetricCategoryId
   shortName: string
   iconName: string
   categoryColor: string
   score: number
+  /** Weight multiplier in [WEIGHT_MIN, WEIGHT_MAX] range (0-1). */
+  weight?: number
   onClick?: () => void
 }
 
@@ -17,11 +19,12 @@ export function CategoryBar({
   iconName,
   categoryColor,
   score,
+  weight,
   onClick,
 }: CategoryBarProps) {
   const widthPercent = Math.max(0, Math.min(100, (score / METRIC_MAX_VALUE) * 100))
   const fillColor = getScoreColor(score)
-  const IconComponent = CATEGORY_ICONS[iconName as keyof typeof CATEGORY_ICONS]
+  const IconComponent = getCategoryIcon(iconName)
 
   return (
     <div
@@ -47,6 +50,14 @@ export function CategoryBar({
         <span className="ml-auto shrink-0 text-xs font-medium text-text-primary">
           {score.toFixed(1)}
         </span>
+        {weight !== undefined && weight !== 1.0 && (
+          <span
+            data-testid={`weight-badge-${categoryId}`}
+            className="shrink-0 rounded bg-primary/15 px-1 text-[10px] font-medium text-primary"
+          >
+            {weight.toFixed(1)}x
+          </span>
+        )}
       </div>
       <div className="h-2 w-full rounded-full bg-muted">
         <div

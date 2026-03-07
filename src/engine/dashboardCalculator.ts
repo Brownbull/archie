@@ -1,5 +1,7 @@
 import { METRIC_CATEGORIES } from "@/lib/constants"
+import type { MetricCategoryId, WeightProfile } from "@/lib/constants"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
+import { getWeight } from "@/lib/weightUtils"
 
 // --- Types ---
 
@@ -16,7 +18,7 @@ export interface CategoryBreakdown {
 }
 
 export interface CategoryScore {
-  categoryId: string
+  categoryId: MetricCategoryId
   categoryName: string
   score: number
   metricCount: number
@@ -123,6 +125,52 @@ export function computeCategoryBreakdown(
     worst: sorted.slice(-3).reverse(),
     totalComponents: nodeScores.length,
   }
+}
+
+/**
+ * Applies weight profile to category scores.
+ * weightedScore = score * weight for each category.
+ * Weight defaults to 1.0 for categories not present in the profile.
+ *
+ * Pure function -- weights passed as parameters, no store imports.
+ */
+export function computeWeightedCategoryScores(
+  categoryScores: CategoryScore[],
+  weights: WeightProfile,
+): CategoryScore[] {
+  return categoryScores.map((cs) => ({
+    ...cs,
+    score: cs.score * getWeight(cs.categoryId, weights),
+  }))
+}
+
+/**
+ * Computes weighted aggregate score: sum(score * weight) / sum(weight)
+ * for categories that have data.
+ *
+ * Falls back to equal weights (1.0 each) if sum of weights is 0.
+ * Returns 0 if no categories have data. Rounded to 1 decimal place.
+ *
+ * Pure function -- weights passed as parameters, no store imports.
+ */
+export function computeWeightedAggregateScore(
+  categoryScores: CategoryScore[],
+  weights: WeightProfile,
+): number {
+  const withData = categoryScores.filter((s) => s.hasData)
+  if (withData.length === 0) return 0
+
+  const totalWeight = withData.reduce((acc, s) => acc + getWeight(s.categoryId, weights), 0)
+
+  // Fallback: if all weights are 0, use equal weights (1.0 each)
+  if (totalWeight === 0) {
+    const sum = withData.reduce((acc, s) => acc + s.score, 0)
+    return Math.round((sum / withData.length) * 10) / 10
+  }
+
+  const weightedSum = withData.reduce((acc, s) => acc + s.score * getWeight(s.categoryId, weights), 0)
+
+  return Math.round((weightedSum / totalWeight) * 10) / 10
 }
 
 /**

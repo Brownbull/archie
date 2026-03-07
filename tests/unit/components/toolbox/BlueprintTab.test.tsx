@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import type { BlueprintFull } from "@/schemas/blueprintSchema"
+import { DEFAULT_WEIGHT_PROFILE } from "@/lib/constants"
 
 // --- Hoisted mocks ---
 
@@ -90,7 +91,7 @@ describe("BlueprintTab", () => {
     vi.resetModules()
     mockHydrate.mockReturnValue({
       success: true,
-      architecture: { nodes: [], edges: [], placeholderIds: [] },
+      architecture: { nodes: [], edges: [], placeholderIds: [], weightProfile: { ...DEFAULT_WEIGHT_PROFILE } },
     })
   })
 
@@ -156,6 +157,16 @@ describe("BlueprintTab", () => {
     fireEvent.click(loadButtons[0])
     expect(mockHydrate).toHaveBeenCalledWith(mockBlueprintWA.skeleton)
     expect(mockLoadArchitecture).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not pass weightProfile to loadArchitecture — preserves user preferences (TD-5-4a AC-3)", async () => {
+    setupMocks({ existingNodes: [] })
+    const { BlueprintTab } = await import("@/components/toolbox/BlueprintTab")
+    render(<BlueprintTab />)
+    const loadButtons = screen.getAllByTestId("blueprint-load-button")
+    fireEvent.click(loadButtons[0])
+    // loadArchitecture should be called with only 2 arguments (nodes, edges) — no weightProfile
+    expect(mockLoadArchitecture.mock.calls[0]).toHaveLength(2)
   })
 
   it("clicking Load on non-empty canvas shows confirmation dialog", async () => {

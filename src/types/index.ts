@@ -1,3 +1,4 @@
+export type { WeightProfile } from "@/lib/constants"
 export type { MetricValue } from "@/schemas/metricSchema"
 export type { MetricCategory, ScoreInterpretation } from "@/schemas/metricCategorySchema"
 export type {

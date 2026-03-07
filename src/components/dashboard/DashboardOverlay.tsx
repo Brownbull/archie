@@ -2,14 +2,14 @@ import { useMemo, useState } from "react"
 import { useShallow } from "zustand/react/shallow"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import {
-  computeCategoryScores,
-  computeAggregateScore,
   computeCategoryBreakdown,
   getScoreColor,
 } from "@/engine/dashboardCalculator"
-import { METRIC_CATEGORIES, METRIC_MAX_VALUE } from "@/lib/constants"
-import { CATEGORY_ICONS } from "@/lib/categoryIcons"
+import { METRIC_MAX_VALUE, type MetricCategoryId } from "@/lib/constants"
+import { CATEGORY_LOOKUP } from "@/lib/categoryLookup"
+import { getCategoryIcon } from "@/lib/categoryIcons"
 import { componentLibrary } from "@/services/componentLibrary"
+import { useDashboardWeights } from "@/hooks/useDashboardWeights"
 import {
   Dialog,
   DialogContent,
@@ -17,7 +17,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
+import { WeightSliders } from "@/components/dashboard/WeightSliders"
+import { ChevronDown } from "lucide-react"
 
 interface DashboardOverlayProps {
   open: boolean
@@ -27,17 +34,14 @@ interface DashboardOverlayProps {
 export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) {
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
   const nodes = useArchitectureStore(useShallow((s) => s.nodes))
-  const [infoCategoryId, setInfoCategoryId] = useState<string | null>(null)
-
-  const categoryScores = useMemo(
-    () => computeCategoryScores(computedMetrics),
-    [computedMetrics],
-  )
-
-  const aggregateScore = useMemo(
-    () => computeAggregateScore(categoryScores),
-    [categoryScores],
-  )
+  const {
+    categoryScores,
+    aggregateScore,
+    weightedAggregateScore,
+    isNonDefaultWeights,
+  } = useDashboardWeights()
+  const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
+  const [weightsOpen, setWeightsOpen] = useState(false)
 
   const breakdowns = useMemo(
     () =>
@@ -72,9 +76,36 @@ export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) 
           <DialogDescription>
             {isEmpty
               ? "No components on canvas"
-              : `Aggregate score: ${aggregateScore.toFixed(1)} across ${computedMetrics.size} components`}
+              : isNonDefaultWeights
+                ? `Weighted: ${weightedAggregateScore.toFixed(1)} | Balanced: ${aggregateScore.toFixed(1)} across ${computedMetrics.size} components`
+                : `Aggregate score: ${aggregateScore.toFixed(1)} across ${computedMetrics.size} components`}
           </DialogDescription>
         </DialogHeader>
+
+        <Collapsible open={weightsOpen} onOpenChange={setWeightsOpen}>
+          <CollapsibleTrigger
+            data-testid="weight-sliders-toggle"
+            className="flex w-full items-center justify-between rounded-lg border border-archie-border px-3 py-2 text-sm font-medium hover:bg-muted/30"
+          >
+            <span className="flex items-center gap-2">
+              Priority Weights
+              {isNonDefaultWeights && (
+                <span
+                  data-testid="weight-indicator"
+                  className="rounded-full bg-primary/15 px-1.5 py-0.5 text-xs text-primary"
+                >
+                  Custom
+                </span>
+              )}
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${weightsOpen ? "rotate-180" : ""}`}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <WeightSliders />
+          </CollapsibleContent>
+        </Collapsible>
 
         {isEmpty ? (
           <p className="py-8 text-center text-sm text-text-secondary">
@@ -83,10 +114,10 @@ export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) 
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {categoryScores.map((cs) => {
-              const catMeta = METRIC_CATEGORIES.find((c) => c.id === cs.categoryId)
+              const catMeta = CATEGORY_LOOKUP.get(cs.categoryId)
               if (!catMeta) return null
 
-              const IconComponent = CATEGORY_ICONS[catMeta.iconName as keyof typeof CATEGORY_ICONS]
+              const IconComponent = getCategoryIcon(catMeta.iconName)
               const breakdown = breakdowns.get(cs.categoryId)!
               const fillColor = cs.hasData ? getScoreColor(cs.score) : "bg-muted"
               const widthPercent = cs.hasData

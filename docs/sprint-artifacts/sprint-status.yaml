@@ -2,7 +2,7 @@
 # project: archie
 # project_key: NOKEY
 # tracking_system: file-system
-# story_location: _bmad-output/implementation-artifacts
+# story_location: docs/sprint-artifacts/stories
 
 # STATUS DEFINITIONS:
 # ==================
@@ -37,7 +37,7 @@ generated: 2026-02-12
 project: archie
 project_key: NOKEY
 tracking_system: file-system
-story_location: _bmad-output/implementation-artifacts
+story_location: docs/sprint-artifacts/stories
 
 development_status:
   # ============================================================================
@@ -145,3 +145,61 @@ development_status:
   4-6-inspector-ux-polish: done
   td-4-6a-overlay-scroll-target-scoping: done
   epic-4-retrospective: optional
+
+  # ============================================================================
+  # Epic 5: Priority Scoring (5 stories, 18 pts)
+  # User adjusts 7 category weight sliders, sees architecture re-scored instantly
+  # FRs: FR44-FR50, FR69-FR72 | NFRs: NFR12, NFR18, NFR19
+  # ============================================================================
+  epic-5: done
+  5-1-yaml-schema-v2-weight-profile-foundation: done
+  td-5-1a-schema-defense-in-depth: done
+  td-5-1b-schema-hardening-followup: done  # DEPENDS: td-5-1a
+  5-2-weighted-recalculation-pipeline: done
+  5-3-priority-slider-ui: done
+  td-5-3a-dashboard-weight-dry-extraction: done  # DEPENDS: 5-3
+  td-5-3b-shared-utility-extraction: done  # DEPENDS: td-5-3a
+  5-4-yaml-weight-profile-export-import: done
+  td-5-4a-weight-pipeline-hardening: done  # DEPENDS: 5-4
+  5-5-e2e-priority-scoring-flow: done
+  td-5-5a-e2e-test-hardening: done  # DEPENDS: 5-5
+  td-5-5b-e2e-test-quality-polish: done  # DEPENDS: td-5-5a
+  td-5-5c-e2e-test-maintainability: done  # DEPENDS: td-5-5b
+  epic-5-retrospective: optional
+
+  # ============================================================================
+  # Epic 6: Constraint Guardrails (5 stories, 19 pts)
+  # User defines hard threshold constraints, sees violations on canvas
+  # FRs: FR51-FR57, FR71-FR72 | NFRs: NFR14, NFR17, NFR18
+  # ============================================================================
+  epic-6: backlog
+  6-1-constraint-schema-and-types-foundation: ready-for-dev
+  6-2-constraint-evaluation-engine-and-store: ready-for-dev
+  6-3-constraint-management-ui-and-canvas-indicators: ready-for-dev
+  6-4-yaml-constraint-export-import: ready-for-dev
+  6-5-e2e-constraint-guardrails-flow: ready-for-dev
+  epic-6-retrospective: optional
+
+  # ============================================================================
+  # Epic 8: Stack Browsing & Placement (4 stories, 15 pts)
+  # User browses pre-composed stacks, drags onto canvas as single action
+  # FRs: FR64-FR68 | NFRs: NFR15
+  # ============================================================================
+  epic-8: backlog
+  8-1-stack-data-model-and-library-integration: ready-for-dev
+  8-2-stacks-tab-ui-browse-and-preview: ready-for-dev
+  8-3-stack-canvas-placement-and-editing: ready-for-dev
+  8-4-e2e-stack-browsing-and-placement-flow: ready-for-dev
+  epic-8-retrospective: optional
+
+  # ============================================================================
+  # Epic 7: Data Context Items (4 stories, 15 pts)
+  # User defines data shapes on components, sees fit indicators per variant
+  # FRs: FR58-FR63, FR71-FR72 | NFRs: NFR13, NFR16
+  # ============================================================================
+  epic-7: backlog
+  7-1-data-context-types-schema-and-fit-engine: ready-for-dev
+  7-2-data-context-ui-inspector-and-fit-display: ready-for-dev
+  7-3-yaml-data-context-export-import: ready-for-dev
+  7-4-e2e-data-context-and-fit-flow: ready-for-dev
+  epic-7-retrospective: optional

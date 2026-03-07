@@ -3,30 +3,20 @@ import { render, screen, fireEvent } from "@testing-library/react"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
 
 // Mock categoryIcons to avoid importing Lucide components in test env
-vi.mock("@/lib/categoryIcons", () => ({
-  CATEGORY_ICONS: new Proxy(
-    {},
-    {
-      get: (_, key) => {
-        const IconMock = ({
-          className,
-          style,
-        }: {
-          className?: string
-          style?: React.CSSProperties
-        }) => (
-          <span
-            data-testid={`icon-${String(key)}`}
-            className={className}
-            style={style}
-          />
-        )
-        IconMock.displayName = String(key)
-        return IconMock
-      },
-    },
-  ),
-}))
+vi.mock("@/lib/categoryIcons", () => {
+  const makeIcon = (key: string) => {
+    const IconMock = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+      <span data-testid={`icon-${key}`} className={className} style={style} />
+    )
+    IconMock.displayName = key
+    return IconMock
+  }
+  const proxy = new Proxy({}, { get: (_, key) => makeIcon(String(key)) })
+  return {
+    CATEGORY_ICONS: proxy,
+    getCategoryIcon: (name: string) => (proxy as Record<string, unknown>)[name],
+  }
+})
 
 const defaultProps = {
   categoryId: "performance",
@@ -244,6 +234,30 @@ describe("CategoryBar", () => {
 
       const bar = screen.getByTestId("category-bar-performance")
       expect(bar).not.toHaveAttribute("tabindex")
+    })
+  })
+
+  // --- Weight badge (TD-5-3a AC-4) ---
+
+  describe("weight badge", () => {
+    it("renders weight badge when weight is not 1.0", () => {
+      render(<CategoryBar {...defaultProps} weight={0.5} />)
+
+      const badge = screen.getByTestId("weight-badge-performance")
+      expect(badge).toBeInTheDocument()
+      expect(badge).toHaveTextContent("0.5x")
+    })
+
+    it("does not render badge when weight is undefined", () => {
+      render(<CategoryBar {...defaultProps} />)
+
+      expect(screen.queryByTestId("weight-badge-performance")).not.toBeInTheDocument()
+    })
+
+    it("does not render badge when weight is exactly 1.0", () => {
+      render(<CategoryBar {...defaultProps} weight={1.0} />)
+
+      expect(screen.queryByTestId("weight-badge-performance")).not.toBeInTheDocument()
     })
   })
 

@@ -1,5 +1,6 @@
 import { load } from "js-yaml"
 import {
+  ArchitectureFileSchema,
   ArchitectureFileYamlSchema,
   checkSchemaVersion,
   CURRENT_SCHEMA_VERSION,
@@ -12,6 +13,7 @@ import { sanitizeDisplayString } from "@/lib/sanitize"
 import {
   CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
+  DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
   MAX_CANVAS_NODES,
   MAX_FILE_SIZE,
@@ -20,6 +22,7 @@ import {
   NODE_WIDTH,
   type ComponentCategoryId,
 } from "@/lib/constants"
+import type { WeightProfile } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge, ArchieNodeData, ArchieEdgeData } from "@/stores/architectureStore"
 
 export interface ImportError {
@@ -33,6 +36,7 @@ export interface HydratedArchitecture {
   edges: ArchieEdge[]
   placeholderIds: string[]
   name?: string
+  weightProfile: WeightProfile
 }
 
 export type ImportResult =
@@ -102,6 +106,14 @@ export async function importYaml(file: File): Promise<ImportResult> {
  * Separated from file handling for testability.
  */
 export function importYamlString(text: string): ImportResult {
+  // Size guard — mirrors importYaml's file.size check for direct callers (TD-5-4a AC-2)
+  if (text.length > MAX_FILE_SIZE) {
+    return {
+      success: false,
+      errors: [{ code: "FILE_TOO_LARGE", message: `Input too large (max ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB)` }],
+    }
+  }
+
   // Step 3: Parse YAML
   let parsed: unknown
   try {
@@ -134,7 +146,8 @@ export function importYamlString(text: string): ImportResult {
 
   const data: ArchitectureFile = schemaResult.data
 
-  // Step 4b: Node count check (defense-in-depth — reject at import, not just canvas)
+  // Step 4b: Node count check (defense-in-depth — redundant with schema .max() but fires
+  // if schema validation is ever bypassed or relaxed; keeps error message user-friendly)
   if (data.nodes.length > MAX_CANVAS_NODES) {
     return {
       success: false,
@@ -211,10 +224,20 @@ export function importYamlString(text: string): ImportResult {
             }],
           }
         }
-        // KNOWN GAP: migratedData is not re-validated against ArchitectureFileSchema.
-        // Accepted for now — migrations are internal, not user-provided. If migrations
-        // ever become plugin-provided, add: ArchitectureFileSchema.safeParse({...data, ...migratedData})
+        // Safe: migratedData is camelCase because migration runs after ArchitectureFileYamlSchema
+        // transform. Re-validation below confirms the merged result matches v2 schema.
         Object.assign(data, migratedData)
+
+        // Re-validate migrated data against v2 schema (closes known gap from Story 3-1)
+        const revalidation = ArchitectureFileSchema.safeParse(data)
+        if (!revalidation.success) {
+          const errors: ImportError[] = revalidation.error.issues.map((issue) => ({
+            code: "MIGRATION_VALIDATION_ERROR",
+            message: issue.message,
+            path: issue.path.join("."),
+          }))
+          return { success: false, errors }
+        }
       }
       break
     }
@@ -232,15 +255,29 @@ export function importYamlString(text: string): ImportResult {
     }
   }
 
-  // Step 6-9: Delegate to shared hydration pipeline
+  // Step 6-9: Delegate to shared hydration pipeline (weight resolution moved there — TD-5-4a)
   return hydrateArchitectureSkeleton(data)
 }
 
 /**
  * Hydrates a validated ArchitectureFile into nodes and edges.
  * Shared by YAML import and blueprint loading — single hydration code path (AC-ARCH-NO-2).
+ *
+ * Weight profile resolution (TD-5-4a): fills default when absent, normalizes all-zero.
+ * This is the sole guarantee that HydratedArchitecture.weightProfile is always valid,
+ * covering both the importYamlString and BlueprintTab code paths.
  */
 export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResult {
+  // Resolve weight profile: default fill + all-zero normalization (AC-4, AC-ARCH-PATTERN-4/5)
+  let resolvedWeightProfile = data.weightProfile ?? { ...DEFAULT_WEIGHT_PROFILE }
+  const allZero = Object.values(resolvedWeightProfile).every((v) => v === 0)
+  if (allZero) {
+    if (import.meta.env.DEV) {
+      console.warn("All weight profile values are zero — normalizing to equal weights")
+    }
+    resolvedWeightProfile = { ...DEFAULT_WEIGHT_PROFILE }
+  }
+
   const sanitizedName = data.name ? sanitizeDisplayString(data.name) : undefined
 
   // Hydrate nodes from component library
@@ -339,6 +376,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       edges: hydratedEdges,
       placeholderIds,
       name: sanitizedName,
+      weightProfile: resolvedWeightProfile,
     },
   }
 }
