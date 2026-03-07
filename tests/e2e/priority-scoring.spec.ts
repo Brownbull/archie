@@ -8,7 +8,8 @@ import * as path from "path"
 import * as fs from "fs"
 import { load, dump } from "js-yaml"
 
-const SCREENSHOT_DIR = "test-results/priority-scoring"
+const SCREENSHOT_BASE = "test-results/priority-scoring"
+// Source of truth: src/lib/constants.ts METRIC_CATEGORIES (keep in sync)
 const ALL_CATEGORY_IDS = [
   "performance",
   "reliability",
@@ -61,9 +62,10 @@ async function readAggregateScore(page: Page): Promise<number> {
 
 /**
  * Adjust a weight slider by pressing ArrowLeft a specified number of times.
- * Waits for debounced recalculation to settle afterward.
+ * @param settle - When true (default), waits 300ms for debounce to settle.
+ *   Pass false when calling in a loop, then wait once after the last call.
  */
-async function adjustSlider(page: Page, categoryId: string, steps: number) {
+async function adjustSlider(page: Page, categoryId: string, steps: number, settle = true) {
   const thumb = page
     .locator(`[data-testid="weight-slider-${categoryId}"]`)
     .locator('[role="slider"]')
@@ -71,7 +73,10 @@ async function adjustSlider(page: Page, categoryId: string, steps: number) {
   for (let i = 0; i < steps; i++) {
     await page.keyboard.press("ArrowLeft")
   }
-  await page.waitForTimeout(300)
+  if (settle) {
+    // 300ms matches WEIGHT_DEBOUNCE_MS in src/features/priority-scoring
+    await page.waitForTimeout(300)
+  }
 }
 
 test.describe("Priority Scoring E2E (Story 5-5)", () => {
@@ -120,7 +125,7 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     expect(newScore).not.toBe(initialScore)
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/01-weights-adjusted.png`,
+      path: `${SCREENSHOT_BASE}/ac1-weights-adjusted/01-weights-adjusted.png`,
       fullPage: true,
     })
   })
@@ -141,10 +146,11 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     await openDashboardOverlay(page)
     await openWeightSliders(page)
 
-    // Adjust 3 sliders to non-default values
-    await adjustSlider(page, "reliability", 5)        // → 0.5
-    await adjustSlider(page, "scalability", 7)        // → 0.3
-    await adjustSlider(page, "performance", 3)        // → 0.7
+    // Adjust 3 sliders to non-default values (step=0.1, min=0.1)
+    // settle=false skips per-call 300ms wait; single settle after last call
+    await adjustSlider(page, "reliability", 5, false)
+    await adjustSlider(page, "scalability", 7, false)
+    await adjustSlider(page, "performance", 3)
 
     // Click Reset Weights
     const resetButton = page.locator('[data-testid="weight-reset-button"]')
@@ -172,7 +178,7 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     expect(resetScore).toBeCloseTo(initialScore, 1)
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/02-weights-reset.png`,
+      path: `${SCREENSHOT_BASE}/ac2-weights-reset/02-weights-reset.png`,
       fullPage: true,
     })
   })
@@ -191,7 +197,7 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     await openWeightSliders(page)
 
     // Adjust scalability to 0.3 (7 ArrowLeft from 1.0, step=0.1, min=0.1)
-    await adjustSlider(page, "scalability", 7)
+    await adjustSlider(page, "scalability", 7, false)
 
     // Adjust reliability to 0.8 (2 ArrowLeft from 1.0)
     await adjustSlider(page, "reliability", 2)
@@ -210,14 +216,15 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     ])
 
     // Save download to temp path
-    const downloadPath = path.join("test-results", "priority-scoring", "exported.yaml")
+    const downloadPath = path.join(SCREENSHOT_BASE, "ac3-weights-roundtrip", "exported.yaml")
     await download.saveAs(downloadPath)
     expect(fs.existsSync(downloadPath)).toBe(true)
 
     // Navigate fresh to clear state
     await page.goto("/")
     await expect(page.locator('[data-testid="dashboard-panel"]')).toBeVisible({ timeout: 15_000 })
-    await waitForComponentLibrary(page)
+    const libraryReadyForImport = await waitForComponentLibrary(page)
+    test.skip(!libraryReadyForImport, "Skipped: Firestore has no seeded component data after reimport")
 
     // Import the exported YAML
     const importButton = page.locator('[data-testid="import-button"]')
@@ -261,7 +268,7 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     }
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/03-weights-roundtrip.png`,
+      path: `${SCREENSHOT_BASE}/ac3-weights-roundtrip/03-weights-roundtrip.png`,
       fullPage: true,
     })
   })
@@ -284,13 +291,17 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     ])
 
     // Save and modify to v1 format (remove weight_profile, set schema_version to 1.0.0)
-    const tempPath = path.join("test-results", "priority-scoring", "v1-test.yaml")
+    const tempPath = path.join(SCREENSHOT_BASE, "ac4-v1-import", "v1-test.yaml")
     await download.saveAs(tempPath)
     const rawYaml = fs.readFileSync(tempPath, "utf-8")
-    const parsed = load(rawYaml) as Record<string, unknown>
-    parsed["schema_version"] = "1.0.0"
-    delete parsed["weight_profile"]
-    const yamlContent = dump(parsed)
+    const parsed = load(rawYaml)
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Exported YAML did not parse to an object")
+    }
+    const doc = parsed as Record<string, unknown>
+    doc["schema_version"] = "1.0.0"
+    delete doc["weight_profile"]
+    const yamlContent = dump(doc)
     expect(yamlContent).not.toContain("weight_profile")
     fs.writeFileSync(tempPath, yamlContent)
 
@@ -335,7 +346,132 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     }
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/04-v1-import-default-sliders.png`,
+      path: `${SCREENSHOT_BASE}/ac4-v1-import/04-v1-import-default-sliders.png`,
+      fullPage: true,
+    })
+  })
+
+  test("TD-5-5b AC-2: out-of-range weight import shows validation error", async ({ page }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Place a component and export to get a valid YAML structure
+    await addComponentWithMetrics(page)
+
+    const exportButton = page.locator('[data-testid="export-button"]')
+    await expect(exportButton).toBeEnabled({ timeout: 5_000 })
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      exportButton.click(),
+    ])
+
+    const basePath = path.join(SCREENSHOT_BASE, "td-5-5b-ac2-out-of-range")
+    const outOfRangePath = path.join(basePath, "out-of-range.yaml")
+    await download.saveAs(outOfRangePath)
+    const rawYaml = fs.readFileSync(outOfRangePath, "utf-8")
+    const parsed = load(rawYaml)
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Exported YAML did not parse to an object")
+    }
+    const doc = parsed as Record<string, unknown>
+
+    // Set one weight to 5.0 (exceeds max=1) — should cause schema validation error
+    const weightProfile = doc["weight_profile"]
+    if (weightProfile === null || typeof weightProfile !== "object" || Array.isArray(weightProfile)) {
+      throw new Error("Exported YAML missing weight_profile — cannot build out-of-range fixture")
+    }
+    const wp = weightProfile as Record<string, number>
+    wp["performance"] = 5.0
+    fs.writeFileSync(outOfRangePath, dump(doc))
+
+    // Navigate fresh and import
+    await page.goto("/")
+    await expect(page.locator('[data-testid="dashboard-panel"]')).toBeVisible({ timeout: 15_000 })
+    const libraryReadyForError = await waitForComponentLibrary(page)
+    test.skip(!libraryReadyForError, "Skipped: Firestore has no seeded component data")
+
+    const fileInput = page.locator('[data-testid="import-file-input"]')
+    await fileInput.setInputFiles(outOfRangePath)
+
+    // Expect error toast — weight=5.0 exceeds schema max of 1
+    const errorToast = page.locator('[data-sonner-toast][data-type="error"]')
+    await expect(errorToast).toBeVisible({ timeout: 5_000 })
+    await expect(errorToast).toContainText("Import failed")
+
+    await page.screenshot({
+      path: `${basePath}/05-out-of-range-error.png`,
+      fullPage: true,
+    })
+  })
+
+  test("TD-5-5b AC-2b: weight=0 import succeeds (valid boundary)", async ({ page }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Place a component and export to get a valid YAML structure
+    await addComponentWithMetrics(page)
+
+    const exportButton = page.locator('[data-testid="export-button"]')
+    await expect(exportButton).toBeEnabled({ timeout: 5_000 })
+
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      exportButton.click(),
+    ])
+
+    const basePath = path.join(SCREENSHOT_BASE, "td-5-5b-ac2b-zero-weight")
+    const zeroWeightPath = path.join(basePath, "zero-weight.yaml")
+    await download.saveAs(zeroWeightPath)
+    const rawYaml = fs.readFileSync(zeroWeightPath, "utf-8")
+    const parsed = load(rawYaml)
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Exported YAML did not parse to an object")
+    }
+    const doc = parsed as Record<string, unknown>
+
+    // Set one weight to 0 (valid: WEIGHT_MIN=0), keep others at 1.0
+    const weightProfile = doc["weight_profile"]
+    if (weightProfile === null || typeof weightProfile !== "object" || Array.isArray(weightProfile)) {
+      throw new Error("Exported YAML missing weight_profile — cannot build zero-weight fixture")
+    }
+    const wp = weightProfile as Record<string, number>
+    wp["security"] = 0
+    fs.writeFileSync(zeroWeightPath, dump(doc))
+
+    // Navigate fresh and import
+    await page.goto("/")
+    await expect(page.locator('[data-testid="dashboard-panel"]')).toBeVisible({ timeout: 15_000 })
+    const libraryReadyForZero = await waitForComponentLibrary(page)
+    test.skip(!libraryReadyForZero, "Skipped: Firestore has no seeded component data")
+
+    const fileInput = page.locator('[data-testid="import-file-input"]')
+    await fileInput.setInputFiles(zeroWeightPath)
+
+    // Import should succeed — weight=0 is valid per schema
+    await expect(page.locator('[data-testid="archie-node"]').first()).toBeVisible({ timeout: 10_000 })
+    await page.waitForTimeout(500)
+
+    // Verify no error toast
+    const errorToast = page.locator('[data-sonner-toast][data-type="error"]')
+    await expect(errorToast).not.toBeVisible()
+
+    // Verify the security weight imported as 0
+    await openDashboardOverlay(page)
+    await openWeightSliders(page)
+    const securityThumb = page
+      .locator('[data-testid="weight-slider-security"]')
+      .locator('[role="slider"]')
+    const securityValue = await securityThumb.getAttribute("aria-valuenow")
+    expect(securityValue).not.toBeNull()
+    expect(parseFloat(securityValue!), "security weight should be 0").toBe(0)
+
+    await page.screenshot({
+      path: `${basePath}/06-zero-weight-success.png`,
       fullPage: true,
     })
   })

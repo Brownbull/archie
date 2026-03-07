@@ -1,6 +1,6 @@
 # Tech Debt Story TD-5-5a: E2E Test Hardening
 
-## Status: review
+## Status: done
 ## Epic: Epic 5 -- Priority Scoring
 
 > **Source:** KDBP Code Review (2026-03-07) on story 5-5
@@ -48,3 +48,19 @@ Then `waitForComponentLibrary(page)` is called before import to prevent race on 
 - Review findings: #3, #8, #11
 - Files affected: `tests/e2e/priority-scoring.spec.ts`
 - Implemented: 2026-03-07
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-03-07
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Classification:** SIMPLE
+- **Outcome:** APPROVE 8/10
+- **Quick fixes:** 4 (ignored return value, null guard, comment cleanup, source-of-truth comment)
+- **TD stories created:** 1 (td-5-5b)
+
+<!-- CITED: none -->
+
+## Deferred Items (from code review)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| td-5-5b | E2E test quality polish (adjustSlider timing, edge-case weight import, result namespacing) | LOW | CREATED |
