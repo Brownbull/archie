@@ -27,4 +27,9 @@ describe("getWeight", () => {
       expect(getWeight(key, DEFAULT_WEIGHT_PROFILE)).toBe(1.0)
     }
   })
+
+  it("returns 1.0 for any key when profile has no matching keys", () => {
+    const empty = {} as WeightProfile
+    expect(getWeight("performance", empty)).toBe(1.0)
+  })
 })
