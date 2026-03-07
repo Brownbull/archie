@@ -6,10 +6,11 @@ import {
   type MetricCategoryId,
   type WeightProfile,
 } from "@/lib/constants"
-import { CATEGORY_ICONS } from "@/lib/categoryIcons"
+import { getCategoryIcon } from "@/lib/categoryIcons"
 import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 
+// UI minimum is 0.1 (not WEIGHT_MIN=0) to prevent zero-weight categories from disappearing entirely.
 const SLIDER_MIN = 0.1
 const SLIDER_MAX = 1.0
 const SLIDER_STEP = 0.1
@@ -31,7 +32,7 @@ export function WeightSliders() {
   }, [])
 
   const handleChange = useCallback(
-    (categoryId: string, value: number) => {
+    (categoryId: MetricCategoryId, value: number) => {
       const rounded = Math.round(value * 10) / 10
       const clamped = Number.isNaN(rounded)
         ? SLIDER_MIN
@@ -64,9 +65,8 @@ export function WeightSliders() {
   return (
     <div data-testid="weight-sliders-section" className="space-y-3">
       {METRIC_CATEGORIES.map((cat) => {
-        const IconComponent =
-          CATEGORY_ICONS[cat.iconName as keyof typeof CATEGORY_ICONS]
-        const weight = weightProfile[cat.id as MetricCategoryId] ?? 1.0
+        const IconComponent = getCategoryIcon(cat.iconName)
+        const weight = weightProfile[cat.id] ?? 1.0
 
         return (
           <div key={cat.id} className="flex items-center gap-3">

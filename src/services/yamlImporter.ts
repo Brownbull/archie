@@ -1,5 +1,6 @@
 import { load } from "js-yaml"
 import {
+  ArchitectureFileSchema,
   ArchitectureFileYamlSchema,
   checkSchemaVersion,
   CURRENT_SCHEMA_VERSION,
@@ -12,6 +13,7 @@ import { sanitizeDisplayString } from "@/lib/sanitize"
 import {
   CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
+  DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
   MAX_CANVAS_NODES,
   MAX_FILE_SIZE,
@@ -20,6 +22,7 @@ import {
   NODE_WIDTH,
   type ComponentCategoryId,
 } from "@/lib/constants"
+import type { WeightProfile } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge, ArchieNodeData, ArchieEdgeData } from "@/stores/architectureStore"
 
 export interface ImportError {
@@ -33,6 +36,7 @@ export interface HydratedArchitecture {
   edges: ArchieEdge[]
   placeholderIds: string[]
   name?: string
+  weightProfile?: WeightProfile
 }
 
 export type ImportResult =
@@ -134,7 +138,8 @@ export function importYamlString(text: string): ImportResult {
 
   const data: ArchitectureFile = schemaResult.data
 
-  // Step 4b: Node count check (defense-in-depth — reject at import, not just canvas)
+  // Step 4b: Node count check (defense-in-depth — redundant with schema .max() but fires
+  // if schema validation is ever bypassed or relaxed; keeps error message user-friendly)
   if (data.nodes.length > MAX_CANVAS_NODES) {
     return {
       success: false,
@@ -211,10 +216,20 @@ export function importYamlString(text: string): ImportResult {
             }],
           }
         }
-        // KNOWN GAP: migratedData is not re-validated against ArchitectureFileSchema.
-        // Accepted for now — migrations are internal, not user-provided. If migrations
-        // ever become plugin-provided, add: ArchitectureFileSchema.safeParse({...data, ...migratedData})
+        // Safe: migratedData is camelCase because migration runs after ArchitectureFileYamlSchema
+        // transform. Re-validation below confirms the merged result matches v2 schema.
         Object.assign(data, migratedData)
+
+        // Re-validate migrated data against v2 schema (closes known gap from Story 3-1)
+        const revalidation = ArchitectureFileSchema.safeParse(data)
+        if (!revalidation.success) {
+          const errors: ImportError[] = revalidation.error.issues.map((issue) => ({
+            code: "MIGRATION_VALIDATION_ERROR",
+            message: issue.message,
+            path: issue.path.join("."),
+          }))
+          return { success: false, errors }
+        }
       }
       break
     }
@@ -230,6 +245,11 @@ export function importYamlString(text: string): ImportResult {
       const _exhaustive: never = versionStatus
       return _exhaustive
     }
+  }
+
+  // Fill default weight profile when absent (AC-4, AC-ARCH-PATTERN-5)
+  if (!data.weightProfile) {
+    data.weightProfile = { ...DEFAULT_WEIGHT_PROFILE }
   }
 
   // Step 6-9: Delegate to shared hydration pipeline
@@ -339,6 +359,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       edges: hydratedEdges,
       placeholderIds,
       name: sanitizedName,
+      weightProfile: data.weightProfile,
     },
   }
 }

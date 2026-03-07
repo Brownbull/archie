@@ -116,4 +116,48 @@ describe("AggregateScore", () => {
       expect(mockGetScoreColor).toHaveBeenCalledWith(3.7)
     })
   })
+
+  // --- AC-4 (Story 5-3): Dual score display ---
+
+  describe("dual score display (AC-4)", () => {
+    it("shows single score when balancedScore is undefined", () => {
+      render(<AggregateScore score={7.5} />)
+
+      expect(screen.getByText("7.5")).toBeInTheDocument()
+      expect(screen.getByText("Overall")).toBeInTheDocument()
+      expect(screen.queryByTestId("aggregate-score-weighted")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("aggregate-score-balanced")).not.toBeInTheDocument()
+    })
+
+    it("shows single score when balancedScore equals score", () => {
+      render(<AggregateScore score={7.5} balancedScore={7.5} />)
+
+      expect(screen.getByText("7.5")).toBeInTheDocument()
+      expect(screen.getByText("Overall")).toBeInTheDocument()
+      expect(screen.queryByTestId("aggregate-score-weighted")).not.toBeInTheDocument()
+    })
+
+    it("shows dual scores when balancedScore differs from score", () => {
+      render(<AggregateScore score={5.2} balancedScore={7.5} />)
+
+      expect(screen.getByTestId("aggregate-score-weighted")).toHaveTextContent("5.2")
+      expect(screen.getByTestId("aggregate-score-balanced")).toHaveTextContent("7.5")
+      expect(screen.getByText("Weighted | Balanced")).toBeInTheDocument()
+    })
+
+    it("shows dual scores when rounding differs", () => {
+      render(<AggregateScore score={7.0} balancedScore={7.1} />)
+
+      expect(screen.getByTestId("aggregate-score-weighted")).toHaveTextContent("7.0")
+      expect(screen.getByTestId("aggregate-score-balanced")).toHaveTextContent("7.1")
+    })
+
+    it("shows single score when scores round to same value", () => {
+      render(<AggregateScore score={7.01} balancedScore={7.04} />)
+
+      // Both round to "7.0" — show single
+      expect(screen.getByText("7.0")).toBeInTheDocument()
+      expect(screen.getByText("Overall")).toBeInTheDocument()
+    })
+  })
 })

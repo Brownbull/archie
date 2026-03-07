@@ -37,30 +37,20 @@ vi.mock("@/components/ui/slider", () => ({
 }))
 
 // Mock categoryIcons
-vi.mock("@/lib/categoryIcons", () => ({
-  CATEGORY_ICONS: new Proxy(
-    {},
-    {
-      get: (_, key) => {
-        const IconMock = ({
-          className,
-          style,
-        }: {
-          className?: string
-          style?: React.CSSProperties
-        }) => (
-          <span
-            data-testid={`icon-${String(key)}`}
-            className={className}
-            style={style}
-          />
-        )
-        IconMock.displayName = String(key)
-        return IconMock
-      },
-    },
-  ),
-}))
+vi.mock("@/lib/categoryIcons", () => {
+  const makeIcon = (key: string) => {
+    const IconMock = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+      <span data-testid={`icon-${key}`} className={className} style={style} />
+    )
+    IconMock.displayName = key
+    return IconMock
+  }
+  const proxy = new Proxy({}, { get: (_, key) => makeIcon(String(key)) })
+  return {
+    CATEGORY_ICONS: proxy,
+    getCategoryIcon: (name: string) => (proxy as Record<string, unknown>)[name],
+  }
+})
 
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { WeightSliders } from "@/components/dashboard/WeightSliders"

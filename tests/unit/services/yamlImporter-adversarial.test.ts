@@ -141,9 +141,10 @@ describe("yamlImporter — adversarial inputs", () => {
       const result = importYamlString(yaml)
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.errors[0].code).toBe("TOO_MANY_NODES")
-        expect(result.errors[0].message).toContain(String(MAX_CANVAS_NODES + 1))
-        expect(result.errors[0].message).toContain(String(MAX_CANVAS_NODES))
+        // Schema .max() catches this first (TD-5-1a defense-in-depth);
+        // the explicit TOO_MANY_NODES check is a backup that only fires
+        // if schema validation is bypassed.
+        expect(["SCHEMA_VALIDATION_ERROR", "TOO_MANY_NODES"]).toContain(result.errors[0].code)
       }
     })
 

@@ -1,11 +1,9 @@
 import { useMemo, useState } from "react"
 import { useArchitectureStore } from "@/stores/architectureStore"
-import {
-  computeCategoryScores,
-  computeAggregateScore,
-} from "@/engine/dashboardCalculator"
-import { METRIC_CATEGORIES } from "@/lib/constants"
+import { type MetricCategoryId } from "@/lib/constants"
+import { CATEGORY_LOOKUP } from "@/lib/categoryLookup"
 import { componentLibrary } from "@/services/componentLibrary"
+import { useDashboardWeights } from "@/hooks/useDashboardWeights"
 import { AggregateScore } from "@/components/dashboard/AggregateScore"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
@@ -14,24 +12,15 @@ import { TierBadge } from "@/components/dashboard/TierBadge"
 import { Button } from "@/components/ui/button"
 import { Maximize2 } from "lucide-react"
 
-/** Lookup from categoryId to METRIC_CATEGORIES entry for icon/color/shortName. */
-const CATEGORY_LOOKUP = new Map<string, (typeof METRIC_CATEGORIES)[number]>(
-  METRIC_CATEGORIES.map((cat) => [cat.id, cat]),
-)
-
 export function DashboardPanel() {
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
-
-  // AC-ARCH-NO-1: scores MUST be computed inside useMemo, not in render body
-  const categoryScores = useMemo(
-    () => computeCategoryScores(computedMetrics),
-    [computedMetrics],
-  )
-
-  const aggregateScore = useMemo(
-    () => computeAggregateScore(categoryScores),
-    [categoryScores],
-  )
+  const {
+    categoryScores,
+    aggregateScore,
+    weightedAggregateScore,
+    isNonDefaultWeights,
+    weightProfile,
+  } = useDashboardWeights()
 
   // AC-ARCH-PATTERN-7: only render categories with data
   const categoriesWithData = useMemo(
@@ -39,7 +28,7 @@ export function DashboardPanel() {
     [categoryScores],
   )
 
-  const [infoCategoryId, setInfoCategoryId] = useState<string | null>(null)
+  const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
 
   const isEmpty = computedMetrics.size === 0
@@ -61,7 +50,10 @@ export function DashboardPanel() {
         </p>
       ) : (
         <>
-          <AggregateScore score={aggregateScore} />
+          <AggregateScore
+            score={weightedAggregateScore}
+            balancedScore={isNonDefaultWeights ? aggregateScore : undefined}
+          />
 
           <div className="self-stretch border-r border-archie-border" />
 
@@ -86,6 +78,7 @@ export function DashboardPanel() {
                     iconName={catMeta.iconName}
                     categoryColor={catMeta.color}
                     score={cs.score}
+                    weight={weightProfile[cs.categoryId]}
                     onClick={() => setInfoCategoryId(cs.categoryId)}
                   />
                 </CategoryInfoPopup>

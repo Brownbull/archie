@@ -18,3 +18,9 @@ export const CATEGORY_ICONS: Record<
   Radio, Shield, Activity, Search, Settings,
   Gauge, ShieldCheck, TrendingUp, Lock, Wrench, DollarSign, Code,
 }
+
+/** Type-safe icon lookup replacing inline `as keyof typeof CATEGORY_ICONS` casts (TD-5-3a AC-3). */
+export function getCategoryIcon(iconName: string): React.ComponentType<{ className?: string; style?: CSSProperties }> | undefined {
+  if (!(iconName in CATEGORY_ICONS)) return undefined
+  return CATEGORY_ICONS[iconName as CategoryIconName]
+}

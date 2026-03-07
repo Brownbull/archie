@@ -6,7 +6,8 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
-import { computeCategoryScores } from "@/engine/dashboardCalculator"
+import { computeCategoryScores, computeWeightedCategoryScores } from "@/engine/dashboardCalculator"
+import { computeWeightedNodeScore, computeHeatmapStatus, type NodeCategoryAverage } from "@/engine/heatmapCalculator"
 import { evaluateTier } from "@/engine/tierEvaluator"
 import type { TierCategoryScore } from "@/engine/tierEvaluator"
 import { DEFAULT_TIER_DEFINITIONS } from "@/lib/tierDefinitions"
@@ -16,6 +17,7 @@ import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import {
   CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
+  DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
   MAX_CANVAS_NODES,
   NODE_TYPE_COMPONENT,
@@ -23,6 +25,7 @@ import {
   POSITION_EPSILON,
   RIPPLE_ANIMATION_DURATION_MS,
   type ComponentCategoryId,
+  type WeightProfile,
 } from "@/lib/constants"
 
 export interface ArchieNodeData extends Record<string, unknown> {
@@ -73,6 +76,7 @@ interface ArchitectureState {
   rippleActiveNodeIds: Set<string>
   recalcGeneration: number
   currentTier: TierResult | null
+  weightProfile: WeightProfile
   addNode: (componentId: string, position: { x: number; y: number }) => void
   addNodeSmartPosition: (componentId: string) => void
   updateNodePosition: (
@@ -86,7 +90,9 @@ interface ArchitectureState {
   addEdge: (connection: Connection) => void
   removeEdges: (edgeIds: string[]) => void
   triggerRecalculation: (changedNodeId: string) => void
-  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[]) => void
+  setWeightProfile: (profile: WeightProfile) => void
+  setWeightAndRecalculate: (profile: WeightProfile) => void
+  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
@@ -95,16 +101,35 @@ interface ArchitectureState {
 }
 
 /**
+ * Module-level helper: computes per-node category averages from RecalculatedMetrics.
+ * Used by weighted heatmap to apply weight profile before determining heatmap status.
+ */
+function getNodeCategoryAverages(nodeMetrics: RecalculatedMetrics): NodeCategoryAverage[] {
+  const categoryMap = new Map<string, { sum: number; count: number }>()
+  for (const metric of nodeMetrics.metrics) {
+    const entry = categoryMap.get(metric.category) ?? { sum: 0, count: 0 }
+    entry.sum += metric.numericValue
+    entry.count++
+    categoryMap.set(metric.category, entry)
+  }
+  const averages: NodeCategoryAverage[] = []
+  for (const [categoryId, { sum, count }] of categoryMap) {
+    averages.push({ categoryId, averageScore: sum / count })
+  }
+  return averages
+}
+
+/**
  * Module-level helper: evaluates tier from current architecture state and sets result.
  * Called from triggerRecalculation (with overrideMetrics), addNode, removeNode/removeNodes.
- * Uses computeCategoryScores from dashboardCalculator (pure function cross-engine import).
+ * Applies weight profile to category scores before tier evaluation (Story 5-2 AC-3, AC-5).
  */
 function evaluateAndSetTier(
   get: () => ArchitectureState,
   set: (partial: Partial<ArchitectureState>) => void,
   overrideMetrics?: Map<string, RecalculatedMetrics>,
 ): void {
-  const { nodes } = get()
+  const { nodes, weightProfile } = get()
   if (nodes.length === 0) {
     set({ currentTier: null })
     return
@@ -112,7 +137,8 @@ function evaluateAndSetTier(
   try {
     const metrics = overrideMetrics ?? get().computedMetrics
     const categoryScores = computeCategoryScores(metrics)
-    const tierCategoryScores: TierCategoryScore[] = categoryScores.map((cs) => ({
+    const weightedScores = computeWeightedCategoryScores(categoryScores, weightProfile)
+    const tierCategoryScores: TierCategoryScore[] = weightedScores.map((cs) => ({
       categoryId: cs.categoryId,
       score: cs.score,
       hasData: cs.hasData,
@@ -123,9 +149,45 @@ function evaluateAndSetTier(
     }))
     const result = evaluateTier(nodeSummaries, tierCategoryScores, DEFAULT_TIER_DEFINITIONS)
     set({ currentTier: result })
-  } catch {
+  } catch (err) {
+    if (import.meta.env.DEV) {
+      console.warn("evaluateAndSetTier failed:", err)
+    }
     set({ currentTier: null })
   }
+}
+
+/**
+ * Module-level helper: recomputes weighted heatmap for all nodes.
+ * Uses weight profile to compute per-node weighted overall scores,
+ * then maps to heatmap statuses.
+ */
+function recomputeWeightedHeatmap(
+  computedMetrics: Map<string, RecalculatedMetrics>,
+  weightProfile: WeightProfile,
+): Map<string, HeatmapStatus> {
+  const result = new Map<string, HeatmapStatus>()
+  for (const [nodeId, nodeMetrics] of computedMetrics) {
+    const categoryAverages = getNodeCategoryAverages(nodeMetrics)
+    const weightedScore = computeWeightedNodeScore(categoryAverages, weightProfile)
+    result.set(nodeId, computeHeatmapStatus(weightedScore))
+  }
+  return result
+}
+
+/**
+ * Module-level helper: recomputes the scoring layer (dashboard, heatmap, tier)
+ * from existing computedMetrics + weight profile. No BFS propagation.
+ * O(nodes * categories) — fast path for weight slider changes (AC-ARCH-PATTERN-4).
+ */
+function recomputeScoringLayer(
+  get: () => ArchitectureState,
+  set: (partial: Partial<ArchitectureState>) => void,
+): void {
+  const { computedMetrics, weightProfile } = get()
+  const heatmapColors = recomputeWeightedHeatmap(computedMetrics, weightProfile)
+  set({ heatmapColors })
+  evaluateAndSetTier(get, set)
 }
 
 // Module-level tracking for ripple setTimeout IDs (TD-2-2b)
@@ -149,6 +211,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   rippleActiveNodeIds: new Set<string>(),
   recalcGeneration: 0,
   currentTier: null,
+  weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
 
   triggerRecalculation: (changedNodeId) => {
     // Cancel pending ripple timeouts from previous recalculation (TD-2-2b)
@@ -167,18 +230,19 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     // Immediate update for changed node (hop 0)
     const changedNodeMetrics = result.metrics.get(changedNodeId)
     if (changedNodeMetrics) {
-      const changedNodeHeatmap = result.nodeHeatmap.get(changedNodeId)
+      // Compute weighted heatmap for changed node (AC-ARCH-PATTERN-5)
+      const categoryAverages = getNodeCategoryAverages(changedNodeMetrics)
+      const weightedScore = computeWeightedNodeScore(categoryAverages, get().weightProfile)
+      const changedNodeHeatmap = computeHeatmapStatus(weightedScore)
       set({
         computedMetrics: new Map([
           ...get().computedMetrics,
           [changedNodeId, changedNodeMetrics],
         ]),
-        // Update heatmap for changed node immediately
+        // Update heatmap for changed node immediately (weighted)
         heatmapColors: new Map([
           ...get().heatmapColors,
-          ...(changedNodeHeatmap
-            ? ([[changedNodeId, changedNodeHeatmap]] as [string, HeatmapStatus][])
-            : []),
+          [changedNodeId, changedNodeHeatmap],
         ]),
         // Edge heatmap updates fully (edges may span multiple hops)
         edgeHeatmapColors: result.edgeHeatmap,
@@ -199,7 +263,10 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       const hopMetrics = result.metrics.get(hop.nodeId)
       if (!hopMetrics) continue
 
-      const hopHeatmap = result.nodeHeatmap.get(hop.nodeId)
+      // Pre-compute weighted heatmap for this hop (AC-ARCH-PATTERN-5)
+      const hopCategoryAverages = getNodeCategoryAverages(hopMetrics)
+      const hopWeightedScore = computeWeightedNodeScore(hopCategoryAverages, get().weightProfile)
+      const hopHeatmap = computeHeatmapStatus(hopWeightedScore)
 
       const rippleId = setTimeout(() => {
         pendingRippleTimeouts.delete(rippleId)
@@ -212,12 +279,10 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
             ...state.computedMetrics,
             [hop.nodeId, hopMetrics],
           ]),
-          // Update heatmap for this node in same set() call (AC-ARCH-PATTERN-12)
+          // Update heatmap for this node in same set() call (AC-ARCH-PATTERN-12, weighted)
           heatmapColors: new Map([
             ...state.heatmapColors,
-            ...(hopHeatmap
-              ? ([[hop.nodeId, hopHeatmap]] as [string, HeatmapStatus][])
-              : []),
+            [hop.nodeId, hopHeatmap],
           ]),
           rippleActiveNodeIds: new Set([
             ...state.rippleActiveNodeIds,
@@ -524,7 +589,16 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
   },
 
-  loadArchitecture: (nodes, edges) => {
+  setWeightProfile: (profile) => {
+    set({ weightProfile: profile })
+  },
+
+  setWeightAndRecalculate: (profile) => {
+    set({ weightProfile: profile })
+    recomputeScoringLayer(get, set)
+  },
+
+  loadArchitecture: (nodes, edges, weightProfile?) => {
     // Cancel pending ripple timeouts from previous architecture
     clearPendingRippleTimeouts()
 
@@ -539,6 +613,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       rippleActiveNodeIds: new Set(),
       recalcGeneration: get().recalcGeneration + 1,
       currentTier: null,
+      weightProfile: weightProfile ?? { ...DEFAULT_WEIGHT_PROFILE },
     })
 
     // Clear uiStore selection state (cross-store pattern from removeNode)
