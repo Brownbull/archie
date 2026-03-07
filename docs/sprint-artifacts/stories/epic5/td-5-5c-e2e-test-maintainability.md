@@ -1,6 +1,6 @@
 # Tech Debt Story TD-5-5c: E2E Test Maintainability & Edge Cases
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 5 -- Priority Scoring
 
 > **Source:** KDBP Code Review (2026-03-07) on story td-5-5b
@@ -38,20 +38,30 @@ Then verify the aggregate score reflects the zero-weighted category (security co
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Extract YAML fixture helper
-  - [ ] 1.1 Create `exportMutateAndReimport(page, mutator)` helper in spec or helpers file
-  - [ ] 1.2 Refactor AC-3, AC-4, and TD-5-5b tests to use the helper
+- [x] Task 1: Extract YAML fixture helper
+  - [x] 1.1 Create `exportMutateAndReimport(page, mutator)` helper in spec or helpers file
+  - [x] 1.2 Refactor TD-5-5b AC-2 and AC-2b tests to use the helper
 
-- [ ] Task 2: Import ALL_CATEGORY_IDS from source
-  - [ ] 2.1 Verify Playwright can resolve TS imports from src/ (Vite config)
-  - [ ] 2.2 Replace manual array with import from `src/lib/constants.ts`
+- [x] Task 2: Import ALL_CATEGORY_IDS from source
+  - [x] 2.1 Verify Playwright can resolve TS imports from src/ (relative path)
+  - [x] 2.2 Replace manual array with import from `src/lib/constants.ts`
 
-- [ ] Task 3: Add edge-case tests
-  - [ ] 3.1 Add negative boundary test (weight=-0.1)
-  - [ ] 3.2 Add unknown category key test
-  - [ ] 3.3 Add score-impact assertion for weight=0 (extend existing AC-2b test)
+- [x] Task 3: Add edge-case tests
+  - [x] 3.1 Add negative boundary test (weight=-0.1)
+  - [x] 3.2 Add unknown category key test
+  - [x] 3.3 Add score-impact assertion for weight=0 (new test, not extending AC-2b)
 
 ## Dev Notes
 - Source story: [td-5-5b](./td-5-5b-e2e-test-quality-polish.md)
 - Review findings: #1, #4, #7, #8, #9
 - Files affected: `tests/e2e/priority-scoring.spec.ts`
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-07
+- **Agents:** code-reviewer, tdd-guide (SIMPLE classification)
+- **Outcome:** APPROVE 8/10
+- **Quick fixes applied:** 2 (AC-5 directional assertion, AC-4 schema comment)
+- **Deferred:** 0 TD stories (2 LOW/LOW items not actionable)
+
+<!-- CITED: none -->
+<!-- ORDERING: clean -->

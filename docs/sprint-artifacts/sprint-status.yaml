@@ -151,7 +151,7 @@ development_status:
   # User adjusts 7 category weight sliders, sees architecture re-scored instantly
   # FRs: FR44-FR50, FR69-FR72 | NFRs: NFR12, NFR18, NFR19
   # ============================================================================
-  epic-5: in-progress
+  epic-5: done
   5-1-yaml-schema-v2-weight-profile-foundation: done
   td-5-1a-schema-defense-in-depth: done
   td-5-1b-schema-hardening-followup: done  # DEPENDS: td-5-1a
@@ -164,7 +164,7 @@ development_status:
   5-5-e2e-priority-scoring-flow: done
   td-5-5a-e2e-test-hardening: done  # DEPENDS: 5-5
   td-5-5b-e2e-test-quality-polish: done  # DEPENDS: td-5-5a
-  td-5-5c-e2e-test-maintainability: ready-for-dev  # DEPENDS: td-5-5b
+  td-5-5c-e2e-test-maintainability: done  # DEPENDS: td-5-5b
   epic-5-retrospective: optional
 
   # ============================================================================
