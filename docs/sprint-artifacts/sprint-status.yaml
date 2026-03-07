@@ -162,7 +162,7 @@ development_status:
   5-4-yaml-weight-profile-export-import: done
   td-5-4a-weight-pipeline-hardening: done  # DEPENDS: 5-4
   5-5-e2e-priority-scoring-flow: done
-  td-5-5a-e2e-test-hardening: ready-for-dev  # DEPENDS: 5-5
+  td-5-5a-e2e-test-hardening: review  # DEPENDS: 5-5
   epic-5-retrospective: optional
 
   # ============================================================================

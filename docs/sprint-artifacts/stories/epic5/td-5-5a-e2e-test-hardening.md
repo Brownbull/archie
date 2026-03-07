@@ -1,6 +1,6 @@
 # Tech Debt Story TD-5-5a: E2E Test Hardening
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 5 -- Priority Scoring
 
 > **Source:** KDBP Code Review (2026-03-07) on story 5-5
@@ -28,22 +28,23 @@ Then `waitForComponentLibrary(page)` is called before import to prevent race on 
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Replace regex with js-yaml in AC-4 fixture
-  - [ ] 1.1 Parse exported YAML with `js-yaml.load()`
-  - [ ] 1.2 Delete `weight_profile` key from parsed object
-  - [ ] 1.3 Set `schema_version` to "1.0.0"
-  - [ ] 1.4 Write back with `js-yaml.dump()`
-  - [ ] 1.5 Add assertion: `expect(yamlContent).not.toContain("weight_profile")`
+- [x] Task 1: Replace regex with js-yaml in AC-4 fixture
+  - [x] 1.1 Parse exported YAML with `js-yaml.load()`
+  - [x] 1.2 Delete `weight_profile` key from parsed object
+  - [x] 1.3 Set `schema_version` to "1.0.0"
+  - [x] 1.4 Write back with `js-yaml.dump()`
+  - [x] 1.5 Add assertion: `expect(yamlContent).not.toContain("weight_profile")`
 
-- [ ] Task 2: Expand AC-2 reset test
-  - [ ] 2.1 Adjust 3+ sliders to different values before reset
-  - [ ] 2.2 After reset, verify all 7 sliders are at 1.0
+- [x] Task 2: Expand AC-2 reset test
+  - [x] 2.1 Adjust 3+ sliders to different values before reset
+  - [x] 2.2 After reset, verify all 7 sliders are at 1.0
 
-- [ ] Task 3: Add waitForComponentLibrary in AC-3
-  - [ ] 3.1 After `page.goto("/")` in round-trip test, call `waitForComponentLibrary(page)`
-  - [ ] 3.2 Verify import proceeds only after library is ready
+- [x] Task 3: Add waitForComponentLibrary in AC-3
+  - [x] 3.1 After `page.goto("/")` in round-trip test, call `waitForComponentLibrary(page)`
+  - [x] 3.2 Verify import proceeds only after library is ready
 
 ## Dev Notes
 - Source story: [5-5](./5-5.md)
 - Review findings: #3, #8, #11
 - Files affected: `tests/e2e/priority-scoring.spec.ts`
+- Implemented: 2026-03-07

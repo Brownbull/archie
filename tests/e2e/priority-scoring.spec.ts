@@ -6,8 +6,18 @@ import {
 } from "./helpers/canvas-helpers"
 import * as path from "path"
 import * as fs from "fs"
+import { load, dump } from "js-yaml"
 
 const SCREENSHOT_DIR = "test-results/priority-scoring"
+const ALL_CATEGORY_IDS = [
+  "performance",
+  "reliability",
+  "scalability",
+  "security",
+  "operational-complexity",
+  "cost-efficiency",
+  "developer-experience",
+] as const
 
 /**
  * Place a component and trigger recalculation to populate computedMetrics.
@@ -131,24 +141,28 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     await openDashboardOverlay(page)
     await openWeightSliders(page)
 
-    // Adjust a slider down
-    await adjustSlider(page, "reliability", 5)
+    // Adjust 3 sliders to non-default values
+    await adjustSlider(page, "reliability", 5)        // → 0.5
+    await adjustSlider(page, "scalability", 7)        // → 0.3
+    await adjustSlider(page, "performance", 3)        // → 0.7
 
     // Click Reset Weights
     const resetButton = page.locator('[data-testid="weight-reset-button"]')
     await expect(resetButton).toBeVisible()
     await resetButton.click()
 
-    // Wait for recalculation
+    // Wait for debounced recalculation to settle
     await page.waitForTimeout(300)
 
-    // Verify slider is back to 1.0
-    const sliderThumb = page
-      .locator('[data-testid="weight-slider-reliability"]')
-      .locator('[role="slider"]')
-    const resetValue = await sliderThumb.getAttribute("aria-valuenow")
-    expect(resetValue).not.toBeNull()
-    expect(parseFloat(resetValue!)).toBe(1)
+    // Verify ALL 7 category sliders are back to 1.0
+    for (const catId of ALL_CATEGORY_IDS) {
+      const thumb = page
+        .locator(`[data-testid="weight-slider-${catId}"]`)
+        .locator('[role="slider"]')
+      const value = await thumb.getAttribute("aria-valuenow")
+      expect(value, `${catId} slider should have aria-valuenow after reset`).not.toBeNull()
+      expect(parseFloat(value!), `${catId} slider should be 1.0 after reset`).toBe(1)
+    }
 
     // Close overlay and verify score reverted
     await page.keyboard.press("Escape")
@@ -203,6 +217,7 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     // Navigate fresh to clear state
     await page.goto("/")
     await expect(page.locator('[data-testid="dashboard-panel"]')).toBeVisible({ timeout: 15_000 })
+    await waitForComponentLibrary(page)
 
     // Import the exported YAML
     const importButton = page.locator('[data-testid="import-button"]')
@@ -238,7 +253,7 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     expect(parseFloat(reliabilityValue!)).toBeCloseTo(0.8, 1)
 
     // Verify remaining 5 sliders stayed at default 1.0
-    for (const catId of ["performance", "security", "operational-complexity", "cost-efficiency", "developer-experience"]) {
+    for (const catId of ALL_CATEGORY_IDS.filter(id => id !== "scalability" && id !== "reliability")) {
       const thumb = page.locator(`[data-testid="weight-slider-${catId}"]`).locator('[role="slider"]')
       const value = await thumb.getAttribute("aria-valuenow")
       expect(value, `${catId} slider should be 1.0`).not.toBeNull()
@@ -271,10 +286,12 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     // Save and modify to v1 format (remove weight_profile, set schema_version to 1.0.0)
     const tempPath = path.join("test-results", "priority-scoring", "v1-test.yaml")
     await download.saveAs(tempPath)
-    let yamlContent = fs.readFileSync(tempPath, "utf-8")
-    yamlContent = yamlContent.replace(/schema_version: ['"]?2\.0\.0['"]?/, 'schema_version: "1.0.0"')
-    // Remove any weight_profile block if present
-    yamlContent = yamlContent.replace(/weight_profile:[\s\S]*?(?=\n\w|\n$|$)/, "")
+    const rawYaml = fs.readFileSync(tempPath, "utf-8")
+    const parsed = load(rawYaml) as Record<string, unknown>
+    parsed["schema_version"] = "1.0.0"
+    delete parsed["weight_profile"]
+    const yamlContent = dump(parsed)
+    expect(yamlContent).not.toContain("weight_profile")
     fs.writeFileSync(tempPath, yamlContent)
 
     // Navigate fresh
@@ -300,25 +317,15 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
 
     // Wait for import to complete and verify no error
     await expect(page.locator('[data-testid="archie-node"]').first()).toBeVisible({ timeout: 10_000 })
-    await expect(page.locator('[role="alert"]')).toHaveCount(0)
     await page.waitForTimeout(500)
+    await expect(page.locator('[role="alert"]')).toHaveCount(0)
 
     // Open overlay and sliders to check all weights are at 1.0
     await openDashboardOverlay(page)
     await openWeightSliders(page)
 
     // Check all 7 category sliders are at 1.0
-    const categoryIds = [
-      "performance",
-      "reliability",
-      "scalability",
-      "security",
-      "operational-complexity",
-      "cost-efficiency",
-      "developer-experience",
-    ]
-
-    for (const catId of categoryIds) {
+    for (const catId of ALL_CATEGORY_IDS) {
       const thumb = page
         .locator(`[data-testid="weight-slider-${catId}"]`)
         .locator('[role="slider"]')
