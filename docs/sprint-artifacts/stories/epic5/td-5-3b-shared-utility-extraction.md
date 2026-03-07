@@ -1,6 +1,6 @@
 # Tech Debt Story TD-5-3b: Shared Utility Extraction (DRY)
 
-Status: review
+Status: done
 
 > **Source:** KDBP Code Review (2026-03-06) on story td-5-3a
 > **Priority:** LOW | **Estimated Effort:** 1 pt
