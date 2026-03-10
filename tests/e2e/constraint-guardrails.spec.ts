@@ -6,7 +6,7 @@ import {
 } from "./helpers/canvas-helpers"
 import * as path from "path"
 import * as fs from "fs"
-import { load, dump } from "js-yaml"
+import { load } from "js-yaml"
 
 const SCREENSHOT_DIR = "test-results/constraint-guardrails"
 
@@ -34,12 +34,12 @@ async function openDashboardOverlay(page: Page) {
  * Expand the Constraint Guardrails collapsible inside the dashboard overlay.
  */
 async function openConstraintPanel(page: Page) {
+  const panel = page.locator('[data-testid="constraint-panel"]')
+  if (await panel.isVisible()) return // already open — skip toggle to avoid closing
   const toggle = page.locator('[data-testid="constraint-guardrails-toggle"]')
   await expect(toggle).toBeVisible()
   await toggle.click()
-  await expect(page.locator('[data-testid="constraint-panel"]')).toBeVisible({
-    timeout: 3_000,
-  })
+  await expect(panel).toBeVisible({ timeout: 3_000 })
 }
 
 /**
@@ -116,6 +116,13 @@ test.describe("Constraint Guardrails E2E (Story 6-5)", () => {
     })
 
     // --- AC-2: Click violation entry → canvas navigates to component ---
+    // Deselect any node first so inspector closes — ensures the assertion below
+    // confirms the violation click actually triggered navigation, not a stale panel.
+    await page.locator('[data-testid="canvas-panel"]').click({ position: { x: 10, y: 10 } })
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeHidden({
+      timeout: 3_000,
+    })
+
     await openDashboardOverlay(page)
     await openConstraintPanel(page)
 
@@ -125,8 +132,10 @@ test.describe("Constraint Guardrails E2E (Story 6-5)", () => {
     )
     await expect(violationList).toBeVisible()
 
-    // Click the first violation entry (button inside the violation list)
-    const firstViolation = violationList.locator("button").first()
+    // Click the first violation entry (uses data-testid prefix selector)
+    const firstViolation = violationList
+      .locator('[data-testid^="constraint-violation-entry-"]')
+      .first()
     await expect(firstViolation).toBeVisible()
     await firstViolation.click()
 

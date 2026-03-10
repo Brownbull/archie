@@ -311,6 +311,7 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
             return (
               <button
                 key={`${v.constraintId}-${v.nodeId}`}
+                data-testid={`constraint-violation-entry-${v.nodeId}`}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm hover:bg-muted/50"
                 onClick={() => handleViolationClick(v.nodeId)}
               >

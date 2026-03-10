@@ -172,7 +172,7 @@ development_status:
   # User defines hard threshold constraints, sees violations on canvas
   # FRs: FR51-FR57, FR71-FR72 | NFRs: NFR14, NFR17, NFR18
   # ============================================================================
-  epic-6: in-progress
+  epic-6: done
   6-1-constraint-schema-and-types-foundation: done
   6-2-constraint-evaluation-engine-and-store: done
   td-6-2a-constraint-hardening-and-test-cleanup: done  # DEPENDS: 6-2
@@ -184,7 +184,7 @@ development_status:
   td-6-4a-import-pipeline-hardening: done  # DEPENDS: 6-4
   td-6-4b-constraint-schema-dry-deterministic-ids: done  # DEPENDS: td-6-4a
   td-6-4c-store-layer-constraint-id-test: done  # DEPENDS: td-6-4b
-  6-5-e2e-constraint-guardrails-flow: review
+  6-5-e2e-constraint-guardrails-flow: done
   epic-6-retrospective: optional
 
   # ============================================================================
