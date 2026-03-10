@@ -224,5 +224,15 @@ describe("ArchieNode", () => {
       const badge = screen.getByTestId("constraint-violation-badge")
       expect(badge).toHaveAttribute("title", "Perf cap")
     })
+
+    it("badge tooltip falls back to categoryId when constraint not found", () => {
+      mockViolationsByNodeId = new Map([
+        ["node-1", [{ constraintId: "unknown-id", nodeId: "node-1", categoryId: "security", actualScore: 3, threshold: 5, operator: "gte" }]],
+      ])
+      mockConstraints = []
+      render(<ArchieNode {...defaultProps} />)
+      const badge = screen.getByTestId("constraint-violation-badge")
+      expect(badge).toHaveAttribute("title", "security constraint")
+    })
   })
 })

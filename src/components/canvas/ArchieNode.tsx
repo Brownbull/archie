@@ -20,6 +20,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Constraint violations — O(1) per-node selector via derived Map (TD-6-3a AC-2)
   // violationsByNodeId.get(id) avoids O(n) filter on every node; constraints subscription
   // is shared but only changes on user CRUD actions (not recalculation).
+  // NOTE: buildViolationsByNodeId creates new array refs on each evaluation, so the
+  // useMemo below re-runs whenever violations are re-evaluated — acceptable at CRUD frequency.
   const nodeViolations = useArchitectureStore((s) => s.violationsByNodeId.get(id))
   const constraints = useArchitectureStore((s) => s.constraints)
   const violationCount = nodeViolations?.length ?? 0

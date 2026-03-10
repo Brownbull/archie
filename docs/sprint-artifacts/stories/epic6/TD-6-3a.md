@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-3a: Constraint UI Performance & Structure Refinement
 
-## Status: review
+## Status: done
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** ECC Code Review (2026-03-10) on story 6-3
@@ -35,6 +35,22 @@ And a constraint violation update for node A does NOT trigger re-render of node 
   - [x] 2.2 ArchieNode subscribes to `(s) => s.violationsByNodeId.get(id)` instead of full arrays
   - [x] 2.3 Verify existing ArchieNode tests pass unchanged
   - [x] 2.4 Run test:quick — all pass
+
+## Deferred Items (from code review 2026-03-10)
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| TD-6-3b | ConstraintPanel polish (grouped form props) + constraint store test coverage | LOW | CREATED |
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-03-10
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer (8.5/10), tdd-guide (8/10)
+- **Overall:** APPROVE 8.3/10
+- **Quick fixes applied:** 4 (immutable spread, memoization comment, test reset, fallback tooltip test)
+- **TD stories created:** 1 (TD-6-3b)
+
+<!-- CITED: none -->
 
 ## Dev Notes
 - Source story: [6-3](./6-3.md)

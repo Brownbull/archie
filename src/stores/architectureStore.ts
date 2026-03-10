@@ -254,9 +254,7 @@ function buildViolationsByNodeId(
 ): Map<string, ConstraintViolation[]> {
   const map = new Map<string, ConstraintViolation[]>()
   for (const v of violations) {
-    const list = map.get(v.nodeId) ?? []
-    list.push(v)
-    map.set(v.nodeId, list)
+    map.set(v.nodeId, [...(map.get(v.nodeId) ?? []), v])
   }
   return map
 }

@@ -81,6 +81,7 @@ describe("architectureStore - constraints", () => {
       currentTier: null,
       constraints: [],
       constraintViolations: [],
+      violationsByNodeId: new Map(),
       weightProfile: {
         performance: 1.0,
         reliability: 1.0,
