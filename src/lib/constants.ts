@@ -97,6 +97,25 @@ export function isDefaultWeightProfile(profile: WeightProfile): boolean {
   )
 }
 
+// Constraint definitions (Story 6-1: Constraint Guardrails foundation)
+export const CONSTRAINT_THRESHOLD_MIN = 1
+export const CONSTRAINT_THRESHOLD_MAX = 10
+export const CONSTRAINT_LABEL_MAX_LENGTH = 100
+export const MAX_CONSTRAINTS = 50
+
+export type ConstraintOperator = "lte" | "gte"
+
+export interface Constraint {
+  id: string
+  categoryId: MetricCategoryId
+  operator: ConstraintOperator
+  threshold: number
+  label: string
+}
+
+/** Constraint as parsed from YAML — no runtime `id` yet (assigned in loadArchitecture, TD-6-4b) */
+export type ParsedConstraint = Omit<Constraint, "id">
+
 // Font presets (Story 2-5)
 // These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally
 // Browser default root is 16px; medium preserves that, small/large shift by ±2px

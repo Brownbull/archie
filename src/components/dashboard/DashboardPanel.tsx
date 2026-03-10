@@ -10,10 +10,11 @@ import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
 import { DashboardOverlay } from "@/components/dashboard/DashboardOverlay"
 import { TierBadge } from "@/components/dashboard/TierBadge"
 import { Button } from "@/components/ui/button"
-import { Maximize2 } from "lucide-react"
+import { AlertTriangle, Maximize2 } from "lucide-react"
 
 export function DashboardPanel() {
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
+  const constraintViolationCount = useArchitectureStore((s) => s.constraintViolations).length
   const {
     categoryScores,
     aggregateScore,
@@ -87,6 +88,17 @@ export function DashboardPanel() {
           </div>
 
           <div className="self-stretch border-r border-archie-border" />
+
+          {constraintViolationCount > 0 && (
+            <span
+              data-testid="constraint-status-badge"
+              className="mx-1 flex shrink-0 items-center gap-1 rounded-full bg-red-500/15 px-1.5 py-0.5 text-xs font-medium text-red-600"
+              title={`${constraintViolationCount} constraint violation${constraintViolationCount !== 1 ? "s" : ""}`}
+            >
+              <AlertTriangle className="h-3 w-3" />
+              {constraintViolationCount}
+            </span>
+          )}
 
           <Button
             data-testid="dashboard-expand-button"

@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { Handle, Position } from "@xyflow/react"
 import type { NodeProps } from "@xyflow/react"
 import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
@@ -6,6 +6,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
+import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 
 function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const category = COMPONENT_CATEGORIES[data.componentCategory as ComponentCategoryId]
@@ -15,6 +16,22 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Heatmap state — targeted selectors (AC-ARCH-PATTERN-5, AC-ARCH-NO-6)
   const heatmapStatus = useArchitectureStore((s) => s.heatmapColors.get(id))
   const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
+
+  // Constraint violations — O(1) per-node selector via derived Map (TD-6-3a AC-2)
+  // violationsByNodeId.get(id) avoids O(n) filter on every node; constraints subscription
+  // is shared but only changes on user CRUD actions (not recalculation).
+  // NOTE: buildViolationsByNodeId creates new array refs on each evaluation, so the
+  // useMemo below re-runs whenever violations are re-evaluated — acceptable at CRUD frequency.
+  const nodeViolations = useArchitectureStore((s) => s.violationsByNodeId.get(id))
+  const constraints = useArchitectureStore((s) => s.constraints)
+  const violationCount = nodeViolations?.length ?? 0
+  const tooltipText = useMemo(() => {
+    if (!nodeViolations || nodeViolations.length === 0) return undefined
+    const constraintMap = new Map(constraints.map((c) => [c.id, c]))
+    return nodeViolations
+      .map((v) => constraintMap.get(v.constraintId)?.label ?? `${v.categoryId} constraint`)
+      .join(", ")
+  }, [nodeViolations, constraints])
 
   // Box-shadow glow for heatmap (AC-ARCH-PATTERN-6) — separate from category stripe
   const boxShadow =
@@ -31,10 +48,12 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   return (
     <div
       data-testid="archie-node"
-      className="rounded-md border border-archie-border bg-panel shadow-sm"
+      className="relative rounded-md border border-archie-border bg-panel shadow-sm"
       style={{ width: `${NODE_WIDTH}px`, boxShadow }}
       aria-label={ariaLabel}
     >
+      <ConstraintViolationBadge violationCount={violationCount} tooltipText={tooltipText} />
+
       {/* Category stripe — identity, never heatmap (UX18, AC-ARCH-NO-9) */}
       <div
         className="h-1 w-full rounded-t-md"

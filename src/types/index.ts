@@ -1,4 +1,4 @@
-export type { WeightProfile } from "@/lib/constants"
+export type { WeightProfile, Constraint, ConstraintOperator, ParsedConstraint } from "@/lib/constants"
 export type { MetricValue } from "@/schemas/metricSchema"
 export type { MetricCategory, ScoreInterpretation } from "@/schemas/metricCategorySchema"
 export type {
@@ -23,6 +23,7 @@ export type { RecalculationResult } from "@/services/recalculationService"
 export type { HeatmapStatus } from "@/engine/heatmapCalculator"
 export type { CategoryScore, CategoryBreakdown, ComponentCategoryMetric } from "@/engine/dashboardCalculator"
 export type { VariantRecommendation } from "@/engine/recommendationEngine"
+export type { ConstraintViolation } from "@/engine/constraintEvaluator"
 export type {
   TierDefinition,
   TierResult,

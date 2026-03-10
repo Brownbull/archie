@@ -243,6 +243,44 @@ edges: []
       const result = await importYaml(file)
       expect(result.success).toBe(true)
     })
+
+    it("rejects image/png MIME type with INVALID_MIME_TYPE", async () => {
+      const file = makeFile(validYaml, "test.yaml", "image/png")
+      const result = await importYaml(file)
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
+
+    it("rejects application/pdf MIME type with INVALID_MIME_TYPE", async () => {
+      const file = makeFile(validYaml, "test.yaml", "application/pdf")
+      const result = await importYaml(file)
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
+
+    it("accepts empty MIME type (browser default for .yaml files)", async () => {
+      const file = makeFile(validYaml, "test.yaml", "")
+      file.text = () => Promise.resolve(validYaml)
+      const result = await importYaml(file)
+      expect(result.success).toBe(true)
+    })
+
+    it("accepts application/octet-stream MIME type", async () => {
+      const file = makeFile(validYaml, "test.yaml", "application/octet-stream")
+      file.text = () => Promise.resolve(validYaml)
+      const result = await importYaml(file)
+      expect(result.success).toBe(true)
+    })
+
+    it("rejects video/mp4 MIME type with INVALID_MIME_TYPE", async () => {
+      const file = makeFile(validYaml, "test.yaml", "video/mp4")
+      const result = await importYaml(file)
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
   })
 
   describe("importYamlString — size guard (TD-5-4a AC-2)", () => {
@@ -274,6 +312,20 @@ edges: []
       expect(result.success).toBe(false)
       if (result.success) return
       expect(result.errors[0].code).toBe("YAML_PARSE_ERROR")
+    })
+
+    it("does not echo file content in YAML parse error message (TD-6-4a AC-1)", () => {
+      // Unclosed bracket triggers js-yaml YAMLException whose .message includes the line content
+      const result = importYamlString("sensitive_api_key: [unclosed")
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("YAML_PARSE_ERROR")
+      // Positive: verify the fixed generic message
+      expect(result.errors[0].message).toBe("YAML file could not be parsed. Check file syntax.")
+      // Negative: verify no content leakage from the file
+      expect(result.errors[0].message).not.toContain("sensitive_api_key")
+      expect(result.errors[0].message).not.toContain("unclosed")
     })
 
     it("rejects non-object YAML (string)", () => {

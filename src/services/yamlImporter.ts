@@ -22,7 +22,7 @@ import {
   NODE_WIDTH,
   type ComponentCategoryId,
 } from "@/lib/constants"
-import type { WeightProfile } from "@/lib/constants"
+import type { WeightProfile, ParsedConstraint } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge, ArchieNodeData, ArchieEdgeData } from "@/stores/architectureStore"
 
 export interface ImportError {
@@ -37,6 +37,7 @@ export interface HydratedArchitecture {
   placeholderIds: string[]
   name?: string
   weightProfile: WeightProfile
+  constraints: ParsedConstraint[]
 }
 
 export type ImportResult =
@@ -44,6 +45,7 @@ export type ImportResult =
   | { success: false; errors: ImportError[] }
 
 const VALID_EXTENSIONS = [".yaml", ".yml"]
+const REJECTED_MIME_PREFIXES = ["image/", "video/", "audio/", "application/pdf"] as const
 
 let importInProgress = false
 
@@ -59,7 +61,7 @@ function snapToGrid(value: number): number {
 /**
  * Imports a YAML file and returns a hydrated architecture or errors.
  *
- * Pipeline: file size check → extension check → parse YAML → validate schema
+ * Pipeline: file size check → extension check → MIME type check → parse YAML → validate schema
  * → version check → sanitize strings → hydrate from library → build edges
  */
 export async function importYaml(file: File): Promise<ImportResult> {
@@ -91,6 +93,16 @@ export async function importYaml(file: File): Promise<ImportResult> {
       }
     }
 
+    // Step 2b: MIME type check (defense-in-depth alongside extension check)
+    // Reject clearly non-text types; accept text-like, YAML-specific, generic binary, and empty
+    const mimeType = file.type.toLowerCase()
+    if (REJECTED_MIME_PREFIXES.some((prefix) => mimeType.startsWith(prefix))) {
+      return {
+        success: false,
+        errors: [{ code: "INVALID_MIME_TYPE", message: "File type not accepted. Only YAML text files are supported." }],
+      }
+    }
+
     // Step 3: Read file content
     const text = await file.text()
 
@@ -118,11 +130,10 @@ export function importYamlString(text: string): ImportResult {
   let parsed: unknown
   try {
     parsed = load(text)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to parse YAML"
+  } catch (_err) {
     return {
       success: false,
-      errors: [{ code: "YAML_PARSE_ERROR", message }],
+      errors: [{ code: "YAML_PARSE_ERROR", message: "YAML file could not be parsed. Check file syntax." }],
     }
   }
 
@@ -377,6 +388,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       placeholderIds,
       name: sanitizedName,
       weightProfile: resolvedWeightProfile,
+      constraints: data.constraints ?? [],
     },
   }
 }
