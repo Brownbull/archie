@@ -17,19 +17,19 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const heatmapStatus = useArchitectureStore((s) => s.heatmapColors.get(id))
   const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
 
-  // Constraint violations — badge overlay (Story 6-3, AC-ARCH-NO-2: no color changes)
-  const constraintViolations = useArchitectureStore((s) => s.constraintViolations)
+  // Constraint violations — O(1) per-node selector via derived Map (TD-6-3a AC-2)
+  // violationsByNodeId.get(id) avoids O(n) filter on every node; constraints subscription
+  // is shared but only changes on user CRUD actions (not recalculation).
+  const nodeViolations = useArchitectureStore((s) => s.violationsByNodeId.get(id))
   const constraints = useArchitectureStore((s) => s.constraints)
-  const { violationCount, tooltipText } = useMemo(() => {
-    const nodeViolations = constraintViolations.filter((v) => v.nodeId === id)
-    if (nodeViolations.length === 0) return { violationCount: 0, tooltipText: undefined }
+  const violationCount = nodeViolations?.length ?? 0
+  const tooltipText = useMemo(() => {
+    if (!nodeViolations || nodeViolations.length === 0) return undefined
     const constraintMap = new Map(constraints.map((c) => [c.id, c]))
-    const lines = nodeViolations.map((v) => {
-      const c = constraintMap.get(v.constraintId)
-      return c?.label ?? `${v.categoryId} constraint`
-    })
-    return { violationCount: nodeViolations.length, tooltipText: lines.join(", ") }
-  }, [constraintViolations, constraints, id])
+    return nodeViolations
+      .map((v) => constraintMap.get(v.constraintId)?.label ?? `${v.categoryId} constraint`)
+      .join(", ")
+  }, [nodeViolations, constraints])
 
   // Box-shadow glow for heatmap (AC-ARCH-PATTERN-6) — separate from category stripe
   const boxShadow =

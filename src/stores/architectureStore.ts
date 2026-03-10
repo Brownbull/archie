@@ -83,6 +83,7 @@ interface ArchitectureState {
   weightProfile: WeightProfile
   constraints: Constraint[]
   constraintViolations: ConstraintViolation[]
+  violationsByNodeId: Map<string, ConstraintViolation[]>
   addNode: (componentId: string, position: { x: number; y: number }) => void
   addNodeSmartPosition: (componentId: string) => void
   updateNodePosition: (
@@ -231,7 +232,7 @@ function _evaluateAndSetViolations(
   const { constraints, weightProfile, nodes } = get()
   if (constraints.length === 0 || nodes.length === 0) {
     if (get().constraintViolations.length > 0) {
-      set({ constraintViolations: [] })
+      set({ constraintViolations: [], violationsByNodeId: new Map() })
     }
     return
   }
@@ -240,7 +241,24 @@ function _evaluateAndSetViolations(
   const weightedScores = computeWeightedCategoryScores(categoryScores, weightProfile)
   const perNodeScores = buildPerNodeCategoryScores(metrics, weightProfile)
   const violations = evaluateConstraints(constraints, weightedScores, perNodeScores)
-  set({ constraintViolations: violations })
+  set({ constraintViolations: violations, violationsByNodeId: buildViolationsByNodeId(violations) })
+}
+
+/**
+ * Module-level helper: groups violations by nodeId for O(1) per-node lookups.
+ * ArchieNode subscribes to violationsByNodeId.get(id) instead of filtering the full array.
+ * TD-6-3a AC-2.
+ */
+function buildViolationsByNodeId(
+  violations: ConstraintViolation[],
+): Map<string, ConstraintViolation[]> {
+  const map = new Map<string, ConstraintViolation[]>()
+  for (const v of violations) {
+    const list = map.get(v.nodeId) ?? []
+    list.push(v)
+    map.set(v.nodeId, list)
+  }
+  return map
 }
 
 /**
@@ -283,6 +301,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
   constraints: [],
   constraintViolations: [],
+  violationsByNodeId: new Map<string, ConstraintViolation[]>(),
 
   triggerRecalculation: (changedNodeId) => {
     // Cancel pending ripple timeouts from previous recalculation (TD-2-2b)
@@ -538,7 +557,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
     // Tier + constraints: clear if canvas is empty, otherwise neighbor recalculation handles it
     if (get().nodes.length === 0) {
-      set({ currentTier: null, constraintViolations: [] })
+      set({ currentTier: null, constraintViolations: [], violationsByNodeId: new Map() })
     }
     // Trigger recalculation for surviving neighbors AFTER removal
     for (const neighborId of neighborNodeIds) {
@@ -597,7 +616,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
     // Tier + constraints: clear if canvas is empty, otherwise re-evaluate
     if (get().nodes.length === 0) {
-      set({ currentTier: null, constraintViolations: [] })
+      set({ currentTier: null, constraintViolations: [], violationsByNodeId: new Map() })
     } else {
       evaluateAndSetTier(get, set)
       _evaluateAndSetViolations(get, set)
@@ -690,6 +709,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       weightProfile: weightProfile ?? get().weightProfile,
       constraints: constraints ?? [],
       constraintViolations: [],
+      violationsByNodeId: new Map(),
     })
 
     // Clear uiStore selection state (cross-store pattern from removeNode)

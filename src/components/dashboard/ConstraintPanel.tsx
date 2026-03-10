@@ -13,6 +13,97 @@ const OPERATOR_LABELS: Record<ConstraintOperator, string> = {
   gte: "at least",
 }
 
+interface ConstraintFormProps {
+  formCategoryId: MetricCategoryId
+  setFormCategoryId: (id: MetricCategoryId) => void
+  formOperator: ConstraintOperator
+  setFormOperator: (op: ConstraintOperator) => void
+  formThreshold: string
+  setFormThreshold: (t: string) => void
+  formLabel: string
+  setFormLabel: (l: string) => void
+  editingId: string | null
+  onSave: () => void
+  onCancel: () => void
+}
+
+function ConstraintForm({
+  formCategoryId, setFormCategoryId,
+  formOperator, setFormOperator,
+  formThreshold, setFormThreshold,
+  formLabel, setFormLabel,
+  editingId, onSave, onCancel,
+}: ConstraintFormProps) {
+  return (
+    <div className="space-y-2 rounded-md border border-archie-border p-2">
+      <div className="grid grid-cols-2 gap-2">
+        <select
+          data-testid="constraint-category-select"
+          value={formCategoryId}
+          onChange={(e) => setFormCategoryId(e.target.value as MetricCategoryId)}
+          className="rounded-md border border-archie-border bg-surface px-2 py-1 text-sm"
+        >
+          {METRIC_CATEGORIES.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+        <select
+          data-testid="constraint-operator-select"
+          value={formOperator}
+          onChange={(e) => setFormOperator(e.target.value as ConstraintOperator)}
+          className="rounded-md border border-archie-border bg-surface px-2 py-1 text-sm"
+        >
+          <option value="lte">at most (≤)</option>
+          <option value="gte">at least (≥)</option>
+        </select>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Input
+          data-testid="constraint-threshold-input"
+          type="number"
+          min={1}
+          max={10}
+          step={0.1}
+          value={formThreshold}
+          onChange={(e) => setFormThreshold(e.target.value)}
+          placeholder="Threshold (1-10)"
+          className="h-8 text-sm"
+        />
+        <Input
+          data-testid="constraint-label-input"
+          type="text"
+          maxLength={100}
+          value={formLabel}
+          onChange={(e) => setFormLabel(e.target.value)}
+          placeholder="Label (optional)"
+          className="h-8 text-sm"
+        />
+      </div>
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          onClick={onSave}
+          data-testid="constraint-save-button"
+          className="h-7"
+        >
+          {editingId ? "Update" : "Add"}
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCancel}
+          data-testid="constraint-cancel-button"
+          className="h-7"
+        >
+          Cancel
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 interface ConstraintPanelProps {
   onCloseOverlay?: () => void
 }
@@ -140,7 +231,13 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
         if (editingId === c.id) {
           return (
             <div key={c.id} data-testid={`constraint-item-${c.id}`}>
-              {renderForm()}
+              <ConstraintForm
+                formCategoryId={formCategoryId} setFormCategoryId={setFormCategoryId}
+                formOperator={formOperator} setFormOperator={setFormOperator}
+                formThreshold={formThreshold} setFormThreshold={setFormThreshold}
+                formLabel={formLabel} setFormLabel={setFormLabel}
+                editingId={editingId} onSave={handleSave} onCancel={handleCancel}
+              />
             </div>
           )
         }
@@ -183,7 +280,13 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
       {/* Inline add form */}
       {isAdding && (
         <div data-testid="constraint-form">
-          {renderForm()}
+          <ConstraintForm
+            formCategoryId={formCategoryId} setFormCategoryId={setFormCategoryId}
+            formOperator={formOperator} setFormOperator={setFormOperator}
+            formThreshold={formThreshold} setFormThreshold={setFormThreshold}
+            formLabel={formLabel} setFormLabel={setFormLabel}
+            editingId={editingId} onSave={handleSave} onCancel={handleCancel}
+          />
         </div>
       )}
 
@@ -228,75 +331,4 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
       )}
     </div>
   )
-
-  function renderForm() {
-    return (
-      <div className="space-y-2 rounded-md border border-archie-border p-2">
-        <div className="grid grid-cols-2 gap-2">
-          <select
-            data-testid="constraint-category-select"
-            value={formCategoryId}
-            onChange={(e) => setFormCategoryId(e.target.value as MetricCategoryId)}
-            className="rounded-md border border-archie-border bg-surface px-2 py-1 text-sm"
-          >
-            {METRIC_CATEGORIES.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-          <select
-            data-testid="constraint-operator-select"
-            value={formOperator}
-            onChange={(e) => setFormOperator(e.target.value as ConstraintOperator)}
-            className="rounded-md border border-archie-border bg-surface px-2 py-1 text-sm"
-          >
-            <option value="lte">at most (≤)</option>
-            <option value="gte">at least (≥)</option>
-          </select>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <Input
-            data-testid="constraint-threshold-input"
-            type="number"
-            min={1}
-            max={10}
-            step={0.1}
-            value={formThreshold}
-            onChange={(e) => setFormThreshold(e.target.value)}
-            placeholder="Threshold (1-10)"
-            className="h-8 text-sm"
-          />
-          <Input
-            data-testid="constraint-label-input"
-            type="text"
-            maxLength={100}
-            value={formLabel}
-            onChange={(e) => setFormLabel(e.target.value)}
-            placeholder="Label (optional)"
-            className="h-8 text-sm"
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            onClick={handleSave}
-            data-testid="constraint-save-button"
-            className="h-7"
-          >
-            {editingId ? "Update" : "Add"}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleCancel}
-            data-testid="constraint-cancel-button"
-            className="h-7"
-          >
-            Cancel
-          </Button>
-        </div>
-      </div>
-    )
-  }
 }
