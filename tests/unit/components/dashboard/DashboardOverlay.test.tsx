@@ -35,6 +35,11 @@ vi.mock("@/components/dashboard/WeightSliders", () => ({
   WeightSliders: () => <div data-testid="weight-sliders-section" />,
 }))
 
+// Mock ConstraintPanel to keep overlay tests focused
+vi.mock("@/components/dashboard/ConstraintPanel", () => ({
+  ConstraintPanel: () => <div data-testid="constraint-panel-section" />,
+}))
+
 import { useArchitectureStore } from "@/stores/architectureStore"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
 
@@ -65,6 +70,8 @@ describe("DashboardOverlay", () => {
         weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
         setWeightProfile: vi.fn(),
         setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -87,6 +94,8 @@ describe("DashboardOverlay", () => {
         weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
         setWeightProfile: vi.fn(),
         setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
         nodes: [
           { id: "n1", data: { componentName: "PostgreSQL", archieComponentId: "pg", activeConfigVariantId: "default", componentCategory: "data-storage" } },
           { id: "n2", data: { componentName: "Redis", archieComponentId: "redis", activeConfigVariantId: "default", componentCategory: "caching" } },
@@ -112,6 +121,8 @@ describe("DashboardOverlay", () => {
         weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
         setWeightProfile: vi.fn(),
         setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -131,6 +142,8 @@ describe("DashboardOverlay", () => {
         weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
         setWeightProfile: vi.fn(),
         setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -151,6 +164,8 @@ describe("DashboardOverlay", () => {
         weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
         setWeightProfile: vi.fn(),
         setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -172,6 +187,8 @@ describe("DashboardOverlay", () => {
           weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
           setWeightProfile: vi.fn(),
           setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
         }),
       )
 
@@ -189,6 +206,8 @@ describe("DashboardOverlay", () => {
           weightProfile: { ...DEFAULT_WEIGHT_PROFILE, performance: 0.5 },
           setWeightProfile: vi.fn(),
           setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
         }),
       )
 
@@ -207,6 +226,8 @@ describe("DashboardOverlay", () => {
           weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
           setWeightProfile: vi.fn(),
           setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
         }),
       )
 
@@ -229,6 +250,8 @@ describe("DashboardOverlay", () => {
         weightProfile: { ...DEFAULT_WEIGHT_PROFILE, performance: 0.5 },
         setWeightProfile: vi.fn(),
         setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
         nodes: [
           { id: "n1", data: { componentName: "PostgreSQL", archieComponentId: "pg", activeConfigVariantId: "default", componentCategory: "data-storage" } },
           { id: "n2", data: { componentName: "Redis", archieComponentId: "redis", activeConfigVariantId: "default", componentCategory: "caching" } },
@@ -256,6 +279,8 @@ describe("DashboardOverlay", () => {
         weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
         setWeightProfile: vi.fn(),
         setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
         nodes: [
           { id: "n1", data: { componentName: "PostgreSQL", archieComponentId: "pg", activeConfigVariantId: "default", componentCategory: "data-storage" } },
           { id: "n2", data: { componentName: "Redis", archieComponentId: "redis", activeConfigVariantId: "default", componentCategory: "caching" } },

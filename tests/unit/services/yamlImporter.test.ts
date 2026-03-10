@@ -273,6 +273,14 @@ edges: []
       const result = await importYaml(file)
       expect(result.success).toBe(true)
     })
+
+    it("rejects video/mp4 MIME type with INVALID_MIME_TYPE", async () => {
+      const file = makeFile(validYaml, "test.yaml", "video/mp4")
+      const result = await importYaml(file)
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
   })
 
   describe("importYamlString — size guard (TD-5-4a AC-2)", () => {
@@ -313,7 +321,9 @@ edges: []
       expect(result.success).toBe(false)
       if (result.success) return
       expect(result.errors[0].code).toBe("YAML_PARSE_ERROR")
-      // The error message must NOT contain content from the file
+      // Positive: verify the fixed generic message
+      expect(result.errors[0].message).toBe("YAML file could not be parsed. Check file syntax.")
+      // Negative: verify no content leakage from the file
       expect(result.errors[0].message).not.toContain("sensitive_api_key")
       expect(result.errors[0].message).not.toContain("unclosed")
     })

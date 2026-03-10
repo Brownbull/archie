@@ -16,6 +16,11 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
+// Mock ConstraintPanel (used by DashboardOverlay child)
+vi.mock("@/components/dashboard/ConstraintPanel", () => ({
+  ConstraintPanel: () => <div data-testid="constraint-panel-section" />,
+}))
+
 // Mock categoryIcons to avoid importing Lucide components in test env
 vi.mock("@/lib/categoryIcons", () => {
   const makeIcon = (key: string) => {
@@ -47,6 +52,8 @@ function mockEmptyStore() {
       currentTier: null,
       nodes: [],
       weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+      constraints: [],
+      constraintViolations: [],
     }
     return (selector as (s: typeof state) => unknown)(state)
   })
@@ -83,6 +90,8 @@ function mockPopulatedStore(
       currentTier: null,
       nodes: [],
       weightProfile: { ...DEFAULT_WEIGHT_PROFILE, ...weightProfileOverrides },
+      constraints: [],
+      constraintViolations: [],
     }
     return (selector as (s: typeof state) => unknown)(state)
   })

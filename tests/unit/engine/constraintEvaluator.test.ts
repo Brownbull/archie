@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest"
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest"
 import {
   evaluateConstraints,
   evaluateNodeConstraints,
@@ -388,5 +388,55 @@ describe("evaluateNodeConstraints", () => {
     expect(result).toHaveLength(2)
     const violatedCategories = result.map((v) => v.categoryId).sort()
     expect(violatedCategories).toEqual(["performance", "reliability"])
+  })
+})
+
+// --- isViolated edge cases (TD-6-2a AC-2) ---
+
+describe("unknown operator handling (TD-6-2a AC-2)", () => {
+  let warnSpy: ReturnType<typeof vi.spyOn>
+
+  beforeEach(() => {
+    constraintCounter = 0
+    warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    warnSpy.mockRestore()
+  })
+
+  it("unknown operator returns no violation and logs DEV warning", () => {
+    const constraint = makeConstraint({
+      categoryId: "performance",
+      operator: "eq" as ConstraintOperator,
+      threshold: 5,
+    })
+    const scores = [makeCategoryScore("performance", 5)]
+
+    const result = evaluateNodeConstraints("node-1", scores, [constraint])
+
+    expect(result).toHaveLength(0)
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Unknown operator"),
+    )
+  })
+
+  it("unknown operator in evaluateConstraints returns no violation and logs warning", () => {
+    const constraint = makeConstraint({
+      categoryId: "performance",
+      operator: "neq" as ConstraintOperator,
+      threshold: 5,
+    })
+    const archScores = makeArchitectureScores([{ id: "performance", score: 5 }])
+    const perNodeScores = makePerNodeScores({
+      "node-1": [{ id: "performance", score: 5 }],
+    })
+
+    const result = evaluateConstraints([constraint], archScores, perNodeScores)
+
+    expect(result).toHaveLength(0)
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Unknown operator"),
+    )
   })
 })
