@@ -1,18 +1,21 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, MAX_STACK_COMPONENTS, MAX_STACK_CONNECTIONS } from "@/lib/constants"
+import { METRIC_CATEGORIES, MAX_STACK_COMPONENTS, MAX_STACK_CONNECTIONS, STACK_ID_MAX_LENGTH, STACK_ID_FORMAT, POSITION_MIN, POSITION_MAX } from "@/lib/constants"
 import type { MetricCategoryId } from "@/lib/constants"
 
 const METRIC_CATEGORY_IDS = METRIC_CATEGORIES.map((c) => c.id) as [MetricCategoryId, ...MetricCategoryId[]]
 
 // --- Sub-schemas ---
 
+// Defense-in-depth: numeric bounds prevent extreme float injection (matches architectureFileSchema pattern, TD-8-1a)
+const PositionSchema = z.object({
+  x: z.number().min(POSITION_MIN).max(POSITION_MAX),
+  y: z.number().min(POSITION_MIN).max(POSITION_MAX),
+}).strict()
+
 export const StackComponentSchema = z.object({
-  componentId: z.string().min(1),
-  variantId: z.string().min(1),
-  relativePosition: z.object({
-    x: z.number(),
-    y: z.number(),
-  }).strict(),
+  componentId: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
+  variantId: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
+  relativePosition: PositionSchema,
 }).strict()
 
 export const StackConnectionSchema = z.object({
@@ -32,7 +35,7 @@ export const StackCategoryScoreSchema = z.object({
 // --- Main schema ---
 
 const StackDefinitionBaseSchema = z.object({
-  id: z.string().min(1),
+  id: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
   name: z.string().min(1).max(200),
   description: z.string().min(1).max(2000),
   components: z.array(StackComponentSchema).min(1).max(MAX_STACK_COMPONENTS),
@@ -75,12 +78,9 @@ export type Stack = StackDefinition
 // --- YAML input variant: snake_case -> camelCase ---
 
 const StackComponentYamlSchema = z.object({
-  component_id: z.string().min(1),
-  variant_id: z.string().min(1),
-  relative_position: z.object({
-    x: z.number(),
-    y: z.number(),
-  }).strict(),
+  component_id: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
+  variant_id: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
+  relative_position: PositionSchema,
 }).strict().transform((d) => ({
   componentId: d.component_id,
   variantId: d.variant_id,
@@ -112,7 +112,7 @@ const StackCategoryScoreYamlSchema = z.object({
 }))
 
 const StackDefinitionYamlBaseSchema = z.object({
-  id: z.string().min(1),
+  id: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
   name: z.string().min(1),
   description: z.string().min(1),
   components: z.array(StackComponentYamlSchema).min(1).max(MAX_STACK_COMPONENTS),

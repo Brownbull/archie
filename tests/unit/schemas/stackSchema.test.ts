@@ -78,6 +78,53 @@ describe("StackComponentSchema", () => {
   it("rejects unknown keys (strict)", () => {
     expect(StackComponentSchema.safeParse({ ...validComponent, extra: "field" }).success).toBe(false)
   })
+
+  // TD-8-1a: ID length constraints
+  it("rejects componentId exceeding 200 chars", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, componentId: "a".repeat(201) }).success).toBe(false)
+  })
+
+  it("rejects variantId exceeding 200 chars", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, variantId: "a".repeat(201) }).success).toBe(false)
+  })
+
+  it("accepts componentId at 200 chars boundary", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, componentId: "a".repeat(200) }).success).toBe(true)
+  })
+
+  it("accepts variantId at 200 chars boundary", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, variantId: "a".repeat(200) }).success).toBe(true)
+  })
+
+  // TD-8-1a: ID format constraints
+  it("rejects componentId with spaces", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, componentId: "invalid id" }).success).toBe(false)
+  })
+
+  it("rejects componentId with special chars", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, componentId: "comp@id!" }).success).toBe(false)
+  })
+
+  it("accepts componentId with hyphens", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, componentId: "node-express" }).success).toBe(true)
+  })
+
+  it("accepts variantId with underscores", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, variantId: "variant_v2" }).success).toBe(true)
+  })
+
+  // TD-8-1a: Position bounds
+  it("rejects relativePosition.x below POSITION_MIN", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, relativePosition: { x: -10001, y: 0 } }).success).toBe(false)
+  })
+
+  it("rejects relativePosition.y above POSITION_MAX", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, relativePosition: { x: 0, y: 10001 } }).success).toBe(false)
+  })
+
+  it("accepts relativePosition at boundary values", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, relativePosition: { x: -10000, y: 10000 } }).success).toBe(true)
+  })
 })
 
 // --- StackConnectionSchema ---
@@ -286,6 +333,52 @@ describe("StackDefinitionYamlSchema", () => {
     const yamlStack = {
       ...validYamlStack,
       connections: [{ source_component_index: 5, target_component_index: 0, connection_type: "tcp" }],
+    }
+    expect(StackDefinitionYamlSchema.safeParse(yamlStack).success).toBe(false)
+  })
+
+  // TD-8-1a: YAML variant ID constraints
+  it("rejects YAML component_id exceeding 200 chars", () => {
+    const yamlStack = {
+      ...validYamlStack,
+      components: [
+        { component_id: "a".repeat(201), variant_id: "default", relative_position: { x: 0, y: 0 } },
+        { component_id: "node-express", variant_id: "default", relative_position: { x: 200, y: 0 } },
+      ],
+    }
+    expect(StackDefinitionYamlSchema.safeParse(yamlStack).success).toBe(false)
+  })
+
+  it("rejects YAML component_id with invalid format", () => {
+    const yamlStack = {
+      ...validYamlStack,
+      components: [
+        { component_id: "invalid id!", variant_id: "default", relative_position: { x: 0, y: 0 } },
+        { component_id: "node-express", variant_id: "default", relative_position: { x: 200, y: 0 } },
+      ],
+    }
+    expect(StackDefinitionYamlSchema.safeParse(yamlStack).success).toBe(false)
+  })
+
+  // TD-8-1a: YAML variant position bounds
+  it("rejects YAML relative_position.x below POSITION_MIN", () => {
+    const yamlStack = {
+      ...validYamlStack,
+      components: [
+        { component_id: "mongodb", variant_id: "default", relative_position: { x: -10001, y: 0 } },
+        { component_id: "node-express", variant_id: "default", relative_position: { x: 200, y: 0 } },
+      ],
+    }
+    expect(StackDefinitionYamlSchema.safeParse(yamlStack).success).toBe(false)
+  })
+
+  it("rejects YAML relative_position.y above POSITION_MAX", () => {
+    const yamlStack = {
+      ...validYamlStack,
+      components: [
+        { component_id: "mongodb", variant_id: "default", relative_position: { x: 0, y: 10001 } },
+        { component_id: "node-express", variant_id: "default", relative_position: { x: 200, y: 0 } },
+      ],
     }
     expect(StackDefinitionYamlSchema.safeParse(yamlStack).success).toBe(false)
   })

@@ -120,6 +120,10 @@ export type ParsedConstraint = Omit<Constraint, "id">
 export const MAX_STACK_COMPONENTS = 20
 export const MAX_STACK_CONNECTIONS = 50
 
+// Stack ID constraints — defense-in-depth against memory exhaustion from malformed Firestore data (TD-8-1a)
+export const STACK_ID_MAX_LENGTH = 200
+export const STACK_ID_FORMAT = /^[\w-]+$/
+
 export interface StackComponent {
   componentId: string
   variantId: string

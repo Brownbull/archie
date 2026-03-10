@@ -194,7 +194,7 @@ development_status:
   # ============================================================================
   epic-8: in-progress
   8-1-stack-data-model-and-library-integration: done
-  td-8-1a-stack-schema-library-hardening: ready-for-dev  # DEPENDS: 8-1
+  td-8-1a-stack-schema-library-hardening: review  # DEPENDS: 8-1
   8-2-stacks-tab-ui-browse-and-preview: ready-for-dev
   8-3-stack-canvas-placement-and-editing: ready-for-dev
   8-4-e2e-stack-browsing-and-placement-flow: ready-for-dev
