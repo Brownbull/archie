@@ -187,3 +187,40 @@ describe("constraint evaluation pipeline (integration)", () => {
     )
   })
 })
+
+describe("buildPerNodeCategoryScores weight guard (TD-6-2b AC-1)", () => {
+  beforeEach(() => {
+    resetConstraintCounter()
+  })
+
+  it("clamps NaN weight to 0 instead of producing NaN scores", () => {
+    const metrics = makeMetrics({
+      "node-1": [{ category: "performance", value: 5 }],
+    })
+    const weights: WeightProfile = {
+      ...DEFAULT_WEIGHT_PROFILE,
+      performance: NaN,
+    }
+
+    const scores = buildPerNodeCategoryScores(metrics, weights)
+    const perfScore = scores.get("node-1")!.find((s) => s.categoryId === "performance")
+
+    expect(perfScore!.score).toBe(0)
+    expect(Number.isNaN(perfScore!.score)).toBe(false)
+  })
+
+  it("clamps negative weight to 0 instead of producing negative scores", () => {
+    const metrics = makeMetrics({
+      "node-1": [{ category: "reliability", value: 6 }],
+    })
+    const weights: WeightProfile = {
+      ...DEFAULT_WEIGHT_PROFILE,
+      reliability: -1,
+    }
+
+    const scores = buildPerNodeCategoryScores(metrics, weights)
+    const relScore = scores.get("node-1")!.find((s) => s.categoryId === "reliability")
+
+    expect(relScore!.score).toBe(0)
+  })
+})

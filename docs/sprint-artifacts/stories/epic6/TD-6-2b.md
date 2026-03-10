@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-2b: Constraint Test Hardening
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** KDBP Code Review (2026-03-09) on story TD-6-2a
@@ -23,8 +23,8 @@ Then verify behavior (either schema rejects or store truncates with warning).
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add defensive guard in `buildPerNodeCategoryScores` for NaN/negative weight values
-- [ ] Task 2: Add test in `architectureStore-constraints.test.ts` for `setConstraints` with >50 entries
+- [x] Task 1: Add defensive guard in `buildPerNodeCategoryScores` for NaN/negative weight values
+- [x] Task 2: Add test in `architectureStore-constraints.test.ts` for `setConstraints` with >50 entries
 
 ## Dev Notes
 - Source story: [TD-6-2a](./TD-6-2a.md)

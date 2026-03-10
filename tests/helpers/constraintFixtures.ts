@@ -47,7 +47,9 @@ export function buildPerNodeCategoryScores(
       const entry = catMap.get(cat.id)
       if (!entry) return { categoryId: cat.id, categoryName: cat.name, score: 0, metricCount: 0, hasData: false }
       const rawScore = entry.sum / entry.count
-      return { categoryId: cat.id, categoryName: cat.name, score: rawScore * getWeight(cat.id, weightProfile), metricCount: entry.count, hasData: true }
+      const w = getWeight(cat.id, weightProfile)
+      const safeWeight = Number.isNaN(w) || w < 0 ? 0 : w
+      return { categoryId: cat.id, categoryName: cat.name, score: rawScore * safeWeight, metricCount: entry.count, hasData: true }
     })
     result.set(nodeId, scores)
   }

@@ -338,6 +338,22 @@ describe("architectureStore - constraints", () => {
     })
   })
 
+  describe("setConstraints cap behavior (TD-6-2b AC-2)", () => {
+    it("accepts >50 constraints at store level (schema enforces cap at import boundary)", () => {
+      setupStoreWithMetrics({
+        "node-1": [{ category: "performance", value: 5 }],
+      })
+
+      const constraints: Constraint[] = Array.from({ length: 51 }, (_, i) =>
+        makeConstraint({ id: `c-cap-${i}`, categoryId: "performance", operator: "lte", threshold: 10 }),
+      )
+      useArchitectureStore.getState().setConstraints(constraints)
+
+      // Store does not enforce the cap — schema validation handles it at YAML import
+      expect(useArchitectureStore.getState().constraints).toHaveLength(51)
+    })
+  })
+
   describe("empty architecture → no violations (5.10)", () => {
     it("produces no violations when no nodes exist", () => {
       const constraint = makeConstraint({
