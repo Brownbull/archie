@@ -29,6 +29,7 @@ import {
   RIPPLE_ANIMATION_DURATION_MS,
   type ComponentCategoryId,
   type Constraint,
+  type ParsedConstraint,
   type WeightProfile,
 } from "@/lib/constants"
 
@@ -99,7 +100,7 @@ interface ArchitectureState {
   triggerRecalculation: (changedNodeId: string) => void
   setWeightProfile: (profile: WeightProfile) => void
   setWeightAndRecalculate: (profile: WeightProfile) => void
-  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: Constraint[]) => void
+  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: ParsedConstraint[]) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
@@ -705,7 +706,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       recalcGeneration: get().recalcGeneration + 1,
       currentTier: null,
       weightProfile: weightProfile ?? get().weightProfile,
-      constraints: constraints ?? [],
+      constraints: (constraints ?? []).map((c) => ({ ...c, id: crypto.randomUUID() })),
       constraintViolations: [],
       violationsByNodeId: new Map(),
     })

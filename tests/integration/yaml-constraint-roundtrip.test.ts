@@ -112,7 +112,7 @@ describe("YAML constraint round-trip (integration)", () => {
       })
     })
 
-    it("imported constraints have runtime IDs assigned", () => {
+    it("imported constraints do NOT have runtime IDs (TD-6-4b AC-2: ID assignment moved to store)", () => {
       const constraints: Constraint[] = [
         makeConstraint({ categoryId: "reliability" as MetricCategoryId }),
       ]
@@ -123,9 +123,8 @@ describe("YAML constraint round-trip (integration)", () => {
       expect(result.success).toBe(true)
       if (!result.success) return
 
-      expect(result.architecture.constraints[0]).toHaveProperty("id")
-      expect(typeof result.architecture.constraints[0].id).toBe("string")
-      expect(result.architecture.constraints[0].id.length).toBeGreaterThan(0)
+      // hydration is now deterministic — no id field
+      expect(result.architecture.constraints[0]).not.toHaveProperty("id")
     })
   })
 
@@ -187,7 +186,7 @@ describe("YAML constraint round-trip (integration)", () => {
   })
 
   describe("AC-5: import invalid constraints -> rejection", () => {
-    it("rejects v2 YAML with threshold=5 outside range (threshold=0 is invalid)", () => {
+    it("rejects v2 YAML with threshold=0 (below minimum of 1)", () => {
       const yaml = dump({
         schema_version: CURRENT_SCHEMA_VERSION,
         nodes: [{ id: "n1", component_id: "postgresql", position: { x: 96, y: 208 } }],

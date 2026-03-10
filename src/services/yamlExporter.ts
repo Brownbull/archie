@@ -1,7 +1,7 @@
 import { dump } from "js-yaml"
 import { ArchitectureFileYamlSchema, CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import { DEFAULT_WEIGHT_PROFILE, isDefaultWeightProfile } from "@/lib/constants"
-import type { WeightProfile, Constraint } from "@/lib/constants"
+import type { WeightProfile, ParsedConstraint } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
 
 /**
@@ -21,7 +21,7 @@ export function exportArchitecture(
   nodes: ArchieNode[],
   edges: ArchieEdge[],
   weightProfile?: WeightProfile,
-  constraints?: Constraint[],
+  constraints?: ParsedConstraint[],
 ): string {
   // Extract skeleton from each node (camelCase → snake_case transform, inverse of import)
   const yamlNodes = nodes.map((node) => ({
@@ -69,7 +69,9 @@ export function exportArchitecture(
   // result is discarded; we only check .success to catch serialization bugs at the boundary
   const validation = ArchitectureFileYamlSchema.safeParse(exportObj)
   if (!validation.success) {
-    throw new Error("Architecture data is invalid and cannot be exported.")
+    throw new Error(
+      `Architecture data is invalid and cannot be exported: ${JSON.stringify(validation.error.flatten().fieldErrors)}`,
+    )
   }
 
   // Safe serialization — js-yaml dump() with default options (AC-7, AC-ARCH-NO-4)

@@ -79,15 +79,15 @@ describe("v2 Import with Constraints (AC-2, AC-3)", () => {
         threshold: 5,
         label: "Max cost",
       })
-      expect(result.architecture.constraints[0]).toHaveProperty("id")
-      expect(typeof result.architecture.constraints[0].id).toBe("string")
+      // TD-6-4b AC-2: hydration is deterministic — no id field (assigned in store)
+      expect(result.architecture.constraints[0]).not.toHaveProperty("id")
       expect(result.architecture.constraints[1]).toMatchObject({
         categoryId: "reliability",
         operator: "gte",
         threshold: 7,
         label: "Min reliability",
       })
-      expect(result.architecture.constraints[1]).toHaveProperty("id")
+      expect(result.architecture.constraints[1]).not.toHaveProperty("id")
     }
   })
 

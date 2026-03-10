@@ -22,7 +22,7 @@ import {
   NODE_WIDTH,
   type ComponentCategoryId,
 } from "@/lib/constants"
-import type { WeightProfile, Constraint } from "@/lib/constants"
+import type { WeightProfile, ParsedConstraint } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge, ArchieNodeData, ArchieEdgeData } from "@/stores/architectureStore"
 
 export interface ImportError {
@@ -37,7 +37,7 @@ export interface HydratedArchitecture {
   placeholderIds: string[]
   name?: string
   weightProfile: WeightProfile
-  constraints: Constraint[]
+  constraints: ParsedConstraint[]
 }
 
 export type ImportResult =
@@ -45,7 +45,7 @@ export type ImportResult =
   | { success: false; errors: ImportError[] }
 
 const VALID_EXTENSIONS = [".yaml", ".yml"]
-const REJECTED_MIME_PREFIXES = ["image/", "video/", "audio/", "application/pdf"]
+const REJECTED_MIME_PREFIXES = ["image/", "video/", "audio/", "application/pdf"] as const
 
 let importInProgress = false
 
@@ -388,7 +388,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       placeholderIds,
       name: sanitizedName,
       weightProfile: resolvedWeightProfile,
-      constraints: (data.constraints ?? []).map((c) => ({ ...c, id: crypto.randomUUID() })),
+      constraints: data.constraints ?? [],
     },
   }
 }

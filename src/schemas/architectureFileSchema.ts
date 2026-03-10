@@ -26,11 +26,16 @@ export const WeightProfileSchema = z.object(
 // Label sanitized via sanitizeDisplayString (defense-in-depth: 6-layer pipeline from src/lib/sanitize.ts)
 const metricCategoryIds = METRIC_CATEGORIES.map((c) => c.id) as [MetricCategoryId, ...MetricCategoryId[]]
 
-export const ConstraintSchema = z.object({
-  categoryId: z.enum(metricCategoryIds),
+// Shared constraint fields: operator, threshold, label — single definition for DRY (TD-6-4b AC-1)
+export const constraintBaseFields = {
   operator: z.enum(["lte", "gte"]),
   threshold: z.number().min(CONSTRAINT_THRESHOLD_MIN).max(CONSTRAINT_THRESHOLD_MAX),
   label: z.string().transform((s) => sanitizeDisplayString(s, CONSTRAINT_LABEL_MAX_LENGTH)),
+}
+
+export const ConstraintSchema = z.object({
+  categoryId: z.enum(metricCategoryIds),
+  ...constraintBaseFields,
 }).strict()
 
 // ─── YAML-Variant Schemas ─────────────────────────────────────────────────────
@@ -43,9 +48,7 @@ export const ConstraintSchema = z.object({
 // Round-trip re-import: export emits the already-sanitized label → re-import sanitizes again → same result.
 const ConstraintYamlSchema = z.object({
   category_id: z.enum(metricCategoryIds),
-  operator: z.enum(["lte", "gte"]),
-  threshold: z.number().min(CONSTRAINT_THRESHOLD_MIN).max(CONSTRAINT_THRESHOLD_MAX),
-  label: z.string().transform((s) => sanitizeDisplayString(s, CONSTRAINT_LABEL_MAX_LENGTH)),
+  ...constraintBaseFields,
 }).strict().transform((data) => ({
   categoryId: data.category_id,
   operator: data.operator,
@@ -63,7 +66,9 @@ function migrateV1ToV2(data: unknown): unknown {
     ...(data as Record<string, unknown>),
     schemaVersion: CURRENT_SCHEMA_VERSION,
     weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
-    // v2 shape: constraints did not exist in v1 — explicitly undefined to document the full v2 contract
+    // v2 shape: constraints did not exist in v1 — explicitly undefined to document the full v2 contract.
+    // Note: explicit undefined means `'constraints' in obj` returns true. All downstream code
+    // uses nullish access (data.constraints ?? []), so this is safe.
     constraints: undefined,
   }
 }
