@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useArchitectureStore } from "@/stores/architectureStore"
-import type { Constraint } from "@/lib/constants"
+import type { Constraint, ParsedConstraint } from "@/lib/constants"
 import { makeMetrics, makeConstraint, resetConstraintCounter } from "../../helpers"
 
 // Mock dependencies — constraint tests don't need component library or recalculation service
@@ -27,6 +27,11 @@ vi.mock("@/lib/firebase", () => ({
 vi.mock("sonner", () => ({
   toast: { warning: vi.fn() },
 }))
+
+let uuidCounter = 0
+vi.stubGlobal("crypto", {
+  randomUUID: () => `test-uuid-${++uuidCounter}`,
+})
 
 // --- Test Helpers ---
 
@@ -68,6 +73,7 @@ function setupStoreWithMetrics(
 
 describe("architectureStore - constraints", () => {
   beforeEach(() => {
+    uuidCounter = 0
     resetConstraintCounter()
     mockRecalcService.mockReset()
     useArchitectureStore.setState({
@@ -324,6 +330,30 @@ describe("architectureStore - constraints", () => {
       useArchitectureStore.getState().loadArchitecture([], [])
 
       expect(useArchitectureStore.getState().constraints).toEqual([])
+    })
+
+    it("assigns unique string IDs to imported ParsedConstraints (TD-6-4c)", () => {
+      const parsed: ParsedConstraint[] = [
+        { categoryId: "performance", operator: "lte", threshold: 5, label: "Perf cap" },
+        { categoryId: "reliability", operator: "gte", threshold: 7, label: "Rel floor" },
+        { categoryId: "scalability", operator: "lte", threshold: 6, label: "Scale cap" },
+      ]
+
+      useArchitectureStore.getState().loadArchitecture([], [], undefined, parsed)
+
+      const { constraints } = useArchitectureStore.getState()
+
+      // AC-1: every constraint has a non-empty string id
+      expect(constraints).toHaveLength(3)
+      for (const c of constraints) {
+        expect(typeof c.id).toBe("string")
+        expect(c.id.length).toBeGreaterThan(0)
+      }
+
+      // AC-2: all IDs are unique
+      const ids = constraints.map((c) => c.id)
+      const uniqueIds = new Set(ids)
+      expect(uniqueIds.size).toBe(ids.length)
     })
   })
 

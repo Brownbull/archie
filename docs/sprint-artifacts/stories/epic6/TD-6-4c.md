@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-4c: Store-layer test for constraint ID assignment
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** KDBP Code Review (2026-03-10) on story TD-6-4b
@@ -16,11 +16,11 @@ As a **developer**, I want **a store-layer test that verifies `loadArchitecture`
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add store-layer constraint ID assignment test
-  - [ ] 1.1 In `architectureStore-constraints.test.ts` (or new describe block), call `loadArchitecture` with `ParsedConstraint[]` inputs (no `id`)
-  - [ ] 1.2 Assert each resulting constraint in `store.constraints` has a non-empty string `id`
-  - [ ] 1.3 Assert all constraint IDs are unique
-  - [ ] 1.4 Verify existing tests still pass
+- [x] Task 1: Add store-layer constraint ID assignment test
+  - [x] 1.1 In `architectureStore-constraints.test.ts` (or new describe block), call `loadArchitecture` with `ParsedConstraint[]` inputs (no `id`)
+  - [x] 1.2 Assert each resulting constraint in `store.constraints` has a non-empty string `id`
+  - [x] 1.3 Assert all constraint IDs are unique
+  - [x] 1.4 Verify existing tests still pass
 
 ## Dev Notes
 - Source story: [TD-6-4b](./TD-6-4b.md)
