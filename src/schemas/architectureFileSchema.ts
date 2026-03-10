@@ -1,5 +1,6 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX } from "@/lib/constants"
+import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, type MetricCategoryId } from "@/lib/constants"
+import { sanitizeDisplayString } from "@/lib/sanitize"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
 // If the count changes, the schema shape silently diverges from expectations. (TD-5-1a)
@@ -20,6 +21,38 @@ export const WeightProfileSchema = z.object(
   ) as Record<(typeof METRIC_CATEGORIES)[number]["id"], z.ZodNumber>,
 ).strict()
 
+// Constraint Zod schema: validates constraint definitions in architecture files (Story 6-1 AC-2)
+// Uses z.array(z.object()) NOT z.record() for ordered, typed entries (AC-ARCH-NO-2)
+// Label sanitized via sanitizeDisplayString (defense-in-depth: 6-layer pipeline from src/lib/sanitize.ts)
+const metricCategoryIds = METRIC_CATEGORIES.map((c) => c.id) as [MetricCategoryId, ...MetricCategoryId[]]
+
+export const ConstraintSchema = z.object({
+  categoryId: z.enum(metricCategoryIds),
+  operator: z.enum(["lte", "gte"]),
+  threshold: z.number().min(CONSTRAINT_THRESHOLD_MIN).max(CONSTRAINT_THRESHOLD_MAX),
+  label: z.string().transform((s) => sanitizeDisplayString(s, CONSTRAINT_LABEL_MAX_LENGTH)),
+}).strict()
+
+// ─── YAML-Variant Schemas ─────────────────────────────────────────────────────
+// These schemas accept snake_case YAML input and transform to camelCase output.
+// They are used exclusively in importYamlString (ArchitectureFileYamlSchema.safeParse).
+// Canonical camelCase schemas above are the source of truth for app types.
+
+// YAML input variant for constraints: snake_case → camelCase transform (AC-ARCH-PATTERN-5)
+// sanitizeDisplayString is idempotent for clean strings (strips HTML once, subsequent passes are no-ops).
+// Round-trip re-import: export emits the already-sanitized label → re-import sanitizes again → same result.
+const ConstraintYamlSchema = z.object({
+  category_id: z.enum(metricCategoryIds),
+  operator: z.enum(["lte", "gte"]),
+  threshold: z.number().min(CONSTRAINT_THRESHOLD_MIN).max(CONSTRAINT_THRESHOLD_MAX),
+  label: z.string().transform((s) => sanitizeDisplayString(s, CONSTRAINT_LABEL_MAX_LENGTH)),
+}).strict().transform((data) => ({
+  categoryId: data.category_id,
+  operator: data.operator,
+  threshold: data.threshold,
+  label: data.label,
+}))
+
 // v1-to-v2 migration: adds default weightProfile (AC-ARCH-PATTERN-3 — pure function)
 // Called on post-transform camelCase data (after ArchitectureFileYamlSchema.safeParse)
 function migrateV1ToV2(data: unknown): unknown {
@@ -28,8 +61,10 @@ function migrateV1ToV2(data: unknown): unknown {
   }
   return {
     ...(data as Record<string, unknown>),
-    weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
     schemaVersion: CURRENT_SCHEMA_VERSION,
+    weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+    // v2 shape: constraints did not exist in v1 — explicitly undefined to document the full v2 contract
+    constraints: undefined,
   }
 }
 
@@ -66,6 +101,7 @@ export const ArchitectureFileSchema = z.object({
   nodes: z.array(ArchitectureFileNodeSchema).max(MAX_CANVAS_NODES),
   edges: z.array(ArchitectureFileEdgeSchema).max(MAX_EDGES),
   weightProfile: WeightProfileSchema.optional(),
+  constraints: z.array(ConstraintSchema).max(MAX_CONSTRAINTS).optional(),
 }).strict()
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
@@ -98,6 +134,7 @@ export const ArchitectureFileYamlSchema = z.object({
   nodes: z.array(ArchitectureFileNodeYamlSchema).max(MAX_CANVAS_NODES),
   edges: z.array(ArchitectureFileEdgeYamlSchema).max(MAX_EDGES),
   weight_profile: WeightProfileSchema.optional(),
+  constraints: z.array(ConstraintYamlSchema).max(MAX_CONSTRAINTS).optional(),
 }).strict().transform((data) => ({
   schemaVersion: data.schema_version,
   libraryVersion: data.library_version,
@@ -105,6 +142,7 @@ export const ArchitectureFileYamlSchema = z.object({
   nodes: data.nodes,
   edges: data.edges,
   weightProfile: data.weight_profile,
+  constraints: data.constraints,
 }))
 
 export type ArchitectureFile = z.infer<typeof ArchitectureFileSchema>
