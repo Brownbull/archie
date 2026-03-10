@@ -368,4 +368,69 @@ describe("architectureStore - constraints", () => {
       expect(useArchitectureStore.getState().constraintViolations).toEqual([])
     })
   })
+
+  describe("violationsByNodeId Map (TD-6-3b)", () => {
+    it("populates violationsByNodeId after addConstraint", () => {
+      setupStoreWithMetrics({
+        "node-1": [{ category: "performance", value: 7 }],
+      })
+
+      const constraint = makeConstraint({
+        id: "c-vbn-add",
+        categoryId: "performance",
+        operator: "lte",
+        threshold: 5,
+      })
+      useArchitectureStore.getState().addConstraint(constraint)
+
+      const byNode = useArchitectureStore.getState().violationsByNodeId
+      const nodeViolations = byNode.get("node-1")
+      expect(nodeViolations).toHaveLength(1)
+      expect(nodeViolations![0].constraintId).toBe("c-vbn-add")
+    })
+
+    it("updates violationsByNodeId after updateConstraint", () => {
+      const constraint = makeConstraint({
+        id: "c-vbn-update",
+        categoryId: "performance",
+        operator: "lte",
+        threshold: 10, // score 7 passes threshold 10
+      })
+      setupStoreWithMetrics(
+        { "node-1": [{ category: "performance", value: 7 }] },
+        [constraint],
+      )
+      // Force initial evaluation
+      useArchitectureStore.getState().setConstraints([constraint])
+      expect(useArchitectureStore.getState().violationsByNodeId.get("node-1")).toBeUndefined()
+
+      // Lower threshold to create violation
+      useArchitectureStore.getState().updateConstraint("c-vbn-update", { threshold: 5 })
+      const byNode = useArchitectureStore.getState().violationsByNodeId
+      expect(byNode.get("node-1")).toHaveLength(1)
+
+      // Raise threshold back — violation clears
+      useArchitectureStore.getState().updateConstraint("c-vbn-update", { threshold: 8 })
+      expect(useArchitectureStore.getState().violationsByNodeId.get("node-1")).toBeUndefined()
+    })
+
+    it("clears violationsByNodeId when constraints are removed", () => {
+      const constraint = makeConstraint({
+        id: "c-vbn-remove",
+        categoryId: "performance",
+        operator: "lte",
+        threshold: 5,
+      })
+      setupStoreWithMetrics(
+        { "node-1": [{ category: "performance", value: 7 }] },
+      )
+
+      useArchitectureStore.getState().addConstraint(constraint)
+      expect(useArchitectureStore.getState().violationsByNodeId.get("node-1")).toHaveLength(1)
+
+      useArchitectureStore.getState().removeConstraint("c-vbn-remove")
+      expect(useArchitectureStore.getState().violationsByNodeId.get("node-1")).toBeUndefined()
+      expect(useArchitectureStore.getState().violationsByNodeId.size).toBe(0)
+    })
+  })
 })

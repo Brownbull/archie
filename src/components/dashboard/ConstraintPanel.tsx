@@ -13,25 +13,23 @@ const OPERATOR_LABELS: Record<ConstraintOperator, string> = {
   gte: "at least",
 }
 
+interface ConstraintFormState {
+  categoryId: MetricCategoryId
+  operator: ConstraintOperator
+  threshold: string
+  label: string
+}
+
 interface ConstraintFormProps {
-  formCategoryId: MetricCategoryId
-  setFormCategoryId: (id: MetricCategoryId) => void
-  formOperator: ConstraintOperator
-  setFormOperator: (op: ConstraintOperator) => void
-  formThreshold: string
-  setFormThreshold: (t: string) => void
-  formLabel: string
-  setFormLabel: (l: string) => void
+  formState: ConstraintFormState
+  onFormChange: (patch: Partial<ConstraintFormState>) => void
   editingId: string | null
   onSave: () => void
   onCancel: () => void
 }
 
 function ConstraintForm({
-  formCategoryId, setFormCategoryId,
-  formOperator, setFormOperator,
-  formThreshold, setFormThreshold,
-  formLabel, setFormLabel,
+  formState, onFormChange,
   editingId, onSave, onCancel,
 }: ConstraintFormProps) {
   return (
@@ -39,8 +37,8 @@ function ConstraintForm({
       <div className="grid grid-cols-2 gap-2">
         <select
           data-testid="constraint-category-select"
-          value={formCategoryId}
-          onChange={(e) => setFormCategoryId(e.target.value as MetricCategoryId)}
+          value={formState.categoryId}
+          onChange={(e) => onFormChange({ categoryId: e.target.value as MetricCategoryId })}
           className="rounded-md border border-archie-border bg-surface px-2 py-1 text-sm"
         >
           {METRIC_CATEGORIES.map((cat) => (
@@ -51,8 +49,8 @@ function ConstraintForm({
         </select>
         <select
           data-testid="constraint-operator-select"
-          value={formOperator}
-          onChange={(e) => setFormOperator(e.target.value as ConstraintOperator)}
+          value={formState.operator}
+          onChange={(e) => onFormChange({ operator: e.target.value as ConstraintOperator })}
           className="rounded-md border border-archie-border bg-surface px-2 py-1 text-sm"
         >
           <option value="lte">at most (≤)</option>
@@ -66,8 +64,8 @@ function ConstraintForm({
           min={1}
           max={10}
           step={0.1}
-          value={formThreshold}
-          onChange={(e) => setFormThreshold(e.target.value)}
+          value={formState.threshold}
+          onChange={(e) => onFormChange({ threshold: e.target.value })}
           placeholder="Threshold (1-10)"
           className="h-8 text-sm"
         />
@@ -75,8 +73,8 @@ function ConstraintForm({
           data-testid="constraint-label-input"
           type="text"
           maxLength={100}
-          value={formLabel}
-          onChange={(e) => setFormLabel(e.target.value)}
+          value={formState.label}
+          onChange={(e) => onFormChange({ label: e.target.value })}
           placeholder="Label (optional)"
           className="h-8 text-sm"
         />
@@ -119,11 +117,17 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
-  // Form state
-  const [formCategoryId, setFormCategoryId] = useState<MetricCategoryId>(METRIC_CATEGORIES[0].id)
-  const [formOperator, setFormOperator] = useState<ConstraintOperator>("lte")
-  const [formThreshold, setFormThreshold] = useState("5")
-  const [formLabel, setFormLabel] = useState("")
+  // Form state (TD-6-3b: grouped into single object)
+  const defaultFormState: ConstraintFormState = {
+    categoryId: METRIC_CATEGORIES[0].id,
+    operator: "lte",
+    threshold: "5",
+    label: "",
+  }
+  const [formState, setFormState] = useState<ConstraintFormState>(defaultFormState)
+  function onFormChange(patch: Partial<ConstraintFormState>) {
+    setFormState((prev) => ({ ...prev, ...patch }))
+  }
 
   const nodeNameMap = useMemo(() => {
     const map = new Map<string, string>()
@@ -140,10 +144,7 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
   }, [constraints])
 
   function resetForm() {
-    setFormCategoryId(METRIC_CATEGORIES[0].id)
-    setFormOperator("lte")
-    setFormThreshold("5")
-    setFormLabel("")
+    setFormState(defaultFormState)
   }
 
   function handleAdd() {
@@ -155,19 +156,21 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
   function handleEdit(constraint: Constraint) {
     setEditingId(constraint.id)
     setIsAdding(false)
-    setFormCategoryId(constraint.categoryId)
-    setFormOperator(constraint.operator)
-    setFormThreshold(String(constraint.threshold))
-    setFormLabel(constraint.label)
+    setFormState({
+      categoryId: constraint.categoryId,
+      operator: constraint.operator,
+      threshold: String(constraint.threshold),
+      label: constraint.label,
+    })
   }
 
   function handleSave() {
-    const threshold = Math.min(10, Math.max(1, Number(formThreshold) || 5))
-    const validCategoryId = METRIC_CATEGORIES.some((c) => c.id === formCategoryId) ? formCategoryId : METRIC_CATEGORIES[0].id
-    const validOperator: ConstraintOperator = formOperator === "gte" ? "gte" : "lte"
+    const threshold = Math.min(10, Math.max(1, Number(formState.threshold) || 5))
+    const validCategoryId = METRIC_CATEGORIES.some((c) => c.id === formState.categoryId) ? formState.categoryId : METRIC_CATEGORIES[0].id
+    const validOperator: ConstraintOperator = formState.operator === "gte" ? "gte" : "lte"
     const catMeta = CATEGORY_LOOKUP.get(validCategoryId)
     const autoLabel = `${catMeta?.name ?? validCategoryId} ${OPERATOR_LABELS[validOperator]} ${threshold}`
-    const label = (formLabel.trim() || autoLabel).slice(0, 100)
+    const label = (formState.label.trim() || autoLabel).slice(0, 100)
 
     if (editingId) {
       updateConstraint(editingId, {
@@ -232,10 +235,7 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
           return (
             <div key={c.id} data-testid={`constraint-item-${c.id}`}>
               <ConstraintForm
-                formCategoryId={formCategoryId} setFormCategoryId={setFormCategoryId}
-                formOperator={formOperator} setFormOperator={setFormOperator}
-                formThreshold={formThreshold} setFormThreshold={setFormThreshold}
-                formLabel={formLabel} setFormLabel={setFormLabel}
+                formState={formState} onFormChange={onFormChange}
                 editingId={editingId} onSave={handleSave} onCancel={handleCancel}
               />
             </div>
@@ -281,10 +281,7 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
       {isAdding && (
         <div data-testid="constraint-form">
           <ConstraintForm
-            formCategoryId={formCategoryId} setFormCategoryId={setFormCategoryId}
-            formOperator={formOperator} setFormOperator={setFormOperator}
-            formThreshold={formThreshold} setFormThreshold={setFormThreshold}
-            formLabel={formLabel} setFormLabel={setFormLabel}
+            formState={formState} onFormChange={onFormChange}
             editingId={editingId} onSave={handleSave} onCancel={handleCancel}
           />
         </div>

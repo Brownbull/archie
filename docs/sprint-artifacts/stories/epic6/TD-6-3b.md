@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-3b: ConstraintPanel Polish & Constraint Test Coverage
 
-## Status: ready-for-dev
+## Status: review
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** ECC Code Review (2026-03-10) on story TD-6-3a
@@ -24,15 +24,15 @@ Then `architectureStore-constraints.test.ts` asserts `violationsByNodeId` is cor
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Group ConstraintForm props
-  - [ ] 1.1 Create `ConstraintFormState` type and `onFormChange` handler
-  - [ ] 1.2 Update ConstraintForm component and call sites
-  - [ ] 1.3 Verify existing ConstraintPanel tests pass unchanged
+- [x] Task 1: Group ConstraintForm props
+  - [x] 1.1 Create `ConstraintFormState` type and `onFormChange` handler
+  - [x] 1.2 Update ConstraintForm component and call sites
+  - [x] 1.3 Verify existing ConstraintPanel tests pass unchanged (20/20 pass)
 
-- [ ] Task 2: Store-level violationsByNodeId tests
-  - [ ] 2.1 Add test asserting violationsByNodeId populated after addConstraint
-  - [ ] 2.2 Add test asserting violationsByNodeId updated after updateConstraint
-  - [ ] 2.3 Add test asserting violationsByNodeId cleared when constraints removed
+- [x] Task 2: Store-level violationsByNodeId tests
+  - [x] 2.1 Add test asserting violationsByNodeId populated after addConstraint
+  - [x] 2.2 Add test asserting violationsByNodeId updated after updateConstraint
+  - [x] 2.3 Add test asserting violationsByNodeId cleared when constraints removed
 
 ## Dev Notes
 - Source story: [TD-6-3a](./TD-6-3a.md)
