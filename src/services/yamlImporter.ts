@@ -22,7 +22,7 @@ import {
   NODE_WIDTH,
   type ComponentCategoryId,
 } from "@/lib/constants"
-import type { WeightProfile } from "@/lib/constants"
+import type { WeightProfile, Constraint } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge, ArchieNodeData, ArchieEdgeData } from "@/stores/architectureStore"
 
 export interface ImportError {
@@ -37,6 +37,7 @@ export interface HydratedArchitecture {
   placeholderIds: string[]
   name?: string
   weightProfile: WeightProfile
+  constraints: Constraint[]
 }
 
 export type ImportResult =
@@ -377,6 +378,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       placeholderIds,
       name: sanitizedName,
       weightProfile: resolvedWeightProfile,
+      constraints: (data.constraints ?? []).map((c) => ({ ...c, id: crypto.randomUUID() })),
     },
   }
 }
