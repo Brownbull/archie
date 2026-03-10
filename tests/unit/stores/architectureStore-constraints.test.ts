@@ -53,6 +53,7 @@ function setupStoreWithMetrics(
     computedMetrics: makeMetrics(nodeScores),
     constraints,
     constraintViolations: [],
+    violationsByNodeId: new Map(),
     weightProfile: {
       performance: 1.0,
       reliability: 1.0,
@@ -385,6 +386,7 @@ describe("architectureStore - constraints", () => {
 
       const byNode = useArchitectureStore.getState().violationsByNodeId
       const nodeViolations = byNode.get("node-1")
+      expect(nodeViolations).toBeDefined()
       expect(nodeViolations).toHaveLength(1)
       expect(nodeViolations![0].constraintId).toBe("c-vbn-add")
     })
@@ -412,6 +414,22 @@ describe("architectureStore - constraints", () => {
       // Raise threshold back — violation clears
       useArchitectureStore.getState().updateConstraint("c-vbn-update", { threshold: 8 })
       expect(useArchitectureStore.getState().violationsByNodeId.get("node-1")).toBeUndefined()
+    })
+
+    it("populates violationsByNodeId after setConstraints", () => {
+      setupStoreWithMetrics({
+        "node-1": [{ category: "performance", value: 7 }],
+      })
+
+      const constraints = [
+        makeConstraint({ id: "c-vbn-set", categoryId: "performance", operator: "lte", threshold: 5 }),
+      ]
+      useArchitectureStore.getState().setConstraints(constraints)
+
+      const byNode = useArchitectureStore.getState().violationsByNodeId
+      expect(byNode.get("node-1")).toBeDefined()
+      expect(byNode.get("node-1")).toHaveLength(1)
+      expect(byNode.get("node-1")![0].constraintId).toBe("c-vbn-set")
     })
 
     it("clears violationsByNodeId when constraints are removed", () => {

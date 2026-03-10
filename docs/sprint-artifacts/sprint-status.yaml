@@ -179,7 +179,7 @@ development_status:
   td-6-2b-constraint-test-hardening: done  # DEPENDS: td-6-2a
   6-3-constraint-management-ui-and-canvas-indicators: done
   td-6-3a-constraint-ui-perf-and-structure: done  # DEPENDS: 6-3
-  td-6-3b-constraint-panel-polish-and-test-coverage: review  # DEPENDS: td-6-3a
+  td-6-3b-constraint-panel-polish-and-test-coverage: done  # DEPENDS: td-6-3a
   6-4-yaml-constraint-export-import: ready-for-dev
   6-5-e2e-constraint-guardrails-flow: ready-for-dev
   epic-6-retrospective: optional

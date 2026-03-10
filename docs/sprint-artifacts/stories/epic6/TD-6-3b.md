@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-3b: ConstraintPanel Polish & Constraint Test Coverage
 
-## Status: review
+## Status: done
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** ECC Code Review (2026-03-10) on story TD-6-3a
@@ -39,3 +39,25 @@ Then `architectureStore-constraints.test.ts` asserts `violationsByNodeId` is cor
 - Review findings: #1 (panel subscription), #3 (wide props), #4 (silent clamp), #6 (native select), #7 (untested helper), #10 (store coverage)
 - Items #1 (panel subscription optimization), #4 (threshold validation UX), #6 (shadcn select) are pre-existing issues noted during review — address opportunistically if touching these areas
 - Files affected: `src/components/dashboard/ConstraintPanel.tsx`, `tests/unit/stores/architectureStore-constraints.test.ts`
+
+## Deferred Items (Review 2026-03-10)
+
+| # | Finding | Sev | Action |
+|---|---------|-----|--------|
+| 1 | `defaultFormState` declared inside component body — stale-closure risk if it ever derives from state/props | WARN | Address when ConstraintPanel is next touched (6-4/6-5) |
+| 4 | `onFormChange` not `useCallback`-wrapped — harmless unless `ConstraintForm` gets `React.memo` | LOW | Address opportunistically |
+| 5 | Edit-form wrapper `div` missing `data-testid` (add-form has `constraint-form`) | LOW | Address opportunistically |
+| 6 | `violationsByNodeId` tests only cover single-node scenarios | LOW | Address when constraint tests are extended |
+| 7 | `violationsByNodeId` not asserted after `loadArchitecture` | LOW | Address when constraint tests are extended |
+
+## Senior Developer Review (ECC)
+- **Date:** 2026-03-10
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Score:** 8.5/10 (code) + 6→8/10 (test, post-fix) = **8.3/10** overall
+- **Outcome:** APPROVE — 3 quick fixes applied, 5 LOW items deferred
+- **Quick fixes:** #2 missing `setConstraints` violationsByNodeId test (AC-2 gap), #3 `setupStoreWithMetrics` missing `violationsByNodeId` reset, #8 `.toBeDefined()` guard
+- **Tests:** 1682/1682 pass (21 constraint store tests, +1 from fix)
+- **Cost:** $7.78
+
+<!-- CITED: L2-009 (P9 Incomplete Specification) -->
