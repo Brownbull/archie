@@ -24,7 +24,8 @@ import {
 } from "@/components/ui/collapsible"
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
 import { WeightSliders } from "@/components/dashboard/WeightSliders"
-import { ChevronDown } from "lucide-react"
+import { ConstraintPanel } from "@/components/dashboard/ConstraintPanel"
+import { ChevronDown, AlertTriangle } from "lucide-react"
 
 interface DashboardOverlayProps {
   open: boolean
@@ -40,8 +41,11 @@ export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) 
     weightedAggregateScore,
     isNonDefaultWeights,
   } = useDashboardWeights()
+  const constraintViolations = useArchitectureStore((s) => s.constraintViolations)
+  const constraintCount = useArchitectureStore((s) => s.constraints).length
   const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [weightsOpen, setWeightsOpen] = useState(false)
+  const [constraintsOpen, setConstraintsOpen] = useState(false)
 
   const breakdowns = useMemo(
     () =>
@@ -104,6 +108,37 @@ export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) 
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-3">
             <WeightSliders />
+          </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible open={constraintsOpen} onOpenChange={setConstraintsOpen}>
+          <CollapsibleTrigger
+            data-testid="constraint-guardrails-toggle"
+            className="flex w-full items-center justify-between rounded-lg border border-archie-border px-3 py-2 text-sm font-medium hover:bg-muted/30"
+          >
+            <span className="flex items-center gap-2">
+              Constraint Guardrails
+              {constraintViolations.length > 0 && (
+                <span
+                  data-testid="constraint-violation-indicator"
+                  className="flex items-center gap-1 rounded-full bg-red-500/15 px-1.5 py-0.5 text-xs text-red-600"
+                >
+                  <AlertTriangle className="h-3 w-3" />
+                  {constraintViolations.length}
+                </span>
+              )}
+              {constraintCount > 0 && constraintViolations.length === 0 && (
+                <span className="rounded-full bg-green-500/15 px-1.5 py-0.5 text-xs text-green-600">
+                  All clear
+                </span>
+              )}
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${constraintsOpen ? "rotate-180" : ""}`}
+            />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pt-3">
+            <ConstraintPanel onCloseOverlay={() => onOpenChange(false)} />
           </CollapsibleContent>
         </Collapsible>
 

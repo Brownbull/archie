@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useMemo } from "react"
 import { Handle, Position } from "@xyflow/react"
 import type { NodeProps } from "@xyflow/react"
 import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
@@ -6,6 +6,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
+import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 
 function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const category = COMPONENT_CATEGORIES[data.componentCategory as ComponentCategoryId]
@@ -15,6 +16,20 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Heatmap state — targeted selectors (AC-ARCH-PATTERN-5, AC-ARCH-NO-6)
   const heatmapStatus = useArchitectureStore((s) => s.heatmapColors.get(id))
   const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
+
+  // Constraint violations — badge overlay (Story 6-3, AC-ARCH-NO-2: no color changes)
+  const constraintViolations = useArchitectureStore((s) => s.constraintViolations)
+  const constraints = useArchitectureStore((s) => s.constraints)
+  const { violationCount, tooltipText } = useMemo(() => {
+    const nodeViolations = constraintViolations.filter((v) => v.nodeId === id)
+    if (nodeViolations.length === 0) return { violationCount: 0, tooltipText: undefined }
+    const constraintMap = new Map(constraints.map((c) => [c.id, c]))
+    const lines = nodeViolations.map((v) => {
+      const c = constraintMap.get(v.constraintId)
+      return c?.label ?? `${v.categoryId} constraint`
+    })
+    return { violationCount: nodeViolations.length, tooltipText: lines.join(", ") }
+  }, [constraintViolations, constraints, id])
 
   // Box-shadow glow for heatmap (AC-ARCH-PATTERN-6) — separate from category stripe
   const boxShadow =
@@ -31,10 +46,12 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   return (
     <div
       data-testid="archie-node"
-      className="rounded-md border border-archie-border bg-panel shadow-sm"
+      className="relative rounded-md border border-archie-border bg-panel shadow-sm"
       style={{ width: `${NODE_WIDTH}px`, boxShadow }}
       aria-label={ariaLabel}
     >
+      <ConstraintViolationBadge violationCount={violationCount} tooltipText={tooltipText} />
+
       {/* Category stripe — identity, never heatmap (UX18, AC-ARCH-NO-9) */}
       <div
         className="h-1 w-full rounded-t-md"
