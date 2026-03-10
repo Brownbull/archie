@@ -1,64 +1,10 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach } from "vitest"
 import { evaluateConstraints, evaluateNodeConstraints } from "@/engine/constraintEvaluator"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
-import { computeCategoryScores, computeWeightedCategoryScores, type CategoryScore } from "@/engine/dashboardCalculator"
-import { getWeight } from "@/lib/weightUtils"
-import { METRIC_CATEGORIES, DEFAULT_WEIGHT_PROFILE, type Constraint, type MetricCategoryId, type WeightProfile } from "@/lib/constants"
+import { computeCategoryScores, computeWeightedCategoryScores } from "@/engine/dashboardCalculator"
+import { DEFAULT_WEIGHT_PROFILE, type Constraint, type WeightProfile } from "@/lib/constants"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
-
-// --- Helpers ---
-
-function makeMetrics(nodeScores: Record<string, Array<{ category: string; value: number }>>): Map<string, RecalculatedMetrics> {
-  const map = new Map<string, RecalculatedMetrics>()
-  for (const [nodeId, metrics] of Object.entries(nodeScores)) {
-    const metricValues = metrics.map((m, i) => ({
-      id: `metric-${i}`,
-      name: `Metric ${i}`,
-      category: m.category,
-      value: (m.value >= 7 ? "high" : m.value >= 4 ? "medium" : "low") as "high" | "medium" | "low",
-      numericValue: m.value,
-      description: "",
-    }))
-    const overall = metricValues.reduce((s, m) => s + m.numericValue, 0) / metricValues.length
-    map.set(nodeId, { nodeId, metrics: metricValues, overallScore: overall })
-  }
-  return map
-}
-
-function buildPerNodeCategoryScores(
-  computedMetrics: Map<string, RecalculatedMetrics>,
-  weightProfile: WeightProfile,
-): Map<string, CategoryScore[]> {
-  const result = new Map<string, CategoryScore[]>()
-  for (const [nodeId, nodeMetrics] of computedMetrics) {
-    const catMap = new Map<string, { sum: number; count: number }>()
-    for (const metric of nodeMetrics.metrics) {
-      const entry = catMap.get(metric.category) ?? { sum: 0, count: 0 }
-      entry.sum += metric.numericValue
-      entry.count++
-      catMap.set(metric.category, entry)
-    }
-    const scores: CategoryScore[] = METRIC_CATEGORIES.map((cat) => {
-      const entry = catMap.get(cat.id)
-      if (!entry) return { categoryId: cat.id, categoryName: cat.name, score: 0, metricCount: 0, hasData: false }
-      const rawScore = entry.sum / entry.count
-      return { categoryId: cat.id, categoryName: cat.name, score: rawScore * getWeight(cat.id, weightProfile), metricCount: entry.count, hasData: true }
-    })
-    result.set(nodeId, scores)
-  }
-  return result
-}
-
-function makeConstraint(overrides: Partial<Constraint>): Constraint {
-  return {
-    id: `c-${Math.random()}`,
-    categoryId: "performance" as MetricCategoryId,
-    operator: "lte",
-    threshold: 5,
-    label: "Test",
-    ...overrides,
-  }
-}
+import { makeMetrics, buildPerNodeCategoryScores, makeConstraint, resetConstraintCounter } from "../helpers"
 
 /** Simulates the full pipeline: metrics → category scores → weighted → constraints → violations */
 function runPipeline(
@@ -75,6 +21,10 @@ function runPipeline(
 // --- Integration Tests ---
 
 describe("constraint evaluation pipeline (integration)", () => {
+  beforeEach(() => {
+    resetConstraintCounter()
+  })
+
   it("full pipeline: metrics → scores → weights → constraints → violations", () => {
     const metrics = makeMetrics({
       "api-gateway": [

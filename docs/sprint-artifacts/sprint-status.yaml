@@ -175,7 +175,8 @@ development_status:
   epic-6: in-progress
   6-1-constraint-schema-and-types-foundation: done
   6-2-constraint-evaluation-engine-and-store: done
-  td-6-2a-constraint-hardening-and-test-cleanup: ready-for-dev  # DEPENDS: 6-2
+  td-6-2a-constraint-hardening-and-test-cleanup: done  # DEPENDS: 6-2
+  td-6-2b-constraint-test-hardening: ready-for-dev  # DEPENDS: td-6-2a
   6-3-constraint-management-ui-and-canvas-indicators: ready-for-dev
   6-4-yaml-constraint-export-import: ready-for-dev
   6-5-e2e-constraint-guardrails-flow: ready-for-dev

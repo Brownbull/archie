@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-2a: Constraint Engine Hardening & Test Cleanup
 
-## Status: ready-for-dev
+## Status: done
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** KDBP Code Review (2026-03-09) on story 6-2
@@ -33,14 +33,26 @@ Then import from a shared fixture file rather than duplicating.
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add `.max(50)` to constraints array in architectureFileSchema.ts
-- [ ] Task 2: Add DEV-only console.warn in isViolated for unknown operators
-- [ ] Task 3: Refactor evaluateNodeConstraints to use Map lookup
-- [ ] Task 4: Extract shared test helpers to tests/helpers/constraintFixtures.ts
-  - [ ] 4.1 Move makeMetrics to shared file
-  - [ ] 4.2 Move buildPerNodeCategoryScores to shared file
-  - [ ] 4.3 Update imports in architectureStore-constraints.test.ts
-  - [ ] 4.4 Update imports in constraint-evaluation-flow.test.ts
+- [x] Task 1: Add `.max(50)` to constraints array in architectureFileSchema.ts
+- [x] Task 2: Add DEV-only console.warn in isViolated for unknown operators
+- [x] Task 3: Refactor evaluateNodeConstraints to use Map lookup
+- [x] Task 4: Extract shared test helpers to tests/helpers/constraintFixtures.ts
+  - [x] 4.1 Move makeMetrics to shared file
+  - [x] 4.2 Move buildPerNodeCategoryScores to shared file
+  - [x] 4.3 Update imports in architectureStore-constraints.test.ts
+  - [x] 4.4 Update imports in constraint-evaluation-flow.test.ts
+
+## Deferred Items
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| [TD-6-2b](./TD-6-2b.md) | Weight guard in test helper + store-level cap test | LOW | CREATED |
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-09
+- **Agents:** code-reviewer, security-reviewer, architect, tdd-guide (COMPLEX classification)
+- **Outcome:** APPROVE 8.9/10 — 2 quick fixes applied, 1 TD story created (TD-6-2b)
+- **Quick fixes:** deterministic test IDs in shared makeConstraint, JSDoc for two-tier hasData filtering
 
 ## Dev Notes
 - Source story: [6-2](./6-2.md)

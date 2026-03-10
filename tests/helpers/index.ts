@@ -19,3 +19,10 @@ export {
   fullArchitecture,
 } from "./fixtures"
 export type { ArchitectureFixture } from "./fixtures"
+
+export {
+  makeMetrics,
+  buildPerNodeCategoryScores,
+  makeConstraint,
+  resetConstraintCounter,
+} from "./constraintFixtures"

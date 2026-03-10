@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useArchitectureStore } from "@/stores/architectureStore"
-import type { RecalculatedMetrics } from "@/engine/recalculator"
-import type { Constraint, MetricCategoryId } from "@/lib/constants"
+import type { Constraint } from "@/lib/constants"
+import { makeMetrics, makeConstraint, resetConstraintCounter } from "../../helpers"
 
 // Mock dependencies — constraint tests don't need component library or recalculation service
 vi.mock("@/services/componentLibrary", () => ({
@@ -29,34 +29,6 @@ vi.mock("sonner", () => ({
 }))
 
 // --- Test Helpers ---
-
-function makeConstraint(overrides: Partial<Constraint> = {}): Constraint {
-  return {
-    id: `c-${Date.now()}-${Math.random()}`,
-    categoryId: "performance" as MetricCategoryId,
-    operator: "lte",
-    threshold: 5,
-    label: "Test Constraint",
-    ...overrides,
-  }
-}
-
-function makeMetrics(nodeScores: Record<string, Array<{ category: string; value: number }>>): Map<string, RecalculatedMetrics> {
-  const map = new Map<string, RecalculatedMetrics>()
-  for (const [nodeId, metrics] of Object.entries(nodeScores)) {
-    const metricValues = metrics.map((m, i) => ({
-      id: `metric-${i}`,
-      name: `Metric ${i}`,
-      category: m.category,
-      value: (m.value >= 7 ? "high" : m.value >= 4 ? "medium" : "low") as "high" | "medium" | "low",
-      numericValue: m.value,
-      description: "",
-    }))
-    const overall = metricValues.reduce((s, m) => s + m.numericValue, 0) / metricValues.length
-    map.set(nodeId, { nodeId, metrics: metricValues, overallScore: overall })
-  }
-  return map
-}
 
 function setupStoreWithMetrics(
   nodeScores: Record<string, Array<{ category: string; value: number }>>,
@@ -95,6 +67,7 @@ function setupStoreWithMetrics(
 
 describe("architectureStore - constraints", () => {
   beforeEach(() => {
+    resetConstraintCounter()
     mockRecalcService.mockReset()
     useArchitectureStore.setState({
       nodes: [],

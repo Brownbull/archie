@@ -23,6 +23,10 @@ export interface ConstraintViolation {
 function isViolated(operator: ConstraintOperator, actualScore: number, threshold: number): boolean {
   if (operator === "lte") return actualScore > threshold
   if (operator === "gte") return actualScore < threshold
+  // Exception: DEV-only diagnostic logging (TD-6-2a AC-2)
+  if (import.meta.env.DEV) {
+    console.warn(`[constraintEvaluator] Unknown operator "${operator}" — returning false (not violated)`)
+  }
   return false
 }
 
@@ -31,6 +35,11 @@ function isViolated(operator: ConstraintOperator, actualScore: number, threshold
 /**
  * Evaluates all constraints against per-node weighted category scores.
  * Returns an array of violations attributed to specific nodes (AC-3).
+ *
+ * Two-tier hasData filtering: skips categories with no architecture-wide data
+ * (categoryDataMap), then skips per-node scores with no data. This differs from
+ * evaluateNodeConstraints which only checks per-node hasData — single-node
+ * evaluation should not rely on an aggregate signal.
  *
  * Pure function — no React, Zustand, or side effects (AC-ARCH-NO-1).
  *
@@ -96,10 +105,15 @@ export function evaluateNodeConstraints(
 ): ConstraintViolation[] {
   if (constraints.length === 0) return []
 
+  const scoreMap = new Map<string, CategoryScore>()
+  for (const ns of nodeScores) {
+    scoreMap.set(ns.categoryId, ns)
+  }
+
   const violations: ConstraintViolation[] = []
 
   for (const constraint of constraints) {
-    const score = nodeScores.find((s) => s.categoryId === constraint.categoryId)
+    const score = scoreMap.get(constraint.categoryId)
     if (!score || !score.hasData) continue
 
     if (isViolated(constraint.operator, score.score, constraint.threshold)) {
