@@ -17,6 +17,8 @@ import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
  *
  * @throws Error if the generated object fails schema validation (programming error, not user error)
  */
+// Accepts ParsedConstraint[] (no runtime `id`). Constraint.id is intentionally
+// stripped during export — only schema-level fields are serialized to YAML.
 export function exportArchitecture(
   nodes: ArchieNode[],
   edges: ArchieEdge[],

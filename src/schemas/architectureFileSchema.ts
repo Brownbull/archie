@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, type MetricCategoryId } from "@/lib/constants"
+import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, type MetricCategoryId, type ConstraintOperator } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
@@ -27,8 +27,9 @@ export const WeightProfileSchema = z.object(
 const metricCategoryIds = METRIC_CATEGORIES.map((c) => c.id) as [MetricCategoryId, ...MetricCategoryId[]]
 
 // Shared constraint fields: operator, threshold, label — single definition for DRY (TD-6-4b AC-1)
+// ConstraintOperator type in constants.ts must stay in sync with this enum.
 export const constraintBaseFields = {
-  operator: z.enum(["lte", "gte"]),
+  operator: z.enum(["lte", "gte"] satisfies [ConstraintOperator, ...ConstraintOperator[]]),
   threshold: z.number().min(CONSTRAINT_THRESHOLD_MIN).max(CONSTRAINT_THRESHOLD_MAX),
   label: z.string().transform((s) => sanitizeDisplayString(s, CONSTRAINT_LABEL_MAX_LENGTH)),
 }

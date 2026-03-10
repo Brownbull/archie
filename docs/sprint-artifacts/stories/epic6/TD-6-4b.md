@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-4b: Constraint schema DRY + deterministic import IDs
 
-## Status: review
+## Status: done
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** KDBP Code Review (2026-03-10) on story TD-6-4a
@@ -26,6 +26,21 @@ As a **developer**, I want **constraint schema fields deduplicated and constrain
   - [x] 2.1 Remove `crypto.randomUUID()` mapping from `hydrateArchitectureSkeleton` return
   - [x] 2.2 Add ID assignment in the store action that receives `HydratedArchitecture`
   - [x] 2.3 Update any tests that rely on constraint IDs being present after import
+
+## Deferred Items
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| TD-6-4c | Store-layer test for `loadArchitecture` constraint ID assignment | LOW | CREATED |
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-10
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Classification:** SIMPLE
+- **Outcome:** APPROVE 8.0/10
+- **Quick fixes applied:** 6 (type-safety `satisfies`, stale comment, test organization, YAML parity test, export comment, operator enum link)
+- **TD stories created:** 1 (TD-6-4c)
+<!-- CITED: none -->
 
 ## Dev Notes
 - Source story: [TD-6-4a](./TD-6-4a.md)

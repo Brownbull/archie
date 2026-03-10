@@ -225,7 +225,9 @@ describe("Constraint Label Sanitization (AC-5)", () => {
       expect(result.data.label).toBe("Cost limit")
     }
   })
+})
 
+describe("ArchitectureFileSchema with constraints (AC-2, AC-3)", () => {
   it("accepts empty constraints array (AC-3)", () => {
     const result = ArchitectureFileSchema.safeParse({
       schemaVersion: "2.0.0",
@@ -235,9 +237,7 @@ describe("Constraint Label Sanitization (AC-5)", () => {
     })
     expect(result.success).toBe(true)
   })
-})
 
-describe("ArchitectureFileSchema with constraints (AC-2, AC-3)", () => {
   const validV2File = {
     schemaVersion: "2.0.0",
     nodes: [validNode],
@@ -474,5 +474,28 @@ describe("Constraint DRY base fields (TD-6-4b AC-1)", () => {
     if (result.success) {
       expect(result.data.label).toBe("test")
     }
+  })
+
+  it("YAML variant rejects same invalid inputs as camelCase variant (DRY behavioral parity)", () => {
+    const yamlBase = {
+      schema_version: "2.0.0",
+      nodes: [{ id: "node-1", component_id: "postgresql", position: { x: 100, y: 200 } }],
+      edges: [{ id: "edge-1", source_node_id: "node-1", target_node_id: "node-2" }],
+    }
+    // Invalid operator rejected in YAML path
+    expect(ArchitectureFileYamlSchema.safeParse({
+      ...yamlBase,
+      constraints: [{ category_id: "performance", operator: "eq", threshold: 5, label: "test" }],
+    }).success).toBe(false)
+    // Invalid threshold rejected in YAML path
+    expect(ArchitectureFileYamlSchema.safeParse({
+      ...yamlBase,
+      constraints: [{ category_id: "performance", operator: "lte", threshold: 0, label: "test" }],
+    }).success).toBe(false)
+    // Invalid category rejected in YAML path
+    expect(ArchitectureFileYamlSchema.safeParse({
+      ...yamlBase,
+      constraints: [{ category_id: "unknown", operator: "lte", threshold: 5, label: "test" }],
+    }).success).toBe(false)
   })
 })
