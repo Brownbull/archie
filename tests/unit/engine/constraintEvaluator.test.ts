@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach } from "vitest"
 import {
   evaluateConstraints,
   evaluateNodeConstraints,
@@ -52,6 +52,10 @@ function makePerNodeScores(nodes: Record<string, Array<{ id: string; score: numb
 // --- evaluateConstraints ---
 
 describe("evaluateConstraints", () => {
+  beforeEach(() => {
+    constraintCounter = 0
+  })
+
   it("returns empty array when no constraints provided (5.1)", () => {
     const perNodeScores = makePerNodeScores({
       "node-1": [{ id: "performance", score: 8 }],
@@ -314,6 +318,10 @@ describe("evaluateConstraints", () => {
 // --- evaluateNodeConstraints ---
 
 describe("evaluateNodeConstraints", () => {
+  beforeEach(() => {
+    constraintCounter = 0
+  })
+
   it("returns empty array when no constraints", () => {
     const scores = [makeCategoryScore("performance", 8)]
 
