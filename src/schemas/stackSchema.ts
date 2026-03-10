@@ -18,12 +18,12 @@ export const StackComponentSchema = z.object({
 export const StackConnectionSchema = z.object({
   sourceComponentIndex: z.number().int().min(0),
   targetComponentIndex: z.number().int().min(0),
-  connectionType: z.string().min(1),
+  connectionType: z.string().min(1).max(100),
 }).strict()
 
 export const StackCategoryScoreSchema = z.object({
   categoryId: z.enum(METRIC_CATEGORY_IDS),
-  categoryName: z.string().min(1),
+  categoryName: z.string().min(1).max(100),
   score: z.number().min(0).max(10),
   metricCount: z.number().int().min(0),
   hasData: z.boolean(),
@@ -33,11 +33,11 @@ export const StackCategoryScoreSchema = z.object({
 
 const StackDefinitionBaseSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().min(1),
+  name: z.string().min(1).max(200),
+  description: z.string().min(1).max(2000),
   components: z.array(StackComponentSchema).min(1).max(MAX_STACK_COMPONENTS),
   connections: z.array(StackConnectionSchema).max(MAX_STACK_CONNECTIONS),
-  tradeOffProfile: z.array(StackCategoryScoreSchema),
+  tradeOffProfile: z.array(StackCategoryScoreSchema).max(METRIC_CATEGORIES.length),
 }).strict()
 
 export const StackDefinitionSchema = StackDefinitionBaseSchema.superRefine((data, ctx) => {
@@ -70,8 +70,6 @@ export const StackDefinitionSchema = StackDefinitionBaseSchema.superRefine((data
 
 export type StackDefinition = z.infer<typeof StackDefinitionSchema>
 
-// Backward-compatibility aliases (stackRepository.ts imports these names)
-export { StackDefinitionSchema as StackSchema }
 export type Stack = StackDefinition
 
 // --- YAML input variant: snake_case -> camelCase ---
@@ -129,6 +127,8 @@ const StackDefinitionYamlBaseSchema = z.object({
   tradeOffProfile: d.trade_off_profile,
 }))
 
+// Pipe through StackDefinitionSchema to run superRefine cross-validation (connection index
+// bounds, self-connections) on the transformed camelCase output.
 export const StackDefinitionYamlSchema = StackDefinitionYamlBaseSchema.pipe(
   StackDefinitionSchema,
 )

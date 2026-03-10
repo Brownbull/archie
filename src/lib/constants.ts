@@ -126,6 +126,11 @@ export interface StackComponent {
   relativePosition: { x: number; y: number }
 }
 
+/**
+ * Connection between two components in a stack definition.
+ * Indices reference positions in the parent StackDefinition.components array (0-based).
+ * Reordering the components array invalidates existing connections.
+ */
 export interface StackConnection {
   sourceComponentIndex: number
   targetComponentIndex: number

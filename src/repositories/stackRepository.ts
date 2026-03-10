@@ -1,6 +1,6 @@
 import { collection, getDocs } from "firebase/firestore"
 import { db } from "@/lib/firebase"
-import { StackSchema } from "@/schemas/stackSchema"
+import { StackDefinitionSchema } from "@/schemas/stackSchema"
 import type { Stack } from "@/schemas/stackSchema"
 import type { StackRepository } from "@/repositories/types"
 
@@ -11,7 +11,7 @@ class FirestoreStackRepository implements StackRepository {
     const snapshot = await getDocs(collection(db, COLLECTION))
     const stacks: Stack[] = []
     for (const docSnap of snapshot.docs) {
-      const result = StackSchema.safeParse(docSnap.data())
+      const result = StackDefinitionSchema.safeParse(docSnap.data())
       if (result.success) {
         stacks.push(result.data)
       } else {

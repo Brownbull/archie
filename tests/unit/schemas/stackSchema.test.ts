@@ -137,6 +137,10 @@ describe("StackCategoryScoreSchema", () => {
   it("rejects non-integer metricCount", () => {
     expect(StackCategoryScoreSchema.safeParse({ ...validCategoryScore, metricCount: 2.5 }).success).toBe(false)
   })
+
+  it("rejects invalid categoryId not in METRIC_CATEGORIES", () => {
+    expect(StackCategoryScoreSchema.safeParse({ ...validCategoryScore, categoryId: "nonexistent" }).success).toBe(false)
+  })
 })
 
 // --- StackDefinitionSchema ---
