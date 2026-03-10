@@ -6,7 +6,9 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
-import { computeCategoryScores, computeWeightedCategoryScores } from "@/engine/dashboardCalculator"
+import { computeCategoryScores, computeWeightedCategoryScores, type CategoryScore } from "@/engine/dashboardCalculator"
+import { evaluateConstraints, type ConstraintViolation } from "@/engine/constraintEvaluator"
+import { getWeight } from "@/lib/weightUtils"
 import { computeWeightedNodeScore, computeHeatmapStatus, type NodeCategoryAverage } from "@/engine/heatmapCalculator"
 import { evaluateTier } from "@/engine/tierEvaluator"
 import type { TierCategoryScore } from "@/engine/tierEvaluator"
@@ -20,11 +22,13 @@ import {
   DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
   MAX_CANVAS_NODES,
+  METRIC_CATEGORIES,
   NODE_TYPE_COMPONENT,
   NODE_WIDTH,
   POSITION_EPSILON,
   RIPPLE_ANIMATION_DURATION_MS,
   type ComponentCategoryId,
+  type Constraint,
   type WeightProfile,
 } from "@/lib/constants"
 
@@ -77,6 +81,8 @@ interface ArchitectureState {
   recalcGeneration: number
   currentTier: TierResult | null
   weightProfile: WeightProfile
+  constraints: Constraint[]
+  constraintViolations: ConstraintViolation[]
   addNode: (componentId: string, position: { x: number; y: number }) => void
   addNodeSmartPosition: (componentId: string) => void
   updateNodePosition: (
@@ -92,12 +98,16 @@ interface ArchitectureState {
   triggerRecalculation: (changedNodeId: string) => void
   setWeightProfile: (profile: WeightProfile) => void
   setWeightAndRecalculate: (profile: WeightProfile) => void
-  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile) => void
+  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: Constraint[]) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
   updateEdgeLabelOffset: (edgeId: string, offset: { x: number; y: number }) => void
   onNodesChange: (changes: NodeChange<ArchieNode>[]) => void
+  addConstraint: (constraint: Constraint) => void
+  updateConstraint: (id: string, updates: Partial<Omit<Constraint, "id">>) => void
+  removeConstraint: (id: string) => void
+  setConstraints: (constraints: Constraint[]) => void
 }
 
 /**
@@ -176,6 +186,62 @@ function recomputeWeightedHeatmap(
 }
 
 /**
+ * Module-level helper: builds per-node weighted category scores from RecalculatedMetrics.
+ * For each node, groups metrics by category, computes average, then applies weight.
+ * Returns Map<nodeId, CategoryScore[]> suitable for evaluateConstraints.
+ * Story 6-2 AC-3: per-node constraint violations.
+ */
+function buildPerNodeCategoryScores(
+  computedMetrics: Map<string, RecalculatedMetrics>,
+  weightProfile: WeightProfile,
+): Map<string, CategoryScore[]> {
+  const result = new Map<string, CategoryScore[]>()
+  for (const [nodeId, nodeMetrics] of computedMetrics) {
+    const catMap = new Map<string, { sum: number; count: number }>()
+    for (const metric of nodeMetrics.metrics) {
+      const entry = catMap.get(metric.category) ?? { sum: 0, count: 0 }
+      entry.sum += metric.numericValue
+      entry.count++
+      catMap.set(metric.category, entry)
+    }
+    const scores: CategoryScore[] = METRIC_CATEGORIES.map((cat) => {
+      const entry = catMap.get(cat.id)
+      if (!entry) return { categoryId: cat.id, categoryName: cat.name, score: 0, metricCount: 0, hasData: false }
+      const rawScore = entry.sum / entry.count
+      return { categoryId: cat.id, categoryName: cat.name, score: rawScore * getWeight(cat.id, weightProfile), metricCount: entry.count, hasData: true }
+    })
+    result.set(nodeId, scores)
+  }
+  return result
+}
+
+/**
+ * Module-level helper: evaluates constraints and sets violations in store.
+ * Called after scoring changes (recalculation, weight change) and constraint CRUD.
+ * Follows evaluateAndSetTier pattern — receives get/set, optional override metrics.
+ * Story 6-2 AC-ARCH-PATTERN-4.
+ */
+function _evaluateAndSetViolations(
+  get: () => ArchitectureState,
+  set: (partial: Partial<ArchitectureState>) => void,
+  overrideMetrics?: Map<string, RecalculatedMetrics>,
+): void {
+  const { constraints, weightProfile, nodes } = get()
+  if (constraints.length === 0 || nodes.length === 0) {
+    if (get().constraintViolations.length > 0) {
+      set({ constraintViolations: [] })
+    }
+    return
+  }
+  const metrics = overrideMetrics ?? get().computedMetrics
+  const categoryScores = computeCategoryScores(metrics)
+  const weightedScores = computeWeightedCategoryScores(categoryScores, weightProfile)
+  const perNodeScores = buildPerNodeCategoryScores(metrics, weightProfile)
+  const violations = evaluateConstraints(constraints, weightedScores, perNodeScores)
+  set({ constraintViolations: violations })
+}
+
+/**
  * Module-level helper: recomputes the scoring layer (dashboard, heatmap, tier)
  * from existing computedMetrics + weight profile. No BFS propagation.
  * O(nodes * categories) — fast path for weight slider changes (AC-ARCH-PATTERN-4).
@@ -188,6 +254,7 @@ function recomputeScoringLayer(
   const heatmapColors = recomputeWeightedHeatmap(computedMetrics, weightProfile)
   set({ heatmapColors })
   evaluateAndSetTier(get, set)
+  _evaluateAndSetViolations(get, set)
 }
 
 // Module-level tracking for ripple setTimeout IDs (TD-2-2b)
@@ -212,6 +279,8 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   recalcGeneration: 0,
   currentTier: null,
   weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+  constraints: [],
+  constraintViolations: [],
 
   triggerRecalculation: (changedNodeId) => {
     // Cancel pending ripple timeouts from previous recalculation (TD-2-2b)
@@ -255,6 +324,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       fullMetrics.set(nodeId, nodeMetrics)
     }
     evaluateAndSetTier(get, set, fullMetrics)
+    _evaluateAndSetViolations(get, set, fullMetrics)
 
     // Sequential ripple for remaining nodes
     for (const hop of result.propagationHops.filter(
@@ -464,9 +534,9 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       nextHeatmap.delete(nodeId)
       set({ heatmapColors: nextHeatmap })
     }
-    // Tier: clear if canvas is empty, otherwise neighbor recalculation handles it
+    // Tier + constraints: clear if canvas is empty, otherwise neighbor recalculation handles it
     if (get().nodes.length === 0) {
-      set({ currentTier: null })
+      set({ currentTier: null, constraintViolations: [] })
     }
     // Trigger recalculation for surviving neighbors AFTER removal
     for (const neighborId of neighborNodeIds) {
@@ -474,9 +544,10 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         get().triggerRecalculation(neighborId)
       }
     }
-    // Re-evaluate tier when no neighbors triggered recalculation (e.g., isolated node removal)
+    // Re-evaluate tier + constraints when no neighbors triggered recalculation (e.g., isolated node removal)
     if (neighborNodeIds.size === 0 && get().nodes.length > 0) {
       evaluateAndSetTier(get, set)
+      _evaluateAndSetViolations(get, set)
     }
   },
 
@@ -522,11 +593,12 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       }
       set({ computedMetrics: nextComputed, heatmapColors: nextHeatmap })
     }
-    // Tier: clear if canvas is empty, otherwise re-evaluate
+    // Tier + constraints: clear if canvas is empty, otherwise re-evaluate
     if (get().nodes.length === 0) {
-      set({ currentTier: null })
+      set({ currentTier: null, constraintViolations: [] })
     } else {
       evaluateAndSetTier(get, set)
+      _evaluateAndSetViolations(get, set)
     }
   },
 
@@ -598,7 +670,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     recomputeScoringLayer(get, set)
   },
 
-  loadArchitecture: (nodes, edges, weightProfile?) => {
+  loadArchitecture: (nodes, edges, weightProfile?, constraints?) => {
     // Cancel pending ripple timeouts from previous architecture
     clearPendingRippleTimeouts()
 
@@ -614,6 +686,8 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       recalcGeneration: get().recalcGeneration + 1,
       currentTier: null,
       weightProfile: weightProfile ?? get().weightProfile,
+      constraints: constraints ?? [],
+      constraintViolations: [],
     })
 
     // Clear uiStore selection state (cross-store pattern from removeNode)
@@ -653,13 +727,41 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   onNodesChange: (changes) => {
     set({ nodes: applyNodeChanges(changes, get().nodes) })
   },
+
+  // --- Constraint CRUD (Story 6-2 AC-ARCH-PATTERN-3) ---
+  // Each action modifies constraints then re-evaluates violations from existing scores.
+  // No BFS propagation (AC-ARCH-NO-3).
+
+  addConstraint: (constraint) => {
+    set({ constraints: [...get().constraints, constraint] })
+    _evaluateAndSetViolations(get, set)
+  },
+
+  updateConstraint: (id, updates) => {
+    set({
+      constraints: get().constraints.map((c) =>
+        c.id === id ? { ...c, ...updates } : c,
+      ),
+    })
+    _evaluateAndSetViolations(get, set)
+  },
+
+  removeConstraint: (id) => {
+    set({ constraints: get().constraints.filter((c) => c.id !== id) })
+    _evaluateAndSetViolations(get, set)
+  },
+
+  setConstraints: (constraints) => {
+    set({ constraints })
+    _evaluateAndSetViolations(get, set)
+  },
 }))
 
 /**
  * Pure selector: extracts the skeleton (nodes + edges) from the current store state.
  * Called on export button click — non-reactive read, not a store action.
  */
-export function getArchitectureSkeleton(): { nodes: ArchieNode[]; edges: ArchieEdge[]; weightProfile: WeightProfile } {
+export function getArchitectureSkeleton(): { nodes: ArchieNode[]; edges: ArchieEdge[]; weightProfile: WeightProfile; constraints: Constraint[] } {
   const state = useArchitectureStore.getState()
-  return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile }
+  return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile, constraints: state.constraints }
 }

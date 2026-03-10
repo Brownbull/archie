@@ -172,9 +172,9 @@ development_status:
   # User defines hard threshold constraints, sees violations on canvas
   # FRs: FR51-FR57, FR71-FR72 | NFRs: NFR14, NFR17, NFR18
   # ============================================================================
-  epic-6: backlog
-  6-1-constraint-schema-and-types-foundation: ready-for-dev
-  6-2-constraint-evaluation-engine-and-store: ready-for-dev
+  epic-6: in-progress
+  6-1-constraint-schema-and-types-foundation: done
+  6-2-constraint-evaluation-engine-and-store: review
   6-3-constraint-management-ui-and-canvas-indicators: ready-for-dev
   6-4-yaml-constraint-export-import: ready-for-dev
   6-5-e2e-constraint-guardrails-flow: ready-for-dev
@@ -203,3 +203,28 @@ development_status:
   7-3-yaml-data-context-export-import: ready-for-dev
   7-4-e2e-data-context-and-fit-flow: ready-for-dev
   epic-7-retrospective: optional
+
+  # ============================================================================
+  # Epic 7.5: Weighted Pathway Guidance (stories TBD — needs brainstorming + ADR)
+  # User sees personalized tier progression hints and component suggestions
+  # that account for their weight profile, constraints, and data context.
+  # V4 alignment fix: "Show the roads, not just the dot"
+  #
+  # PREREQUISITES before story creation:
+  #   1. Brainstorming: What does pathway guidance look like in the UI?
+  #      (tier overlay? dashboard section? inspector panel?)
+  #   2. Architecture decision: How does the suggestion engine work?
+  #      (gap analysis algorithm, ranking by weights, constraint filtering)
+  #   3. PRD amendment: New FRs needed (FR73+) — no spec exists yet
+  #
+  # Origin: Alignment check 2026-03-07 — V4 DRIFTING after Epic 5
+  # Depends on: Epic 5 (weights), Epic 6 (constraints), Epic 7 (data context)
+  # ============================================================================
+  epic-7.5: backlog
+  # Stories drafted — NOT ready-for-dev until brainstorming + ADR complete
+  7.5-0-brainstorming-and-architecture-decisions: drafted
+  7.5-1-tier-gap-analysis-engine: drafted
+  7.5-2-component-suggestion-logic-and-ranking: drafted
+  7.5-3-pathway-guidance-ui: drafted
+  7.5-4-e2e-pathway-guidance-flow: drafted
+  epic-7.5-retrospective: optional
