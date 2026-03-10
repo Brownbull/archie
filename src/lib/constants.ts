@@ -116,6 +116,31 @@ export interface Constraint {
 /** Constraint as parsed from YAML — no runtime `id` yet (assigned in loadArchitecture, TD-6-4b) */
 export type ParsedConstraint = Omit<Constraint, "id">
 
+// Stack definitions (Story 8-1: Stack Browsing foundation)
+export const MAX_STACK_COMPONENTS = 20
+export const MAX_STACK_CONNECTIONS = 50
+
+export interface StackComponent {
+  componentId: string
+  variantId: string
+  relativePosition: { x: number; y: number }
+}
+
+export interface StackConnection {
+  sourceComponentIndex: number
+  targetComponentIndex: number
+  connectionType: string
+}
+
+/** Mirrors CategoryScore shape — defined independently to avoid engine imports in constants */
+export interface StackCategoryScore {
+  categoryId: MetricCategoryId
+  categoryName: string
+  score: number
+  metricCount: number
+  hasData: boolean
+}
+
 // Font presets (Story 2-5)
 // These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally
 // Browser default root is 16px; medium preserves that, small/large shift by ±2px

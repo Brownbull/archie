@@ -1,164 +1,288 @@
 import { describe, it, expect } from "vitest"
-import { StackSchema, StackYamlSchema } from "@/schemas/stackSchema"
+import {
+  StackComponentSchema,
+  StackConnectionSchema,
+  StackCategoryScoreSchema,
+  StackDefinitionSchema,
+  StackDefinitionYamlSchema,
+} from "@/schemas/stackSchema"
 
-describe("StackSchema", () => {
-  const validStack = {
-    id: "mean-stack",
-    name: "MEAN Stack",
-    description: "MongoDB, Express, Angular, Node.js",
-    componentIds: ["mongodb", "node-express", "angular"],
-    tags: ["fullstack", "javascript"],
-  }
+// --- Fixtures ---
 
-  it("accepts valid stack data", () => {
-    const result = StackSchema.safeParse(validStack)
+const validComponent = {
+  componentId: "mongodb",
+  variantId: "default",
+  relativePosition: { x: 0, y: 100 },
+}
+
+const validConnection = {
+  sourceComponentIndex: 0,
+  targetComponentIndex: 1,
+  connectionType: "tcp",
+}
+
+const validCategoryScore = {
+  categoryId: "performance",
+  categoryName: "Performance",
+  score: 7.2,
+  metricCount: 4,
+  hasData: true,
+}
+
+const validStack = {
+  id: "mern-stack",
+  name: "MERN Stack",
+  description: "MongoDB, Express, React, Node.js",
+  components: [
+    { componentId: "mongodb", variantId: "default", relativePosition: { x: 0, y: 0 } },
+    { componentId: "node-express", variantId: "default", relativePosition: { x: 200, y: 0 } },
+    { componentId: "react-app", variantId: "default", relativePosition: { x: 200, y: 200 } },
+  ],
+  connections: [
+    { sourceComponentIndex: 0, targetComponentIndex: 1, connectionType: "tcp" },
+    { sourceComponentIndex: 1, targetComponentIndex: 2, connectionType: "http" },
+  ],
+  tradeOffProfile: [
+    { categoryId: "performance", categoryName: "Performance", score: 7.2, metricCount: 4, hasData: true },
+    { categoryId: "scalability", categoryName: "Scalability", score: 6.5, metricCount: 3, hasData: true },
+  ],
+}
+
+// --- StackComponentSchema ---
+
+describe("StackComponentSchema", () => {
+  it("accepts valid component", () => {
+    const result = StackComponentSchema.safeParse(validComponent)
     expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data).toEqual(validStack)
-    }
   })
 
-  it("rejects missing name", () => {
-    const { name: _name, ...withoutName } = validStack
-    const result = StackSchema.safeParse(withoutName)
-    expect(result.success).toBe(false)
+  it("rejects missing componentId", () => {
+    const { componentId: _, ...rest } = validComponent
+    expect(StackComponentSchema.safeParse(rest).success).toBe(false)
   })
 
-  it("rejects missing componentIds", () => {
-    const { componentIds: _ids, ...withoutComponents } = validStack
-    const result = StackSchema.safeParse(withoutComponents)
-    expect(result.success).toBe(false)
+  it("rejects empty componentId", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, componentId: "" }).success).toBe(false)
   })
 
-  it("rejects unknown keys with strict mode", () => {
-    const result = StackSchema.safeParse({ ...validStack, extra: "field" })
-    expect(result.success).toBe(false)
+  it("rejects missing variantId", () => {
+    const { variantId: _, ...rest } = validComponent
+    expect(StackComponentSchema.safeParse(rest).success).toBe(false)
   })
 
-  it("accepts empty tags array", () => {
-    const result = StackSchema.safeParse({ ...validStack, tags: [] })
-    expect(result.success).toBe(true)
+  it("rejects missing relativePosition", () => {
+    const { relativePosition: _, ...rest } = validComponent
+    expect(StackComponentSchema.safeParse(rest).success).toBe(false)
   })
 
-  it("accepts empty componentIds array", () => {
-    const result = StackSchema.safeParse({ ...validStack, componentIds: [] })
-    expect(result.success).toBe(true)
+  it("rejects unknown keys (strict)", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, extra: "field" }).success).toBe(false)
   })
 })
 
-describe("StackYamlSchema", () => {
-  const validYamlStack = {
-    id: "mean-stack",
-    name: "MEAN Stack",
-    description: "MongoDB, Express, Angular, Node.js",
-    component_ids: ["mongodb", "node-express", "angular"],
-    tags: ["fullstack", "javascript"],
-  }
+// --- StackConnectionSchema ---
 
-  it("transforms snake_case component_ids to camelCase componentIds", () => {
-    const result = StackYamlSchema.safeParse(validYamlStack)
-    expect(result.success).toBe(true)
-    if (result.success) {
-      expect(result.data).toEqual({
-        id: "mean-stack",
-        name: "MEAN Stack",
-        description: "MongoDB, Express, Angular, Node.js",
-        componentIds: ["mongodb", "node-express", "angular"],
-        tags: ["fullstack", "javascript"],
-      })
-    }
-  })
-
-  it("rejects camelCase componentIds (expects snake_case)", () => {
-    const result = StackYamlSchema.safeParse({
-      id: "mean-stack",
-      name: "MEAN Stack",
-      description: "MongoDB, Express, Angular, Node.js",
-      componentIds: ["mongodb", "node-express", "angular"],
-      tags: ["fullstack", "javascript"],
-    })
-    expect(result.success).toBe(false)
-  })
-
-  it("rejects invalid data (missing required fields)", () => {
-    const result = StackYamlSchema.safeParse({ id: "incomplete" })
-    expect(result.success).toBe(false)
-  })
-
-  it("rejects unknown keys with strict mode", () => {
-    const result = StackYamlSchema.safeParse({ ...validYamlStack, extra: "field" })
-    expect(result.success).toBe(false)
-  })
-
-  it("accepts empty component_ids array", () => {
-    const result = StackYamlSchema.safeParse({ ...validYamlStack, component_ids: [] })
+describe("StackConnectionSchema", () => {
+  it("accepts valid connection", () => {
+    const result = StackConnectionSchema.safeParse(validConnection)
     expect(result.success).toBe(true)
   })
 
-  it("accepts empty tags array", () => {
-    const result = StackYamlSchema.safeParse({ ...validYamlStack, tags: [] })
-    expect(result.success).toBe(true)
+  it("rejects negative sourceComponentIndex", () => {
+    expect(StackConnectionSchema.safeParse({ ...validConnection, sourceComponentIndex: -1 }).success).toBe(false)
   })
 
-  it("round-trip: YAML output matches StackSchema shape", () => {
-    const result = StackYamlSchema.safeParse(validYamlStack)
-    expect(result.success).toBe(true)
-    if (result.success) {
-      const baseResult = StackSchema.safeParse(result.data)
-      expect(baseResult.success).toBe(true)
-      if (baseResult.success) {
-        expect(baseResult.data).toEqual(result.data)
-      }
-    }
+  it("rejects negative targetComponentIndex", () => {
+    expect(StackConnectionSchema.safeParse({ ...validConnection, targetComponentIndex: -1 }).success).toBe(false)
+  })
+
+  it("rejects non-integer sourceComponentIndex", () => {
+    expect(StackConnectionSchema.safeParse({ ...validConnection, sourceComponentIndex: 1.5 }).success).toBe(false)
+  })
+
+  it("rejects missing connectionType", () => {
+    const { connectionType: _, ...rest } = validConnection
+    expect(StackConnectionSchema.safeParse(rest).success).toBe(false)
+  })
+
+  it("rejects empty connectionType", () => {
+    expect(StackConnectionSchema.safeParse({ ...validConnection, connectionType: "" }).success).toBe(false)
+  })
+
+  it("rejects unknown keys (strict)", () => {
+    expect(StackConnectionSchema.safeParse({ ...validConnection, extra: true }).success).toBe(false)
   })
 })
 
-describe("StackSchema — empty string rejection", () => {
-  const validStack = {
-    id: "mean-stack",
-    name: "MEAN Stack",
-    description: "MongoDB, Express, Angular, Node.js",
-    componentIds: ["mongodb", "node-express", "angular"],
-    tags: ["fullstack", "javascript"],
-  }
+// --- StackCategoryScoreSchema ---
+
+describe("StackCategoryScoreSchema", () => {
+  it("accepts valid category score", () => {
+    const result = StackCategoryScoreSchema.safeParse(validCategoryScore)
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects score > 10", () => {
+    expect(StackCategoryScoreSchema.safeParse({ ...validCategoryScore, score: 11 }).success).toBe(false)
+  })
+
+  it("rejects negative score", () => {
+    expect(StackCategoryScoreSchema.safeParse({ ...validCategoryScore, score: -1 }).success).toBe(false)
+  })
+
+  it("rejects negative metricCount", () => {
+    expect(StackCategoryScoreSchema.safeParse({ ...validCategoryScore, metricCount: -1 }).success).toBe(false)
+  })
+
+  it("rejects non-integer metricCount", () => {
+    expect(StackCategoryScoreSchema.safeParse({ ...validCategoryScore, metricCount: 2.5 }).success).toBe(false)
+  })
+})
+
+// --- StackDefinitionSchema ---
+
+describe("StackDefinitionSchema", () => {
+  it("accepts valid stack definition", () => {
+    const result = StackDefinitionSchema.safeParse(validStack)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.id).toBe("mern-stack")
+      expect(result.data.components).toHaveLength(3)
+      expect(result.data.connections).toHaveLength(2)
+      expect(result.data.tradeOffProfile).toHaveLength(2)
+    }
+  })
 
   it("rejects empty id", () => {
-    const result = StackSchema.safeParse({ ...validStack, id: "" })
-    expect(result.success).toBe(false)
+    expect(StackDefinitionSchema.safeParse({ ...validStack, id: "" }).success).toBe(false)
   })
 
   it("rejects empty name", () => {
-    const result = StackSchema.safeParse({ ...validStack, name: "" })
-    expect(result.success).toBe(false)
+    expect(StackDefinitionSchema.safeParse({ ...validStack, name: "" }).success).toBe(false)
   })
 
   it("rejects empty description", () => {
-    const result = StackSchema.safeParse({ ...validStack, description: "" })
-    expect(result.success).toBe(false)
+    expect(StackDefinitionSchema.safeParse({ ...validStack, description: "" }).success).toBe(false)
+  })
+
+  it("rejects missing required fields", () => {
+    expect(StackDefinitionSchema.safeParse({ id: "incomplete" }).success).toBe(false)
+  })
+
+  it("rejects empty components array", () => {
+    expect(StackDefinitionSchema.safeParse({ ...validStack, components: [] }).success).toBe(false)
+  })
+
+  it("accepts empty connections array", () => {
+    const result = StackDefinitionSchema.safeParse({ ...validStack, connections: [] })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts empty tradeOffProfile array", () => {
+    const result = StackDefinitionSchema.safeParse({ ...validStack, tradeOffProfile: [] })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects unknown keys (strict)", () => {
+    expect(StackDefinitionSchema.safeParse({ ...validStack, extra: "field" }).success).toBe(false)
+  })
+
+  it("rejects connection with sourceComponentIndex >= components.length", () => {
+    const stack = {
+      ...validStack,
+      connections: [{ sourceComponentIndex: 5, targetComponentIndex: 0, connectionType: "tcp" }],
+    }
+    expect(StackDefinitionSchema.safeParse(stack).success).toBe(false)
+  })
+
+  it("rejects connection with targetComponentIndex >= components.length", () => {
+    const stack = {
+      ...validStack,
+      connections: [{ sourceComponentIndex: 0, targetComponentIndex: 10, connectionType: "tcp" }],
+    }
+    expect(StackDefinitionSchema.safeParse(stack).success).toBe(false)
+  })
+
+  it("rejects self-connection (source === target)", () => {
+    const stack = {
+      ...validStack,
+      connections: [{ sourceComponentIndex: 0, targetComponentIndex: 0, connectionType: "tcp" }],
+    }
+    expect(StackDefinitionSchema.safeParse(stack).success).toBe(false)
+  })
+
+  it("accepts null id as invalid", () => {
+    expect(StackDefinitionSchema.safeParse({ ...validStack, id: null }).success).toBe(false)
+  })
+
+  it("accepts null name as invalid", () => {
+    expect(StackDefinitionSchema.safeParse({ ...validStack, name: null }).success).toBe(false)
   })
 })
 
-describe("StackSchema — null rejection", () => {
-  const validStack = {
-    id: "mean-stack",
-    name: "MEAN Stack",
-    description: "MongoDB, Express, Angular, Node.js",
-    componentIds: ["mongodb", "node-express", "angular"],
-    tags: ["fullstack", "javascript"],
+// --- StackDefinitionYamlSchema ---
+
+describe("StackDefinitionYamlSchema", () => {
+  const validYamlStack = {
+    id: "mern-stack",
+    name: "MERN Stack",
+    description: "MongoDB, Express, React, Node.js",
+    components: [
+      { component_id: "mongodb", variant_id: "default", relative_position: { x: 0, y: 0 } },
+      { component_id: "node-express", variant_id: "default", relative_position: { x: 200, y: 0 } },
+    ],
+    connections: [
+      { source_component_index: 0, target_component_index: 1, connection_type: "tcp" },
+    ],
+    trade_off_profile: [
+      { category_id: "performance", category_name: "Performance", score: 7.2, metric_count: 4, has_data: true },
+    ],
   }
 
-  it("rejects null id", () => {
-    const result = StackSchema.safeParse({ ...validStack, id: null })
+  it("transforms snake_case to camelCase", () => {
+    const result = StackDefinitionYamlSchema.safeParse(validYamlStack)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.components[0].componentId).toBe("mongodb")
+      expect(result.data.components[0].variantId).toBe("default")
+      expect(result.data.components[0].relativePosition).toEqual({ x: 0, y: 0 })
+      expect(result.data.connections[0].sourceComponentIndex).toBe(0)
+      expect(result.data.connections[0].targetComponentIndex).toBe(1)
+      expect(result.data.connections[0].connectionType).toBe("tcp")
+      expect(result.data.tradeOffProfile[0].categoryId).toBe("performance")
+      expect(result.data.tradeOffProfile[0].categoryName).toBe("Performance")
+      expect(result.data.tradeOffProfile[0].metricCount).toBe(4)
+      expect(result.data.tradeOffProfile[0].hasData).toBe(true)
+    }
+  })
+
+  it("rejects camelCase input (expects snake_case)", () => {
+    const result = StackDefinitionYamlSchema.safeParse(validStack)
     expect(result.success).toBe(false)
   })
 
-  it("rejects null name", () => {
-    const result = StackSchema.safeParse({ ...validStack, name: null })
-    expect(result.success).toBe(false)
+  it("rejects missing required fields", () => {
+    expect(StackDefinitionYamlSchema.safeParse({ id: "incomplete" }).success).toBe(false)
   })
 
-  it("rejects null description", () => {
-    const result = StackSchema.safeParse({ ...validStack, description: null })
-    expect(result.success).toBe(false)
+  it("rejects unknown keys (strict)", () => {
+    expect(StackDefinitionYamlSchema.safeParse({ ...validYamlStack, extra: "field" }).success).toBe(false)
+  })
+
+  it("round-trip: YAML output matches StackDefinitionSchema shape", () => {
+    const yamlResult = StackDefinitionYamlSchema.safeParse(validYamlStack)
+    expect(yamlResult.success).toBe(true)
+    if (yamlResult.success) {
+      const baseResult = StackDefinitionSchema.safeParse(yamlResult.data)
+      expect(baseResult.success).toBe(true)
+    }
+  })
+
+  it("rejects connection with out-of-bounds indices after transform", () => {
+    const yamlStack = {
+      ...validYamlStack,
+      connections: [{ source_component_index: 5, target_component_index: 0, connection_type: "tcp" }],
+    }
+    expect(StackDefinitionYamlSchema.safeParse(yamlStack).success).toBe(false)
   })
 })

@@ -1,4 +1,12 @@
-export type { WeightProfile, Constraint, ConstraintOperator, ParsedConstraint } from "@/lib/constants"
+export type {
+  WeightProfile,
+  Constraint,
+  ConstraintOperator,
+  ParsedConstraint,
+  StackComponent,
+  StackConnection,
+  StackCategoryScore,
+} from "@/lib/constants"
 export type { MetricValue } from "@/schemas/metricSchema"
 export type { MetricCategory, ScoreInterpretation } from "@/schemas/metricCategorySchema"
 export type {
@@ -8,7 +16,7 @@ export type {
   MetricExplanation,
   ConnectionProperties,
 } from "@/schemas/componentSchema"
-export type { Stack } from "@/schemas/stackSchema"
+export type { Stack, StackDefinition } from "@/schemas/stackSchema"
 export type { Blueprint } from "@/schemas/blueprintSchema"
 export type { ArchieEdgeData } from "@/stores/architectureStore"
 export type { CompatibilityResult } from "@/engine/compatibilityChecker"

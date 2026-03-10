@@ -9,7 +9,7 @@ import type { MetricCategory } from "@/schemas/metricCategorySchema"
 
 let componentMap = new Map<string, Component>()
 let categoryMap = new Map<string, Component[]>()
-let stacks: Stack[] = []
+let stackMap = new Map<string, Stack>()
 let blueprintMap = new Map<string, BlueprintFull>()
 let metricCategoryMap = new Map<string, MetricCategory>()
 let initialized = false
@@ -47,9 +47,14 @@ export const componentLibrary = {
         newMetricCategoryMap.set(mc.id, mc)
       }
 
+      const newStackMap = new Map<string, Stack>()
+      for (const stack of stackData) {
+        newStackMap.set(stack.id, stack)
+      }
+
       componentMap = newComponentMap
       categoryMap = newCategoryMap
-      stacks = stackData
+      stackMap = newStackMap
       blueprintMap = newBlueprintMap
       metricCategoryMap = newMetricCategoryMap
       initialized = true
@@ -88,7 +93,11 @@ export const componentLibrary = {
   },
 
   getStacks(): Stack[] {
-    return stacks
+    return Array.from(stackMap.values())
+  },
+
+  getStackById(id: string): Stack | undefined {
+    return stackMap.get(id)
   },
 
   /** @deprecated Use getAllBlueprints() — kept for backward compatibility */
@@ -115,7 +124,7 @@ export const componentLibrary = {
   reset(): void {
     componentMap = new Map()
     categoryMap = new Map()
-    stacks = []
+    stackMap = new Map()
     blueprintMap = new Map()
     metricCategoryMap = new Map()
     initialized = false
