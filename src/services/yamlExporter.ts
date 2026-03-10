@@ -1,5 +1,7 @@
 import { dump } from "js-yaml"
 import { ArchitectureFileYamlSchema, CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
+import { DEFAULT_WEIGHT_PROFILE, isDefaultWeightProfile } from "@/lib/constants"
+import type { WeightProfile, ParsedConstraint } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
 
 /**
@@ -15,7 +17,14 @@ import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
  *
  * @throws Error if the generated object fails schema validation (programming error, not user error)
  */
-export function exportArchitecture(nodes: ArchieNode[], edges: ArchieEdge[]): string {
+// Accepts ParsedConstraint[] (no runtime `id`). Constraint.id is intentionally
+// stripped during export — only schema-level fields are serialized to YAML.
+export function exportArchitecture(
+  nodes: ArchieNode[],
+  edges: ArchieEdge[],
+  weightProfile?: WeightProfile,
+  constraints?: ParsedConstraint[],
+): string {
   // Extract skeleton from each node (camelCase → snake_case transform, inverse of import)
   const yamlNodes = nodes.map((node) => ({
     id: node.id,
@@ -36,18 +45,35 @@ export function exportArchitecture(nodes: ArchieNode[], edges: ArchieEdge[]): st
   }))
 
   // Assemble root object in logical field order (schema_version first)
-  const exportObj = {
+  // AC-2 / AC-ARCH-PATTERN-1: omit weight_profile when all weights are default
+  const resolvedProfile = weightProfile ?? { ...DEFAULT_WEIGHT_PROFILE }
+  const exportObj: Record<string, unknown> = {
     schema_version: CURRENT_SCHEMA_VERSION,
     nodes: yamlNodes,
     edges: yamlEdges,
   }
+  if (!isDefaultWeightProfile(resolvedProfile)) {
+    exportObj.weight_profile = resolvedProfile
+  }
+  // AC-1 / AC-ARCH-PATTERN-1: include constraints only when non-empty
+  // AC-ARCH-PATTERN-2: transform camelCase → snake_case, strip runtime `id`
+  if (constraints && constraints.length > 0) {
+    exportObj.constraints = constraints.map((c) => ({
+      category_id: c.categoryId,
+      operator: c.operator,
+      threshold: c.threshold,
+      label: c.label,
+    }))
+  }
 
   // Validate against ArchitectureFileYamlSchema before serializing (AC-ARCH-PATTERN-3)
-  // This catches any serialization bugs at the boundary — safeParse transforms to camelCase
-  // internally but we only check .success (discard .data)
+  // Uses the YAML variant (which includes .transform()) for simplicity — the transform
+  // result is discarded; we only check .success to catch serialization bugs at the boundary
   const validation = ArchitectureFileYamlSchema.safeParse(exportObj)
   if (!validation.success) {
-    throw new Error("Architecture data is invalid and cannot be exported.")
+    throw new Error(
+      `Architecture data is invalid and cannot be exported: ${JSON.stringify(validation.error.flatten().fieldErrors)}`,
+    )
   }
 
   // Safe serialization — js-yaml dump() with default options (AC-7, AC-ARCH-NO-4)

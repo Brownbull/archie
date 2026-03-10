@@ -50,6 +50,13 @@ export const EDGE_TYPE_CONNECTION = "archie-connection" as const
 // Canvas node limit — defense-in-depth against client-side performance degradation (TD-1-3a)
 export const MAX_CANVAS_NODES = 50
 
+// Canvas edge limit — defense-in-depth against memory exhaustion from malformed YAML (TD-5-1a)
+export const MAX_EDGES = 200
+
+// Canvas position bounds — defense-in-depth against extreme float injection from malicious YAML (TD-5-1b)
+export const POSITION_MIN = -10000
+export const POSITION_MAX = 10000
+
 // Canvas spatial tolerances
 export const POSITION_EPSILON = 1 // px tolerance for floating-point position comparison
 
@@ -69,6 +76,45 @@ export const METRIC_CATEGORIES = [
 ] as const
 
 export type MetricCategoryId = (typeof METRIC_CATEGORIES)[number]["id"]
+
+// Weight profile (Story 5-1: Priority Scoring foundation)
+export const WEIGHT_MIN = 0
+export const WEIGHT_MAX = 1
+
+export type WeightProfile = Record<MetricCategoryId, number>
+
+export const DEFAULT_WEIGHT_PROFILE: Readonly<WeightProfile> = Object.freeze(
+  Object.fromEntries(METRIC_CATEGORIES.map((c) => [c.id, 1.0])) as WeightProfile,
+)
+
+/** Floating-point epsilon for weight comparison (0.1-step sliders, Story 5-4 AC-ARCH-PATTERN-1) */
+const WEIGHT_EPSILON = 0.01
+
+/** Returns true if every category weight is within epsilon of the default (1.0). */
+export function isDefaultWeightProfile(profile: WeightProfile): boolean {
+  return METRIC_CATEGORIES.every(
+    (c) => Math.abs((profile[c.id] ?? 0) - 1.0) < WEIGHT_EPSILON,
+  )
+}
+
+// Constraint definitions (Story 6-1: Constraint Guardrails foundation)
+export const CONSTRAINT_THRESHOLD_MIN = 1
+export const CONSTRAINT_THRESHOLD_MAX = 10
+export const CONSTRAINT_LABEL_MAX_LENGTH = 100
+export const MAX_CONSTRAINTS = 50
+
+export type ConstraintOperator = "lte" | "gte"
+
+export interface Constraint {
+  id: string
+  categoryId: MetricCategoryId
+  operator: ConstraintOperator
+  threshold: number
+  label: string
+}
+
+/** Constraint as parsed from YAML — no runtime `id` yet (assigned in loadArchitecture, TD-6-4b) */
+export type ParsedConstraint = Omit<Constraint, "id">
 
 // Font presets (Story 2-5)
 // These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally

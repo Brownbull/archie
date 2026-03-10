@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { importYaml, importYamlString, hydrateArchitectureSkeleton } from "@/services/yamlImporter"
 import { MIGRATIONS } from "@/schemas/architectureFileSchema"
-import { MAX_FILE_SIZE } from "@/lib/constants"
+import { DEFAULT_WEIGHT_PROFILE, MAX_FILE_SIZE } from "@/lib/constants"
 
 const { testComponentMap } = vi.hoisted(() => {
   type TestComponent = {
@@ -243,6 +243,66 @@ edges: []
       const result = await importYaml(file)
       expect(result.success).toBe(true)
     })
+
+    it("rejects image/png MIME type with INVALID_MIME_TYPE", async () => {
+      const file = makeFile(validYaml, "test.yaml", "image/png")
+      const result = await importYaml(file)
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
+
+    it("rejects application/pdf MIME type with INVALID_MIME_TYPE", async () => {
+      const file = makeFile(validYaml, "test.yaml", "application/pdf")
+      const result = await importYaml(file)
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
+
+    it("accepts empty MIME type (browser default for .yaml files)", async () => {
+      const file = makeFile(validYaml, "test.yaml", "")
+      file.text = () => Promise.resolve(validYaml)
+      const result = await importYaml(file)
+      expect(result.success).toBe(true)
+    })
+
+    it("accepts application/octet-stream MIME type", async () => {
+      const file = makeFile(validYaml, "test.yaml", "application/octet-stream")
+      file.text = () => Promise.resolve(validYaml)
+      const result = await importYaml(file)
+      expect(result.success).toBe(true)
+    })
+
+    it("rejects video/mp4 MIME type with INVALID_MIME_TYPE", async () => {
+      const file = makeFile(validYaml, "test.yaml", "video/mp4")
+      const result = await importYaml(file)
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
+  })
+
+  describe("importYamlString — size guard (TD-5-4a AC-2)", () => {
+    it("rejects oversized string input with FILE_TOO_LARGE", () => {
+      const oversizedText = "x".repeat(MAX_FILE_SIZE + 1)
+      const result = importYamlString(oversizedText)
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.errors[0].code).toBe("FILE_TOO_LARGE")
+      }
+    })
+
+    it("accepts string at exactly MAX_FILE_SIZE", () => {
+      // At exactly the limit, the guard should NOT fire — content still goes through YAML parse
+      const exactSizeText = "x".repeat(MAX_FILE_SIZE)
+      const result = importYamlString(exactSizeText)
+      // Will fail at YAML parse (not valid YAML), but NOT at size check
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.errors[0].code).not.toBe("FILE_TOO_LARGE")
+      }
+    })
   })
 
   describe("importYamlString — YAML parsing", () => {
@@ -252,6 +312,20 @@ edges: []
       expect(result.success).toBe(false)
       if (result.success) return
       expect(result.errors[0].code).toBe("YAML_PARSE_ERROR")
+    })
+
+    it("does not echo file content in YAML parse error message (TD-6-4a AC-1)", () => {
+      // Unclosed bracket triggers js-yaml YAMLException whose .message includes the line content
+      const result = importYamlString("sensitive_api_key: [unclosed")
+
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("YAML_PARSE_ERROR")
+      // Positive: verify the fixed generic message
+      expect(result.errors[0].message).toBe("YAML file could not be parsed. Check file syntax.")
+      // Negative: verify no content leakage from the file
+      expect(result.errors[0].message).not.toContain("sensitive_api_key")
+      expect(result.errors[0].message).not.toContain("unclosed")
     })
 
     it("rejects non-object YAML (string)", () => {
@@ -585,6 +659,33 @@ describe("hydrateArchitectureSkeleton", () => {
     expect(result.success).toBe(true)
     if (!result.success) return
     expect(result.architecture.placeholderIds).toContain("node-1")
+  })
+
+  it("returns DEFAULT_WEIGHT_PROFILE when input has no weightProfile (TD-5-4a AC-1)", () => {
+    const data = {
+      schemaVersion: "1.0.0",
+      nodes: [],
+      edges: [],
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.weightProfile).toEqual(DEFAULT_WEIGHT_PROFILE)
+  })
+
+  it("normalizes all-zero weightProfile to DEFAULT_WEIGHT_PROFILE (TD-5-4a)", () => {
+    const data = {
+      schemaVersion: "1.0.0",
+      nodes: [],
+      edges: [],
+      weightProfile: Object.fromEntries(
+        Object.keys(DEFAULT_WEIGHT_PROFILE).map((k) => [k, 0]),
+      ),
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.weightProfile).toEqual(DEFAULT_WEIGHT_PROFILE)
   })
 
   it("builds edges for the hydrated architecture", () => {

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel"
+import { DEFAULT_WEIGHT_PROFILE } from "@/lib/constants"
 
 // Mock architectureStore -- selector pattern (component calls useArchitectureStore(selector))
 vi.mock("@/stores/architectureStore", () => ({
@@ -15,31 +16,26 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-// Mock categoryIcons to avoid importing Lucide components in test env
-vi.mock("@/lib/categoryIcons", () => ({
-  CATEGORY_ICONS: new Proxy(
-    {},
-    {
-      get: (_, key) => {
-        const IconMock = ({
-          className,
-          style,
-        }: {
-          className?: string
-          style?: React.CSSProperties
-        }) => (
-          <span
-            data-testid={`icon-${String(key)}`}
-            className={className}
-            style={style}
-          />
-        )
-        IconMock.displayName = String(key)
-        return IconMock
-      },
-    },
-  ),
+// Mock ConstraintPanel (used by DashboardOverlay child)
+vi.mock("@/components/dashboard/ConstraintPanel", () => ({
+  ConstraintPanel: () => <div data-testid="constraint-panel-section" />,
 }))
+
+// Mock categoryIcons to avoid importing Lucide components in test env
+vi.mock("@/lib/categoryIcons", () => {
+  const makeIcon = (key: string) => {
+    const IconMock = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+      <span data-testid={`icon-${key}`} className={className} style={style} />
+    )
+    IconMock.displayName = key
+    return IconMock
+  }
+  const proxy = new Proxy({}, { get: (_, key) => makeIcon(String(key)) })
+  return {
+    CATEGORY_ICONS: proxy,
+    getCategoryIcon: (name: string) => (proxy as Record<string, unknown>)[name],
+  }
+})
 
 import { useArchitectureStore } from "@/stores/architectureStore"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
@@ -51,7 +47,14 @@ const mockUseArchitectureStore = vi.mocked(useArchitectureStore)
 
 function mockEmptyStore() {
   mockUseArchitectureStore.mockImplementation((selector: unknown) => {
-    const state = { computedMetrics: new Map(), currentTier: null, nodes: [] }
+    const state = {
+      computedMetrics: new Map(),
+      currentTier: null,
+      nodes: [],
+      weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+      constraints: [],
+      constraintViolations: [],
+    }
     return (selector as (s: typeof state) => unknown)(state)
   })
 }
@@ -79,9 +82,17 @@ function makeNode(
 
 function mockPopulatedStore(
   metricsMap: Map<string, RecalculatedMetrics>,
+  weightProfileOverrides: Record<string, number> = {},
 ) {
   mockUseArchitectureStore.mockImplementation((selector: unknown) => {
-    const state = { computedMetrics: metricsMap, currentTier: null, nodes: [] }
+    const state = {
+      computedMetrics: metricsMap,
+      currentTier: null,
+      nodes: [],
+      weightProfile: { ...DEFAULT_WEIGHT_PROFILE, ...weightProfileOverrides },
+      constraints: [],
+      constraintViolations: [],
+    }
     return (selector as (s: typeof state) => unknown)(state)
   })
 }
@@ -223,6 +234,44 @@ describe("DashboardPanel", () => {
       render(<DashboardPanel />)
 
       expect(screen.queryByTestId("dashboard-expand-button")).not.toBeInTheDocument()
+    })
+  })
+
+  // --- Story 5-3: Weight badges ---
+
+  describe("weight badges (AC-ARCH-PATTERN-6)", () => {
+    const metrics = new Map([
+      [
+        "node-1",
+        makeNode("node-1", [
+          makeMetric({ id: "latency", category: "performance", numericValue: 8 }),
+          makeMetric({ id: "uptime", category: "reliability", numericValue: 9 }),
+        ]),
+      ],
+    ])
+
+    it("does not show weight badges when all weights are default", () => {
+      mockPopulatedStore(metrics)
+      render(<DashboardPanel />)
+
+      expect(screen.queryByTestId("weight-badge-performance")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("weight-badge-reliability")).not.toBeInTheDocument()
+    })
+
+    it("shows weight badge on category with non-default weight", () => {
+      mockPopulatedStore(metrics, { performance: 0.5 })
+      render(<DashboardPanel />)
+
+      const badge = screen.getByTestId("weight-badge-performance")
+      expect(badge).toBeInTheDocument()
+      expect(badge).toHaveTextContent("0.5x")
+    })
+
+    it("does not show badge on category with default weight", () => {
+      mockPopulatedStore(metrics, { performance: 0.5 })
+      render(<DashboardPanel />)
+
+      expect(screen.queryByTestId("weight-badge-reliability")).not.toBeInTheDocument()
     })
   })
 

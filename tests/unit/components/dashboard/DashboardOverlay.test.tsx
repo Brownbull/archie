@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { DashboardOverlay } from "@/components/dashboard/DashboardOverlay"
+import { DEFAULT_WEIGHT_PROFILE } from "@/lib/constants"
 
 vi.mock("@/stores/architectureStore", () => ({
   useArchitectureStore: vi.fn(),
@@ -14,19 +15,29 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-vi.mock("@/lib/categoryIcons", () => ({
-  CATEGORY_ICONS: new Proxy(
-    {},
-    {
-      get: (_, key) => {
-        const IconMock = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
-          <span data-testid={`icon-${String(key)}`} className={className} style={style} />
-        )
-        IconMock.displayName = String(key)
-        return IconMock
-      },
-    },
-  ),
+vi.mock("@/lib/categoryIcons", () => {
+  const makeIcon = (key: string) => {
+    const IconMock = ({ className, style }: { className?: string; style?: React.CSSProperties }) => (
+      <span data-testid={`icon-${key}`} className={className} style={style} />
+    )
+    IconMock.displayName = key
+    return IconMock
+  }
+  const proxy = new Proxy({}, { get: (_, key) => makeIcon(String(key)) })
+  return {
+    CATEGORY_ICONS: proxy,
+    getCategoryIcon: (name: string) => (proxy as Record<string, unknown>)[name],
+  }
+})
+
+// Mock WeightSliders to keep overlay tests focused
+vi.mock("@/components/dashboard/WeightSliders", () => ({
+  WeightSliders: () => <div data-testid="weight-sliders-section" />,
+}))
+
+// Mock ConstraintPanel to keep overlay tests focused
+vi.mock("@/components/dashboard/ConstraintPanel", () => ({
+  ConstraintPanel: () => <div data-testid="constraint-panel-section" />,
 }))
 
 import { useArchitectureStore } from "@/stores/architectureStore"
@@ -56,6 +67,11 @@ describe("DashboardOverlay", () => {
       (selector as (s: any) => any)({
         computedMetrics: new Map(),
         nodes: [],
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -75,6 +91,11 @@ describe("DashboardOverlay", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (selector as (s: any) => any)({
         computedMetrics: metricsMap,
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
         nodes: [
           { id: "n1", data: { componentName: "PostgreSQL", archieComponentId: "pg", activeConfigVariantId: "default", componentCategory: "data-storage" } },
           { id: "n2", data: { componentName: "Redis", archieComponentId: "redis", activeConfigVariantId: "default", componentCategory: "caching" } },
@@ -97,6 +118,11 @@ describe("DashboardOverlay", () => {
       (selector as (s: any) => any)({
         computedMetrics: new Map(),
         nodes: [],
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -113,6 +139,11 @@ describe("DashboardOverlay", () => {
       (selector as (s: any) => any)({
         computedMetrics: new Map(),
         nodes: [],
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -130,6 +161,11 @@ describe("DashboardOverlay", () => {
       (selector as (s: any) => any)({
         computedMetrics: new Map(),
         nodes: [],
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
       }),
     )
 
@@ -137,6 +173,97 @@ describe("DashboardOverlay", () => {
 
     await user.keyboard("{Escape}")
     expect(onOpenChange).toHaveBeenCalledWith(false)
+  })
+
+  // --- Story 5-3: Priority Weights section ---
+
+  describe("priority weights section (AC-ARCH-PATTERN-5)", () => {
+    it("renders weight sliders toggle", () => {
+      mockUseArchitectureStore.mockImplementation((selector) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (selector as (s: any) => any)({
+          computedMetrics: new Map(),
+          nodes: [],
+          weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+          setWeightProfile: vi.fn(),
+          setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
+        }),
+      )
+
+      render(<DashboardOverlay open={true} onOpenChange={vi.fn()} />)
+
+      expect(screen.getByText("Priority Weights")).toBeInTheDocument()
+    })
+
+    it("shows 'Custom' indicator when weights are non-default", () => {
+      mockUseArchitectureStore.mockImplementation((selector) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (selector as (s: any) => any)({
+          computedMetrics: new Map(),
+          nodes: [],
+          weightProfile: { ...DEFAULT_WEIGHT_PROFILE, performance: 0.5 },
+          setWeightProfile: vi.fn(),
+          setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
+        }),
+      )
+
+      render(<DashboardOverlay open={true} onOpenChange={vi.fn()} />)
+
+      expect(screen.getByTestId("weight-indicator")).toBeInTheDocument()
+      expect(screen.getByText("Custom")).toBeInTheDocument()
+    })
+
+    it("does not show indicator when weights are default", () => {
+      mockUseArchitectureStore.mockImplementation((selector) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (selector as (s: any) => any)({
+          computedMetrics: new Map(),
+          nodes: [],
+          weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+          setWeightProfile: vi.fn(),
+          setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
+        }),
+      )
+
+      render(<DashboardOverlay open={true} onOpenChange={vi.fn()} />)
+
+      expect(screen.queryByTestId("weight-indicator")).not.toBeInTheDocument()
+    })
+  })
+
+  it("shows weighted score when weights are non-default (TD-5-3a)", () => {
+    const metricsMap = new Map([
+      ["n1", makeMetrics("n1", 7)],
+      ["n2", makeMetrics("n2", 5)],
+    ])
+
+    mockUseArchitectureStore.mockImplementation((selector) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (selector as (s: any) => any)({
+        computedMetrics: metricsMap,
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE, performance: 0.5 },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
+        nodes: [
+          { id: "n1", data: { componentName: "PostgreSQL", archieComponentId: "pg", activeConfigVariantId: "default", componentCategory: "data-storage" } },
+          { id: "n2", data: { componentName: "Redis", archieComponentId: "redis", activeConfigVariantId: "default", componentCategory: "caching" } },
+        ],
+      }),
+    )
+
+    render(<DashboardOverlay open={true} onOpenChange={vi.fn()} />)
+
+    // When weights are non-default, the description should show "Weighted:" prefix
+    expect(screen.getByText(/Weighted:/)).toBeInTheDocument()
+    expect(screen.getByText(/Balanced:/)).toBeInTheDocument()
   })
 
   it("shows aggregate score and component count (AC-FUNC-2)", () => {
@@ -149,6 +276,11 @@ describe("DashboardOverlay", () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (selector as (s: any) => any)({
         computedMetrics: metricsMap,
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
         nodes: [
           { id: "n1", data: { componentName: "PostgreSQL", archieComponentId: "pg", activeConfigVariantId: "default", componentCategory: "data-storage" } },
           { id: "n2", data: { componentName: "Redis", archieComponentId: "redis", activeConfigVariantId: "default", componentCategory: "caching" } },

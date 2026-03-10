@@ -2,6 +2,8 @@ import {
   HEATMAP_THRESHOLD_WARNING,
   HEATMAP_THRESHOLD_BOTTLENECK,
 } from "@/lib/constants"
+import type { WeightProfile } from "@/lib/constants"
+import { getWeight } from "@/lib/weightUtils"
 
 // --- Types ---
 
@@ -39,6 +41,44 @@ export function computeArchitectureHeatmap(
     result.set(nodeId, computeHeatmapStatus(data.overallScore))
   }
   return result
+}
+
+// --- Weighted Node Score ---
+
+export interface NodeCategoryAverage {
+  categoryId: string
+  averageScore: number
+}
+
+/**
+ * Computes a node's weighted overall score from per-category averages.
+ * Formula: sum(categoryAvg * weight) / sum(weight) for non-zero-weight categories.
+ *
+ * Categories with weight 0 are excluded from the average.
+ * Falls back to unweighted average if all weights are 0.
+ * Returns 0 for empty input. Rounded to 1 decimal place.
+ *
+ * Pure function -- weights passed as parameters, no store imports.
+ */
+export function computeWeightedNodeScore(
+  categoryAverages: NodeCategoryAverage[],
+  weights: WeightProfile,
+): number {
+  if (categoryAverages.length === 0) return 0
+
+  // Filter to categories with non-zero weight
+  const weighted = categoryAverages.filter((ca) => getWeight(ca.categoryId, weights) > 0)
+
+  // Fallback: all weights are 0 — use equal weights
+  if (weighted.length === 0) {
+    const sum = categoryAverages.reduce((acc, ca) => acc + ca.averageScore, 0)
+    return Math.round((sum / categoryAverages.length) * 10) / 10
+  }
+
+  const totalWeight = weighted.reduce((acc, ca) => acc + getWeight(ca.categoryId, weights), 0)
+  const weightedSum = weighted.reduce((acc, ca) => acc + ca.averageScore * getWeight(ca.categoryId, weights), 0)
+
+  return Math.round((weightedSum / totalWeight) * 10) / 10
 }
 
 /**
