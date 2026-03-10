@@ -343,11 +343,10 @@ describe("architectureStore - constraints", () => {
 
       const { constraints } = useArchitectureStore.getState()
 
-      // AC-1: every constraint has a non-empty string id
+      // AC-1: every constraint has a non-empty string id assigned by crypto.randomUUID
       expect(constraints).toHaveLength(3)
       for (const c of constraints) {
-        expect(typeof c.id).toBe("string")
-        expect(c.id.length).toBeGreaterThan(0)
+        expect(c.id).toMatch(/^test-uuid-\d+$/)
       }
 
       // AC-2: all IDs are unique

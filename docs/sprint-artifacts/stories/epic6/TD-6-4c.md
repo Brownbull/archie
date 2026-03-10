@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-4c: Store-layer test for constraint ID assignment
 
-## Status: review
+## Status: done
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** KDBP Code Review (2026-03-10) on story TD-6-4b
@@ -26,3 +26,12 @@ As a **developer**, I want **a store-layer test that verifies `loadArchitecture`
 - Source story: [TD-6-4b](./TD-6-4b.md)
 - Review findings: #6
 - Files affected: `tests/unit/stores/architectureStore-constraints.test.ts`
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-10
+- **Classification:** TRIVIAL
+- **Agents:** code-reviewer (sonnet)
+- **Score:** 9.5/10 — APPROVE
+- **Quick fixes applied:** 1 (tightened ID assertion to verify `crypto.randomUUID` stub invocation)
+- **TD stories created:** 0 (1 LOW deferred item — DRY crypto stub — too low-value for separate story)
+<!-- CITED: none -->

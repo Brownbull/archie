@@ -183,7 +183,7 @@ development_status:
   6-4-yaml-constraint-export-import: done
   td-6-4a-import-pipeline-hardening: done  # DEPENDS: 6-4
   td-6-4b-constraint-schema-dry-deterministic-ids: done  # DEPENDS: td-6-4a
-  td-6-4c-store-layer-constraint-id-test: review  # DEPENDS: td-6-4b
+  td-6-4c-store-layer-constraint-id-test: done  # DEPENDS: td-6-4b
   6-5-e2e-constraint-guardrails-flow: ready-for-dev
   epic-6-retrospective: optional
 
