@@ -188,3 +188,6 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-03-10 01:04,e9684de3-0fe,kdbp-code-review,6-2,30min,100,2,22,"<synthetic>, opus",2374,22855,775546,7688005,9.99,1.54,11.53
 2026-03-10 01:40,e6712d72-5fa,kdbp-dev-story,td-6-2a,38min,168,2,41,opus,236,36047,581759,15524646,11.09,2.40,13.49
 2026-03-10 02:23,604673f7-ee2,kdbp-code-review,TD-6-2a,10min,97,4,19,opus,152,27336,767638,7512061,9.00,2.05,11.05
+2026-03-10 02:44,541aec29-5a3,kdbp-code-review,TD-6-2b,7min,80,1,17,opus,115,15208,327359,4896582,5.20,0.65,5.85
+2026-03-10 02:55,b7afe936-081,kdbp-dev-story,6-3,634min,213,2,62,"<synthetic>, opus, sonnet",314,52760,1082335,23661503,19.00,3.66,22.65
+2026-03-10 13:33,1045ddcd-398,ecc-code-review,6-3,12min,103,2,15,"opus, sonnet",4990,27365,410262,8164139,7.79,0.82,8.61

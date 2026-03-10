@@ -42,7 +42,7 @@ export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) 
     isNonDefaultWeights,
   } = useDashboardWeights()
   const constraintViolations = useArchitectureStore((s) => s.constraintViolations)
-  const constraintCount = useArchitectureStore((s) => s.constraints).length
+  const constraintCount = useArchitectureStore((s) => s.constraints.length)
   const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [weightsOpen, setWeightsOpen] = useState(false)
   const [constraintsOpen, setConstraintsOpen] = useState(false)

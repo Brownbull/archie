@@ -37,8 +37,7 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
   const nodeNameMap = useMemo(() => {
     const map = new Map<string, string>()
     for (const node of nodes) {
-      const data = node.data as { componentName: string }
-      map.set(node.id, data.componentName)
+      map.set(node.id, node.data.componentName)
     }
     return map
   }, [nodes])
@@ -72,15 +71,17 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
   }
 
   function handleSave() {
-    const threshold = Number(formThreshold) || 5
-    const catMeta = CATEGORY_LOOKUP.get(formCategoryId)
-    const autoLabel = `${catMeta?.name ?? formCategoryId} ${OPERATOR_LABELS[formOperator]} ${threshold}`
-    const label = formLabel.trim() || autoLabel
+    const threshold = Math.min(10, Math.max(1, Number(formThreshold) || 5))
+    const validCategoryId = METRIC_CATEGORIES.some((c) => c.id === formCategoryId) ? formCategoryId : METRIC_CATEGORIES[0].id
+    const validOperator: ConstraintOperator = formOperator === "gte" ? "gte" : "lte"
+    const catMeta = CATEGORY_LOOKUP.get(validCategoryId)
+    const autoLabel = `${catMeta?.name ?? validCategoryId} ${OPERATOR_LABELS[validOperator]} ${threshold}`
+    const label = (formLabel.trim() || autoLabel).slice(0, 100)
 
     if (editingId) {
       updateConstraint(editingId, {
-        categoryId: formCategoryId,
-        operator: formOperator,
+        categoryId: validCategoryId,
+        operator: validOperator,
         threshold,
         label,
       })
@@ -88,8 +89,8 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
     } else {
       addConstraint({
         id: crypto.randomUUID(),
-        categoryId: formCategoryId,
-        operator: formOperator,
+        categoryId: validCategoryId,
+        operator: validOperator,
         threshold,
         label,
       })
@@ -204,12 +205,12 @@ export function ConstraintPanel({ onCloseOverlay }: ConstraintPanelProps) {
       {violationCount > 0 && (
         <div data-testid="constraint-violation-list" className="space-y-1">
           <p className="text-xs font-medium text-text-secondary">Violations</p>
-          {constraintViolations.map((v, i) => {
+          {constraintViolations.map((v) => {
             const nodeName = nodeNameMap.get(v.nodeId) ?? v.nodeId
             const constraint = constraintMap.get(v.constraintId)
             return (
               <button
-                key={`${v.constraintId}-${v.nodeId}-${i}`}
+                key={`${v.constraintId}-${v.nodeId}`}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1 text-left text-sm hover:bg-muted/50"
                 onClick={() => handleViolationClick(v.nodeId)}
               >
