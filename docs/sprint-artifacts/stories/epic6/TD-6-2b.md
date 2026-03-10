@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-2b: Constraint Test Hardening
 
-## Status: review
+## Status: done
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** KDBP Code Review (2026-03-09) on story TD-6-2a
@@ -30,3 +30,11 @@ Then verify behavior (either schema rejects or store truncates with warning).
 - Source story: [TD-6-2a](./TD-6-2a.md)
 - Review findings: #3 (weight guard), #6 (store cap test)
 - Files affected: tests/helpers/constraintFixtures.ts, tests/unit/stores/architectureStore-constraints.test.ts
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-09
+- **Classification:** TRIVIAL
+- **Agents:** code-reviewer
+- **Score:** 8.5/10 (post-fix)
+- **Outcome:** APPROVE — 3 quick fixes applied (1 HIGH P4 production weight guard, 1 LOW rename, 1 MED false positive resolved). 0 TD stories created.
+- **Quick fixes:** Production weight guard in architectureStore.ts, `w` → `rawWeight` rename in constraintFixtures.ts
