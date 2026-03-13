@@ -24,6 +24,7 @@ vi.mock("@/services/componentLibrary", () => ({
     isInitialized: () => true,
     getAllComponents: () => [],
     getAllBlueprints: () => [],
+    getStacks: () => [],
     getBlueprint: vi.fn(),
     getComponent: vi.fn(),
     getComponentsByCategory: vi.fn(() => []),
@@ -62,10 +63,10 @@ describe("ToolboxPanel", () => {
     expect(screen.getByTestId("search-filter")).toBeInTheDocument()
   })
 
-  it("shows stack placeholder when Stacks tab is clicked", async () => {
+  it("shows stacks empty state when Stacks tab is clicked", async () => {
     render(<ToolboxPanel />)
     await userEvent.click(screen.getByText("Stacks"))
-    expect(screen.getByText("Coming in Phase 2")).toBeInTheDocument()
+    expect(screen.getByTestId("stacks-tab-empty")).toBeInTheDocument()
   })
 
   it("shows blueprint empty state when Blueprints tab is clicked (no blueprints loaded)", async () => {
