@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import type { Stack } from "@/schemas/stackSchema"
+import type { StackDefinition } from "@/schemas/stackSchema"
 
 vi.mock("@/lib/firebase", () => ({
   auth: { currentUser: null },
@@ -10,7 +10,7 @@ vi.mock("@/lib/firebase", () => ({
 
 // --- Full-stack fixtures (minimal mocking — only Firebase) ---
 
-const mockStacks: Stack[] = [
+const mockStacks: StackDefinition[] = [
   {
     id: "messaging-stack",
     name: "High-Throughput Messaging",
@@ -37,7 +37,7 @@ const componentLookup: Record<string, { id: string; name: string; category: stri
   nginx: { id: "nginx", name: "Nginx", category: "delivery-network", configVariants: [{ id: "load-balancer", name: "Load Balancer" }] },
 }
 
-function setupMocks({ stacks = mockStacks }: { stacks?: Stack[] } = {}) {
+function setupMocks({ stacks = mockStacks }: { stacks?: StackDefinition[] } = {}) {
   vi.doMock("@/hooks/useLibrary", () => ({
     useLibrary: () => ({ isReady: true }),
   }))

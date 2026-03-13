@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react"
 import type { StackDefinition } from "@/schemas/stackSchema"
 import { METRIC_CATEGORIES, COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { getCategoryIcon } from "@/lib/categoryIcons"
+import { sanitizeDisplayString } from "@/lib/sanitize"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 
@@ -30,14 +31,15 @@ export function StackCard({ stack, resolvedComponents }: StackCardProps) {
   return (
     <div
       data-testid={`stack-card-${stack.id}`}
+      aria-label={stack.name}
       className="rounded-md border border-border bg-surface-secondary p-3 space-y-2 cursor-grab active:cursor-grabbing"
       draggable
       onDragStart={handleDragStart}
     >
       {/* Summary section — always visible */}
       <div>
-        <p className="text-sm font-medium text-text-primary">{stack.name}</p>
-        <p className="text-xs text-text-secondary line-clamp-2 mt-0.5">{stack.description}</p>
+        <p className="text-sm font-medium text-text-primary">{sanitizeDisplayString(stack.name, 200)}</p>
+        <p className="text-xs text-text-secondary line-clamp-2 mt-0.5">{sanitizeDisplayString(stack.description, 500)}</p>
       </div>
 
       {/* Component list: icons + names */}
@@ -49,7 +51,7 @@ export function StackCard({ stack, resolvedComponents }: StackCardProps) {
           return (
             <span key={rc.componentId} className="inline-flex items-center gap-1 text-xs text-text-primary">
               {IconComponent && <IconComponent className="h-3 w-3 shrink-0" style={{ color }} />}
-              {rc.componentName}
+              {sanitizeDisplayString(rc.componentName, 100)}
             </span>
           )
         })}
@@ -95,7 +97,7 @@ export function StackCard({ stack, resolvedComponents }: StackCardProps) {
               <ul className="space-y-0.5">
                 {resolvedComponents.map((rc) => (
                   <li key={rc.componentId} className="text-xs text-text-primary">
-                    {rc.componentName} <span className="text-text-secondary">({rc.variantName})</span>
+                    {sanitizeDisplayString(rc.componentName, 100)} <span className="text-text-secondary">({sanitizeDisplayString(rc.variantName, 100)})</span>
                   </li>
                 ))}
               </ul>
@@ -106,14 +108,14 @@ export function StackCard({ stack, resolvedComponents }: StackCardProps) {
               <div>
                 <p className="text-[0.625rem] font-semibold uppercase text-text-secondary mb-1">Connections</p>
                 <ul className="space-y-0.5">
-                  {stack.connections.map((conn, i) => {
+                  {stack.connections.map((conn, idx) => {
                     const source = resolvedComponents[conn.sourceComponentIndex]
                     const target = resolvedComponents[conn.targetComponentIndex]
                     const sourceName = source?.componentName ?? `Component ${conn.sourceComponentIndex}`
                     const targetName = target?.componentName ?? `Component ${conn.targetComponentIndex}`
                     return (
-                      <li key={`${conn.sourceComponentIndex}-${conn.targetComponentIndex}-${conn.connectionType}`} className="text-xs text-text-primary">
-                        {sourceName} → {targetName} <span className="text-text-secondary">({conn.connectionType})</span>
+                      <li key={`${idx}-${conn.sourceComponentIndex}-${conn.targetComponentIndex}-${conn.connectionType}`} className="text-xs text-text-primary">
+                        {sanitizeDisplayString(sourceName, 100)} → {sanitizeDisplayString(targetName, 100)} <span className="text-text-secondary">({sanitizeDisplayString(conn.connectionType, 50)})</span>
                       </li>
                     )
                   })}

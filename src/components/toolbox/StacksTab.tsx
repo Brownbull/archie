@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from "react"
+import { Component, useMemo, type ErrorInfo, type ReactNode } from "react"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useLibrary } from "@/hooks/useLibrary"
 import { StackCard, type ResolvedStackComponent } from "@/components/toolbox/StackCard"
@@ -72,6 +72,11 @@ function StacksTabInner() {
 
   const stacks = componentLibrary.getStacks()
 
+  const resolvedMap = useMemo(
+    () => new Map(stacks.map((s) => [s.id, resolveStackComponents(s)])),
+    [stacks],
+  )
+
   if (stacks.length === 0) {
     return (
       <div
@@ -90,7 +95,7 @@ function StacksTabInner() {
           <StackCard
             key={stack.id}
             stack={stack}
-            resolvedComponents={resolveStackComponents(stack)}
+            resolvedComponents={resolvedMap.get(stack.id) ?? []}
           />
         ))}
       </div>
