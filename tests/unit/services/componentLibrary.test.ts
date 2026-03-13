@@ -151,10 +151,41 @@ describe("componentLibrary", () => {
   })
 
   it("getStacks returns stacks from repository", async () => {
-    const mockStacks = [{ id: "mean", name: "MEAN Stack", components: ["mongodb", "express", "angular", "node"], description: "Full-stack JS", tags: ["javascript"], baseMetrics: [], configVariants: [{ id: "default", name: "Default", componentOverrides: {} }] }]
+    const mockStacks = [{
+      id: "mern-stack",
+      name: "MERN Stack",
+      description: "MongoDB, Express, React, Node.js",
+      components: [
+        { componentId: "mongodb", variantId: "default", relativePosition: { x: 0, y: 0 } },
+        { componentId: "node-express", variantId: "default", relativePosition: { x: 200, y: 0 } },
+      ],
+      connections: [{ sourceComponentIndex: 0, targetComponentIndex: 1, connectionType: "tcp" }],
+      tradeOffProfile: [{ categoryId: "performance", categoryName: "Performance", score: 7.2, metricCount: 4, hasData: true }],
+    }]
     mockStackRepo.getAll.mockResolvedValue(mockStacks)
     await componentLibrary.initialize()
     expect(componentLibrary.getStacks()).toEqual(mockStacks)
+  })
+
+  it("getStackById returns correct stack by ID", async () => {
+    const mockStacks = [{
+      id: "mern-stack",
+      name: "MERN Stack",
+      description: "MongoDB, Express, React, Node.js",
+      components: [{ componentId: "mongodb", variantId: "default", relativePosition: { x: 0, y: 0 } }],
+      connections: [],
+      tradeOffProfile: [],
+    }]
+    mockStackRepo.getAll.mockResolvedValue(mockStacks)
+    await componentLibrary.initialize()
+    const stack = componentLibrary.getStackById("mern-stack")
+    expect(stack?.name).toBe("MERN Stack")
+  })
+
+  it("getStackById returns undefined for unknown ID", async () => {
+    mockStackRepo.getAll.mockResolvedValue([])
+    await componentLibrary.initialize()
+    expect(componentLibrary.getStackById("nonexistent")).toBeUndefined()
   })
 
   it("getBlueprints returns blueprints from repository", async () => {

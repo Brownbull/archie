@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from "@testing-library/react"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { componentLibrary } from "@/services/componentLibrary"
+import { resolveStackPlacement } from "@/services/stackPlacement"
 
 const mockScreenToFlowPosition = vi.fn((pos: { x: number; y: number }) => pos)
 const mockFitView = vi.fn()
@@ -78,9 +80,14 @@ vi.mock("@/services/componentLibrary", () => ({
       }
       return undefined
     }),
+    getStackById: vi.fn(),
     isInitialized: () => true,
     reset: vi.fn(),
   },
+}))
+
+vi.mock("@/services/stackPlacement", () => ({
+  resolveStackPlacement: vi.fn(),
 }))
 
 vi.mock("@/lib/firebase", () => ({
@@ -212,7 +219,9 @@ describe("CanvasView", () => {
     const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent
     Object.defineProperty(dropEvent, "dataTransfer", {
       value: {
-        getData: vi.fn(() => "postgresql"),
+        getData: vi.fn((type: string) =>
+          type === "application/archie-component" ? "postgresql" : "",
+        ),
       },
     })
     Object.defineProperty(dropEvent, "clientX", { value: 100 })
@@ -334,5 +343,46 @@ describe("CanvasView", () => {
 
     // setEdges is NOT called by onConnect (addEdge uses its own set() internally)
     expect(setEdgesSpy).not.toHaveBeenCalled()
+  })
+
+  it("onDrop with stack ID calls placeStack via resolveStackPlacement", () => {
+    const mockNode = {
+      id: "stack-node-1",
+      type: "archie-component" as const,
+      position: { x: 0, y: 0 },
+      data: {
+        archieComponentId: "postgresql",
+        activeConfigVariantId: "default",
+        componentName: "PostgreSQL",
+        componentCategory: "data-storage" as const,
+      },
+    }
+    const mockStackDef = { id: "test-stack", name: "Test", description: "", components: [], connections: [], tradeOffProfile: [] }
+
+    vi.mocked(componentLibrary.getStackById).mockReturnValueOnce(mockStackDef)
+    vi.mocked(resolveStackPlacement).mockReturnValueOnce({ nodes: [mockNode], edges: [] })
+    mockScreenToFlowPosition.mockReturnValueOnce({ x: 100, y: 200 })
+
+    const placeStackSpy = vi.spyOn(useArchitectureStore.getState(), "placeStack")
+
+    render(<CanvasView />)
+    const panel = screen.getByTestId("canvas-panel")
+
+    const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent
+    Object.defineProperty(dropEvent, "dataTransfer", {
+      value: {
+        getData: vi.fn((type: string) =>
+          type === "application/archie-stack" ? "test-stack" : "",
+        ),
+        files: [],
+      },
+    })
+    Object.defineProperty(dropEvent, "clientX", { value: 100 })
+    Object.defineProperty(dropEvent, "clientY", { value: 200 })
+    Object.defineProperty(dropEvent, "preventDefault", { value: vi.fn() })
+
+    fireEvent(panel, dropEvent)
+
+    expect(placeStackSpy).toHaveBeenCalledWith([mockNode], [])
   })
 })

@@ -1,46 +1,46 @@
 {
-  "generated": "2026-03-10T15:35:27.682765",
+  "generated": "2026-03-13T01:12:03.487114",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 161,
-  "total_cost": 1864.57,
+  "total_sessions": 171,
+  "total_cost": 1972.9,
   "averages": {
-    "overall": 11.58,
-    "last_10": 11.16,
-    "last_20": 10.46
+    "overall": 11.54,
+    "last_10": 10.83,
+    "last_20": 11.0
   },
   "percentiles": {
-    "p50": 7.91,
+    "p50": 8.3,
     "p75": 13.32,
-    "p90": 19.34,
-    "p95": 26.24
+    "p90": 19.19,
+    "p95": 25.72
   },
   "thresholds": {
-    "warning": 15.68,
-    "high": 20.91
+    "warning": 16.49,
+    "high": 21.99
   },
-  "trend_last10_vs_prev10_pct": 14.4,
+  "trend_last10_vs_prev10_pct": -2.9,
   "recent_outliers": [
-    {
-      "date": "2026-03-10 00:41",
-      "session_id": "b71181d2-a3d",
-      "cost": 18.06,
-      "ratio": 1.7
-    },
     {
       "date": "2026-03-10 02:55",
       "session_id": "b7afe936-081",
       "cost": 22.65,
-      "ratio": 2.2
+      "ratio": 2.1
+    },
+    {
+      "date": "2026-03-13 01:45",
+      "session_id": "a37267ea-52f",
+      "cost": 17.86,
+      "ratio": 1.6
     }
   ],
   "by_model": {
     "opus, sonnet": {
-      "count": 84,
-      "total_cost": 873.6300000000002
+      "count": 91,
+      "total_cost": 942.6300000000001
     },
     "opus": {
-      "count": 26,
-      "total_cost": 328.65000000000003
+      "count": 27,
+      "total_cost": 340.12000000000006
     },
     "haiku, opus": {
       "count": 6,
@@ -55,8 +55,8 @@
       "total_cost": 30.4
     },
     "haiku, opus, sonnet": {
-      "count": 16,
-      "total_cost": 127.97000000000003
+      "count": 18,
+      "total_cost": 155.83000000000004
     },
     "<synthetic>, haiku, opus, sonnet": {
       "count": 1,
@@ -109,22 +109,22 @@
       "p90": 11.63
     },
     "kdbp-code-review": {
-      "count": 19,
-      "total_cost": 165.09,
-      "avg": 8.69,
-      "avg_last_10": 9.53,
-      "p50": 7.78,
-      "p75": 11.29,
-      "p90": 12.34
+      "count": 25,
+      "total_cost": 220.21,
+      "avg": 8.81,
+      "avg_last_10": 9.61,
+      "p50": 8.25,
+      "p75": 10.75,
+      "p90": 12.04
     },
     "kdbp-dev-story": {
-      "count": 10,
-      "total_cost": 135.07,
-      "avg": 13.51,
-      "avg_last_10": 13.51,
+      "count": 14,
+      "total_cost": 188.28,
+      "avg": 13.45,
+      "avg_last_10": 13.69,
       "p50": 13.41,
       "p75": 15.01,
-      "p90": 18.52
+      "p90": 18.0
     }
   }
 }

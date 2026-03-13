@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUiStore, type ToolboxTab } from "@/stores/uiStore"
 import { SearchFilter } from "@/components/toolbox/SearchFilter"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
-import { StackTab } from "@/components/toolbox/StackTab"
+import { StacksTab } from "@/components/toolbox/StacksTab"
 import { BlueprintTab } from "@/components/toolbox/BlueprintTab"
 
 export function ToolboxPanel() {
@@ -25,8 +25,8 @@ export function ToolboxPanel() {
         <TabsContent value="components" className="flex-1 overflow-hidden">
           <ComponentTab />
         </TabsContent>
-        <TabsContent value="stacks" className="flex-1">
-          <StackTab />
+        <TabsContent value="stacks" className="flex-1 overflow-hidden">
+          <StacksTab />
         </TabsContent>
         <TabsContent value="blueprints" className="flex-1">
           <BlueprintTab />

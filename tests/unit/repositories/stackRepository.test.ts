@@ -20,8 +20,12 @@ const validStack = {
   id: "mean-stack",
   name: "MEAN Stack",
   description: "MongoDB, Express, Angular, Node.js",
-  componentIds: ["mongodb", "node-express"],
-  tags: ["fullstack"],
+  components: [
+    { componentId: "mongodb", variantId: "default", relativePosition: { x: 0, y: 0 } },
+    { componentId: "node-express", variantId: "default", relativePosition: { x: 200, y: 0 } },
+  ],
+  connections: [{ sourceComponentIndex: 0, targetComponentIndex: 1, connectionType: "tcp" }],
+  tradeOffProfile: [{ categoryId: "performance", categoryName: "Performance", score: 7.0, metricCount: 3, hasData: true }],
 }
 
 function createMockSnapshot(docs: Array<{ id: string; data: Record<string, unknown> }>) {

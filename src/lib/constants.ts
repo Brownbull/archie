@@ -116,6 +116,42 @@ export interface Constraint {
 /** Constraint as parsed from YAML — no runtime `id` yet (assigned in loadArchitecture, TD-6-4b) */
 export type ParsedConstraint = Omit<Constraint, "id">
 
+// Stack definitions (Story 8-1: Stack Browsing foundation)
+export const MAX_STACK_COMPONENTS = 20
+export const MAX_STACK_CONNECTIONS = 50
+
+// Stack string limits — defense-in-depth against memory exhaustion from malformed Firestore data (TD-8-1a)
+export const STACK_NAME_MAX_LENGTH = 200
+export const STACK_DESC_MAX_LENGTH = 2000
+export const STACK_ID_MAX_LENGTH = 200
+export const STACK_ID_FORMAT = /^[\w-]+$/ // allows: a-z A-Z 0-9 _ -
+
+export interface StackComponent {
+  componentId: string
+  variantId: string
+  relativePosition: { x: number; y: number }
+}
+
+/**
+ * Connection between two components in a stack definition.
+ * Indices reference positions in the parent StackDefinition.components array (0-based).
+ * Reordering the components array invalidates existing connections.
+ */
+export interface StackConnection {
+  sourceComponentIndex: number
+  targetComponentIndex: number
+  connectionType: string
+}
+
+/** Mirrors CategoryScore shape — defined independently to avoid engine imports in constants */
+export interface StackCategoryScore {
+  categoryId: MetricCategoryId
+  categoryName: string
+  score: number
+  metricCount: number
+  hasData: boolean
+}
+
 // Font presets (Story 2-5)
 // These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally
 // Browser default root is 16px; medium preserves that, small/large shift by ±2px

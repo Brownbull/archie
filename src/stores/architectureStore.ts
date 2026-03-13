@@ -16,8 +16,8 @@ import { DEFAULT_TIER_DEFINITIONS } from "@/lib/tierDefinitions"
 import type { TierResult } from "@/lib/tierDefinitions"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
+import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
 import {
-  CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
   DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
@@ -25,7 +25,6 @@ import {
   METRIC_CATEGORIES,
   NODE_TYPE_COMPONENT,
   NODE_WIDTH,
-  POSITION_EPSILON,
   RIPPLE_ANIMATION_DURATION_MS,
   type ComponentCategoryId,
   type Constraint,
@@ -51,26 +50,6 @@ export interface ArchieEdgeData extends Record<string, unknown> {
 export type ArchieNode = Node<ArchieNodeData, typeof NODE_TYPE_COMPONENT>
 export type ArchieEdge = Edge<ArchieEdgeData>
 
-function snapToGrid(value: number): number {
-  return Math.round(value / CANVAS_GRID_SIZE) * CANVAS_GRID_SIZE
-}
-
-const NODE_GAP = CANVAS_GRID_SIZE * 2 // 32px between nodes
-
-function findNextAvailablePosition(nodes: ArchieNode[]): { x: number; y: number } {
-  if (nodes.length === 0) return { x: 0, y: 0 }
-
-  // Place to the right of the rightmost node, snapped to grid
-  const maxX = Math.max(...nodes.map((n) => n.position.x))
-  const sameRowNodes = nodes.filter((n) => Math.abs(n.position.x - maxX) < POSITION_EPSILON)
-  const y = sameRowNodes[0]?.position.y ?? 0
-
-  return {
-    x: snapToGrid(maxX + NODE_WIDTH + NODE_GAP),
-    y: snapToGrid(y),
-  }
-}
-
 interface ArchitectureState {
   nodes: ArchieNode[]
   edges: ArchieEdge[]
@@ -95,6 +74,7 @@ interface ArchitectureState {
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
   removeNode: (nodeId: string) => void
   removeNodes: (nodeIds: string[]) => void
+  placeStack: (nodes: ArchieNode[], edges: ArchieEdge[]) => void
   addEdge: (connection: Connection) => void
   removeEdges: (edgeIds: string[]) => void
   triggerRecalculation: (changedNodeId: string) => void
@@ -438,6 +418,27 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
     set({ nodes: [...get().nodes, newNode] })
     evaluateAndSetTier(get, set)
+    _evaluateAndSetViolations(get, set)
+  },
+
+  placeStack: (newNodes, newEdges) => {
+    if (get().nodes.length + newNodes.length > MAX_CANVAS_NODES) {
+      toast.warning(`Cannot place stack: would exceed canvas limit (${MAX_CANVAS_NODES} components)`)
+      return
+    }
+    // Single state update for all nodes and edges (AC-ARCH-PATTERN-5)
+    set({
+      nodes: [...get().nodes, ...newNodes],
+      edges: [...get().edges, ...newEdges],
+    })
+    // Evaluate tier + constraints after batch update
+    evaluateAndSetTier(get, set)
+    _evaluateAndSetViolations(get, set)
+    // Trigger recalculation for each placed node (same pattern as loadArchitecture).
+    // O(n) BFS passes — acceptable for MAX_STACK_COMPONENTS; optimize if profiling flags this.
+    for (const node of newNodes) {
+      get().triggerRecalculation(node.id)
+    }
   },
 
   swapNodeComponent: (nodeId, newComponentId) => {

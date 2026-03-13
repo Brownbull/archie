@@ -1,6 +1,6 @@
 # Tech Debt Story TD-6-4a: Import pipeline hardening + schema maintenance
 
-## Status: review
+## Status: done
 ## Epic: Epic 6 -- Constraint Guardrails
 
 > **Source:** KDBP Code Review (2026-03-10) on story 6-4
@@ -40,6 +40,21 @@ As a **developer**, I want **import pipeline defense-in-depth improvements and s
 - Review findings: #4, #5, #6, #7
 - Files affected: `src/services/yamlImporter.ts`, `src/schemas/architectureFileSchema.ts`
 - Self-review: APPROVE 8.5/10, finding #1 fixed (constant hoisted to module scope)
+
+## Deferred Items
+
+| TD Story | Description | Priority | Action |
+|----------|-------------|----------|--------|
+| TD-6-4b | Constraint schema DRY + deterministic import IDs | LOW | CREATED |
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-10
+- **Classification:** SIMPLE
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Outcome:** APPROVE 8.1/10
+- **Quick fixes applied:** 4 (MIME test coverage, `as const`, safety comment, positive assertion)
+- **TD stories created:** 1 (TD-6-4b)
+- **Session cost:** $7.67
 
 <!-- CITED: none -->
 <!-- ORDERING: clean -->

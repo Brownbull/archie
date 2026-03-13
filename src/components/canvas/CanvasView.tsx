@@ -19,6 +19,7 @@ import type {
   OnNodesDelete,
   OnEdgesDelete,
 } from "@xyflow/react"
+import { toast } from "sonner"
 import {
   useArchitectureStore,
   type ArchieNode as ArchieNodeType,
@@ -26,6 +27,8 @@ import {
 } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { useImportAction } from "@/components/import-export/ImportDialog"
+import { componentLibrary } from "@/services/componentLibrary"
+import { resolveStackPlacement } from "@/services/stackPlacement"
 import { ArchieNode } from "@/components/canvas/ArchieNode"
 import { ArchieEdge } from "@/components/canvas/ArchieEdge"
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode"
@@ -50,6 +53,7 @@ function CanvasViewInner() {
   const edges = useArchitectureStore((s) => s.edges)
   const onNodesChange = useArchitectureStore((s) => s.onNodesChange)
   const addNode = useArchitectureStore((s) => s.addNode)
+  const placeStack = useArchitectureStore((s) => s.placeStack)
   const addEdge = useArchitectureStore((s) => s.addEdge)
   const removeEdges = useArchitectureStore((s) => s.removeEdges)
   const removeNodes = useArchitectureStore((s) => s.removeNodes)
@@ -142,6 +146,32 @@ function CanvasViewInner() {
         }
       }
 
+      // Check for stack drag-and-drop (Story 8-3)
+      const stackId = event.dataTransfer.getData("application/archie-stack")
+      if (stackId) {
+        if (stackId.length > 200 || !/^[a-z0-9_-]+$/.test(stackId)) return
+
+        const stackDef = componentLibrary.getStackById(stackId)
+        if (!stackDef) {
+          toast.error("Stack not found in library")
+          return
+        }
+
+        const position = screenToFlowPosition({
+          x: event.clientX,
+          y: event.clientY,
+        })
+
+        const result = resolveStackPlacement(stackDef, position)
+        if (result.nodes.length === 0) {
+          toast.error("Stack has no valid components")
+          return
+        }
+
+        placeStack(result.nodes, result.edges)
+        return
+      }
+
       // Fall through to component drag-and-drop
       const componentId = event.dataTransfer.getData("application/archie-component")
       if (!componentId || componentId.length > 100 || !/^[a-z0-9-]+$/.test(componentId)) return
@@ -153,7 +183,7 @@ function CanvasViewInner() {
 
       addNode(componentId, position)
     },
-    [screenToFlowPosition, addNode, handleFileDrop],
+    [screenToFlowPosition, addNode, placeStack, handleFileDrop],
   )
 
   const handlePaneClick = useCallback(() => {
