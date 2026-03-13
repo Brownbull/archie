@@ -26,6 +26,65 @@ export async function waitForBlueprints(page: Page): Promise<boolean> {
 }
 
 /**
+ * Switch to Stacks tab and wait for it to finish loading.
+ * Returns true if stack cards appeared, false if empty/error state.
+ */
+export async function waitForStacksTab(page: Page): Promise<boolean> {
+  await page.getByRole("tab", { name: "Stacks" }).click()
+  await Promise.race([
+    page.locator('[data-testid="stacks-tab"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
+    page.locator('[data-testid="stacks-tab-empty"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
+    page.locator('[data-testid="stacks-tab-error"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
+    page.locator('[data-testid="stacks-tab-loading"]').waitFor({ state: "hidden", timeout: 15_000 }).catch(() => {}),
+  ])
+  return page.locator('[data-testid="stacks-tab"]').isVisible()
+}
+
+/**
+ * Simulate HTML5 drag-and-drop of a stack from toolbox to canvas.
+ * Uses "application/archie-stack" data transfer type.
+ */
+export async function dragStackToCanvas(
+  page: Page,
+  stackId: string,
+  targetX: number,
+  targetY: number,
+): Promise<void> {
+  await page.evaluate(
+    ({ sId, x, y }) => {
+      const canvasPanel = document.querySelector('[data-testid="canvas-panel"]')
+      if (!canvasPanel) throw new Error("canvas-panel not found")
+
+      const dragOverEvent = new DragEvent("dragover", {
+        bubbles: true,
+        cancelable: true,
+      })
+      Object.defineProperty(dragOverEvent, "dataTransfer", {
+        value: { dropEffect: "", types: ["application/archie-stack"] },
+      })
+      canvasPanel.dispatchEvent(dragOverEvent)
+
+      const dropEvent = new DragEvent("drop", {
+        bubbles: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+      })
+      Object.defineProperty(dropEvent, "dataTransfer", {
+        value: {
+          getData: (type: string) =>
+            type === "application/archie-stack" ? sId : "",
+          types: ["application/archie-stack"],
+          files: [],
+        },
+      })
+      canvasPanel.dispatchEvent(dropEvent)
+    },
+    { sId: stackId, x: targetX, y: targetY },
+  )
+}
+
+/**
  * Place a component on the canvas via the Add to Canvas button.
  *
  * NOTE: Assumes sequential usage — asserts node count equals buttonIndex + 1.
@@ -62,11 +121,6 @@ export async function selectNodeOnCanvas(
   await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 }
 
-/**
- * Simulate HTML5 drag-and-drop from toolbox to canvas via synthetic DragEvents.
- * Playwright does not natively support dataTransfer, so events are dispatched
- * via page.evaluate.
- */
 /**
  * Place two components on the canvas using drag-and-drop.
  * Drops the first card at 30% canvas width and the second at 70%.

@@ -10,8 +10,8 @@ import type { ArchitectureFile } from "@/schemas/architectureFileSchema"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { sanitizeDisplayString } from "@/lib/sanitize"
+import { snapToGrid } from "@/lib/canvasUtils"
 import {
-  CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
   DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
@@ -52,10 +52,6 @@ let importInProgress = false
 /** @internal — exposed for test cleanup only */
 export function _resetImportGuard(): void {
   importInProgress = false
-}
-
-function snapToGrid(value: number): number {
-  return Math.round(value / CANVAS_GRID_SIZE) * CANVAS_GRID_SIZE
 }
 
 /**
