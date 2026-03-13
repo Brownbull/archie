@@ -1,6 +1,6 @@
 # Tech Debt Story TD-8-1a: Stack Schema & Library Hardening
 
-Status: review
+Status: done
 
 > **Source:** KDBP Code Review (2026-03-10) on story 8-1
 > **Priority:** LOW | **Estimated Effort:** Small (3 tasks, 2 files)
@@ -40,5 +40,13 @@ As a **developer**, I want **defense-in-depth limits on stack schema string leng
 - Files affected: `src/schemas/stackSchema.ts`, `src/lib/constants.ts`, `src/repositories/stackRepository.ts`, `src/types/scoreAlignment.ts` (new)
 - Prior art: TD-5-1a and TD-5-1b applied similar hardening to architectureFileSchema
 - Self-review: APPROVE 8/10 — stack `id` field hardened (review fix), variantId boundary test added
+- Code review (2026-03-12): 8 quick fixes applied, 1 deferred to backlog
+
+### Deferred Findings
+
+| # | Finding | Stage | Destination | Tracking |
+|---|---------|-------|-------------|----------|
+| 8 | Repository test for schema-triggered silent drop (201-char componentId) | PROD | Backlog | `deferred-findings.md` |
+
 <!-- CITED: none -->
 <!-- ORDERING: clean -->

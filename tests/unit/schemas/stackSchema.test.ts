@@ -80,6 +80,8 @@ describe("StackComponentSchema", () => {
   })
 
   // TD-8-1a: ID length constraints
+  // Boundary strings use "a".repeat() — a single-char repeat satisfies STACK_ID_FORMAT (/^[\w-]+$/)
+  // while testing length limits in isolation. If the regex tightens, update these strings.
   it("rejects componentId exceeding 200 chars", () => {
     expect(StackComponentSchema.safeParse({ ...validComponent, componentId: "a".repeat(201) }).success).toBe(false)
   })
@@ -124,6 +126,10 @@ describe("StackComponentSchema", () => {
 
   it("accepts relativePosition at boundary values", () => {
     expect(StackComponentSchema.safeParse({ ...validComponent, relativePosition: { x: -10000, y: 10000 } }).success).toBe(true)
+  })
+
+  it("accepts relativePosition at symmetric boundary values", () => {
+    expect(StackComponentSchema.safeParse({ ...validComponent, relativePosition: { x: 10000, y: -10000 } }).success).toBe(true)
   })
 })
 
@@ -218,6 +224,15 @@ describe("StackDefinitionSchema", () => {
 
   it("rejects missing required fields", () => {
     expect(StackDefinitionSchema.safeParse({ id: "incomplete" }).success).toBe(false)
+  })
+
+  // TD-8-1a review: id field uses same STACK_ID_FORMAT constraint
+  it("rejects id with invalid format", () => {
+    expect(StackDefinitionSchema.safeParse({ ...validStack, id: "invalid id!" }).success).toBe(false)
+  })
+
+  it("rejects id exceeding 200 chars", () => {
+    expect(StackDefinitionSchema.safeParse({ ...validStack, id: "a".repeat(201) }).success).toBe(false)
   })
 
   it("rejects empty components array", () => {

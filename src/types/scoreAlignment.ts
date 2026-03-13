@@ -6,6 +6,9 @@
  * create a dependency from the constants layer into the engine layer. This file sits outside
  * both modules and exists solely to be type-checked — it is never imported at runtime.
  *
+ * IMPORTANT: This file must remain included in tsconfig.json. Excluding it silently
+ * disables the drift guard without any compile or runtime error.
+ *
  * @see TD-8-1a AC-3
  */
 import type { StackCategoryScore } from "@/lib/constants"
@@ -19,6 +22,8 @@ type _AssertStackMatchesCategory =
       : never
     : never
 
-// Consume the type to prevent "unused" warnings
+// Consume the type to trigger a compile error if it resolves to `never`.
+// `void _` suppresses the "unused variable" warning. Do NOT replace with `export type` —
+// a type alias that evaluates to `never` is valid TS; the const assignment is what fails.
 const _: _AssertStackMatchesCategory = true as _AssertStackMatchesCategory
 void _

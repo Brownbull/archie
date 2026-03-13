@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, MAX_STACK_COMPONENTS, MAX_STACK_CONNECTIONS, STACK_ID_MAX_LENGTH, STACK_ID_FORMAT, POSITION_MIN, POSITION_MAX } from "@/lib/constants"
+import { METRIC_CATEGORIES, MAX_STACK_COMPONENTS, MAX_STACK_CONNECTIONS, STACK_ID_MAX_LENGTH, STACK_ID_FORMAT, STACK_NAME_MAX_LENGTH, STACK_DESC_MAX_LENGTH, POSITION_MIN, POSITION_MAX } from "@/lib/constants"
 import type { MetricCategoryId } from "@/lib/constants"
 
 const METRIC_CATEGORY_IDS = METRIC_CATEGORIES.map((c) => c.id) as [MetricCategoryId, ...MetricCategoryId[]]
@@ -36,8 +36,8 @@ export const StackCategoryScoreSchema = z.object({
 
 const StackDefinitionBaseSchema = z.object({
   id: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
-  name: z.string().min(1).max(200),
-  description: z.string().min(1).max(2000),
+  name: z.string().min(1).max(STACK_NAME_MAX_LENGTH),
+  description: z.string().min(1).max(STACK_DESC_MAX_LENGTH),
   components: z.array(StackComponentSchema).min(1).max(MAX_STACK_COMPONENTS),
   connections: z.array(StackConnectionSchema).max(MAX_STACK_CONNECTIONS),
   tradeOffProfile: z.array(StackCategoryScoreSchema).max(METRIC_CATEGORIES.length),
@@ -90,7 +90,7 @@ const StackComponentYamlSchema = z.object({
 const StackConnectionYamlSchema = z.object({
   source_component_index: z.number().int().min(0),
   target_component_index: z.number().int().min(0),
-  connection_type: z.string().min(1),
+  connection_type: z.string().min(1).max(100),
 }).strict().transform((d) => ({
   sourceComponentIndex: d.source_component_index,
   targetComponentIndex: d.target_component_index,
@@ -99,7 +99,7 @@ const StackConnectionYamlSchema = z.object({
 
 const StackCategoryScoreYamlSchema = z.object({
   category_id: z.enum(METRIC_CATEGORY_IDS),
-  category_name: z.string().min(1),
+  category_name: z.string().min(1).max(100),
   score: z.number().min(0).max(10),
   metric_count: z.number().int().min(0),
   has_data: z.boolean(),
@@ -113,8 +113,8 @@ const StackCategoryScoreYamlSchema = z.object({
 
 const StackDefinitionYamlBaseSchema = z.object({
   id: z.string().min(1).max(STACK_ID_MAX_LENGTH).regex(STACK_ID_FORMAT),
-  name: z.string().min(1),
-  description: z.string().min(1),
+  name: z.string().min(1).max(STACK_NAME_MAX_LENGTH),
+  description: z.string().min(1).max(STACK_DESC_MAX_LENGTH),
   components: z.array(StackComponentYamlSchema).min(1).max(MAX_STACK_COMPONENTS),
   connections: z.array(StackConnectionYamlSchema).max(MAX_STACK_CONNECTIONS),
   trade_off_profile: z.array(StackCategoryScoreYamlSchema),
