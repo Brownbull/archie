@@ -1,30 +1,30 @@
 {
-  "generated": "2026-03-13T00:20:21.259941",
+  "generated": "2026-03-13T01:12:03.487114",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 169,
-  "total_cost": 1953.3,
+  "total_sessions": 171,
+  "total_cost": 1972.9,
   "averages": {
-    "overall": 11.56,
-    "last_10": 11.02,
-    "last_20": 11.27
+    "overall": 11.54,
+    "last_10": 10.83,
+    "last_20": 11.0
   },
   "percentiles": {
     "p50": 8.3,
     "p75": 13.32,
-    "p90": 19.22,
-    "p95": 25.82
+    "p90": 19.19,
+    "p95": 25.72
   },
   "thresholds": {
-    "warning": 16.9,
-    "high": 22.53
+    "warning": 16.49,
+    "high": 21.99
   },
-  "trend_last10_vs_prev10_pct": -4.3,
+  "trend_last10_vs_prev10_pct": -2.9,
   "recent_outliers": [
     {
       "date": "2026-03-10 02:55",
       "session_id": "b7afe936-081",
       "cost": 22.65,
-      "ratio": 2.0
+      "ratio": 2.1
     },
     {
       "date": "2026-03-13 01:45",
@@ -35,12 +35,12 @@
   ],
   "by_model": {
     "opus, sonnet": {
-      "count": 90,
-      "total_cost": 934.5000000000001
+      "count": 91,
+      "total_cost": 942.6300000000001
     },
     "opus": {
-      "count": 26,
-      "total_cost": 328.65000000000003
+      "count": 27,
+      "total_cost": 340.12000000000006
     },
     "haiku, opus": {
       "count": 6,
@@ -109,22 +109,22 @@
       "p90": 11.63
     },
     "kdbp-code-review": {
-      "count": 24,
-      "total_cost": 212.08,
-      "avg": 8.84,
-      "avg_last_10": 9.38,
-      "p50": 8.28,
-      "p75": 10.82,
+      "count": 25,
+      "total_cost": 220.21,
+      "avg": 8.81,
+      "avg_last_10": 9.61,
+      "p50": 8.25,
+      "p75": 10.75,
       "p90": 12.04
     },
     "kdbp-dev-story": {
-      "count": 13,
-      "total_cost": 176.81,
-      "avg": 13.6,
-      "avg_last_10": 14.04,
-      "p50": 13.49,
-      "p75": 15.03,
-      "p90": 18.02
+      "count": 14,
+      "total_cost": 188.28,
+      "avg": 13.45,
+      "avg_last_10": 13.69,
+      "p50": 13.41,
+      "p75": 15.01,
+      "p90": 18.0
     }
   }
 }
