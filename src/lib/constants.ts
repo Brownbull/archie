@@ -222,3 +222,42 @@ export const Z_INDEX = {
   INSPECTOR_OVERLAY: "z-[60]", // Full-screen inspector overlay (above panels, below toasts)
   TOAST: "z-[70]", // Toast notifications (above everything)
 } as const satisfies Record<string, TailwindZIndex>
+
+// ─── Data Context Items (Story 7-1) ─────────────────────────────────────────
+
+export const ACCESS_PATTERN_VALUES = ["read-heavy", "write-heavy", "mixed", "append-only"] as const
+export type AccessPattern = (typeof ACCESS_PATTERN_VALUES)[number]
+
+export const DATA_SIZE_VALUES = ["small", "medium", "large", "huge"] as const
+export type DataSize = (typeof DATA_SIZE_VALUES)[number]
+
+export const STRUCTURE_TYPE_VALUES = ["simple-kv", "nested-json", "relational", "binary-blob"] as const
+export type StructureType = (typeof STRUCTURE_TYPE_VALUES)[number]
+
+export const FIT_LEVEL_VALUES = ["great-fit", "good-fit", "trade-off", "poor-fit", "risky"] as const
+export type FitLevel = (typeof FIT_LEVEL_VALUES)[number]
+
+export type FitCompatibility = "positive" | "neutral" | "negative"
+
+export interface DataContextItem {
+  id: string
+  name: string
+  accessPattern: AccessPattern
+  averageSize: DataSize
+  structureType: StructureType
+}
+
+export interface FitFactor {
+  dimension: string
+  compatibility: FitCompatibility
+  detail: string
+}
+
+export interface FitResult {
+  level: FitLevel
+  explanation: string
+  factors: FitFactor[]
+}
+
+export const DATA_CONTEXT_NAME_MAX_LENGTH = 100
+export const MAX_DATA_CONTEXT_ITEMS_PER_NODE = 10
