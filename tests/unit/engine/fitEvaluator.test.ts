@@ -216,9 +216,7 @@ describe("evaluateFit", () => {
       )
 
       const start = performance.now()
-      for (const item of items) {
-        evaluateFit(item, profile)
-      }
+      evaluateFitBatch(items, profile)
       const elapsed = performance.now() - start
 
       expect(elapsed).toBeLessThan(200)

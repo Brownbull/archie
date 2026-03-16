@@ -333,6 +333,8 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     const node = get().nodes.find((n) => n.id === nodeId)
     if (!node || node.data.archieComponentId === newComponentId) return
 
+    // dataContextItems intentionally preserved on swap — user may want to evaluate
+    // same data against new component's fit profile (Story 7-1 review decision)
     set({
       nodes: get().nodes.map((n) =>
         n.id === nodeId
@@ -693,6 +695,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   updateDataContextItem: (nodeId, itemId, updates) => {
     const current = get().dataContextItems.get(nodeId)
     if (!current) return
+    if (!current.some((item) => item.id === itemId)) return
     const next = new Map(get().dataContextItems)
     next.set(
       nodeId,
@@ -729,7 +732,15 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
  * Pure selector: extracts the skeleton (nodes + edges) from the current store state.
  * Called on export button click — non-reactive read, not a store action.
  */
-export function getArchitectureSkeleton(): { nodes: ArchieNode[]; edges: ArchieEdge[]; weightProfile: WeightProfile; constraints: Constraint[]; dataContextItems: Map<string, DataContextItem[]> } {
+export interface ArchitectureSkeleton {
+  nodes: ArchieNode[]
+  edges: ArchieEdge[]
+  weightProfile: WeightProfile
+  constraints: Constraint[]
+  dataContextItems: Map<string, DataContextItem[]>
+}
+
+export function getArchitectureSkeleton(): ArchitectureSkeleton {
   const state = useArchitectureStore.getState()
   return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile, constraints: state.constraints, dataContextItems: state.dataContextItems }
 }

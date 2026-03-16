@@ -115,7 +115,7 @@ export const ArchitectureFileNodeSchema = z.object({
   componentId: z.string().min(1).max(MAX_STRING_LENGTH),
   configVariantId: z.string().min(1).max(MAX_STRING_LENGTH).optional(),
   position: PositionSchema,
-  dataContext: z.array(DataContextItemSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).optional(),
+  dataContext: z.array(DataContextItemSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict()
 
 export const ArchitectureFileEdgeSchema = z.object({
@@ -140,7 +140,7 @@ const ArchitectureFileNodeYamlSchema = z.object({
   component_id: z.string().min(1).max(MAX_STRING_LENGTH),
   config_variant_id: z.string().min(1).max(MAX_STRING_LENGTH).optional(),
   position: PositionSchema,
-  data_context: z.array(DataContextItemYamlSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).optional(),
+  data_context: z.array(DataContextItemYamlSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   componentId: data.component_id,

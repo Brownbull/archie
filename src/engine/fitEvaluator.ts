@@ -1,4 +1,5 @@
 import type { DataContextItem, FitResult, FitFactor, FitLevel, FitCompatibility } from "@/lib/constants"
+import { sanitizeDisplayString } from "@/lib/sanitize"
 
 // --- Compatibility Mapping ---
 
@@ -88,7 +89,7 @@ export function evaluateFit(
     return {
       dimension: DIMENSION_LABELS[key] ?? key,
       compatibility: toFitCompatibility(profileValue),
-      detail: profileValue ?? "No data available",
+      detail: profileValue ? sanitizeDisplayString(profileValue, 200) : "No data available",
     }
   })
 
@@ -97,7 +98,7 @@ export function evaluateFit(
   const factorSummaries = factors
     .map((f) => `${f.dimension}: ${f.detail} (${f.compatibility})`)
     .join("; ")
-  const explanation = `${level.replace("-", " ")} — ${factorSummaries}`
+  const explanation = `${level.replaceAll("-", " ")} — ${factorSummaries}`
 
   return { level, explanation, factors }
 }

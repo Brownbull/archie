@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { DataContextItemSchema, ArchitectureFileNodeSchema } from "@/schemas/architectureFileSchema"
+import { DataContextItemSchema, ArchitectureFileNodeSchema, ArchitectureFileYamlSchema } from "@/schemas/architectureFileSchema"
 import { DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE } from "@/lib/constants"
 
 // --- Test Helpers ---
@@ -168,5 +168,44 @@ describe("ArchitectureFileNodeSchema + dataContext", () => {
       validNode({ dataContext: [{ id: "bad", name: "Bad" }] }),
     )
     expect(result.success).toBe(false)
+  })
+
+  it("rejects node with duplicate data context item IDs", () => {
+    const result = ArchitectureFileNodeSchema.safeParse(
+      validNode({ dataContext: [validItem({ id: "dup-1" }), validItem({ id: "dup-1" })] }),
+    )
+    expect(result.success).toBe(false)
+  })
+})
+
+// --- DataContextItemYamlSchema (snake_case → camelCase round-trip) ---
+
+describe("DataContextItemYamlSchema (via ArchitectureFileYamlSchema)", () => {
+  it("transforms snake_case data_context to camelCase dataContext", () => {
+    const yamlInput = {
+      schema_version: "2.0.0",
+      nodes: [{
+        id: "node-1",
+        component_id: "redis",
+        position: { x: 0, y: 0 },
+        data_context: [{
+          id: "dci-1",
+          name: "Sessions",
+          access_pattern: "read-heavy",
+          average_size: "medium",
+          structure_type: "simple-kv",
+        }],
+      }],
+      edges: [],
+    }
+    const result = ArchitectureFileYamlSchema.safeParse(yamlInput)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const node = result.data.nodes[0]
+      expect(node.dataContext).toBeDefined()
+      expect(node.dataContext![0].accessPattern).toBe("read-heavy")
+      expect(node.dataContext![0].averageSize).toBe("medium")
+      expect(node.dataContext![0].structureType).toBe("simple-kv")
+    }
   })
 })

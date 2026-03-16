@@ -36,7 +36,7 @@ export const ConfigVariantSchema = z.object({
   metrics: z.array(MetricValueSchema),
   codeSnippet: CodeSnippetSchema.optional(),
   metricExplanations: z.record(z.string(), MetricExplanationSchema).optional(),
-  dataFitProfile: z.record(z.string(), z.string()).optional(),
+  dataFitProfile: z.record(z.string().max(100), z.string().max(200)).refine((r) => Object.keys(r).length <= 50, { message: "dataFitProfile: max 50 entries" }).optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
@@ -68,7 +68,7 @@ const ConfigVariantYamlSchema = z.object({
   metrics: z.array(MetricValueYamlSchema),
   code_snippet: CodeSnippetSchema.optional(),
   metric_explanations: z.record(z.string(), MetricExplanationYamlSchema).optional(),
-  data_fit_profile: z.record(z.string(), z.string()).optional(),
+  data_fit_profile: z.record(z.string().max(100), z.string().max(200)).refine((r) => Object.keys(r).length <= 50, { message: "dataFitProfile: max 50 entries" }).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
