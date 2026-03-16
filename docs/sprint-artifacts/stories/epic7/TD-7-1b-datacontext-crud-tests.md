@@ -1,6 +1,6 @@
 # Tech Debt Story TD-7-1b: Store-Level Tests for Data Context CRUD
 
-Status: ready-for-dev
+Status: review
 
 > **Source:** KDBP Code Review (2026-03-15) on story 7-1
 > **Priority:** MEDIUM | **Estimated Effort:** Small (1 file, ~80 lines)
@@ -23,15 +23,15 @@ As a **developer**, I want **unit tests covering the data context CRUD actions i
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Create test file
-  - [ ] 1.1 Create `tests/unit/stores/architectureStore-dataContext.test.ts`
-  - [ ] 1.2 Test addDataContextItem: add item, verify in store
-  - [ ] 1.3 Test addDataContextItem: limit enforcement (MAX_DATA_CONTEXT_ITEMS_PER_NODE)
-  - [ ] 1.4 Test updateDataContextItem: name sanitization on update
-  - [ ] 1.5 Test updateDataContextItem: non-existent itemId no-op
-  - [ ] 1.6 Test removeDataContextItem: last item removes key from Map
-  - [ ] 1.7 Test removeNode: cleanup of dataContextItems
-  - [ ] 1.8 Test loadArchitecture: resets dataContextItems
+- [x] Task 1: Create test file
+  - [x] 1.1 Create `tests/unit/stores/architectureStore-dataContext.test.ts`
+  - [x] 1.2 Test addDataContextItem: add item, verify in store
+  - [x] 1.3 Test addDataContextItem: limit enforcement (MAX_DATA_CONTEXT_ITEMS_PER_NODE)
+  - [x] 1.4 Test updateDataContextItem: name sanitization on update
+  - [x] 1.5 Test updateDataContextItem: non-existent itemId no-op
+  - [x] 1.6 Test removeDataContextItem: last item removes key from Map
+  - [x] 1.7 Test removeNode: cleanup of dataContextItems
+  - [x] 1.8 Test loadArchitecture: resets dataContextItems
 
 ## Dev Notes
 - Source story: [7-1](./7-1.md)
