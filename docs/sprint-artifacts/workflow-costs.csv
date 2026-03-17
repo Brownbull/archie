@@ -208,3 +208,8 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-03-13 03:21,b9a22dc2-bf2,kdbp-dev-story,8-4,18min,131,1,40,opus,199,27240,604395,11362792,8.98,2.49,11.47
 2026-03-13 03:52,f0025c0c-cc5,kdbp-code-review,8-4,20min,77,2,67,"opus, sonnet",6714,31250,467887,6585929,5.92,2.22,8.13
 2026-03-16 00:50,1998362f-0a8,kdbp-dev-story,td-7-1b,10min,122,1,27,"opus, sonnet",164,20680,394478,9061828,7.31,1.25,8.57
+2026-03-16 01:04,1ee691ff-cd3,kdbp-code-review,TD-7-1b,10min,97,2,9,"opus, sonnet",138,33092,450759,7579675,8.40,0.50,8.91
+2026-03-16 01:17,a9b6d6d5-51b,kdbp-dev-story,TD-cross-2,23min,203,2,104,"opus, sonnet",423,40967,835596,20965756,12.29,5.57,17.86
+2026-03-17 02:58,98a9b70c-f2f,kdbp-code-review,TD-cross-2,12min,111,2,40,"opus, sonnet",184,29621,933867,9019182,11.92,1.86,13.78
+2026-03-17 03:18,3480b902-6a1,kdbp-dev-story,td-cross-2a,17min,99,0,0,opus,111,12967,218920,6165998,5.60,0.00,5.60
+2026-03-17 03:37,ed9108ef-374,kdbp-code-review,TD-cross-2a,5min,67,1,3,"opus, sonnet",82,13920,293927,3647396,4.71,0.26,4.98

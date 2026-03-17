@@ -207,8 +207,9 @@ development_status:
   # ============================================================================
   epic-7: in-progress
   7-1-data-context-types-schema-and-fit-engine: done
-  td-7-1b-datacontext-crud-tests: review  # DEPENDS: 7-1, stage: MVP
-  td-cross-2-aislop-baseline-cleanup: ready-for-dev
+  td-7-1b-datacontext-crud-tests: done  # DEPENDS: 7-1, stage: MVP
+  td-cross-2-aislop-baseline-cleanup: done
+  td-cross-2a-stackstab-memo-instability: done  # DEPENDS: td-cross-2, stage: MVP
   7-2-data-context-ui-inspector-and-fit-display: ready-for-dev
   7-3-yaml-data-context-export-import: ready-for-dev
   7-4-e2e-data-context-and-fit-flow: ready-for-dev
