@@ -1,8 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { load } from "js-yaml"
 import { exportArchitecture } from "@/services/yamlExporter"
-import { DEFAULT_WEIGHT_PROFILE, type WeightProfile } from "@/lib/constants"
-import { isDefaultWeightProfile } from "@/lib/constants"
+import { DEFAULT_WEIGHT_PROFILE, isDefaultWeightProfile, type WeightProfile } from "@/lib/constants"
 import { makeNode, makeEdge } from "../../helpers"
 
 describe("yamlExporter v2 — weight profile export", () => {

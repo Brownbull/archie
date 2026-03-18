@@ -5,7 +5,8 @@ export function useLibrary() {
   const isReady = componentLibrary.isInitialized()
   const components = useMemo(
     () => componentLibrary.getAllComponents(),
-    [isReady],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- componentLibrary is a singleton initialized once at app startup; components list is stable after init
+    [],
   )
 
   return {

@@ -1,0 +1,48 @@
+# Tech Debt Story TD-7-1b: Store-Level Tests for Data Context CRUD
+
+Status: done
+
+> **Source:** KDBP Code Review (2026-03-15) on story 7-1
+> **Priority:** MEDIUM | **Estimated Effort:** Small (1 file, ~80 lines)
+> **Stage:** MVP
+
+## Story
+As a **developer**, I want **unit tests covering the data context CRUD actions in architectureStore**, so that **limit enforcement, sanitization, cleanup on node removal, and edge cases are verified**.
+
+## Acceptance Criteria
+
+**AC-1:** `addDataContextItem` — add item, verify stored; add up to limit, verify toast on overflow.
+
+**AC-2:** `updateDataContextItem` — update name triggers sanitization; update non-existent itemId is no-op; update non-existent nodeId is no-op (no re-render).
+
+**AC-3:** `removeDataContextItem` — remove last item cleans up Map key; remove from non-existent nodeId is no-op.
+
+**AC-4:** `removeNode` / `removeNodes` — verify dataContextItems for removed node(s) are cleaned up.
+
+**AC-5:** `loadArchitecture` — verify dataContextItems reset to empty Map.
+
+## Tasks / Subtasks
+
+- [x] Task 1: Create test file
+  - [x] 1.1 Create `tests/unit/stores/architectureStore-dataContext.test.ts`
+  - [x] 1.2 Test addDataContextItem: add item, verify in store
+  - [x] 1.3 Test addDataContextItem: limit enforcement (MAX_DATA_CONTEXT_ITEMS_PER_NODE)
+  - [x] 1.4 Test updateDataContextItem: name sanitization on update
+  - [x] 1.5 Test updateDataContextItem: non-existent itemId no-op
+  - [x] 1.6 Test removeDataContextItem: last item removes key from Map
+  - [x] 1.7 Test removeNode: cleanup of dataContextItems
+  - [x] 1.8 Test loadArchitecture: resets dataContextItems
+
+## Dev Notes
+- Source story: [7-1](./7-1.md)
+- Review findings: #5 (code-reviewer W3)
+- Files affected: `tests/unit/stores/architectureStore-dataContext.test.ts`
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-15
+- **Agents:** code-reviewer (sonnet), tdd-guide (sonnet)
+- **Classification:** SIMPLE
+- **Outcome:** APPROVE 7.75/10 — 9 quick fixes applied, 0 TD stories created
+- **Quick fixes:** XSS negative assertion, add-time sanitization test, no-name update branch test, non-name field update test, non-existent itemId remove test, partial removeNodes test, removeNode no-DCI guard test, AC-2 doc drift fix, UUID assertion hardened
+- **Test health:** 1879/1879 passing (16 in this file, up from 11)
+<!-- CITED: none -->

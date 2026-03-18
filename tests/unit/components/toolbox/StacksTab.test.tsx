@@ -69,6 +69,12 @@ const mockNginxComponent = {
   configVariants: [{ id: "reverse-proxy", name: "Reverse Proxy" }],
 }
 
+const mockComponentMap: Record<string, typeof mockKafkaComponent> = {
+  kafka: mockKafkaComponent,
+  redis: mockRedisComponent,
+  nginx: mockNginxComponent,
+}
+
 // --- Setup helpers ---
 
 function setupMocks({
@@ -86,14 +92,7 @@ function setupMocks({
     componentLibrary: {
       isInitialized: () => isReady,
       getStacks: () => stacks,
-      getComponent: (id: string) => {
-        const map: Record<string, typeof mockKafkaComponent> = {
-          kafka: mockKafkaComponent,
-          redis: mockRedisComponent,
-          nginx: mockNginxComponent,
-        }
-        return map[id]
-      },
+      getComponent: (id: string) => mockComponentMap[id],
     },
   }))
 }
@@ -163,6 +162,27 @@ describe("StacksTab", () => {
     const { StacksTab } = await import("@/components/toolbox/StacksTab")
     render(<StacksTab />)
     expect(screen.getByText("unknown-comp")).toBeInTheDocument()
+  })
+
+  it("does not recompute resolvedMap when stacks have not changed", async () => {
+    const getStacksSpy = vi.fn(() => [mockStackA, mockStackB])
+    vi.doMock("@/hooks/useLibrary", () => ({
+      useLibrary: () => ({ isReady: true }),
+    }))
+    vi.doMock("@/services/componentLibrary", () => ({
+      componentLibrary: {
+        isInitialized: () => true,
+        getStacks: getStacksSpy,
+        getComponent: (id: string) => mockComponentMap[id],
+      },
+    }))
+    const { StacksTab } = await import("@/components/toolbox/StacksTab")
+    const { rerender } = render(<StacksTab />)
+    const callsAfterFirstRender = getStacksSpy.mock.calls.length
+
+    // Re-render without changing isReady — getStacks should NOT be called again
+    rerender(<StacksTab />)
+    expect(getStacksSpy).toHaveBeenCalledTimes(callsAfterFirstRender)
   })
 
   it("StacksErrorBoundary renders error fallback when a child throws", async () => {

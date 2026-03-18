@@ -140,7 +140,7 @@ export function InspectorPanel() {
           data-testid="inspector-section-nav"
           className="flex gap-1 border-b border-archie-border px-2 py-1"
         >
-          {(["code", "details", "metrics"] as const).map((section) => (
+          {(["code", "details", "metrics", "data"] as const).map((section) => (
             <button
               key={section}
               type="button"

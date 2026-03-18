@@ -2,7 +2,6 @@ import { describe, it, expect } from "vitest"
 import {
   getAffectedNodes,
   getPropagationHops,
-  type PropagationHop,
 } from "@/engine/propagator"
 import { RIPPLE_DELAY_MS } from "@/lib/constants"
 
