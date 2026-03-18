@@ -220,3 +220,6 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-03-18 02:02,ebccced9-414,kdbp-dev-story,7-4,17min,129,1,45,opus,197,28186,450925,11857069,8.79,1.83,10.62
 2026-03-18 02:26,31d989e9-ed6,kdbp-code-review,7-4,29min,83,2,27,"opus, sonnet",587,25948,452108,5957094,6.14,1.42,7.57
 2026-03-18 03:25,10bdab14-73d,kdbp-dev-story,7.5-0-brainstorming-and-architecture-decisions,23min,138,2,53,"haiku, opus, sonnet",24148,43935,925044,12888124,10.42,2.17,12.59
+2026-03-18 03:50,f2d3f698-8c9,kdbp-code-review,7.5-0,11min,76,2,35,"opus, sonnet",4463,25983,578346,6541570,7.94,1.38,9.32
+2026-03-18 04:13,fd02ef49-d72,kdbp-dev-story,7.5-1,21min,162,2,57,"opus, sonnet",235,49873,702667,16965173,12.91,2.84,15.75
+2026-03-18 04:36,5a90989c-d00,kdbp-code-review,7.5-1,15min,116,2,30,"opus, sonnet",168,37727,715053,11064520,10.60,2.11,12.71

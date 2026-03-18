@@ -61,6 +61,14 @@
 - **Stage:** PROD — DRY/maintainability, not functional
 - **Estimated effort:** Small (extract shared setup within describe block)
 
+### [PROD] Two-Map pattern in checkConstraintSafety could be single-pass
+
+- **Source:** 7.5-1 review (2026-03-18)
+- **Finding:** `checkConstraintSafety` in `pathwayEngine.ts` allocates both `categoryCounts` and `categoryAvgs` Maps when a single-pass approach (computing averages inline) would suffice. The sibling function `computeCandidateWeightedScore` uses a single Map. Minor DRY/consistency cleanup, no correctness impact.
+- **Files:** `src/engine/pathwayEngine.ts`
+- **Stage:** PROD — code hygiene, not functional
+- **Estimated effort:** Small (refactor two Maps into one, ~10 lines)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
