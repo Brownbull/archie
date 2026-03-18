@@ -40,13 +40,13 @@ export function ExportButton() {
   }, [])
 
   const handleExport = useCallback(() => {
-    const { nodes, edges, weightProfile, constraints } = getArchitectureSkeleton()
+    const { nodes, edges, weightProfile, constraints, dataContextItems } = getArchitectureSkeleton()
     // Self-protecting guard: disabled state is enforced in JSX, but guard here in case
     // the button is invoked programmatically or via assistive technology
     if (nodes.length === 0) return
 
     try {
-      const yamlString = exportArchitecture(nodes, edges, weightProfile, constraints)
+      const yamlString = exportArchitecture(nodes, edges, weightProfile, constraints, dataContextItems)
 
       const blob = new Blob([yamlString], { type: "application/x-yaml" })
       const url = URL.createObjectURL(blob)

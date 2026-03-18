@@ -14,8 +14,7 @@ vi.mock("@/lib/firebase", () => ({
   db: {},
 }))
 
-import { metricCategoryRepository } from "@/repositories/metricCategoryRepository"
-import { RepositoryError } from "@/repositories/metricCategoryRepository"
+import { metricCategoryRepository, RepositoryError } from "@/repositories/metricCategoryRepository"
 
 const validCategory = {
   id: "performance",

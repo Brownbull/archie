@@ -356,7 +356,7 @@ describe("YAML data context round-trip (integration)", () => {
   })
 
   describe("AC-6 affirmative: fit is computed from library after import", () => {
-    it("evaluateFitBatch returns computed fit results for imported items (AC-1)", () => {
+    it("evaluateFitBatch returns computed fit results for imported items (TD-7-3a AC-1)", () => {
       const dataContextItems = new Map<string, DataContextItem[]>()
       dataContextItems.set("n1", [sampleItems[0]])
 
@@ -369,6 +369,7 @@ describe("YAML data context round-trip (integration)", () => {
       expect(importedItems).toHaveLength(1)
 
       // Mock profile: all dimensions map to positive compatibility
+      // ("good" also maps to "positive" — verifies non-"great" values still yield great-fit)
       const profileA: Record<string, string> = {
         "read-heavy": "great",
         "medium": "good",
@@ -377,13 +378,12 @@ describe("YAML data context round-trip (integration)", () => {
 
       const results = evaluateFitBatch(importedItems, profileA)
       expect(results).toHaveLength(1)
-      expect(results[0]).toBeDefined()
       expect(results[0].level).toBe("great-fit")
       expect(results[0].factors).toHaveLength(3)
-      expect(results[0].explanation).toBeTruthy()
+      expect(results[0].explanation).toContain("great fit")
     })
 
-    it("fit result reflects current profile, not stale export data (AC-2)", () => {
+    it("fit result reflects current profile, not stale export data (TD-7-3a AC-2)", () => {
       const dataContextItems = new Map<string, DataContextItem[]>()
       dataContextItems.set("n1", [sampleItems[0]])
 
@@ -413,7 +413,6 @@ describe("YAML data context round-trip (integration)", () => {
 
       expect(resultsA[0].level).toBe("great-fit")
       expect(resultsB[0].level).toBe("risky")
-      expect(resultsA[0].level).not.toBe(resultsB[0].level)
     })
   })
 

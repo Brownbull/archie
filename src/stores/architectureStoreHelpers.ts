@@ -1,13 +1,10 @@
 import { computeCategoryScores, computeWeightedCategoryScores, type CategoryScore } from "@/engine/dashboardCalculator"
 import { evaluateConstraints, type ConstraintViolation } from "@/engine/constraintEvaluator"
 import { getWeight } from "@/lib/weightUtils"
-import { computeWeightedNodeScore, computeHeatmapStatus, type NodeCategoryAverage } from "@/engine/heatmapCalculator"
-import { evaluateTier } from "@/engine/tierEvaluator"
-import type { TierCategoryScore } from "@/engine/tierEvaluator"
-import { DEFAULT_TIER_DEFINITIONS } from "@/lib/tierDefinitions"
-import type { TierResult } from "@/lib/tierDefinitions"
+import { computeWeightedNodeScore, computeHeatmapStatus, type NodeCategoryAverage, type HeatmapStatus } from "@/engine/heatmapCalculator"
+import { evaluateTier, type TierCategoryScore } from "@/engine/tierEvaluator"
+import { DEFAULT_TIER_DEFINITIONS, type TierResult } from "@/lib/tierDefinitions"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
-import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import {
   METRIC_CATEGORIES,
   type Constraint,
@@ -15,7 +12,7 @@ import {
 } from "@/lib/constants"
 
 // Re-export types used by store consumers
-export type { CategoryScore, ConstraintViolation, RecalculatedMetrics, HeatmapStatus, TierResult }
+export type { ConstraintViolation, RecalculatedMetrics, HeatmapStatus, TierResult }
 
 /**
  * Module-level helper: computes per-node category averages from RecalculatedMetrics.
@@ -75,7 +72,7 @@ export function evaluateAndSetTier(
  * Uses weight profile to compute per-node weighted overall scores,
  * then maps to heatmap statuses.
  */
-export function recomputeWeightedHeatmap(
+function recomputeWeightedHeatmap(
   computedMetrics: Map<string, RecalculatedMetrics>,
   weightProfile: WeightProfile,
 ): Map<string, HeatmapStatus> {
@@ -94,7 +91,7 @@ export function recomputeWeightedHeatmap(
  * Returns Map<nodeId, CategoryScore[]> suitable for evaluateConstraints.
  * Story 6-2 AC-3: per-node constraint violations.
  */
-export function buildPerNodeCategoryScores(
+function buildPerNodeCategoryScores(
   computedMetrics: Map<string, RecalculatedMetrics>,
   weightProfile: WeightProfile,
 ): Map<string, CategoryScore[]> {
@@ -148,7 +145,7 @@ export function evaluateAndGetViolations(
  * ArchieNode subscribes to violationsByNodeId.get(id) instead of filtering the full array.
  * TD-6-3a AC-2.
  */
-export function buildViolationsByNodeId(
+function buildViolationsByNodeId(
   violations: ConstraintViolation[],
 ): Map<string, ConstraintViolation[]> {
   const map = new Map<string, ConstraintViolation[]>()

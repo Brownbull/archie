@@ -15,7 +15,12 @@
     "test:e2e": "bash -c 'unset ${!VITE_FIREBASE_*} && playwright test'",
     "preview": "vite preview",
     "seed:firestore": "tsx scripts/seed-firestore.ts",
-    "seed:metric-categories": "tsx scripts/seed-metric-categories.ts"
+    "seed:metric-categories": "tsx scripts/seed-metric-categories.ts",
+    "quality": "npx aislop scan",
+    "quality:staged": "npx aislop scan --staged",
+    "quality:report": "bash scripts/aislop-report.sh",
+    "quality:report:staged": "bash scripts/aislop-report.sh --staged",
+    "prepare": "[ -d .git ] && git config core.hooksPath .githooks || true"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
@@ -26,7 +31,6 @@
     "firebase": "^12.9.0",
     "js-yaml": "^4.1.1",
     "lucide-react": "^0.563.0",
-    "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -51,6 +55,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/coverage-v8": "^4.0.18",
+    "aislop": "^0.2.0",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

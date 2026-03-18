@@ -1,6 +1,6 @@
 # Tech Debt Story TD-7-3a: Affirmative AC-6 Fit Re-Derivation Test
 
-Status: review
+Status: done
 
 > **Source:** KDBP Code Review (2026-03-17) on story 7-3
 > **Priority:** LOW | **Estimated Effort:** ~30 min
@@ -27,3 +27,11 @@ As a **developer**, I want **an affirmative test that verifies fit indicators ar
 - Review findings: #8 (TDD guide)
 - Files affected: `tests/integration/yaml-dataContext-roundtrip.test.ts`
 - The existing AC-6 tests only verify the negative side (fit fields absent from YAML export). This story adds the affirmative side (fit computed from library after import).
+
+## Senior Developer Review (KDBP)
+- **Date:** 2026-03-17
+- **Agents:** code-reviewer (TRIVIAL classification)
+- **Outcome:** APPROVE 7.5/10 — 5 quick fixes applied, 1 backlog deferral
+- **Quick fixes:** Clarified profile comment (#1), removed redundant assertion (#2), disambiguated AC labels (#3), removed redundant inequality check (#4), strengthened explanation assertion (#7)
+- **Backlog:** Duplicated export-then-import preamble (PROD) → deferred-findings.md
+<!-- CITED: none -->

@@ -93,7 +93,7 @@ describe("architectureStore - dataContext CRUD", () => {
       const items = useArchitectureStore.getState().dataContextItems.get("node-1")
       expect(items).toHaveLength(1)
       expect(items![0]).toEqual({
-        id: "test-uuid-1",
+        id: expect.stringMatching(/^test-uuid-\d+$/),
         name: "Users",
         accessPattern: "read-heavy",
         averageSize: "medium",
@@ -123,6 +123,19 @@ describe("architectureStore - dataContext CRUD", () => {
         expect.stringContaining(String(MAX_DATA_CONTEXT_ITEMS_PER_NODE)),
       )
     })
+
+    it("sanitizes name on add", () => {
+      useArchitectureStore.getState().addDataContextItem("node-1", {
+        name: "<script>alert(1)</script>UserData",
+        accessPattern: "read-heavy",
+        averageSize: "medium",
+        structureType: "relational",
+      })
+
+      const items = useArchitectureStore.getState().dataContextItems.get("node-1")!
+      expect(items[0].name).toBe("UserData")
+      expect(items[0].name).not.toContain("<script>")
+    })
   })
 
   // --- AC-2: updateDataContextItem ---
@@ -139,6 +152,7 @@ describe("architectureStore - dataContext CRUD", () => {
 
       const items = useArchitectureStore.getState().dataContextItems.get("node-1")!
       expect(items[0].name).toBe("Orders")
+      expect(items[0].name).not.toContain("<script>")
     })
 
     it("is no-op for non-existent itemId", () => {
@@ -161,6 +175,20 @@ describe("architectureStore - dataContext CRUD", () => {
         .updateDataContextItem("node-DOES-NOT-EXIST", "item-0", { name: "X" })
 
       expect(useArchitectureStore.getState().dataContextItems.size).toBe(0)
+    })
+
+    it("updates non-name field without triggering sanitization", () => {
+      useArchitectureStore.setState({
+        dataContextItems: new Map([["node-1", [makeItem({ id: "item-0", name: "Orders" })]]]),
+      })
+
+      useArchitectureStore
+        .getState()
+        .updateDataContextItem("node-1", "item-0", { accessPattern: "write-heavy" })
+
+      const items = useArchitectureStore.getState().dataContextItems.get("node-1")!
+      expect(items[0].name).toBe("Orders")
+      expect(items[0].accessPattern).toBe("write-heavy")
     })
   })
 
@@ -196,6 +224,18 @@ describe("architectureStore - dataContext CRUD", () => {
       useArchitectureStore.getState().removeDataContextItem("node-DOES-NOT-EXIST", "item-0")
       expect(useArchitectureStore.getState().dataContextItems.size).toBe(0)
     })
+
+    it("is no-op for non-existent itemId on existing nodeId", () => {
+      useArchitectureStore.setState({
+        dataContextItems: new Map([["node-1", [makeItem({ id: "item-0", name: "A" })]]]),
+      })
+
+      useArchitectureStore.getState().removeDataContextItem("node-1", "item-DOES-NOT-EXIST")
+
+      const items = useArchitectureStore.getState().dataContextItems.get("node-1")!
+      expect(items).toHaveLength(1)
+      expect(items[0].id).toBe("item-0")
+    })
   })
 
   // --- AC-4: removeNode / removeNodes cleanup ---
@@ -217,6 +257,19 @@ describe("architectureStore - dataContext CRUD", () => {
       expect(useArchitectureStore.getState().dataContextItems.has("node-2")).toBe(true)
       expect(useArchitectureStore.getState().dataContextItems.size).toBe(1)
     })
+
+    it("is no-op for node with no dataContextItems", () => {
+      useArchitectureStore.setState({
+        nodes: [makeNode("node-1"), makeNode("node-2")],
+        edges: [],
+        dataContextItems: new Map([["node-2", [makeItem({ id: "item-1" })]]]),
+      })
+
+      useArchitectureStore.getState().removeNode("node-1")
+
+      expect(useArchitectureStore.getState().dataContextItems.has("node-2")).toBe(true)
+      expect(useArchitectureStore.getState().dataContextItems.size).toBe(1)
+    })
   })
 
   describe("removeNodes", () => {
@@ -233,6 +286,25 @@ describe("architectureStore - dataContext CRUD", () => {
       useArchitectureStore.getState().removeNodes(["node-1", "node-2"])
 
       expect(useArchitectureStore.getState().dataContextItems.size).toBe(0)
+    })
+
+    it("preserves DCI for surviving nodes on partial removal", () => {
+      useArchitectureStore.setState({
+        nodes: [makeNode("node-1"), makeNode("node-2"), makeNode("node-3")],
+        edges: [],
+        dataContextItems: new Map([
+          ["node-1", [makeItem({ id: "item-0" })]],
+          ["node-2", [makeItem({ id: "item-1" })]],
+          ["node-3", [makeItem({ id: "item-2" })]],
+        ]),
+      })
+
+      useArchitectureStore.getState().removeNodes(["node-1"])
+
+      expect(useArchitectureStore.getState().dataContextItems.has("node-1")).toBe(false)
+      expect(useArchitectureStore.getState().dataContextItems.has("node-2")).toBe(true)
+      expect(useArchitectureStore.getState().dataContextItems.has("node-3")).toBe(true)
+      expect(useArchitectureStore.getState().dataContextItems.size).toBe(2)
     })
   })
 

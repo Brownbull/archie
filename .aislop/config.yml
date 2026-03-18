@@ -1,0 +1,49 @@
+# aislop configuration — tuned for Archie
+# Docs: https://github.com/heavykenny/aislop
+version: 1
+
+engines:
+  # DISABLED: Archie uses ESLint, not Biome — Biome formatting fights ESLint style
+  format: false
+  lint: true
+  code-quality: true
+  ai-slop: true
+  # OPT-IN: Enable when Feature-Sliced Design import rules are defined in rules.yml
+  architecture: false
+  security: true
+
+quality:
+  # Function complexity — aislop-only check (ECC hooks don't cover this)
+  maxFunctionLoc: 80
+  # File size — match ECC hook threshold (default 400 is too strict for Archie)
+  maxFileLoc: 800
+  maxNesting: 5
+  maxParams: 6
+
+security:
+  audit: true
+  auditTimeout: 25000
+
+scoring:
+  weights:
+    format: 0.5
+    # Reduced: overlaps with ESLint
+    lint: 0.5
+    code-quality: 1.5
+    # Full weight: unique value
+    ai-slop: 1.0
+    architecture: 1.0
+    # Highest weight: security matters
+    security: 2.0
+  thresholds:
+    good: 75
+    ok: 50
+  smoothing: 10
+
+ci:
+  # Advisory only — raise incrementally as baseline improves
+  failBelow: 0
+  format: json
+
+telemetry:
+  enabled: false

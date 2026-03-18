@@ -62,7 +62,7 @@ describe("recalculator", () => {
 
     it("does not mutate input effectiveMetrics array", () => {
       const metrics = [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })]
-      const original = [...metrics.map((m) => ({ ...m }))]
+      const original = metrics.map((m) => ({ ...m }))
       recalculateNode("node-1", "data-storage", metrics, [], [])
       expect(metrics).toEqual(original)
     })
