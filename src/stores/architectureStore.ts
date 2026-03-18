@@ -23,6 +23,9 @@ import {
   type DataContextItem,
   DATA_CONTEXT_NAME_MAX_LENGTH,
   MAX_DATA_CONTEXT_ITEMS_PER_NODE,
+  ACCESS_PATTERN_VALUES,
+  DATA_SIZE_VALUES,
+  STRUCTURE_TYPE_VALUES,
 } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 import {
@@ -82,7 +85,7 @@ interface ArchitectureState {
   triggerRecalculation: (changedNodeId: string) => void
   setWeightProfile: (profile: WeightProfile) => void
   setWeightAndRecalculate: (profile: WeightProfile) => void
-  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: ParsedConstraint[]) => void
+  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: ParsedConstraint[], dataContextItems?: Map<string, DataContextItem[]>) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
@@ -584,7 +587,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     recomputeScoringLayer(get, set)
   },
 
-  loadArchitecture: (nodes, edges, weightProfile?, constraints?) => {
+  loadArchitecture: (nodes, edges, weightProfile?, constraints?, dataContextItems?) => {
     // Cancel pending ripple timeouts from previous architecture
     clearPendingRippleTimeouts()
 
@@ -603,7 +606,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       constraints: (constraints ?? []).map((c) => ({ ...c, id: crypto.randomUUID() })),
       constraintViolations: [],
       violationsByNodeId: new Map(),
-      dataContextItems: new Map(),
+      dataContextItems: dataContextItems ?? new Map(),
     })
 
     // Clear uiStore selection state (cross-store pattern from removeNode)
@@ -696,6 +699,10 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     const current = get().dataContextItems.get(nodeId)
     if (!current) return
     if (!current.some((item) => item.id === itemId)) return
+    // Runtime enum validation — TS types erased at runtime (review 7-3 fix #2)
+    if (updates.accessPattern !== undefined && !(ACCESS_PATTERN_VALUES as readonly string[]).includes(updates.accessPattern)) return
+    if (updates.averageSize !== undefined && !(DATA_SIZE_VALUES as readonly string[]).includes(updates.averageSize)) return
+    if (updates.structureType !== undefined && !(STRUCTURE_TYPE_VALUES as readonly string[]).includes(updates.structureType)) return
     const next = new Map(get().dataContextItems)
     next.set(
       nodeId,

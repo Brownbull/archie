@@ -13,6 +13,9 @@ import { MetricCard } from "@/components/inspector/MetricCard"
 import { MetricFilter } from "@/components/inspector/MetricFilter"
 import { VariantRecommendation } from "@/components/inspector/VariantRecommendation"
 import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
+import { DataContextPanel } from "@/components/inspector/DataContextPanel"
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
+import { ChevronDown, ChevronRight } from "lucide-react"
 
 interface ComponentDetailProps {
   component: Component
@@ -94,6 +97,7 @@ export function ComponentDetail({
 
   // --- Metric filter state (AC-ARCH-PATTERN-3, AC-ARCH-NO-1: local useState, NOT Zustand) ---
   const [hiddenMetricIds, setHiddenMetricIds] = useState<Set<string>>(new Set())
+  const [dataContextOpen, setDataContextOpen] = useState(true)
 
   // Reset filter when inspecting a different component (AC-FUNC-3)
   useEffect(() => {
@@ -262,6 +266,32 @@ export function ComponentDetail({
                 ))}
             </div>
           </>
+        )}
+        {/* Data Context (Story 7-2, AC-1 through AC-5) */}
+        {nodeId && (
+          <div data-section="data">
+            <Separator />
+            <Collapsible open={dataContextOpen} onOpenChange={setDataContextOpen}>
+              <CollapsibleTrigger asChild>
+                <button
+                  type="button"
+                  data-testid="data-context-section-trigger"
+                  className="flex w-full items-center justify-between py-1 text-xs font-medium text-text-primary"
+                >
+                  Data Context
+                  {dataContextOpen
+                    ? <ChevronDown className="h-3 w-3 text-text-secondary" />
+                    : <ChevronRight className="h-3 w-3 text-text-secondary" />}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <DataContextPanel
+                  nodeId={nodeId}
+                  dataFitProfile={activeVariant?.dataFitProfile}
+                />
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         )}
       </div>
     </ScrollArea>

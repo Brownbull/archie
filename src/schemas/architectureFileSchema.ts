@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, type MetricCategoryId, type ConstraintOperator, type AccessPattern, type DataSize, type StructureType } from "@/lib/constants"
+import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, type MetricCategoryId, type ConstraintOperator, } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
@@ -71,6 +71,9 @@ function migrateV1ToV2(data: unknown): unknown {
     // Note: explicit undefined means `'constraints' in obj` returns true. All downstream code
     // uses nullish access (data.constraints ?? []), so this is safe.
     constraints: undefined,
+    // v2 shape: dataContext is per-node (ArchitectureFileNodeSchema.dataContext), not top-level.
+    // v1 nodes cannot have data_context (schema .strict() rejects unknown keys).
+    // No migration needed — absent field defaults to undefined via schema .optional().
   }
 }
 
@@ -89,19 +92,19 @@ const MAX_STRING_LENGTH = 256
 
 // Data context item schemas (Story 7-1 AC-ARCH-LOC-3)
 export const DataContextItemSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH),
+  id: z.string().min(1).max(MAX_STRING_LENGTH).regex(/^[\w-]+$/, "ID must contain only word characters and hyphens"),
   name: z.string().transform((s) => sanitizeDisplayString(s, DATA_CONTEXT_NAME_MAX_LENGTH)),
-  accessPattern: z.enum(ACCESS_PATTERN_VALUES as [AccessPattern, ...AccessPattern[]]),
-  averageSize: z.enum(DATA_SIZE_VALUES as [DataSize, ...DataSize[]]),
-  structureType: z.enum(STRUCTURE_TYPE_VALUES as [StructureType, ...StructureType[]]),
+  accessPattern: z.enum([...ACCESS_PATTERN_VALUES]),
+  averageSize: z.enum([...DATA_SIZE_VALUES]),
+  structureType: z.enum([...STRUCTURE_TYPE_VALUES]),
 }).strict()
 
 const DataContextItemYamlSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH),
+  id: z.string().min(1).max(MAX_STRING_LENGTH).regex(/^[\w-]+$/, "ID must contain only word characters and hyphens"),
   name: z.string().transform((s) => sanitizeDisplayString(s, DATA_CONTEXT_NAME_MAX_LENGTH)),
-  access_pattern: z.enum(ACCESS_PATTERN_VALUES as [AccessPattern, ...AccessPattern[]]),
-  average_size: z.enum(DATA_SIZE_VALUES as [DataSize, ...DataSize[]]),
-  structure_type: z.enum(STRUCTURE_TYPE_VALUES as [StructureType, ...StructureType[]]),
+  access_pattern: z.enum([...ACCESS_PATTERN_VALUES]),
+  average_size: z.enum([...DATA_SIZE_VALUES]),
+  structure_type: z.enum([...STRUCTURE_TYPE_VALUES]),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,

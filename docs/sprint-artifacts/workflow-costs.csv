@@ -213,3 +213,6 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-03-17 02:58,98a9b70c-f2f,kdbp-code-review,TD-cross-2,12min,111,2,40,"opus, sonnet",184,29621,933867,9019182,11.92,1.86,13.78
 2026-03-17 03:18,3480b902-6a1,kdbp-dev-story,td-cross-2a,17min,99,0,0,opus,111,12967,218920,6165998,5.60,0.00,5.60
 2026-03-17 03:37,ed9108ef-374,kdbp-code-review,TD-cross-2a,5min,67,1,3,"opus, sonnet",82,13920,293927,3647396,4.71,0.26,4.98
+2026-03-17 04:25,8fad0dc5-160,kdbp-code-review,7-2,16min,90,2,59,"opus, sonnet",14276,35508,634128,9367432,7.99,3.05,11.04
+2026-03-17 04:45,64c43062-ecc,kdbp-dev-story,7-3,23min,181,2,72,"opus, sonnet",272,38724,787736,19929978,13.20,4.12,17.32
+2026-03-18 01:12,e8dc53aa-572,kdbp-code-review,7-3,20min,111,3,67,"opus, sonnet",12746,45778,807437,12849750,11.00,3.52,14.52
