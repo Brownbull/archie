@@ -1,36 +1,36 @@
 {
-  "generated": "2026-03-17T23:55:18.443792",
+  "generated": "2026-03-18T00:48:30.617205",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 183,
-  "total_cost": 2100.44,
+  "total_sessions": 184,
+  "total_cost": 2113.03,
   "averages": {
     "overall": 11.48,
-    "last_10": 11.01,
-    "last_20": 10.69
+    "last_10": 10.48,
+    "last_20": 10.87
   },
   "percentiles": {
-    "p50": 8.35,
-    "p75": 13.41,
-    "p90": 18.41,
-    "p95": 25.08
+    "p50": 8.4,
+    "p75": 13.36,
+    "p90": 18.4,
+    "p95": 25.01
   },
   "thresholds": {
-    "warning": 16.03,
-    "high": 21.37
+    "warning": 16.3,
+    "high": 21.73
   },
-  "trend_last10_vs_prev10_pct": 6.2,
+  "trend_last10_vs_prev10_pct": -6.9,
   "recent_outliers": [
     {
       "date": "2026-03-13 01:45",
       "session_id": "a37267ea-52f",
       "cost": 17.86,
-      "ratio": 1.7
+      "ratio": 1.6
     },
     {
       "date": "2026-03-16 01:17",
       "session_id": "a9b6d6d5-51b",
       "cost": 17.86,
-      "ratio": 1.7
+      "ratio": 1.6
     },
     {
       "date": "2026-03-17 04:45",
@@ -61,8 +61,8 @@
       "total_cost": 30.4
     },
     "haiku, opus, sonnet": {
-      "count": 18,
-      "total_cost": 155.83000000000004
+      "count": 19,
+      "total_cost": 168.42000000000004
     },
     "<synthetic>, haiku, opus, sonnet": {
       "count": 1,
@@ -124,13 +124,13 @@
       "p90": 13.36
     },
     "kdbp-dev-story": {
-      "count": 19,
-      "total_cost": 248.25,
-      "avg": 13.07,
-      "avg_last_10": 12.26,
-      "p50": 13.32,
-      "p75": 16.18,
-      "p90": 17.9
+      "count": 20,
+      "total_cost": 260.84,
+      "avg": 13.04,
+      "avg_last_10": 12.58,
+      "p50": 13.18,
+      "p75": 15.6,
+      "p90": 17.88
     }
   }
 }

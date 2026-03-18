@@ -232,11 +232,11 @@ development_status:
   # Origin: Alignment check 2026-03-07 — V4 DRIFTING after Epic 5
   # Depends on: Epic 5 (weights), Epic 6 (constraints), Epic 7 (data context)
   # ============================================================================
-  epic-7.5: backlog
-  # Stories drafted — NOT ready-for-dev until brainstorming + ADR complete
-  7.5-0-brainstorming-and-architecture-decisions: drafted
-  7.5-1-tier-gap-analysis-engine: drafted
-  7.5-2-component-suggestion-logic-and-ranking: drafted
-  7.5-3-pathway-guidance-ui: drafted
-  7.5-4-e2e-pathway-guidance-flow: drafted
+  epic-7.5: in-progress
+  # Story 7.5-0 in progress — brainstorming + ADR before other stories can proceed
+  7.5-0-brainstorming-and-architecture-decisions: review
+  7.5-1-tier-gap-analysis-engine: ready-for-dev
+  7.5-2-component-suggestion-logic-and-ranking: ready-for-dev
+  7.5-3-pathway-guidance-ui: ready-for-dev
+  7.5-4-e2e-pathway-guidance-flow: ready-for-dev
   epic-7.5-retrospective: optional
