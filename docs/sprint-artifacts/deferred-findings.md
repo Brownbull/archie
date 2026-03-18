@@ -52,3 +52,29 @@
 - **Files:** `src/services/yamlImporter.ts`
 - **Stage:** PROD — defense-in-depth enhancement, not feature-blocking. Existing layers prevent exploitation.
 - **Estimated effort:** Small (add accept-list alongside reject-list, test browser MIME behaviors)
+
+### [PROD] Duplicated export-then-import preamble in data context round-trip tests
+
+- **Source:** TD-7-3a review (2026-03-17)
+- **Finding:** The affirmative AC-6 tests duplicate a 10-line export-then-import preamble (build Map, exportArchitecture, importYamlString, assert success, extract items) verbatim across both test cases. Pre-existing pattern in the file — other describe blocks inline the same setup too. A shared `beforeEach` with `let importedItems` within the new describe block would eliminate the duplication.
+- **Files:** `tests/integration/yaml-dataContext-roundtrip.test.ts`
+- **Stage:** PROD — DRY/maintainability, not functional
+- **Estimated effort:** Small (extract shared setup within describe block)
+
+## SCALE Backlog
+
+### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
+
+- **Source:** 7-4 review (2026-03-17)
+- **Finding:** AC-1 and AC-2 in `data-context.spec.ts` perform identical setup sequences: goto → waitForBlueprints → blueprint-load → selectNode → navigateToDataSection → addDataContextItem with the same arguments. Extracting a `loadBlueprintAndAddDataItem` helper into `canvas-helpers.ts` would reduce maintenance surface and make divergence points obvious. Currently 2 callers.
+- **Files:** `tests/e2e/data-context.spec.ts`, `tests/e2e/helpers/canvas-helpers.ts`
+- **Stage:** SCALE — DRY improvement for test infrastructure; no functional impact
+- **Estimated effort:** Small (extract helper, update 2 callers)
+
+### [SCALE] YAML shape validation in E2E round-trip assertion
+
+- **Source:** 7-4 review (2026-03-17)
+- **Finding:** AC-4 round-trip test casts `load(rawYaml)` to `Record<string, unknown>` and accesses `nodes` via a second cast. A Zod partial check or manual shape guard would produce more informative assertion failure messages ("nodes is undefined" vs a clear shape description). Low priority for test files.
+- **Files:** `tests/e2e/data-context.spec.ts`
+- **Stage:** SCALE — developer experience improvement for test diagnostics; no correctness impact
+- **Estimated effort:** Small (add 5-line shape guard or Zod partial parse)

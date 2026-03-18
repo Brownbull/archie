@@ -205,15 +205,15 @@ development_status:
   # User defines data shapes on components, sees fit indicators per variant
   # FRs: FR58-FR63, FR71-FR72 | NFRs: NFR13, NFR16
   # ============================================================================
-  epic-7: in-progress
+  epic-7: done
   7-1-data-context-types-schema-and-fit-engine: done
   td-7-1b-datacontext-crud-tests: done  # DEPENDS: 7-1, stage: MVP
   td-cross-2-aislop-baseline-cleanup: done
   td-cross-2a-stackstab-memo-instability: done  # DEPENDS: td-cross-2, stage: MVP
   7-2-data-context-ui-inspector-and-fit-display: done
   7-3-yaml-data-context-export-import: done
-  td-7-3a-affirmative-ac6-fit-test: review  # DEPENDS: 7-3, stage: MVP
-  7-4-e2e-data-context-and-fit-flow: ready-for-dev
+  td-7-3a-affirmative-ac6-fit-test: done  # DEPENDS: 7-3, stage: MVP
+  7-4-e2e-data-context-and-fit-flow: done
   epic-7-retrospective: optional
 
   # ============================================================================
