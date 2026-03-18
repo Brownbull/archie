@@ -212,7 +212,7 @@ development_status:
   td-cross-2a-stackstab-memo-instability: done  # DEPENDS: td-cross-2, stage: MVP
   7-2-data-context-ui-inspector-and-fit-display: done
   7-3-yaml-data-context-export-import: done
-  td-7-3a-affirmative-ac6-fit-test: ready-for-dev  # DEPENDS: 7-3, stage: MVP
+  td-7-3a-affirmative-ac6-fit-test: review  # DEPENDS: 7-3, stage: MVP
   7-4-e2e-data-context-and-fit-flow: ready-for-dev
   epic-7-retrospective: optional
 

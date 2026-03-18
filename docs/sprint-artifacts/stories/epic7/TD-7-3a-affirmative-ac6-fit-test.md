@@ -1,6 +1,6 @@
 # Tech Debt Story TD-7-3a: Affirmative AC-6 Fit Re-Derivation Test
 
-Status: ready-for-dev
+Status: review
 
 > **Source:** KDBP Code Review (2026-03-17) on story 7-3
 > **Priority:** LOW | **Estimated Effort:** ~30 min
@@ -17,10 +17,10 @@ As a **developer**, I want **an affirmative test that verifies fit indicators ar
 
 ## Tasks / Subtasks
 
-- [ ] Task 1: Add affirmative fit re-derivation test
-  - [ ] 1.1 In `yaml-dataContext-roundtrip.test.ts`, add test: import YAML → call `evaluateFitBatch` with imported items + mock profile → verify fit result computed
-  - [ ] 1.2 Add test: export with profile A, import, evaluate with profile B → fit reflects B (not A)
-  - [ ] 1.3 Run `npm run test:quick` — all pass
+- [x] Task 1: Add affirmative fit re-derivation test
+  - [x] 1.1 In `yaml-dataContext-roundtrip.test.ts`, add test: import YAML → call `evaluateFitBatch` with imported items + mock profile → verify fit result computed
+  - [x] 1.2 Add test: export with profile A, import, evaluate with profile B → fit reflects B (not A)
+  - [x] 1.3 Run `npm run test:quick` — all pass (1946/1946)
 
 ## Dev Notes
 - Source story: [7-3](./7-3.md)

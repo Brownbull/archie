@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { dump, load } from "js-yaml"
+import { evaluateFitBatch } from "@/engine/fitEvaluator"
 import { exportArchitecture } from "@/services/yamlExporter"
 import { importYamlString } from "@/services/yamlImporter"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
@@ -351,6 +352,68 @@ describe("YAML data context round-trip (integration)", () => {
           }
         }
       }
+    })
+  })
+
+  describe("AC-6 affirmative: fit is computed from library after import", () => {
+    it("evaluateFitBatch returns computed fit results for imported items (AC-1)", () => {
+      const dataContextItems = new Map<string, DataContextItem[]>()
+      dataContextItems.set("n1", [sampleItems[0]])
+
+      const yaml = exportArchitecture(nodes, edges, DEFAULT_WEIGHT_PROFILE, [], dataContextItems)
+      const result = importYamlString(yaml)
+      expect(result.success).toBe(true)
+      if (!result.success) return
+
+      const importedItems = result.architecture.dataContextItems.get("n1")!
+      expect(importedItems).toHaveLength(1)
+
+      // Mock profile: all dimensions map to positive compatibility
+      const profileA: Record<string, string> = {
+        "read-heavy": "great",
+        "medium": "good",
+        "simple-kv": "great",
+      }
+
+      const results = evaluateFitBatch(importedItems, profileA)
+      expect(results).toHaveLength(1)
+      expect(results[0]).toBeDefined()
+      expect(results[0].level).toBe("great-fit")
+      expect(results[0].factors).toHaveLength(3)
+      expect(results[0].explanation).toBeTruthy()
+    })
+
+    it("fit result reflects current profile, not stale export data (AC-2)", () => {
+      const dataContextItems = new Map<string, DataContextItem[]>()
+      dataContextItems.set("n1", [sampleItems[0]])
+
+      const yaml = exportArchitecture(nodes, edges, DEFAULT_WEIGHT_PROFILE, [], dataContextItems)
+      const result = importYamlString(yaml)
+      expect(result.success).toBe(true)
+      if (!result.success) return
+
+      const importedItems = result.architecture.dataContextItems.get("n1")!
+
+      // Profile A: all positive → great-fit
+      const profileA: Record<string, string> = {
+        "read-heavy": "great",
+        "medium": "great",
+        "simple-kv": "great",
+      }
+
+      // Profile B: all negative → risky
+      const profileB: Record<string, string> = {
+        "read-heavy": "incompatible",
+        "medium": "poor",
+        "simple-kv": "poor",
+      }
+
+      const resultsA = evaluateFitBatch(importedItems, profileA)
+      const resultsB = evaluateFitBatch(importedItems, profileB)
+
+      expect(resultsA[0].level).toBe("great-fit")
+      expect(resultsB[0].level).toBe("risky")
+      expect(resultsA[0].level).not.toBe(resultsB[0].level)
     })
   })
 
