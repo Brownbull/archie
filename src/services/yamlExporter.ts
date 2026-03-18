@@ -1,7 +1,7 @@
 import { dump } from "js-yaml"
 import { ArchitectureFileYamlSchema, CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import { DEFAULT_WEIGHT_PROFILE, isDefaultWeightProfile } from "@/lib/constants"
-import type { WeightProfile, ParsedConstraint } from "@/lib/constants"
+import type { WeightProfile, ParsedConstraint, DataContextItem } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
 
 /**
@@ -24,16 +24,34 @@ export function exportArchitecture(
   edges: ArchieEdge[],
   weightProfile?: WeightProfile,
   constraints?: ParsedConstraint[],
+  dataContextItems?: Map<string, DataContextItem[]>,
 ): string {
   // Extract skeleton from each node (camelCase → snake_case transform, inverse of import)
-  const yamlNodes = nodes.map((node) => ({
-    id: node.id,
-    component_id: node.data.archieComponentId,
-    // config_variant_id: empty string → undefined so js-yaml omits the key
-    // (schema requires z.string().min(1).optional() — empty string would fail validation)
-    config_variant_id: node.data.activeConfigVariantId || undefined,
-    position: { x: node.position.x, y: node.position.y },
-  }))
+  // Story 7-3 AC-ARCH-PATTERN-2: data context exported PER-NODE (not top-level)
+  const yamlNodes = nodes.map((node) => {
+    const nodeObj: Record<string, unknown> = {
+      id: node.id,
+      component_id: node.data.archieComponentId,
+      // config_variant_id: empty string → undefined so js-yaml omits the key
+      // (schema requires z.string().min(1).optional() — empty string would fail validation)
+      config_variant_id: node.data.activeConfigVariantId || undefined,
+      position: { x: node.position.x, y: node.position.y },
+    }
+    // AC-ARCH-PATTERN-1: include data_context only when node has items
+    // AC-ARCH-PATTERN-3: fit results NOT exported — only data definitions
+    // AC-ARCH-PATTERN-5: camelCase → snake_case transform
+    const items = dataContextItems?.get(node.id)
+    if (items && items.length > 0) {
+      nodeObj.data_context = items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        access_pattern: item.accessPattern,
+        average_size: item.averageSize,
+        structure_type: item.structureType,
+      }))
+    }
+    return nodeObj
+  })
 
   // Extract skeleton from each edge (camelCase → snake_case transform)
   // NOTE: edge.data (including labelOffset) is intentionally excluded —
@@ -71,9 +89,10 @@ export function exportArchitecture(
   // result is discarded; we only check .success to catch serialization bugs at the boundary
   const validation = ArchitectureFileYamlSchema.safeParse(exportObj)
   if (!validation.success) {
-    throw new Error(
-      `Architecture data is invalid and cannot be exported: ${JSON.stringify(validation.error.flatten().fieldErrors)}`,
-    )
+    if (import.meta.env.DEV) {
+      console.warn("Export validation failed:", validation.error.flatten().fieldErrors)
+    }
+    throw new Error("Export failed: architecture data failed internal validation")
   }
 
   // Safe serialization — js-yaml dump() with default options (AC-7, AC-ARCH-NO-4)

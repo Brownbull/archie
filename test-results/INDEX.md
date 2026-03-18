@@ -10,3 +10,4 @@ Screenshots persist per-spec folder. Re-running a spec only overwrites that spec
 | `priority-scoring/` | `priority-scoring.spec.ts` | 5-5 | Weight slider adjustments, reset, export/import round-trip, v1 defaults |
 | `constraint-guardrails/` | `constraint-guardrails.spec.ts` | 6-5 | Constraint CRUD, violation badges, navigation, YAML round-trip |
 | `stack-browsing/` | `stack-browsing.spec.ts` | 8-4 | Stack tab browsing, drag-and-drop placement, post-placement config editing |
+| `data-context/` | `data-context.spec.ts` | 7-4 | Data context CRUD, fit indicators, variant switching, YAML round-trip |

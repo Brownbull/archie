@@ -1,9 +1,3 @@
-/** Vite raw import — returns file contents as a string at build time */
-declare module "*.md?raw" {
-  const content: string
-  export default content
-}
-
 /** react-syntax-highlighter ESM subpath declarations (not covered by @types package) */
 declare module "react-syntax-highlighter/dist/esm/prism-light" {
   import type { ComponentType } from "react"

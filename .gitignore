@@ -59,6 +59,10 @@ tests/e2e/.auth/
 # Firebase
 .firebase/
 
+# Quality reports (aislop)
+docs/quality-reports/aislop-latest.json
+docs/quality-reports/history/
+
 # Claude local settings
 .claude/settings.local.json
 

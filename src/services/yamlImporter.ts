@@ -21,8 +21,10 @@ import {
   NODE_TYPE_PLACEHOLDER,
   NODE_WIDTH,
   type ComponentCategoryId,
+  type WeightProfile,
+  type ParsedConstraint,
+  type DataContextItem,
 } from "@/lib/constants"
-import type { WeightProfile, ParsedConstraint } from "@/lib/constants"
 import type { ArchieNode, ArchieEdge, ArchieNodeData, ArchieEdgeData } from "@/stores/architectureStore"
 
 export interface ImportError {
@@ -38,6 +40,7 @@ export interface HydratedArchitecture {
   name?: string
   weightProfile: WeightProfile
   constraints: ParsedConstraint[]
+  dataContextItems: Map<string, DataContextItem[]>
 }
 
 export type ImportResult =
@@ -287,9 +290,10 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
 
   const sanitizedName = data.name ? sanitizeDisplayString(data.name) : undefined
 
-  // Hydrate nodes from component library
+  // Hydrate nodes from component library + extract data context items (Story 7-3 AC-ARCH-PATTERN-4)
   const hydratedNodes: ArchieNode[] = []
   const placeholderIds: string[] = []
+  const dataContextItems = new Map<string, DataContextItem[]>()
 
   for (const yamlNode of data.nodes) {
     // NFC-normalize componentId to prevent Unicode mismatch (TD-3-1a AC-3)
@@ -299,6 +303,10 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
     if (!component) {
       // Create placeholder node for unknown component
       placeholderIds.push(yamlNode.id)
+      // Preserve data context even for placeholder nodes (round-trip safety — review 7-3 fix #3)
+      if (yamlNode.dataContext && yamlNode.dataContext.length > 0) {
+        dataContextItems.set(yamlNode.id, yamlNode.dataContext)
+      }
       hydratedNodes.push({
         id: yamlNode.id,
         type: NODE_TYPE_PLACEHOLDER,
@@ -340,6 +348,11 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       },
       width: NODE_WIDTH,
     })
+
+    // Extract data context items for this node (Zod already transformed snake_case → camelCase)
+    if (yamlNode.dataContext && yamlNode.dataContext.length > 0) {
+      dataContextItems.set(yamlNode.id, yamlNode.dataContext)
+    }
   }
 
   // Build edges with compatibility check
@@ -385,6 +398,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       name: sanitizedName,
       weightProfile: resolvedWeightProfile,
       constraints: data.constraints ?? [],
+      dataContextItems,
     },
   }
 }

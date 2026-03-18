@@ -104,8 +104,6 @@ test.describe("Stack Browsing & Placement E2E (Story 8-4)", () => {
     // Aggregate score should be visible after stack placement (placeStack triggers recalculation)
     const aggregateScore = page.locator('[data-testid="aggregate-score"]')
     await expect(aggregateScore).toBeVisible({ timeout: 5_000 })
-    const initialScore = await aggregateScore.textContent()
-
     // Change config variant on first placed component
     await triggerRecalcViaConfigChange(page, 0)
 

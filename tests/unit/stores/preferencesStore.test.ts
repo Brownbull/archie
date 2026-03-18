@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach } from "vitest"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { FONT_SIZE_PRESETS, FONT_FAMILY_PRESETS } from "@/lib/constants"
 

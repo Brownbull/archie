@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Git pre-commit hook — runs aislop on staged files and saves report.
+# Non-blocking: always exits 0 (advisory). Raise ci.failBelow in .aislop/config.yml to enforce.
+
+set -uo pipefail
+
+# Only run if aislop is installed
+if ! npx aislop --version >/dev/null 2>&1; then
+  exit 0
+fi
+
+# Check if there are staged files worth scanning
+STAGED_COUNT=$(git diff --cached --name-only --diff-filter=ACMR -- '*.ts' '*.tsx' '*.js' '*.jsx' '*.py' | wc -l)
+if [ "$STAGED_COUNT" -eq 0 ]; then
+  exit 0
+fi
+
+echo "aislop: scanning staged files..."
+
+# Run the report script (saves to docs/quality-reports/)
+bash "$(git rev-parse --show-toplevel)/scripts/aislop-report.sh" --staged 2>/dev/null || true
+
+# Always allow the commit (advisory mode)
+# To block commits below a threshold, set ci.failBelow > 0 in .aislop/config.yml
+exit 0

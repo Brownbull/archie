@@ -61,6 +61,15 @@ function resolveStackComponents(stack: StackDefinition): ResolvedStackComponent[
 function StacksTabInner() {
   const { isReady } = useLibrary()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- componentLibrary is a module-level singleton, stable across renders
+  const { stacks, resolvedMap } = useMemo(() => {
+    const s = isReady ? componentLibrary.getStacks() : []
+    return {
+      stacks: s,
+      resolvedMap: new Map(s.map((st) => [st.id, resolveStackComponents(st)])),
+    }
+  }, [isReady])
+
   if (!isReady) {
     return (
       <div data-testid="stacks-tab-loading" className="space-y-3 p-3">
@@ -69,13 +78,6 @@ function StacksTabInner() {
       </div>
     )
   }
-
-  const stacks = componentLibrary.getStacks()
-
-  const resolvedMap = useMemo(
-    () => new Map(stacks.map((s) => [s.id, resolveStackComponents(s)])),
-    [stacks],
-  )
 
   if (stacks.length === 0) {
     return (

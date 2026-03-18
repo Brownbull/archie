@@ -6,23 +6,13 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
-import { computeCategoryScores, computeWeightedCategoryScores, type CategoryScore } from "@/engine/dashboardCalculator"
-import { evaluateConstraints, type ConstraintViolation } from "@/engine/constraintEvaluator"
-import { getWeight } from "@/lib/weightUtils"
-import { computeWeightedNodeScore, computeHeatmapStatus, type NodeCategoryAverage } from "@/engine/heatmapCalculator"
-import { evaluateTier } from "@/engine/tierEvaluator"
-import type { TierCategoryScore } from "@/engine/tierEvaluator"
-import { DEFAULT_TIER_DEFINITIONS } from "@/lib/tierDefinitions"
-import type { TierResult } from "@/lib/tierDefinitions"
-import type { RecalculatedMetrics } from "@/engine/recalculator"
-import type { HeatmapStatus } from "@/engine/heatmapCalculator"
+import { computeWeightedNodeScore, computeHeatmapStatus } from "@/engine/heatmapCalculator"
 import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
 import {
   COMPONENT_CATEGORIES,
   DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
   MAX_CANVAS_NODES,
-  METRIC_CATEGORIES,
   NODE_TYPE_COMPONENT,
   NODE_WIDTH,
   RIPPLE_ANIMATION_DURATION_MS,
@@ -30,7 +20,21 @@ import {
   type Constraint,
   type ParsedConstraint,
   type WeightProfile,
+  type DataContextItem,
+  DATA_CONTEXT_NAME_MAX_LENGTH,
+  MAX_DATA_CONTEXT_ITEMS_PER_NODE,
+  ACCESS_PATTERN_VALUES,
+  DATA_SIZE_VALUES,
+  STRUCTURE_TYPE_VALUES,
 } from "@/lib/constants"
+import { sanitizeDisplayString } from "@/lib/sanitize"
+import {
+  getNodeCategoryAverages,
+  evaluateAndSetTier as computeTierResult,
+  evaluateAndGetViolations,
+  recomputeScoringLayer as computeScoringLayer,
+} from "@/stores/architectureStoreHelpers"
+import type { ConstraintViolation, RecalculatedMetrics, HeatmapStatus, TierResult } from "@/stores/architectureStoreHelpers"
 
 export interface ArchieNodeData extends Record<string, unknown> {
   archieComponentId: string
@@ -64,6 +68,7 @@ interface ArchitectureState {
   constraints: Constraint[]
   constraintViolations: ConstraintViolation[]
   violationsByNodeId: Map<string, ConstraintViolation[]>
+  dataContextItems: Map<string, DataContextItem[]>
   addNode: (componentId: string, position: { x: number; y: number }) => void
   addNodeSmartPosition: (componentId: string) => void
   updateNodePosition: (
@@ -80,7 +85,7 @@ interface ArchitectureState {
   triggerRecalculation: (changedNodeId: string) => void
   setWeightProfile: (profile: WeightProfile) => void
   setWeightAndRecalculate: (profile: WeightProfile) => void
-  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: ParsedConstraint[]) => void
+  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: ParsedConstraint[], dataContextItems?: Map<string, DataContextItem[]>) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
@@ -90,170 +95,44 @@ interface ArchitectureState {
   updateConstraint: (id: string, updates: Partial<Omit<Constraint, "id">>) => void
   removeConstraint: (id: string) => void
   setConstraints: (constraints: Constraint[]) => void
+  addDataContextItem: (nodeId: string, item: Omit<DataContextItem, "id">) => void
+  updateDataContextItem: (nodeId: string, itemId: string, updates: Partial<Omit<DataContextItem, "id">>) => void
+  removeDataContextItem: (nodeId: string, itemId: string) => void
 }
 
-/**
- * Module-level helper: computes per-node category averages from RecalculatedMetrics.
- * Used by weighted heatmap to apply weight profile before determining heatmap status.
- */
-function getNodeCategoryAverages(nodeMetrics: RecalculatedMetrics): NodeCategoryAverage[] {
-  const categoryMap = new Map<string, { sum: number; count: number }>()
-  for (const metric of nodeMetrics.metrics) {
-    const entry = categoryMap.get(metric.category) ?? { sum: 0, count: 0 }
-    entry.sum += metric.numericValue
-    entry.count++
-    categoryMap.set(metric.category, entry)
-  }
-  const averages: NodeCategoryAverage[] = []
-  for (const [categoryId, { sum, count }] of categoryMap) {
-    averages.push({ categoryId, averageScore: sum / count })
-  }
-  return averages
-}
+// Thin wrappers: delegate to pure helpers, adapt to store get/set pattern.
+// Keeps call sites identical to pre-extraction code. (Story 7-1 Phase 0 refactor)
 
-/**
- * Module-level helper: evaluates tier from current architecture state and sets result.
- * Called from triggerRecalculation (with overrideMetrics), addNode, removeNode/removeNodes.
- * Applies weight profile to category scores before tier evaluation (Story 5-2 AC-3, AC-5).
- */
 function evaluateAndSetTier(
   get: () => ArchitectureState,
   set: (partial: Partial<ArchitectureState>) => void,
   overrideMetrics?: Map<string, RecalculatedMetrics>,
 ): void {
-  const { nodes, weightProfile } = get()
-  if (nodes.length === 0) {
-    set({ currentTier: null })
-    return
-  }
-  try {
-    const metrics = overrideMetrics ?? get().computedMetrics
-    const categoryScores = computeCategoryScores(metrics)
-    const weightedScores = computeWeightedCategoryScores(categoryScores, weightProfile)
-    const tierCategoryScores: TierCategoryScore[] = weightedScores.map((cs) => ({
-      categoryId: cs.categoryId,
-      score: cs.score,
-      hasData: cs.hasData,
-    }))
-    const nodeSummaries = nodes.map((n) => ({
-      id: n.id,
-      category: n.data.componentCategory,
-    }))
-    const result = evaluateTier(nodeSummaries, tierCategoryScores, DEFAULT_TIER_DEFINITIONS)
-    set({ currentTier: result })
-  } catch (err) {
-    if (import.meta.env.DEV) {
-      console.warn("evaluateAndSetTier failed:", err)
-    }
-    set({ currentTier: null })
-  }
+  const { nodes, weightProfile, computedMetrics } = get()
+  set({ currentTier: computeTierResult(nodes, weightProfile, computedMetrics, overrideMetrics) })
 }
 
-/**
- * Module-level helper: recomputes weighted heatmap for all nodes.
- * Uses weight profile to compute per-node weighted overall scores,
- * then maps to heatmap statuses.
- */
-function recomputeWeightedHeatmap(
-  computedMetrics: Map<string, RecalculatedMetrics>,
-  weightProfile: WeightProfile,
-): Map<string, HeatmapStatus> {
-  const result = new Map<string, HeatmapStatus>()
-  for (const [nodeId, nodeMetrics] of computedMetrics) {
-    const categoryAverages = getNodeCategoryAverages(nodeMetrics)
-    const weightedScore = computeWeightedNodeScore(categoryAverages, weightProfile)
-    result.set(nodeId, computeHeatmapStatus(weightedScore))
-  }
-  return result
-}
-
-/**
- * Module-level helper: builds per-node weighted category scores from RecalculatedMetrics.
- * For each node, groups metrics by category, computes average, then applies weight.
- * Returns Map<nodeId, CategoryScore[]> suitable for evaluateConstraints.
- * Story 6-2 AC-3: per-node constraint violations.
- */
-function buildPerNodeCategoryScores(
-  computedMetrics: Map<string, RecalculatedMetrics>,
-  weightProfile: WeightProfile,
-): Map<string, CategoryScore[]> {
-  const result = new Map<string, CategoryScore[]>()
-  for (const [nodeId, nodeMetrics] of computedMetrics) {
-    const catMap = new Map<string, { sum: number; count: number }>()
-    for (const metric of nodeMetrics.metrics) {
-      const entry = catMap.get(metric.category) ?? { sum: 0, count: 0 }
-      entry.sum += metric.numericValue
-      entry.count++
-      catMap.set(metric.category, entry)
-    }
-    const scores: CategoryScore[] = METRIC_CATEGORIES.map((cat) => {
-      const entry = catMap.get(cat.id)
-      if (!entry) return { categoryId: cat.id, categoryName: cat.name, score: 0, metricCount: 0, hasData: false }
-      const rawScore = entry.sum / entry.count
-      const rawWeight = getWeight(cat.id, weightProfile)
-      const safeWeight = Number.isNaN(rawWeight) || rawWeight < 0 ? 0 : rawWeight
-      return { categoryId: cat.id, categoryName: cat.name, score: rawScore * safeWeight, metricCount: entry.count, hasData: true }
-    })
-    result.set(nodeId, scores)
-  }
-  return result
-}
-
-/**
- * Module-level helper: evaluates constraints and sets violations in store.
- * Called after scoring changes (recalculation, weight change) and constraint CRUD.
- * Follows evaluateAndSetTier pattern — receives get/set, optional override metrics.
- * Story 6-2 AC-ARCH-PATTERN-4.
- */
 function _evaluateAndSetViolations(
   get: () => ArchitectureState,
   set: (partial: Partial<ArchitectureState>) => void,
   overrideMetrics?: Map<string, RecalculatedMetrics>,
 ): void {
-  const { constraints, weightProfile, nodes } = get()
+  const { constraints, weightProfile, nodes, computedMetrics, constraintViolations } = get()
   if (constraints.length === 0 || nodes.length === 0) {
-    if (get().constraintViolations.length > 0) {
+    if (constraintViolations.length > 0) {
       set({ constraintViolations: [], violationsByNodeId: new Map() })
     }
     return
   }
-  const metrics = overrideMetrics ?? get().computedMetrics
-  const categoryScores = computeCategoryScores(metrics)
-  const weightedScores = computeWeightedCategoryScores(categoryScores, weightProfile)
-  const perNodeScores = buildPerNodeCategoryScores(metrics, weightProfile)
-  const violations = evaluateConstraints(constraints, weightedScores, perNodeScores)
-  set({ constraintViolations: violations, violationsByNodeId: buildViolationsByNodeId(violations) })
+  set(evaluateAndGetViolations(constraints, weightProfile, nodes, computedMetrics, overrideMetrics))
 }
 
-/**
- * Module-level helper: groups violations by nodeId for O(1) per-node lookups.
- * ArchieNode subscribes to violationsByNodeId.get(id) instead of filtering the full array.
- * TD-6-3a AC-2.
- */
-function buildViolationsByNodeId(
-  violations: ConstraintViolation[],
-): Map<string, ConstraintViolation[]> {
-  const map = new Map<string, ConstraintViolation[]>()
-  for (const v of violations) {
-    map.set(v.nodeId, [...(map.get(v.nodeId) ?? []), v])
-  }
-  return map
-}
-
-/**
- * Module-level helper: recomputes the scoring layer (dashboard, heatmap, tier)
- * from existing computedMetrics + weight profile. No BFS propagation.
- * O(nodes * categories) — fast path for weight slider changes (AC-ARCH-PATTERN-4).
- */
 function recomputeScoringLayer(
   get: () => ArchitectureState,
   set: (partial: Partial<ArchitectureState>) => void,
 ): void {
-  const { computedMetrics, weightProfile } = get()
-  const heatmapColors = recomputeWeightedHeatmap(computedMetrics, weightProfile)
-  set({ heatmapColors })
-  evaluateAndSetTier(get, set)
-  _evaluateAndSetViolations(get, set)
+  const { nodes, weightProfile, computedMetrics, constraints } = get()
+  set(computeScoringLayer(nodes, weightProfile, computedMetrics, constraints))
 }
 
 // Module-level tracking for ripple setTimeout IDs (TD-2-2b)
@@ -281,6 +160,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   constraints: [],
   constraintViolations: [],
   violationsByNodeId: new Map<string, ConstraintViolation[]>(),
+  dataContextItems: new Map<string, DataContextItem[]>(),
 
   triggerRecalculation: (changedNodeId) => {
     // Cancel pending ripple timeouts from previous recalculation (TD-2-2b)
@@ -456,6 +336,8 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     const node = get().nodes.find((n) => n.id === nodeId)
     if (!node || node.data.archieComponentId === newComponentId) return
 
+    // dataContextItems intentionally preserved on swap — user may want to evaluate
+    // same data against new component's fit profile (Story 7-1 review decision)
     set({
       nodes: get().nodes.map((n) =>
         n.id === nodeId
@@ -555,6 +437,12 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       nextHeatmap.delete(nodeId)
       set({ heatmapColors: nextHeatmap })
     }
+    // Clean up dataContextItems for the removed node
+    if (get().dataContextItems.has(nodeId)) {
+      const nextDci = new Map(get().dataContextItems)
+      nextDci.delete(nodeId)
+      set({ dataContextItems: nextDci })
+    }
     // Tier + constraints: clear if canvas is empty, otherwise neighbor recalculation handles it
     if (get().nodes.length === 0) {
       set({ currentTier: null, constraintViolations: [], violationsByNodeId: new Map() })
@@ -613,6 +501,14 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         nextHeatmap.delete(id)
       }
       set({ computedMetrics: nextComputed, heatmapColors: nextHeatmap })
+    }
+    // Clean up dataContextItems for removed nodes
+    const currentDci = get().dataContextItems
+    const hasDciToClean = [...idsToRemove].some((id) => currentDci.has(id))
+    if (hasDciToClean) {
+      const nextDci = new Map(currentDci)
+      for (const id of idsToRemove) nextDci.delete(id)
+      set({ dataContextItems: nextDci })
     }
     // Tier + constraints: clear if canvas is empty, otherwise re-evaluate
     if (get().nodes.length === 0) {
@@ -691,7 +587,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     recomputeScoringLayer(get, set)
   },
 
-  loadArchitecture: (nodes, edges, weightProfile?, constraints?) => {
+  loadArchitecture: (nodes, edges, weightProfile?, constraints?, dataContextItems?) => {
     // Cancel pending ripple timeouts from previous architecture
     clearPendingRippleTimeouts()
 
@@ -710,6 +606,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       constraints: (constraints ?? []).map((c) => ({ ...c, id: crypto.randomUUID() })),
       constraintViolations: [],
       violationsByNodeId: new Map(),
+      dataContextItems: dataContextItems ?? new Map(),
     })
 
     // Clear uiStore selection state (cross-store pattern from removeNode)
@@ -777,13 +674,80 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({ constraints })
     _evaluateAndSetViolations(get, set)
   },
+
+  // --- Data Context CRUD (Story 7-1 AC-ARCH-PATTERN-5) ---
+
+  addDataContextItem: (nodeId, item) => {
+    const current = get().dataContextItems.get(nodeId) ?? []
+    if (current.length >= MAX_DATA_CONTEXT_ITEMS_PER_NODE) {
+      toast.warning(`Limit reached (${MAX_DATA_CONTEXT_ITEMS_PER_NODE} data items per component)`)
+      return
+    }
+    const newItem: DataContextItem = {
+      id: crypto.randomUUID(),
+      name: sanitizeDisplayString(item.name, DATA_CONTEXT_NAME_MAX_LENGTH),
+      accessPattern: item.accessPattern,
+      averageSize: item.averageSize,
+      structureType: item.structureType,
+    }
+    const next = new Map(get().dataContextItems)
+    next.set(nodeId, [...current, newItem])
+    set({ dataContextItems: next })
+  },
+
+  updateDataContextItem: (nodeId, itemId, updates) => {
+    const current = get().dataContextItems.get(nodeId)
+    if (!current) return
+    if (!current.some((item) => item.id === itemId)) return
+    // Runtime enum validation — TS types erased at runtime (review 7-3 fix #2)
+    if (updates.accessPattern !== undefined && !(ACCESS_PATTERN_VALUES as readonly string[]).includes(updates.accessPattern)) return
+    if (updates.averageSize !== undefined && !(DATA_SIZE_VALUES as readonly string[]).includes(updates.averageSize)) return
+    if (updates.structureType !== undefined && !(STRUCTURE_TYPE_VALUES as readonly string[]).includes(updates.structureType)) return
+    const next = new Map(get().dataContextItems)
+    next.set(
+      nodeId,
+      current.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              ...updates,
+              ...(updates.name !== undefined
+                ? { name: sanitizeDisplayString(updates.name, DATA_CONTEXT_NAME_MAX_LENGTH) }
+                : {}),
+            }
+          : item,
+      ),
+    )
+    set({ dataContextItems: next })
+  },
+
+  removeDataContextItem: (nodeId, itemId) => {
+    const current = get().dataContextItems.get(nodeId)
+    if (!current) return
+    const filtered = current.filter((item) => item.id !== itemId)
+    const next = new Map(get().dataContextItems)
+    if (filtered.length === 0) {
+      next.delete(nodeId)
+    } else {
+      next.set(nodeId, filtered)
+    }
+    set({ dataContextItems: next })
+  },
 }))
 
 /**
  * Pure selector: extracts the skeleton (nodes + edges) from the current store state.
  * Called on export button click — non-reactive read, not a store action.
  */
-export function getArchitectureSkeleton(): { nodes: ArchieNode[]; edges: ArchieEdge[]; weightProfile: WeightProfile; constraints: Constraint[] } {
+export interface ArchitectureSkeleton {
+  nodes: ArchieNode[]
+  edges: ArchieEdge[]
+  weightProfile: WeightProfile
+  constraints: Constraint[]
+  dataContextItems: Map<string, DataContextItem[]>
+}
+
+export function getArchitectureSkeleton(): ArchitectureSkeleton {
   const state = useArchitectureStore.getState()
-  return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile, constraints: state.constraints }
+  return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile, constraints: state.constraints, dataContextItems: state.dataContextItems }
 }

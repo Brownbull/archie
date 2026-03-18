@@ -7,6 +7,16 @@ export type {
   StackConnection,
   StackCategoryScore,
 } from "@/lib/constants"
+export type {
+  AccessPattern,
+  DataSize,
+  StructureType,
+  FitLevel,
+  FitCompatibility,
+  DataContextItem,
+  FitFactor,
+  FitResult,
+} from "@/lib/constants"
 export type { MetricValue } from "@/schemas/metricSchema"
 export type { MetricCategory, ScoreInterpretation } from "@/schemas/metricCategorySchema"
 export type {
