@@ -41,7 +41,8 @@ async function openWeightSliders(page: Page) {
  */
 async function openConstraintPanel(page: Page) {
   const panel = page.locator('[data-testid="constraint-panel"]')
-  if (await panel.isVisible()) return // already open — skip toggle to avoid closing
+  const alreadyOpen = await panel.waitFor({ state: "visible", timeout: 500 }).then(() => true).catch(() => false)
+  if (alreadyOpen) return // already open — skip toggle to avoid closing
   const toggle = page.locator('[data-testid="constraint-guardrails-toggle"]')
   await expect(toggle).toBeVisible()
   await toggle.click()
@@ -58,7 +59,9 @@ async function addConstraint(
   operator: string,
   threshold: string,
 ) {
-  await page.locator('[data-testid="constraint-add-button"]').click()
+  const addButton = page.locator('[data-testid="constraint-add-button"]')
+  await expect(addButton).toBeVisible({ timeout: 3_000 })
+  await addButton.click()
   await expect(page.locator('[data-testid="constraint-form"]')).toBeVisible({ timeout: 3_000 })
 
   await page.locator('[data-testid="constraint-category-select"]').selectOption(categoryId)
@@ -94,9 +97,15 @@ async function adjustSlider(page: Page, categoryId: string, steps: number, settl
  * Returns true if Foundation tier is reached (tier badge button appears).
  */
 async function reachFoundationTier(page: Page): Promise<boolean> {
-  await addComponentWithMetrics(page, 0)
-  await addComponentWithMetrics(page, 1)
-  await addComponentWithMetrics(page, 2)
+  // Assumes seeded components span 2+ metric categories (Foundation tier requirement).
+  // If fewer than 3 components are seeded, addComponentToCanvas throws — caught below.
+  try {
+    await addComponentWithMetrics(page, 0)
+    await addComponentWithMetrics(page, 1)
+    await addComponentWithMetrics(page, 2)
+  } catch {
+    return false // insufficient seeded components
+  }
 
   // Wait for tier evaluation to settle
   await page.waitForTimeout(500)
@@ -161,18 +170,15 @@ test.describe("Pathway Guidance E2E (Story 7.5-4)", () => {
     // --- AC-2: Change weight slider, verify suggestion ranking changes ---
     await openWeightSliders(page)
 
+    // Note: assumes default weight 1.0 (fresh page state — AC-1/2/3 run in single test from page.goto("/"))
     // Adjust scalability slider down to 0.3 (7 ArrowLeft from 1.0, step=0.1)
     await adjustSlider(page, "scalability", 7)
 
-    // Wait for suggestion recomputation to propagate through React render
-    await page.waitForTimeout(200)
-
-    // Capture suggestion card text contents AFTER weight change
-    const afterTexts = await suggestionCards.allTextContents()
-
-    // Weighted scores should have changed (scalability weight went from 1.0 to 0.3)
-    // Either order changed or score values changed
-    expect(afterTexts).not.toEqual(beforeTexts)
+    // Poll until suggestion text changes (debounce 100ms + React render + Zustand propagation)
+    await expect.poll(
+      async () => await suggestionCards.allTextContents(),
+      { timeout: 3_000, message: "Suggestion text should change after weight adjustment" },
+    ).not.toEqual(beforeTexts)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/03-reranked-after-weight-change.png`,
@@ -194,20 +200,13 @@ test.describe("Pathway Guidance E2E (Story 7.5-4)", () => {
       await expect(pathwayPanel).toBeVisible({ timeout: 3_000 })
     }
 
-    // Verify at least one constraint warning badge appears on suggestion cards
+    // Verify constraint evaluation produced visible badges on suggestion cards
     const constraintWarnings = page.locator('[data-testid^="constraint-warning-"]')
     const warningCount = await constraintWarnings.count()
-
-    // If no warnings with threshold 2, all suggestions happen to be safe — still valid,
-    // but verify at least some badge exists (safe or warning)
-    if (warningCount === 0) {
-      const safeBadges = page.locator('[data-testid^="constraint-safe-"]')
-      const safeCount = await safeBadges.count()
-      // Every suggestion card should have either a safe or warning badge
-      expect(safeCount).toBeGreaterThan(0)
-    } else {
-      expect(warningCount).toBeGreaterThan(0)
-    }
+    const safeBadges = page.locator('[data-testid^="constraint-safe-"]')
+    const safeCount = await safeBadges.count()
+    // Every suggestion card should display either a constraint warning or safe badge
+    expect(warningCount + safeCount).toBeGreaterThan(0)
   })
 
   test("AC-4: max tier — no suggestions", async ({ page }) => {

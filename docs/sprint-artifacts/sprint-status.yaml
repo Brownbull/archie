@@ -239,5 +239,5 @@ development_status:
   7.5-2-component-suggestion-logic-and-ranking: done
   td-7.5-1-pathway-hook-ac-compliance: done  # DEPENDS: 7.5-2, stage: MVP
   7.5-3-pathway-guidance-ui: done
-  7.5-4-e2e-pathway-guidance-flow: review
+  7.5-4-e2e-pathway-guidance-flow: done
   epic-7.5-retrospective: optional
