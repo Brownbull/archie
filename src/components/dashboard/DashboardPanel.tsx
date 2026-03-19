@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { type MetricCategoryId } from "@/lib/constants"
 import { CATEGORY_LOOKUP } from "@/lib/categoryLookup"
@@ -31,6 +31,17 @@ export function DashboardPanel() {
 
   const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
+  const [overlayInitialSection, setOverlayInitialSection] = useState<"pathway" | null>(null)
+
+  const handleOpenPathway = useCallback(() => {
+    setOverlayInitialSection("pathway")
+    setIsOverlayOpen(true)
+  }, [])
+
+  const handleOverlayOpenChange = useCallback((o: boolean) => {
+    setIsOverlayOpen(o)
+    if (!o) setOverlayInitialSection(null)
+  }, [])
 
   const isEmpty = computedMetrics.size === 0
 
@@ -41,7 +52,7 @@ export function DashboardPanel() {
       aria-label="Architecture scoring dashboard"
       className="flex h-full items-center"
     >
-      <TierBadge />
+      <TierBadge onOpenPathway={handleOpenPathway} />
 
       <div className="self-stretch border-r border-archie-border" />
 
@@ -113,7 +124,11 @@ export function DashboardPanel() {
         </>
       )}
 
-      <DashboardOverlay open={isOverlayOpen} onOpenChange={setIsOverlayOpen} />
+      <DashboardOverlay
+        open={isOverlayOpen}
+        onOpenChange={handleOverlayOpenChange}
+        initialSection={overlayInitialSection}
+      />
     </div>
   )
 }

@@ -61,6 +61,30 @@
 - **Stage:** PROD — DRY/maintainability, not functional
 - **Estimated effort:** Small (extract shared setup within describe block)
 
+### [PROD] Two-Map pattern in checkConstraintSafety could be single-pass
+
+- **Source:** 7.5-1 review (2026-03-18)
+- **Finding:** `checkConstraintSafety` in `pathwayEngine.ts` allocates both `categoryCounts` and `categoryAvgs` Maps when a single-pass approach (computing averages inline) would suffice. The sibling function `computeCandidateWeightedScore` uses a single Map. Minor DRY/consistency cleanup, no correctness impact.
+- **Files:** `src/engine/pathwayEngine.ts`
+- **Stage:** PROD — code hygiene, not functional
+- **Estimated effort:** Small (refactor two Maps into one, ~10 lines)
+
+### [PROD] Triple usePathwaySuggestions hook invocation — redundant engine recomputation
+
+- **Source:** 7.5-3 review (2026-03-18)
+- **Finding:** `usePathwaySuggestions` is called independently in TierBadge, DashboardOverlay, and PathwayGuidancePanel. Each call runs `computePathwaySuggestions` (non-trivial engine call) inside `useMemo`. DashboardOverlay and PathwayGuidancePanel always mount together, causing redundant recomputation. Fix: call hook once in DashboardPanel and pass count/suggestions as props, or lift to a shared context.
+- **Files:** `src/components/dashboard/TierBadge.tsx`, `src/components/dashboard/DashboardOverlay.tsx`, `src/components/dashboard/PathwayGuidancePanel.tsx`
+- **Stage:** PROD — performance optimization, not feature-blocking. useMemo prevents expensive re-renders but three independent memos still triple the work on dependency changes.
+- **Estimated effort:** Medium (multi-file prop threading or context extraction)
+
+### [PROD] AC-4 max-tier E2E test may perpetually skip due to blueprint recalc no-op
+
+- **Source:** 7.5-4 review (2026-03-18)
+- **Finding:** `triggerRecalcViaConfigChange(page, 0)` on a blueprint-loaded canvas may silently no-op if the first node has no unchecked config options. This causes `computedMetrics` to remain empty, tier evaluation to not trigger, and the AC-4 max-tier test to always hit `test.skip`. The test technically passes (skips) but never validates the max-tier empty state in practice.
+- **Files:** `tests/e2e/pathway-guidance.spec.ts`
+- **Stage:** PROD — test reliability in CI environments; feature itself works correctly
+- **Estimated effort:** Medium (need alternative recalc trigger for blueprint-loaded architectures, or fixture with pre-computed metrics)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
@@ -78,3 +102,11 @@
 - **Files:** `tests/e2e/data-context.spec.ts`
 - **Stage:** SCALE — developer experience improvement for test diagnostics; no correctness impact
 - **Estimated effort:** Small (add 5-line shape guard or Zod partial parse)
+
+### [SCALE] Fit level tooltip (title attribute) inaccessible on mobile/keyboard
+
+- **Source:** 7.5-3 review (2026-03-18)
+- **Finding:** `suggestion.fitExplanation` is only accessible via `title` attribute hover tooltip in PathwayGuidancePanel. On mobile and keyboard-only navigation, `title` tooltips are inaccessible. Desktop-first per PRD, so acceptable for MVP. Address in a future accessibility pass.
+- **Files:** `src/components/dashboard/PathwayGuidancePanel.tsx`
+- **Stage:** SCALE — accessibility improvement for mobile/keyboard users; desktop-first tool per PRD
+- **Estimated effort:** Small (add aria-label or tooltip component)

@@ -16,6 +16,18 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
+vi.mock("@/hooks/usePathwaySuggestions", () => ({
+  usePathwaySuggestions: vi.fn(() => ({
+    suggestions: [],
+    hasGaps: false,
+    nextTierName: null,
+  })),
+}))
+
+vi.mock("@/components/dashboard/PathwayGuidancePanel", () => ({
+  PathwayGuidancePanel: () => <div data-testid="pathway-guidance-panel-mock" />,
+}))
+
 // Mock ConstraintPanel (used by DashboardOverlay child)
 vi.mock("@/components/dashboard/ConstraintPanel", () => ({
   ConstraintPanel: () => <div data-testid="constraint-panel-section" />,

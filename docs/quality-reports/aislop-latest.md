@@ -1,21 +1,21 @@
 # aislop Quality Report
 
-**Date:** 20260317-235718
-**Score:** 14/100 (Critical)
+**Date:** 20260318-180959
+**Score:** 13/100 (Critical)
 **Scan:** `aislop scan --staged`
 
 ## Engine Summary
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 9 | 585ms |
-| code-quality | 64 | 4306ms |
-| ai-slop | 0 | 3ms |
-| security | 9 | 2608ms |
+| lint | 9 | 970ms |
+| code-quality | 66 | 4923ms |
+| ai-slop | 0 | 10ms |
+| security | 9 | 3124ms |
 
 ## Findings
 
-### code-quality (64)
+### code-quality (66)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
@@ -37,6 +37,7 @@
 - [!] `src/engine/compatibilityChecker.ts:3` — knip/types: Unused type: CompatibilityResult
 - [!] `src/services/yamlImporter.ts:36` — knip/types: Unused type: HydratedArchitecture
 - [!] `src/services/yamlImporter.ts:46` — knip/types: Unused type: ImportResult
+- [!] `src/engine/pathwayEngine.ts:10` — knip/types: Unused type: PathwaySuggestion
 - [!] `src/types/index.ts:2` — knip/types: Unused type: WeightProfile
 - [!] `src/types/index.ts:3` — knip/types: Unused type: Constraint
 - [!] `src/types/index.ts:4` — knip/types: Unused type: ConstraintOperator
@@ -72,13 +73,14 @@
 - [!] `src/types/index.ts:42` — knip/types: Unused type: ComponentCategoryMetric
 - [!] `src/types/index.ts:43` — knip/types: Unused type: VariantRecommendation
 - [!] `src/types/index.ts:44` — knip/types: Unused type: ConstraintViolation
-- [!] `src/types/index.ts:46` — knip/types: Unused type: TierDefinition
-- [!] `src/types/index.ts:47` — knip/types: Unused type: TierResult
-- [!] `src/types/index.ts:48` — knip/types: Unused type: TierGap
-- [!] `src/types/index.ts:49` — knip/types: Unused type: TierRequirement
-- [!] `src/types/index.ts:52` — knip/types: Unused type: ArchitectureFile
-- [!] `src/types/index.ts:53` — knip/types: Unused type: ArchitectureFileNode
-- [!] `src/types/index.ts:54` — knip/types: Unused type: ArchitectureFileEdge
+- [!] `src/types/index.ts:45` — knip/types: Unused type: PathwaySuggestion
+- [!] `src/types/index.ts:47` — knip/types: Unused type: TierDefinition
+- [!] `src/types/index.ts:48` — knip/types: Unused type: TierResult
+- [!] `src/types/index.ts:49` — knip/types: Unused type: TierGap
+- [!] `src/types/index.ts:50` — knip/types: Unused type: TierRequirement
+- [!] `src/types/index.ts:53` — knip/types: Unused type: ArchitectureFile
+- [!] `src/types/index.ts:54` — knip/types: Unused type: ArchitectureFileNode
+- [!] `src/types/index.ts:55` — knip/types: Unused type: ArchitectureFileEdge
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
 
@@ -86,9 +88,9 @@
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:183` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/services/yamlImporter.ts:132` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.

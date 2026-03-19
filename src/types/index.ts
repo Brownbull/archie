@@ -42,6 +42,8 @@ export type { HeatmapStatus } from "@/engine/heatmapCalculator"
 export type { CategoryScore, CategoryBreakdown, ComponentCategoryMetric } from "@/engine/dashboardCalculator"
 export type { VariantRecommendation } from "@/engine/recommendationEngine"
 export type { ConstraintViolation } from "@/engine/constraintEvaluator"
+export type { PathwaySuggestion } from "@/engine/pathwayEngine"
+export type { PathwaySuggestionsResult } from "@/hooks/usePathwaySuggestions"
 export type {
   TierDefinition,
   TierResult,
