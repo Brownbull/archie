@@ -1,10 +1,16 @@
 import { useState } from "react"
 import { Trophy, ChevronUp, ChevronDown, Check } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
 import { Z_INDEX } from "@/lib/constants"
 
-export function TierBadge() {
+interface TierBadgeProps {
+  onOpenPathway?: () => void
+}
+
+export function TierBadge({ onOpenPathway }: TierBadgeProps) {
   const currentTier = useArchitectureStore((s) => s.currentTier)
+  const { suggestions } = usePathwaySuggestions()
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
@@ -23,6 +29,7 @@ export function TierBadge() {
             onClick={() => setIsExpanded((prev) => !prev)}
             aria-expanded={isExpanded}
             aria-controls="tier-detail-panel"
+            // tierColor/tierTextColor are static Tailwind classes from tierDefinitions.ts, not user input
             className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors duration-300 ease-in-out ${currentTier.tierColor} ${currentTier.tierTextColor}`}
           >
             <Trophy className="h-4 w-4" />
@@ -63,6 +70,20 @@ export function TierBadge() {
                       </li>
                     ))}
                   </ul>
+                  {suggestions.length > 0 && (
+                    <button
+                      type="button"
+                      data-testid="pathway-suggestions-link"
+                      className="mt-2 text-xs font-medium text-primary hover:underline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setIsExpanded(false)
+                        onOpenPathway?.()
+                      }}
+                    >
+                      {suggestions.length} suggestion{suggestions.length !== 1 ? "s" : ""}
+                    </button>
+                  )}
                 </div>
               )}
             </div>

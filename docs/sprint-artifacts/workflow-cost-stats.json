@@ -1,42 +1,36 @@
 {
-  "generated": "2026-03-18T01:50:56.704279",
+  "generated": "2026-03-18T22:13:03.989797",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 187,
-  "total_cost": 2150.81,
+  "total_sessions": 193,
+  "total_cost": 2232.07,
   "averages": {
-    "overall": 11.5,
-    "last_10": 11.82,
-    "last_20": 10.88
+    "overall": 11.57,
+    "last_10": 13.16,
+    "last_20": 12.08
   },
   "percentiles": {
-    "p50": 8.57,
-    "p75": 13.41,
-    "p90": 18.34,
-    "p95": 24.83
+    "p50": 8.68,
+    "p75": 13.5,
+    "p90": 18.27,
+    "p95": 24.46
   },
   "thresholds": {
-    "warning": 16.32,
-    "high": 21.76
+    "warning": 18.13,
+    "high": 24.17
   },
-  "trend_last10_vs_prev10_pct": 19.0,
+  "trend_last10_vs_prev10_pct": 19.6,
   "recent_outliers": [
     {
-      "date": "2026-03-16 01:17",
-      "session_id": "a9b6d6d5-51b",
-      "cost": 17.86,
-      "ratio": 1.6
-    },
-    {
-      "date": "2026-03-17 04:45",
-      "session_id": "64c43062-ecc",
-      "cost": 17.32,
-      "ratio": 1.6
+      "date": "2026-03-18 23:47",
+      "session_id": "de653f89-589",
+      "cost": 18.25,
+      "ratio": 1.5
     }
   ],
   "by_model": {
     "opus, sonnet": {
-      "count": 104,
-      "total_cost": 1091.73
+      "count": 110,
+      "total_cost": 1172.9900000000002
     },
     "opus": {
       "count": 29,
@@ -109,21 +103,21 @@
       "p90": 11.63
     },
     "kdbp-code-review": {
-      "count": 34,
-      "total_cost": 309.81,
-      "avg": 9.11,
-      "avg_last_10": 9.77,
-      "p50": 8.32,
-      "p75": 11.05,
-      "p90": 13.26
+      "count": 37,
+      "total_cost": 349.0,
+      "avg": 9.43,
+      "avg_last_10": 10.61,
+      "p50": 8.91,
+      "p75": 11.53,
+      "p90": 13.61
     },
     "kdbp-dev-story": {
-      "count": 21,
-      "total_cost": 276.59,
-      "avg": 13.17,
-      "avg_last_10": 12.76,
-      "p50": 13.32,
-      "p75": 15.75,
+      "count": 24,
+      "total_cost": 318.66,
+      "avg": 13.28,
+      "avg_last_10": 13.04,
+      "p50": 13.41,
+      "p75": 16.14,
       "p90": 17.86
     }
   }

@@ -30,6 +30,18 @@ vi.mock("@/lib/categoryIcons", () => {
   }
 })
 
+vi.mock("@/hooks/usePathwaySuggestions", () => ({
+  usePathwaySuggestions: vi.fn(() => ({
+    suggestions: [],
+    hasGaps: false,
+    nextTierName: null,
+  })),
+}))
+
+vi.mock("@/components/dashboard/PathwayGuidancePanel", () => ({
+  PathwayGuidancePanel: () => <div data-testid="pathway-guidance-panel-mock" />,
+}))
+
 // Mock WeightSliders to keep overlay tests focused
 vi.mock("@/components/dashboard/WeightSliders", () => ({
   WeightSliders: () => <div data-testid="weight-sliders-section" />,
@@ -264,6 +276,88 @@ describe("DashboardOverlay", () => {
     // When weights are non-default, the description should show "Weighted:" prefix
     expect(screen.getByText(/Weighted:/)).toBeInTheDocument()
     expect(screen.getByText(/Balanced:/)).toBeInTheDocument()
+  })
+
+  // --- Story 7.5-3: Pathway Guidance section ---
+
+  describe("pathway guidance section (AC-3, AC-6)", () => {
+    it("renders pathway guidance collapsible with count badge when suggestions exist (AC-3)", async () => {
+      const { usePathwaySuggestions } = await import("@/hooks/usePathwaySuggestions")
+      vi.mocked(usePathwaySuggestions).mockReturnValue({
+        suggestions: [
+          { componentId: "pg", componentName: "PostgreSQL", category: "data-storage", gapClosed: "Add Data Storage", weightedScore: 7.5, isConstraintSafe: true, reason: "test" },
+          { componentId: "redis", componentName: "Redis", category: "caching", gapClosed: "Add Caching", weightedScore: 6.0, isConstraintSafe: true, reason: "test" },
+        ],
+        hasGaps: true,
+        nextTierName: "Established",
+      })
+
+      mockUseArchitectureStore.mockImplementation((selector) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (selector as (s: any) => any)({
+          computedMetrics: new Map(),
+          nodes: [],
+          weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+          setWeightProfile: vi.fn(),
+          setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
+        }),
+      )
+
+      render(<DashboardOverlay open={true} onOpenChange={vi.fn()} />)
+
+      expect(screen.getByTestId("pathway-guidance-toggle")).toBeInTheDocument()
+      expect(screen.getByTestId("pathway-count-badge")).toHaveTextContent("2")
+    })
+
+    it("does not show count badge when no suggestions", () => {
+      mockUseArchitectureStore.mockImplementation((selector) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (selector as (s: any) => any)({
+          computedMetrics: new Map(),
+          nodes: [],
+          weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+          setWeightProfile: vi.fn(),
+          setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
+        }),
+      )
+
+      render(<DashboardOverlay open={true} onOpenChange={vi.fn()} />)
+
+      expect(screen.getByTestId("pathway-guidance-toggle")).toBeInTheDocument()
+      expect(screen.queryByTestId("pathway-count-badge")).not.toBeInTheDocument()
+    })
+
+    it("expands pathway section when initialSection='pathway' (AC-6)", async () => {
+      const { usePathwaySuggestions } = await import("@/hooks/usePathwaySuggestions")
+      vi.mocked(usePathwaySuggestions).mockReturnValue({
+        suggestions: [
+          { componentId: "pg", componentName: "PostgreSQL", category: "data-storage", gapClosed: "Add Data Storage", weightedScore: 7.5, isConstraintSafe: true, reason: "test" },
+        ],
+        hasGaps: true,
+        nextTierName: "Established",
+      })
+
+      mockUseArchitectureStore.mockImplementation((selector) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (selector as (s: any) => any)({
+          computedMetrics: new Map(),
+          nodes: [],
+          weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+          setWeightProfile: vi.fn(),
+          setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
+        }),
+      )
+
+      render(<DashboardOverlay open={true} onOpenChange={vi.fn()} initialSection="pathway" />)
+
+      expect(screen.getByTestId("pathway-guidance-panel-mock")).toBeInTheDocument()
+    })
   })
 
   it("shows aggregate score and component count (AC-FUNC-2)", () => {

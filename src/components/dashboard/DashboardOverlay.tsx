@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useShallow } from "zustand/react/shallow"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import {
@@ -25,14 +25,17 @@ import {
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
 import { WeightSliders } from "@/components/dashboard/WeightSliders"
 import { ConstraintPanel } from "@/components/dashboard/ConstraintPanel"
+import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePanel"
+import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
 import { ChevronDown, AlertTriangle } from "lucide-react"
 
 interface DashboardOverlayProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  initialSection?: "pathway" | null
 }
 
-export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) {
+export function DashboardOverlay({ open, onOpenChange, initialSection }: DashboardOverlayProps) {
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
   const nodes = useArchitectureStore(useShallow((s) => s.nodes))
   const {
@@ -43,9 +46,28 @@ export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) 
   } = useDashboardWeights()
   const constraintViolations = useArchitectureStore((s) => s.constraintViolations)
   const constraintCount = useArchitectureStore((s) => s.constraints.length)
+  const { suggestions } = usePathwaySuggestions()
   const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [weightsOpen, setWeightsOpen] = useState(false)
   const [constraintsOpen, setConstraintsOpen] = useState(false)
+  const [pathwayOpen, setPathwayOpen] = useState(false)
+  const pathwayRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) {
+      setPathwayOpen(false)
+      return
+    }
+    if (initialSection === "pathway") {
+      setPathwayOpen(true)
+      // Double rAF: first waits for state update, second waits for collapsible transition start
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          pathwayRef.current?.scrollIntoView({ behavior: "smooth" })
+        })
+      })
+    }
+  }, [open, initialSection])
 
   const breakdowns = useMemo(
     () =>
@@ -140,6 +162,33 @@ export function DashboardOverlay({ open, onOpenChange }: DashboardOverlayProps) 
           <CollapsibleContent className="pt-3">
             <ConstraintPanel onCloseOverlay={() => onOpenChange(false)} />
           </CollapsibleContent>
+        </Collapsible>
+
+        <Collapsible open={pathwayOpen} onOpenChange={setPathwayOpen}>
+          <div ref={pathwayRef}>
+            <CollapsibleTrigger
+              data-testid="pathway-guidance-toggle"
+              className="flex w-full items-center justify-between rounded-lg border border-archie-border px-3 py-2 text-sm font-medium hover:bg-muted/30"
+            >
+              <span className="flex items-center gap-2">
+                Pathway Guidance
+                {suggestions.length > 0 && (
+                  <span
+                    data-testid="pathway-count-badge"
+                    className="rounded-full bg-primary/15 px-1.5 py-0.5 text-xs text-primary"
+                  >
+                    {suggestions.length}
+                  </span>
+                )}
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${pathwayOpen ? "rotate-180" : ""}`}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3">
+              <PathwayGuidancePanel />
+            </CollapsibleContent>
+          </div>
         </Collapsible>
 
         {isEmpty ? (

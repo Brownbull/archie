@@ -69,6 +69,14 @@
 - **Stage:** PROD — code hygiene, not functional
 - **Estimated effort:** Small (refactor two Maps into one, ~10 lines)
 
+### [PROD] Triple usePathwaySuggestions hook invocation — redundant engine recomputation
+
+- **Source:** 7.5-3 review (2026-03-18)
+- **Finding:** `usePathwaySuggestions` is called independently in TierBadge, DashboardOverlay, and PathwayGuidancePanel. Each call runs `computePathwaySuggestions` (non-trivial engine call) inside `useMemo`. DashboardOverlay and PathwayGuidancePanel always mount together, causing redundant recomputation. Fix: call hook once in DashboardPanel and pass count/suggestions as props, or lift to a shared context.
+- **Files:** `src/components/dashboard/TierBadge.tsx`, `src/components/dashboard/DashboardOverlay.tsx`, `src/components/dashboard/PathwayGuidancePanel.tsx`
+- **Stage:** PROD — performance optimization, not feature-blocking. useMemo prevents expensive re-renders but three independent memos still triple the work on dependency changes.
+- **Estimated effort:** Medium (multi-file prop threading or context extraction)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
@@ -86,3 +94,11 @@
 - **Files:** `tests/e2e/data-context.spec.ts`
 - **Stage:** SCALE — developer experience improvement for test diagnostics; no correctness impact
 - **Estimated effort:** Small (add 5-line shape guard or Zod partial parse)
+
+### [SCALE] Fit level tooltip (title attribute) inaccessible on mobile/keyboard
+
+- **Source:** 7.5-3 review (2026-03-18)
+- **Finding:** `suggestion.fitExplanation` is only accessible via `title` attribute hover tooltip in PathwayGuidancePanel. On mobile and keyboard-only navigation, `title` tooltips are inaccessible. Desktop-first per PRD, so acceptable for MVP. Address in a future accessibility pass.
+- **Files:** `src/components/dashboard/PathwayGuidancePanel.tsx`
+- **Stage:** SCALE — accessibility improvement for mobile/keyboard users; desktop-first tool per PRD
+- **Estimated effort:** Small (add aria-label or tooltip component)
