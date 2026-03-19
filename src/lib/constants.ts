@@ -261,3 +261,6 @@ export interface FitResult {
 
 export const DATA_CONTEXT_NAME_MAX_LENGTH = 100
 export const MAX_DATA_CONTEXT_ITEMS_PER_NODE = 10
+
+// Pathway guidance (Story 7.5-1: Tier Gap Analysis Engine)
+export const PATHWAY_SUGGESTION_LIMIT = 10

@@ -4,6 +4,14 @@ import { TierBadge } from "@/components/dashboard/TierBadge"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import type { TierResult } from "@/lib/tierDefinitions"
 
+vi.mock("@/hooks/usePathwaySuggestions", () => ({
+  usePathwaySuggestions: vi.fn(() => ({
+    suggestions: [],
+    hasGaps: false,
+    nextTierName: null,
+  })),
+}))
+
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
     getComponent: vi.fn(),
@@ -161,6 +169,85 @@ describe("TierBadge", () => {
       expect(
         screen.getByText("All tier requirements met"),
       ).toBeInTheDocument()
+    })
+  })
+
+  // --- Story 7.5-3: Pathway suggestion link ---
+
+  describe("pathway suggestion link (AC-1, AC-2)", () => {
+    it("shows suggestion link when suggestions exist and not max tier (AC-1)", async () => {
+      const { usePathwaySuggestions } = await import("@/hooks/usePathwaySuggestions")
+      vi.mocked(usePathwaySuggestions).mockReturnValue({
+        suggestions: [
+          { componentId: "pg", componentName: "PostgreSQL", category: "data-storage", gapClosed: "Add Data Storage", weightedScore: 7.5, isConstraintSafe: true, reason: "test" },
+          { componentId: "redis", componentName: "Redis", category: "caching", gapClosed: "Add Caching", weightedScore: 6.0, isConstraintSafe: true, reason: "test" },
+          { componentId: "kafka", componentName: "Kafka", category: "messaging", gapClosed: "Add Messaging", weightedScore: 5.5, isConstraintSafe: true, reason: "test" },
+        ],
+        hasGaps: true,
+        nextTierName: "Established",
+      })
+
+      useArchitectureStore.setState({ currentTier: FOUNDATION_TIER })
+      render(<TierBadge />)
+      const button = screen.getByTestId("tier-badge").querySelector("button")!
+      fireEvent.click(button)
+
+      expect(screen.getByTestId("pathway-suggestions-link")).toBeInTheDocument()
+      expect(screen.getByText(/3 suggestions/)).toBeInTheDocument()
+    })
+
+    it("hides suggestion link at max tier (AC-2)", async () => {
+      const { usePathwaySuggestions } = await import("@/hooks/usePathwaySuggestions")
+      vi.mocked(usePathwaySuggestions).mockReturnValue({
+        suggestions: [],
+        hasGaps: false,
+        nextTierName: null,
+      })
+
+      useArchitectureStore.setState({ currentTier: MAX_TIER })
+      render(<TierBadge />)
+      const button = screen.getByTestId("tier-badge").querySelector("button")!
+      fireEvent.click(button)
+
+      expect(screen.queryByTestId("pathway-suggestions-link")).not.toBeInTheDocument()
+    })
+
+    it("hides suggestion link when no suggestions", async () => {
+      const { usePathwaySuggestions } = await import("@/hooks/usePathwaySuggestions")
+      vi.mocked(usePathwaySuggestions).mockReturnValue({
+        suggestions: [],
+        hasGaps: false,
+        nextTierName: null,
+      })
+
+      useArchitectureStore.setState({ currentTier: FOUNDATION_TIER })
+      render(<TierBadge />)
+      const button = screen.getByTestId("tier-badge").querySelector("button")!
+      fireEvent.click(button)
+
+      expect(screen.queryByTestId("pathway-suggestions-link")).not.toBeInTheDocument()
+    })
+
+    it("calls onOpenPathway when suggestion link is clicked", async () => {
+      const { usePathwaySuggestions } = await import("@/hooks/usePathwaySuggestions")
+      vi.mocked(usePathwaySuggestions).mockReturnValue({
+        suggestions: [
+          { componentId: "pg", componentName: "PostgreSQL", category: "data-storage", gapClosed: "Add Data Storage", weightedScore: 7.5, isConstraintSafe: true, reason: "test" },
+        ],
+        hasGaps: true,
+        nextTierName: "Established",
+      })
+
+      const onOpenPathway = vi.fn()
+      useArchitectureStore.setState({ currentTier: FOUNDATION_TIER })
+      render(<TierBadge onOpenPathway={onOpenPathway} />)
+      const button = screen.getByTestId("tier-badge").querySelector("button")!
+      fireEvent.click(button)
+
+      const link = screen.getByTestId("pathway-suggestions-link")
+      fireEvent.click(link)
+
+      expect(onOpenPathway).toHaveBeenCalledOnce()
     })
   })
 })
