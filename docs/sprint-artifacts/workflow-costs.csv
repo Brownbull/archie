@@ -230,3 +230,6 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-03-19 00:34,697fda19-a4e,kdbp-dev-story,7.5-3,19min,175,2,41,"opus, sonnet",35260,40564,811443,19316574,14.40,3.23,17.63
 2026-03-19 00:56,3ef0267b-2e4,kdbp-code-review,7.5-3,16min,119,2,49,"opus, sonnet",5219,38599,525483,12169349,10.27,1.73,12.00
 2026-03-19 01:40,e4ab858f-abf,kdbp-code-review,7.5-4,13min,78,2,72,"opus, sonnet",9409,33997,499103,7169419,6.57,2.28,8.85
+2026-03-20 19:08,8eb38a8a-acc,kdbp-dev-story,9-1-demand-schema-and-scenario-presets,18min,165,2,52,"opus, sonnet",245,47282,641808,15979803,11.57,2.84,14.40
+2026-03-24 18:36,2705e53f-3a9,kdbp-code-review,9-1,161min,110,4,39,"opus, sonnet",8772,38653,960762,9043093,12.43,1.92,14.34
+2026-03-26 15:46,afdfeabd-0ca,kdbp-code-review,9-2,26min,112,4,36,"opus, sonnet",18457,36009,704789,10861730,11.08,1.71,12.78

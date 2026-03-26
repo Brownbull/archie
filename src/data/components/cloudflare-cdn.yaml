@@ -123,3 +123,17 @@ connection_properties:
     - streaming
   typical_latency: "<5ms (edge)"
   co_location_potential: false
+demand_responses:
+  data-size:
+    extreme:
+      edge-latency: 0.8
+      operational-complexity: 0.8
+  geographic-spread:
+    multi-region:
+      global-availability: 0.95
+    global:
+      global-availability: 0.9
+      operational-complexity: 0.9
+  burst-pattern:
+    unpredictable:
+      edge-latency: 0.9

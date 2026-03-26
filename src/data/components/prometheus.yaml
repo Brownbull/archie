@@ -129,3 +129,27 @@ connection_properties:
     - push-gateway
   typical_latency: 10-30s (scrape interval)
   co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      query-latency: 0.7
+      storage-efficiency: 0.8
+    extreme:
+      query-latency: 0.5
+      storage-efficiency: 0.6
+      operational-complexity: 0.8
+  data-size:
+    high:
+      storage-efficiency: 0.7
+      query-latency: 0.8
+    extreme:
+      storage-efficiency: 0.5
+      query-latency: 0.6
+  geographic-spread:
+    multi-region:
+      operational-complexity: 0.8
+    global:
+      operational-complexity: 0.6
+  burst-pattern:
+    unpredictable:
+      query-latency: 0.8

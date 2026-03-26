@@ -1,42 +1,29 @@
 {
-  "generated": "2026-03-18T22:53:31.159012",
+  "generated": "2026-03-26T13:12:08.610008",
   "csv_path": "/home/khujta/projects/bmad/archie/docs/sprint-artifacts/workflow-costs.csv",
-  "total_sessions": 194,
-  "total_cost": 2240.92,
+  "total_sessions": 197,
+  "total_cost": 2282.44,
   "averages": {
-    "overall": 11.55,
-    "last_10": 12.79,
-    "last_20": 11.63
+    "overall": 11.59,
+    "last_10": 13.16,
+    "last_20": 12.49
   },
   "percentiles": {
-    "p50": 8.77,
-    "p75": 13.5,
+    "p50": 8.91,
+    "p75": 13.65,
     "p90": 18.26,
-    "p95": 24.39
+    "p95": 24.21
   },
   "thresholds": {
-    "warning": 17.45,
-    "high": 23.27
+    "warning": 18.74,
+    "high": 24.98
   },
-  "trend_last10_vs_prev10_pct": 22.0,
-  "recent_outliers": [
-    {
-      "date": "2026-03-18 23:47",
-      "session_id": "de653f89-589",
-      "cost": 18.25,
-      "ratio": 1.6
-    },
-    {
-      "date": "2026-03-19 00:34",
-      "session_id": "697fda19-a4e",
-      "cost": 17.63,
-      "ratio": 1.5
-    }
-  ],
+  "trend_last10_vs_prev10_pct": 11.4,
+  "recent_outliers": [],
   "by_model": {
     "opus, sonnet": {
-      "count": 111,
-      "total_cost": 1181.8400000000001
+      "count": 114,
+      "total_cost": 1223.3600000000001
     },
     "opus": {
       "count": 29,
@@ -109,21 +96,21 @@
       "p90": 11.63
     },
     "kdbp-code-review": {
-      "count": 38,
-      "total_cost": 357.85,
-      "avg": 9.42,
-      "avg_last_10": 11.0,
-      "p50": 8.88,
-      "p75": 11.41,
-      "p90": 13.58
+      "count": 40,
+      "total_cost": 384.97,
+      "avg": 9.62,
+      "avg_last_10": 11.15,
+      "p50": 8.92,
+      "p75": 12.01,
+      "p90": 13.84
     },
     "kdbp-dev-story": {
-      "count": 24,
-      "total_cost": 318.66,
-      "avg": 13.28,
-      "avg_last_10": 13.04,
-      "p50": 13.41,
-      "p75": 16.14,
+      "count": 25,
+      "total_cost": 333.06,
+      "avg": 13.32,
+      "avg_last_10": 13.62,
+      "p50": 13.49,
+      "p75": 15.75,
       "p90": 17.86
     }
   }
