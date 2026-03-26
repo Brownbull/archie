@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, type MetricCategoryId, type ConstraintOperator, } from "@/lib/constants"
+import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, type MetricCategoryId, type ConstraintOperator, } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
@@ -88,11 +88,11 @@ const PositionSchema = z.object({
 }).strict()
 
 // Defense-in-depth: max string length prevents memory exhaustion from malformed YAML (TD-5-1a)
-const MAX_STRING_LENGTH = 256
+// Defense-in-depth: max string length prevents memory exhaustion from malformed YAML (TD-5-1a, Story 9-0)
 
 // Data context item schemas (Story 7-1 AC-ARCH-LOC-3)
 export const DataContextItemSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH).regex(/^[\w-]+$/, "ID must contain only word characters and hyphens"),
+  id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(/^[\w-]+$/, "ID must contain only word characters and hyphens"),
   name: z.string().transform((s) => sanitizeDisplayString(s, DATA_CONTEXT_NAME_MAX_LENGTH)),
   accessPattern: z.enum([...ACCESS_PATTERN_VALUES]),
   averageSize: z.enum([...DATA_SIZE_VALUES]),
@@ -100,7 +100,7 @@ export const DataContextItemSchema = z.object({
 }).strict()
 
 const DataContextItemYamlSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH).regex(/^[\w-]+$/, "ID must contain only word characters and hyphens"),
+  id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(/^[\w-]+$/, "ID must contain only word characters and hyphens"),
   name: z.string().transform((s) => sanitizeDisplayString(s, DATA_CONTEXT_NAME_MAX_LENGTH)),
   access_pattern: z.enum([...ACCESS_PATTERN_VALUES]),
   average_size: z.enum([...DATA_SIZE_VALUES]),
@@ -114,34 +114,37 @@ const DataContextItemYamlSchema = z.object({
 }))
 
 export const ArchitectureFileNodeSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH),
-  componentId: z.string().min(1).max(MAX_STRING_LENGTH),
-  configVariantId: z.string().min(1).max(MAX_STRING_LENGTH).optional(),
+  id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  componentId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  configVariantId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
   position: PositionSchema,
   dataContext: z.array(DataContextItemSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict()
 
 export const ArchitectureFileEdgeSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH),
-  sourceNodeId: z.string().min(1).max(MAX_STRING_LENGTH),
-  targetNodeId: z.string().min(1).max(MAX_STRING_LENGTH),
+  id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  sourceNodeId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  targetNodeId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
 }).strict()
 
 export const ArchitectureFileSchema = z.object({
-  schemaVersion: z.string().min(1).max(MAX_STRING_LENGTH),
-  libraryVersion: z.string().max(MAX_STRING_LENGTH).optional(),
-  name: z.string().max(MAX_STRING_LENGTH).optional(),
+  schemaVersion: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  libraryVersion: z.string().max(MAX_SCHEMA_STRING_LENGTH).optional(),
+  name: z.string().max(MAX_SCHEMA_STRING_LENGTH).optional(),
   nodes: z.array(ArchitectureFileNodeSchema).max(MAX_CANVAS_NODES),
   edges: z.array(ArchitectureFileEdgeSchema).max(MAX_EDGES),
   weightProfile: WeightProfileSchema.optional(),
   constraints: z.array(ConstraintSchema).max(MAX_CONSTRAINTS).optional(),
+  // camelCase variant: validates JSON-style input and round-trip re-validation after migration.
+  // Primary ingestion path uses ArchitectureFileYamlSchema (snake_case); this field exists for symmetry.
+  activeScenarioId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(SCENARIO_ID_FORMAT).optional(),
 }).strict()
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
 const ArchitectureFileNodeYamlSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH),
-  component_id: z.string().min(1).max(MAX_STRING_LENGTH),
-  config_variant_id: z.string().min(1).max(MAX_STRING_LENGTH).optional(),
+  id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  component_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  config_variant_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
   position: PositionSchema,
   data_context: z.array(DataContextItemYamlSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict().transform((data) => ({
@@ -153,9 +156,9 @@ const ArchitectureFileNodeYamlSchema = z.object({
 }))
 
 const ArchitectureFileEdgeYamlSchema = z.object({
-  id: z.string().min(1).max(MAX_STRING_LENGTH),
-  source_node_id: z.string().min(1).max(MAX_STRING_LENGTH),
-  target_node_id: z.string().min(1).max(MAX_STRING_LENGTH),
+  id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  source_node_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  target_node_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
 }).strict().transform((data) => ({
   id: data.id,
   sourceNodeId: data.source_node_id,
@@ -163,13 +166,14 @@ const ArchitectureFileEdgeYamlSchema = z.object({
 }))
 
 export const ArchitectureFileYamlSchema = z.object({
-  schema_version: z.string().min(1).max(MAX_STRING_LENGTH),
-  library_version: z.string().max(MAX_STRING_LENGTH).optional(),
-  name: z.string().max(MAX_STRING_LENGTH).optional(),
+  schema_version: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  library_version: z.string().max(MAX_SCHEMA_STRING_LENGTH).optional(),
+  name: z.string().max(MAX_SCHEMA_STRING_LENGTH).optional(),
   nodes: z.array(ArchitectureFileNodeYamlSchema).max(MAX_CANVAS_NODES),
   edges: z.array(ArchitectureFileEdgeYamlSchema).max(MAX_EDGES),
   weight_profile: WeightProfileSchema.optional(),
   constraints: z.array(ConstraintYamlSchema).max(MAX_CONSTRAINTS).optional(),
+  active_scenario_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(SCENARIO_ID_FORMAT).optional(),
 }).strict().transform((data) => ({
   schemaVersion: data.schema_version,
   libraryVersion: data.library_version,
@@ -178,6 +182,7 @@ export const ArchitectureFileYamlSchema = z.object({
   edges: data.edges,
   weightProfile: data.weight_profile,
   constraints: data.constraints,
+  activeScenarioId: data.active_scenario_id,
 }))
 
 export type ArchitectureFile = z.infer<typeof ArchitectureFileSchema>

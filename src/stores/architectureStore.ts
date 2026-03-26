@@ -33,8 +33,15 @@ import {
   evaluateAndSetTier as computeTierResult,
   evaluateAndGetViolations,
   recomputeScoringLayer as computeScoringLayer,
+  clearPendingRippleTimeouts,
+  addPendingRippleTimeout,
+  removePendingRippleTimeout,
+  getDemandProfileForScenario,
 } from "@/stores/architectureStoreHelpers"
-import type { ConstraintViolation, RecalculatedMetrics, HeatmapStatus, TierResult } from "@/stores/architectureStoreHelpers"
+import type { ConstraintViolation } from "@/engine/constraintEvaluator"
+import type { RecalculatedMetrics } from "@/engine/recalculator"
+import type { HeatmapStatus } from "@/engine/heatmapCalculator"
+import type { TierResult } from "@/lib/tierDefinitions"
 
 export interface ArchieNodeData extends Record<string, unknown> {
   archieComponentId: string
@@ -69,6 +76,7 @@ interface ArchitectureState {
   constraintViolations: ConstraintViolation[]
   violationsByNodeId: Map<string, ConstraintViolation[]>
   dataContextItems: Map<string, DataContextItem[]>
+  activeScenarioId: string | null
   addNode: (componentId: string, position: { x: number; y: number }) => void
   addNodeSmartPosition: (componentId: string) => void
   updateNodePosition: (
@@ -83,9 +91,10 @@ interface ArchitectureState {
   addEdge: (connection: Connection) => void
   removeEdges: (edgeIds: string[]) => void
   triggerRecalculation: (changedNodeId: string) => void
+  setActiveScenario: (scenarioId: string | null) => void
   setWeightProfile: (profile: WeightProfile) => void
   setWeightAndRecalculate: (profile: WeightProfile) => void
-  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: ParsedConstraint[], dataContextItems?: Map<string, DataContextItem[]>) => void
+  loadArchitecture: (nodes: ArchieNode[], edges: ArchieEdge[], weightProfile?: WeightProfile, constraints?: ParsedConstraint[], dataContextItems?: Map<string, DataContextItem[]>, activeScenarioId?: string | null) => void
   setNodes: (nodes: ArchieNode[]) => void
   setEdges: (edges: ArchieEdge[]) => void
   deselectAll: () => void
@@ -135,17 +144,6 @@ function recomputeScoringLayer(
   set(computeScoringLayer(nodes, weightProfile, computedMetrics, constraints))
 }
 
-// Module-level tracking for ripple setTimeout IDs (TD-2-2b)
-// Kept outside store state to avoid triggering subscriber re-renders on timeout bookkeeping
-const pendingRippleTimeouts = new Set<ReturnType<typeof setTimeout>>()
-
-function clearPendingRippleTimeouts() {
-  for (const id of pendingRippleTimeouts) {
-    clearTimeout(id)
-  }
-  pendingRippleTimeouts.clear()
-}
-
 export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   nodes: [],
   edges: [],
@@ -161,6 +159,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   constraintViolations: [],
   violationsByNodeId: new Map<string, ConstraintViolation[]>(),
   dataContextItems: new Map<string, DataContextItem[]>(),
+  activeScenarioId: null,
 
   triggerRecalculation: (changedNodeId) => {
     // Cancel pending ripple timeouts from previous recalculation (TD-2-2b)
@@ -173,8 +172,9 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       previousMetrics: new Map(get().computedMetrics),
     })
 
-    const { nodes, edges } = get()
-    const result = recalculationService.run(nodes, edges, changedNodeId)
+    const { nodes, edges, activeScenarioId } = get()
+    const demandProfile = getDemandProfileForScenario(activeScenarioId)
+    const result = recalculationService.run(nodes, edges, changedNodeId, demandProfile)
 
     // Immediate update for changed node (hop 0)
     const changedNodeMetrics = result.metrics.get(changedNodeId)
@@ -219,7 +219,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       const hopHeatmap = computeHeatmapStatus(hopWeightedScore)
 
       const rippleId = setTimeout(() => {
-        pendingRippleTimeouts.delete(rippleId)
+        removePendingRippleTimeout(rippleId)
         if (isStale()) return
         // Node existence check — skip if node was deleted during propagation
         if (!get().nodes.some((n) => n.id === hop.nodeId)) return
@@ -242,7 +242,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
         // Clear ripple indicator after animation
         const clearId = setTimeout(() => {
-          pendingRippleTimeouts.delete(clearId)
+          removePendingRippleTimeout(clearId)
           if (isStale()) return
           set((state) => {
             const next = new Set(state.rippleActiveNodeIds)
@@ -250,9 +250,21 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
             return { rippleActiveNodeIds: next }
           })
         }, RIPPLE_ANIMATION_DURATION_MS)
-        pendingRippleTimeouts.add(clearId)
+        addPendingRippleTimeout(clearId)
       }, hop.delayMs)
-      pendingRippleTimeouts.add(rippleId)
+      addPendingRippleTimeout(rippleId)
+    }
+  },
+
+  setActiveScenario: (scenarioId) => {
+    const prev = get().activeScenarioId
+    if (prev === scenarioId) return
+    set({ activeScenarioId: scenarioId })
+    // Trigger recalculation for all nodes — BFS from a single seed only covers its
+    // connected component, so isolated subgraphs need their own trigger.
+    // Same pattern as loadArchitecture (line 631).
+    for (const node of get().nodes) {
+      get().triggerRecalculation(node.id)
     }
   },
 
@@ -587,7 +599,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     recomputeScoringLayer(get, set)
   },
 
-  loadArchitecture: (nodes, edges, weightProfile?, constraints?, dataContextItems?) => {
+  loadArchitecture: (nodes, edges, weightProfile?, constraints?, dataContextItems?, activeScenarioId?) => {
     // Cancel pending ripple timeouts from previous architecture
     clearPendingRippleTimeouts()
 
@@ -607,6 +619,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       constraintViolations: [],
       violationsByNodeId: new Map(),
       dataContextItems: dataContextItems ?? new Map(),
+      activeScenarioId: activeScenarioId ?? null,
     })
 
     // Clear uiStore selection state (cross-store pattern from removeNode)
@@ -745,9 +758,10 @@ export interface ArchitectureSkeleton {
   weightProfile: WeightProfile
   constraints: Constraint[]
   dataContextItems: Map<string, DataContextItem[]>
+  activeScenarioId: string | null
 }
 
 export function getArchitectureSkeleton(): ArchitectureSkeleton {
   const state = useArchitectureStore.getState()
-  return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile, constraints: state.constraints, dataContextItems: state.dataContextItems }
+  return { nodes: state.nodes, edges: state.edges, weightProfile: state.weightProfile, constraints: state.constraints, dataContextItems: state.dataContextItems, activeScenarioId: state.activeScenarioId }
 }
