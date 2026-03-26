@@ -117,13 +117,10 @@
 - **Stage:** PROD — defense-in-depth tightening, not feature-blocking
 - **Estimated effort:** Small (add constant, update schema, add boundary test)
 
-### [PROD] AC-2 default-1.0 behavior untested in engine
+### ~~[PROD] AC-2 default-1.0 behavior untested in engine~~ RESOLVED
 
 - **Source:** 9-2 review (2026-03-26)
-- **Finding:** AC-2 specifies "the engine treats the missing entry as 1.0 (no change)" for sparse demand responses, but no test confirms this behavior. Story 9-2 is data-only (AC-ARCH-NO-1); the default-to-1.0 semantic belongs in the engine story that consumes demand response data. When the engine story is implemented, it must include a test confirming that a missing variable/level pair returns a 1.0 multiplier (not `undefined`).
-- **Files:** Future engine story test file (TBD)
-- **Stage:** PROD — correctness verification for engine behavior; data layer contract is met
-- **Estimated effort:** Small (1 test case in engine story)
+- **Resolved:** 9-3 review (2026-03-26) — test "defaults missing modifier to 1.0 (AC-2)" in `demandEngine.test.ts` confirms 1.0 default behavior
 
 ### [PROD] DemandResponseSchema accepts any string as metric key
 
@@ -140,6 +137,22 @@
 - **Files:** `tests/unit/schemas/componentSchema.test.ts`, `src/data/components/*.yaml`
 - **Stage:** PROD — data integrity guard for CI; feature works without it
 - **Estimated effort:** Small (1 test case iterating components, checking metric key membership)
+
+### [PROD] DEMAND_MULTIPLIER_MIN/MAX constants unused by demand engine
+
+- **Source:** 9-3 review (2026-03-26)
+- **Finding:** `DEMAND_MULTIPLIER_MIN` (0.1) and `DEMAND_MULTIPLIER_MAX` (1.0) in constants.ts are declared but unused by `demandEngine.ts`. The engine clamps to `DEMAND_METRIC_FLOOR`/`CEILING` (1-10), not multiplier bounds. These constants belong to the schema/validation layer (used by `demandSchema.ts` for input validation). The naming suggests engine-level clamping that doesn't happen, which is misleading.
+- **Files:** `src/lib/constants.ts`, `src/engine/demandEngine.ts`
+- **Stage:** PROD — naming clarity for developer comprehension; no functional impact
+- **Estimated effort:** Small (rename to `DEMAND_SCHEMA_MULTIPLIER_MIN/MAX` or add clarifying comment)
+
+### [PROD] Double-undefined ambiguity in computeDemandAdjustedMetrics Map parameter
+
+- **Source:** 9-3 review (2026-03-26)
+- **Finding:** `nodeDemandResponses: Map<string, DemandResponse | undefined>` means `undefined` from a missing key (`.get()` on absent key) and `undefined` as an explicit "no demand data" value are indistinguishable. Using `Map<string, DemandResponse>` and relying on `.get()` returning `undefined` for absent keys would be cleaner. No behavioral difference today.
+- **Files:** `src/engine/demandEngine.ts`
+- **Stage:** PROD — API hygiene, not functional
+- **Estimated effort:** Small (remove `| undefined` from Map value type, update callers)
 
 ## SCALE Backlog
 
@@ -166,6 +179,14 @@
 - **Files:** `src/lib/constants.ts`, `src/lib/demandTypes.ts`
 - **Stage:** SCALE — type-level precision improvement, not feature-blocking. Runtime validation is correct.
 - **Estimated effort:** Medium (per-variable level types, schema refactor, test updates)
+
+### [SCALE] Extract shared clamp utility from engine files
+
+- **Source:** 9-3 review (2026-03-26)
+- **Finding:** `demandEngine.ts` defines a private `clamp(value, min, max)` helper. If similar helpers exist in other engine files (pathwayEngine, recalculator), extracting to a shared `src/lib/mathUtils.ts` would reduce duplication. Currently only one caller.
+- **Files:** `src/engine/demandEngine.ts`, potentially `src/engine/pathwayEngine.ts`
+- **Stage:** SCALE — future DRY concern; only one caller today
+- **Estimated effort:** Small (extract function, update imports)
 
 ### [SCALE] Fit level tooltip (title attribute) inaccessible on mobile/keyboard
 
