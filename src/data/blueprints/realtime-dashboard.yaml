@@ -1,0 +1,42 @@
+id: realtime-dashboard
+name: "Real-Time Dashboard"
+description: "Push-based analytics architecture where Prometheus scrapes metrics, the application tier aggregates them, and WebSocket connections push live updates to all connected dashboards. Redis pub-sub coordinates metric broadcasts across WebSocket instances. Trades cost and operational complexity for sub-second dashboard refresh."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "Real-Time Dashboard"
+  nodes:
+    - id: rtd-prometheus
+      component_id: prometheus
+      config_variant_id: standalone
+      position:
+        x: 0
+        y: 250
+    - id: rtd-app
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 300
+        y: 250
+    - id: rtd-redis
+      component_id: redis
+      config_variant_id: standalone
+      position:
+        x: 600
+        y: 100
+    - id: rtd-ws
+      component_id: websocket-server
+      config_variant_id: clustered
+      position:
+        x: 600
+        y: 400
+  edges:
+    - id: rtd-edge-prometheus-app
+      source_node_id: rtd-prometheus
+      target_node_id: rtd-app
+    - id: rtd-edge-app-redis
+      source_node_id: rtd-app
+      target_node_id: rtd-redis
+    - id: rtd-edge-redis-ws
+      source_node_id: rtd-redis
+      target_node_id: rtd-ws

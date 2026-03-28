@@ -1,0 +1,42 @@
+id: api-gateway-pattern
+name: "API Gateway Pattern"
+description: "Centralized gateway architecture where Nginx handles all cross-cutting concerns — rate limiting, request routing, and TLS termination — before traffic reaches the application tier. Redis caches rate-limit counters and auth tokens at the gateway layer. Trades gateway-as-bottleneck risk for clean separation of infrastructure concerns from business logic."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "API Gateway Pattern"
+  nodes:
+    - id: agp-nginx
+      component_id: nginx
+      config_variant_id: load-balancer
+      position:
+        x: 0
+        y: 250
+    - id: agp-cache
+      component_id: redis-cache
+      config_variant_id: distributed-cache
+      position:
+        x: 350
+        y: 100
+    - id: agp-app
+      component_id: node-express
+      config_variant_id: single-process
+      position:
+        x: 350
+        y: 400
+    - id: agp-db
+      component_id: postgresql
+      config_variant_id: single-node
+      position:
+        x: 700
+        y: 400
+  edges:
+    - id: agp-edge-nginx-cache
+      source_node_id: agp-nginx
+      target_node_id: agp-cache
+    - id: agp-edge-nginx-app
+      source_node_id: agp-nginx
+      target_node_id: agp-app
+    - id: agp-edge-app-db
+      source_node_id: agp-app
+      target_node_id: agp-db

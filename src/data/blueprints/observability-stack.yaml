@@ -1,0 +1,45 @@
+id: observability-stack
+name: "Observability Stack"
+description: "Metrics-first architecture where Prometheus is the organizing principle, not a peripheral add-on. Federated Prometheus scrapes both Nginx and the application tier. The app exposes /metrics endpoints alongside business logic. PostgreSQL stores alert rules and aggregated historical data. Trades operational overhead of instrumentation for full system visibility."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "Observability Stack"
+  nodes:
+    - id: obs-nginx
+      component_id: nginx
+      config_variant_id: reverse-proxy
+      position:
+        x: 0
+        y: 200
+    - id: obs-app
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 350
+        y: 200
+    - id: obs-db
+      component_id: postgresql
+      config_variant_id: single-node
+      position:
+        x: 700
+        y: 200
+    - id: obs-prometheus
+      component_id: prometheus
+      config_variant_id: federated
+      position:
+        x: 350
+        y: 450
+  edges:
+    - id: obs-edge-nginx-app
+      source_node_id: obs-nginx
+      target_node_id: obs-app
+    - id: obs-edge-app-db
+      source_node_id: obs-app
+      target_node_id: obs-db
+    - id: obs-edge-prom-nginx
+      source_node_id: obs-prometheus
+      target_node_id: obs-nginx
+    - id: obs-edge-prom-app
+      source_node_id: obs-prometheus
+      target_node_id: obs-app
