@@ -253,7 +253,7 @@ development_status:
   9-2-component-demand-response-data: done  # DEPENDS: 9-1
   9-3-demand-simulation-engine: done  # DEPENDS: 9-1
   9-4-scenario-selector-ui-and-store: done  # DEPENDS: 9-3
-  9-5-e2e-demand-flow: drafted  # DEPENDS: 9-4
+  9-5-e2e-demand-flow: done  # DEPENDS: 9-4
   9-6-score-transition-animation: drafted  # DEPENDS: 9-4, 10-1 (cross-epic)
   9-7-failure-scenario-presets: drafted  # DEPENDS: 9-3, 9-4
   epic-9-retrospective: optional
@@ -264,7 +264,7 @@ development_status:
   # FRs: FR86-FR88, FR93, FR94 | NFRs: NFR25
   # ============================================================================
   epic-10: in-progress
-  10-1-inline-canvas-metrics: ready-for-dev  # Extended with FR93 badge verification
+  10-1-inline-canvas-metrics: review  # Extended with FR93 badge verification
   10-2-blueprint-expansion: ready-for-dev
   10-3-e2e-canvas-metrics-and-blueprints: drafted  # DEPENDS: 10-1, 10-2
   10-4-architecture-report-export: drafted  # DEPENDS: 10-1
