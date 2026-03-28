@@ -308,3 +308,18 @@ export const SCENARIO_ID_FORMAT = SLUG_ID_FORMAT
 // Demand metric clamping — directional scale never goes below 1 or above 10 (Story 9-3)
 export const DEMAND_METRIC_FLOOR = 1
 export const DEMAND_METRIC_CEILING = 10
+
+// ─── Score Transition Animation (Story 9-6) ─────────────────────────────────
+
+// Particle animation on connections — density reflects connection health
+export const CONNECTION_DEFAULT_HEALTH_SCORE = 5.0
+export const PARTICLE_DENSITY_MIN = 2
+export const PARTICLE_DENSITY_MAX = 12
+export const PARTICLE_RADIUS = 2 // px radius of each SVG circle
+export const PARTICLE_SPEED = 0.3 // fraction of path length per second
+export const METRIC_BAR_TRANSITION_MS = 300 // CSS transition duration for metric bar width
+
+// Scenario selector UI (Story 9-4)
+export const SCENARIO_NONE_LABEL = "No Scenario"
+export const SCENARIO_SELECTOR_TESTID = "scenario-selector"
+export const SCENARIO_BANNER_TESTID = "scenario-banner"

@@ -178,6 +178,38 @@
 - **Stage:** PROD — defense-in-depth documentation, not feature-blocking
 - **Estimated effort:** Small (add invariant comment at CATEGORY_LOOKUP definition)
 
+### [PROD] Unconditional useConnectionHealth hook in ArchieEdge
+
+- **Source:** 9-6 review (2026-03-27)
+- **Finding:** `useConnectionHealth(source, target)` is called unconditionally in ArchieEdge but its result is only used when `heatmapEnabled && animationsEnabled`. This runs store subscriptions and useMemo on every edge render regardless of particle visibility. At 20 edges, this means 20 unnecessary subscriptions. Extract to a conditional child component (`EdgeParticlesLayer`) that only mounts when particles are visible.
+- **Files:** `src/components/canvas/ArchieEdge.tsx`
+- **Stage:** PROD — performance optimization, not feature-blocking. useMemo prevents expensive recomputation but subscription overhead remains.
+- **Estimated effort:** Medium (extract child component, move hook + EdgeParticles render into it)
+
+### [PROD] DEFAULT_SCORE inflates health for uncomputed nodes
+
+- **Source:** 9-6 review (2026-03-27)
+- **Finding:** `useConnectionHealth` uses `CONNECTION_DEFAULT_HEALTH_SCORE` (5.0) as fallback when a node has no computed metrics. A node that is genuinely bottlenecking but hasn't had metrics computed yet shows medium density rather than low. Consider returning a `dataReady: boolean` flag so the caller can suppress particles entirely when metrics are absent.
+- **Files:** `src/hooks/useConnectionHealth.ts`
+- **Stage:** PROD — directional accuracy concern, not feature-breaking. Default is reasonable for MVP.
+- **Estimated effort:** Small (add flag, update ArchieEdge guard condition)
+
+### [PROD] Health status divergence between edge heatmap and particle color
+
+- **Source:** 9-6 review (2026-03-27)
+- **Finding:** `edgeHeatmapStatus` (from heatmap engine per-edge) and `healthStatus` (from useConnectionHealth averaging source+target node overallScore) can diverge. The edge stroke color comes from the heatmap engine; particle color comes from the hook. If heatmap says "warning" but node average says "healthy," particle color disagrees with edge color. Document the intentional divergence or unify the source of truth.
+- **Files:** `src/components/canvas/ArchieEdge.tsx`, `src/hooks/useConnectionHealth.ts`
+- **Stage:** PROD — visual consistency concern, not feature-breaking. Both values are directionally correct.
+- **Estimated effort:** Medium (unify requires refactoring heatmap engine to expose per-edge health, or hook to consume heatmap status)
+
+### [PROD] Per-frame getPointAtLength DOM calls — AC-6 frame budget risk
+
+- **Source:** 9-6 review (2026-03-27)
+- **Finding:** `EdgeParticles` calls `path.getPointAtLength()` for every particle on every animation frame. At max density (12 particles x 20 edges = 240 calls/frame at 60fps), this is the primary risk to the AC-6 <16ms frame budget. `getPointAtLength` is a synchronous layout-triggering SVG DOM call. Pre-computing waypoints as a `Float32Array` at effect setup time and interpolating in `animate` would eliminate all per-frame DOM calls.
+- **Files:** `src/components/canvas/EdgeParticles.tsx`
+- **Stage:** PROD — performance optimization for AC-6 compliance under load. Works correctly at current scale.
+- **Estimated effort:** Medium (pre-compute path waypoints array at fixed intervals, lerp in RAF loop)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
@@ -211,6 +243,14 @@
 - **Files:** `src/engine/demandEngine.ts`, potentially `src/engine/pathwayEngine.ts`
 - **Stage:** SCALE — future DRY concern; only one caller today
 - **Estimated effort:** Small (extract function, update imports)
+
+### [SCALE] Particle speed is path-length-relative — visual speed varies with edge length
+
+- **Source:** 9-6 review (2026-03-27)
+- **Finding:** `PARTICLE_SPEED = 0.3` is a fraction of path length per second. A 100px edge and a 500px edge show the same fractional travel per second, meaning particles appear 5x slower on the longer edge. If consistent perceived speed is desired, normalize by `totalLength` (e.g., `elapsed * PARTICLE_SPEED / totalLength * referenceLength`). If the current behavior is intentional (short connections = fast, long = slow), document the design choice.
+- **Files:** `src/components/canvas/EdgeParticles.tsx`, `src/lib/constants.ts`
+- **Stage:** SCALE — visual polish, not feature-blocking. Current behavior is directionally correct.
+- **Estimated effort:** Small (normalize speed calculation or add design rationale comment)
 
 ### [SCALE] Fit level tooltip (title attribute) inaccessible on mobile/keyboard
 

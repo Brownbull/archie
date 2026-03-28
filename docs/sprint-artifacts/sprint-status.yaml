@@ -254,7 +254,7 @@ development_status:
   9-3-demand-simulation-engine: done  # DEPENDS: 9-1
   9-4-scenario-selector-ui-and-store: done  # DEPENDS: 9-3
   9-5-e2e-demand-flow: done  # DEPENDS: 9-4
-  9-6-score-transition-animation: drafted  # DEPENDS: 9-4, 10-1 (cross-epic)
+  9-6-score-transition-animation: done  # DEPENDS: 9-4, 10-1 (cross-epic)
   9-7-failure-scenario-presets: drafted  # DEPENDS: 9-3, 9-4
   epic-9-retrospective: optional
 
