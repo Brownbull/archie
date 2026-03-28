@@ -1,5 +1,5 @@
 import type { MetricValue } from "@/schemas/metricSchema"
-import type { DemandResponse, DemandProfile } from "@/lib/demandTypes"
+import type { DemandResponse, DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { DEMAND_METRIC_FLOOR, DEMAND_METRIC_CEILING, DEMAND_VARIABLE_VALUES } from "@/lib/constants"
 
 // --- Types ---
@@ -66,6 +66,32 @@ export function applyDemandModifiers(
       value: deriveValueEnum(clampedValue),
       demandMultiplier: clampedValue / (metric.numericValue || 1),
       originalValue: metric.numericValue,
+    }
+  })
+}
+
+/**
+ * Applies failure modifiers to metrics (Level 4 — after demand at Level 3).
+ * Pure function — flat per-metric multipliers, simpler than demand's per-variable/per-level structure.
+ * Clamped to [DEMAND_METRIC_FLOOR, DEMAND_METRIC_CEILING].
+ */
+export function applyFailureModifiers(
+  baseMetrics: MetricValue[],
+  failureModifiers: FailureModifiers | null | undefined,
+): MetricValue[] {
+  // Identity fast-path: returns same array reference when no modifiers apply.
+  // Normal path returns new objects via .map(). Callers should not rely on reference equality.
+  if (!failureModifiers || Object.keys(failureModifiers).length === 0) return baseMetrics
+
+  return baseMetrics.map((metric) => {
+    const modifier = failureModifiers[metric.id]
+    if (modifier === undefined) return metric
+    const rawValue = metric.numericValue * modifier
+    const clampedValue = clamp(rawValue, DEMAND_METRIC_FLOOR, DEMAND_METRIC_CEILING)
+    return {
+      ...metric,
+      numericValue: clampedValue,
+      value: deriveValueEnum(clampedValue),
     }
   })
 }

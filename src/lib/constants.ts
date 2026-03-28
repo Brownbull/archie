@@ -323,3 +323,21 @@ export const METRIC_BAR_TRANSITION_MS = 300 // CSS transition duration for metri
 export const SCENARIO_NONE_LABEL = "No Scenario"
 export const SCENARIO_SELECTOR_TESTID = "scenario-selector"
 export const SCENARIO_BANNER_TESTID = "scenario-banner"
+
+// ─── Failure Scenarios (Story 9-7) ──────────────────────────────────────────
+
+export const FAILURE_PRESET_IDS = [
+  "failure-single-node",
+  "failure-network-partition",
+  "failure-database",
+  "failure-traffic-spike",
+  "failure-region-outage",
+  "failure-data-corruption",
+] as const
+export type FailurePresetId = (typeof FAILURE_PRESET_IDS)[number]
+
+export const FAILURE_MULTIPLIER_MIN = 0.1
+export const FAILURE_MULTIPLIER_MAX = 1.0
+export const FAILURE_NONE_LABEL = "No Failure"
+export const FAILURE_SELECTOR_TESTID = "failure-selector"
+export const FAILURE_BANNER_TESTID = "failure-banner"

@@ -1,0 +1,11 @@
+id: failure-traffic-spike
+name: Traffic Spike (10x)
+description: "Sudden 10x traffic surge. Tests auto-scaling, load balancing, and graceful degradation."
+icon: TrendingUp
+failure_modifiers:
+  write-throughput: 0.5
+  message-throughput: 0.5
+  read-latency: 0.6
+  request-latency: 0.6
+  concurrent-connections: 0.5
+  cache-efficiency: 0.8

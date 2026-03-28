@@ -138,6 +138,9 @@ export const ArchitectureFileSchema = z.object({
   // camelCase variant: validates JSON-style input and round-trip re-validation after migration.
   // Primary ingestion path uses ArchitectureFileYamlSchema (snake_case); this field exists for symmetry.
   activeScenarioId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(SCENARIO_ID_FORMAT).optional(),
+  // Two-layer defense: regex here admits any slug; yamlImporter.isKnownFailurePresetId() rejects unknown IDs.
+  // Schema stays flexible (forward-compat); importer enforces known presets (AC-7).
+  activeFailureScenarioId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(SCENARIO_ID_FORMAT).optional(),
 }).strict()
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
@@ -174,6 +177,7 @@ export const ArchitectureFileYamlSchema = z.object({
   weight_profile: WeightProfileSchema.optional(),
   constraints: z.array(ConstraintYamlSchema).max(MAX_CONSTRAINTS).optional(),
   active_scenario_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(SCENARIO_ID_FORMAT).optional(),
+  active_failure_scenario_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(SCENARIO_ID_FORMAT).optional(),
 }).strict().transform((data) => ({
   schemaVersion: data.schema_version,
   libraryVersion: data.library_version,
@@ -183,6 +187,7 @@ export const ArchitectureFileYamlSchema = z.object({
   weightProfile: data.weight_profile,
   constraints: data.constraints,
   activeScenarioId: data.active_scenario_id,
+  activeFailureScenarioId: data.active_failure_scenario_id,
 }))
 
 export type ArchitectureFile = z.infer<typeof ArchitectureFileSchema>

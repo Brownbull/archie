@@ -1,0 +1,10 @@
+id: enterprise-production
+name: Enterprise Production
+description: "Large-scale production environment with high traffic, many concurrent users, and large datasets across multiple regions with unpredictable burst patterns."
+icon: Building
+demand_profile:
+  traffic-volume: high
+  concurrent-users: high
+  burst-pattern: unpredictable
+  data-size: high
+  geographic-spread: multi-region

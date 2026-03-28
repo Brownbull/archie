@@ -1,8 +1,21 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
+import { METRIC_BAR_TRANSITION_MS } from "@/lib/constants"
+
+let mockAnimationsEnabled = true
+vi.mock("@/stores/preferencesStore", () => ({
+  usePreferencesStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ animationsEnabled: mockAnimationsEnabled }),
+  ),
+}))
+
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
 
 describe("InlineMetricBar", () => {
+  beforeEach(() => {
+    mockAnimationsEnabled = true
+  })
+
   it("renders abbreviation and numeric value with 1 decimal", () => {
     render(<InlineMetricBar abbreviation="Perf" value={7.5} color="var(--color-metric-performance)" />)
 
@@ -81,5 +94,29 @@ describe("InlineMetricBar", () => {
     const bar = container.querySelector("[data-testid='inline-metric-bar-fill']")
     expect(bar).toHaveStyle({ width: "0%" })
     expect(screen.getByText("0.0")).toBeInTheDocument()
+  })
+
+  describe("animation transitions (Story 9-6)", () => {
+    it("has CSS transition on fill bar when animations enabled", () => {
+      mockAnimationsEnabled = true
+      const { container } = render(
+        <InlineMetricBar abbreviation="Perf" value={7} color="var(--color-metric-performance)" />,
+      )
+
+      const bar = container.querySelector("[data-testid='inline-metric-bar-fill']")
+      expect(bar).toHaveStyle({
+        transition: `width ${METRIC_BAR_TRANSITION_MS}ms ease-out`,
+      })
+    })
+
+    it("has no CSS transition when animations disabled", () => {
+      mockAnimationsEnabled = false
+      const { container } = render(
+        <InlineMetricBar abbreviation="Perf" value={7} color="var(--color-metric-performance)" />,
+      )
+
+      const bar = container.querySelector("[data-testid='inline-metric-bar-fill']")
+      expect(bar).toHaveStyle({ transition: "none" })
+    })
   })
 })

@@ -128,3 +128,27 @@ connection_properties:
     - server-sent-events
   typical_latency: 5-50ms
   co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.7
+      cpu-efficiency: 0.7
+    extreme:
+      request-latency: 0.5
+      cpu-efficiency: 0.5
+      concurrent-connections: 0.7
+  concurrent-users:
+    high:
+      concurrent-connections: 0.7
+      cpu-efficiency: 0.8
+    extreme:
+      concurrent-connections: 0.5
+      cpu-efficiency: 0.6
+      request-latency: 0.7
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.8
+      concurrent-connections: 0.8
+    unpredictable:
+      request-latency: 0.6
+      concurrent-connections: 0.6

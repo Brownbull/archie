@@ -1,4 +1,4 @@
-import { METRIC_CATEGORIES } from "@/lib/constants"
+import { METRIC_CATEGORIES, SCORE_COLOR_GOOD_THRESHOLD, HEATMAP_THRESHOLD_BOTTLENECK } from "@/lib/constants"
 import type { MetricCategoryId, WeightProfile } from "@/lib/constants"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
 import { getWeight } from "@/lib/weightUtils"
@@ -175,12 +175,12 @@ export function computeWeightedAggregateScore(
 
 /**
  * Returns a Tailwind color class matching MetricBar.tsx thresholds:
- * - score >= 7 -> green
- * - score >= 4 -> yellow
- * - score < 4  -> red
+ * - score >= SCORE_COLOR_GOOD_THRESHOLD -> green
+ * - score >= HEATMAP_THRESHOLD_BOTTLENECK -> yellow
+ * - score < HEATMAP_THRESHOLD_BOTTLENECK -> red
  */
 export function getScoreColor(score: number): string {
-  if (score >= 7) return "bg-green-500"
-  if (score >= 4) return "bg-yellow-500"
+  if (score >= SCORE_COLOR_GOOD_THRESHOLD) return "bg-green-500"
+  if (score >= HEATMAP_THRESHOLD_BOTTLENECK) return "bg-yellow-500"
   return "bg-red-500"
 }

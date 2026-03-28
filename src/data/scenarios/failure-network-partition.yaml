@@ -1,0 +1,12 @@
+id: failure-network-partition
+name: Network Partition
+description: "Network split isolates components. Tests consistency guarantees and partition tolerance."
+icon: WifiOff
+failure_modifiers:
+  read-latency: 0.4
+  request-latency: 0.4
+  message-latency: 0.4
+  edge-latency: 0.4
+  query-latency: 0.4
+  write-throughput: 0.5
+  horizontal-scalability: 0.6

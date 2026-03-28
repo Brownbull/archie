@@ -1,0 +1,10 @@
+id: high-availability
+name: High Availability
+description: "Mission-critical uptime requirements with high traffic and periodic spikes across multiple regions. Tests redundancy and failover under sustained pressure."
+icon: HeartPulse
+demand_profile:
+  traffic-volume: high
+  concurrent-users: high
+  burst-pattern: periodic-spikes
+  data-size: high
+  geographic-spread: multi-region

@@ -132,3 +132,30 @@ connection_properties:
     - pub-sub
   typical_latency: "<1ms"
   co_location_potential: false
+demand_responses:
+  concurrent-users:
+    high:
+      concurrent-connections: 0.7
+      message-latency: 0.8
+    extreme:
+      concurrent-connections: 0.5
+      message-latency: 0.6
+      operational-complexity: 0.8
+  burst-pattern:
+    periodic-spikes:
+      concurrent-connections: 0.8
+      message-latency: 0.8
+    unpredictable:
+      concurrent-connections: 0.6
+      message-latency: 0.7
+  traffic-volume:
+    high:
+      message-latency: 0.8
+    extreme:
+      message-latency: 0.6
+  geographic-spread:
+    multi-region:
+      message-latency: 0.8
+    global:
+      message-latency: 0.6
+      operational-complexity: 0.8

@@ -8,14 +8,19 @@ import type { EdgeProps } from "@xyflow/react"
 import type { ArchieEdge as ArchieEdgeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import { HEATMAP_COLORS, LABEL_INCOMPATIBILITY_OFFSET, MAX_LABEL_OFFSET } from "@/lib/constants"
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
 import { useLibrary } from "@/hooks/useLibrary"
+import { useConnectionHealth } from "@/hooks/useConnectionHealth"
+import { EdgeParticles } from "@/components/canvas/EdgeParticles"
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
 export function ArchieEdge({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -39,6 +44,10 @@ export function ArchieEdge({
   const edgeHeatmapStatus = useArchitectureStore((s) => s.edgeHeatmapColors.get(id))
   const updateEdgeLabelOffset = useArchitectureStore((s) => s.updateEdgeLabelOffset)
   const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
+  const animationsEnabled = usePreferencesStore((s) => s.animationsEnabled)
+
+  // Connection health for particle animation (Story 9-6)
+  const { density, status: healthStatus } = useConnectionHealth(source, target)
 
   const isIncompatible = data?.isIncompatible ?? false
   const currentLabelOffset = data?.labelOffset ?? { x: 0, y: 0 }
@@ -137,12 +146,8 @@ export function ArchieEdge({
         }}
         data-testid="archie-edge"
       />
-      {heatmapEnabled && edgeHeatmapStatus && edgeHeatmapStatus in HEATMAP_COLORS && (
-        <path
-          data-testid={`flow-particle-${id}`}
-          d={edgePath}
-          className={`flow-particle flow-particle-${edgeHeatmapStatus}`}
-        />
+      {heatmapEnabled && animationsEnabled && edgeHeatmapStatus && edgeHeatmapStatus in HEATMAP_COLORS && (
+        <EdgeParticles edgePath={edgePath} density={density} status={healthStatus} edgeId={id} />
       )}
       {isIncompatible && (
         <EdgeLabelRenderer>

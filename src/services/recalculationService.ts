@@ -15,8 +15,8 @@ import {
   type HeatmapStatus,
 } from "@/engine/heatmapCalculator"
 import type { MetricValue } from "@/schemas/metricSchema"
-import type { DemandProfile, DemandResponse } from "@/lib/demandTypes"
-import { applyDemandModifiers } from "@/engine/demandEngine"
+import type { DemandProfile, DemandResponse, FailureModifiers } from "@/lib/demandTypes"
+import { applyDemandModifiers, applyFailureModifiers } from "@/engine/demandEngine"
 
 // --- Types ---
 
@@ -109,6 +109,7 @@ export const recalculationService = {
     edges: { id: string; source: string; target: string }[],
     changedNodeId: string,
     demandProfile?: DemandProfile | null,
+    failureModifiers?: FailureModifiers | null,
   ): RecalculationResult {
     // Build lookup maps
     const nodeMap = new Map<string, ServiceNode>(nodes.map((n) => [n.id, n]))
@@ -168,18 +169,23 @@ export const recalculationService = {
         edges,
       )
 
-      // Story 9-4: Apply demand modifiers after variant resolution + interaction rules
+      // Story 9-4: Apply demand modifiers after variant resolution + interaction rules (Level 3)
       if (demandProfile) {
-        // Fallback to "" if node lookup failed — getComponent("") returns undefined,
-        // so demandResponses will be undefined and applyDemandModifiers passes metrics through unchanged.
         const component = componentLibrary.getComponent(node?.data.archieComponentId ?? "")
         const demandResponses: DemandResponse | undefined = component?.demandResponses
         const adjustedMetrics = applyDemandModifiers(recalculated.metrics, demandResponses, demandProfile)
         recalculated.metrics = adjustedMetrics
-        // Recompute overallScore as simple mean of adjusted metrics.
-        // Matches recalculateNode's formula (simple mean, not weighted by category).
         if (adjustedMetrics.length > 0) {
           recalculated.overallScore = adjustedMetrics.reduce((sum, m) => sum + m.numericValue, 0) / adjustedMetrics.length
+        }
+      }
+
+      // Story 9-7: Apply failure modifiers after demand (Level 4)
+      if (failureModifiers) {
+        const failureAdjusted = applyFailureModifiers(recalculated.metrics, failureModifiers)
+        recalculated.metrics = failureAdjusted
+        if (failureAdjusted.length > 0) {
+          recalculated.overallScore = failureAdjusted.reduce((sum, m) => sum + m.numericValue, 0) / failureAdjusted.length
         }
       }
 

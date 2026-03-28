@@ -247,7 +247,7 @@ development_status:
   # User sees architecture under demand pressure and failure conditions
   # FRs: FR78-FR85, FR89-FR92 | NFRs: NFR23, NFR24
   # ============================================================================
-  epic-9: in-progress
+  epic-9: done
   9-0-consolidation-compression-trigger: done  # TD, no deps
   9-1-demand-schema-and-scenario-presets: done
   9-2-component-demand-response-data: done  # DEPENDS: 9-1
@@ -255,7 +255,7 @@ development_status:
   9-4-scenario-selector-ui-and-store: done  # DEPENDS: 9-3
   9-5-e2e-demand-flow: done  # DEPENDS: 9-4
   9-6-score-transition-animation: done  # DEPENDS: 9-4, 10-1 (cross-epic)
-  9-7-failure-scenario-presets: drafted  # DEPENDS: 9-3, 9-4
+  9-7-failure-scenario-presets: done  # DEPENDS: 9-3, 9-4
   epic-9-retrospective: optional
 
   # ============================================================================

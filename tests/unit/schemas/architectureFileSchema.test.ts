@@ -9,7 +9,7 @@ import {
   checkSchemaVersion,
   type VersionStatus,
 } from "@/schemas/architectureFileSchema"
-import { METRIC_CATEGORIES, MAX_CANVAS_NODES, MAX_EDGES } from "@/lib/constants"
+import { METRIC_CATEGORIES, MAX_CANVAS_NODES, MAX_EDGES, MAX_SCHEMA_STRING_LENGTH } from "@/lib/constants"
 
 const validNode = {
   id: "node-1",
@@ -451,7 +451,7 @@ describe("Defense-in-depth: METRIC_CATEGORIES static assertion throw-path (TD-5-
 })
 
 describe("Defense-in-depth: string length limits (TD-5-1a)", () => {
-  const longString = "a".repeat(257)
+  const longString = "a".repeat(MAX_SCHEMA_STRING_LENGTH + 1)
 
   it("rejects node id exceeding 256 chars", () => {
     const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, id: longString })
@@ -493,8 +493,8 @@ describe("Defense-in-depth: string length limits (TD-5-1a)", () => {
     expect(result.success).toBe(false)
   })
 
-  it("accepts strings at exactly 256 chars", () => {
-    const maxString = "a".repeat(256)
+  it("accepts strings at exactly MAX_SCHEMA_STRING_LENGTH chars", () => {
+    const maxString = "a".repeat(MAX_SCHEMA_STRING_LENGTH)
     const result = ArchitectureFileNodeSchema.safeParse({ ...validNode, id: maxString, componentId: maxString })
     expect(result.success).toBe(true)
   })
@@ -525,8 +525,62 @@ describe("Defense-in-depth: string length limits (TD-5-1a)", () => {
   })
 })
 
+describe("activeScenarioId (Story 9-4)", () => {
+  const validV2File = {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    nodes: [validNode],
+    edges: [validEdge],
+  }
+
+  const validV2YamlFile = {
+    schema_version: CURRENT_SCHEMA_VERSION,
+    nodes: [{ id: "node-1", component_id: "postgresql", config_variant_id: "single-node", position: { x: 100, y: 200 } }],
+    edges: [{ id: "edge-1", source_node_id: "node-1", target_node_id: "node-2" }],
+  }
+
+  it("accepts file with activeScenarioId (camelCase)", () => {
+    const result = ArchitectureFileSchema.safeParse({
+      ...validV2File,
+      activeScenarioId: "traffic-peak",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts file without activeScenarioId (backward compatible)", () => {
+    const result = ArchitectureFileSchema.safeParse(validV2File)
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts YAML variant with active_scenario_id (snake_case)", () => {
+    const result = ArchitectureFileYamlSchema.safeParse({
+      ...validV2YamlFile,
+      active_scenario_id: "traffic-peak",
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.activeScenarioId).toBe("traffic-peak")
+    }
+  })
+
+  it("rejects activeScenarioId with invalid characters", () => {
+    const result = ArchitectureFileSchema.safeParse({
+      ...validV2File,
+      activeScenarioId: "invalid scenario!@#",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects empty activeScenarioId", () => {
+    const result = ArchitectureFileSchema.safeParse({
+      ...validV2File,
+      activeScenarioId: "",
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
 describe("Defense-in-depth: YAML variant string length parity (TD-5-1a)", () => {
-  const longString = "a".repeat(257)
+  const longString = "a".repeat(MAX_SCHEMA_STRING_LENGTH + 1)
 
   it("rejects YAML node component_id exceeding 256 chars", () => {
     const result = ArchitectureFileYamlSchema.safeParse({

@@ -9,9 +9,11 @@ interface PreferencesState {
   theme: Theme
   fontSize: FontSize
   fontFamily: FontFamily
+  animationsEnabled: boolean
   setTheme: (theme: Theme) => void
   setFontSize: (fontSize: FontSize) => void
   setFontFamily: (fontFamily: FontFamily) => void
+  setAnimationsEnabled: (enabled: boolean) => void
 }
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -20,9 +22,11 @@ export const usePreferencesStore = create<PreferencesState>()(
       theme: "dark",
       fontSize: "medium",
       fontFamily: "inter",
+      animationsEnabled: true,
       setTheme: (theme) => set({ theme }),
       setFontSize: (fontSize) => set({ fontSize }),
       setFontFamily: (fontFamily) => set({ fontFamily }),
+      setAnimationsEnabled: (enabled) => set({ animationsEnabled: enabled }),
     }),
     { name: "archie-preferences" }
   )

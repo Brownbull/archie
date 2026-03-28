@@ -169,3 +169,28 @@ connection_properties:
     - pub-sub
   typical_latency: "<1ms"
   co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      write-throughput: 0.7
+      read-latency: 0.8
+    extreme:
+      write-throughput: 0.5
+      read-latency: 0.6
+  data-size:
+    high:
+      read-latency: 0.8
+      data-durability: 0.8
+    extreme:
+      read-latency: 0.6
+      data-durability: 0.6
+      horizontal-scalability: 0.7
+  concurrent-users:
+    high:
+      read-latency: 0.8
+    extreme:
+      read-latency: 0.6
+      write-throughput: 0.7
+  burst-pattern:
+    unpredictable:
+      write-throughput: 0.7

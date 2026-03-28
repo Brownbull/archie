@@ -135,3 +135,28 @@ connection_properties:
     - routing
   typical_latency: 1-5ms
   co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      message-throughput: 0.7
+    extreme:
+      message-throughput: 0.5
+      operational-complexity: 0.8
+  concurrent-users:
+    high:
+      message-throughput: 0.8
+    extreme:
+      message-throughput: 0.6
+  burst-pattern:
+    periodic-spikes:
+      message-throughput: 0.7
+      operational-complexity: 0.8
+    unpredictable:
+      message-throughput: 0.5
+      operational-complexity: 0.7
+  data-size:
+    high:
+      message-durability: 0.8
+    extreme:
+      message-durability: 0.6
+      operational-complexity: 0.8

@@ -1,3 +1,6 @@
+import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
+import { getScenarioPreset } from "@/services/scenarioLoader"
+import { getFailurePreset } from "@/services/failureLoader"
 import { computeCategoryScores, computeWeightedCategoryScores, type CategoryScore } from "@/engine/dashboardCalculator"
 import { evaluateConstraints, type ConstraintViolation } from "@/engine/constraintEvaluator"
 import { getWeight } from "@/lib/weightUtils"
@@ -10,9 +13,6 @@ import {
   type Constraint,
   type WeightProfile,
 } from "@/lib/constants"
-
-// Re-export types used by store consumers
-export type { ConstraintViolation, RecalculatedMetrics, HeatmapStatus, TierResult }
 
 /**
  * Module-level helper: computes per-node category averages from RecalculatedMetrics.
@@ -178,3 +178,41 @@ export function recomputeScoringLayer(
   )
   return { heatmapColors, currentTier, constraintViolations, violationsByNodeId }
 }
+
+// --- Ripple timeout management (extracted from architectureStore for line-count headroom) ---
+
+// Module-level tracking for ripple setTimeout IDs (TD-2-2b)
+// Kept outside store state to avoid triggering subscriber re-renders on timeout bookkeeping
+const pendingRippleTimeouts = new Set<ReturnType<typeof setTimeout>>()
+
+export function clearPendingRippleTimeouts(): void {
+  for (const id of pendingRippleTimeouts) {
+    clearTimeout(id)
+  }
+  pendingRippleTimeouts.clear()
+}
+
+export function addPendingRippleTimeout(id: ReturnType<typeof setTimeout>): void {
+  pendingRippleTimeouts.add(id)
+}
+
+export function removePendingRippleTimeout(id: ReturnType<typeof setTimeout>): void {
+  pendingRippleTimeouts.delete(id)
+}
+
+// --- Demand scenario helpers (Story 9-4) ---
+
+/** Resolves demand profile from scenario ID. Returns null when no scenario active. */
+export function getDemandProfileForScenario(scenarioId: string | null): DemandProfile | null {
+  if (!scenarioId) return null
+  return getScenarioPreset(scenarioId)?.demandProfile ?? null
+}
+
+// --- Failure scenario helpers (Story 9-7) ---
+
+/** Resolves failure modifiers from failure preset ID. Returns null when no failure active. */
+export function getFailureModifiersForScenario(failureScenarioId: string | null): FailureModifiers | null {
+  if (!failureScenarioId) return null
+  return getFailurePreset(failureScenarioId)?.failureModifiers ?? null
+}
+

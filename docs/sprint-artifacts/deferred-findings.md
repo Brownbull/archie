@@ -210,6 +210,30 @@
 - **Stage:** PROD — performance optimization for AC-6 compliance under load. Works correctly at current scale.
 - **Estimated effort:** Medium (pre-compute path waypoints array at fixed intervals, lerp in RAF loop)
 
+### [PROD] No pipeline Level 4 sequencing integration test
+
+- **Source:** 9-7 review (2026-03-27)
+- **Finding:** `recalculationService.run()` applies failure modifiers at Level 4 (after demand at Level 3), but no integration test verifies the pipeline ordering with both demand and failure active simultaneously. Unit tests cover `applyFailureModifiers` in isolation; the pipeline wiring in recalculationService is tested only via E2E.
+- **Files:** `tests/unit/services/recalculationService.test.ts` (new or extend)
+- **Stage:** PROD — test coverage for pipeline integration; feature works correctly
+- **Estimated effort:** Medium (requires mocking componentLibrary + propagator for integration test)
+
+### [PROD] No FailureSelector component tests
+
+- **Source:** 9-7 review (2026-03-27)
+- **Finding:** `FailureSelector.tsx` has no unit/component tests. AC-2 (dropdown render, "No Failure" default, 6 presets visible, disabled when no nodes) is covered only by E2E. A component test with React Testing Library would catch regressions faster.
+- **Files:** `tests/unit/components/canvas/FailureSelector.test.tsx` (new)
+- **Stage:** PROD — component test coverage, not feature-blocking
+- **Estimated effort:** Medium (requires mocking store + failureLoader for component render tests)
+
+### [PROD] No performance benchmark test for combined demand + failure computation
+
+- **Source:** 9-7 review (2026-03-27)
+- **Finding:** AC-5 specifies 15 components with both demand and failure scenarios active completing within 20ms. No benchmark or perf-marked test enforces this budget. A vitest bench entry or `performance.now()` guard would catch regressions.
+- **Files:** `tests/unit/engine/demandEngine-failure.test.ts` or `tests/bench/` (new)
+- **Stage:** PROD — performance enforcement, not feature-blocking. Current implementation is synchronous and fast.
+- **Estimated effort:** Small (add performance.now() timing test with 15 mock components)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
@@ -251,6 +275,30 @@
 - **Files:** `src/components/canvas/EdgeParticles.tsx`, `src/lib/constants.ts`
 - **Stage:** SCALE — visual polish, not feature-blocking. Current behavior is directionally correct.
 - **Estimated effort:** Small (normalize speed calculation or add design rationale comment)
+
+### [SCALE] FailureSelector dropdown order driven by alphabet, not severity progression
+
+- **Source:** 9-7 review (2026-03-27)
+- **Finding:** `failureLoader.ts` sorts presets alphabetically by name. The natural educational progression (Single Node → Network Partition → Database → Traffic Spike → Region Outage → Data Corruption) is lost. A `sortOrder` field in the YAML schema or an explicit ordered ID list would let the author control pedagogical sequence.
+- **Files:** `src/services/failureLoader.ts`, `src/data/scenarios/failure-*.yaml`
+- **Stage:** SCALE — UX improvement for educational sequencing, not feature-blocking
+- **Estimated effort:** Small (add sortOrder field to schema + YAML files, update sort logic)
+
+### [SCALE] FailureSelector coupled to demand scenario state for layout positioning
+
+- **Source:** 9-7 review (2026-03-27)
+- **Finding:** `FailureSelector` reads `activeScenarioId` from the store solely to compute CSS offset strings (`topOffset`, `bannerTopOffset`). This couples the failure component to the demand scenario state for a layout concern. If a third overlay is added later, this positioning logic needs updating in multiple components. Consider a shared `useOverlayStackOffset` hook or CSS variable approach.
+- **Files:** `src/components/canvas/FailureSelector.tsx`
+- **Stage:** SCALE — architectural coupling concern for future overlay expansion
+- **Estimated effort:** Medium (extract shared positioning hook, update both selectors)
+
+### [SCALE] ICON_MAP hardcoded in FailureSelector — won't scale for Epic 13
+
+- **Source:** 9-7 review (2026-03-27)
+- **Finding:** `ICON_MAP` in `FailureSelector.tsx` maps icon name strings from YAML to Lucide components via a static dictionary. This works for 6 presets but won't scale when Epic 13 adds more failure/chaos scenarios. Fallback to `AlertTriangle` is safe. Consider a shared icon resolver utility when expanding the failure catalog.
+- **Files:** `src/components/canvas/FailureSelector.tsx`
+- **Stage:** SCALE — extensibility concern for Epic 13 expansion
+- **Estimated effort:** Small (extract shared icon resolver utility)
 
 ### [SCALE] Fit level tooltip (title attribute) inaccessible on mobile/keyboard
 

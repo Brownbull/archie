@@ -164,3 +164,43 @@ connection_properties:
     - connection-pooling
   typical_latency: 1-10ms
   co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      write-throughput: 0.7
+      read-latency: 0.8
+    extreme:
+      write-throughput: 0.5
+      read-latency: 0.6
+      horizontal-scalability: 0.7
+      operational-complexity: 0.8
+  data-size:
+    high:
+      read-latency: 0.7
+      write-throughput: 0.8
+    extreme:
+      read-latency: 0.5
+      write-throughput: 0.6
+      horizontal-scalability: 0.7
+      operational-complexity: 0.8
+  concurrent-users:
+    high:
+      read-latency: 0.7
+      write-throughput: 0.8
+    extreme:
+      read-latency: 0.5
+      write-throughput: 0.5
+  geographic-spread:
+    multi-region:
+      read-latency: 0.8
+      data-durability: 0.9
+    global:
+      read-latency: 0.6
+      data-durability: 0.8
+      operational-complexity: 0.8
+  burst-pattern:
+    periodic-spikes:
+      write-throughput: 0.8
+    unpredictable:
+      write-throughput: 0.6
+      read-latency: 0.8

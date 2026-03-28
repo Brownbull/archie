@@ -10,6 +10,7 @@ describe("preferencesStore", () => {
       theme: "dark",
       fontSize: "medium",
       fontFamily: "inter",
+      animationsEnabled: true,
     })
   })
 
@@ -73,6 +74,23 @@ describe("preferencesStore", () => {
       usePreferencesStore.getState().setFontFamily("system")
       usePreferencesStore.getState().setFontFamily("inter")
       expect(usePreferencesStore.getState().fontFamily).toBe("inter")
+    })
+  })
+
+  describe("animationsEnabled", () => {
+    it("defaults to true", () => {
+      expect(usePreferencesStore.getState().animationsEnabled).toBe(true)
+    })
+
+    it("toggles to false via setAnimationsEnabled", () => {
+      usePreferencesStore.getState().setAnimationsEnabled(false)
+      expect(usePreferencesStore.getState().animationsEnabled).toBe(false)
+    })
+
+    it("toggles back to true", () => {
+      usePreferencesStore.getState().setAnimationsEnabled(false)
+      usePreferencesStore.getState().setAnimationsEnabled(true)
+      expect(usePreferencesStore.getState().animationsEnabled).toBe(true)
     })
   })
 
