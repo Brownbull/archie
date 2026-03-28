@@ -21,11 +21,11 @@ const CATEGORY_LOOKUP = new Map<string, { shortName: string; color: string }>(
  * Categories with zero weight are excluded.
  */
 export function useTopMetrics(nodeId: string, count = 2): TopMetric[] {
-  const safeCount = Math.min(Math.max(count, 0), METRIC_CATEGORIES.length)
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
   const weightProfile = useArchitectureStore((s) => s.weightProfile)
 
   return useMemo(() => {
+    const safeCount = Math.min(Math.max(count, 0), METRIC_CATEGORIES.length)
     const nodeMetrics = computedMetrics.get(nodeId)
     if (!nodeMetrics || nodeMetrics.metrics.length === 0) return []
 
@@ -42,5 +42,5 @@ export function useTopMetrics(nodeId: string, count = 2): TopMetric[] {
       .sort((a, b) => b.weight - a.weight || b.value - a.value)
       .slice(0, safeCount)
       .map(({ categoryId, shortName, value, color }) => ({ categoryId, shortName, value, color }))
-  }, [computedMetrics, weightProfile, nodeId, safeCount])
+  }, [computedMetrics, weightProfile, nodeId, count])
 }

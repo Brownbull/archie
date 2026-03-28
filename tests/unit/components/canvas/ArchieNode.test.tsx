@@ -277,8 +277,8 @@ describe("ArchieNode", () => {
       expect(bars).toHaveLength(2)
       expect(screen.getByText("Perf")).toBeInTheDocument()
       expect(screen.getByText("Scale")).toBeInTheDocument()
-      expect(screen.getByText("8")).toBeInTheDocument()
-      expect(screen.getByText("4")).toBeInTheDocument()
+      expect(screen.getByText("8.0")).toBeInTheDocument()
+      expect(screen.getByText("4.0")).toBeInTheDocument()
     })
 
     it("does not render metric bars when no metrics", () => {
@@ -312,6 +312,19 @@ describe("ArchieNode", () => {
       render(<ArchieNode {...defaultProps} />)
       expect(screen.getByTestId("constraint-violation-badge")).toBeInTheDocument()
       expect(screen.getAllByTestId("inline-metric-bar")).toHaveLength(2)
+    })
+
+    it("does not render variant name when activeConfigVariantId does not match any variant", () => {
+      mockGetComponent.mockReturnValue({
+        id: "postgresql",
+        configVariants: [{ id: "event-driven", name: "Event-Driven" }],
+      })
+      const props = {
+        ...defaultProps,
+        data: { ...defaultProps.data, activeConfigVariantId: "nonexistent-variant" },
+      } as Parameters<typeof ArchieNode>[0]
+      render(<ArchieNode {...props} />)
+      expect(screen.queryByTestId("archie-node-variant")).not.toBeInTheDocument()
     })
   })
 })

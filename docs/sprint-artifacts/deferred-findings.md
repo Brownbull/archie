@@ -154,6 +154,30 @@
 - **Stage:** PROD — API hygiene, not functional
 - **Estimated effort:** Small (remove `| undefined` from Map value type, update callers)
 
+### [PROD] Megamonolithic E2E test — AC-1/2/3/4 in single test block (230+ lines)
+
+- **Source:** 9-5 review (2026-03-27)
+- **Finding:** The demand simulation E2E spec packs AC-1, AC-2, AC-3, and AC-4 into a single `test()` block (~230 lines). If any early AC fails, subsequent ACs never execute, making failure triage harder. Splitting into separate tests per AC (or at least AC-1/2 + AC-3/4) would improve isolation and diagnostics. The pathway-guidance.spec.ts reference pattern uses separate tests.
+- **Files:** `tests/e2e/demand-simulation.spec.ts`
+- **Stage:** PROD — test reliability/maintainability, not feature-blocking
+- **Estimated effort:** Medium (requires extracting shared setup into beforeEach, splitting assertions)
+
+### [PROD] ArchieNode directly calls componentLibrary.getComponent() in render path
+
+- **Source:** 10-1 review (2026-03-27)
+- **Finding:** `ArchieNode.tsx` calls `componentLibrary.getComponent(data.archieComponentId)` inside a `useMemo` to resolve the variant name. This couples the render component directly to the service layer. Same pattern as TD-4-3b (ArchieEdge). Consolidating variant name resolution into a store selector or a `getVariantName()` helper on componentLibrary would decouple render from service.
+- **Files:** `src/components/canvas/ArchieNode.tsx`
+- **Stage:** PROD — coupling concern, not feature-blocking. componentLibrary is a synchronous cached singleton.
+- **Estimated effort:** Small (extract helper or derived selector)
+
+### [PROD] Document color source invariant on METRIC_CATEGORIES
+
+- **Source:** 10-1 review (2026-03-27)
+- **Finding:** `InlineMetricBar` and `useTopMetrics` inject `color` values from `METRIC_CATEGORIES` (static constants) directly into `style={{ backgroundColor: color }}`. Safe today because colors are CSS variables (`var(--color-metric-*)`), not user-controlled. If `METRIC_CATEGORIES` ever gains a YAML/DB source, colors must be validated against an allowlist. A single-line invariant comment would protect future maintainers.
+- **Files:** `src/hooks/useTopMetrics.ts`, `src/components/canvas/InlineMetricBar.tsx`
+- **Stage:** PROD — defense-in-depth documentation, not feature-blocking
+- **Estimated effort:** Small (add invariant comment at CATEGORY_LOOKUP definition)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs

@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
 
 describe("InlineMetricBar", () => {
-  it("renders abbreviation and numeric value", () => {
+  it("renders abbreviation and numeric value with 1 decimal", () => {
     render(<InlineMetricBar abbreviation="Perf" value={7.5} color="var(--color-metric-performance)" />)
 
     expect(screen.getByText("Perf")).toBeInTheDocument()
@@ -71,5 +71,15 @@ describe("InlineMetricBar", () => {
     const bar = container.querySelector("[data-testid='inline-metric-bar-fill']")
     // 5 / 20 = 25%
     expect(bar).toHaveStyle({ width: "25%" })
+  })
+
+  it("handles NaN value via Number.isFinite guard", () => {
+    const { container } = render(
+      <InlineMetricBar abbreviation="Perf" value={NaN} color="var(--color-metric-performance)" />,
+    )
+
+    const bar = container.querySelector("[data-testid='inline-metric-bar-fill']")
+    expect(bar).toHaveStyle({ width: "0%" })
+    expect(screen.getByText("0.0")).toBeInTheDocument()
   })
 })

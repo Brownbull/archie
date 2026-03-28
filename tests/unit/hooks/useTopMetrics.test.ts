@@ -168,4 +168,42 @@ describe("useTopMetrics", () => {
     expect(result.current).toHaveLength(2)
     expect(result.current.every((m) => m.categoryId !== "scalability")).toBe(true)
   })
+
+  it("returns empty array when count is 0", async () => {
+    const useTopMetrics = await getHook()
+    const metrics = new Map<string, RecalculatedMetrics>()
+    metrics.set("node-1", makeNode("node-1", [
+      { id: "m1", category: "performance", numericValue: 8.0 },
+    ]))
+
+    mockStore(metrics)
+
+    const { result } = renderHook(() => useTopMetrics("node-1", 0))
+
+    expect(result.current).toEqual([])
+  })
+
+  it("reorders top metrics when weight profile changes", async () => {
+    const useTopMetrics = await getHook()
+    const metrics = new Map<string, RecalculatedMetrics>()
+    metrics.set("node-1", makeNode("node-1", [
+      { id: "m1", category: "performance", numericValue: 8.0 },
+      { id: "m2", category: "reliability", numericValue: 6.0 },
+      { id: "m3", category: "security", numericValue: 7.0 },
+    ]))
+
+    // First render: performance highest weight
+    mockStore(metrics, { performance: 1.0, reliability: 0.3, security: 0.5 })
+    const { result, rerender } = renderHook(() => useTopMetrics("node-1"))
+
+    expect(result.current[0].categoryId).toBe("performance")
+    expect(result.current[1].categoryId).toBe("security")
+
+    // Second render: security now highest weight
+    mockStore(metrics, { performance: 0.2, reliability: 0.3, security: 1.0 })
+    rerender()
+
+    expect(result.current[0].categoryId).toBe("security")
+    expect(result.current[1].categoryId).toBe("reliability")
+  })
 })

@@ -38,9 +38,10 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
 
   // Inline metrics: top 2 by weight (Story 10-1)
   const topMetrics = useTopMetrics(id)
+  // Variant name sourced from static component library (bundled YAML, not user-controlled)
   const variantName = useMemo(() => {
     const comp = componentLibrary.getComponent(data.archieComponentId)
-    return comp?.configVariants.find((v: { id: string }) => v.id === data.activeConfigVariantId)?.name ?? null
+    return comp?.configVariants.find((v) => v.id === data.activeConfigVariantId)?.name ?? null
   }, [data.archieComponentId, data.activeConfigVariantId])
 
   // Box-shadow glow for heatmap (AC-ARCH-PATTERN-6) — separate from category stripe
