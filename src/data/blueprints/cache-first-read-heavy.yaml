@@ -1,6 +1,6 @@
 id: cache-first-read-heavy
 name: "Cache-First Read-Heavy"
-description: "Multi-tier caching architecture optimized for content serving where most requests never reach the database. Full-site CDN absorbs the majority of traffic, Nginx load-balances cache misses across read replicas, and Redis handles origin-level caching. Trades data freshness (stale reads) for extreme throughput and low database load."
+description: "Multi-tier caching architecture optimized for static content serving where most requests never reach the database. Full-site CDN absorbs the majority of traffic at the edge, Nginx routes cache misses to Redis for origin-level lookups, and PostgreSQL (primary-replica) serves as the final data source. No application tier — content flows through caching layers only. Trades data freshness (stale reads) and dynamic capability for extreme read throughput and minimal database load."
 tier: 2
 skeleton:
   schema_version: "2.0.0"

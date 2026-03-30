@@ -37,6 +37,9 @@ skeleton:
     - id: agp-edge-nginx-app
       source_node_id: agp-nginx
       target_node_id: agp-app
+    - id: agp-edge-app-cache
+      source_node_id: agp-app
+      target_node_id: agp-cache
     - id: agp-edge-app-db
       source_node_id: agp-app
       target_node_id: agp-db

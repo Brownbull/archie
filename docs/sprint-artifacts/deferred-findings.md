@@ -234,6 +234,22 @@
 - **Stage:** PROD — performance enforcement, not feature-blocking. Current implementation is synchronous and fast.
 - **Estimated effort:** Small (add performance.now() timing test with 15 mock components)
 
+### [PROD] Existing blueprints use schema_version 1.0.0 (current is 2.0.0)
+
+- **Source:** 10-2 review (2026-03-28)
+- **Finding:** `whatsapp-messaging.yaml` and `telegram-messaging.yaml` still declare `schema_version: "1.0.0"` inside their `skeleton` block, but `CURRENT_SCHEMA_VERSION` in `architectureFileSchema.ts` is `"2.0.0"`. New blueprints correctly use 2.0.0. The importer accepts both versions, so this is not feature-blocking, but the library is inconsistent.
+- **Files:** `src/data/blueprints/whatsapp-messaging.yaml`, `src/data/blueprints/telegram-messaging.yaml`
+- **Stage:** PROD — data consistency across blueprint library; importer handles both versions
+- **Estimated effort:** Small (update schema_version field in 2 files, verify import/export round-trip)
+
+### [PROD] Existing blueprints missing optional tier field
+
+- **Source:** 10-2 review (2026-03-28)
+- **Finding:** `whatsapp-messaging.yaml` and `telegram-messaging.yaml` lack the `tier` field that all 8 new blueprints include. `BlueprintSchema` declares `tier: z.number().optional()`, so both states are schema-valid, but the blueprint browser may display inconsistently (some with tiers, some without).
+- **Files:** `src/data/blueprints/whatsapp-messaging.yaml`, `src/data/blueprints/telegram-messaging.yaml`
+- **Stage:** PROD — data consistency in blueprint library; display may vary
+- **Estimated effort:** Small (add `tier: 3` to both files based on their component count/spread)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs

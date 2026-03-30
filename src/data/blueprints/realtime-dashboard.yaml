@@ -37,6 +37,9 @@ skeleton:
     - id: rtd-edge-app-redis
       source_node_id: rtd-app
       target_node_id: rtd-redis
+    - id: rtd-edge-app-ws
+      source_node_id: rtd-app
+      target_node_id: rtd-ws
     - id: rtd-edge-redis-ws
       source_node_id: rtd-redis
       target_node_id: rtd-ws
