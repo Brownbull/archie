@@ -250,6 +250,30 @@
 - **Stage:** PROD — data consistency in blueprint library; display may vary
 - **Estimated effort:** Small (add `tier: 3` to both files based on their component count/spread)
 
+### [PROD] AC-2 weight slider state not explicitly reset — test isolation risk
+
+- **Source:** 10-3 review (2026-03-30)
+- **Finding:** AC-2 test assumes weight sliders start at 1.0 (default). No explicit reset before adjusting sliders. If a prior test run or retry leaves non-default weights in storageState, State A setup produces wrong slider values. Needs an app-level reset mechanism (store reset via URL param in test mode, or explicit beforeEach navigation).
+- **Files:** `tests/e2e/canvas-enhancements.spec.ts`
+- **Stage:** PROD — test reliability in CI environments, not feature-blocking
+- **Estimated effort:** Medium (requires app-level reset mechanism or per-test state isolation)
+
+### [PROD] selectScenario + addComponentWithMetrics duplicated across E2E specs
+
+- **Source:** 10-3 review (2026-03-30)
+- **Finding:** `selectScenario` and `addComponentWithMetrics` helper functions are independently implemented in both `demand-simulation.spec.ts` and `canvas-enhancements.spec.ts` with identical logic. Should be promoted to `tests/e2e/helpers/canvas-helpers.ts` to eliminate DRY violation and maintenance fork risk.
+- **Files:** `tests/e2e/canvas-enhancements.spec.ts`, `tests/e2e/demand-simulation.spec.ts`, `tests/e2e/helpers/canvas-helpers.ts`
+- **Stage:** PROD — DRY/maintainability, not feature-blocking
+- **Estimated effort:** Small (extract to canvas-helpers.ts, update both specs)
+
+### [PROD] waitForTimeout(800) in selectScenario — prefer explicit wait signal
+
+- **Source:** 10-3 review (2026-03-30)
+- **Finding:** `selectScenario` uses `waitForTimeout(800)` for recalculation settling after scenario selection. Borderline vs the <1000ms testing convention. Replace with `expect.poll` on a stable DOM signal (e.g., scenario banner text or metric value change) once a stable signal exists. Current approach is correct in spirit but may cause flakiness under CI load.
+- **Files:** `tests/e2e/canvas-enhancements.spec.ts`
+- **Stage:** PROD — CI reliability, not feature-blocking
+- **Estimated effort:** Small (replace waitForTimeout with expect.poll on stable signal)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs

@@ -266,7 +266,7 @@ development_status:
   epic-10: in-progress
   10-1-inline-canvas-metrics: done  # Extended with FR93 badge verification
   10-2-blueprint-expansion: done
-  10-3-e2e-canvas-metrics-and-blueprints: review  # DEPENDS: 10-1, 10-2
+  10-3-e2e-canvas-metrics-and-blueprints: done  # DEPENDS: 10-1, 10-2
   10-4-architecture-report-export: drafted  # DEPENDS: 10-1
   epic-10-retrospective: optional
 
