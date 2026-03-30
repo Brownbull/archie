@@ -274,6 +274,30 @@
 - **Stage:** PROD — CI reliability, not feature-blocking
 - **Estimated effort:** Small (replace waitForTimeout with expect.poll on stable signal)
 
+### [PROD] StoreSnapshot interface duplicates store type shape — drift risk
+
+- **Source:** 10-4 review (2026-03-30)
+- **Finding:** `StoreSnapshot` interface in `ExportReportButton.tsx` manually declares the shape of `architectureStore.getState()` (nodes, edges, computedMetrics, heatmapColors, etc.). If store fields are renamed, added, or removed, this interface silently drifts. Should derive from `ReturnType<typeof useArchitectureStore.getState>` with `Pick<>` to stay in sync.
+- **Files:** `src/components/toolbar/ExportReportButton.tsx`
+- **Stage:** PROD — type safety / SSoT, not feature-blocking
+- **Estimated effort:** Medium (derive type from store, update Pick fields, verify type compatibility)
+
+### [PROD] mdCell only escapes pipe/newline — markdown injection via heading/link syntax unguarded
+
+- **Source:** 10-4 review (2026-03-30)
+- **Finding:** `mdCell()` in `reportGenerator.ts` escapes `|` and `\n` for table cell safety, but component names and categories used in H3 headings (`### ${mdCell(comp.componentName)}`) are not protected against markdown heading injection (`# injected`), link syntax (`[click](url)`), or HTML-like tags (`<script>`). Since the report is a downloaded .md file rendered by external viewers, injected markdown could render unexpectedly. Extend `mdCell` to strip `#` at string start and escape `[`, `(`, `<`, `>` for non-table contexts, or introduce a separate `mdText()` sanitizer for headings.
+- **Files:** `src/services/reportGenerator.ts`
+- **Stage:** PROD — defense-in-depth for exported artifacts rendered in external markdown viewers
+- **Estimated effort:** Medium (design mdText sanitizer, apply to all non-table interpolation points, add tests)
+
+### [PROD] E2E gap: export-report-button not covered in E2E specs
+
+- **Source:** 10-4 self-review (2026-03-30)
+- **Finding:** `export-report-button` data-testid exists but no E2E test exercises the export flow. This is the first artifact that leaves the tool — stakeholders reading the report have no in-app context. AC-8 (provenance footer) and AC-1 (3+ component gate) should be verified in E2E. V5 applies: data leaving the tool is a critical execution proof path.
+- **Files:** `tests/e2e/` (new spec or extend existing)
+- **Stage:** PROD — V5 execution proof for export-critical path; feature works correctly via unit tests
+- **Estimated effort:** Medium (E2E needs store setup with 3+ components, click export, verify download triggered)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
