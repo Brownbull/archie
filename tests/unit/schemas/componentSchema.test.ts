@@ -702,6 +702,7 @@ describe("Component YAML files — demand_responses validation", () => {
     expect(kafkaWorst).toBeGreaterThan(pgWorst)
   })
 
+
   it("round-trip: all YAML components match ComponentSchema after transform", () => {
     for (const filename of componentFiles) {
       const yamlResult = parseComponent(filename)

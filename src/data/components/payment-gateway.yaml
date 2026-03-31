@@ -183,6 +183,12 @@ config_variants:
           return subscription
         }
     metric_explanations:
+      payment-availability:
+        reason: Recurring billing uses stored payment methods and scheduled retries, reducing the impact of transient provider outages on successful charge rates.
+        contributing_factors:
+          - Stored tokens avoid real-time card entry failures
+          - Dunning retries spread attempts across provider recovery windows
+          - Subscription webhooks confirm settlement asynchronously rather than requiring synchronous availability
       cost-per-transaction:
         reason: Recurring billing amortizes payment processing overhead across predictable monthly charges rather than per-transaction spikes.
         contributing_factors:

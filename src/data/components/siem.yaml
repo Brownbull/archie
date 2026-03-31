@@ -26,7 +26,7 @@ base_metrics:
     value: high
     numeric_value: 8
     category: security
-  - id: log-retention
+  - id: data-durability
     value: high
     numeric_value: 7
     category: reliability
