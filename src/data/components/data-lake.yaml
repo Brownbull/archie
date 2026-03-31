@@ -1,0 +1,218 @@
+id: data-lake
+name: Data Lake
+category: data-storage
+description: Scalable storage layer for raw and processed data at any scale with schema-on-read semantics
+is: A centralized repository that stores structured, semi-structured, and unstructured data in its native format, enabling schema-on-read analytics and batch processing
+gain:
+  - Stores any data format (JSON, Parquet, CSV, images) without upfront schema definition
+  - Orders of magnitude cheaper per GB than traditional data warehouses
+  - Decouples storage from compute allowing independent scaling of each
+cost:
+  - Query latency measured in seconds to minutes, not milliseconds
+  - Schema-on-read means data quality issues surface at query time, not ingestion
+  - Governance and catalog tooling required to prevent data swamp
+tags:
+  - storage
+  - analytics
+  - big-data
+  - data-lake
+  - warehouse
+base_metrics:
+  - id: query-latency
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: storage-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: cost-per-gb
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+config_variants:
+  - id: raw-storage
+    name: Raw Object Storage
+    metrics:
+      - id: cost-per-gb
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+      - id: query-latency
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+    code_snippet:
+      language: typescript
+      code: |
+        // Data Lake - Raw Object Storage via AWS S3
+        import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+
+        const s3 = new S3Client({ region: process.env.AWS_REGION })
+
+        export async function ingestRawData(
+          bucket: string,
+          key: string,
+          body: Buffer
+        ) {
+          await s3.send(new PutObjectCommand({
+            Bucket: bucket,
+            Key: `raw/${new Date().toISOString().slice(0, 10)}/${key}`,
+            Body: body,
+          }))
+        }
+    metric_explanations:
+      cost-per-gb:
+        reason: Object storage (S3, GCS) costs $0.02-0.03/GB/month, orders of magnitude cheaper than block storage or managed databases.
+        contributing_factors:
+          - No compute attached to storage so you pay only for bytes stored
+          - Lifecycle policies automatically tier old data to cheaper storage classes
+          - No indexing or schema overhead added to raw storage cost
+      query-latency:
+        reason: Raw object storage has no query engine; reading data requires full file scans or external compute (Athena, Spark) adding significant latency.
+        contributing_factors:
+          - No indexes or partitioning on raw files means full-scan reads
+          - External query engines add cold-start latency for each query
+          - File format (CSV vs Parquet) drastically affects scan performance
+    data_fit_profile:
+      data-format: "Any format accepted as-is; no transformation on ingest"
+      ingestion-rate: "Handles high-throughput streaming or batch ingestion with no schema overhead"
+      query-frequency: "Not optimized for frequent queries; best as a staging layer before processing"
+  - id: lakehouse
+    name: Lakehouse (Delta/Iceberg)
+    metrics:
+      - id: query-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: operational-complexity
+        value: high
+        numeric_value: 7
+        category: operational-complexity
+    code_snippet:
+      language: python
+      code: |
+        # Data Lake - Lakehouse with Delta Lake on Spark
+        from delta import DeltaTable
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession.builder \
+            .config("spark.sql.extensions",
+                    "io.delta.sql.DeltaSparkSessionExtension") \
+            .getOrCreate()
+
+        # ACID upsert into Delta table on object storage
+        delta_table = DeltaTable.forPath(spark, "s3://lake/events")
+        delta_table.alias("target").merge(
+            new_events_df.alias("source"),
+            "target.event_id = source.event_id"
+        ).whenMatchedUpdateAll().whenNotMatchedInsertAll().execute()
+    metric_explanations:
+      data-durability:
+        reason: Delta Lake and Iceberg provide ACID transactions on object storage, ensuring every write is atomic and recoverable via time-travel.
+        contributing_factors:
+          - Write-ahead transaction log guarantees atomic commits
+          - Time-travel enables point-in-time queries and rollback
+          - Object storage replication provides underlying durability (11 nines on S3)
+      operational-complexity:
+        reason: Lakehouse adds a metadata and transaction layer on top of raw storage, requiring Spark or compatible compute, compaction jobs, and catalog management.
+        contributing_factors:
+          - Compaction jobs needed to consolidate small files from streaming writes
+          - Spark cluster management for compute (or serverless Spark/Photon)
+          - Schema evolution and partition management require governance tooling
+    data_fit_profile:
+      data-format: "Best with columnar formats (Parquet); supports schema evolution and enforcement"
+      ingestion-rate: "Handles streaming micro-batches with ACID guarantees on each write"
+      query-frequency: "Suitable for moderate to high query frequency with partition pruning"
+  - id: managed-lake
+    name: Managed Warehouse/Lake
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: cost-per-gb
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Data Lake - Managed via BigQuery (serverless)
+        import { BigQuery } from '@google-cloud/bigquery'
+
+        const bq = new BigQuery({ projectId: process.env.GCP_PROJECT })
+
+        export async function queryLake(sql: string) {
+          const [rows] = await bq.query({
+            query: sql,
+            location: 'US',
+            maximumBytesBilled: '10000000000',  // 10 GB scan limit
+          })
+          return rows
+        }
+    metric_explanations:
+      query-latency:
+        reason: Managed services like BigQuery use massively parallel execution engines that scan terabytes in seconds without any cluster provisioning.
+        contributing_factors:
+          - Dremel/Colossus architecture distributes scans across thousands of workers
+          - Columnar storage with automatic caching of hot datasets
+          - No cluster cold-start; serverless compute is always available
+      operational-complexity:
+        reason: Fully managed service handles storage, compute, indexing, and access control with zero infrastructure to operate.
+        contributing_factors:
+          - No clusters, nodes, or instances to provision or patch
+          - Automatic partitioning and clustering optimize query performance
+          - Built-in IAM and column-level security without external tooling
+    data_fit_profile:
+      data-format: "Supports structured and semi-structured (JSON, Avro) with auto-schema detection"
+      ingestion-rate: "Streaming inserts and batch loads both supported with serverless scaling"
+      query-frequency: "Optimized for high-frequency ad-hoc and scheduled queries"
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - batch
+    - request-response
+  typical_latency: 500ms-5min
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.7
+      cost-per-gb: 0.8
+    extreme:
+      query-latency: 0.5
+      cost-per-gb: 0.6
+      operational-complexity: 0.8
+  traffic-volume:
+    high:
+      query-latency: 0.7
+    extreme:
+      query-latency: 0.4
+      storage-scalability: 0.9
+  burst-pattern:
+    periodic-spikes:
+      query-latency: 0.7
+    unpredictable:
+      query-latency: 0.5
+      operational-complexity: 0.8

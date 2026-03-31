@@ -588,14 +588,22 @@ describe("Component YAML files — demand_responses validation", () => {
   const componentDir = join(__dirname, "../../../src/data/components")
   const componentFiles = [
     "cloudflare-cdn.yaml",
+    "data-lake.yaml",
+    "etl-pipeline.yaml",
+    "graph-db.yaml",
     "kafka.yaml",
+    "llm-gateway.yaml",
     "nginx.yaml",
     "node-express.yaml",
+    "payment-gateway.yaml",
     "postgresql.yaml",
     "prometheus.yaml",
     "rabbitmq.yaml",
     "redis-cache.yaml",
     "redis.yaml",
+    "serverless.yaml",
+    "siem.yaml",
+    "vector-db.yaml",
     "websocket-server.yaml",
   ]
 
@@ -616,7 +624,7 @@ describe("Component YAML files — demand_responses validation", () => {
     })
   }
 
-  it("all 10 components define demand_responses for at least 2 variables (AC-1)", () => {
+  it("all 18 components define demand_responses for at least 2 variables (AC-1)", () => {
     for (const filename of componentFiles) {
       const result = parseComponent(filename)
       expect(result.success).toBe(true)

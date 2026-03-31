@@ -277,7 +277,7 @@ development_status:
   # ============================================================================
   epic-11: in-progress
   11-1-component-data-ai-ml-data-engineering: done  # No deps, parallelizable
-  11-2-component-data-specialty-domains: ready-for-dev  # No deps, parallelizable
+  11-2-component-data-specialty-domains: review  # No deps, parallelizable
   11-3-cost-efficiency-metric: drafted  # DEPENDS: 11-1, 11-2
   11-4-demand-failure-response-data: drafted  # DEPENDS: 11-1, 11-2, 9-1, 9-7 (cross-epic)
   11-5-blueprint-architectures: drafted  # DEPENDS: 11-1, 11-2

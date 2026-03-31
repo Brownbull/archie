@@ -1,0 +1,242 @@
+id: siem
+name: SIEM
+category: monitoring
+description: Security information and event management platform for threat detection, investigation, and compliance
+is: A centralized security platform that ingests logs from infrastructure and applications, correlates events using detection rules, and generates alerts for security analysts to investigate and respond
+gain:
+  - Centralized visibility across all infrastructure and application security events
+  - Automated threat detection through correlation rules and behavioral analytics
+  - Compliance audit trail with long-term searchable log retention
+cost:
+  - Ingestion costs scale linearly with log volume, often dominating the security budget
+  - High false-positive rate requires dedicated analyst time for alert triage
+  - Detection rule maintenance is an ongoing effort as threat landscape evolves
+tags:
+  - security
+  - siem
+  - logging
+  - compliance
+  - threat-detection
+base_metrics:
+  - id: alert-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: threat-detection
+    value: high
+    numeric_value: 8
+    category: security
+  - id: log-retention
+    value: high
+    numeric_value: 7
+    category: reliability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: cost-per-gb-ingested
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: on-premise
+    name: On-Premise (ELK/Splunk)
+    metrics:
+      - id: threat-detection
+        value: high
+        numeric_value: 8
+        category: security
+      - id: operational-complexity
+        value: high
+        numeric_value: 8
+        category: operational-complexity
+      - id: cost-per-gb-ingested
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # SIEM - Elasticsearch + Kibana (ELK) on-premise
+        # docker-compose.yml
+        services:
+          elasticsearch:
+            image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+            environment:
+              - discovery.type=single-node
+              - xpack.security.enabled=true
+              - ES_JAVA_OPTS=-Xms4g -Xmx4g
+            ports:
+              - "9200:9200"
+
+          kibana:
+            image: docker.elastic.co/kibana/kibana:8.12.0
+            ports:
+              - "5601:5601"
+            depends_on:
+              - elasticsearch
+
+          filebeat:
+            image: docker.elastic.co/beats/filebeat:8.12.0
+            volumes:
+              - /var/log:/var/log:ro
+    metric_explanations:
+      threat-detection:
+        reason: On-premise SIEM allows full customization of detection rules, correlation logic, and data enrichment pipelines without vendor restrictions.
+        contributing_factors:
+          - Custom detection rules written in KQL or SPL with full regex support
+          - Local enrichment pipelines can integrate threat intel feeds in real time
+          - No vendor-imposed limits on rule complexity or alert volume
+      operational-complexity:
+        reason: Self-hosted SIEM requires managing Elasticsearch clusters, storage capacity planning, index lifecycle policies, and detection rule maintenance.
+        contributing_factors:
+          - Elasticsearch cluster sizing and shard management is a specialized skill
+          - Index lifecycle management needed to control storage costs
+          - Detection rules require continuous tuning to reduce false positives
+    data_fit_profile:
+      log-volume: "Scales with hardware; requires capacity planning for peak ingestion rates"
+      alert-complexity: "Full flexibility for custom correlation rules and multi-stage detection"
+      retention-period: "Limited by local storage capacity; tiering to cold storage extends retention"
+  - id: cloud-native
+    name: Cloud-Native SIEM
+    metrics:
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: alert-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: cost-per-gb-ingested
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // SIEM - Cloud-Native via AWS Security Hub + CloudWatch
+        import {
+          SecurityHubClient,
+          GetFindingsCommand,
+        } from '@aws-sdk/client-securityhub'
+
+        const hub = new SecurityHubClient({ region: process.env.AWS_REGION })
+
+        export async function getActiveFindings(severity: string) {
+          const response = await hub.send(new GetFindingsCommand({
+            Filters: {
+              SeverityLabel: [{ Value: severity, Comparison: 'EQUALS' }],
+              WorkflowStatus: [{ Value: 'NEW', Comparison: 'EQUALS' }],
+            },
+            MaxResults: 100,
+          }))
+          return response.Findings ?? []
+        }
+    metric_explanations:
+      operational-complexity:
+        reason: Cloud-native SIEM eliminates infrastructure management entirely; the provider handles scaling, patching, and availability.
+        contributing_factors:
+          - No clusters or indices to manage; fully serverless ingestion and query
+          - Built-in integrations with cloud provider services (CloudTrail, VPC Flow Logs)
+          - Managed detection rules updated by the provider's threat research team
+      alert-latency:
+        reason: Cloud-native SIEM processes events in near real-time with streaming ingestion pipelines directly connected to cloud service event buses.
+        contributing_factors:
+          - Events flow directly from cloud services without agent collection delay
+          - Serverless processing eliminates queue backlog during burst ingestion
+          - Detection rules evaluate against streaming data, not batch-indexed data
+    data_fit_profile:
+      log-volume: "Auto-scales with ingestion; cost is the primary constraint, not capacity"
+      alert-complexity: "Managed detection rules cover common threats; custom rules have vendor-specific limitations"
+      retention-period: "Long-term retention via integrated cold storage (S3, Azure Blob) at low cost"
+  - id: hybrid
+    name: Hybrid SIEM + SOAR
+    metrics:
+      - id: threat-detection
+        value: high
+        numeric_value: 9
+        category: security
+      - id: operational-complexity
+        value: high
+        numeric_value: 9
+        category: operational-complexity
+      - id: alert-latency
+        value: low
+        numeric_value: 3
+        category: performance
+    code_snippet:
+      language: python
+      code: |
+        # SIEM - Hybrid: on-prem ELK + cloud SOAR (Splunk SOAR pattern)
+        import requests
+
+        import os
+
+        SOAR_URL = os.environ["SOAR_URL"]  # e.g. https://soar.example.com/rest
+        API_TOKEN = os.environ["SOAR_API_TOKEN"]
+
+        def create_incident(alert: dict) -> dict:
+            """Forward SIEM alert to cloud SOAR for automated response."""
+            payload = {
+                "name": alert["rule_name"],
+                "severity": alert["severity"],
+                "artifacts": [
+                    {"cef": {"sourceAddress": alert["src_ip"]}},
+                    {"cef": {"destinationAddress": alert["dst_ip"]}},
+                ],
+            }
+            resp = requests.post(
+                f"{SOAR_URL}/container",
+                json=payload,
+                headers={"ph-auth-token": API_TOKEN},
+                timeout=10,
+            )
+            resp.raise_for_status()
+            return resp.json()
+    metric_explanations:
+      threat-detection:
+        reason: Hybrid combines deep on-premise detection with cloud SOAR automated response, covering both custom correlation and automated remediation.
+        contributing_factors:
+          - On-premise SIEM runs complex multi-stage correlation rules
+          - Cloud SOAR automates containment playbooks (block IP, disable user)
+          - Threat intel enrichment happens at both layers for defense in depth
+      operational-complexity:
+        reason: Operating two security platforms (on-premise SIEM plus cloud SOAR) with bidirectional integration is the most operationally demanding SIEM configuration.
+        contributing_factors:
+          - Two separate platforms to maintain, patch, and monitor
+          - Bidirectional API integration requires careful authentication and error handling
+          - Playbook maintenance spans both detection rules and response automation
+    data_fit_profile:
+      log-volume: "On-premise handles high-volume raw ingestion; SOAR processes only escalated alerts"
+      alert-complexity: "Most powerful setup for complex multi-stage detection with automated response"
+      retention-period: "On-premise for short-term hot data; cloud SOAR archives incident history long-term"
+connection_properties:
+  protocol: TCP/Syslog
+  communication_patterns:
+    - push-based
+    - streaming
+  typical_latency: 1-30s
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      alert-latency: 0.7
+      cost-per-gb-ingested: 0.7
+    extreme:
+      alert-latency: 0.5
+      cost-per-gb-ingested: 0.4
+      operational-complexity: 0.8
+  traffic-volume:
+    high:
+      alert-latency: 0.7
+    extreme:
+      alert-latency: 0.4
+      threat-detection: 0.8
+  burst-pattern:
+    periodic-spikes:
+      alert-latency: 0.6
+      cost-per-gb-ingested: 0.7
+    unpredictable:
+      alert-latency: 0.4
+      cost-per-gb-ingested: 0.5

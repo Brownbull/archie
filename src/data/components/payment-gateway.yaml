@@ -1,0 +1,223 @@
+id: payment-gateway
+name: Payment Gateway
+category: compute
+description: Transaction processing layer that routes payments through one or more payment service providers
+is: A middleware service that accepts payment requests, applies fraud checks, routes to the appropriate PSP (Stripe, Adyen, PayPal), and handles settlement reconciliation
+gain:
+  - Unified API across multiple payment service providers
+  - Built-in fraud detection and PCI-DSS compliance abstraction
+  - Automatic retry and failover between providers on decline or outage
+cost:
+  - Added latency on every transaction from proxy hop and fraud checks
+  - PCI-DSS compliance scope expands with each integration point
+  - Settlement reconciliation complexity grows with multi-provider setups
+tags:
+  - payment
+  - fintech
+  - transactions
+  - compliance
+  - gateway
+base_metrics:
+  - id: transaction-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: payment-availability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: pci-compliance
+    value: high
+    numeric_value: 8
+    category: security
+  - id: operational-complexity
+    value: medium
+    numeric_value: 6
+    category: operational-complexity
+config_variants:
+  - id: direct-integration
+    name: Direct PSP Integration
+    metrics:
+      - id: transaction-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: payment-availability
+        value: medium
+        numeric_value: 6
+        category: reliability
+    code_snippet:
+      language: typescript
+      code: |
+        // Payment Gateway - Direct Stripe Integration
+        import Stripe from 'stripe'
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+        export async function createPayment(amount: number, currency: string) {
+          const intent = await stripe.paymentIntents.create({
+            amount,
+            currency,
+            automatic_payment_methods: { enabled: true },
+          })
+          return { clientSecret: intent.client_secret, id: intent.id }
+        }
+    metric_explanations:
+      transaction-latency:
+        reason: Single PSP integration eliminates routing decision overhead and reduces the network path to one provider endpoint.
+        contributing_factors:
+          - No multi-provider routing logic to evaluate per request
+          - Direct API call to Stripe with connection pooling
+          - Fraud checks handled by the PSP itself rather than a separate layer
+      operational-complexity:
+        reason: One provider means one dashboard, one set of credentials, and one webhook integration to maintain.
+        contributing_factors:
+          - Single API key and webhook secret to manage
+          - Settlement reconciliation against one provider ledger
+          - No fallback routing rules to configure or debug
+    data_fit_profile:
+      transaction-volume: "Handles moderate volume; limited by single provider rate limits"
+      compliance-level: "PCI compliance delegated entirely to PSP via hosted checkout"
+      payment-method: "Supports cards and digital wallets through Stripe's built-in methods"
+  - id: payment-orchestrator
+    name: Payment Orchestrator
+    metrics:
+      - id: payment-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: operational-complexity
+        value: high
+        numeric_value: 7
+        category: operational-complexity
+      - id: pci-compliance
+        value: high
+        numeric_value: 9
+        category: security
+    code_snippet:
+      language: typescript
+      code: |
+        // Payment Gateway - Multi-PSP Orchestrator
+        import Stripe from 'stripe'
+
+        const stripe = new Stripe(process.env.STRIPE_KEY!)
+
+        type ChargeResult = { id: string; status: string }
+        type PSP = { charge: (amt: number, cur: string) => Promise<ChargeResult> }
+
+        const providers: PSP[] = [
+          { charge: (amt, cur) => stripe.paymentIntents.create({
+              amount: amt, currency: cur,
+              automatic_payment_methods: { enabled: true },
+            }).then(pi => ({ id: pi.id, status: pi.status }))
+          },
+          // Add secondary PSP (Adyen, Braintree) via their own SDK
+        ]
+
+        export async function processPayment(amount: number, currency: string) {
+          for (const psp of providers) {
+            try {
+              return await psp.charge(amount, currency)
+            } catch { /* try next provider */ }
+          }
+          throw new Error('All payment providers failed')
+        }
+    metric_explanations:
+      payment-availability:
+        reason: Multiple PSPs provide automatic failover so a single provider outage does not block transactions.
+        contributing_factors:
+          - Primary provider failure triggers automatic fallback to secondary PSP
+          - Health checks detect degraded providers before user-facing impact
+          - Regional routing directs traffic to the nearest healthy provider
+      operational-complexity:
+        reason: Orchestrating multiple PSPs requires managing separate credentials, webhook endpoints, and settlement reconciliation per provider.
+        contributing_factors:
+          - Each PSP has its own API version, error codes, and retry semantics
+          - Webhook deduplication across providers is non-trivial
+          - Settlement reports must be merged across provider ledgers for accounting
+    data_fit_profile:
+      transaction-volume: "High throughput via load distribution across multiple PSPs"
+      compliance-level: "PCI scope increases with each additional PSP integration point"
+      payment-method: "Broadest method coverage by routing to the PSP that supports each method"
+  - id: recurring-billing
+    name: Recurring Billing Engine
+    metrics:
+      - id: transaction-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: payment-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-transaction
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Payment Gateway - Recurring Billing via Stripe Subscriptions
+        import Stripe from 'stripe'
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+        export async function createSubscription(
+          customerId: string,
+          priceId: string
+        ) {
+          const subscription = await stripe.subscriptions.create({
+            customer: customerId,
+            items: [{ price: priceId }],
+            payment_behavior: 'default_incomplete',
+            expand: ['latest_invoice.payment_intent'],
+          })
+          return subscription
+        }
+    metric_explanations:
+      cost-per-transaction:
+        reason: Recurring billing amortizes payment processing overhead across predictable monthly charges rather than per-transaction spikes.
+        contributing_factors:
+          - Subscription billing batches invoices reducing per-transaction API calls
+          - Stored payment methods eliminate re-authorization overhead
+          - Dunning automation recovers failed payments without manual intervention
+    data_fit_profile:
+      transaction-volume: "Optimized for predictable recurring charges, not high-frequency one-off payments"
+      compliance-level: "Stored card tokens require SAQ-D or delegated tokenization to the PSP"
+      payment-method: "Primarily card-based; digital wallet support varies by subscription platform"
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+    - webhook
+  typical_latency: 200-2000ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      transaction-latency: 0.7
+      payment-availability: 0.9
+    extreme:
+      transaction-latency: 0.5
+      payment-availability: 0.7
+  concurrent-users:
+    high:
+      transaction-latency: 0.7
+    extreme:
+      transaction-latency: 0.4
+      payment-availability: 0.8
+  burst-pattern:
+    periodic-spikes:
+      transaction-latency: 0.6
+      payment-availability: 0.8
+    unpredictable:
+      transaction-latency: 0.4
+      payment-availability: 0.7
