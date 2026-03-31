@@ -237,3 +237,16 @@ demand_responses:
     extreme:
       traversal-latency: 0.4
       data-durability: 0.9
+failure_responses:
+  failure-single-node:
+    data-durability: 0.4
+    traversal-latency: 0.5
+  failure-database:
+    data-durability: 0.3
+    traversal-latency: 0.4
+  failure-network-partition:
+    traversal-latency: 0.4
+    horizontal-scalability: 0.5
+  failure-data-corruption:
+    data-durability: 0.3
+    traversal-latency: 0.6

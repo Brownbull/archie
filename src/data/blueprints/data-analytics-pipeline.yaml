@@ -1,0 +1,54 @@
+id: data-analytics-pipeline
+name: "Data Analytics Pipeline"
+description: "Batch-and-stream hybrid analytics architecture. An ETL pipeline ingests raw data into a lakehouse for schema-on-read flexibility. PostgreSQL serves as the curated query layer for BI tools. Prometheus monitors pipeline health and data freshness. Trades ingestion latency and operational complexity for flexible ad-hoc querying and unified batch-plus-streaming data access."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "Data Analytics Pipeline"
+  nodes:
+    - id: dap-etl
+      component_id: etl-pipeline
+      config_variant_id: micro-batch
+      position:
+        x: 0
+        y: 250
+    - id: dap-lake
+      component_id: data-lake
+      config_variant_id: lakehouse
+      position:
+        x: 350
+        y: 250
+    - id: dap-db
+      component_id: postgresql
+      config_variant_id: primary-replica
+      position:
+        x: 700
+        y: 100
+    - id: dap-prom
+      component_id: prometheus
+      config_variant_id: federated
+      position:
+        x: 700
+        y: 400
+    - id: dap-app
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 1050
+        y: 250
+  edges:
+    - id: dap-edge-etl-lake
+      source_node_id: dap-etl
+      target_node_id: dap-lake
+    - id: dap-edge-lake-db
+      source_node_id: dap-lake
+      target_node_id: dap-db
+    - id: dap-edge-lake-prom
+      source_node_id: dap-lake
+      target_node_id: dap-prom
+    - id: dap-edge-db-app
+      source_node_id: dap-db
+      target_node_id: dap-app
+    - id: dap-edge-prom-app
+      source_node_id: dap-prom
+      target_node_id: dap-app

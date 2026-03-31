@@ -110,6 +110,7 @@ export const recalculationService = {
     changedNodeId: string,
     demandProfile?: DemandProfile | null,
     failureModifiers?: FailureModifiers | null,
+    activeFailurePresetId?: string | null,
   ): RecalculationResult {
     // Build lookup maps
     const nodeMap = new Map<string, ServiceNode>(nodes.map((n) => [n.id, n]))
@@ -180,9 +181,13 @@ export const recalculationService = {
         }
       }
 
-      // Story 9-7: Apply failure modifiers after demand (Level 4)
+      // Story 9-7 + 11-4: Apply failure modifiers after demand (Level 4)
+      // Per-component failure responses override global preset when available
       if (failureModifiers) {
-        const failureAdjusted = applyFailureModifiers(recalculated.metrics, failureModifiers)
+        const component = componentLibrary.getComponent(node?.data.archieComponentId ?? "")
+        const componentFailure = activeFailurePresetId ? component?.failureResponses?.[activeFailurePresetId] : undefined
+        const effectiveModifiers = componentFailure ?? failureModifiers
+        const failureAdjusted = applyFailureModifiers(recalculated.metrics, effectiveModifiers)
         recalculated.metrics = failureAdjusted
         if (failureAdjusted.length > 0) {
           recalculated.overallScore = failureAdjusted.reduce((sum, m) => sum + m.numericValue, 0) / failureAdjusted.length

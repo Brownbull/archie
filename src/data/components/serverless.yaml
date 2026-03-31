@@ -209,3 +209,13 @@ demand_responses:
       cold-start-latency: 0.7
     extreme:
       cold-start-latency: 0.4
+failure_responses:
+  failure-traffic-spike:
+    cold-start-latency: 0.3
+    cost-per-invocation: 0.4
+  failure-region-outage:
+    auto-scaling: 0.3
+    cold-start-latency: 0.4
+  failure-network-partition:
+    cold-start-latency: 0.5
+    auto-scaling: 0.6

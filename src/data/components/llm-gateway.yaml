@@ -217,3 +217,16 @@ demand_responses:
     unpredictable:
       inference-latency: 0.5
       model-availability: 0.7
+failure_responses:
+  failure-single-node:
+    model-availability: 0.5
+    operational-complexity: 0.7
+  failure-network-partition:
+    inference-latency: 0.3
+    model-availability: 0.4
+  failure-traffic-spike:
+    inference-latency: 0.4
+    cost-per-inference: 0.3
+  failure-region-outage:
+    model-availability: 0.3
+    inference-latency: 0.4

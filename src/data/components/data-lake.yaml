@@ -216,3 +216,13 @@ demand_responses:
     unpredictable:
       query-latency: 0.5
       operational-complexity: 0.8
+failure_responses:
+  failure-data-corruption:
+    data-durability: 0.3
+    storage-scalability: 0.6
+  failure-region-outage:
+    data-durability: 0.4
+    query-latency: 0.4
+  failure-database:
+    query-latency: 0.5
+    data-durability: 0.5

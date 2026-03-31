@@ -241,3 +241,16 @@ demand_responses:
     unpredictable:
       processing-throughput: 0.5
       operational-complexity: 0.8
+failure_responses:
+  failure-data-corruption:
+    data-quality: 0.3
+    processing-throughput: 0.5
+  failure-database:
+    processing-throughput: 0.4
+    data-quality: 0.5
+  failure-single-node:
+    processing-throughput: 0.5
+    operational-complexity: 0.7
+  failure-network-partition:
+    processing-throughput: 0.4
+    data-quality: 0.6

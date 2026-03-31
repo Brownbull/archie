@@ -1,0 +1,54 @@
+id: ai-agent-orchestration
+name: "AI Agent Orchestration"
+description: "Multi-model AI agent pipeline with retrieval-augmented generation. RabbitMQ dispatches agent tasks asynchronously to an LLM gateway that routes across models by cost and capability. Vector DB provides semantic memory retrieval for context injection. Redis caches embeddings and inference results. Trades inference cost and cold-start latency for flexible model selection and reliable task queuing."
+tier: 3
+skeleton:
+  schema_version: "2.0.0"
+  name: "AI Agent Orchestration"
+  nodes:
+    - id: aao-app
+      component_id: node-express
+      config_variant_id: single-process
+      position:
+        x: 0
+        y: 250
+    - id: aao-queue
+      component_id: rabbitmq
+      config_variant_id: clustered
+      position:
+        x: 350
+        y: 250
+    - id: aao-llm
+      component_id: llm-gateway
+      config_variant_id: multi-model-router
+      position:
+        x: 700
+        y: 100
+    - id: aao-vdb
+      component_id: vector-db
+      config_variant_id: managed-cloud
+      position:
+        x: 700
+        y: 400
+    - id: aao-cache
+      component_id: redis
+      config_variant_id: sentinel
+      position:
+        x: 1050
+        y: 250
+  edges:
+    - id: aao-edge-app-queue
+      source_node_id: aao-app
+      target_node_id: aao-queue
+    - id: aao-edge-queue-llm
+      source_node_id: aao-queue
+      target_node_id: aao-llm
+    - id: aao-edge-queue-vdb
+      source_node_id: aao-queue
+      target_node_id: aao-vdb
+    - id: aao-edge-llm-cache
+      source_node_id: aao-llm
+      target_node_id: aao-cache
+    - id: aao-edge-vdb-cache
+      source_node_id: aao-vdb
+      target_node_id: aao-cache

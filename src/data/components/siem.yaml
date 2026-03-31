@@ -240,3 +240,16 @@ demand_responses:
     unpredictable:
       alert-latency: 0.4
       cost-per-gb-ingested: 0.5
+failure_responses:
+  failure-traffic-spike:
+    alert-latency: 0.3
+    threat-detection: 0.6
+  failure-network-partition:
+    alert-latency: 0.4
+    threat-detection: 0.5
+  failure-single-node:
+    data-durability: 0.5
+    operational-complexity: 0.7
+  failure-data-corruption:
+    data-durability: 0.3
+    threat-detection: 0.5

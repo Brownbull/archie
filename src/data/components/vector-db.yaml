@@ -213,3 +213,16 @@ demand_responses:
       query-latency: 0.8
     extreme:
       query-latency: 0.5
+failure_responses:
+  failure-single-node:
+    data-durability: 0.5
+    horizontal-scalability: 0.4
+  failure-network-partition:
+    query-latency: 0.4
+    horizontal-scalability: 0.5
+  failure-database:
+    data-durability: 0.3
+    query-latency: 0.4
+  failure-data-corruption:
+    data-durability: 0.3
+    query-latency: 0.5

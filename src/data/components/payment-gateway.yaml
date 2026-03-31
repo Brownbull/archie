@@ -227,3 +227,16 @@ demand_responses:
     unpredictable:
       transaction-latency: 0.4
       payment-availability: 0.7
+failure_responses:
+  failure-traffic-spike:
+    transaction-latency: 0.4
+    payment-availability: 0.5
+  failure-single-node:
+    payment-availability: 0.5
+    operational-complexity: 0.7
+  failure-network-partition:
+    payment-availability: 0.3
+    transaction-latency: 0.4
+  failure-data-corruption:
+    pci-compliance: 0.4
+    payment-availability: 0.6

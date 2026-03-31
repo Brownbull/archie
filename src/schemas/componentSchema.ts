@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { MetricValueSchema, MetricValueYamlSchema } from "@/schemas/metricSchema"
-import { DemandResponseSchema } from "@/schemas/demandSchema"
+import { DemandResponseSchema, FailureResponseSchema } from "@/schemas/demandSchema"
 
 export const MAX_REASON_LENGTH = 500
 export const MAX_FACTOR_LENGTH = 200
@@ -61,6 +61,7 @@ export const ComponentSchema = z.object({
   compatibility: z.record(z.string(), z.string()).optional(),
   connectionProperties: ConnectionPropertiesSchema.optional(),
   demandResponses: DemandResponseSchema.optional(),
+  failureResponses: FailureResponseSchema.optional(),
 }).strict()
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
@@ -106,6 +107,7 @@ export const ComponentYamlSchema = z.object({
   compatibility: z.record(z.string(), z.string()).optional(),
   connection_properties: ConnectionPropertiesYamlSchema.optional(),
   demand_responses: DemandResponseSchema.optional(),
+  failure_responses: FailureResponseSchema.optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -120,6 +122,7 @@ export const ComponentYamlSchema = z.object({
   compatibility: data.compatibility,
   connectionProperties: data.connection_properties,
   demandResponses: data.demand_responses,
+  failureResponses: data.failure_responses,
 }))
 
 export type Component = z.infer<typeof ComponentSchema>
