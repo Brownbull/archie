@@ -290,13 +290,10 @@
 - **Stage:** PROD — defense-in-depth for exported artifacts rendered in external markdown viewers
 - **Estimated effort:** Medium (design mdText sanitizer, apply to all non-table interpolation points, add tests)
 
-### [PROD] E2E gap: export-report-button not covered in E2E specs
+### ~~[PROD] E2E gap: export-report-button not covered in E2E specs~~ RESOLVED
 
 - **Source:** 10-4 self-review (2026-03-30)
-- **Finding:** `export-report-button` data-testid exists but no E2E test exercises the export flow. This is the first artifact that leaves the tool — stakeholders reading the report have no in-app context. AC-8 (provenance footer) and AC-1 (3+ component gate) should be verified in E2E. V5 applies: data leaving the tool is a critical execution proof path.
-- **Files:** `tests/e2e/` (new spec or extend existing)
-- **Stage:** PROD — V5 execution proof for export-critical path; feature works correctly via unit tests
-- **Estimated effort:** Medium (E2E needs store setup with 3+ components, click export, verify download triggered)
+- **Resolved:** 10-4 code review (2026-03-30) — `tests/e2e/export-report.spec.ts` added with 4 tests: button gating (AC-1), download+provenance (AC-7/AC-8/V2/V5), content verification (AC-2/AC-3/V1/V6), scenario impact (AC-5/V3). All pass.
 
 ## SCALE Backlog
 
