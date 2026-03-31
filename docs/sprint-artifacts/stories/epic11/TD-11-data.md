@@ -64,6 +64,9 @@ Then every `category` field references an ID that exists in `COMPONENT_CATEGORIE
   - [ ] 1.4 `test.each`: each component has 2+ config_variants
   - [ ] 1.5 `test.each`: each component has cost-efficiency metric
   - [ ] 1.6 `test.each`: each component's category exists in COMPONENT_CATEGORIES
+  - [ ] 1.7 `test.each`: each variant has metric_explanations with 2+ entries (reason + contributing_factors) [V6 — from 11-1 review]
+  - [ ] 1.8 `test.each`: each variant has a non-empty code_snippet [V6 — from 11-1 review]
+  - [ ] 1.9 `test.each`: variant metrics differ from each other for at least one metric (distinctness) [V6 — from 11-1 review]
 
 - [ ] Task 2: Blueprint YAML validation tests
   - [ ] 2.1 Load all `*.yaml` files from `src/data/blueprints/`

@@ -1,0 +1,243 @@
+id: etl-pipeline
+name: ETL Pipeline
+category: compute
+description: Data extraction, transformation, and loading pipeline for batch and streaming workloads
+is: An orchestrated data processing system that extracts data from sources, applies transformations, and loads results into target stores on a schedule or in real time
+gain:
+  - Automated data transformation with built-in quality checks and validation
+  - Scheduling and dependency management across complex data workflows
+  - Idempotent runs with retry and backfill capabilities for failed jobs
+cost:
+  - Resource-intensive compute during transformation phases
+  - Orchestration complexity grows quadratically with pipeline dependencies
+  - Debugging failed transformations across distributed stages is time-consuming
+tags:
+  - etl
+  - data-engineering
+  - pipeline
+  - batch
+  - transformation
+base_metrics:
+  - id: processing-throughput
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: data-quality
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: cost-per-run
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: batch
+    name: Batch Processing
+    metrics:
+      - id: processing-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 6
+        category: operational-complexity
+    code_snippet:
+      language: typescript
+      code: |
+        // ETL Pipeline - Batch via Airflow-style DAG (Node.js orchestrator)
+        interface PipelineStep {
+          name: string
+          run: () => Promise<void>
+          dependsOn?: string[]
+        }
+
+        const steps: PipelineStep[] = [
+          {
+            name: 'extract',
+            run: async () => {
+              const raw = await fetchSource(process.env.SOURCE_URL ?? 'http://localhost:8080/source')
+              await writeStaging('raw_data', raw)
+            },
+          },
+          {
+            name: 'transform',
+            dependsOn: ['extract'],
+            run: async () => {
+              const raw = await readStaging('raw_data')
+              const cleaned = raw.filter(validate).map(normalize)
+              await writeStaging('clean_data', cleaned)
+            },
+          },
+          {
+            name: 'load',
+            dependsOn: ['transform'],
+            run: async () => {
+              const data = await readStaging('clean_data')
+              await bulkInsert(process.env.TARGET_DB!, data)
+            },
+          },
+        ]
+    metric_explanations:
+      processing-throughput:
+        reason: Batch ETL processes large datasets in bulk during off-peak windows, maximizing throughput by reading and writing in large sequential blocks.
+        contributing_factors:
+          - Sequential bulk reads avoid random I/O overhead
+          - Full dataset available for sort-merge and hash-join optimizations
+          - Compute resources dedicated entirely to the batch window
+      operational-complexity:
+        reason: Batch pipelines have clear scheduling boundaries and deterministic retry semantics, making failures easier to isolate and re-run than streaming alternatives.
+        contributing_factors:
+          - Scheduled runs have clear start/end boundaries for monitoring
+          - Failed stages can be individually re-run with backfill
+          - No state management between runs simplifies debugging
+    data_fit_profile:
+      data-volume: "Handles terabytes per run with bulk read/write optimization"
+      transformation-complexity: "Supports complex multi-stage joins and aggregations"
+      schedule-pattern: "Designed for hourly, daily, or weekly scheduled runs"
+  - id: micro-batch
+    name: Micro-Batch
+    metrics:
+      - id: processing-throughput
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: operational-complexity
+        value: high
+        numeric_value: 7
+        category: operational-complexity
+    code_snippet:
+      language: typescript
+      code: |
+        // ETL Pipeline - Micro-Batch via Spark Structured Streaming pattern
+        interface MicroBatch {
+          interval: number
+          process: (batch: unknown[]) => Promise<void>
+        }
+
+        const pipeline: MicroBatch = {
+          interval: 30_000, // 30-second micro-batches
+          process: async (batch) => {
+            const validated = batch.filter(isValid)
+            const transformed = validated.map(applyTransforms)
+            await writeBatch(process.env.TARGET_DB!, transformed)
+          },
+        }
+
+        // Micro-batch loop
+        setInterval(async () => {
+          const batch = await pollSource(pipeline.interval)
+          if (batch.length > 0) await pipeline.process(batch)
+        }, pipeline.interval)
+    metric_explanations:
+      processing-throughput:
+        reason: Micro-batch collects events into small time windows (10-60 seconds) before processing, trading some latency for batch-level optimization within each window.
+        contributing_factors:
+          - Small batches enable near-real-time but sacrifice full-batch throughput
+          - Window-based aggregation is more efficient than per-event processing
+          - Checkpoint intervals affect both throughput and recovery time
+      operational-complexity:
+        reason: Micro-batch adds windowing, checkpointing, and watermark management on top of batch semantics, requiring continuous monitoring of lag and throughput.
+        contributing_factors:
+          - Checkpoint state must be durable and recoverable after failures
+          - Late-arriving data handling requires watermark configuration
+          - Lag monitoring needs alerting when batches fall behind ingestion rate
+    data_fit_profile:
+      data-volume: "Handles moderate continuous data flow in small time windows"
+      transformation-complexity: "Supports windowed aggregations and streaming joins"
+      schedule-pattern: "Continuous processing with 10-60 second micro-batch intervals"
+  - id: streaming
+    name: Real-Time Streaming
+    metrics:
+      - id: processing-throughput
+        value: medium
+        numeric_value: 7
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: operational-complexity
+        value: high
+        numeric_value: 8
+        category: operational-complexity
+    code_snippet:
+      language: typescript
+      code: |
+        // ETL Pipeline - Real-Time Streaming via event-driven transform
+        import { Kafka } from 'kafkajs'
+
+        const kafka = new Kafka({
+          brokers: [process.env.KAFKA_BROKER ?? 'localhost:9092'],
+        })
+
+        const consumer = kafka.consumer({ groupId: 'etl-transform' })
+        const producer = kafka.producer()
+
+        await consumer.connect()
+        await producer.connect()
+        await consumer.subscribe({ topic: 'raw-events' })
+
+        await consumer.run({
+          eachMessage: async ({ message }) => {
+            const event = JSON.parse(message.value?.toString() ?? '{}')
+            const transformed = applyTransforms(event)
+            await producer.send({
+              topic: 'clean-events',
+              messages: [{ value: JSON.stringify(transformed) }],
+            })
+          },
+        })
+    metric_explanations:
+      horizontal-scalability:
+        reason: Streaming ETL scales horizontally by adding consumer instances that each process a partition of the input stream in parallel.
+        contributing_factors:
+          - Kafka partitions distribute load across consumer group members
+          - Adding consumers increases processing throughput linearly
+          - Stateless transforms scale independently from stateful aggregations
+      operational-complexity:
+        reason: Real-time streaming requires managing consumer offsets, exactly-once semantics, backpressure, and continuous health monitoring with no natural batch boundaries.
+        contributing_factors:
+          - Consumer offset management determines data loss vs duplication trade-off
+          - Exactly-once delivery requires transactional producer/consumer coordination
+          - No natural end boundary makes progress tracking and debugging harder
+    data_fit_profile:
+      data-volume: "Handles continuous high-throughput event streams"
+      transformation-complexity: "Best for stateless per-event transforms; complex joins need careful state management"
+      schedule-pattern: "Continuous real-time processing with sub-second latency"
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - batch
+    - streaming
+  typical_latency: 100ms-hours
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      processing-throughput: 0.7
+      cost-per-run: 0.7
+    extreme:
+      processing-throughput: 0.5
+      operational-complexity: 0.8
+      cost-per-run: 0.5
+  traffic-volume:
+    high:
+      processing-throughput: 0.8
+    extreme:
+      processing-throughput: 0.5
+      horizontal-scalability: 0.7
+  burst-pattern:
+    periodic-spikes:
+      processing-throughput: 0.7
+    unpredictable:
+      processing-throughput: 0.5
+      operational-complexity: 0.8

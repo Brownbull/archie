@@ -263,7 +263,7 @@ development_status:
   # User sees inline metrics on cards, loads more blueprints, exports reports
   # FRs: FR86-FR88, FR93, FR94 | NFRs: NFR25
   # ============================================================================
-  epic-10: in-progress
+  epic-10: done
   10-1-inline-canvas-metrics: done  # Extended with FR93 badge verification
   10-2-blueprint-expansion: done
   10-3-e2e-canvas-metrics-and-blueprints: done  # DEPENDS: 10-1, 10-2
@@ -276,7 +276,7 @@ development_status:
   # FRs: FR95-FR99 | NFRs: NFR26
   # ============================================================================
   epic-11: in-progress
-  11-1-component-data-ai-ml-data-engineering: ready-for-dev  # No deps, parallelizable
+  11-1-component-data-ai-ml-data-engineering: done  # No deps, parallelizable
   11-2-component-data-specialty-domains: ready-for-dev  # No deps, parallelizable
   11-3-cost-efficiency-metric: drafted  # DEPENDS: 11-1, 11-2
   11-4-demand-failure-response-data: drafted  # DEPENDS: 11-1, 11-2, 9-1, 9-7 (cross-epic)

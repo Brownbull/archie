@@ -295,6 +295,22 @@
 - **Source:** 10-4 self-review (2026-03-30)
 - **Resolved:** 10-4 code review (2026-03-30) — `tests/e2e/export-report.spec.ts` added with 4 tests: button gating (AC-1), download+provenance (AC-7/AC-8/V2/V5), content verification (AC-2/AC-3/V1/V6), scenario impact (AC-5/V3). All pass.
 
+### [PROD] Missing geographic-spread demand variable on AI/ML + Data Eng components
+
+- **Source:** 11-1 review (2026-03-30)
+- **Finding:** All 4 new components (llm-gateway, vector-db, serverless, etl-pipeline) lack `geographic-spread` demand responses. This variable is meaningful for LLM Gateway (multi-region inference routing) and Serverless (edge-function variant explicitly targets global distribution). Omission is not a schema violation but misses a directionally informative signal.
+- **Files:** `src/data/components/llm-gateway.yaml`, `src/data/components/vector-db.yaml`, `src/data/components/serverless.yaml`, `src/data/components/etl-pipeline.yaml`
+- **Stage:** PROD — data completeness for demand simulation accuracy, not feature-blocking
+- **Estimated effort:** Small (add geographic-spread entries to 4 YAML files, 2 levels each)
+
+### [PROD] No comparative degradation tests for Epic 11 components
+
+- **Source:** 11-1 review (2026-03-30)
+- **Finding:** Existing components have cross-component comparative degradation tests (redis-cache vs redis, nginx vs node-express, kafka vs rabbitmq). The 4 new components get no analogous treatment. Directionally meaningful comparisons: vector-db single-node vs distributed under data-size:extreme, serverless cold-start vs provisioned-concurrency under burst-pattern, etl-pipeline batch vs streaming under data-size:extreme.
+- **Files:** `tests/unit/schemas/componentSchema.test.ts`
+- **Stage:** PROD — test semantic depth for demand response accuracy, not feature-blocking
+- **Estimated effort:** Small (3-4 comparative test cases following existing pattern)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
