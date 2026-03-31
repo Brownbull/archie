@@ -133,3 +133,25 @@ connection_properties:
     - streaming
   typical_latency: 5-20ms
   co_location_potential: false
+demand_responses:
+  traffic-volume:
+    extreme:
+      message-throughput: 0.9
+  data-size:
+    high:
+      operational-complexity: 0.8
+    extreme:
+      message-durability: 0.7
+      operational-complexity: 0.7
+  geographic-spread:
+    multi-region:
+      message-durability: 0.8
+      operational-complexity: 0.8
+    global:
+      message-durability: 0.6
+      operational-complexity: 0.7
+  burst-pattern:
+    periodic-spikes:
+      message-throughput: 0.8
+    unpredictable:
+      message-throughput: 0.7

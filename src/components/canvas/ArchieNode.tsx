@@ -7,6 +7,9 @@ import { useUiStore } from "@/stores/uiStore"
 import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
+import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
+import { useTopMetrics } from "@/hooks/useTopMetrics"
+import { componentLibrary } from "@/services/componentLibrary"
 
 function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const category = COMPONENT_CATEGORIES[data.componentCategory as ComponentCategoryId]
@@ -32,6 +35,14 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       .map((v) => constraintMap.get(v.constraintId)?.label ?? `${v.categoryId} constraint`)
       .join(", ")
   }, [nodeViolations, constraints])
+
+  // Inline metrics: top 2 by weight (Story 10-1)
+  const topMetrics = useTopMetrics(id)
+  // Variant name sourced from static component library (bundled YAML, not user-controlled)
+  const variantName = useMemo(() => {
+    const comp = componentLibrary.getComponent(data.archieComponentId)
+    return comp?.configVariants.find((v) => v.id === data.activeConfigVariantId)?.name ?? null
+  }, [data.archieComponentId, data.activeConfigVariantId])
 
   // Box-shadow glow for heatmap (AC-ARCH-PATTERN-6) — separate from category stripe
   const boxShadow =
@@ -72,6 +83,25 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
           {data.componentName}
         </span>
       </div>
+
+      {variantName && (
+        <div data-testid="archie-node-variant" className="px-3 pb-0.5 text-[10px] text-text-secondary truncate">
+          {variantName}
+        </div>
+      )}
+
+      {topMetrics.length > 0 && (
+        <div className="pb-1.5">
+          {topMetrics.map((m) => (
+            <InlineMetricBar
+              key={m.categoryId}
+              abbreviation={m.shortName}
+              value={m.value}
+              color={m.color}
+            />
+          ))}
+        </div>
+      )}
 
       <Handle
         type="target"

@@ -1,0 +1,10 @@
+id: traffic-peak
+name: Traffic Peak
+description: "Extreme traffic surge with periodic spikes. Tests how your architecture handles sudden, massive load increases."
+icon: TrendingUp
+demand_profile:
+  traffic-volume: extreme
+  concurrent-users: high
+  burst-pattern: periodic-spikes
+  data-size: medium
+  geographic-spread: single-region

@@ -47,6 +47,23 @@ interface RawSuggestion extends PathwaySuggestion {
 // --- Private Helpers ---
 
 /**
+ * Groups MetricValue entries by category and computes per-category sum and count.
+ * Shared accumulation used by both weighted scoring and constraint safety checks (Story 9-0).
+ */
+function groupMetricsByCategory(
+  metrics: { category: string; numericValue: number }[],
+): Map<string, { sum: number; count: number }> {
+  const categorySums = new Map<string, { sum: number; count: number }>()
+  for (const metric of metrics) {
+    const entry = categorySums.get(metric.category) ?? { sum: 0, count: 0 }
+    entry.sum += metric.numericValue
+    entry.count++
+    categorySums.set(metric.category, entry)
+  }
+  return categorySums
+}
+
+/**
  * Computes a weighted aggregate score for a component using its default variant metrics.
  * Formula matches computeWeightedAggregateScore in dashboardCalculator.ts:
  * sum(categoryAvg * weight) / sum(weights) for categories with data.
@@ -58,14 +75,7 @@ function computeCandidateWeightedScore(
   const defaultVariant = component.configVariants[0]
   if (!defaultVariant || defaultVariant.metrics.length === 0) return 0
 
-  // Group metrics by category and compute per-category average
-  const categorySums = new Map<string, { sum: number; count: number }>()
-  for (const metric of defaultVariant.metrics) {
-    const entry = categorySums.get(metric.category) ?? { sum: 0, count: 0 }
-    entry.sum += metric.numericValue
-    entry.count++
-    categorySums.set(metric.category, entry)
-  }
+  const categorySums = groupMetricsByCategory(defaultVariant.metrics)
 
   let weightedSum = 0
   let totalWeight = 0
@@ -93,16 +103,10 @@ function checkConstraintSafety(
   const defaultVariant = component.configVariants[0]
   if (!defaultVariant) return { safe: true }
 
-  // Group metrics by category and compute averages
+  // Group metrics by category and compute averages (shared helper, Story 9-0)
+  const categorySums = groupMetricsByCategory(defaultVariant.metrics)
   const categoryAvgs = new Map<string, number>()
-  const categoryCounts = new Map<string, { sum: number; count: number }>()
-  for (const metric of defaultVariant.metrics) {
-    const entry = categoryCounts.get(metric.category) ?? { sum: 0, count: 0 }
-    entry.sum += metric.numericValue
-    entry.count++
-    categoryCounts.set(metric.category, entry)
-  }
-  for (const [catId, { sum, count }] of categoryCounts) {
+  for (const [catId, { sum, count }] of categorySums) {
     categoryAvgs.set(catId, sum / count)
   }
 

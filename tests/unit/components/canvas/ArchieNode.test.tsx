@@ -4,6 +4,7 @@ import { ArchieNode } from "@/components/canvas/ArchieNode"
 import { HEATMAP_COLORS, NODE_WIDTH, type Constraint } from "@/lib/constants"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
+import type { TopMetric } from "@/hooks/useTopMetrics"
 
 vi.mock("@xyflow/react", () => ({
   Handle: ({ type, position, ...props }: Record<string, unknown>) => (
@@ -15,6 +16,18 @@ vi.mock("@xyflow/react", () => ({
 vi.mock("@/lib/firebase", () => ({
   auth: { currentUser: null },
   db: {},
+}))
+
+let mockTopMetrics: TopMetric[] = []
+vi.mock("@/hooks/useTopMetrics", () => ({
+  useTopMetrics: () => mockTopMetrics,
+}))
+
+const mockGetComponent = vi.fn()
+vi.mock("@/services/componentLibrary", () => ({
+  componentLibrary: {
+    getComponent: (...args: unknown[]) => mockGetComponent(...args),
+  },
 }))
 
 // Mock Zustand stores for heatmap + constraint integration
@@ -56,6 +69,8 @@ describe("ArchieNode", () => {
     mockHeatmapEnabled = false
     mockViolationsByNodeId = new Map()
     mockConstraints = []
+    mockTopMetrics = []
+    mockGetComponent.mockReturnValue(undefined)
   })
 
   it("renders component name", () => {
@@ -103,10 +118,10 @@ describe("ArchieNode", () => {
     expect(nameEl.className).toContain("truncate")
   })
 
-  it("does NOT render description or metrics", () => {
+  it("renders only component name when no metrics and no variant lookup", () => {
     render(<ArchieNode {...defaultProps} />)
-    const node = screen.getByTestId("archie-node")
-    expect(node.textContent).toBe("PostgreSQL")
+    expect(screen.getByText("PostgreSQL")).toBeInTheDocument()
+    expect(screen.queryByTestId("inline-metric-bar")).not.toBeInTheDocument()
   })
 
   describe("heatmap glow", () => {
@@ -233,6 +248,83 @@ describe("ArchieNode", () => {
       render(<ArchieNode {...defaultProps} />)
       const badge = screen.getByTestId("constraint-violation-badge")
       expect(badge).toHaveAttribute("title", "security constraint")
+    })
+  })
+
+  describe("inline metrics (Story 10-1)", () => {
+    it("renders active variant name when component found", () => {
+      mockGetComponent.mockReturnValue({
+        id: "postgresql",
+        configVariants: [{ id: "default", name: "Standard" }, { id: "event-driven", name: "Event-Driven" }],
+      })
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByText("Standard")).toBeInTheDocument()
+    })
+
+    it("does not render variant name when component not found", () => {
+      mockGetComponent.mockReturnValue(undefined)
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("archie-node-variant")).not.toBeInTheDocument()
+    })
+
+    it("renders 2 inline metric bars when metrics available", () => {
+      mockTopMetrics = [
+        { categoryId: "performance", shortName: "Perf", value: 8.0, color: "var(--color-metric-performance)" },
+        { categoryId: "scalability", shortName: "Scale", value: 4.0, color: "var(--color-metric-scalability)" },
+      ]
+      render(<ArchieNode {...defaultProps} />)
+      const bars = screen.getAllByTestId("inline-metric-bar")
+      expect(bars).toHaveLength(2)
+      expect(screen.getByText("Perf")).toBeInTheDocument()
+      expect(screen.getByText("Scale")).toBeInTheDocument()
+      expect(screen.getByText("8.0")).toBeInTheDocument()
+      expect(screen.getByText("4.0")).toBeInTheDocument()
+    })
+
+    it("does not render metric bars when no metrics", () => {
+      mockTopMetrics = []
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("inline-metric-bar")).not.toBeInTheDocument()
+    })
+
+    it("renders variant name and metrics together", () => {
+      mockGetComponent.mockReturnValue({
+        id: "postgresql",
+        configVariants: [{ id: "default", name: "Standard" }],
+      })
+      mockTopMetrics = [
+        { categoryId: "performance", shortName: "Perf", value: 7.5, color: "var(--color-metric-performance)" },
+      ]
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByText("Standard")).toBeInTheDocument()
+      expect(screen.getByText("Perf")).toBeInTheDocument()
+    })
+
+    it("renders constraint badge alongside inline metrics without overlap", () => {
+      mockViolationsByNodeId = new Map([
+        ["node-1", [{ constraintId: "c1", nodeId: "node-1", categoryId: "performance", actualScore: 7, threshold: 5, operator: "lte" }]],
+      ])
+      mockConstraints = [{ id: "c1", categoryId: "performance", operator: "lte", threshold: 5, label: "Perf cap" }]
+      mockTopMetrics = [
+        { categoryId: "performance", shortName: "Perf", value: 8.0, color: "var(--color-metric-performance)" },
+        { categoryId: "reliability", shortName: "Rel", value: 6.0, color: "var(--color-metric-reliability)" },
+      ]
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("constraint-violation-badge")).toBeInTheDocument()
+      expect(screen.getAllByTestId("inline-metric-bar")).toHaveLength(2)
+    })
+
+    it("does not render variant name when activeConfigVariantId does not match any variant", () => {
+      mockGetComponent.mockReturnValue({
+        id: "postgresql",
+        configVariants: [{ id: "event-driven", name: "Event-Driven" }],
+      })
+      const props = {
+        ...defaultProps,
+        data: { ...defaultProps.data, activeConfigVariantId: "nonexistent-variant" },
+      } as Parameters<typeof ArchieNode>[0]
+      render(<ArchieNode {...props} />)
+      expect(screen.queryByTestId("archie-node-variant")).not.toBeInTheDocument()
     })
   })
 })

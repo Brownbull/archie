@@ -1,0 +1,8 @@
+id: failure-single-node
+name: Single Node Failure
+description: "A single component instance becomes unavailable. Tests redundancy and failover capabilities."
+icon: AlertTriangle
+failure_modifiers:
+  operational-complexity: 0.7
+  data-durability: 0.6
+  horizontal-scalability: 0.5

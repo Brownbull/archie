@@ -11,6 +11,8 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 import { snapToGrid } from "@/lib/canvasUtils"
+import { isKnownScenarioId } from "@/services/scenarioLoader"
+import { isKnownFailurePresetId } from "@/services/failureLoader"
 import {
   COMPONENT_CATEGORIES,
   DEFAULT_WEIGHT_PROFILE,
@@ -41,6 +43,8 @@ export interface HydratedArchitecture {
   weightProfile: WeightProfile
   constraints: ParsedConstraint[]
   dataContextItems: Map<string, DataContextItem[]>
+  activeScenarioId?: string
+  activeFailureScenarioId?: string
 }
 
 export type ImportResult =
@@ -389,6 +393,16 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
     })
   }
 
+  // Story 9-4: Restore active scenario if it matches a known preset
+  const activeScenarioId = data.activeScenarioId && isKnownScenarioId(data.activeScenarioId)
+    ? data.activeScenarioId
+    : undefined
+
+  // Story 9-7: Restore active failure scenario if it matches a known preset
+  const activeFailureScenarioId = data.activeFailureScenarioId && isKnownFailurePresetId(data.activeFailureScenarioId)
+    ? data.activeFailureScenarioId
+    : undefined
+
   return {
     success: true,
     architecture: {
@@ -399,6 +413,8 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       weightProfile: resolvedWeightProfile,
       constraints: data.constraints ?? [],
       dataContextItems,
+      activeScenarioId,
+      activeFailureScenarioId,
     },
   }
 }

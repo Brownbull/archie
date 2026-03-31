@@ -1,4 +1,7 @@
 import { describe, it, expect } from "vitest"
+import { readFileSync } from "fs"
+import { join } from "path"
+import { load } from "js-yaml"
 import {
   ComponentSchema,
   ConfigVariantSchema,
@@ -460,6 +463,244 @@ describe("ComponentYamlSchema (snake_case to camelCase)", () => {
       expect(baseResult.success).toBe(true)
       if (baseResult.success) {
         expect(baseResult.data).toEqual(result.data)
+      }
+    }
+  })
+})
+
+describe("ComponentSchema — demandResponses", () => {
+  it("accepts component without demandResponses (backward compatibility)", () => {
+    const result = ComponentSchema.safeParse(validComponent)
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts component with valid demandResponses", () => {
+    const result = ComponentSchema.safeParse({
+      ...validComponent,
+      demandResponses: {
+        "traffic-volume": {
+          high: { "read-latency": 0.7 },
+          extreme: { "read-latency": 0.5, "write-throughput": 0.6 },
+        },
+      },
+    })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects component with invalid demandResponses (unknown variable)", () => {
+    const result = ComponentSchema.safeParse({
+      ...validComponent,
+      demandResponses: {
+        "disk-speed": { high: { perf: 0.7 } },
+      },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects component with demandResponses multiplier out of range", () => {
+    const result = ComponentSchema.safeParse({
+      ...validComponent,
+      demandResponses: {
+        "traffic-volume": { high: { perf: 1.5 } },
+      },
+    })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("ComponentYamlSchema — demand_responses", () => {
+  const yamlInputForDemand = {
+    id: "postgresql",
+    name: "PostgreSQL",
+    category: "data-storage",
+    description: "Relational database",
+    is: "An open-source relational database",
+    gain: ["ACID compliance"],
+    cost: ["Higher memory"],
+    tags: ["database"],
+    base_metrics: [
+      { id: "latency", value: "medium", numeric_value: 5, category: "performance" },
+    ],
+    config_variants: [
+      {
+        id: "default",
+        name: "Default",
+        metrics: [
+          { id: "latency", value: "low", numeric_value: 3, category: "performance" },
+        ],
+      },
+    ],
+  }
+
+  it("transforms demand_responses to demandResponses", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInputForDemand,
+      demand_responses: {
+        "traffic-volume": { high: { "read-latency": 0.7 } },
+      },
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.demandResponses).toBeDefined()
+      expect((result.data as Record<string, unknown>)["demand_responses"]).toBeUndefined()
+    }
+  })
+
+  it("round-trip: YAML with demand_responses matches ComponentSchema shape", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInputForDemand,
+      demand_responses: {
+        "traffic-volume": { high: { "read-latency": 0.7 } },
+      },
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const baseResult = ComponentSchema.safeParse(result.data)
+      expect(baseResult.success).toBe(true)
+    }
+  })
+
+  it("rejects invalid demand_responses through ComponentYamlSchema path", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInputForDemand,
+      demand_responses: {
+        "disk-speed": { high: { perf: 0.7 } },
+      },
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts empty demand_responses through ComponentYamlSchema", () => {
+    const result = ComponentYamlSchema.safeParse({
+      ...yamlInputForDemand,
+      demand_responses: {},
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.demandResponses).toEqual({})
+    }
+  })
+})
+
+// --- Component YAML files — demand_responses validation (AC-1, AC-3, AC-4) ---
+
+describe("Component YAML files — demand_responses validation", () => {
+  const componentDir = join(__dirname, "../../../src/data/components")
+  const componentFiles = [
+    "cloudflare-cdn.yaml",
+    "kafka.yaml",
+    "nginx.yaml",
+    "node-express.yaml",
+    "postgresql.yaml",
+    "prometheus.yaml",
+    "rabbitmq.yaml",
+    "redis-cache.yaml",
+    "redis.yaml",
+    "websocket-server.yaml",
+  ]
+
+  function loadComponent(filename: string) {
+    const content = readFileSync(join(componentDir, filename), "utf-8")
+    return load(content) as Record<string, unknown>
+  }
+
+  function parseComponent(filename: string) {
+    const raw = loadComponent(filename)
+    return ComponentYamlSchema.safeParse(raw)
+  }
+
+  for (const filename of componentFiles) {
+    it(`${filename} passes ComponentYamlSchema validation with demand_responses`, () => {
+      const result = parseComponent(filename)
+      expect(result.success).toBe(true)
+    })
+  }
+
+  it("all 10 components define demand_responses for at least 2 variables (AC-1)", () => {
+    for (const filename of componentFiles) {
+      const result = parseComponent(filename)
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data.demandResponses).toBeDefined()
+        const variableCount = Object.keys(result.data.demandResponses!).length
+        expect(variableCount).toBeGreaterThanOrEqual(2)
+      }
+    }
+  })
+
+  // AC-3 worst-multiplier strategy: Math.min across all metric multipliers gives
+  // the single harshest degradation for a component at a given level. This is the
+  // right comparison because "degrades less" means even the worst-affected metric
+  // of the resilient component is still better than the worst-affected metric of
+  // the non-resilient one. Named-metric assertions are added where available.
+  it("redis-cache degrades less on traffic-volume:extreme than redis data store (AC-3)", () => {
+    const cache = parseComponent("redis-cache.yaml")
+    const store = parseComponent("redis.yaml")
+    expect(cache.success && store.success).toBe(true)
+    if (!cache.success || !store.success) return
+
+    const cacheTraffic = cache.data.demandResponses?.["traffic-volume"]?.["extreme"]
+    const storeTraffic = store.data.demandResponses?.["traffic-volume"]?.["extreme"]
+
+    const cacheWorstMultiplier = cacheTraffic
+      ? Math.min(...Object.values(cacheTraffic))
+      : 1.0
+    const storeWorstMultiplier = storeTraffic
+      ? Math.min(...Object.values(storeTraffic))
+      : 1.0
+    expect(cacheWorstMultiplier).toBeGreaterThan(storeWorstMultiplier)
+  })
+
+  it("nginx degrades less on traffic-volume:extreme than node-express (AC-3)", () => {
+    const nginx = parseComponent("nginx.yaml")
+    const node = parseComponent("node-express.yaml")
+    expect(nginx.success && node.success).toBe(true)
+    if (!nginx.success || !node.success) return
+
+    const nginxTraffic = nginx.data.demandResponses?.["traffic-volume"]?.["extreme"]
+    const nodeTraffic = node.data.demandResponses?.["traffic-volume"]?.["extreme"]
+
+    const nginxWorst = nginxTraffic ? Math.min(...Object.values(nginxTraffic)) : 1.0
+    const nodeWorst = nodeTraffic ? Math.min(...Object.values(nodeTraffic)) : 1.0
+    expect(nginxWorst).toBeGreaterThan(nodeWorst)
+  })
+
+  it("kafka degrades less on traffic-volume:extreme than rabbitmq (AC-3)", () => {
+    const kafka = parseComponent("kafka.yaml")
+    const rabbit = parseComponent("rabbitmq.yaml")
+    expect(kafka.success && rabbit.success).toBe(true)
+    if (!kafka.success || !rabbit.success) return
+
+    const kafkaTraffic = kafka.data.demandResponses?.["traffic-volume"]?.["extreme"]
+    const rabbitTraffic = rabbit.data.demandResponses?.["traffic-volume"]?.["extreme"]
+
+    const kafkaWorst = kafkaTraffic ? Math.min(...Object.values(kafkaTraffic)) : 1.0
+    const rabbitWorst = rabbitTraffic ? Math.min(...Object.values(rabbitTraffic)) : 1.0
+    expect(kafkaWorst).toBeGreaterThan(rabbitWorst)
+  })
+
+  it("kafka degrades less on data-size:extreme than postgresql (AC-3, data-size)", () => {
+    const kafka = parseComponent("kafka.yaml")
+    const pg = parseComponent("postgresql.yaml")
+    expect(kafka.success && pg.success).toBe(true)
+    if (!kafka.success || !pg.success) return
+
+    const kafkaDataSize = kafka.data.demandResponses?.["data-size"]?.["extreme"]
+    const pgDataSize = pg.data.demandResponses?.["data-size"]?.["extreme"]
+
+    const kafkaWorst = kafkaDataSize ? Math.min(...Object.values(kafkaDataSize)) : 1.0
+    const pgWorst = pgDataSize ? Math.min(...Object.values(pgDataSize)) : 1.0
+    // Kafka (streaming-optimized) degrades less under extreme data-size than PostgreSQL
+    expect(kafkaWorst).toBeGreaterThan(pgWorst)
+  })
+
+  it("round-trip: all YAML components match ComponentSchema after transform", () => {
+    for (const filename of componentFiles) {
+      const yamlResult = parseComponent(filename)
+      expect(yamlResult.success).toBe(true)
+      if (yamlResult.success) {
+        const baseResult = ComponentSchema.safeParse(yamlResult.data)
+        expect(baseResult.success).toBe(true)
       }
     }
   })

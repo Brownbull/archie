@@ -25,6 +25,8 @@ export function exportArchitecture(
   weightProfile?: WeightProfile,
   constraints?: ParsedConstraint[],
   dataContextItems?: Map<string, DataContextItem[]>,
+  activeScenarioId?: string | null,
+  activeFailureScenarioId?: string | null,
 ): string {
   // Extract skeleton from each node (camelCase → snake_case transform, inverse of import)
   // Story 7-3 AC-ARCH-PATTERN-2: data context exported PER-NODE (not top-level)
@@ -82,6 +84,14 @@ export function exportArchitecture(
       threshold: c.threshold,
       label: c.label,
     }))
+  }
+  // Story 9-4: Include active scenario ID when set
+  if (activeScenarioId) {
+    exportObj.active_scenario_id = activeScenarioId
+  }
+  // Story 9-7: Include active failure scenario ID when set
+  if (activeFailureScenarioId) {
+    exportObj.active_failure_scenario_id = activeFailureScenarioId
   }
 
   // Validate against ArchitectureFileYamlSchema before serializing (AC-ARCH-PATTERN-3)

@@ -1,0 +1,42 @@
+id: message-queue-worker
+name: "Message Queue Worker"
+description: "Queue-based background processing architecture where RabbitMQ distributes tasks to a pool of worker processes. Tasks are consumed at-least-once with Redis-based deduplication for idempotency. PostgreSQL stores completed task results. Trades real-time responsiveness for reliable, ordered task execution with horizontal worker scaling."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "Message Queue Worker"
+  nodes:
+    - id: mqw-app
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 0
+        y: 250
+    - id: mqw-rabbit
+      component_id: rabbitmq
+      config_variant_id: clustered
+      position:
+        x: 350
+        y: 250
+    - id: mqw-redis
+      component_id: redis
+      config_variant_id: sentinel
+      position:
+        x: 700
+        y: 100
+    - id: mqw-db
+      component_id: postgresql
+      config_variant_id: single-node
+      position:
+        x: 700
+        y: 400
+  edges:
+    - id: mqw-edge-app-rabbit
+      source_node_id: mqw-app
+      target_node_id: mqw-rabbit
+    - id: mqw-edge-rabbit-redis
+      source_node_id: mqw-rabbit
+      target_node_id: mqw-redis
+    - id: mqw-edge-rabbit-db
+      source_node_id: mqw-rabbit
+      target_node_id: mqw-db

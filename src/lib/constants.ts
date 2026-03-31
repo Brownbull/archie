@@ -20,6 +20,9 @@ export const SPACING_XL = 24
 // File limits (NFR7)
 export const MAX_FILE_SIZE = 1_048_576 // 1MB in bytes
 
+// Schema string limits — defense-in-depth against memory exhaustion from malformed YAML (TD-5-1a, Story 9-0)
+export const MAX_SCHEMA_STRING_LENGTH = 256
+
 // Component categories (AC-ARCH-PATTERN-10)
 export const COMPONENT_CATEGORIES = {
   compute: { label: "Compute", color: "var(--color-cat-compute)", iconName: "Cpu" },
@@ -124,7 +127,9 @@ export const MAX_STACK_CONNECTIONS = 50
 export const STACK_NAME_MAX_LENGTH = 200
 export const STACK_DESC_MAX_LENGTH = 2000
 export const STACK_ID_MAX_LENGTH = 200
-export const STACK_ID_FORMAT = /^[\w-]+$/ // allows: a-z A-Z 0-9 _ -
+// Shared slug format for IDs — allows: a-z A-Z 0-9 _ -
+export const SLUG_ID_FORMAT = /^[\w-]+$/
+export const STACK_ID_FORMAT = SLUG_ID_FORMAT
 
 export interface StackComponent {
   componentId: string
@@ -177,6 +182,10 @@ export const FONT_FAMILY_PRESETS = {
 // Aligns with MetricValue enum: low=1-3, medium=4-7, high=8-10
 export const HEATMAP_THRESHOLD_WARNING = 6
 export const HEATMAP_THRESHOLD_BOTTLENECK = 4
+
+// Score color threshold — green/good cutoff for dashboard score bars (Story 9-0)
+// Intentionally higher than HEATMAP_THRESHOLD_WARNING (6): MetricBar uses 7 as green cutoff
+export const SCORE_COLOR_GOOD_THRESHOLD = 7
 
 // Recommendation threshold (Story 4-2a)
 // Metrics scoring below this value are weak and eligible for variant recommendations.
@@ -264,3 +273,71 @@ export const MAX_DATA_CONTEXT_ITEMS_PER_NODE = 10
 
 // Pathway guidance (Story 7.5-1: Tier Gap Analysis Engine)
 export const PATHWAY_SUGGESTION_LIMIT = 10
+
+// ─── Demand Simulation (Story 9-1) ──────────────────────────────────────────
+
+export const DEMAND_VARIABLE_VALUES = [
+  "traffic-volume",
+  "data-size",
+  "concurrent-users",
+  "geographic-spread",
+  "burst-pattern",
+] as const
+export type DemandVariable = (typeof DEMAND_VARIABLE_VALUES)[number]
+
+export const DEMAND_LEVEL_VALUES = [
+  "low",
+  "medium",
+  "high",
+  "extreme",
+  "single-region",
+  "multi-region",
+  "global",
+  "steady",
+  "periodic-spikes",
+  "unpredictable",
+] as const
+export type DemandLevel = (typeof DEMAND_LEVEL_VALUES)[number]
+
+export const DEMAND_MULTIPLIER_MIN = 0.1
+export const DEMAND_MULTIPLIER_MAX = 1.0
+export const SCENARIO_NAME_MAX_LENGTH = 100
+export const SCENARIO_DESC_MAX_LENGTH = 500
+export const SCENARIO_ID_FORMAT = SLUG_ID_FORMAT
+
+// Demand metric clamping — directional scale never goes below 1 or above 10 (Story 9-3)
+export const DEMAND_METRIC_FLOOR = 1
+export const DEMAND_METRIC_CEILING = 10
+
+// ─── Score Transition Animation (Story 9-6) ─────────────────────────────────
+
+// Particle animation on connections — density reflects connection health
+export const CONNECTION_DEFAULT_HEALTH_SCORE = 5.0
+export const PARTICLE_DENSITY_MIN = 2
+export const PARTICLE_DENSITY_MAX = 12
+export const PARTICLE_RADIUS = 2 // px radius of each SVG circle
+export const PARTICLE_SPEED = 0.3 // fraction of path length per second
+export const METRIC_BAR_TRANSITION_MS = 300 // CSS transition duration for metric bar width
+
+// Scenario selector UI (Story 9-4)
+export const SCENARIO_NONE_LABEL = "No Scenario"
+export const SCENARIO_SELECTOR_TESTID = "scenario-selector"
+export const SCENARIO_BANNER_TESTID = "scenario-banner"
+
+// ─── Failure Scenarios (Story 9-7) ──────────────────────────────────────────
+
+export const FAILURE_PRESET_IDS = [
+  "failure-single-node",
+  "failure-network-partition",
+  "failure-database",
+  "failure-traffic-spike",
+  "failure-region-outage",
+  "failure-data-corruption",
+] as const
+export type FailurePresetId = (typeof FAILURE_PRESET_IDS)[number]
+
+export const FAILURE_MULTIPLIER_MIN = 0.1
+export const FAILURE_MULTIPLIER_MAX = 1.0
+export const FAILURE_NONE_LABEL = "No Failure"
+export const FAILURE_SELECTOR_TESTID = "failure-selector"
+export const FAILURE_BANNER_TESTID = "failure-banner"

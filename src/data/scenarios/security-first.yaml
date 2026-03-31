@@ -1,0 +1,10 @@
+id: security-first
+name: Security First
+description: "Moderate load with security-focused evaluation. Highlights security trade-offs under normal operating conditions with steady traffic patterns."
+icon: Shield
+demand_profile:
+  traffic-volume: medium
+  concurrent-users: medium
+  burst-pattern: steady
+  data-size: medium
+  geographic-spread: single-region

@@ -1,0 +1,42 @@
+id: event-driven-pipeline
+name: "Event-Driven Pipeline"
+description: "Asynchronous data ingestion architecture built around Kafka as the central event bus. Producers publish events, consumers process them independently. Redis buffers intermediate state for stream processing. PostgreSQL is the final sink for processed records. Trades latency and simplicity for throughput and decoupled scalability."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "Event-Driven Pipeline"
+  nodes:
+    - id: edp-app
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 0
+        y: 250
+    - id: edp-kafka
+      component_id: kafka
+      config_variant_id: multi-broker
+      position:
+        x: 350
+        y: 250
+    - id: edp-redis
+      component_id: redis
+      config_variant_id: sentinel
+      position:
+        x: 700
+        y: 100
+    - id: edp-db
+      component_id: postgresql
+      config_variant_id: citus-distributed
+      position:
+        x: 700
+        y: 400
+  edges:
+    - id: edp-edge-app-kafka
+      source_node_id: edp-app
+      target_node_id: edp-kafka
+    - id: edp-edge-kafka-redis
+      source_node_id: edp-kafka
+      target_node_id: edp-redis
+    - id: edp-edge-kafka-db
+      source_node_id: edp-kafka
+      target_node_id: edp-db

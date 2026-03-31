@@ -1,0 +1,10 @@
+id: startup-mvp
+name: Startup MVP
+description: "Early-stage product with minimal users and data. Validates that your architecture is not over-engineered for Day 1 traffic."
+icon: Rocket
+demand_profile:
+  traffic-volume: low
+  concurrent-users: low
+  burst-pattern: periodic-spikes
+  data-size: low
+  geographic-spread: single-region

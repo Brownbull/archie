@@ -1,0 +1,10 @@
+id: cost-optimized
+name: Cost Optimized
+description: "Minimal resource environment with low traffic, few users, and small data. Shows which components are over-provisioned for lightweight workloads."
+icon: DollarSign
+demand_profile:
+  traffic-volume: low
+  concurrent-users: low
+  burst-pattern: steady
+  data-size: low
+  geographic-spread: single-region

@@ -129,3 +129,13 @@ connection_properties:
     - streaming
   typical_latency: "<1ms"
   co_location_potential: false
+demand_responses:
+  traffic-volume:
+    extreme:
+      request-latency: 0.9
+  concurrent-users:
+    extreme:
+      request-latency: 0.9
+  burst-pattern:
+    unpredictable:
+      request-latency: 0.9

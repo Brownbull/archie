@@ -5,6 +5,7 @@ import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { IssuesSummary } from "@/components/layout/IssuesSummary"
 import { useImportAction } from "@/components/import-export/ImportDialog"
 import { ExportButton } from "@/components/import-export/ExportButton"
+import { ExportReportButton } from "@/components/toolbar/ExportReportButton"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 import { FileUp, BrainCircuit } from "lucide-react"
@@ -34,6 +35,7 @@ export function Toolbar() {
           Import
         </Button>
         <ExportButton />
+        <ExportReportButton />
         <Button
           data-testid="prompt-template-button"
           variant="ghost"

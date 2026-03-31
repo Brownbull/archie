@@ -1,0 +1,9 @@
+id: failure-data-corruption
+name: Data Corruption
+description: "Data integrity compromised. Tests backup strategies, validation layers, and recovery procedures."
+icon: FileWarning
+failure_modifiers:
+  data-durability: 0.3
+  storage-efficiency: 0.4
+  cache-efficiency: 0.5
+  write-throughput: 0.5

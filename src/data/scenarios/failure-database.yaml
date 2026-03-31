@@ -1,0 +1,9 @@
+id: failure-database
+name: Database Failure
+description: "Primary database becomes unreachable. Tests data layer resilience and fallback strategies."
+icon: DatabaseZap
+failure_modifiers:
+  data-durability: 0.3
+  read-latency: 0.4
+  write-throughput: 0.4
+  operational-complexity: 0.5

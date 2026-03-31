@@ -183,15 +183,66 @@ Phase 2 adds personalization to Archie: priority sliders, constraint guardrails,
 
 ---
 
+---
+
+## Epic 9: Demand Simulation -- "See your architecture under pressure"
+
+**User Outcome:** Select a demand scenario (Traffic Peak, Enterprise Scale, etc.) and see the entire architecture respond — components degrade realistically, heatmap shifts, pathway suggestions reorder.
+
+**Analogy:** Wind tunnel testing — same car body, different wind speeds. You don't redesign the car to test it; you change the conditions and watch what happens.
+
+**FRs:** FR78-FR85 | **NFRs:** NFR21, NFR22
+
+**Origin:** Competitive analysis against Simulador de Arquitetura (2026-03-19). Adversarial-reviewed: decomposed demand variables with multiplicative deltas, MVP-restricted to preset dropdown.
+
+| Story | Title | Size | Points | Type |
+|-------|-------|------|--------|------|
+| 9-1 | Demand Schema & Scenario Preset Definitions | MEDIUM | 4 | User |
+| 9-2 | Component Demand Response Data | MEDIUM | 4 | User |
+| 9-3 | Demand Simulation Engine | MEDIUM | 5 | User |
+| 9-4 | Scenario Selector UI & Store Integration | LARGE | 6 | User |
+| 9-5 | E2E: Demand Simulation Flow | SMALL | 3 | Hardening |
+
+**Total:** 5 stories, 22 points
+
+**Build order:** 9-1 → 9-2 → 9-3 → 9-4 → 9-5
+
+---
+
+## Epic 10: Canvas & Content Enhancements -- "More to see, more to start from"
+
+**User Outcome:** See key metrics directly on canvas cards without clicking, and browse 10 blueprint architectures for richer starting points.
+
+**Analogy:** Dashboard gauges on a car vs. pulling over to check under the hood. The speedometer and fuel gauge are always visible. You only pop the hood for diagnostics.
+
+**FRs:** FR86-FR88
+
+**Origin:** Competitive analysis (2026-03-19). Inline metrics inspired by Simulador's property cards. Template expansion addresses content gap.
+
+| Story | Title | Size | Points | Type |
+|-------|-------|------|--------|------|
+| 10-1 | Inline Canvas Metrics — Weight-Responsive Node Display | MEDIUM | 5 | User |
+| 10-2 | Blueprint Library Expansion | MEDIUM | 4 | User |
+| 10-3 | E2E: Canvas Metrics & Blueprint Loading | SMALL | 2 | Hardening |
+
+**Total:** 3 stories, 11 points
+
+**Build order:** 10-1 → 10-2 → 10-3
+
+---
+
 ## Phase 2 Summary
 
-| Epic | Stories | Points | Build Order |
-|------|---------|--------|-------------|
-| Epic 5: Priority Scoring | 5 (4 user + 1 hardening) | 18 | 1st |
-| Epic 6: Constraint Guardrails | 5 (4 user + 1 hardening) | 19 | 2nd |
-| Epic 8: Stack Browsing | 4 (3 user + 1 hardening) | 15 | 3rd |
-| Epic 7: Data Context Items | 4 (3 user + 1 hardening) | 15 | 4th |
-| **Total** | **18 stories** | **67 points** | |
+| Epic | Stories | Points | Build Order | Status |
+|------|---------|--------|-------------|--------|
+| Epic 5: Priority Scoring | 5 (4 user + 1 hardening) | 18 | 1st | DONE |
+| Epic 6: Constraint Guardrails | 5 (4 user + 1 hardening) | 19 | 2nd | DONE |
+| Epic 8: Stack Browsing | 4 (3 user + 1 hardening) | 15 | 3rd | DONE |
+| Epic 7: Data Context Items | 4 (3 user + 1 hardening) | 15 | 4th | DONE |
+| Epic 7.5: Weighted Pathway Guidance | 5 (4 user + 1 hardening) | — | 4.5th | DONE |
+| Epic 9: Demand Simulation | 5 (4 user + 1 hardening) | 22 | 5th | DRAFTED |
+| Epic 10: Canvas & Content | 3 (2 user + 1 hardening) | 11 | 6th | DRAFTED |
+| **Total** | **31 stories** | **100 points** | | |
 
 ### Cross-Epic Hardening Analysis
 
@@ -226,3 +277,11 @@ All story files at `docs/sprint-artifacts/stories/`:
 | epic8/8-2.md | Stacks Tab UI -- Browse & Preview | Epic 8 |
 | epic8/8-3.md | Stack Canvas Placement & Editing | Epic 8 |
 | epic8/8-4.md | E2E: Stack Browsing & Placement Flow | Epic 8 |
+| epic9/9-1.md | Demand Schema & Scenario Preset Definitions | Epic 9 |
+| epic9/9-2.md | Component Demand Response Data | Epic 9 |
+| epic9/9-3.md | Demand Simulation Engine | Epic 9 |
+| epic9/9-4.md | Scenario Selector UI & Store Integration | Epic 9 |
+| epic9/9-5.md | E2E: Demand Simulation Flow | Epic 9 |
+| epic10/10-1.md | Inline Canvas Metrics — Weight-Responsive Node Display | Epic 10 |
+| epic10/10-2.md | Blueprint Library Expansion | Epic 10 |
+| epic10/10-3.md | E2E: Canvas Metrics & Blueprint Loading | Epic 10 |

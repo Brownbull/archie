@@ -1,0 +1,42 @@
+id: cache-first-read-heavy
+name: "Cache-First Read-Heavy"
+description: "Multi-tier caching architecture optimized for static content serving where most requests never reach the database. Full-site CDN absorbs the majority of traffic at the edge, Nginx routes cache misses to Redis for origin-level lookups, and PostgreSQL (primary-replica) serves as the final data source. No application tier — content flows through caching layers only. Trades data freshness (stale reads) and dynamic capability for extreme read throughput and minimal database load."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "Cache-First Read-Heavy"
+  nodes:
+    - id: cfr-cdn
+      component_id: cloudflare-cdn
+      config_variant_id: full-site
+      position:
+        x: 0
+        y: 250
+    - id: cfr-nginx
+      component_id: nginx
+      config_variant_id: load-balancer
+      position:
+        x: 300
+        y: 250
+    - id: cfr-cache
+      component_id: redis-cache
+      config_variant_id: simple-cache
+      position:
+        x: 600
+        y: 250
+    - id: cfr-db
+      component_id: postgresql
+      config_variant_id: primary-replica
+      position:
+        x: 900
+        y: 250
+  edges:
+    - id: cfr-edge-cdn-nginx
+      source_node_id: cfr-cdn
+      target_node_id: cfr-nginx
+    - id: cfr-edge-nginx-cache
+      source_node_id: cfr-nginx
+      target_node_id: cfr-cache
+    - id: cfr-edge-cache-db
+      source_node_id: cfr-cache
+      target_node_id: cfr-db

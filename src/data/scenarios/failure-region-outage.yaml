@@ -1,0 +1,9 @@
+id: failure-region-outage
+name: Region Outage
+description: "Entire region goes offline. Tests geographic redundancy and disaster recovery."
+icon: Globe
+failure_modifiers:
+  global-availability: 0.2
+  edge-latency: 0.3
+  operational-complexity: 0.4
+  data-durability: 0.5

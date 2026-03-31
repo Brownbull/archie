@@ -6,7 +6,7 @@ import {
   computeCategoryBreakdown,
   type CategoryScore,
 } from "@/engine/dashboardCalculator"
-import { METRIC_CATEGORIES } from "@/lib/constants"
+import { METRIC_CATEGORIES, SCORE_COLOR_GOOD_THRESHOLD, HEATMAP_THRESHOLD_BOTTLENECK, HEATMAP_THRESHOLD_WARNING } from "@/lib/constants"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
 import type { MetricValue } from "@/schemas/metricSchema"
 
@@ -277,32 +277,37 @@ describe("computeAggregateScore", () => {
 // --- getScoreColor ---
 
 describe("getScoreColor", () => {
-  it("returns green for score >= 7", () => {
-    expect(getScoreColor(7)).toBe("bg-green-500")
-    expect(getScoreColor(7.0)).toBe("bg-green-500")
+  it("threshold ordering invariant: GOOD > WARNING > BOTTLENECK", () => {
+    expect(SCORE_COLOR_GOOD_THRESHOLD).toBeGreaterThan(HEATMAP_THRESHOLD_WARNING)
+    expect(HEATMAP_THRESHOLD_WARNING).toBeGreaterThan(HEATMAP_THRESHOLD_BOTTLENECK)
+  })
+
+  it("returns green for score >= SCORE_COLOR_GOOD_THRESHOLD", () => {
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD)).toBe("bg-green-500")
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD + 0.0)).toBe("bg-green-500")
     expect(getScoreColor(8)).toBe("bg-green-500")
     expect(getScoreColor(10)).toBe("bg-green-500")
   })
 
-  it("returns yellow for score >= 4 and < 7", () => {
-    expect(getScoreColor(4)).toBe("bg-yellow-500")
-    expect(getScoreColor(4.0)).toBe("bg-yellow-500")
+  it("returns yellow for score >= HEATMAP_THRESHOLD_BOTTLENECK and < SCORE_COLOR_GOOD_THRESHOLD", () => {
+    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK)).toBe("bg-yellow-500")
+    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK + 0.0)).toBe("bg-yellow-500")
     expect(getScoreColor(5.5)).toBe("bg-yellow-500")
-    expect(getScoreColor(6.9)).toBe("bg-yellow-500")
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD - 0.1)).toBe("bg-yellow-500")
   })
 
-  it("returns red for score < 4", () => {
-    expect(getScoreColor(3.9)).toBe("bg-red-500")
+  it("returns red for score < HEATMAP_THRESHOLD_BOTTLENECK", () => {
+    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK - 0.1)).toBe("bg-red-500")
     expect(getScoreColor(3)).toBe("bg-red-500")
     expect(getScoreColor(1)).toBe("bg-red-500")
     expect(getScoreColor(0)).toBe("bg-red-500")
   })
 
   it("handles exact boundary values", () => {
-    expect(getScoreColor(7.0)).toBe("bg-green-500")
-    expect(getScoreColor(4.0)).toBe("bg-yellow-500")
-    expect(getScoreColor(3.99)).toBe("bg-red-500")
-    expect(getScoreColor(6.99)).toBe("bg-yellow-500")
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD)).toBe("bg-green-500")
+    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK)).toBe("bg-yellow-500")
+    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK - 0.01)).toBe("bg-red-500")
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD - 0.01)).toBe("bg-yellow-500")
   })
 })
 

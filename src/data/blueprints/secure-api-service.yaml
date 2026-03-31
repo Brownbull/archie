@@ -1,0 +1,42 @@
+id: secure-api-service
+name: "Secure API Service"
+description: "Auth-centric API architecture where authentication and authorization happen inside the application tier, not at the gateway. Nginx terminates TLS and routes requests. Redis caches session tokens and permission lookups for fast auth validation. PostgreSQL stores user credentials and permission rules with read replicas for high-frequency auth queries. Trades horizontal scaling simplicity for tight security control."
+tier: 2
+skeleton:
+  schema_version: "2.0.0"
+  name: "Secure API Service"
+  nodes:
+    - id: sas-nginx
+      component_id: nginx
+      config_variant_id: reverse-proxy
+      position:
+        x: 0
+        y: 250
+    - id: sas-app
+      component_id: node-express
+      config_variant_id: single-process
+      position:
+        x: 350
+        y: 250
+    - id: sas-cache
+      component_id: redis-cache
+      config_variant_id: distributed-cache
+      position:
+        x: 700
+        y: 100
+    - id: sas-db
+      component_id: postgresql
+      config_variant_id: primary-replica
+      position:
+        x: 700
+        y: 400
+  edges:
+    - id: sas-edge-nginx-app
+      source_node_id: sas-nginx
+      target_node_id: sas-app
+    - id: sas-edge-app-cache
+      source_node_id: sas-app
+      target_node_id: sas-cache
+    - id: sas-edge-app-db
+      source_node_id: sas-app
+      target_node_id: sas-db

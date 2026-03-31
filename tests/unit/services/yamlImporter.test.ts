@@ -74,6 +74,12 @@ vi.mock("@/lib/firebase", () => ({
   db: {},
 }))
 
+vi.mock("@/services/scenarioLoader", () => ({
+  isKnownScenarioId: vi.fn((id: string) => id === "traffic-peak"),
+  getScenarioPreset: vi.fn(),
+  getAllScenarioPresets: vi.fn(() => []),
+}))
+
 const validYaml = `schema_version: "1.0.0"
 name: "Test Architecture"
 nodes:
@@ -702,5 +708,44 @@ describe("hydrateArchitectureSkeleton", () => {
     if (!result.success) return
     expect(result.architecture.edges).toHaveLength(1)
     expect(result.architecture.edges[0].id).toBe("e1")
+  })
+
+  // Story 9-4 Task 4.5: Unknown scenario ID gracefully defaults to undefined
+  it("restores activeScenarioId when it matches a known preset", () => {
+    const data = {
+      schemaVersion: "2.0.0",
+      nodes: [{ id: "n1", componentId: "postgresql", configVariantId: "single-node", position: { x: 0, y: 0 } }],
+      edges: [],
+      activeScenarioId: "traffic-peak",
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.activeScenarioId).toBe("traffic-peak")
+  })
+
+  it("defaults activeScenarioId to undefined when unknown preset", () => {
+    const data = {
+      schemaVersion: "2.0.0",
+      nodes: [{ id: "n1", componentId: "postgresql", configVariantId: "single-node", position: { x: 0, y: 0 } }],
+      edges: [],
+      activeScenarioId: "unknown-scenario-xyz",
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.activeScenarioId).toBeUndefined()
+  })
+
+  it("defaults activeScenarioId to undefined when not provided", () => {
+    const data = {
+      schemaVersion: "2.0.0",
+      nodes: [{ id: "n1", componentId: "postgresql", configVariantId: "single-node", position: { x: 0, y: 0 } }],
+      edges: [],
+    }
+    const result = hydrateArchitectureSkeleton(data)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.activeScenarioId).toBeUndefined()
   })
 })

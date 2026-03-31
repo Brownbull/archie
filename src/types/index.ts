@@ -43,6 +43,7 @@ export type { CategoryScore, CategoryBreakdown, ComponentCategoryMetric } from "
 export type { VariantRecommendation } from "@/engine/recommendationEngine"
 export type { ConstraintViolation } from "@/engine/constraintEvaluator"
 export type { PathwaySuggestion } from "@/engine/pathwayEngine"
+export type { AdjustedMetric } from "@/engine/demandEngine"
 export type { PathwaySuggestionsResult } from "@/hooks/usePathwaySuggestions"
 export type {
   TierDefinition,
@@ -55,3 +56,11 @@ export type {
   ArchitectureFileNode,
   ArchitectureFileEdge,
 } from "@/schemas/architectureFileSchema"
+export type { DemandVariable, DemandLevel } from "@/lib/constants"
+export type {
+  DemandResponse,
+  DemandProfile,
+  ScenarioPreset,
+  DemandVariableMetadata,
+  DemandLevelMeta,
+} from "@/lib/demandTypes"

@@ -254,3 +254,13 @@ export async function dragComponentToCanvas(
     { compId: componentId, x: targetX, y: targetY },
   )
 }
+
+/**
+ * Open the DashboardOverlay dialog.
+ */
+export async function openDashboardOverlay(page: Page) {
+  const expandButton = page.locator('[data-testid="dashboard-expand-button"]')
+  await expect(expandButton).toBeVisible({ timeout: 5_000 })
+  await expandButton.click()
+  await expect(page.locator('[data-testid="dashboard-overlay"]')).toBeVisible({ timeout: 5_000 })
+}

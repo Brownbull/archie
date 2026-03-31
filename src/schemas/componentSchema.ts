@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { MetricValueSchema, MetricValueYamlSchema } from "@/schemas/metricSchema"
+import { DemandResponseSchema } from "@/schemas/demandSchema"
 
 export const MAX_REASON_LENGTH = 500
 export const MAX_FACTOR_LENGTH = 200
@@ -59,6 +60,7 @@ export const ComponentSchema = z.object({
   configVariants: z.array(ConfigVariantSchema).min(1),
   compatibility: z.record(z.string(), z.string()).optional(),
   connectionProperties: ConnectionPropertiesSchema.optional(),
+  demandResponses: DemandResponseSchema.optional(),
 }).strict()
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
@@ -103,6 +105,7 @@ export const ComponentYamlSchema = z.object({
   config_variants: z.array(ConfigVariantYamlSchema).min(1),
   compatibility: z.record(z.string(), z.string()).optional(),
   connection_properties: ConnectionPropertiesYamlSchema.optional(),
+  demand_responses: DemandResponseSchema.optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -116,6 +119,7 @@ export const ComponentYamlSchema = z.object({
   configVariants: data.config_variants,
   compatibility: data.compatibility,
   connectionProperties: data.connection_properties,
+  demandResponses: data.demand_responses,
 }))
 
 export type Component = z.infer<typeof ComponentSchema>

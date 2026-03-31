@@ -37,7 +37,7 @@ export function ImportProvider({ children }: ImportProviderProps) {
       const result = await importYaml(file)
 
       if (result.success) {
-        loadArchitecture(result.architecture.nodes, result.architecture.edges, result.architecture.weightProfile, result.architecture.constraints, result.architecture.dataContextItems)
+        loadArchitecture(result.architecture.nodes, result.architecture.edges, result.architecture.weightProfile, result.architecture.constraints, result.architecture.dataContextItems, result.architecture.activeScenarioId, result.architecture.activeFailureScenarioId)
 
         const placeholderCount = result.architecture.placeholderIds.length
         const nameLabel = result.architecture.name ? `"${result.architecture.name}" ` : ""

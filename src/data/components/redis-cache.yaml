@@ -129,3 +129,24 @@ connection_properties:
     - request-response
   typical_latency: "<1ms"
   co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      cache-efficiency: 0.95
+    extreme:
+      cache-efficiency: 0.9
+  data-size:
+    high:
+      cache-efficiency: 0.7
+      operational-complexity: 0.9
+    extreme:
+      cache-efficiency: 0.5
+      operational-complexity: 0.8
+  concurrent-users:
+    extreme:
+      cache-hit-latency: 0.9
+  burst-pattern:
+    periodic-spikes:
+      cache-efficiency: 0.9
+    unpredictable:
+      cache-efficiency: 0.8

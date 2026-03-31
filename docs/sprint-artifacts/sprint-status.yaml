@@ -232,7 +232,7 @@ development_status:
   # Origin: Alignment check 2026-03-07 — V4 DRIFTING after Epic 5
   # Depends on: Epic 5 (weights), Epic 6 (constraints), Epic 7 (data context)
   # ============================================================================
-  epic-7.5: in-progress
+  epic-7.5: done
   # Story 7.5-0 in progress — brainstorming + ADR before other stories can proceed
   7.5-0-brainstorming-and-architecture-decisions: done
   7.5-1-tier-gap-analysis-engine: done
@@ -241,3 +241,46 @@ development_status:
   7.5-3-pathway-guidance-ui: done
   7.5-4-e2e-pathway-guidance-flow: done
   epic-7.5-retrospective: optional
+
+  # ============================================================================
+  # Epic 9: Demand Simulation (8 stories, 36 pts)
+  # User sees architecture under demand pressure and failure conditions
+  # FRs: FR78-FR85, FR89-FR92 | NFRs: NFR23, NFR24
+  # ============================================================================
+  epic-9: done
+  9-0-consolidation-compression-trigger: done  # TD, no deps
+  9-1-demand-schema-and-scenario-presets: done
+  9-2-component-demand-response-data: done  # DEPENDS: 9-1
+  9-3-demand-simulation-engine: done  # DEPENDS: 9-1
+  9-4-scenario-selector-ui-and-store: done  # DEPENDS: 9-3
+  9-5-e2e-demand-flow: done  # DEPENDS: 9-4
+  9-6-score-transition-animation: done  # DEPENDS: 9-4, 10-1 (cross-epic)
+  9-7-failure-scenario-presets: done  # DEPENDS: 9-3, 9-4
+  epic-9-retrospective: optional
+
+  # ============================================================================
+  # Epic 10: Canvas & Content Enhancements (4 stories, 15 pts)
+  # User sees inline metrics on cards, loads more blueprints, exports reports
+  # FRs: FR86-FR88, FR93, FR94 | NFRs: NFR25
+  # ============================================================================
+  epic-10: in-progress
+  10-1-inline-canvas-metrics: done  # Extended with FR93 badge verification
+  10-2-blueprint-expansion: done
+  10-3-e2e-canvas-metrics-and-blueprints: done  # DEPENDS: 10-1, 10-2
+  10-4-architecture-report-export: done  # DEPENDS: 10-1
+  epic-10-retrospective: optional
+
+  # ============================================================================
+  # Epic 11: Expanded Content Library (7 stories, 22 pts)
+  # User accesses 18 components, 15 blueprints, cost metric, demand/failure data
+  # FRs: FR95-FR99 | NFRs: NFR26
+  # ============================================================================
+  epic-11: in-progress
+  11-1-component-data-ai-ml-data-engineering: ready-for-dev  # No deps, parallelizable
+  11-2-component-data-specialty-domains: ready-for-dev  # No deps, parallelizable
+  11-3-cost-efficiency-metric: drafted  # DEPENDS: 11-1, 11-2
+  11-4-demand-failure-response-data: drafted  # DEPENDS: 11-1, 11-2, 9-1, 9-7 (cross-epic)
+  11-5-blueprint-architectures: drafted  # DEPENDS: 11-1, 11-2
+  11-6-e2e-new-components-and-blueprints: drafted  # DEPENDS: 11-1 through 11-5
+  td-11-data-component-data-validation-hardening: drafted  # DEPENDS: 11-1, 11-2
+  epic-11-retrospective: optional

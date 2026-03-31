@@ -12,3 +12,5 @@ Screenshots persist per-spec folder. Re-running a spec only overwrites that spec
 | `stack-browsing/` | `stack-browsing.spec.ts` | 8-4 | Stack tab browsing, drag-and-drop placement, post-placement config editing |
 | `data-context/` | `data-context.spec.ts` | 7-4 | Data context CRUD, fit indicators, variant switching, YAML round-trip |
 | `pathway-guidance/` | `pathway-guidance.spec.ts` | 7.5-4 | Pathway guidance flow: suggestions, weight reranking, constraint warnings, max tier |
+| `demand-simulation/` | `demand-simulation.spec.ts` | 9-5 | Demand scenario selection, heatmap shift, semantic verification, YAML round-trip |
+| `canvas-enhancements/` | `canvas-enhancements.spec.ts` | 10-3 | Inline metrics visibility, weight responsiveness, blueprint loading, demand interaction |
