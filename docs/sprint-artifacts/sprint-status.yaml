@@ -283,6 +283,6 @@ development_status:
   11-5-blueprint-architectures: done  # DEPENDS: 11-1, 11-2
   11-6-e2e-new-components-and-blueprints: done  # DEPENDS: 11-1 through 11-5
   td-11-4a-test-coverage-11-4-code-changes: done  # DEPENDS: 11-4 (MVP test gaps)
-  td-11-6a-e2e-category-browsing-coverage: ready-for-dev  # DEPENDS: 11-6 (MVP E2E gap)
-  td-11-data-component-data-validation-hardening: drafted  # DEPENDS: 11-1, 11-2
+  td-11-6a-e2e-category-browsing-coverage: done  # DEPENDS: 11-6 (MVP E2E gap)
+  td-11-data-component-data-validation-hardening: done  # DEPENDS: 11-1, 11-2
   epic-11-retrospective: optional

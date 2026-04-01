@@ -170,9 +170,13 @@ export const recalculationService = {
         edges,
       )
 
+      // Lookup component once for demand + failure modifier application
+      const component = (demandProfile || failureModifiers)
+        ? componentLibrary.getComponent(node?.data.archieComponentId ?? "")
+        : undefined
+
       // Story 9-4: Apply demand modifiers after variant resolution + interaction rules (Level 3)
       if (demandProfile) {
-        const component = componentLibrary.getComponent(node?.data.archieComponentId ?? "")
         const demandResponses: DemandResponse | undefined = component?.demandResponses
         const adjustedMetrics = applyDemandModifiers(recalculated.metrics, demandResponses, demandProfile)
         recalculated.metrics = adjustedMetrics
@@ -184,7 +188,6 @@ export const recalculationService = {
       // Story 9-7 + 11-4: Apply failure modifiers after demand (Level 4)
       // Per-component failure responses override global preset when available
       if (failureModifiers) {
-        const component = componentLibrary.getComponent(node?.data.archieComponentId ?? "")
         const componentFailure = activeFailurePresetId ? component?.failureResponses?.[activeFailurePresetId] : undefined
         const effectiveModifiers = componentFailure ?? failureModifiers
         const failureAdjusted = applyFailureModifiers(recalculated.metrics, effectiveModifiers)

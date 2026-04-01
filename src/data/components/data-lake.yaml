@@ -105,6 +105,10 @@ config_variants:
         value: high
         numeric_value: 7
         category: operational-complexity
+      - id: cost-per-gb
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
     code_snippet:
       language: python
       code: |

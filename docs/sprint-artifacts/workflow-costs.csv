@@ -256,3 +256,8 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-04-01 01:02,b542be8c-e51,kdbp-code-review,11-6,20min,90,2,66,"opus, sonnet",9381,40506,533610,8421194,7.17,2.64,9.81
 2026-04-01 01:27,5d195276-651,kdbp-dev-story,TD-11-4a,27min,101,1,23,"opus, sonnet",5698,18883,386400,7636134,6.40,1.29,7.68
 2026-04-01 01:27,5d195276-651,kdbp-code-review,TD-11-4a,691min,172,3,64,"opus, sonnet",12626,36222,903563,17143466,14.94,2.67,17.60
+2026-04-01 14:51,333a9a74-392,kdbp-dev-story,TD-11-6a,18min,107,1,12,"opus, sonnet",8746,18394,355611,7524778,6.65,0.81,7.46
+2026-04-01 15:22,03e669d8-3ec,kdbp-code-review,TD-11-6a,15min,80,1,4,"opus, sonnet",10408,24604,365286,5405026,6.25,0.51,6.76
+2026-04-01 21:51,c563267f-880,kdbp-code-review,TD-11-6a,12min,98,1,28,"opus, sonnet",151,31577,419426,7834601,7.53,1.05,8.58
+2026-04-01 22:21,23135322-4ba,kdbp-dev-story,TD-11-data,49min,191,3,78,"<synthetic>, opus, sonnet",297,53408,1040782,19883566,16.42,3.90,20.31
+2026-04-01 23:12,7e8fd424-76a,kdbp-code-review,TD-11-data,28min,134,2,34,"opus, sonnet",6224,33978,466358,11197776,9.10,1.47,10.57

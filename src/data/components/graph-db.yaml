@@ -38,6 +38,10 @@ base_metrics:
     value: high
     numeric_value: 8
     category: developer-experience
+  - id: cost-per-query
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
 config_variants:
   - id: single-node
     name: Single Node
@@ -54,6 +58,10 @@ config_variants:
         value: low
         numeric_value: 2
         category: scalability
+      - id: cost-per-query
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |
@@ -112,6 +120,10 @@ config_variants:
         value: medium
         numeric_value: 5
         category: performance
+      - id: cost-per-query
+        value: low
+        numeric_value: 2
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |

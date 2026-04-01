@@ -55,6 +55,9 @@ skeleton:
     - id: smf-edge-kafka-cache
       source_node_id: smf-kafka
       target_node_id: smf-cache
+    - id: smf-edge-graph-cache
+      source_node_id: smf-graph
+      target_node_id: smf-cache
     - id: smf-edge-cache-ws
       source_node_id: smf-cache
       target_node_id: smf-ws

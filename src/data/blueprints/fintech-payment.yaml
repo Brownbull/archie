@@ -49,6 +49,9 @@ skeleton:
     - id: ftp-edge-pgw-cache
       source_node_id: ftp-pgw
       target_node_id: ftp-cache
+    - id: ftp-edge-app-cache
+      source_node_id: ftp-app
+      target_node_id: ftp-cache
     - id: ftp-edge-db-cache
       source_node_id: ftp-db
       target_node_id: ftp-cache

@@ -142,6 +142,7 @@ export const FailureModifiersSchema = z.record(
 ).refine((r) => Object.keys(r).length <= 50, { message: "FailureModifiers: max 50 entries" })
 
 // Per-component failure responses: maps failure preset IDs to per-metric multiplier maps (Story 11-4)
+// Cap: 10 entries (6 failure presets currently; allows room for future expansion)
 export const FailureResponseSchema = z.record(
   z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   FailureModifiersSchema,

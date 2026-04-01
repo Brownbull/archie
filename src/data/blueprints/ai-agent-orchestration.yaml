@@ -31,8 +31,8 @@ skeleton:
         x: 700
         y: 400
     - id: aao-cache
-      component_id: redis
-      config_variant_id: sentinel
+      component_id: redis-cache
+      config_variant_id: distributed-cache
       position:
         x: 1050
         y: 250
@@ -51,4 +51,7 @@ skeleton:
       target_node_id: aao-cache
     - id: aao-edge-vdb-cache
       source_node_id: aao-vdb
+      target_node_id: aao-cache
+    - id: aao-edge-app-cache
+      source_node_id: aao-app
       target_node_id: aao-cache

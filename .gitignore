@@ -63,6 +63,9 @@ tests/e2e/.auth/
 docs/quality-reports/aislop-latest.json
 docs/quality-reports/history/
 
+# Test runner artifacts
+results.json
+
 # Claude local settings
 .claude/settings.local.json
 

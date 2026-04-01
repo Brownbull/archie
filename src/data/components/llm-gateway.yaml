@@ -50,6 +50,10 @@ config_variants:
         value: low
         numeric_value: 3
         category: operational-complexity
+      - id: cost-per-inference
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |
@@ -150,6 +154,10 @@ config_variants:
         value: medium
         numeric_value: 6
         category: operational-complexity
+      - id: cost-per-inference
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |

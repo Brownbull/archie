@@ -29,6 +29,10 @@ base_metrics:
     value: medium
     numeric_value: 5
     category: operational-complexity
+  - id: data-retention-reliability
+    value: medium
+    numeric_value: 5
+    category: reliability
   - id: prometheus-cost-efficiency
     value: high
     numeric_value: 7

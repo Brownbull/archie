@@ -50,6 +50,10 @@ config_variants:
         value: low
         numeric_value: 2
         category: scalability
+      - id: cost-per-query
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |
@@ -100,6 +104,10 @@ config_variants:
         value: high
         numeric_value: 7
         category: operational-complexity
+      - id: cost-per-query
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |

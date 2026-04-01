@@ -165,6 +165,10 @@ config_variants:
         value: low
         numeric_value: 3
         category: performance
+      - id: cost-per-gb-ingested
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
     code_snippet:
       language: python
       code: |

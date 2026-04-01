@@ -68,6 +68,63 @@ describe("Story 11-5: Blueprint Architectures", () => {
     }
   )
 
+  it.each(BLUEPRINTS_11_5)(
+    "%s has meaningful description with trade-off language (AC-5, V6)",
+    (filename) => {
+      const result = parseBlueprint(filename)
+      expect(result.success, result.error?.message ?? "schema parse failed").toBe(true)
+      if (!result.success) return
+      expect(result.data.description.length).toBeGreaterThan(80)
+      expect(result.data.description.toLowerCase()).toMatch(
+        /trade|latency|cost|complexity|resilience/
+      )
+    }
+  )
+
+  it.each(BLUEPRINTS_11_5)(
+    "%s nodes within canvas bounds x:0-1200 y:0-600 (AC-ARCH-PATTERN-2)",
+    (filename) => {
+      const result = parseBlueprint(filename)
+      expect(result.success, result.error?.message ?? "schema parse failed").toBe(true)
+      if (!result.success) return
+      for (const node of result.data.skeleton.nodes) {
+        expect(node.position.x).toBeGreaterThanOrEqual(0)
+        expect(node.position.x).toBeLessThanOrEqual(1200)
+        expect(node.position.y).toBeGreaterThanOrEqual(0)
+        expect(node.position.y).toBeLessThanOrEqual(600)
+      }
+    }
+  )
+
+  it.each(BLUEPRINTS_11_5)(
+    "%s has 5-6 components (AC-ARCH-PATTERN-3)",
+    (filename) => {
+      const result = parseBlueprint(filename)
+      expect(result.success, result.error?.message ?? "schema parse failed").toBe(true)
+      if (!result.success) return
+      const count = result.data.skeleton.nodes.length
+      expect(count).toBeGreaterThanOrEqual(5)
+      expect(count).toBeLessThanOrEqual(6)
+    }
+  )
+
+  it.each(BLUEPRINTS_11_5)(
+    "%s id matches filename (AC-4)",
+    (filename) => {
+      const result = parseBlueprint(filename)
+      expect(result.success, result.error?.message ?? "schema parse failed").toBe(true)
+      if (!result.success) return
+      const expectedId = filename.replace(".yaml", "")
+      expect(result.data.id).toBe(expectedId)
+    }
+  )
+
+  it("rejects malformed YAML (AC-3 error path)", () => {
+    const malformed = load("id: bad\nname: Bad\nskeleton: not-an-object")
+    const result = BlueprintFullYamlSchema.safeParse(malformed)
+    expect(result.success).toBe(false)
+  })
+
   it("total blueprint count is 15 (10 existing + 5 new) (AC-1)", () => {
     const allFiles = readdirSync(blueprintDir).filter((f: string) =>
       f.endsWith(".yaml")

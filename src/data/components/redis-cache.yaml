@@ -29,6 +29,10 @@ base_metrics:
     value: low
     numeric_value: 3
     category: operational-complexity
+  - id: cache-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
   - id: cache-cost-efficiency
     value: high
     numeric_value: 7
