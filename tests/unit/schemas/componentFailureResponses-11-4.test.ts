@@ -143,7 +143,7 @@ describe("Story 11-4: Failure Response Data for New Components", () => {
         const result = parseComponent(filename)
         expect(result.success, result.error?.message ?? "schema parse failed").toBe(true)
         if (!result.success) return
-        const value = (result.data.failureResponses as Record<string, Record<string, number>> | undefined)?.[preset]?.[metric]
+        const value = result.data.failureResponses?.[preset]?.[metric]
         expect(value, `${filename} → ${preset} → ${metric} is undefined`).toBeDefined()
         expect(
           value!,

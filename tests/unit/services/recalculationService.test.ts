@@ -396,11 +396,12 @@ describe("recalculationService", () => {
   })
 
   describe("failure override logic — per-component vs global (TD-11-4a)", () => {
+    // Shared safely: applyFailureModifiers returns new arrays via .map(), never mutates inputs
     const globalFailureModifiers = { "read-latency": 0.5 }
     const baseMetrics = [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })]
     const defaultVariant = { id: "default", name: "Default", metrics: [] }
 
-    function makeServiceNode(archieComponentId: string) {
+    function makeSingleNode(archieComponentId: string) {
       return [{
         id: "n1",
         data: { archieComponentId, activeConfigVariantId: "default", componentName: "Test", componentCategory: "data-storage" },
@@ -418,7 +419,7 @@ describe("recalculationService", () => {
         },
       }))
 
-      const nodes = makeServiceNode("comp-with-responses")
+      const nodes = makeSingleNode("comp-with-responses")
       const result = recalculationService.run(
         nodes, [], "n1", null, globalFailureModifiers, "failure-traffic-spike",
       )
@@ -437,7 +438,7 @@ describe("recalculationService", () => {
         // no failureResponses
       }))
 
-      const nodes = makeServiceNode("comp-no-responses")
+      const nodes = makeSingleNode("comp-no-responses")
       const result = recalculationService.run(
         nodes, [], "n1", null, globalFailureModifiers, "failure-traffic-spike",
       )
@@ -448,8 +449,8 @@ describe("recalculationService", () => {
     })
 
     it("uses global failureModifiers when activeFailurePresetId is null (1.3)", () => {
-      mockComponents.set("comp-with-responses-2", makeComponent({
-        id: "comp-with-responses-2",
+      mockComponents.set("comp-with-responses", makeComponent({
+        id: "comp-with-responses",
         category: "data-storage",
         baseMetrics,
         configVariants: [defaultVariant],
@@ -458,13 +459,13 @@ describe("recalculationService", () => {
         },
       }))
 
-      const nodes = makeServiceNode("comp-with-responses-2")
+      const nodes = makeSingleNode("comp-with-responses")
       const result = recalculationService.run(
         nodes, [], "n1", null, globalFailureModifiers, null,
       )
       const metric = result.metrics.get("n1")!.metrics.find((m) => m.id === "read-latency")
 
-      // Global wins even though component has data: base 5 * 0.5 = 2.5 (NOT 5 * 0.1 = 0.5)
+      // Null preset → ternary guard forces componentFailure=undefined → global wins: 5 * 0.5 = 2.5
       expect(metric!.numericValue).toBe(2.5)
     })
 
@@ -479,7 +480,7 @@ describe("recalculationService", () => {
         },
       }))
 
-      const nodes = makeServiceNode("comp-partial-responses")
+      const nodes = makeSingleNode("comp-partial-responses")
       const result = recalculationService.run(
         nodes, [], "n1", null, globalFailureModifiers, "failure-traffic-spike",
       )
