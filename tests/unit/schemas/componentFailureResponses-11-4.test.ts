@@ -3,6 +3,7 @@ import { readFileSync } from "fs"
 import { join } from "path"
 import { load } from "js-yaml"
 import { ComponentYamlSchema } from "@/schemas/componentSchema"
+import { FailureResponseSchema } from "@/schemas/demandSchema"
 import { FAILURE_PRESET_IDS, FAILURE_MULTIPLIER_MIN, FAILURE_MULTIPLIER_MAX } from "@/lib/constants"
 
 const componentDir = join(__dirname, "../../../src/data/components")
@@ -43,9 +44,9 @@ describe("Story 11-4: Failure Response Data for New Components", () => {
       expect(result.success, result.error?.message ?? "schema parse failed").toBe(true)
       if (!result.success) return
       expect(
-        result.data.failureResponses,
-        `${filename} missing failureResponses`
-      ).toBeDefined()
+        Object.keys(result.data.failureResponses ?? {}).length,
+        `${filename} failureResponses is empty or missing`
+      ).toBeGreaterThan(0)
     }
   )
 
@@ -119,4 +120,36 @@ describe("Story 11-4: Failure Response Data for New Components", () => {
       }
     }
   )
+
+  it("rejects failure_responses with more than 10 entries (schema boundary)", () => {
+    const tooMany: Record<string, Record<string, number>> = {}
+    for (let i = 0; i < 11; i++) {
+      tooMany[`failure-test-${i}`] = { "some-metric": 0.5 }
+    }
+    const result = FailureResponseSchema.safeParse(tooMany)
+    expect(result.success, "FailureResponseSchema should reject >10 entries").toBe(false)
+  })
+
+  describe("Directional accuracy pins — severe degradation ≤ 0.4 (TD-11-4a AC-2)", () => {
+    const ACCURACY_PINS = [
+      { filename: "llm-gateway.yaml", preset: "failure-traffic-spike", metric: "cost-per-inference", threshold: 0.4 },
+      { filename: "data-lake.yaml", preset: "failure-data-corruption", metric: "data-durability", threshold: 0.4 },
+      { filename: "payment-gateway.yaml", preset: "failure-network-partition", metric: "payment-availability", threshold: 0.4 },
+    ]
+
+    it.each(ACCURACY_PINS)(
+      "$filename $preset → $metric ≤ $threshold",
+      ({ filename, preset, metric, threshold }) => {
+        const result = parseComponent(filename)
+        expect(result.success, result.error?.message ?? "schema parse failed").toBe(true)
+        if (!result.success) return
+        const value = (result.data.failureResponses as Record<string, Record<string, number>> | undefined)?.[preset]?.[metric]
+        expect(value, `${filename} → ${preset} → ${metric} is undefined`).toBeDefined()
+        expect(
+          value!,
+          `${filename} → ${preset} → ${metric}: ${value} should be ≤ ${threshold}`
+        ).toBeLessThanOrEqual(threshold)
+      }
+    )
+  })
 })

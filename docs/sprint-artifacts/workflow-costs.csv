@@ -246,3 +246,12 @@ date,session_id,workflow,story,duration,parent_msgs,subagent_count,subagent_msgs
 2026-03-30 22:33,1fd60d16-d87,kdbp-code-review,10-4,24min,90,2,4,"opus, sonnet",3617,30607,479075,6758183,8.11,0.56,8.67
 2026-03-31 00:19,cba3970c-a55,kdbp-dev-story,11-1-component-data-ai-ml-data-engineering,16min,123,2,68,"opus, sonnet",554,37660,730767,11693314,8.45,4.03,12.48
 2026-03-31 00:41,e82b1520-aa0,kdbp-code-review,11-1,13min,94,2,29,"opus, sonnet",151,28795,552487,8613242,9.01,1.19,10.20
+2026-03-31 01:46,6108c8f9-54d,kdbp-dev-story,11-3-cost-efficiency-metric,29min,195,2,42,"opus, sonnet",264,37838,569131,18270647,12.80,2.15,14.95
+2026-03-31 02:21,cf0d6ba9-a8f,kdbp-code-review,11-3,670min,112,4,72,"opus, sonnet",223,44967,1697264,10359623,18.32,3.52,21.85
+2026-03-31 13:54,6f038383-54e,kdbp-dev-story,11-4-demand-failure-response-data,267min,189,3,141,"haiku, opus, sonnet",1346,51243,1303612,21269262,15.82,4.52,20.34
+2026-03-31 18:32,2ff13fe3-a48,kdbp-code-review,11-4,62min,108,4,50,"<synthetic>, opus, sonnet",7093,47107,634439,10115493,9.70,2.13,11.84
+2026-03-31 19:44,fa6a8b95-23b,kdbp-dev-story,11-5-blueprint-architectures,18min,144,2,75,"opus, sonnet",9901,42794,544303,13579311,9.62,2.93,12.54
+2026-03-31 20:08,79e918c2-886,kdbp-code-review,11-5,27min,87,2,53,"opus, sonnet",169,36546,418353,6901619,6.17,1.82,7.99
+2026-04-01 00:23,8a454a21-060,kdbp-dev-story,11-6,34min,173,2,103,"opus, sonnet",9707,52160,661718,20765850,13.53,3.99,17.52
+2026-04-01 01:02,b542be8c-e51,kdbp-code-review,11-6,20min,90,2,66,"opus, sonnet",9381,40506,533610,8421194,7.17,2.64,9.81
+2026-04-01 01:27,5d195276-651,kdbp-dev-story,TD-11-4a,27min,101,1,23,"opus, sonnet",5698,18883,386400,7636134,6.40,1.29,7.68
