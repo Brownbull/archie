@@ -1,0 +1,236 @@
+id: vector-db
+name: Vector Database
+category: data-storage
+description: Stores and retrieves vector embeddings for similarity search and semantic queries
+is: A specialized database optimized for storing high-dimensional vectors and performing approximate nearest neighbor search at scale
+gain:
+  - Sub-millisecond similarity search across millions of embeddings
+  - Enables semantic search, recommendation, and RAG without custom algorithms
+  - Supports hybrid search combining vector similarity with metadata filtering
+cost:
+  - Memory-intensive indexing limits dataset size per node
+  - Index rebuild after bulk inserts can take minutes to hours
+  - Embedding dimension locked at index creation time
+tags:
+  - database
+  - vector
+  - embeddings
+  - similarity
+  - ai
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: data-durability
+    value: medium
+    numeric_value: 6
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: cost-per-query
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: single-node
+    name: Single Node
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 2
+        category: scalability
+      - id: cost-per-query
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Vector DB - Single Node via Chroma
+        import { ChromaClient } from 'chromadb'
+
+        const client = new ChromaClient({ path: process.env.CHROMA_URL })
+        const collection = await client.getOrCreateCollection({
+          name: 'documents',
+        })
+
+        export async function upsert(id: string, embedding: number[], metadata: Record<string, string>) {
+          await collection.upsert({ ids: [id], embeddings: [embedding], metadatas: [metadata] })
+        }
+
+        export async function query(embedding: number[], topK = 10) {
+          return collection.query({ queryEmbeddings: [embedding], nResults: topK })
+        }
+    metric_explanations:
+      query-latency:
+        reason: Single-node vector search operates entirely in local memory with no network partition routing, delivering sub-millisecond query times on moderate datasets.
+        contributing_factors:
+          - HNSW index resides entirely in one process memory space
+          - No network hop for shard coordination
+          - Small datasets fit entirely in RAM without disk spill
+      horizontal-scalability:
+        reason: Single-node deployment cannot distribute vectors across machines, capping dataset size at one server's available RAM.
+        contributing_factors:
+          - Index size bounded by single machine memory
+          - No automatic sharding or partition rebalancing
+          - Scaling requires manual migration to distributed variant
+    data_fit_profile:
+      embedding-dimension: "Handles any dimension on single node but RAM limits total vector count"
+      index-size: "Best for small to medium collections under 10M vectors"
+      query-pattern: "Optimized for low-concurrency exploratory queries"
+  - id: distributed
+    name: Distributed Cluster
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: operational-complexity
+        value: high
+        numeric_value: 7
+        category: operational-complexity
+      - id: cost-per-query
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Vector DB - Distributed Cluster via Qdrant
+        import { QdrantClient } from '@qdrant/js-client-rest'
+
+        const client = new QdrantClient({
+          url: process.env.QDRANT_CLUSTER_URL,
+          apiKey: process.env.QDRANT_API_KEY,
+        })
+
+        export async function upsert(collectionName: string, points: { id: string; vector: number[]; payload: Record<string, unknown> }[]) {
+          await client.upsert(collectionName, { points })
+        }
+
+        export async function search(collectionName: string, vector: number[], limit = 10) {
+          return client.search(collectionName, { vector, limit })
+        }
+    metric_explanations:
+      horizontal-scalability:
+        reason: Distributed vector DBs shard collections across nodes, enabling billions of vectors by adding machines to the cluster.
+        contributing_factors:
+          - Vectors partitioned across shards with consistent hashing
+          - New nodes absorb rebalanced shards without downtime
+          - Query fanout to multiple shards runs in parallel
+      operational-complexity:
+        reason: Running a distributed vector cluster requires managing shard placement, replication factors, index tuning per collection, and coordinated rolling upgrades.
+        contributing_factors:
+          - Shard rebalancing during scale-out can saturate network bandwidth
+          - Replication factor tuning trades durability for write performance
+          - Index parameter changes require per-shard rebuild
+    data_fit_profile:
+      embedding-dimension: "Handles high-dimensional vectors with sharding across nodes"
+      index-size: "Scales to billions of vectors across cluster nodes"
+      query-pattern: "Supports high-concurrency production workloads"
+  - id: managed-cloud
+    name: Managed Cloud
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: cost-per-query
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Vector DB - Managed Cloud via Pinecone
+        import { Pinecone } from '@pinecone-database/pinecone'
+
+        const pc = new Pinecone({ apiKey: process.env.PINECONE_API_KEY })
+        const index = pc.index('documents')
+
+        export async function upsert(vectors: { id: string; values: number[]; metadata: Record<string, string> }[]) {
+          await index.upsert(vectors)
+        }
+
+        export async function query(vector: number[], topK = 10) {
+          return index.query({ vector, topK, includeMetadata: true })
+        }
+    metric_explanations:
+      operational-complexity:
+        reason: Managed cloud vector databases eliminate all infrastructure management; the provider handles scaling, indexing, backups, and upgrades automatically.
+        contributing_factors:
+          - No servers or clusters to provision or monitor
+          - Automatic index optimization without manual parameter tuning
+          - Provider SLA covers availability and durability
+      horizontal-scalability:
+        reason: Cloud-managed services auto-scale storage and compute based on demand, handling billions of vectors without manual shard management.
+        contributing_factors:
+          - Serverless pod scaling based on query volume
+          - Storage scales independently from compute
+          - Multi-region replication available with a configuration toggle
+    data_fit_profile:
+      embedding-dimension: "Supports standard dimensions with provider-optimized indexing"
+      index-size: "Auto-scales to billions of vectors with no manual sharding"
+      query-pattern: "Handles variable query patterns with serverless auto-scaling"
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 1-50ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+      cost-per-query: 0.7
+    extreme:
+      query-latency: 0.6
+      data-durability: 0.8
+      cost-per-query: 0.5
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+      horizontal-scalability: 0.7
+  concurrent-users:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.5
+failure_responses:
+  failure-single-node:
+    data-durability: 0.5
+    horizontal-scalability: 0.4
+  failure-network-partition:
+    query-latency: 0.4
+    horizontal-scalability: 0.5
+  failure-database:
+    data-durability: 0.3
+    query-latency: 0.4
+  failure-data-corruption:
+    data-durability: 0.3
+    query-latency: 0.5

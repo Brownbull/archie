@@ -14,3 +14,4 @@ Screenshots persist per-spec folder. Re-running a spec only overwrites that spec
 | `pathway-guidance/` | `pathway-guidance.spec.ts` | 7.5-4 | Pathway guidance flow: suggestions, weight reranking, constraint warnings, max tier |
 | `demand-simulation/` | `demand-simulation.spec.ts` | 9-5 | Demand scenario selection, heatmap shift, semantic verification, YAML round-trip |
 | `canvas-enhancements/` | `canvas-enhancements.spec.ts` | 10-3 | Inline metrics visibility, weight responsiveness, blueprint loading, demand interaction |
+| `expanded-content/` | `expanded-content.spec.ts` | 11-6 | New components load, blueprints render, cost-efficiency visible, demand/failure V6 |

@@ -33,6 +33,10 @@ base_metrics:
     value: high
     numeric_value: 8
     category: operational-complexity
+  - id: kafka-cost-efficiency
+    value: low
+    numeric_value: 3
+    category: cost-efficiency
 config_variants:
   - id: single-broker
     name: Single Broker
@@ -45,6 +49,10 @@ config_variants:
         value: low
         numeric_value: 3
         category: scalability
+      - id: kafka-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |
@@ -88,6 +96,10 @@ config_variants:
         value: high
         numeric_value: 9
         category: scalability
+      - id: kafka-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |

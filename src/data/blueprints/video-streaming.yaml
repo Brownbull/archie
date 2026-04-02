@@ -1,0 +1,51 @@
+id: video-streaming
+name: "Video Streaming"
+description: "CDN-first video delivery architecture optimized for global reach and adaptive bitrate streaming. Cloudflare edge caches HLS segments close to viewers. Nginx load-balances origin requests across application servers. Redis caches manifest files and session state. Serverless functions handle elastic transcoding bursts without permanent infrastructure. Trades cold-start transcoding latency for near-zero idle cost and global sub-100ms segment delivery."
+tier: 3
+skeleton:
+  schema_version: "2.0.0"
+  name: "Video Streaming"
+  nodes:
+    - id: vs-cdn
+      component_id: cloudflare-cdn
+      config_variant_id: full-site
+      position:
+        x: 0
+        y: 250
+    - id: vs-nginx
+      component_id: nginx
+      config_variant_id: load-balancer
+      position:
+        x: 300
+        y: 250
+    - id: vs-app
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 600
+        y: 250
+    - id: vs-cache
+      component_id: redis-cache
+      config_variant_id: distributed-cache
+      position:
+        x: 900
+        y: 100
+    - id: vs-transcode
+      component_id: serverless
+      config_variant_id: provisioned-concurrency
+      position:
+        x: 900
+        y: 400
+  edges:
+    - id: vs-edge-cdn-nginx
+      source_node_id: vs-cdn
+      target_node_id: vs-nginx
+    - id: vs-edge-nginx-app
+      source_node_id: vs-nginx
+      target_node_id: vs-app
+    - id: vs-edge-app-cache
+      source_node_id: vs-app
+      target_node_id: vs-cache
+    - id: vs-edge-app-transcode
+      source_node_id: vs-app
+      target_node_id: vs-transcode

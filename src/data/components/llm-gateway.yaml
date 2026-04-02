@@ -1,0 +1,240 @@
+id: llm-gateway
+name: LLM Gateway
+category: compute
+description: Routing and proxy layer for large language model inference across providers
+is: A unified API gateway that routes inference requests to one or more LLM providers with load balancing, fallback, and cost tracking
+gain:
+  - Unified API across multiple LLM providers (OpenAI, Anthropic, Google)
+  - Automatic fallback and retry across providers on failure
+  - Centralized cost tracking and token usage monitoring
+cost:
+  - Added latency from proxy hop on every inference call
+  - Single point of failure if gateway goes down
+  - Configuration complexity grows with each new provider integration
+tags:
+  - ai
+  - llm
+  - inference
+  - gateway
+  - routing
+base_metrics:
+  - id: inference-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: model-availability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: cost-per-inference
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: single-model
+    name: Single Model Proxy
+    metrics:
+      - id: inference-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: cost-per-inference
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // LLM Gateway - Single Model Proxy via OpenAI SDK
+        import OpenAI from 'openai'
+
+        const client = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        })
+
+        export async function complete(prompt: string) {
+          const response = await client.chat.completions.create({
+            model: 'gpt-4o',
+            messages: [{ role: 'user', content: prompt }],
+          })
+          return response.choices[0]?.message?.content
+        }
+    metric_explanations:
+      inference-latency:
+        reason: Single-model proxy adds minimal overhead since requests route directly to one provider with no routing logic or model selection.
+        contributing_factors:
+          - No model selection decision required per request
+          - Single network hop to one provider endpoint
+          - Connection pooling to a single API reduces handshake overhead
+      operational-complexity:
+        reason: One provider, one API key, one model configuration keeps the operational surface small and easy to monitor.
+        contributing_factors:
+          - Single set of credentials to manage
+          - No routing rules or fallback chains to debug
+          - Monitoring targets a single provider dashboard
+    data_fit_profile:
+      model-size: "Suitable for any single model size since routing is direct"
+      token-throughput: "Handles moderate throughput; limited by single provider rate limits"
+      inference-latency: "Low added latency due to simple proxy path"
+  - id: multi-model-router
+    name: Multi-Model Router
+    metrics:
+      - id: inference-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cost-per-inference
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // LLM Gateway - Multi-Model Router via LiteLLM pattern
+        import OpenAI from 'openai'
+
+        const providers = {
+          fast: new OpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+          // Anthropic via LiteLLM proxy (github.com/BerriAI/litellm)
+          quality: new OpenAI({
+            apiKey: process.env.ANTHROPIC_API_KEY,
+            baseURL: process.env.LITELLM_URL ?? 'http://localhost:4000/v1',
+          }),
+        }
+
+        export async function route(prompt: string, tier: 'fast' | 'quality') {
+          const client = providers[tier]
+          const model = tier === 'fast' ? 'gpt-4o-mini' : 'claude-sonnet-4-20250514'
+          return client.chat.completions.create({
+            model,
+            messages: [{ role: 'user', content: prompt }],
+          })
+        }
+    metric_explanations:
+      model-availability:
+        reason: Multiple providers mean a failure at one provider triggers automatic fallback to another, reducing total downtime probability.
+        contributing_factors:
+          - Provider outage at OpenAI still routes to Anthropic and vice versa
+          - Health checks detect slow or failing providers before user impact
+          - Retry logic spans providers, not just endpoints within one provider
+      cost-per-inference:
+        reason: Routing cheaper models for simple tasks and expensive models for complex tasks significantly reduces average cost per request.
+        contributing_factors:
+          - Task classification directs low-complexity requests to cheaper models
+          - Token cost varies 10-50x across model tiers
+          - Bulk traffic on cheap models subsidizes expensive model usage
+    data_fit_profile:
+      model-size: "Routes between small and large models based on task complexity"
+      token-throughput: "Higher aggregate throughput by distributing across providers"
+      inference-latency: "Moderate added latency from routing decision logic"
+  - id: streaming
+    name: Streaming Gateway
+    metrics:
+      - id: inference-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 6
+        category: operational-complexity
+      - id: cost-per-inference
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // LLM Gateway - Streaming via Server-Sent Events
+        import OpenAI from 'openai'
+
+        const client = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        })
+
+        export async function* streamComplete(prompt: string) {
+          const stream = await client.chat.completions.create({
+            model: 'gpt-4o',
+            messages: [{ role: 'user', content: prompt }],
+            stream: true,
+          })
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content
+            if (content) yield content
+          }
+        }
+    metric_explanations:
+      inference-latency:
+        reason: Streaming returns the first token almost immediately rather than waiting for the full response, drastically reducing perceived latency for users.
+        contributing_factors:
+          - First token arrives in 100-500ms instead of waiting 2-10s for full response
+          - Server-Sent Events maintain a persistent connection reducing handshake overhead
+          - Progressive rendering gives users feedback before completion
+      operational-complexity:
+        reason: Streaming connections require long-lived HTTP connections, backpressure handling, and reconnection logic that stateless request-response does not need.
+        contributing_factors:
+          - SSE connections must handle client disconnects gracefully
+          - Load balancers need sticky sessions or connection-aware routing
+          - Monitoring must track stream duration and partial failure rates
+    data_fit_profile:
+      model-size: "Works with any model that supports streaming output"
+      token-throughput: "Optimized for user-facing latency, not batch throughput"
+      inference-latency: "Minimal time-to-first-token via progressive streaming"
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+    - streaming
+  typical_latency: 50-500ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      inference-latency: 0.7
+      cost-per-inference: 0.8
+    extreme:
+      inference-latency: 0.5
+      model-availability: 0.8
+      cost-per-inference: 0.6
+  concurrent-users:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.5
+      model-availability: 0.7
+  burst-pattern:
+    periodic-spikes:
+      inference-latency: 0.7
+      model-availability: 0.8
+    unpredictable:
+      inference-latency: 0.5
+      model-availability: 0.7
+failure_responses:
+  failure-single-node:
+    model-availability: 0.5
+    operational-complexity: 0.7
+  failure-network-partition:
+    inference-latency: 0.3
+    model-availability: 0.4
+  failure-traffic-spike:
+    inference-latency: 0.4
+    cost-per-inference: 0.3
+  failure-region-outage:
+    model-availability: 0.3
+    inference-latency: 0.4

@@ -5,6 +5,14 @@
 
 ## PROD Backlog
 
+### [PROD] Blueprint YAML validation: structural assertions + referential integrity
+
+- **Source:** TD-11-data review (2026-04-01)
+- **Finding:** Blueprint validation tests only check schema pass/fail. No assertions on skeleton node count, edge count, or that `component_id` references in blueprint nodes map to known component IDs in the catalog. A referential integrity test (`it("all node component_ids reference known components")`) would catch data drift between blueprint and component YAML files.
+- **Files:** `tests/unit/data/blueprint-yaml-validation.test.ts`
+- **Stage:** PROD — data integrity coverage for cross-file references; not blocking functionality
+- **Estimated effort:** Small (2-3 test case additions)
+
 ### [PROD] Repository integration test for schema-triggered silent drop
 
 - **Source:** TD-8-1a review (2026-03-12)
@@ -295,6 +303,22 @@
 - **Source:** 10-4 self-review (2026-03-30)
 - **Resolved:** 10-4 code review (2026-03-30) — `tests/e2e/export-report.spec.ts` added with 4 tests: button gating (AC-1), download+provenance (AC-7/AC-8/V2/V5), content verification (AC-2/AC-3/V1/V6), scenario impact (AC-5/V3). All pass.
 
+### [PROD] Missing geographic-spread demand variable on AI/ML + Data Eng components
+
+- **Source:** 11-1 review (2026-03-30)
+- **Finding:** All 4 new components (llm-gateway, vector-db, serverless, etl-pipeline) lack `geographic-spread` demand responses. This variable is meaningful for LLM Gateway (multi-region inference routing) and Serverless (edge-function variant explicitly targets global distribution). Omission is not a schema violation but misses a directionally informative signal.
+- **Files:** `src/data/components/llm-gateway.yaml`, `src/data/components/vector-db.yaml`, `src/data/components/serverless.yaml`, `src/data/components/etl-pipeline.yaml`
+- **Stage:** PROD — data completeness for demand simulation accuracy, not feature-blocking
+- **Estimated effort:** Small (add geographic-spread entries to 4 YAML files, 2 levels each)
+
+### [PROD] No comparative degradation tests for Epic 11 components
+
+- **Source:** 11-1 review (2026-03-30)
+- **Finding:** Existing components have cross-component comparative degradation tests (redis-cache vs redis, nginx vs node-express, kafka vs rabbitmq). The 4 new components get no analogous treatment. Directionally meaningful comparisons: vector-db single-node vs distributed under data-size:extreme, serverless cold-start vs provisioned-concurrency under burst-pattern, etl-pipeline batch vs streaming under data-size:extreme.
+- **Files:** `tests/unit/schemas/componentSchema.test.ts`
+- **Stage:** PROD — test semantic depth for demand response accuracy, not feature-blocking
+- **Estimated effort:** Small (3-4 comparative test cases following existing pattern)
+
 ## SCALE Backlog
 
 ### [SCALE] Extract shared blueprint-load-and-add-data-item helper for E2E specs
@@ -368,3 +392,27 @@
 - **Files:** `src/components/dashboard/PathwayGuidancePanel.tsx`
 - **Stage:** SCALE — accessibility improvement for mobile/keyboard users; desktop-first tool per PRD
 - **Estimated effort:** Small (add aria-label or tooltip component)
+
+### [PROD] RecalculationService.run() accumulating positional parameters (6 params)
+
+- **Source:** 11-4 review (2026-03-31)
+- **Finding:** `recalculationService.run()` now takes 6 positional parameters (nodes, edges, changedNodeId, demandProfile, failureModifiers, activeFailurePresetId). At threshold for parameter object refactor. Next parameter addition should trigger extraction to a `RecalculationOptions` object.
+- **Files:** `src/services/recalculationService.ts`, `src/stores/architectureStore.ts`
+- **Stage:** PROD — API ergonomics and maintainability, not feature-blocking
+- **Estimated effort:** Small (extract options object, update callers)
+
+### [PROD] Duplicate parseComponent test helper across 11-3 and 11-4 test files
+
+- **Source:** 11-4 review (2026-03-31)
+- **Finding:** `parseComponent()` helper is independently defined in both `componentDataQuality-11-3.test.ts` and `componentFailureResponses-11-4.test.ts` with identical logic (readFileSync + load + ComponentYamlSchema.safeParse). Extract to shared `tests/unit/schemas/helpers.ts` to eliminate duplication as more story-specific test files accumulate.
+- **Files:** `tests/unit/schemas/componentDataQuality-11-3.test.ts`, `tests/unit/schemas/componentFailureResponses-11-4.test.ts`
+- **Stage:** PROD — DRY/maintainability for test infrastructure, not feature-blocking
+- **Estimated effort:** Small (extract shared helper, update 2 test files)
+
+### [PROD] Cost-efficiency metric ID naming convention drift across 18 components
+
+- **Source:** 11-3 review (2026-03-30)
+- **Finding:** 10 existing components use component-prefixed metric IDs (`redis-cost-efficiency`, `postgres-cost-efficiency`, `nginx-cost-efficiency`, etc.) while 8 new components from 11-1/11-2 use semantically-descriptive IDs (`cost-per-inference`, `cost-per-invocation`, `cost-per-query`, `cost-per-gb`, `cost-per-gb-ingested`). The scoring pipeline uses `metric.category` for aggregation (functionally correct), but `INTERACTION_RULES` in `recalculator.ts` reads metric IDs directly. If future stories add cost-efficiency adjacency rules, the inconsistent IDs would cause silent misses. Standardize to either semantic or generic convention across all 18 components.
+- **Files:** All 18 `src/data/components/*.yaml` files
+- **Stage:** PROD — no functional impact today (pipeline is category-driven), but creates latent maintenance risk for future interaction rules
+- **Estimated effort:** Medium (rename metric IDs in 18 YAML files + update corresponding tests)

@@ -11,6 +11,8 @@ const blueprintDir = resolve(__dirname, "../../../src/data/blueprints")
 const VALID_COMPONENT_IDS = new Set([
   "nginx", "node-express", "postgresql", "redis", "redis-cache",
   "kafka", "rabbitmq", "cloudflare-cdn", "websocket-server", "prometheus",
+  "llm-gateway", "vector-db", "serverless", "etl-pipeline",
+  "payment-gateway", "graph-db", "data-lake", "siem",
 ])
 
 const VALID_VARIANT_IDS: Record<string, Set<string>> = {
@@ -24,6 +26,14 @@ const VALID_VARIANT_IDS: Record<string, Set<string>> = {
   "cloudflare-cdn": new Set(["static-caching", "full-site"]),
   "websocket-server": new Set(["single-server", "clustered"]),
   "prometheus": new Set(["standalone", "federated"]),
+  "llm-gateway": new Set(["single-model", "multi-model-router", "streaming"]),
+  "vector-db": new Set(["single-node", "distributed", "managed-cloud"]),
+  "serverless": new Set(["cold-start", "provisioned-concurrency", "edge-function"]),
+  "etl-pipeline": new Set(["batch", "micro-batch", "streaming"]),
+  "payment-gateway": new Set(["direct-integration", "payment-orchestrator", "recurring-billing"]),
+  "graph-db": new Set(["single-node", "distributed-cluster", "managed-cloud"]),
+  "data-lake": new Set(["raw-storage", "lakehouse", "managed-lake"]),
+  "siem": new Set(["on-premise", "cloud-native", "hybrid"]),
 }
 
 function loadBlueprintYaml(filename: string): unknown {

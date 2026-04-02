@@ -394,4 +394,100 @@ describe("recalculationService", () => {
 
     })
   })
+
+  describe("failure override logic — per-component vs global (TD-11-4a)", () => {
+    // Shared safely: applyFailureModifiers returns new arrays via .map(), never mutates inputs
+    const globalFailureModifiers = { "read-latency": 0.5 }
+    const baseMetrics = [makeMetric({ id: "read-latency", numericValue: 5, category: "performance" })]
+    const defaultVariant = { id: "default", name: "Default", metrics: [] }
+
+    function makeSingleNode(archieComponentId: string) {
+      return [{
+        id: "n1",
+        data: { archieComponentId, activeConfigVariantId: "default", componentName: "Test", componentCategory: "data-storage" },
+      }]
+    }
+
+    it("uses component-specific failureResponses when preset matches (1.1)", () => {
+      mockComponents.set("comp-with-responses", makeComponent({
+        id: "comp-with-responses",
+        category: "data-storage",
+        baseMetrics,
+        configVariants: [defaultVariant],
+        failureResponses: {
+          "failure-traffic-spike": { "read-latency": 0.2 },
+        },
+      }))
+
+      const nodes = makeSingleNode("comp-with-responses")
+      const result = recalculationService.run(
+        nodes, [], "n1", null, globalFailureModifiers, "failure-traffic-spike",
+      )
+      const metric = result.metrics.get("n1")!.metrics.find((m) => m.id === "read-latency")
+
+      // Component-specific: base 5 * 0.2 = 1.0 (NOT global 5 * 0.5 = 2.5)
+      expect(metric!.numericValue).toBe(1)
+    })
+
+    it("falls back to global failureModifiers when component has no failureResponses (1.2)", () => {
+      mockComponents.set("comp-no-responses", makeComponent({
+        id: "comp-no-responses",
+        category: "data-storage",
+        baseMetrics,
+        configVariants: [defaultVariant],
+        // no failureResponses
+      }))
+
+      const nodes = makeSingleNode("comp-no-responses")
+      const result = recalculationService.run(
+        nodes, [], "n1", null, globalFailureModifiers, "failure-traffic-spike",
+      )
+      const metric = result.metrics.get("n1")!.metrics.find((m) => m.id === "read-latency")
+
+      // Global: base 5 * 0.5 = 2.5
+      expect(metric!.numericValue).toBe(2.5)
+    })
+
+    it("uses global failureModifiers when activeFailurePresetId is null (1.3)", () => {
+      mockComponents.set("comp-with-responses", makeComponent({
+        id: "comp-with-responses",
+        category: "data-storage",
+        baseMetrics,
+        configVariants: [defaultVariant],
+        failureResponses: {
+          "failure-traffic-spike": { "read-latency": 0.1 },
+        },
+      }))
+
+      const nodes = makeSingleNode("comp-with-responses")
+      const result = recalculationService.run(
+        nodes, [], "n1", null, globalFailureModifiers, null,
+      )
+      const metric = result.metrics.get("n1")!.metrics.find((m) => m.id === "read-latency")
+
+      // Null preset → ternary guard forces componentFailure=undefined → global wins: 5 * 0.5 = 2.5
+      expect(metric!.numericValue).toBe(2.5)
+    })
+
+    it("falls back to global when component has failureResponses but not for active preset (1.4)", () => {
+      mockComponents.set("comp-partial-responses", makeComponent({
+        id: "comp-partial-responses",
+        category: "data-storage",
+        baseMetrics,
+        configVariants: [defaultVariant],
+        failureResponses: {
+          "failure-single-node": { "read-latency": 0.1 },
+        },
+      }))
+
+      const nodes = makeSingleNode("comp-partial-responses")
+      const result = recalculationService.run(
+        nodes, [], "n1", null, globalFailureModifiers, "failure-traffic-spike",
+      )
+      const metric = result.metrics.get("n1")!.metrics.find((m) => m.id === "read-latency")
+
+      // Global: preset "failure-traffic-spike" not in component's responses → fallback
+      expect(metric!.numericValue).toBe(2.5)
+    })
+  })
 })

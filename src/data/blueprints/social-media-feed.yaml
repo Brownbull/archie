@@ -1,0 +1,63 @@
+id: social-media-feed
+name: "Social Media Feed"
+description: "Relationship-driven social feed architecture built around a graph database for friend-of-friend traversals and content ranking. Kafka fans out feed updates to WebSocket-connected clients in real time. Redis caching absorbs read-heavy timeline queries. Trades graph traversal latency and operational complexity for expressive social queries and sub-second feed delivery."
+tier: 3
+skeleton:
+  schema_version: "2.0.0"
+  name: "Social Media Feed"
+  nodes:
+    - id: smf-nginx
+      component_id: nginx
+      config_variant_id: load-balancer
+      position:
+        x: 0
+        y: 250
+    - id: smf-app
+      component_id: node-express
+      config_variant_id: cluster-mode
+      position:
+        x: 300
+        y: 250
+    - id: smf-kafka
+      component_id: kafka
+      config_variant_id: multi-broker
+      position:
+        x: 600
+        y: 250
+    - id: smf-graph
+      component_id: graph-db
+      config_variant_id: distributed-cluster
+      position:
+        x: 900
+        y: 100
+    - id: smf-cache
+      component_id: redis-cache
+      config_variant_id: distributed-cache
+      position:
+        x: 900
+        y: 400
+    - id: smf-ws
+      component_id: websocket-server
+      config_variant_id: clustered
+      position:
+        x: 1200
+        y: 250
+  edges:
+    - id: smf-edge-nginx-app
+      source_node_id: smf-nginx
+      target_node_id: smf-app
+    - id: smf-edge-app-kafka
+      source_node_id: smf-app
+      target_node_id: smf-kafka
+    - id: smf-edge-kafka-graph
+      source_node_id: smf-kafka
+      target_node_id: smf-graph
+    - id: smf-edge-kafka-cache
+      source_node_id: smf-kafka
+      target_node_id: smf-cache
+    - id: smf-edge-graph-cache
+      source_node_id: smf-graph
+      target_node_id: smf-cache
+    - id: smf-edge-cache-ws
+      source_node_id: smf-cache
+      target_node_id: smf-ws

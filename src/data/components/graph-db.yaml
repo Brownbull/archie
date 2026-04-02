@@ -1,0 +1,264 @@
+id: graph-db
+name: Graph Database
+category: data-storage
+description: Database optimized for storing and querying highly connected data as nodes and relationships
+is: A native graph storage engine that represents data as nodes, edges, and properties, enabling constant-time relationship traversal regardless of dataset size
+gain:
+  - Constant-time relationship traversal regardless of total graph size
+  - Natural data modeling for social networks, knowledge graphs, and fraud detection
+  - Powerful graph query languages (Cypher, Gremlin) for multi-hop pattern matching
+cost:
+  - Poor fit for tabular or aggregation-heavy workloads
+  - Horizontal scaling requires graph partitioning which can split traversal paths
+  - Smaller ecosystem and fewer managed service options than relational databases
+tags:
+  - database
+  - graph
+  - social
+  - relationships
+  - traversal
+base_metrics:
+  - id: traversal-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: data-durability
+    value: medium
+    numeric_value: 6
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 6
+    category: operational-complexity
+  - id: query-expressiveness
+    value: high
+    numeric_value: 8
+    category: developer-experience
+  - id: cost-per-query
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: single-node
+    name: Single Node
+    metrics:
+      - id: traversal-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 2
+        category: scalability
+      - id: cost-per-query
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Graph DB - Single Node Neo4j via official driver
+        import neo4j from 'neo4j-driver'
+
+        const driver = neo4j.driver(
+          'bolt://localhost:7687',
+          neo4j.auth.basic('neo4j', process.env.NEO4J_PASSWORD!)
+        )
+
+        export async function findFriends(userId: string, depth: number) {
+          const session = driver.session({ defaultAccessMode: neo4j.session.READ })
+          try {
+            const result = await session.run(
+              `MATCH (u:User {id: $userId})-[:FOLLOWS*1..${depth}]->(friend)
+               RETURN DISTINCT friend.id AS id, friend.name AS name`,
+              { userId }
+            )
+            return result.records.map(r => ({
+              id: r.get('id'), name: r.get('name'),
+            }))
+          } finally {
+            await session.close()
+          }
+        }
+    metric_explanations:
+      traversal-latency:
+        reason: Single-node graph keeps all data local, eliminating network hops during multi-hop traversals.
+        contributing_factors:
+          - All nodes and edges stored on the same disk with index-free adjacency
+          - No network partition lookup required during traversal
+          - Page cache keeps hot subgraphs in memory for sub-millisecond access
+      operational-complexity:
+        reason: A single Neo4j instance requires minimal configuration and operates as a single process with built-in browser console.
+        contributing_factors:
+          - Single JVM process with embedded web console
+          - Backup is a file-level copy or built-in dump command
+          - No cluster coordination, leader election, or replication to manage
+    data_fit_profile:
+      relationship-depth: "Excellent for deep traversals (5+ hops) since all data is local"
+      traversal-pattern: "Best for read-heavy graph queries with moderate write volume"
+      graph-size: "Limited to single-machine memory and disk; practical ceiling around 10B nodes"
+  - id: distributed-cluster
+    name: Distributed Cluster
+    metrics:
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: operational-complexity
+        value: high
+        numeric_value: 8
+        category: operational-complexity
+      - id: traversal-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: cost-per-query
+        value: low
+        numeric_value: 2
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Graph DB - Distributed Neo4j Cluster (causal cluster)
+        import neo4j from 'neo4j-driver'
+
+        const driver = neo4j.driver(
+          'neo4j+s://cluster.example.com:7687',
+          neo4j.auth.basic('neo4j', process.env.NEO4J_PASSWORD!),
+          { maxConnectionPoolSize: 100 }
+        )
+
+        export async function findShortestPath(fromId: string, toId: string) {
+          const session = driver.session({
+            defaultAccessMode: neo4j.session.READ,
+            bookmarks: [],  // causal consistency
+          })
+          try {
+            const result = await session.run(
+              `MATCH path = shortestPath(
+                (a:User {id: $fromId})-[:KNOWS*..10]-(b:User {id: $toId})
+              ) RETURN nodes(path) AS nodes, length(path) AS hops`,
+              { fromId, toId }
+            )
+            return result.records[0]
+          } finally {
+            await session.close()
+          }
+        }
+    metric_explanations:
+      horizontal-scalability:
+        reason: Causal clustering distributes read replicas across machines, allowing horizontal read scaling while the core servers handle writes.
+        contributing_factors:
+          - Read replicas can be added independently to scale query throughput
+          - Causal consistency model allows stale reads on replicas without locking
+          - Sharding (fabric) can partition large graphs across database instances
+      operational-complexity:
+        reason: Running a causal cluster requires managing core servers, read replicas, discovery protocols, and monitoring replication lag.
+        contributing_factors:
+          - Minimum 3 core servers for quorum-based write consensus
+          - Read replicas need monitoring for replication lag and catchup
+          - Rolling upgrades require careful version coordination across cluster
+    data_fit_profile:
+      relationship-depth: "Cross-shard traversals add latency; best when hot subgraphs fit on a single shard"
+      traversal-pattern: "Supports mixed read-write with causal consistency guarantees"
+      graph-size: "Scales to billions of nodes across cluster; limited by partitioning strategy"
+  - id: managed-cloud
+    name: Managed Cloud Service
+    metrics:
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cost-per-query
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Graph DB - AWS Neptune (managed graph service)
+        import { NeptuneClient } from '@aws-sdk/client-neptune'
+
+        // Neptune uses Gremlin or openCypher via HTTP endpoint
+        const endpoint = process.env.NEPTUNE_ENDPOINT!
+
+        export async function queryGraph(cypher: string) {
+          const response = await fetch(
+            `https://${endpoint}:8182/openCypher`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: `query=${encodeURIComponent(cypher)}`,
+            }
+          )
+          return response.json()
+        }
+    metric_explanations:
+      operational-complexity:
+        reason: Managed service handles backups, patching, scaling, and high availability automatically.
+        contributing_factors:
+          - Automated daily backups and point-in-time restore
+          - Patching and version upgrades handled by the provider
+          - Built-in multi-AZ replication for high availability
+      data-durability:
+        reason: Managed graph services replicate data across multiple availability zones with automated backups and point-in-time recovery.
+        contributing_factors:
+          - Multi-AZ storage replication provides automatic failover
+          - Continuous backup to durable object storage
+          - Point-in-time restore within the configured retention window
+    data_fit_profile:
+      relationship-depth: "Good for moderate traversal depth; deep traversals may hit timeout limits"
+      traversal-pattern: "Optimized for OLTP graph queries; analytics workloads may need export to Spark"
+      graph-size: "Scales storage automatically; compute scaling requires instance resizing"
+connection_properties:
+  protocol: Bolt/TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 1-50ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      traversal-latency: 0.7
+      data-durability: 0.9
+    extreme:
+      traversal-latency: 0.5
+      data-durability: 0.8
+      horizontal-scalability: 0.7
+  traffic-volume:
+    high:
+      traversal-latency: 0.7
+    extreme:
+      traversal-latency: 0.4
+      operational-complexity: 0.8
+  concurrent-users:
+    high:
+      traversal-latency: 0.7
+    extreme:
+      traversal-latency: 0.4
+      data-durability: 0.9
+failure_responses:
+  failure-single-node:
+    data-durability: 0.4
+    traversal-latency: 0.5
+  failure-database:
+    data-durability: 0.3
+    traversal-latency: 0.4
+  failure-network-partition:
+    traversal-latency: 0.4
+    horizontal-scalability: 0.5
+  failure-data-corruption:
+    data-durability: 0.3
+    traversal-latency: 0.6

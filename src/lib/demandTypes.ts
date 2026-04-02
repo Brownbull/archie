@@ -92,6 +92,10 @@ export const DEMAND_LEVEL_METADATA: Record<DemandLevel, DemandLevelMeta> = {
 /** Per-metric multiplier map for failure scenarios. Keys are metric IDs, values are 0.1-1.0 degradation multipliers. */
 export type FailureModifiers = Record<string, number>
 
+/** Per-component failure responses. Keys are failure preset IDs, values are per-metric multiplier maps. (Story 11-4)
+ * SSoT: shape mirrors FailureResponseSchema in demandSchema.ts — kept here to avoid circular imports. */
+export type FailureResponse = Record<string, FailureModifiers>
+
 export interface FailurePreset {
   id: string
   name: string

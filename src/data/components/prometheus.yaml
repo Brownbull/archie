@@ -29,6 +29,14 @@ base_metrics:
     value: medium
     numeric_value: 5
     category: operational-complexity
+  - id: data-retention-reliability
+    value: medium
+    numeric_value: 5
+    category: reliability
+  - id: prometheus-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
 config_variants:
   - id: standalone
     name: Standalone
@@ -41,6 +49,10 @@ config_variants:
         value: low
         numeric_value: 3
         category: operational-complexity
+      - id: prometheus-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
     code_snippet:
       language: yaml
       code: |
@@ -89,6 +101,10 @@ config_variants:
         value: high
         numeric_value: 7
         category: operational-complexity
+      - id: prometheus-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
     code_snippet:
       language: yaml
       code: |
