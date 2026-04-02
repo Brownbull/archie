@@ -179,7 +179,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     const { nodes, edges, activeScenarioId, activeFailureScenarioId } = get()
     const demandProfile = getDemandProfileForScenario(activeScenarioId)
     const failureModifiers = getFailureModifiersForScenario(activeFailureScenarioId)
-    const result = recalculationService.run(nodes, edges, changedNodeId, demandProfile, failureModifiers)
+    const result = recalculationService.run(nodes, edges, changedNodeId, demandProfile, failureModifiers, activeFailureScenarioId)
 
     // Immediate update for changed node (hop 0)
     const changedNodeMetrics = result.metrics.get(changedNodeId)

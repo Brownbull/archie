@@ -29,6 +29,10 @@ base_metrics:
     value: low
     numeric_value: 2
     category: operational-complexity
+  - id: cdn-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
 config_variants:
   - id: static-caching
     name: Static Asset Caching
@@ -41,6 +45,10 @@ config_variants:
         value: high
         numeric_value: 9
         category: reliability
+      - id: cdn-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
     code_snippet:
       language: yaml
       code: |
@@ -86,6 +94,10 @@ config_variants:
         value: high
         numeric_value: 9
         category: reliability
+      - id: cdn-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
     code_snippet:
       language: yaml
       code: |

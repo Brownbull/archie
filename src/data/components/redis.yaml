@@ -37,6 +37,10 @@ base_metrics:
     value: low
     numeric_value: 3
     category: operational-complexity
+  - id: redis-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
 config_variants:
   - id: standalone
     name: Standalone
@@ -49,6 +53,10 @@ config_variants:
         value: low
         numeric_value: 2
         category: scalability
+      - id: redis-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |
@@ -89,6 +97,10 @@ config_variants:
         value: medium
         numeric_value: 5
         category: scalability
+      - id: redis-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |
@@ -130,6 +142,10 @@ config_variants:
         value: high
         numeric_value: 8
         category: scalability
+      - id: redis-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
     code_snippet:
       language: typescript
       code: |

@@ -1,0 +1,225 @@
+id: serverless
+name: Serverless Compute
+category: compute
+description: Ephemeral compute functions that scale to zero and execute on demand
+is: An event-driven compute platform where functions run on managed infrastructure with automatic scaling and pay-per-invocation pricing
+gain:
+  - Zero cost when idle with pay-per-invocation pricing
+  - Automatic scaling from zero to thousands of concurrent instances
+  - No server provisioning, patching, or capacity planning required
+cost:
+  - Cold start latency adds 100ms-10s delay on first invocation
+  - Execution time limits constrain long-running workloads
+  - Vendor lock-in from provider-specific triggers and runtime APIs
+tags:
+  - serverless
+  - lambda
+  - functions
+  - cloud
+  - ephemeral
+base_metrics:
+  - id: cold-start-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: auto-scaling
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: cost-per-invocation
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: developer-experience
+    value: medium
+    numeric_value: 6
+    category: developer-experience
+config_variants:
+  - id: cold-start
+    name: Standard (Cold Start)
+    metrics:
+      - id: cold-start-latency
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: cost-per-invocation
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Serverless - AWS Lambda Standard
+        import { APIGatewayProxyHandler } from 'aws-lambda'
+
+        export const handler: APIGatewayProxyHandler = async (event) => {
+          const body = JSON.parse(event.body ?? '{}')
+
+          const result = await processRequest(body)
+
+          return {
+            statusCode: 200,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(result),
+          }
+        }
+    metric_explanations:
+      cold-start-latency:
+        reason: Standard Lambda initializes a fresh runtime container on first invocation or after idle timeout, adding 100ms-10s depending on runtime and package size.
+        contributing_factors:
+          - Container provisioning includes downloading deployment package
+          - Runtime initialization runs module-level code on every cold start
+          - Large dependency bundles increase cold start duration significantly
+      cost-per-invocation:
+        reason: Standard Lambda charges only for actual compute time with no idle cost, making it extremely cost-efficient for sporadic or low-traffic workloads.
+        contributing_factors:
+          - Zero cost during idle periods between invocations
+          - Per-millisecond billing means short functions cost fractions of a cent
+          - No reserved capacity charges when traffic drops to zero
+    data_fit_profile:
+      request-duration: "Best for short-lived requests under 15 minutes"
+      memory-requirement: "Configurable 128MB-10GB per function instance"
+      invocation-pattern: "Most cost-effective for sporadic or bursty traffic"
+  - id: provisioned-concurrency
+    name: Provisioned Concurrency
+    metrics:
+      - id: cold-start-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: cost-per-invocation
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Serverless - AWS Lambda with Provisioned Concurrency
+        // Same handler code as standard Lambda
+        // Provisioned concurrency configured via infrastructure:
+        // aws lambda put-provisioned-concurrency-config \
+        //   --function-name my-api \
+        //   --qualifier prod \
+        //   --provisioned-concurrent-executions 50
+
+        import { APIGatewayProxyHandler } from 'aws-lambda'
+
+        export const handler: APIGatewayProxyHandler = async (event) => {
+          const body = JSON.parse(event.body ?? '{}')
+          const result = await processRequest(body)
+          return {
+            statusCode: 200,
+            body: JSON.stringify(result),
+          }
+        }
+    metric_explanations:
+      cold-start-latency:
+        reason: Provisioned concurrency keeps a pool of pre-initialized execution environments warm at all times, eliminating cold start latency entirely for those instances.
+        contributing_factors:
+          - Pre-warmed containers skip initialization on invocation
+          - Provisioned pool size guarantees minimum instant capacity
+          - Requests beyond provisioned limit still incur cold starts
+      cost-per-invocation:
+        reason: Provisioned concurrency charges for reserved capacity even when idle, converting the serverless cost model into something closer to always-on compute.
+        contributing_factors:
+          - Hourly charge for each provisioned instance regardless of usage
+          - Cost-effective only when baseline traffic justifies the reserved capacity
+          - Requires monitoring to right-size provisioned pool vs actual demand
+    data_fit_profile:
+      request-duration: "Same execution limits as standard; warm start eliminates init delay"
+      memory-requirement: "Pre-allocated memory per provisioned instance"
+      invocation-pattern: "Best for steady baseline traffic with predictable load"
+  - id: edge-function
+    name: Edge Function
+    metrics:
+      - id: cold-start-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: auto-scaling
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: developer-experience
+        value: medium
+        numeric_value: 5
+        category: developer-experience
+      - id: cost-per-invocation
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Serverless - Cloudflare Worker (Edge Function)
+        export default {
+          async fetch(request: Request): Promise<Response> {
+            const url = new URL(request.url)
+
+            if (url.pathname === '/api/data') {
+              const data = await fetchUpstream(url.searchParams)
+              return new Response(JSON.stringify(data), {
+                headers: { 'Content-Type': 'application/json' },
+              })
+            }
+
+            return new Response('Not Found', { status: 404 })
+          },
+        }
+    metric_explanations:
+      cold-start-latency:
+        reason: Edge functions use lightweight V8 isolates instead of full containers, starting in under 5ms compared to 100ms+ for traditional serverless.
+        contributing_factors:
+          - V8 isolates share a runtime and skip container initialization
+          - Edge locations pre-warm isolates based on traffic patterns
+          - Minimal runtime overhead compared to Node.js or Python containers
+      developer-experience:
+        reason: Edge functions have restricted runtime APIs (no native Node.js modules, limited fetch) that force developers to adapt familiar patterns to a constrained environment.
+        contributing_factors:
+          - No filesystem access or native modules available
+          - Execution time capped at 30s (vs 15min for Lambda)
+          - Different debugging and logging infrastructure from standard serverless
+    data_fit_profile:
+      request-duration: "Constrained to short execution times (typically under 30 seconds)"
+      memory-requirement: "Limited memory per isolate (128MB typical)"
+      invocation-pattern: "Ideal for latency-sensitive requests distributed globally"
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+    - event-driven
+  typical_latency: 5-1000ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      cold-start-latency: 0.7
+      cost-per-invocation: 0.7
+    extreme:
+      cold-start-latency: 0.5
+      cost-per-invocation: 0.5
+  burst-pattern:
+    periodic-spikes:
+      cold-start-latency: 0.6
+    unpredictable:
+      cold-start-latency: 0.5
+      auto-scaling: 0.8
+  concurrent-users:
+    high:
+      cold-start-latency: 0.7
+    extreme:
+      cold-start-latency: 0.4
+failure_responses:
+  failure-traffic-spike:
+    cold-start-latency: 0.3
+    cost-per-invocation: 0.4
+  failure-region-outage:
+    auto-scaling: 0.3
+    cold-start-latency: 0.4
+  failure-network-partition:
+    cold-start-latency: 0.5
+    auto-scaling: 0.6
