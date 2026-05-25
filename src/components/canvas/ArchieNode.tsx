@@ -10,6 +10,7 @@ import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolatio
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
 import { useTopMetrics } from "@/hooks/useTopMetrics"
 import { componentLibrary } from "@/services/componentLibrary"
+import { checkCompatibility } from "@/engine/compatibilityChecker"
 
 function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const category = COMPONENT_CATEGORIES[data.componentCategory as ComponentCategoryId]
@@ -44,11 +45,40 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     return comp?.configVariants.find((v) => v.id === data.activeConfigVariantId)?.name ?? null
   }, [data.archieComponentId, data.activeConfigVariantId])
 
+  // Compatibility dimming during active drag (Phase 1 — Factorio-fy)
+  const activeDrag = useUiStore((s) => s.activeDrag)
+  const compatStatus = useMemo(() => {
+    if (!activeDrag) return null
+    if (activeDrag.kind === "connection" && activeDrag.sourceNodeId === id) {
+      return { isDragSource: true, isCompatible: true, reason: "" }
+    }
+    const dragComponent = activeDrag.kind === "toolbox"
+      ? componentLibrary.getComponent(activeDrag.componentId)
+      : (() => {
+          const comp = componentLibrary.getComponent(
+            // sourceCategory is the category string; we need the component from the source node
+            // but we only have the node id — read from store
+            useArchitectureStore.getState().nodes.find((n) => n.id === (activeDrag as { sourceNodeId: string }).sourceNodeId)?.data.archieComponentId ?? ""
+          )
+          return comp
+        })()
+    const nodeComponent = componentLibrary.getComponent(data.archieComponentId)
+    const result = checkCompatibility(
+      dragComponent ? { category: dragComponent.category, compatibility: dragComponent.compatibility } : undefined,
+      nodeComponent ? { category: nodeComponent.category, compatibility: nodeComponent.compatibility } : undefined,
+    )
+    return { isDragSource: false, isCompatible: result.isCompatible, reason: result.reason }
+  }, [activeDrag, id, data.archieComponentId])
+
+  const isDimmed = activeDrag !== null && compatStatus !== null && !compatStatus.isDragSource && !compatStatus.isCompatible
+  const isHighlighted = activeDrag !== null && compatStatus !== null && !compatStatus.isDragSource && compatStatus.isCompatible
+
   // Box-shadow glow for heatmap (AC-ARCH-PATTERN-6) — separate from category stripe
-  const boxShadow =
-    heatmapEnabled && heatmapStatus
-      ? `0 0 8px 2px ${HEATMAP_COLORS[heatmapStatus]}`
-      : undefined
+  const boxShadow = (() => {
+    if (isHighlighted) return "0 0 12px 3px var(--color-heatmap-green)"
+    if (heatmapEnabled && heatmapStatus) return `0 0 8px 2px ${HEATMAP_COLORS[heatmapStatus]}`
+    return undefined
+  })()
 
   // Accessibility: include heatmap status in aria-label for screen readers (TD-2-2b)
   const ariaLabel =
@@ -59,9 +89,18 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   return (
     <div
       data-testid="archie-node"
-      className="relative rounded-md border border-archie-border bg-panel shadow-sm"
+      data-compat-dimmed={isDimmed || undefined}
+      data-compat-highlighted={isHighlighted || undefined}
+      className={`relative rounded-md border bg-panel shadow-sm transition-all duration-200 ${
+        isDimmed
+          ? "border-archie-border/40 opacity-35 grayscale"
+          : isHighlighted
+            ? "border-green-400 ring-2 ring-green-400/50 opacity-100"
+            : "border-archie-border opacity-100"
+      }`}
       style={{ width: `${NODE_WIDTH}px`, boxShadow }}
       aria-label={ariaLabel}
+      title={isDimmed && compatStatus?.reason ? `⚠ ${compatStatus.reason}` : undefined}
     >
       <ConstraintViolationBadge violationCount={violationCount} tooltipText={tooltipText} />
 

@@ -4,19 +4,28 @@ import type { Component } from "@/schemas/componentSchema"
 import { Badge } from "@/components/ui/badge"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useUiStore } from "@/stores/uiStore"
 
 interface ComponentCardProps {
   component: Component
+  dimmed?: boolean
 }
 
-export function ComponentCard({ component }: ComponentCardProps) {
+export function ComponentCard({ component, dimmed }: ComponentCardProps) {
   const addNodeSmartPosition = useArchitectureStore((s) => s.addNodeSmartPosition)
   const category = COMPONENT_CATEGORIES[component.category as ComponentCategoryId]
   const color = category?.color ?? "var(--color-muted)"
 
+  const setActiveDrag = useUiStore((s) => s.setActiveDrag)
+
   const handleDragStart = (event: DragEvent<HTMLDivElement>) => {
     event.dataTransfer.setData("application/archie-component", component.id)
     event.dataTransfer.effectAllowed = "move"
+    setActiveDrag({ kind: "toolbox", componentId: component.id, componentCategory: component.category })
+  }
+
+  const handleDragEnd = () => {
+    setActiveDrag(null)
   }
 
   const handleAddToCanvas = (event: MouseEvent<HTMLButtonElement>) => {
@@ -27,9 +36,13 @@ export function ComponentCard({ component }: ComponentCardProps) {
   return (
     <div
       data-testid={`component-card-${component.id}`}
-      className="relative cursor-grab rounded-md border border-archie-border bg-panel p-3 pl-5 pr-8 active:cursor-grabbing"
+      className={`relative cursor-grab rounded-md border border-archie-border bg-panel p-3 pl-5 pr-8 transition-opacity duration-200 active:cursor-grabbing ${
+        dimmed ? "opacity-40 grayscale" : "opacity-100"
+      }`}
       draggable
       onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      title={dimmed ? "Incompatible with selected component" : undefined}
     >
       <div
         className="absolute left-0 top-0 h-full w-1.5 rounded-l-md"

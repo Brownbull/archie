@@ -15,6 +15,8 @@ import type {
   NodeMouseHandler,
   EdgeMouseHandler,
   OnConnect,
+  OnConnectStart,
+  OnConnectEnd,
   OnEdgesChange,
   OnNodesDelete,
   OnEdgesDelete,
@@ -63,6 +65,7 @@ function CanvasViewInner() {
   const setSelectedNodeId = useUiStore((s) => s.setSelectedNodeId)
   const setSelectedEdgeId = useUiStore((s) => s.setSelectedEdgeId)
   const clearSelection = useUiStore((s) => s.clearSelection)
+  const setActiveDrag = useUiStore((s) => s.setActiveDrag)
   const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId)
   const deselectAll = useArchitectureStore((s) => s.deselectAll)
   const { screenToFlowPosition, fitView } = useReactFlow()
@@ -93,11 +96,30 @@ function CanvasViewInner() {
     [setSelectedEdgeId],
   )
 
+  const handleConnectStart: OnConnectStart = useCallback(
+    (_event, params) => {
+      if (!params.nodeId) return
+      const node = useArchitectureStore.getState().nodes.find((n) => n.id === params.nodeId)
+      if (!node) return
+      setActiveDrag({
+        kind: "connection",
+        sourceNodeId: params.nodeId,
+        sourceCategory: node.data.componentCategory,
+      })
+    },
+    [setActiveDrag],
+  )
+
+  const handleConnectEnd: OnConnectEnd = useCallback(() => {
+    setActiveDrag(null)
+  }, [setActiveDrag])
+
   const handleConnect: OnConnect = useCallback(
     (connection) => {
+      setActiveDrag(null)
       addEdge(connection)
     },
-    [addEdge],
+    [addEdge, setActiveDrag],
   )
 
   const handleEdgesChange: OnEdgesChange<ArchieEdgeType> = useCallback(
@@ -248,6 +270,8 @@ function CanvasViewInner() {
         onNodesChange={onNodesChange}
         onEdgesChange={handleEdgesChange}
         onConnect={handleConnect}
+        onConnectStart={handleConnectStart}
+        onConnectEnd={handleConnectEnd}
         onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
         onPaneClick={handlePaneClick}

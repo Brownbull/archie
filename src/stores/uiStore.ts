@@ -6,6 +6,11 @@ export type ToolboxTab = "components" | "stacks" | "blueprints"
 // NOTE: architectureStore.removeNode directly writes selectedNodeId and
 // selectedEdgeId in this store to clear stale selection on node deletion.
 // See architectureStore.ts cross-store coupling comment (TD-1-3a / TD-1-4a).
+
+export type DragSource =
+  | { kind: "toolbox"; componentId: string; componentCategory: string }
+  | { kind: "connection"; sourceNodeId: string; sourceCategory: string }
+
 interface UiState {
   toolboxTab: ToolboxTab
   searchQuery: string
@@ -16,10 +21,9 @@ interface UiState {
   inspectorWidth: number
   inspectorOverlay: boolean
   heatmapEnabled: boolean
-  // NOTE: legendDismissed is intentionally in-memory only (not persisted to localStorage).
-  // If persistence is needed in future, route through a store action — never raw storage calls (AC-ARCH-NO-4).
   legendDismissed: boolean
   pendingNavNodeId: string | null
+  activeDrag: DragSource | null
   setToolboxTab: (tab: ToolboxTab) => void
   setSearchQuery: (query: string) => void
   setCommandPaletteOpen: (open: boolean) => void
@@ -31,6 +35,7 @@ interface UiState {
   toggleHeatmap: () => void
   setLegendDismissed: (dismissed: boolean) => void
   setPendingNavNodeId: (id: string | null) => void
+  setActiveDrag: (drag: DragSource | null) => void
   clearSelection: () => void
 }
 
@@ -46,6 +51,7 @@ export const useUiStore = create<UiState>()((set) => ({
   heatmapEnabled: true,
   legendDismissed: false,
   pendingNavNodeId: null,
+  activeDrag: null,
   setToolboxTab: (tab) => set({ toolboxTab: tab }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
@@ -62,5 +68,6 @@ export const useUiStore = create<UiState>()((set) => ({
   })),
   setLegendDismissed: (dismissed) => set({ legendDismissed: dismissed }),
   setPendingNavNodeId: (id) => set({ pendingNavNodeId: id }),
+  setActiveDrag: (drag) => set({ activeDrag: drag }),
   clearSelection: () => set({ selectedNodeId: null, selectedEdgeId: null }),
 }))
