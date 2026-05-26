@@ -79,3 +79,10 @@ PLAN ALIGNMENT: ALIGNED (5/5 on-scope, 0 off-scope)
 ## 2026-05-26 — [fcc784c] fix(radial-menu): memoize items array + keyboard nav test coverage
 FINDINGS: 0
 DEFERRED: 0
+
+## 2026-05-26 — PHASE PUSH: Phase 2 — Radial Context Menu
+BRANCH: dev → main (PR #27)
+COMMITS: 12 (e0c0b44..136578d)
+CI: ⏳ timeout (75s) — still running
+PR: https://github.com/Brownbull/archie/pull/27
+DEPLOYMENTS: P1
