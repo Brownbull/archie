@@ -1,6 +1,7 @@
 import type {
 	EdgeMouseHandler,
 	EdgeTypes,
+	Node,
 	NodeMouseHandler,
 	NodeTypes,
 	OnConnect,
@@ -61,7 +62,7 @@ function CanvasViewInner() {
 	const storeNodes = useArchitectureStore((s) => s.nodes);
 	const edges = useArchitectureStore((s) => s.edges);
 	const ghostNodes = useGhostNodes();
-	const nodes = useMemo(
+	const nodes: Node[] = useMemo(
 		() => [...storeNodes, ...ghostNodes],
 		[storeNodes, ghostNodes],
 	);
