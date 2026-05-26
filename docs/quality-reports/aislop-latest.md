@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260525-195458
+**Date:** 20260526-135910
 **Score:** 7/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,17 +8,16 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 10 | 502ms |
-| code-quality | 86 | 5255ms |
-| ai-slop | 0 | 31ms |
-| security | 28 | 2129ms |
+| lint | 10 | 572ms |
+| code-quality | 83 | 4241ms |
+| ai-slop | 0 | 5ms |
+| security | 28 | 4041ms |
 
 ## Findings
 
-### code-quality (86)
+### code-quality (83)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
-- [!] `src/hooks/useCompatibilityFilter.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:66` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:68` — knip/devDependencies: Unused devDependency: tw-animate-css
@@ -100,18 +99,16 @@
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
 - [!] `src/stores/uiStore.ts:10` — knip/types: Unused type: DragSource
-- [!] `src/components/canvas/ArchieNode.tsx:15` — complexity/function-too-long: Function 'ArchieNodeComponent' has 145 lines (max: 80)
-- [!] `src/components/canvas/CanvasView.tsx:55` — complexity/function-too-long: Function 'CanvasViewInner' has 247 lines (max: 80)
-- [!] `src/components/toolbox/ComponentCard.tsx:14` — complexity/function-too-long: Function 'ComponentCard' has 87 lines (max: 80)
+- [!] `src/components/toolbox/ComponentTab.tsx:13` — complexity/function-too-long: Function 'ComponentTab' has 83 lines (max: 80)
 
 ### lint (10)
 
-- [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
