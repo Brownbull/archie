@@ -61,3 +61,8 @@ T5 RESOLVED: Runtime journey evidence captured via Playwright E2E spec (radial-m
     - test-results/radial-menu-journey/07-menu-before-delete.png
     - test-results/radial-menu-journey/08-after-delete.png (1 node remaining)
 EXEC STATE: ✅ (all 5 tasks complete)
+
+## 2026-05-26 — [e854614] feat(canvas): radial context menu with right-click actions, duplicate, keyboard nav
+FINDINGS: 1 (0 critical, 0 high, 1 medium, 0 low)
+ACTIONS: 1:write-test (CanvasView.tsx coverage 79%→84%, 3 new tests: context menu open, pane click closes menu, empty stack rejection)
+DEFERRED: 0
