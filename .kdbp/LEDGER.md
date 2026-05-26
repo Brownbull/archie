@@ -86,3 +86,12 @@ COMMITS: 12 (e0c0b44..136578d)
 CI: ✅ 2/2 (113s) — ci pass, GitGuardian pass
 PR: https://github.com/Brownbull/archie/pull/27
 DEPLOYMENTS: P1
+
+## 2026-05-26 16:55 — [c13eb7d] feat(canvas): ghost placement suggestions
+FINDINGS: 0 (0 critical, 0 high, 0 medium, 0 low)
+ACTIONS: none
+DEFERRED: 0
+FILES: src/engine/ghostSuggestionEngine.ts (new), src/components/canvas/GhostNode.tsx (new), src/hooks/useGhostNodes.ts (new), src/components/canvas/CanvasView.tsx (mod), src/lib/constants.ts (mod)
+TESTS: 2682/2682 pass, 17 new (engine 8, component 5, hook 4)
+E2E: tests/e2e/ghost-placement.spec.ts — 6 screenshots in test-results/ghost-placement-journey/
+RUNTIME EVIDENCE: Playwright desktop — ghost nodes appear near open handles, dispatchEvent("click") materializes real node + auto-edge
