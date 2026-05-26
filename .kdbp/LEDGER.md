@@ -66,3 +66,16 @@ EXEC STATE: ✅ (all 5 tasks complete)
 FINDINGS: 1 (0 critical, 0 high, 1 medium, 0 low)
 ACTIONS: 1:write-test (CanvasView.tsx coverage 79%→84%, 3 new tests: context menu open, pane click closes menu, empty stack rejection)
 DEFERRED: 0
+
+## 2026-05-26 — PHASE REVIEW COMPLETE: Phase 2 — Radial Context Menu
+SCORE: 81 → 100/100 (after fixes)
+FINDINGS: 3 total (1 HIGH, 1 MEDIUM, 1 LOW)
+FIXED: 2 of 2 Enterprise gate findings
+  - #1: Test gap resolved — 4 new keyboard nav tests (ArrowUp wrap, Enter activate, Space activate, disabled Enter)
+  - #2: Performance fix — items array memoized with useMemo, handleSwap converted to useCallback
+ACCEPTED: #3 (architectureStore.ts at 799 lines — LOW, Scale gate)
+PLAN ALIGNMENT: ALIGNED (5/5 on-scope, 0 off-scope)
+
+## 2026-05-26 — [fcc784c] fix(radial-menu): memoize items array + keyboard nav test coverage
+FINDINGS: 0
+DEFERRED: 0
