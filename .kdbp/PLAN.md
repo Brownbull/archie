@@ -3,7 +3,7 @@
 <!-- status: active -->
 <!-- project_type: code -->
 <!-- created: 2026-05-25 -->
-<!-- last_updated: 2026-05-26T14:30 -->
+<!-- last_updated: 2026-05-26T20:05 -->
 <!-- phase_advanced: 1→2 on 2026-05-26 -->
 <!-- goal: Factorio-fy Archie — transform from plain design platform to game-like interactive experience -->
 
@@ -36,7 +36,7 @@ Transform archie from a plain design platform into a game-like interactive exper
 
 ## Current Phase
 
-Phase 2 — Radial Context Menu
+Phase 3 — Ghost Placement & Suggestions
 
 ## Phase Details
 
