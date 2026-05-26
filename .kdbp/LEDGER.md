@@ -36,3 +36,28 @@ COMMITS: 5 (ea6e4e1, e0c0b44, d80fd22, 9070b8c, 5bc5db1, 0bd7888)
 DEP FIX: vite + yaml critical/high vulnerabilities resolved via npm audit fix
 CI: pending (audit-level=critical passes locally)
 PR: https://github.com/Brownbull/archie/pull/27
+
+## 2026-05-26 — PHASE 2 EXEC (partial): Radial Context Menu
+TASKS COMPLETE: T1-T4 (context menu state, RadialMenu component, duplicateNode action, keyboard nav + a11y)
+TESTS: 15 new tests passing (RadialMenu.test.tsx), 2658/2658 full suite green
+TYPECHECK: clean
+FILES:
+  - src/stores/uiStore.ts (context menu state + openContextMenu/closeContextMenu actions)
+  - src/stores/architectureStore.ts (duplicateNode action + CANVAS_GRID_SIZE import fix)
+  - src/components/canvas/CanvasView.tsx (onNodeContextMenu handler, closeContextMenu in pane click + Escape)
+  - src/components/canvas/RadialMenu.tsx (NEW — 6-item radial menu with circular layout, stagger animation, ARIA)
+  - tests/unit/components/canvas/RadialMenu.test.tsx (NEW — 15 tests)
+T5 RESOLVED: Runtime journey evidence captured via Playwright E2E spec (radial-menu.spec.ts).
+  Root cause of earlier blocker: stale auth storageState, not credential issue. Regenerated via `npx playwright test --project=setup`.
+  Commands: npx playwright test tests/e2e/radial-menu.spec.ts --project=desktop
+  Target runtime: headless Chromium (Playwright)
+  Artifacts (8 screenshots):
+    - test-results/radial-menu-journey/01-canvas-loaded.png
+    - test-results/radial-menu-journey/02-component-placed.png
+    - test-results/radial-menu-journey/03-radial-menu-open.png (all 6 items visible in circular layout)
+    - test-results/radial-menu-journey/04-after-inspect.png (menu closed, node selected)
+    - test-results/radial-menu-journey/05-after-duplicate.png (2 nodes on canvas)
+    - test-results/radial-menu-journey/06-after-escape.png (menu closed via keyboard)
+    - test-results/radial-menu-journey/07-menu-before-delete.png
+    - test-results/radial-menu-journey/08-after-delete.png (1 node remaining)
+EXEC STATE: ✅ (all 5 tasks complete)

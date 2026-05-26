@@ -9,6 +9,7 @@ import { recalculationService } from "@/services/recalculationService"
 import { computeWeightedNodeScore, computeHeatmapStatus } from "@/engine/heatmapCalculator"
 import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
 import {
+  CANVAS_GRID_SIZE,
   COMPONENT_CATEGORIES,
   DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
@@ -87,6 +88,7 @@ interface ArchitectureState {
   ) => void
   updateNodeConfigVariant: (nodeId: string, variantId: string) => void
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
+  duplicateNode: (nodeId: string) => string | null
   removeNode: (nodeId: string) => void
   removeNodes: (nodeIds: string[]) => void
   placeStack: (nodes: ArchieNode[], edges: ArchieEdge[]) => void
@@ -414,15 +416,30 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     })
   },
 
-  // CROSS-STORE COUPLING (TD-1-3a, also tracked in TD-1-4a Item 2):
-  // removeNode directly reads/writes uiStore to clear selection state when the
-  // deleted node (or its connected edge) is currently selected. This prevents
-  // stale selection references in the inspector panel.
-  //
-  // This coupling is intentional for correctness but creates a tight dependency
-  // between architectureStore and uiStore. If more stores need to react to node
-  // removal in the future, consider an event/subscription pattern or a thin
-  // coordination layer. TD-1-4a Item 2 tracks potential decoupling.
+  duplicateNode: (nodeId) => {
+    if (get().nodes.length >= MAX_CANVAS_NODES) {
+      toast.warning(`Canvas limit reached (${MAX_CANVAS_NODES} components)`)
+      return null
+    }
+    const source = get().nodes.find((n) => n.id === nodeId)
+    if (!source) return null
+
+    const newNode: ArchieNode = {
+      id: crypto.randomUUID(),
+      type: NODE_TYPE_COMPONENT,
+      position: {
+        x: snapToGrid(source.position.x + NODE_WIDTH + CANVAS_GRID_SIZE * 2),
+        y: snapToGrid(source.position.y),
+      },
+      data: { ...source.data },
+      width: NODE_WIDTH,
+    }
+
+    set({ nodes: [...get().nodes, newNode] })
+    get().triggerRecalculation(newNode.id)
+    return newNode.id
+  },
+
   removeNode: (nodeId) => {
     if (useUiStore.getState().selectedNodeId === nodeId) {
       useUiStore.getState().setSelectedNodeId(null)

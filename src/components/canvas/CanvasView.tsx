@@ -36,6 +36,7 @@ import { ArchieEdge } from "@/components/canvas/ArchieEdge"
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode"
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState"
 import { CanvasLegend } from "@/components/canvas/CanvasLegend"
+import { RadialMenu } from "@/components/canvas/RadialMenu"
 import { ScenarioSelector } from "@/components/canvas/ScenarioSelector"
 import { FailureSelector } from "@/components/canvas/FailureSelector"
 import {
@@ -66,6 +67,8 @@ function CanvasViewInner() {
   const setSelectedEdgeId = useUiStore((s) => s.setSelectedEdgeId)
   const clearSelection = useUiStore((s) => s.clearSelection)
   const setActiveDrag = useUiStore((s) => s.setActiveDrag)
+  const openContextMenu = useUiStore((s) => s.openContextMenu)
+  const closeContextMenu = useUiStore((s) => s.closeContextMenu)
   const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId)
   const deselectAll = useArchitectureStore((s) => s.deselectAll)
   const { screenToFlowPosition, fitView } = useReactFlow()
@@ -211,9 +214,19 @@ function CanvasViewInner() {
   )
 
   const handlePaneClick = useCallback(() => {
+    closeContextMenu()
     clearSelection()
     deselectAll()
-  }, [clearSelection, deselectAll])
+  }, [closeContextMenu, clearSelection, deselectAll])
+
+  const handleNodeContextMenu: NodeMouseHandler<ArchieNodeType> = useCallback(
+    (event, node) => {
+      event.preventDefault()
+      setSelectedNodeId(node.id)
+      openContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY })
+    },
+    [setSelectedNodeId, openContextMenu],
+  )
 
   // Keyboard listeners scoped to canvas container (AC-ARCH-PATTERN-7, AC-ARCH-NO-5)
   useEffect(() => {
@@ -228,6 +241,7 @@ function CanvasViewInner() {
       }
 
       if (event.key === "Escape") {
+        closeContextMenu()
         clearSelection()
         deselectAll()
       }
@@ -244,7 +258,7 @@ function CanvasViewInner() {
 
     container.addEventListener("keydown", handleKeyDown)
     return () => container.removeEventListener("keydown", handleKeyDown)
-  }, [clearSelection, deselectAll])
+  }, [closeContextMenu, clearSelection, deselectAll])
 
   // Navigate to a node when pendingNavNodeId is set (from IssuesSummary click)
   useEffect(() => {
@@ -275,6 +289,7 @@ function CanvasViewInner() {
         onNodeClick={handleNodeClick}
         onEdgeClick={handleEdgeClick}
         onPaneClick={handlePaneClick}
+        onNodeContextMenu={handleNodeContextMenu}
         onNodesDelete={handleNodesDelete}
         onEdgesDelete={handleEdgesDelete}
         nodeTypes={nodeTypes}
@@ -292,6 +307,7 @@ function CanvasViewInner() {
         <MiniMap nodeStrokeWidth={3} zoomable pannable />
         <Controls />
       </ReactFlow>
+      <RadialMenu />
       <EmptyCanvasState />
       <CanvasLegend />
       <ScenarioSelector />
