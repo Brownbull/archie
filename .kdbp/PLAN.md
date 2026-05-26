@@ -16,7 +16,7 @@ Transform archie from a plain design platform into a game-like interactive exper
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
 | 1 | Compatibility Intelligence UI | Dim incompatible components during drag, highlight valid targets, "why not" tooltips, context-filtered palette | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 2 | Radial Context Menu | Right-click/hold → 6-8 item radial with contextual actions (connect, inspect, swap tier, duplicate, delete, trade-offs) | ent | med | ✅ | ✅ | ✅ | ⬜ |
+| 2 | Radial Context Menu | Right-click/hold → 6-8 item radial with contextual actions (connect, inspect, swap tier, duplicate, delete, trade-offs) | ent | med | ✅ | ✅ | ✅ | ✅ |
 | 3 | Ghost Placement & Suggestions | Semi-transparent ghost outlines of recommended next components near open connections, powered by recommendationEngine | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | ALT-Mode Overlay System | Toggle between information layers (Compatibility, Performance, Cost, Tier, Flow) — each transforms visuals without changing layout | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | Connection Flow Animation + Status Dots | Animated traveling dots on connections, colored status indicators on components, quick-replace gesture | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
