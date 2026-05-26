@@ -48,6 +48,7 @@ export const CANVAS_MIN_ZOOM = 0.5
 export const CANVAS_MAX_ZOOM = 2
 export const NODE_TYPE_COMPONENT = "archie-component" as const
 export const NODE_TYPE_PLACEHOLDER = "placeholder" as const
+export const NODE_TYPE_GHOST = "ghost" as const
 export const EDGE_TYPE_CONNECTION = "archie-connection" as const
 
 // Canvas node limit — defense-in-depth against client-side performance degradation (TD-1-3a)
@@ -273,6 +274,11 @@ export const MAX_DATA_CONTEXT_ITEMS_PER_NODE = 10
 
 // Pathway guidance (Story 7.5-1: Tier Gap Analysis Engine)
 export const PATHWAY_SUGGESTION_LIMIT = 10
+
+// Ghost placement suggestions (Phase 3 — Factorio-fy)
+export const GHOST_SUGGESTION_LIMIT = 3
+export const GHOST_OFFSET_X = 200
+export const GHOST_OFFSET_Y = 0
 
 // ─── Demand Simulation (Story 9-1) ──────────────────────────────────────────
 
