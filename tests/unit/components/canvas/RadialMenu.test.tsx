@@ -138,6 +138,43 @@ describe("RadialMenu", () => {
       const inspectBtn = screen.getByTestId("radial-item-inspect")
       expect(inspectBtn).toHaveAttribute("tabindex", "0")
     })
+
+    it("ArrowUp cycles focus backward (wraps to last)", () => {
+      useUiStore.setState({ contextMenu: { nodeId: "node-1", x: 200, y: 200 } })
+      render(<RadialMenu />)
+      fireEvent.keyDown(document, { key: "ArrowUp" })
+      const deleteBtn = screen.getByTestId("radial-item-delete")
+      expect(deleteBtn).toHaveAttribute("tabindex", "0")
+    })
+
+    it("Enter activates focused item", () => {
+      useUiStore.setState({ contextMenu: { nodeId: "node-1", x: 200, y: 200 } })
+      render(<RadialMenu />)
+      fireEvent.keyDown(document, { key: "ArrowDown" })
+      fireEvent.keyDown(document, { key: "Enter" })
+      expect(useUiStore.getState().selectedNodeId).toBe("node-1")
+      expect(useUiStore.getState().contextMenu).toBeNull()
+    })
+
+    it("Space activates focused item", () => {
+      useUiStore.setState({ contextMenu: { nodeId: "node-1", x: 200, y: 200 } })
+      render(<RadialMenu />)
+      fireEvent.keyDown(document, { key: "ArrowDown" })
+      fireEvent.keyDown(document, { key: " " })
+      expect(useUiStore.getState().selectedNodeId).toBe("node-1")
+      expect(useUiStore.getState().contextMenu).toBeNull()
+    })
+
+    it("Enter on disabled item does nothing", () => {
+      useUiStore.setState({ contextMenu: { nodeId: "node-1", x: 200, y: 200 } })
+      render(<RadialMenu />)
+      // Navigate to connect (index 4): 5 ArrowDown presses from -1
+      for (let i = 0; i < 5; i++) fireEvent.keyDown(document, { key: "ArrowDown" })
+      const connectBtn = screen.getByTestId("radial-item-connect")
+      expect(connectBtn).toHaveAttribute("tabindex", "0")
+      fireEvent.keyDown(document, { key: "Enter" })
+      expect(useUiStore.getState().contextMenu).not.toBeNull()
+    })
   })
 })
 

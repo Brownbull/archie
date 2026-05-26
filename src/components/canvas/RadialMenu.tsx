@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { componentLibrary } from "@/services/componentLibrary"
@@ -59,22 +59,26 @@ export function RadialMenu() {
     closeContextMenu()
   }, [contextMenu, setSelectedNodeId, closeContextMenu])
 
-  const items: RadialItem[] = contextMenu
-    ? [
-        { id: "inspect", label: "Inspect", icon: <Search size={18} />, action: handleInspect },
-        { id: "duplicate", label: "Duplicate", icon: <Copy size={18} />, action: handleDuplicate },
-        { id: "swap", label: "Swap", icon: <ArrowRightLeft size={18} />, action: handleSwap },
-        { id: "trade-offs", label: "Trade-offs", icon: <Scale size={18} />, action: handleTradeOffs },
-        { id: "connect", label: "Connect", icon: <Link size={18} />, action: () => closeContextMenu(), disabled: true },
-        { id: "delete", label: "Delete", icon: <Trash2 size={18} />, action: handleDelete },
-      ]
-    : []
-
-  function handleSwap() {
+  const handleSwap = useCallback(() => {
     if (!contextMenu) return
     setSelectedNodeId(contextMenu.nodeId)
     closeContextMenu()
-  }
+  }, [contextMenu, setSelectedNodeId, closeContextMenu])
+
+  const items: RadialItem[] = useMemo(
+    () =>
+      contextMenu
+        ? [
+            { id: "inspect", label: "Inspect", icon: <Search size={18} />, action: handleInspect },
+            { id: "duplicate", label: "Duplicate", icon: <Copy size={18} />, action: handleDuplicate },
+            { id: "swap", label: "Swap", icon: <ArrowRightLeft size={18} />, action: handleSwap },
+            { id: "trade-offs", label: "Trade-offs", icon: <Scale size={18} />, action: handleTradeOffs },
+            { id: "connect", label: "Connect", icon: <Link size={18} />, action: () => closeContextMenu(), disabled: true },
+            { id: "delete", label: "Delete", icon: <Trash2 size={18} />, action: handleDelete },
+          ]
+        : [],
+    [contextMenu, handleInspect, handleDuplicate, handleSwap, handleTradeOffs, closeContextMenu, handleDelete],
+  )
 
   useEffect(() => {
     if (contextMenu) {
