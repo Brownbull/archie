@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
 import { useUiStore } from "@/stores/uiStore"
+import { useArchitectureStore } from "@/stores/architectureStore"
+import { componentLibrary } from "@/services/componentLibrary"
+import { checkCompatibility } from "@/engine/compatibilityChecker"
 import type { Component } from "@/schemas/componentSchema"
 
 const mockComponents: Component[] = [
@@ -66,9 +69,15 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
+vi.mock("@/engine/compatibilityChecker", () => ({
+  checkCompatibility: vi.fn(() => ({ isCompatible: true, reason: "" })),
+}))
+
 describe("ComponentTab", () => {
   beforeEach(() => {
-    useUiStore.setState({ searchQuery: "" })
+    useUiStore.setState({ searchQuery: "", selectedNodeId: null })
+    vi.mocked(componentLibrary.getComponent).mockReturnValue(undefined)
+    vi.mocked(checkCompatibility).mockReturnValue({ isCompatible: true, reason: "" })
   })
 
   it("renders component cards for all components", () => {
@@ -115,5 +124,73 @@ describe("ComponentTab", () => {
     render(<ComponentTab />)
     const counts = screen.getAllByText("(1)")
     expect(counts).toHaveLength(2) // One per category (data-storage, caching)
+  })
+
+  describe("compatibility filtering", () => {
+    it("no cards are dimmed when no node is selected", () => {
+      useUiStore.setState({ selectedNodeId: null })
+      render(<ComponentTab />)
+      const pgCard = screen.getByTestId("component-card-postgresql")
+      const redisCard = screen.getByTestId("component-card-redis")
+      expect(pgCard.className).toContain("opacity-100")
+      expect(redisCard.className).toContain("opacity-100")
+    })
+
+    it("dims incompatible cards when a node is selected", () => {
+      useUiStore.setState({ selectedNodeId: "node-1" })
+      useArchitectureStore.setState({
+        nodes: [{
+          id: "node-1",
+          type: "archie-component",
+          position: { x: 0, y: 0 },
+          data: {
+            archieComponentId: "postgresql",
+            componentName: "PostgreSQL",
+            componentCategory: "data-storage",
+            activeConfigVariantId: "default",
+          },
+        }],
+      } as Partial<ReturnType<typeof useArchitectureStore.getState>> as never)
+      vi.mocked(componentLibrary.getComponent).mockImplementation((id: string) => {
+        if (id === "postgresql") return { id: "postgresql", category: "data-storage", compatibility: { caching: "Not recommended" } } as never
+        return undefined
+      })
+      vi.mocked(checkCompatibility).mockImplementation((_source, target) => {
+        if ((target as { category: string } | undefined)?.category === "caching") return { isCompatible: false, reason: "Not recommended" }
+        return { isCompatible: true, reason: "" }
+      })
+
+      render(<ComponentTab />)
+      const redisCard = screen.getByTestId("component-card-redis")
+      expect(redisCard.className).toContain("opacity-40")
+
+      const pgCard = screen.getByTestId("component-card-postgresql")
+      expect(pgCard.className).toContain("opacity-100")
+    })
+
+    it("all cards are full opacity when selected node has no compatibility restrictions", () => {
+      useUiStore.setState({ selectedNodeId: "node-1" })
+      useArchitectureStore.setState({
+        nodes: [{
+          id: "node-1",
+          type: "archie-component",
+          position: { x: 0, y: 0 },
+          data: {
+            archieComponentId: "postgresql",
+            componentName: "PostgreSQL",
+            componentCategory: "data-storage",
+            activeConfigVariantId: "default",
+          },
+        }],
+      } as Partial<ReturnType<typeof useArchitectureStore.getState>> as never)
+      vi.mocked(componentLibrary.getComponent).mockReturnValue({ id: "postgresql", category: "data-storage", compatibility: {} } as never)
+      vi.mocked(checkCompatibility).mockReturnValue({ isCompatible: true, reason: "" })
+
+      render(<ComponentTab />)
+      const pgCard = screen.getByTestId("component-card-postgresql")
+      const redisCard = screen.getByTestId("component-card-redis")
+      expect(pgCard.className).toContain("opacity-100")
+      expect(redisCard.className).toContain("opacity-100")
+    })
   })
 })

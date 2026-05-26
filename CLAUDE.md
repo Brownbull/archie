@@ -1,99 +1,57 @@
-# Archie
+# archie
 
-## Identity
-- **What:** [One-line description — fill in]
-- **Stack:** React 18, TypeScript, Vite
-- **Architecture:** Feature-Sliced Design
+Software architecture visualization and design tool
 
-## Git Branching
-```
-feature/* --> dev --> main
-```
-- **main** — Production-ready. Receives merges from `dev` only.
-- **dev** — Integration branch. Feature branches merge here first.
-- **feature/*** — Short-lived, created from `dev`.
+<!-- KDBP-MARKER: gabe-init v1 -->
 
-Rules:
-1. NEVER commit directly to `main` or `dev`.
-2. Create: `git checkout dev && git checkout -b feature/your-feature`
-3. Merge feature → dev via PR. Merge dev → main via PR for releases.
-4. `main` and `dev` are protected. No direct pushes.
+## KDBP Active
 
-## Commands
-```bash
-npm run dev         # Start dev server
-npm run build       # Production build
-npm run lint        # ESLint check
-npm run typecheck   # TypeScript check
+This project uses **KDBP (Khujta Database Protocol)** — structured project memory under `.kdbp/` that every Claude Code session reads. KDBP gives context, plans, values, knowledge, decisions, and quality gates a durable home outside the session window.
 
-npm run test:quick  # Unit tests
-npm run test:story  # Unit + integration
-npm run test:sprint # Full suite
-```
+Maturity: **enterprise** · Stack: react, typescript, vite, react-flow
 
-## Session Protocol
+### What to read when
 
-Before each session, fill the constraint box:
-```
-SESSION CONSTRAINT BOX
-Goal: [one sentence]
-Constraint 1: Max 90 min or 2 compactions
-Constraint 2: [scope limit — e.g., max 3 files touched]
-Constraint 3: Must pass test:quick before commit
-Out of scope: [what NOT to touch]
-Decision I must make: [the trade-off, if any]
-```
+| Moment | File | Why |
+|--------|------|-----|
+| Session start | `.kdbp/BEHAVIOR.md` | Project identity, maturity, tech stack |
+| Before decisions | `.kdbp/VALUES.md` + `~/.kdbp/VALUES.md` | Project + user values override defaults |
+| Before implementing | `.kdbp/PLAN.md` | Active phase, task status, tier constraints |
+| Before architectural changes | `.kdbp/DECISIONS.md` | Prior decisions + rationale |
+| Before creating files | `.kdbp/STRUCTURE.md` | Folder conventions (enforced by gabe-commit CHECK 9) |
+| Before editing source | `.kdbp/DOCS.md` | Source → doc drift mappings |
+| Explaining concepts | `.kdbp/KNOWLEDGE.md` | Gravity wells + verified topics |
+| Pre-commit | `.kdbp/PENDING.md` | Deferred review findings + escalation |
+| Incident / audit | `.kdbp/LEDGER.md` | Checkpoint + commit + review history |
 
-When the session budget hook warns (3+ compactions): save handoff, restart fresh.
+### Active commands
 
-## Process Scale
-```
-Team size: SOLO
-PR ceremony: MINIMAL
-Sprint tracking: LIGHTWEIGHT
-```
-SOLO defaults: PRs = commit + push + auto-merge if CI passes. Max 1 PR/day.
-Sprint-status.yaml: weekly updates only. No sprint ceremonies.
+| Command | When to use |
+|---------|-------------|
+| `/gabe-help` | Context-aware "what should I do next?" |
+| `/gabe-plan` | Create or view the active plan |
+| `/gabe-next` | Router — dispatches to the next phase step |
+| `/gabe-execute` | Implement current phase tasks |
+| `/gabe-review` | Risk-priced code review with triage + confidence |
+| `/gabe-commit` | Commit quality gate — **never use raw `git commit`** |
+| `/gabe-push` | Push + PR + CI watch + branch promotion |
+| `/gabe-teach` | Consolidate architect-level understanding post-commit |
 
-## Key Constraints (each backed by a hook)
+### Invariants
 
-1. **File size: BLOCK at 800 lines** — Hook rejects edits >800 lines. Split first.
-2. **No console.log** — Hook warns. Remove before commit.
-3. **No `: any` types** — Hook warns. Use proper TypeScript types.
-4. **Planning before code** — Hook warns when creating `src/` files without an ADR.
-5. **Session budget** — Hook warns at 3 compactions, BLOCKS at 5.
-6. **Cost tracking** — Hook logs to `docs/cost-tracking/session-costs.csv` on session end.
-7. **Churn gate** — Hook warns at 20 touches, BLOCKS at 40 (gravity well prevention).
+1. **No raw commits.** `/gabe-commit` runs CHECK 1–9, deferred scan, doc drift, and the Notable Updates digest. Raw `git commit` bypasses the gate.
+2. **PLAN before code.** Check `.kdbp/PLAN.md` phase state (✅/⬜/🔄) before implementing — `/gabe-execute` enforces the Commit-column invariant.
+3. **STRUCTURE before placement.** New files must match a pattern in `.kdbp/STRUCTURE.md` — PostToolUse hook warns on drift.
+4. **VALUES override defaults.** Project `.kdbp/VALUES.md` + user `~/.kdbp/VALUES.md` outrank model priors.
+5. **Verified topics trump re-derivation.** If `.kdbp/KNOWLEDGE.md` marks a topic verified, honor that explanation rather than re-explaining from scratch.
 
-## Decision Format
+### Full reference
 
-When presenting architecture decisions:
-```
-## Gabe Decision Block
-### What's Changing: [one sentence]
-### The Analogy: [physical-system analogy for the trade-off]
-### Constraint Box
-IS:     [what this change does]
-IS NOT: [what it looks like but isn't]
-RISK:   [what could break]
-### Your Call: [specific question]
-```
+- Suite skills — `~/.claude/skills/gabe-*/SKILL.md`
+- Suite commands — `~/.claude/commands/gabe-*.md`
+- Documentation standards — `~/.claude/skills/gabe-docs/SKILL.md`
+- User values — `~/.kdbp/VALUES.md` (cross-project)
+- Project docs — `docs/` (if present)
 
-## Security
-- Never commit secrets, API keys, passwords, or credentials.
-- `.gitignore` excludes `.env*`, private keys, `settings.local.json`.
-- Verify `git diff --cached` before committing sensitive changes.
-
-## Framework
-- **Planning:** BMAD Phase 3 (architecture, epics, stories)
-- **Execution:** ECC (dev-story, code-review, deploy-story)
-- **Enforcement:** Hooks (see `.claude/settings.json`)
-- **Knowledge:** `_ecc/knowledge/` — loaded by workflows at Step 0
-
-## Project Structure
-- `_bmad/` — BMAD suite modules and configuration
-- `_bmad-output/` — Generated output from BMAD workflows
-- `_ecc/` — ECC workflows, hooks, and commands
-- `.claude/` — Claude Code settings and hooks
-- `docs/` — Project documentation, decisions, behavioral health
-- `scripts/` — Analysis scripts (behavioral health, backprop)
+<!-- Content above this line is managed by /gabe-init and refreshed by `update` mode. -->
+<!-- Add project-specific instructions for Claude Code below. -->

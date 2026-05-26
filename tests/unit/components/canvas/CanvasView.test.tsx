@@ -18,6 +18,7 @@ vi.mock("@xyflow/react", () => ({
     onConnect,
     onNodesDelete,
     onEdgesDelete,
+    onNodeContextMenu,
     ...props
   }: Record<string, unknown>) => (
     <div data-testid="react-flow-mock" data-props={JSON.stringify(props)}>
@@ -42,6 +43,12 @@ vi.mock("@xyflow/react", () => ({
       <button
         data-testid="mock-edges-delete"
         onClick={() => (onEdgesDelete as CallableFunction)?.([{ id: "edge-1" }])}
+      />
+      <button
+        data-testid="mock-node-context-menu"
+        onClick={() =>
+          (onNodeContextMenu as CallableFunction)?.({ preventDefault: vi.fn(), clientX: 300, clientY: 400 }, { id: "node-1" })
+        }
       />
       {children as React.ReactNode}
     </div>
@@ -343,6 +350,47 @@ describe("CanvasView", () => {
 
     // setEdges is NOT called by onConnect (addEdge uses its own set() internally)
     expect(setEdgesSpy).not.toHaveBeenCalled()
+  })
+
+  it("onNodeContextMenu selects node and opens context menu", () => {
+    render(<CanvasView />)
+    fireEvent.click(screen.getByTestId("mock-node-context-menu"))
+    expect(useUiStore.getState().selectedNodeId).toBe("node-1")
+    expect(useUiStore.getState().contextMenu).toEqual({ nodeId: "node-1", x: 300, y: 400 })
+  })
+
+  it("onPaneClick closes context menu", () => {
+    useUiStore.setState({ contextMenu: { nodeId: "node-1", x: 100, y: 100 } })
+    render(<CanvasView />)
+    fireEvent.click(screen.getByTestId("mock-pane-click"))
+    expect(useUiStore.getState().contextMenu).toBeNull()
+  })
+
+  it("onDrop with stack returning no valid components does not call placeStack", () => {
+    const mockStackDef = { id: "empty-stack", name: "Empty", description: "", components: [], connections: [], tradeOffProfile: [] }
+    vi.mocked(componentLibrary.getStackById).mockReturnValueOnce(mockStackDef)
+    vi.mocked(resolveStackPlacement).mockReturnValueOnce({ nodes: [], edges: [] })
+    mockScreenToFlowPosition.mockReturnValueOnce({ x: 100, y: 200 })
+    const placeStackSpy = vi.spyOn(useArchitectureStore.getState(), "placeStack")
+
+    render(<CanvasView />)
+    const panel = screen.getByTestId("canvas-panel")
+
+    const dropEvent = new Event("drop", { bubbles: true }) as unknown as DragEvent
+    Object.defineProperty(dropEvent, "dataTransfer", {
+      value: {
+        getData: vi.fn((type: string) =>
+          type === "application/archie-stack" ? "empty-stack" : "",
+        ),
+        files: [],
+      },
+    })
+    Object.defineProperty(dropEvent, "clientX", { value: 100 })
+    Object.defineProperty(dropEvent, "clientY", { value: 200 })
+    Object.defineProperty(dropEvent, "preventDefault", { value: vi.fn() })
+
+    fireEvent(panel, dropEvent)
+    expect(placeStackSpy).not.toHaveBeenCalled()
   })
 
   it("onDrop with stack ID calls placeStack via resolveStackPlacement", () => {

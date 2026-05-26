@@ -73,3 +73,5 @@ results.json
 .mcp.json
 __pycache__
 _kdbp/
+
+.kdbp/reviews-archive/

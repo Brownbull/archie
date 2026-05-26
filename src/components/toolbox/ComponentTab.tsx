@@ -1,14 +1,46 @@
+import { useCallback, useMemo } from "react"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useUiStore } from "@/stores/uiStore"
+import { useArchitectureStore } from "@/stores/architectureStore"
 import { ComponentCard } from "@/components/toolbox/ComponentCard"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { groupByCategory } from "@/lib/componentUtils"
+import { checkCompatibility } from "@/engine/compatibilityChecker"
+import { componentLibrary } from "@/services/componentLibrary"
 
 export function ComponentTab() {
   const { components, searchComponents } = useLibrary()
   const searchQuery = useUiStore((s) => s.searchQuery)
+  const selectedNodeId = useUiStore((s) => s.selectedNodeId)
+  const selectedArchieComponentId = useArchitectureStore(
+    useCallback(
+      (s) => {
+        if (!selectedNodeId) return null
+        return s.nodes.find((n) => n.id === selectedNodeId)?.data.archieComponentId ?? null
+      },
+      [selectedNodeId],
+    ),
+  )
+
+  const selectedComponent = useMemo(() => {
+    if (!selectedArchieComponentId) return null
+    return componentLibrary.getComponent(selectedArchieComponentId) ?? null
+  }, [selectedArchieComponentId])
+
+  const incompatibleIds = useMemo(() => {
+    if (!selectedComponent) return new Set<string>()
+    const ids = new Set<string>()
+    for (const comp of components) {
+      const result = checkCompatibility(
+        { category: selectedComponent.category, compatibility: selectedComponent.compatibility },
+        { category: comp.category, compatibility: comp.compatibility },
+      )
+      if (!result.isCompatible) ids.add(comp.id)
+    }
+    return ids
+  }, [selectedComponent, components])
 
   const filtered = searchQuery ? searchComponents(searchQuery) : components
   const grouped = groupByCategory(filtered)
@@ -47,7 +79,11 @@ export function ComponentTab() {
               </div>
               <div className="space-y-2">
                 {comps.map((comp) => (
-                  <ComponentCard key={comp.id} component={comp} />
+                  <ComponentCard
+                    key={comp.id}
+                    component={comp}
+                    dimmed={incompatibleIds.has(comp.id)}
+                  />
                 ))}
               </div>
             </div>
