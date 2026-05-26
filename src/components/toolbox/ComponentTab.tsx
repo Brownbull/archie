@@ -1,4 +1,4 @@
-import { useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
@@ -14,14 +14,20 @@ export function ComponentTab() {
   const { components, searchComponents } = useLibrary()
   const searchQuery = useUiStore((s) => s.searchQuery)
   const selectedNodeId = useUiStore((s) => s.selectedNodeId)
-  const nodes = useArchitectureStore((s) => s.nodes)
+  const selectedArchieComponentId = useArchitectureStore(
+    useCallback(
+      (s) => {
+        if (!selectedNodeId) return null
+        return s.nodes.find((n) => n.id === selectedNodeId)?.data.archieComponentId ?? null
+      },
+      [selectedNodeId],
+    ),
+  )
 
   const selectedComponent = useMemo(() => {
-    if (!selectedNodeId) return null
-    const node = nodes.find((n) => n.id === selectedNodeId)
-    if (!node) return null
-    return componentLibrary.getComponent(node.data.archieComponentId) ?? null
-  }, [selectedNodeId, nodes])
+    if (!selectedArchieComponentId) return null
+    return componentLibrary.getComponent(selectedArchieComponentId) ?? null
+  }, [selectedArchieComponentId])
 
   const incompatibleIds = useMemo(() => {
     if (!selectedComponent) return new Set<string>()

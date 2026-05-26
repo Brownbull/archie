@@ -90,6 +90,35 @@ describe("ComponentCard", () => {
     expect((dragEvent as unknown as DragEvent).dataTransfer.effectAllowed).toBe("move")
   })
 
+  describe("compatibility dimming", () => {
+    it("renders with full opacity when not dimmed", () => {
+      render(<ComponentCard component={mockComponent} />)
+      const card = screen.getByTestId("component-card-postgresql")
+      expect(card.className).toContain("opacity-100")
+      expect(card.className).not.toContain("opacity-40")
+      expect(card.className).not.toContain("grayscale")
+    })
+
+    it("renders with reduced opacity and grayscale when dimmed", () => {
+      render(<ComponentCard component={mockComponent} dimmed />)
+      const card = screen.getByTestId("component-card-postgresql")
+      expect(card.className).toContain("opacity-40")
+      expect(card.className).toContain("grayscale")
+    })
+
+    it("shows incompatibility tooltip when dimmed", () => {
+      render(<ComponentCard component={mockComponent} dimmed />)
+      const card = screen.getByTestId("component-card-postgresql")
+      expect(card).toHaveAttribute("title", "Incompatible with selected component")
+    })
+
+    it("has no tooltip when not dimmed", () => {
+      render(<ComponentCard component={mockComponent} />)
+      const card = screen.getByTestId("component-card-postgresql")
+      expect(card).not.toHaveAttribute("title")
+    })
+  })
+
   describe("Add to Canvas button", () => {
     beforeEach(() => {
       useArchitectureStore.setState({ nodes: [], edges: [] })

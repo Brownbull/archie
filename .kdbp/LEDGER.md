@@ -7,3 +7,20 @@ WELLS: 6 defined (Canvas, Engine, Data Layer, UI Panels, Personalization, Bluepr
 PLAN: 5 phases | ALL enterprise tier | DECISIONS: D1-D5
 Phases: Compatibility Intelligence UI → Radial Context Menu → Ghost Placement & Suggestions → ALT-Mode Overlay System → Connection Flow Animation + Status Dots
 Research: Deep Factorio interface analysis (8 categories) + game UI patterns (radial menus, node editors, factory games, gamification)
+
+## 2026-05-25 — PHASE EXEC COMPLETE: Phase 1 — Compatibility Intelligence UI
+TIER: ent
+TASKS: 6 tasks, 1 commit (batched)
+DEVIATIONS: 0 structural, 0 minor
+COMMIT: ea6e4e1 feat(canvas): compatibility intelligence UI — dim/highlight during drag
+
+## 2026-05-26 — PHASE REVIEW COMPLETE: Phase 1 — Compatibility Intelligence UI
+SCORE: 18 → 81/100 (after fixes)
+FINDINGS: 8 total (5 HIGH, 2 MEDIUM, 1 LOW)
+FIXED: 6 of 7 MVP+Enterprise gate findings
+  - #1-4: Test gaps resolved — 18 new tests (ArchieNode compat 7, uiStore activeDrag 4, ComponentCard dimmed 4, ComponentTab filtering 3)
+  - #6: Performance fix — ComponentTab targeted selector (avoids full nodes re-render)
+  - #7: Dead code removed — useCompatibilityFilter.ts deleted (69 lines)
+DEFERRED: #5 RUNTIME EVIDENCE GAP (needs manual browser drag verification)
+SKIPPED: #8 Scale-gate (unnecessary type cast — LOW)
+PLAN ALIGNMENT: ALIGNED (6/6 on-scope, 0 off-scope)

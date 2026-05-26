@@ -1,23 +1,24 @@
 # aislop Quality Report
 
-**Date:** 20260401-115134
-**Score:** 9/100 (Critical)
+**Date:** 20260525-195458
+**Score:** 7/100 (Critical)
 **Scan:** `aislop scan --staged`
 
 ## Engine Summary
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 10 | 944ms |
-| code-quality | 81 | 5264ms |
-| ai-slop | 0 | 2ms |
-| security | 16 | 4623ms |
+| lint | 10 | 502ms |
+| code-quality | 86 | 5255ms |
+| ai-slop | 0 | 31ms |
+| security | 28 | 2129ms |
 
 ## Findings
 
-### code-quality (81)
+### code-quality (86)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
+- [!] `src/hooks/useCompatibilityFilter.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:66` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:68` — knip/devDependencies: Unused devDependency: tw-animate-css
@@ -98,36 +99,52 @@
 - [!] `src/types/index.ts:65` — knip/types: Unused type: DemandLevelMeta
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
+- [!] `src/stores/uiStore.ts:10` — knip/types: Unused type: DragSource
+- [!] `src/components/canvas/ArchieNode.tsx:15` — complexity/function-too-long: Function 'ArchieNodeComponent' has 145 lines (max: 80)
+- [!] `src/components/canvas/CanvasView.tsx:55` — complexity/function-too-long: Function 'CanvasViewInner' has 247 lines (max: 80)
+- [!] `src/components/toolbox/ComponentCard.tsx:14` — complexity/function-too-long: Function 'ComponentCard' has 87 lines (max: 80)
 
 ### lint (10)
 
-- [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 
-### security (16)
+### security (28)
 
-- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/firestore (low)
-- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/storage (low)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/firestore (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/storage (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @hono/node-server (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @protobufjs/utf8 (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @tootallnate/once (low)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): brace-expansion (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): express-rate-limit (moderate)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): fast-uri (high)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): fast-xml-builder (high)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): fast-xml-parser (high)
-- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): firebase-admin (low)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): firebase-admin (moderate)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): flatted (high)
-- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): google-gax (low)
-- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): http-proxy-agent (low)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): gaxios (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): google-gax (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): hono (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): ip-address (moderate)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): node-forge (high)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): path-to-regexp (high)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): picomatch (high)
-- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): retry-request (low)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): postcss (moderate)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): protobufjs (critical)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): qs (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): retry-request (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): smol-toml (moderate)
-- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): teeny-request (low)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): teeny-request (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): uuid (moderate)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): vite (high)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): yaml (moderate)
 

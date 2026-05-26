@@ -13,6 +13,7 @@ describe("uiStore", () => {
       inspectorWidth: 300,
       inspectorOverlay: false,
       heatmapEnabled: true,
+      activeDrag: null,
     })
   })
 
@@ -179,6 +180,28 @@ describe("uiStore", () => {
       useUiStore.getState().toggleHeatmap()
       useUiStore.getState().toggleHeatmap()
       expect(useUiStore.getState().heatmapEnabled).toBe(true)
+    })
+  })
+
+  describe("activeDrag", () => {
+    it("defaults to null", () => {
+      expect(useUiStore.getState().activeDrag).toBeNull()
+    })
+
+    it("setActiveDrag sets toolbox drag source", () => {
+      useUiStore.getState().setActiveDrag({ kind: "toolbox", componentId: "redis", componentCategory: "caching" })
+      expect(useUiStore.getState().activeDrag).toEqual({ kind: "toolbox", componentId: "redis", componentCategory: "caching" })
+    })
+
+    it("setActiveDrag sets connection drag source", () => {
+      useUiStore.getState().setActiveDrag({ kind: "connection", sourceNodeId: "node-1", sourceCategory: "data-storage" })
+      expect(useUiStore.getState().activeDrag).toEqual({ kind: "connection", sourceNodeId: "node-1", sourceCategory: "data-storage" })
+    })
+
+    it("setActiveDrag clears drag source", () => {
+      useUiStore.getState().setActiveDrag({ kind: "toolbox", componentId: "redis", componentCategory: "caching" })
+      useUiStore.getState().setActiveDrag(null)
+      expect(useUiStore.getState().activeDrag).toBeNull()
     })
   })
 

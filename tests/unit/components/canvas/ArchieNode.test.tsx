@@ -30,25 +30,40 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-// Mock Zustand stores for heatmap + constraint integration
+const mockCheckCompatibility = vi.fn(() => ({ isCompatible: true, reason: "" }))
+vi.mock("@/engine/compatibilityChecker", () => ({
+  checkCompatibility: (...args: unknown[]) => mockCheckCompatibility(...args),
+}))
+
+// Mock Zustand stores for heatmap + constraint + compatibility integration
 const mockHeatmapColors = new Map<string, HeatmapStatus>()
 let mockHeatmapEnabled = false
 let mockViolationsByNodeId = new Map<string, ConstraintViolation[]>()
 let mockConstraints: Constraint[] = []
 
-vi.mock("@/stores/architectureStore", () => ({
-  useArchitectureStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
-    selector({
-      heatmapColors: mockHeatmapColors,
-      violationsByNodeId: mockViolationsByNodeId,
-      constraints: mockConstraints,
-    }),
-  ),
-}))
+type MockDragSource =
+  | { kind: "toolbox"; componentId: string; componentCategory: string }
+  | { kind: "connection"; sourceNodeId: string; sourceCategory: string }
+let mockActiveDrag: MockDragSource | null = null
+let mockArchNodes: Array<{ id: string; data: { archieComponentId: string; componentCategory: string } }> = []
+
+vi.mock("@/stores/architectureStore", () => {
+  const fn = Object.assign(
+    vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
+      selector({
+        heatmapColors: mockHeatmapColors,
+        violationsByNodeId: mockViolationsByNodeId,
+        constraints: mockConstraints,
+      }),
+    ),
+    { getState: () => ({ nodes: mockArchNodes }) },
+  )
+  return { useArchitectureStore: fn }
+})
 
 vi.mock("@/stores/uiStore", () => ({
   useUiStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
-    selector({ heatmapEnabled: mockHeatmapEnabled }),
+    selector({ heatmapEnabled: mockHeatmapEnabled, activeDrag: mockActiveDrag }),
   ),
 }))
 
@@ -71,6 +86,9 @@ describe("ArchieNode", () => {
     mockConstraints = []
     mockTopMetrics = []
     mockGetComponent.mockReturnValue(undefined)
+    mockActiveDrag = null
+    mockArchNodes = []
+    mockCheckCompatibility.mockReturnValue({ isCompatible: true, reason: "" })
   })
 
   it("renders component name", () => {
@@ -325,6 +343,83 @@ describe("ArchieNode", () => {
       } as Parameters<typeof ArchieNode>[0]
       render(<ArchieNode {...props} />)
       expect(screen.queryByTestId("archie-node-variant")).not.toBeInTheDocument()
+    })
+  })
+
+  describe("compatibility dimming (Phase 1)", () => {
+    const setupComponentMocks = () => {
+      mockGetComponent.mockImplementation((id: string) => {
+        if (id === "redis") return { id: "redis", category: "caching", compatibility: {}, configVariants: [] }
+        if (id === "postgresql") return { id: "postgresql", category: "data-storage", compatibility: {}, configVariants: [{ id: "default", name: "Standard" }] }
+        return undefined
+      })
+    }
+
+    it("no dimming or highlighting when no active drag", () => {
+      mockActiveDrag = null
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).not.toHaveAttribute("data-compat-dimmed")
+      expect(node).not.toHaveAttribute("data-compat-highlighted")
+    })
+
+    it("highlights compatible node during toolbox drag", () => {
+      mockActiveDrag = { kind: "toolbox", componentId: "redis", componentCategory: "caching" }
+      setupComponentMocks()
+      mockCheckCompatibility.mockReturnValue({ isCompatible: true, reason: "" })
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("data-compat-highlighted")
+      expect(node).not.toHaveAttribute("data-compat-dimmed")
+    })
+
+    it("dims incompatible node during toolbox drag", () => {
+      mockActiveDrag = { kind: "toolbox", componentId: "redis", componentCategory: "caching" }
+      setupComponentMocks()
+      mockCheckCompatibility.mockReturnValue({ isCompatible: false, reason: "Incompatible storage type" })
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("data-compat-dimmed")
+      expect(node).not.toHaveAttribute("data-compat-highlighted")
+    })
+
+    it("shows incompatibility reason as tooltip on dimmed node", () => {
+      mockActiveDrag = { kind: "toolbox", componentId: "redis", componentCategory: "caching" }
+      setupComponentMocks()
+      mockCheckCompatibility.mockReturnValue({ isCompatible: false, reason: "Incompatible storage" })
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("title", "⚠ Incompatible storage")
+    })
+
+    it("does not dim or highlight the drag source node during connection drag", () => {
+      mockActiveDrag = { kind: "connection", sourceNodeId: "node-1", sourceCategory: "data-storage" }
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).not.toHaveAttribute("data-compat-dimmed")
+      expect(node).not.toHaveAttribute("data-compat-highlighted")
+    })
+
+    it("highlighted node gets green glow box-shadow", () => {
+      mockActiveDrag = { kind: "toolbox", componentId: "redis", componentCategory: "caching" }
+      setupComponentMocks()
+      mockCheckCompatibility.mockReturnValue({ isCompatible: true, reason: "" })
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.style.boxShadow).toBe("0 0 12px 3px var(--color-heatmap-green)")
+    })
+
+    it("dims node during connection drag from another node", () => {
+      mockActiveDrag = { kind: "connection", sourceNodeId: "other-node", sourceCategory: "caching" }
+      mockArchNodes = [
+        { id: "other-node", data: { archieComponentId: "redis", componentCategory: "caching" } },
+        { id: "node-1", data: { archieComponentId: "postgresql", componentCategory: "data-storage" } },
+      ]
+      setupComponentMocks()
+      mockCheckCompatibility.mockReturnValue({ isCompatible: false, reason: "Wrong type" })
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("data-compat-dimmed")
     })
   })
 })
