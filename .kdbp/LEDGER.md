@@ -104,3 +104,11 @@ DEFERRED: 0
 PLAN ALIGNMENT: ALIGNED (9/9 on-scope, 0 off-scope)
 COVERAGE: HIGH (all changed source files have corresponding test changes)
 CHURN: all STABLE
+
+## 2026-05-26 — PHASE PUSH: Phase 3 — Ghost Placement & Suggestions
+BRANCH: dev → main (PR #28)
+COMMITS: 8 (136578d..b17f03d)
+CI FIX: TS2322 — widened ReactFlow nodes array type assertion for ghost+store merge
+CI: ✅ 2/2 — ci pass, GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/28
+DEPLOYMENTS: P2
