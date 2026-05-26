@@ -4,6 +4,7 @@
 <!-- project_type: code -->
 <!-- created: 2026-05-25 -->
 <!-- last_updated: 2026-05-26 -->
+<!-- phase_advanced: 1→2 on 2026-05-26 -->
 <!-- goal: Factorio-fy Archie — transform from plain design platform to game-like interactive experience -->
 
 ## Goal
@@ -35,7 +36,7 @@ Transform archie from a plain design platform into a game-like interactive exper
 
 ## Current Phase
 
-Phase 1 — Compatibility Intelligence UI
+Phase 2 — Radial Context Menu
 
 ## Phase Details
 
