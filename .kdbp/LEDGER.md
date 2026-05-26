@@ -24,3 +24,8 @@ FIXED: 6 of 7 MVP+Enterprise gate findings
 DEFERRED: #5 RUNTIME EVIDENCE GAP (needs manual browser drag verification)
 SKIPPED: #8 Scale-gate (unnecessary type cast — LOW)
 PLAN ALIGNMENT: ALIGNED (6/6 on-scope, 0 off-scope)
+
+## 2026-05-26 — [d80fd22] fix(phase1): address review findings — tests, perf, dead code
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept 2:accept (wells doc drift — no semantic doc changes needed)
+DEFERRED: 0
