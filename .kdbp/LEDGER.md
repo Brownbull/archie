@@ -267,3 +267,10 @@ REVIEW SCORES: P1 81→100, P2 81→100, P3 100, P4 96, P5 100
 PRs: #27 (P1-P2), #28 (P3-P4), #29 (P5)
 TIERS: all enterprise (5×ent, 0 escalations)
 DURATION: 2026-05-25 → 2026-05-27 (3 days)
+
+## 2026-05-27 17:25 — [bd1b78d] feat(canvas): topology checker engine with store integration and issues panel
+FINDINGS: 1 (0 critical, 0 high, 1 medium, 0 low)
+ACTIONS: 1:accept (architectureStore.ts at 793 lines — pre-existing shape, improved from 800)
+DEFERRED: 0
+FILES: src/engine/topologyChecker.ts (new, 220), tests/unit/engine/topologyChecker.test.ts (new, 170), src/stores/architectureStore.ts (+20/-27), src/stores/architectureStoreHelpers.ts (+12), src/components/layout/IssuesSummary.tsx (+76/-42), src/types/index.ts (+4), tests/unit/components/layout/IssuesSummary.test.tsx (+84/-8)
+TESTS: 2818/2818 pass (topology engine 22, IssuesSummary 9)
