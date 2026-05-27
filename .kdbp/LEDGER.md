@@ -316,3 +316,9 @@ FINDINGS: 3 (0 critical, 0 high, 0 medium, 3 low)
 ACTIONS: 1:accept (auth thin coverage — Scale gate), 2:accept (cdn thin coverage — Scale gate), 3:update-docs (fixed "30+" → "18" in well doc + PLAN.md)
 DEFERRED: 0
 TICK: ✅ Review column
+
+## 2026-05-30 18:30 — PUSH dev → origin/dev (6 commits)
+ENV: production | TARGET: main | PR: #30 (existing, OPEN)
+CI: ✅ GitGuardian (1s)
+DEPLOYMENTS: P8 (added row to .kdbp/DEPLOYMENTS.md)
+TICK: ✅ Push column — Phase 5 complete
