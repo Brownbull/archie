@@ -393,6 +393,50 @@ describe("CanvasView", () => {
     expect(placeStackSpy).not.toHaveBeenCalled()
   })
 
+  describe("Alt+N overlay shortcuts", () => {
+    it("Alt+1 sets overlay to compatibility", () => {
+      useUiStore.setState({ overlayMode: "none" })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "1", altKey: true })
+      expect(useUiStore.getState().overlayMode).toBe("compatibility")
+    })
+
+    it("Alt+2 sets overlay to performance", () => {
+      useUiStore.setState({ overlayMode: "none" })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "2", altKey: true })
+      expect(useUiStore.getState().overlayMode).toBe("performance")
+    })
+
+    it("Alt+0 sets overlay to none", () => {
+      useUiStore.setState({ overlayMode: "performance" })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "0", altKey: true })
+      expect(useUiStore.getState().overlayMode).toBe("none")
+    })
+
+    it("Alt+number ignored when Ctrl also pressed", () => {
+      useUiStore.setState({ overlayMode: "none" })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      fireEvent.keyDown(panel, { key: "1", altKey: true, ctrlKey: true })
+      expect(useUiStore.getState().overlayMode).toBe("none")
+    })
+
+    it("Alt+number ignored in INPUT element", () => {
+      useUiStore.setState({ overlayMode: "none" })
+      render(<CanvasView />)
+      const panel = screen.getByTestId("canvas-panel")
+      const input = document.createElement("input")
+      panel.appendChild(input)
+      fireEvent.keyDown(input, { key: "1", altKey: true, bubbles: true })
+      expect(useUiStore.getState().overlayMode).toBe("none")
+    })
+  })
+
   it("onDrop with stack ID calls placeStack via resolveStackPlacement", () => {
     const mockNode = {
       id: "stack-node-1",

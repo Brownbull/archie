@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { INSPECTOR_DEFAULT_WIDTH, INSPECTOR_MIN_WIDTH, INSPECTOR_MAX_WIDTH } from "@/lib/constants"
+import { INSPECTOR_DEFAULT_WIDTH, INSPECTOR_MIN_WIDTH, INSPECTOR_MAX_WIDTH, OVERLAY_MODES, type OverlayModeId } from "@/lib/constants"
 
 export type ToolboxTab = "components" | "stacks" | "blueprints"
 
@@ -31,6 +31,9 @@ interface UiState {
   pendingNavNodeId: string | null
   activeDrag: DragSource | null
   contextMenu: ContextMenuState | null
+  overlayMode: OverlayModeId
+  setOverlayMode: (mode: OverlayModeId) => void
+  cycleOverlayMode: () => void
   setToolboxTab: (tab: ToolboxTab) => void
   setSearchQuery: (query: string) => void
   setCommandPaletteOpen: (open: boolean) => void
@@ -62,6 +65,13 @@ export const useUiStore = create<UiState>()((set) => ({
   pendingNavNodeId: null,
   activeDrag: null,
   contextMenu: null,
+  overlayMode: "none" as OverlayModeId,
+  setOverlayMode: (mode) => set({ overlayMode: mode }),
+  cycleOverlayMode: () => set((state) => {
+    const currentIndex = OVERLAY_MODES.findIndex((m) => m.id === state.overlayMode)
+    const nextIndex = (currentIndex + 1) % OVERLAY_MODES.length
+    return { overlayMode: OVERLAY_MODES[nextIndex].id }
+  }),
   setToolboxTab: (tab) => set({ toolboxTab: tab }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),

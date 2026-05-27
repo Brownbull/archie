@@ -280,6 +280,18 @@ export const GHOST_SUGGESTION_LIMIT = 3
 export const GHOST_OFFSET_X = 200
 export const GHOST_OFFSET_Y = 0
 
+// ALT-Mode Overlay System (Phase 4 — Factorio-fy)
+export const OVERLAY_MODES = [
+  { id: "none", label: "Off", shortcut: "0", iconName: "EyeOff" },
+  { id: "compatibility", label: "Compatibility", shortcut: "1", iconName: "Plug" },
+  { id: "performance", label: "Performance", shortcut: "2", iconName: "Gauge" },
+  { id: "cost", label: "Cost", shortcut: "3", iconName: "DollarSign" },
+  { id: "tier", label: "Tier", shortcut: "4", iconName: "Layers" },
+  { id: "flow", label: "Flow", shortcut: "5", iconName: "GitBranch" },
+] as const
+
+export type OverlayModeId = (typeof OVERLAY_MODES)[number]["id"]
+
 // ─── Demand Simulation (Story 9-1) ──────────────────────────────────────────
 
 export const DEMAND_VARIABLE_VALUES = [

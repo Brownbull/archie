@@ -28,6 +28,7 @@ import { CanvasLegend } from "@/components/canvas/CanvasLegend";
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState";
 import { FailureSelector } from "@/components/canvas/FailureSelector";
 import { GhostNode } from "@/components/canvas/GhostNode";
+import { OverlaySelector } from "@/components/canvas/OverlaySelector";
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode";
 import { RadialMenu } from "@/components/canvas/RadialMenu";
 import { ScenarioSelector } from "@/components/canvas/ScenarioSelector";
@@ -41,6 +42,7 @@ import {
 	NODE_TYPE_COMPONENT,
 	NODE_TYPE_GHOST,
 	NODE_TYPE_PLACEHOLDER,
+	OVERLAY_MODES,
 } from "@/lib/constants";
 import { componentLibrary } from "@/services/componentLibrary";
 import { resolveStackPlacement } from "@/services/stackPlacement";
@@ -279,6 +281,14 @@ function CanvasViewInner() {
 			) {
 				useUiStore.getState().toggleHeatmap();
 			}
+			// Alt+0-5 overlay mode shortcuts (Phase 4 — Factorio-fy)
+			if (event.altKey && !event.ctrlKey && !event.metaKey) {
+				const mode = OVERLAY_MODES.find((m) => m.shortcut === event.key);
+				if (mode) {
+					event.preventDefault();
+					useUiStore.getState().setOverlayMode(mode.id);
+				}
+			}
 		};
 
 		container.addEventListener("keydown", handleKeyDown);
@@ -334,6 +344,7 @@ function CanvasViewInner() {
 			</ReactFlow>
 			<RadialMenu />
 			<EmptyCanvasState />
+			<OverlaySelector />
 			<CanvasLegend />
 			<ScenarioSelector />
 			<FailureSelector />

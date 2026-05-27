@@ -14,6 +14,7 @@ describe("uiStore", () => {
       inspectorOverlay: false,
       heatmapEnabled: true,
       activeDrag: null,
+      overlayMode: "none" as const,
     })
   })
 
@@ -202,6 +203,32 @@ describe("uiStore", () => {
       useUiStore.getState().setActiveDrag({ kind: "toolbox", componentId: "redis", componentCategory: "caching" })
       useUiStore.getState().setActiveDrag(null)
       expect(useUiStore.getState().activeDrag).toBeNull()
+    })
+  })
+
+  describe("overlayMode", () => {
+    it("defaults to none", () => {
+      expect(useUiStore.getState().overlayMode).toBe("none")
+    })
+
+    it("setOverlayMode sets overlay", () => {
+      useUiStore.getState().setOverlayMode("performance")
+      expect(useUiStore.getState().overlayMode).toBe("performance")
+    })
+
+    it("cycleOverlayMode cycles through modes", () => {
+      useUiStore.getState().cycleOverlayMode()
+      expect(useUiStore.getState().overlayMode).toBe("compatibility")
+      useUiStore.getState().cycleOverlayMode()
+      expect(useUiStore.getState().overlayMode).toBe("performance")
+      useUiStore.getState().cycleOverlayMode()
+      expect(useUiStore.getState().overlayMode).toBe("cost")
+    })
+
+    it("cycleOverlayMode wraps around to none", () => {
+      useUiStore.setState({ overlayMode: "flow" })
+      useUiStore.getState().cycleOverlayMode()
+      expect(useUiStore.getState().overlayMode).toBe("none")
     })
   })
 
