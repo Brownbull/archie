@@ -244,6 +244,14 @@
 .flow-particle-warning   { stroke: var(--color-heatmap-yellow); animation-duration: 1.4s; }
 .flow-particle-bottleneck { stroke: var(--color-heatmap-red);   animation-duration: 3.0s; }
 
+/* Status-change ripple — fires when heatmapCalculator propagates a new status to a node */
+@keyframes archie-ripple {
+  0%   { box-shadow: 0 0 0 0 var(--ripple-color, var(--color-heatmap-green)); }
+  50%  { box-shadow: 0 0 0 6px color-mix(in srgb, var(--ripple-color, var(--color-heatmap-green)) 40%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.archie-ripple { animation: archie-ripple 200ms ease-out; }
+
 /* Override Radix ScrollArea internal table wrapper to constrain content width.
    All Archie scroll areas are vertical-only; the table display is only needed
    for horizontal scroll detection which we don't use. */
