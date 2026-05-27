@@ -151,3 +151,10 @@ demand_responses:
   burst-pattern:
     unpredictable:
       request-latency: 0.9
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out

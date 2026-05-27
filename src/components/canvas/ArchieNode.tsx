@@ -14,6 +14,23 @@ import { usePreferencesStore } from "@/stores/preferencesStore"
 import { useTopMetrics } from "@/hooks/useTopMetrics"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
+import { useNodePorts } from "@/hooks/useNodePorts"
+
+const PORT_HEIGHT_PX = 20
+const MIN_PORT_SECTION_HEIGHT = 0
+const DYNAMIC_HEIGHT_THRESHOLD = 5
+
+function getPortOffset(index: number, total: number): number {
+  if (total <= 1) return 50
+  const padding = 15
+  const range = 100 - 2 * padding
+  return padding + (index / (total - 1)) * range
+}
+
+function getMinHeight(portCount: number): number | undefined {
+  if (portCount <= DYNAMIC_HEIGHT_THRESHOLD) return undefined
+  return MIN_PORT_SECTION_HEIGHT + portCount * PORT_HEIGHT_PX
+}
 
 function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const category = COMPONENT_CATEGORIES[data.componentCategory as ComponentCategoryId]
@@ -51,6 +68,10 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     const comp = componentLibrary.getComponent(data.archieComponentId)
     return comp?.configVariants.find((v) => v.id === data.activeConfigVariantId)?.name ?? null
   }, [data.archieComponentId, data.activeConfigVariantId])
+
+  const { inputs, outputs, hasPorts } = useNodePorts(data.archieComponentId)
+  const maxPortSide = Math.max(inputs.length, outputs.length)
+  const dynamicMinHeight = getMinHeight(maxPortSide)
 
   // Compatibility dimming during active drag (Phase 1 — Factorio-fy)
   const activeDrag = useUiStore((s) => s.activeDrag)
@@ -107,6 +128,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       }${animationsEnabled && isRippling ? " archie-ripple" : ""}`}
       style={{
         width: `${NODE_WIDTH}px`,
+        minHeight: dynamicMinHeight,
         boxShadow,
         "--ripple-color": heatmapStatus ? HEATMAP_COLORS[heatmapStatus] : undefined,
       } as React.CSSProperties}
@@ -167,18 +189,57 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         <StatusDot status={heatmapStatus} animate={animationsEnabled} />
       )}
 
-      <Handle
-        type="target"
-        position={Position.Left}
-        data-testid="archie-node-handle-target"
-        className="!h-2.5 !w-2.5 !border-2 !border-archie-border !bg-surface"
-      />
-      <Handle
-        type="source"
-        position={Position.Right}
-        data-testid="archie-node-handle-source"
-        className="!h-2.5 !w-2.5 !border-2 !border-archie-border !bg-surface"
-      />
+      {hasPorts ? (
+        <>
+          {inputs.map((port, i) => (
+            <Handle
+              key={port.id}
+              id={port.id}
+              type="target"
+              position={Position.Left}
+              data-testid={`port-handle-${port.id}`}
+              data-port-type={port.type}
+              title={`${port.label} In`}
+              className="!h-3 !w-3 !border-2 !border-white/80"
+              style={{
+                backgroundColor: port.color,
+                top: `${getPortOffset(i, inputs.length)}%`,
+              }}
+            />
+          ))}
+          {outputs.map((port, i) => (
+            <Handle
+              key={port.id}
+              id={port.id}
+              type="source"
+              position={Position.Right}
+              data-testid={`port-handle-${port.id}`}
+              data-port-type={port.type}
+              title={`${port.label} Out`}
+              className="!h-3 !w-3 !border-2 !border-white/80"
+              style={{
+                backgroundColor: port.color,
+                top: `${getPortOffset(i, outputs.length)}%`,
+              }}
+            />
+          ))}
+        </>
+      ) : (
+        <>
+          <Handle
+            type="target"
+            position={Position.Left}
+            data-testid="archie-node-handle-target"
+            className="!h-2.5 !w-2.5 !border-2 !border-archie-border !bg-surface"
+          />
+          <Handle
+            type="source"
+            position={Position.Right}
+            data-testid="archie-node-handle-source"
+            className="!h-2.5 !w-2.5 !border-2 !border-archie-border !bg-surface"
+          />
+        </>
+      )}
     </div>
   )
 }

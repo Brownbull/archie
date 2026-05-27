@@ -220,3 +220,10 @@ demand_responses:
     unpredictable:
       write-throughput: 0.6
       read-latency: 0.8
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

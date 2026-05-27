@@ -23,6 +23,10 @@ The swap popover (triggered from radial menu) uses `getBoundingClientRect` again
 ### 2026-05-26 — Ripple animation is CSS-only with store-driven class toggle
 Status-change ripples use a CSS `@keyframes` animation (`archie-ripple`, 200ms) triggered by adding/removing a class based on `rippleActiveNodeIds` in architectureStore. No JS animation loop — the store sets the node ID, a `setTimeout` clears it after the duration, and CSS handles the visual. Respects `preferencesStore.animationsEnabled`.
 
+### 2026-05-28 — Port-aware node rendering replaces generic Handles (Epic 12, Phase 2)
+
+ArchieNode now uses `useNodePorts(archieComponentId)` to resolve typed port definitions from the component library. Components with ports render colored Handle dots (jewel-tone colors from `PORT_TYPES`) positioned vertically on left (inputs) and right (outputs), sorted by `PORT_SORT_ORDER`. Components without ports keep the original 2 generic gray Handles for backward compatibility. Node height expands dynamically when a side has more than 5 ports. Each port dot has a title tooltip showing its type and direction (e.g. "HTTP In", "Database Out").
+
 ## Key Diagrams
 
 <!-- Suggested diagram type for this well: flowchart -->
