@@ -196,6 +196,25 @@ DEFERRED: 0
 FILES: src/lib/constants.ts (mod), src/schemas/componentSchema.ts (mod), src/types/index.ts (mod), tests/unit/schemas/portDefinition.test.ts (new), tests/unit/schemas/componentSchema.test.ts (mod)
 TESTS: 2749/2749 pass, 16 new (portDefinition 13, componentSchema ports 3)
 
+## 2026-05-28 — PHASE REVIEW COMPLETE: Phase 2 — Port-aware node rendering
+VERDICT: APPROVE
+FINDINGS: 0 total (0 critical, 0 high, 0 medium, 0 low)
+COVERAGE: HIGH (all changed source files have corresponding test changes)
+CONFIDENCE: 100/100
+DEFERRED: none
+ALIGNMENT: ALIGNED (7/7 on-scope, 0 off-scope)
+TIER: ent | DRIFT: none
+TICK: ✅
+
+## 2026-05-28 — [c86a72f] feat(canvas): port-aware node rendering with colored handle dots
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:update-docs 2:update-docs
+DEFERRED: 0
+FILES: src/hooks/useNodePorts.ts (new), src/components/canvas/ArchieNode.tsx (mod), src/data/components/nginx.yaml (mod), src/data/components/node-express.yaml (mod), src/data/components/postgresql.yaml (mod), tests/unit/hooks/useNodePorts.test.ts (new), tests/unit/components/canvas/ArchieNode.test.tsx (mod), tests/e2e/port-handles.spec.ts (new), docs/wells/1-canvas.md (mod), docs/wells/6-blueprints-stacks.md (mod)
+TESTS: 2766/2766 pass, 17 new (useNodePorts 9, ArchieNode ports 8)
+E2E: tests/e2e/port-handles.spec.ts — 4 passed, 5 screenshots in test-results/port-handles/
+RUNTIME EVIDENCE: Playwright desktop — port colored dots on nginx (2 ports), node-express (5 ports), postgresql (2 ports); kafka generic fallback handles; hover tooltip verified
+
 ## 2026-05-27 — PLAN COMPLETED: Factorio-fy Archie
 ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-27_factorio-fy-archie.md
 PHASES COMPLETED: 5 of 5
