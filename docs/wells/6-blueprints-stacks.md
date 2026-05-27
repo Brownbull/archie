@@ -17,7 +17,7 @@
 
 ### 2026-05-28 — Component YAML files gain optional `ports` field (Epic 12, Phase 2)
 
-Three component YAML files (nginx, node-express, postgresql) now include `ports` arrays with typed port definitions. This is the first batch of port data ahead of Phase 5's full 30+ component authoring. Port data drives the new colored Handle rendering on the canvas — components with ports get jewel-tone colored dots; those without keep generic handles.
+Three component YAML files (nginx, node-express, postgresql) now include `ports` arrays with typed port definitions. This is the first batch of port data ahead of Phase 5's full 18-component authoring. Port data drives the new colored Handle rendering on the canvas — components with ports get jewel-tone colored dots; those without keep generic handles.
 
 ### 2026-05-30 — All 18 components now have typed port definitions (Epic 12, Phase 5)
 
