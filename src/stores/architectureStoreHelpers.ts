@@ -1,3 +1,4 @@
+import { detectTopologyIssues, type TopologyIssue } from "@/engine/topologyChecker"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { getFailurePreset } from "@/services/failureLoader"
@@ -177,6 +178,23 @@ export function recomputeScoringLayer(
     constraints, weightProfile, nodes, computedMetrics,
   )
   return { heatmapColors, currentTier, constraintViolations, violationsByNodeId }
+}
+
+/**
+ * Module-level helper: runs topology checks on current graph and returns
+ * issues + grouped-by-node map for O(1) per-node lookups.
+ * Called after topology mutations (addNode, removeNode, addEdge, removeEdges, loadArchitecture).
+ */
+export function evaluateTopology(
+  nodes: { id: string }[],
+  edges: { source: string; target: string }[],
+): { topologyIssues: TopologyIssue[]; topologyIssuesByNodeId: Map<string, TopologyIssue[]> } {
+  const issues = detectTopologyIssues(nodes, edges)
+  const byNode = new Map<string, TopologyIssue[]>()
+  for (const issue of issues) {
+    byNode.set(issue.nodeId, [...(byNode.get(issue.nodeId) ?? []), issue])
+  }
+  return { topologyIssues: issues, topologyIssuesByNodeId: byNode }
 }
 
 // --- Ripple timeout management (extracted from architectureStore for line-count headroom) ---

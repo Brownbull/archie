@@ -40,8 +40,10 @@ import {
   removePendingRippleTimeout,
   getDemandProfileForScenario,
   getFailureModifiersForScenario,
+  evaluateTopology,
 } from "@/stores/architectureStoreHelpers"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
+import type { TopologyIssue } from "@/engine/topologyChecker"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import type { TierResult } from "@/lib/tierDefinitions"
@@ -82,6 +84,8 @@ interface ArchitectureState {
   constraintViolations: ConstraintViolation[]
   violationsByNodeId: Map<string, ConstraintViolation[]>
   dataContextItems: Map<string, DataContextItem[]>
+  topologyIssues: TopologyIssue[]
+  topologyIssuesByNodeId: Map<string, TopologyIssue[]>
   activeScenarioId: string | null
   activeFailureScenarioId: string | null
   addNode: (componentId: string, position: { x: number; y: number }) => void
@@ -118,9 +122,6 @@ interface ArchitectureState {
   removeDataContextItem: (nodeId: string, itemId: string) => void
 }
 
-// Thin wrappers: delegate to pure helpers, adapt to store get/set pattern.
-// Keeps call sites identical to pre-extraction code. (Story 7-1 Phase 0 refactor)
-
 function evaluateAndSetTier(
   get: () => ArchitectureState,
   set: (partial: Partial<ArchitectureState>) => void,
@@ -153,6 +154,13 @@ function recomputeScoringLayer(
   set(computeScoringLayer(nodes, weightProfile, computedMetrics, constraints))
 }
 
+function _evaluateTopology(
+  get: () => ArchitectureState,
+  set: (partial: Partial<ArchitectureState>) => void,
+): void {
+  set(evaluateTopology(get().nodes, get().edges))
+}
+
 export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   nodes: [],
   edges: [],
@@ -168,6 +176,8 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   constraintViolations: [],
   violationsByNodeId: new Map<string, ConstraintViolation[]>(),
   dataContextItems: new Map<string, DataContextItem[]>(),
+  topologyIssues: [],
+  topologyIssuesByNodeId: new Map<string, TopologyIssue[]>(),
   activeScenarioId: null,
   activeFailureScenarioId: null,
 
@@ -187,10 +197,8 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     const failureModifiers = getFailureModifiersForScenario(activeFailureScenarioId)
     const result = recalculationService.run(nodes, edges, changedNodeId, demandProfile, failureModifiers, activeFailureScenarioId)
 
-    // Immediate update for changed node (hop 0)
     const changedNodeMetrics = result.metrics.get(changedNodeId)
     if (changedNodeMetrics) {
-      // Compute weighted heatmap for changed node (AC-ARCH-PATTERN-5)
       const categoryAverages = getNodeCategoryAverages(changedNodeMetrics)
       const weightedScore = computeWeightedNodeScore(categoryAverages, get().weightProfile)
       const changedNodeHeatmap = computeHeatmapStatus(weightedScore)
@@ -199,17 +207,14 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
           ...get().computedMetrics,
           [changedNodeId, changedNodeMetrics],
         ]),
-        // Update heatmap for changed node immediately (weighted)
         heatmapColors: new Map([
           ...get().heatmapColors,
           [changedNodeId, changedNodeHeatmap],
         ]),
-        // Edge heatmap updates fully (edges may span multiple hops)
         edgeHeatmapColors: result.edgeHeatmap,
       })
     }
 
-    // Tier evaluation: merge ALL service results with existing metrics for full picture
     const fullMetrics = new Map(get().computedMetrics)
     for (const [nodeId, nodeMetrics] of result.metrics) {
       fullMetrics.set(nodeId, nodeMetrics)
@@ -217,7 +222,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     evaluateAndSetTier(get, set, fullMetrics)
     _evaluateAndSetViolations(get, set, fullMetrics)
 
-    // Sequential ripple for remaining nodes
     for (const hop of result.propagationHops.filter(
       (h) => h.hopIndex > 0,
     )) {
@@ -288,7 +292,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   },
 
   addNodeSmartPosition: (componentId) => {
-    // Early exit avoids unnecessary position calculation when canvas is full (TD-1-3a)
     if (get().nodes.length >= MAX_CANVAS_NODES) {
       toast.warning(`Canvas limit reached (${MAX_CANVAS_NODES} components)`)
       return
@@ -298,7 +301,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   },
 
   addNode: (componentId, position) => {
-    // Defense-in-depth: prevent client-side performance degradation (TD-1-3a)
     if (get().nodes.length >= MAX_CANVAS_NODES) {
       toast.warning(`Canvas limit reached (${MAX_CANVAS_NODES} components)`)
       return
@@ -330,6 +332,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({ nodes: [...get().nodes, newNode] })
     evaluateAndSetTier(get, set)
     _evaluateAndSetViolations(get, set)
+    _evaluateTopology(get, set)
   },
 
   placeStack: (newNodes, newEdges) => {
@@ -337,16 +340,13 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       toast.warning(`Cannot place stack: would exceed canvas limit (${MAX_CANVAS_NODES} components)`)
       return
     }
-    // Single state update for all nodes and edges (AC-ARCH-PATTERN-5)
     set({
       nodes: [...get().nodes, ...newNodes],
       edges: [...get().edges, ...newEdges],
     })
-    // Evaluate tier + constraints after batch update
     evaluateAndSetTier(get, set)
     _evaluateAndSetViolations(get, set)
-    // Trigger recalculation for each placed node (same pattern as loadArchitecture).
-    // O(n) BFS passes — acceptable for MAX_STACK_COMPONENTS; optimize if profiling flags this.
+    _evaluateTopology(get, set)
     for (const node of newNodes) {
       get().triggerRecalculation(node.id)
     }
@@ -356,7 +356,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     const newComponent = componentLibrary.getComponent(newComponentId)
     if (!newComponent) return
 
-    // Guard: reject swap to component with no config variants (TD-1-6a)
     if (newComponent.configVariants.length === 0) {
       console.warn(
         `swapNodeComponent: "${newComponentId}" has no configVariants — swap rejected`,
@@ -457,7 +456,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         useUiStore.getState().setSelectedEdgeId(null)
       }
     }
-    // Capture neighbor node IDs BEFORE removal (Story 2-1)
     const neighborNodeIds = new Set<string>()
     for (const edge of get().edges) {
       if (edge.source === nodeId) neighborNodeIds.add(edge.target)
@@ -469,21 +467,18 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         (e) => e.source !== nodeId && e.target !== nodeId,
       ),
     })
-    // Clean up computedMetrics for the removed node
     const currentComputed = get().computedMetrics
     if (currentComputed.has(nodeId)) {
       const next = new Map(currentComputed)
       next.delete(nodeId)
       set({ computedMetrics: next })
     }
-    // Clean up heatmapColors for the removed node
     const currentHeatmap = get().heatmapColors
     if (currentHeatmap.has(nodeId)) {
       const nextHeatmap = new Map(currentHeatmap)
       nextHeatmap.delete(nodeId)
       set({ heatmapColors: nextHeatmap })
     }
-    // Clean up dataContextItems for the removed node
     if (get().dataContextItems.has(nodeId)) {
       const nextDci = new Map(get().dataContextItems)
       nextDci.delete(nodeId)
@@ -492,7 +487,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     if (get().nodes.length === 0) {
       set({ currentTier: null, constraintViolations: [], violationsByNodeId: new Map() })
     }
-    // Trigger recalculation for surviving neighbors AFTER removal
     for (const neighborId of neighborNodeIds) {
       if (get().nodes.some((n) => n.id === neighborId)) {
         get().triggerRecalculation(neighborId)
@@ -502,6 +496,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       evaluateAndSetTier(get, set)
       _evaluateAndSetViolations(get, set)
     }
+    _evaluateTopology(get, set)
   },
 
   removeNodes: (nodeIds) => {
@@ -558,6 +553,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       evaluateAndSetTier(get, set)
       _evaluateAndSetViolations(get, set)
     }
+    _evaluateTopology(get, set)
   },
 
   addEdge: (connection) => {
@@ -608,6 +604,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
 
     set({ edges: [...get().edges, newEdge] })
+    _evaluateTopology(get, set)
     get().triggerRecalculation(connection.source)
     get().triggerRecalculation(connection.target)
   },
@@ -622,6 +619,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       }
     }
     set({ edges: get().edges.filter((e) => !idsToRemove.has(e.id)) })
+    _evaluateTopology(get, set)
     for (const nodeId of affectedNodeIds) {
       get().triggerRecalculation(nodeId)
     }
@@ -659,6 +657,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
     useUiStore.getState().setSelectedNodeId(null)
     useUiStore.getState().setSelectedEdgeId(null)
+    _evaluateTopology(get, set)
 
     for (const node of nodes) {
       get().triggerRecalculation(node.id)
@@ -692,10 +691,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({ nodes: applyNodeChanges(changes, get().nodes) })
   },
 
-  // --- Constraint CRUD (Story 6-2 AC-ARCH-PATTERN-3) ---
-  // Each action modifies constraints then re-evaluates violations from existing scores.
-  // No BFS propagation (AC-ARCH-NO-3).
-
   addConstraint: (constraint) => {
     set({ constraints: [...get().constraints, constraint] })
     _evaluateAndSetViolations(get, set)
@@ -719,8 +714,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({ constraints })
     _evaluateAndSetViolations(get, set)
   },
-
-  // --- Data Context CRUD (Story 7-1 AC-ARCH-PATTERN-5) ---
 
   addDataContextItem: (nodeId, item) => {
     const current = get().dataContextItems.get(nodeId) ?? []

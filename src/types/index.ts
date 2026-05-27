@@ -37,6 +37,11 @@ export type {
   PortLookupContext,
 } from "@/engine/portCompatibilityChecker"
 export type {
+  TopologyIssue,
+  TopologyIssueType,
+  TopologyIssueSeverity,
+} from "@/engine/topologyChecker"
+export type {
   RecalculatedMetrics,
   ArchitectureMetrics,
   ConnectedNodeInfo,

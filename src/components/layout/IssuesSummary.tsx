@@ -13,46 +13,72 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 
+type IssueKind = "bottleneck" | "warning" | "orphan" | "unreachable" | "missing-hop"
+
 interface IssueItem {
   nodeId: string
   componentName: string
-  status: "bottleneck" | "warning"
+  kind: IssueKind
+  description?: string
+}
+
+const ISSUE_COLORS: Record<IssueKind, string> = {
+  bottleneck: "bg-red-500",
+  warning: "bg-yellow-500",
+  orphan: "bg-orange-400",
+  unreachable: "bg-orange-400",
+  "missing-hop": "bg-orange-400",
 }
 
 export function IssuesSummary() {
   const heatmapColors = useArchitectureStore((s) => s.heatmapColors)
+  const topologyIssues = useArchitectureStore((s) => s.topologyIssues)
   const nodes = useArchitectureStore(useShallow((s) => s.nodes))
   const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
 
-  const { issues, bottleneckCount, warningCount } = useMemo(() => {
-    if (!heatmapEnabled) return { issues: [] as IssueItem[], bottleneckCount: 0, warningCount: 0 }
-
+  const { issues, bottleneckCount, warningCount, topologyCount } = useMemo(() => {
     const items: IssueItem[] = []
-    let bottlenecks = 0
-    let warnings = 0
     const nodeMap = new Map(nodes.map((n) => [n.id, n]))
-    for (const [nodeId, status] of heatmapColors) {
-      if (status !== "bottleneck" && status !== "warning") continue
-      const node = nodeMap.get(nodeId)
-      items.push({
-        nodeId,
-        componentName: node?.data.componentName ?? nodeId,
-        status,
-      })
-      if (status === "bottleneck") bottlenecks++
-      else warnings++
+
+    if (heatmapEnabled) {
+      for (const [nodeId, status] of heatmapColors) {
+        if (status !== "bottleneck" && status !== "warning") continue
+        const node = nodeMap.get(nodeId)
+        items.push({
+          nodeId,
+          componentName: node?.data.componentName ?? nodeId,
+          kind: status,
+        })
+      }
     }
 
-    // Sort bottlenecks first, then warnings
+    const topologyNodesSeen = new Set<string>()
+    for (const issue of topologyIssues) {
+      if (topologyNodesSeen.has(issue.nodeId)) continue
+      topologyNodesSeen.add(issue.nodeId)
+      const node = nodeMap.get(issue.nodeId)
+      items.push({
+        nodeId: issue.nodeId,
+        componentName: node?.data.componentName ?? issue.nodeId,
+        kind: issue.issueType,
+        description: issue.description,
+      })
+    }
+
     items.sort((a, b) => {
-      if (a.status === b.status) return 0
-      return a.status === "bottleneck" ? -1 : 1
+      const order: IssueKind[] = ["bottleneck", "missing-hop", "unreachable", "orphan", "warning"]
+      return order.indexOf(a.kind) - order.indexOf(b.kind)
     })
 
-    return { issues: items, bottleneckCount: bottlenecks, warningCount: warnings }
-  }, [heatmapColors, nodes, heatmapEnabled])
+    return {
+      issues: items,
+      bottleneckCount: items.filter((i) => i.kind === "bottleneck").length,
+      warningCount: items.filter((i) => i.kind === "warning").length,
+      topologyCount: topologyNodesSeen.size,
+    }
+  }, [heatmapColors, topologyIssues, nodes, heatmapEnabled])
 
-  if (!heatmapEnabled || issues.length === 0) return null
+  if (issues.length === 0) return null
 
   function handleIssueClick(nodeId: string) {
     useUiStore.getState().setPendingNavNodeId(nodeId)
@@ -78,27 +104,35 @@ export function IssuesSummary() {
               {warningCount}
             </span>
           )}
+          {topologyCount > 0 && (
+            <span data-testid="topology-count" className="text-xs font-medium text-orange-500">
+              {topologyCount}
+            </span>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         data-testid="issues-dropdown"
         align="end"
-        className="w-56"
+        className="w-64"
       >
         <DropdownMenuLabel>Architecture Issues</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {issues.map((issue) => (
+        {issues.map((issue, idx) => (
           <DropdownMenuItem
-            key={issue.nodeId}
+            key={`${issue.nodeId}-${issue.kind}-${idx}`}
             data-testid={`issue-item-${issue.nodeId}`}
             onClick={() => handleIssueClick(issue.nodeId)}
           >
             <span
-              className={`mr-2 h-2 w-2 shrink-0 rounded-full ${
-                issue.status === "bottleneck" ? "bg-red-500" : "bg-yellow-500"
-              }`}
+              className={`mr-2 h-2 w-2 shrink-0 rounded-full ${ISSUE_COLORS[issue.kind]}`}
             />
-            <span className="truncate">{issue.componentName}</span>
+            <span className="truncate">
+              {issue.componentName}
+              {issue.description && (
+                <span className="ml-1 text-muted-foreground text-xs">— {issue.description}</span>
+              )}
+            </span>
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
