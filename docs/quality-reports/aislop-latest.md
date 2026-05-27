@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260526-165550
+**Date:** 20260526-222832
 **Score:** 11/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,14 +8,14 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 10 | 454ms |
-| code-quality | 86 | 3355ms |
-| ai-slop | 0 | 12ms |
-| security | 8 | 1803ms |
+| lint | 11 | 453ms |
+| code-quality | 89 | 3988ms |
+| ai-slop | 0 | 13ms |
+| security | 8 | 2294ms |
 
 ## Findings
 
-### code-quality (86)
+### code-quality (89)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
@@ -26,7 +26,7 @@
 - [!] `src/lib/constants.ts:146` — knip/types: Unused type: StackConnection
 - [!] `src/lib/constants.ts:153` — knip/types: Unused type: StackCategoryScore
 - [!] `src/lib/constants.ts:225` — knip/types: Unused type: TailwindZIndex
-- [!] `src/lib/constants.ts:343` — knip/types: Unused type: FailurePresetId
+- [!] `src/lib/constants.ts:355` — knip/types: Unused type: FailurePresetId
 - [!] `src/lib/constants.ts:0` — knip/duplicates: Duplicate export: unknown
 - [!] `src/schemas/metricCategorySchema.ts:39` — knip/types: Unused type: ScoreInterpretation
 - [!] `src/schemas/componentSchema.ts:132` — knip/types: Unused type: ConnectionProperties
@@ -97,24 +97,28 @@
 - [!] `src/types/index.ts:63` — knip/types: Unused type: ScenarioPreset
 - [!] `src/types/index.ts:64` — knip/types: Unused type: DemandVariableMetadata
 - [!] `src/types/index.ts:65` — knip/types: Unused type: DemandLevelMeta
-- [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
-- [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
+- [!] `src/hooks/useEdgeOverlay.ts:7` — knip/types: Unused type: EdgeOverlayStyle
 - [!] `src/stores/uiStore.ts:10` — knip/types: Unused type: DragSource
 - [!] `src/stores/uiStore.ts:14` — knip/types: Unused type: ContextMenuState
-- [!] `src/components/canvas/CanvasView.tsx:60` — complexity/function-too-long: Function 'CanvasViewInner' has 283 lines (max: 80)
-- [!] `src/components/canvas/GhostNode.tsx:24` — complexity/function-too-long: Function 'GhostNodeComponent' has 92 lines (max: 80)
+- [!] `src/hooks/useNodeOverlay.ts:8` — knip/types: Unused type: NodeOverlayInfo
+- [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
+- [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
+- [!] `src/components/canvas/ArchieNode.tsx:18` — complexity/function-too-long: Function 'ArchieNodeComponent' has 167 lines (max: 80)
+- [!] `src/components/canvas/CanvasView.tsx:63` — complexity/function-too-long: Function 'CanvasViewInner' has 296 lines (max: 80)
+- [!] `src/components/canvas/RadialMenu.tsx:26` — complexity/function-too-long: Function 'RadialMenu' has 207 lines (max: 80)
 
-### lint (10)
+### lint (11)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
+- [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 
 ### security (8)

@@ -10,16 +10,18 @@
 
 ## Purpose
 
-<!-- 2-3 sentences: what this section of the application does and why it exists. -->
-<!-- Populated manually by the human, or auto-appended from verified /gabe-teach topics. -->
+The Canvas well owns the interactive visual surface where architecture components are placed, connected, and manipulated. It renders nodes (ArchieNode) and edges (ArchieEdge) via React Flow, manages selection and context menus, and hosts visual feedback systems: heatmap glows, status dots, flow particles, ripple animations, compatibility dimming during drag, ghost placement suggestions, and overlay badges. The canvas is the primary interaction layer — everything the user sees and touches on the factory floor.
 
 ## Key Decisions
 
-<!-- Load-bearing choices for this well. Each entry: date + one-line title + 1-2 paragraph rationale. -->
-<!-- Example:
-### 2026-04-15 — Guardrails run before the LLM, not after
-Reasoning: ...
--->
+### 2026-05-26 — StatusDot renders at component level, not edge level
+Status dots show connection health (healthy/warning/bottleneck) on each node's corner rather than on edges. This gives per-node health visibility at a glance without cluttering the edge paths that already carry flow particles. The dot only renders when heatmapEnabled is true and the node has a computed heatmap status.
+
+### 2026-05-26 — SwapPopover uses DOM measurement for positioning
+The swap popover (triggered from radial menu) uses `getBoundingClientRect` against the React Flow node element to position itself adjacent to the target node. This avoids coupling to React Flow's internal coordinate system and works regardless of zoom/pan state. Trade-off: the component is harder to unit-test (jsdom lacks layout), so E2E tests carry the positioning verification.
+
+### 2026-05-26 — Ripple animation is CSS-only with store-driven class toggle
+Status-change ripples use a CSS `@keyframes` animation (`archie-ripple`, 200ms) triggered by adding/removing a class based on `rippleActiveNodeIds` in architectureStore. No JS animation loop — the store sets the node ID, a `setTimeout` clears it after the duration, and CSS handles the visual. Respects `preferencesStore.animationsEnabled`.
 
 ## Key Diagrams
 

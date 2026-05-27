@@ -59,11 +59,14 @@ export function RadialMenu() {
     closeContextMenu()
   }, [contextMenu, setSelectedNodeId, closeContextMenu])
 
+  const openSwapTarget = useUiStore((s) => s.openSwapTarget)
+
   const handleSwap = useCallback(() => {
     if (!contextMenu) return
     setSelectedNodeId(contextMenu.nodeId)
+    openSwapTarget(contextMenu.nodeId)
     closeContextMenu()
-  }, [contextMenu, setSelectedNodeId, closeContextMenu])
+  }, [contextMenu, setSelectedNodeId, openSwapTarget, closeContextMenu])
 
   const items: RadialItem[] = useMemo(
     () =>

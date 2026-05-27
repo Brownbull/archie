@@ -32,6 +32,7 @@ import { OverlaySelector } from "@/components/canvas/OverlaySelector";
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode";
 import { RadialMenu } from "@/components/canvas/RadialMenu";
 import { ScenarioSelector } from "@/components/canvas/ScenarioSelector";
+import { SwapPopover } from "@/components/canvas/SwapPopover";
 import { useImportAction } from "@/components/import-export/ImportDialog";
 import { useGhostNodes } from "@/hooks/useGhostNodes";
 import {
@@ -80,6 +81,7 @@ function CanvasViewInner() {
 	const setActiveDrag = useUiStore((s) => s.setActiveDrag);
 	const openContextMenu = useUiStore((s) => s.openContextMenu);
 	const closeContextMenu = useUiStore((s) => s.closeContextMenu);
+	const clearSwapTarget = useUiStore((s) => s.clearSwapTarget);
 	const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId);
 	const deselectAll = useArchitectureStore((s) => s.deselectAll);
 	const { screenToFlowPosition, fitView } = useReactFlow();
@@ -238,9 +240,10 @@ function CanvasViewInner() {
 
 	const handlePaneClick = useCallback(() => {
 		closeContextMenu();
+		clearSwapTarget();
 		clearSelection();
 		deselectAll();
-	}, [closeContextMenu, clearSelection, deselectAll]);
+	}, [closeContextMenu, clearSwapTarget, clearSelection, deselectAll]);
 
 	const handleNodeContextMenu: NodeMouseHandler<ArchieNodeType> = useCallback(
 		(event, node) => {
@@ -269,6 +272,7 @@ function CanvasViewInner() {
 
 			if (event.key === "Escape") {
 				closeContextMenu();
+				clearSwapTarget();
 				clearSelection();
 				deselectAll();
 			}
@@ -293,7 +297,7 @@ function CanvasViewInner() {
 
 		container.addEventListener("keydown", handleKeyDown);
 		return () => container.removeEventListener("keydown", handleKeyDown);
-	}, [closeContextMenu, clearSelection, deselectAll]);
+	}, [closeContextMenu, clearSwapTarget, clearSelection, deselectAll]);
 
 	// Navigate to a node when pendingNavNodeId is set (from IssuesSummary click)
 	useEffect(() => {
@@ -343,6 +347,7 @@ function CanvasViewInner() {
 				<Controls />
 			</ReactFlow>
 			<RadialMenu />
+			<SwapPopover />
 			<EmptyCanvasState />
 			<OverlaySelector />
 			<CanvasLegend />

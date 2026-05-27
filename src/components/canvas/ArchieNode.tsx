@@ -8,7 +8,9 @@ import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, type ComponentCategor
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
+import { StatusDot } from "@/components/canvas/StatusDot"
 import { useNodeOverlay } from "@/hooks/useNodeOverlay"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import { useTopMetrics } from "@/hooks/useTopMetrics"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
@@ -38,7 +40,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       .join(", ")
   }, [nodeViolations, constraints])
 
-  // ALT-mode overlay badge (Phase 4 — Factorio-fy)
+  const animationsEnabled = usePreferencesStore((s) => s.animationsEnabled)
+  const isRippling = useArchitectureStore((s) => s.rippleActiveNodeIds.has(id))
   const overlayInfo = useNodeOverlay(id, data.archieComponentId)
 
   // Inline metrics: top 2 by weight (Story 10-1)
@@ -101,8 +104,12 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
           : isHighlighted
             ? "border-green-400 ring-2 ring-green-400/50 opacity-100"
             : "border-archie-border opacity-100"
-      }`}
-      style={{ width: `${NODE_WIDTH}px`, boxShadow }}
+      }${animationsEnabled && isRippling ? " archie-ripple" : ""}`}
+      style={{
+        width: `${NODE_WIDTH}px`,
+        boxShadow,
+        "--ripple-color": heatmapStatus ? HEATMAP_COLORS[heatmapStatus] : undefined,
+      } as React.CSSProperties}
       aria-label={ariaLabel}
       title={isDimmed && compatStatus?.reason ? `⚠ ${compatStatus.reason}` : undefined}
     >
@@ -154,6 +161,10 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         >
           <span>{overlayInfo.value}</span>
         </div>
+      )}
+
+      {heatmapEnabled && heatmapStatus && (
+        <StatusDot status={heatmapStatus} animate={animationsEnabled} />
       )}
 
       <Handle

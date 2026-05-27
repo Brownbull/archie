@@ -15,6 +15,7 @@ describe("uiStore", () => {
       heatmapEnabled: true,
       activeDrag: null,
       overlayMode: "none" as const,
+      swapTargetNodeId: null,
     })
   })
 
@@ -251,6 +252,23 @@ describe("uiStore", () => {
       useUiStore.getState().clearSelection()
       expect(useUiStore.getState().selectedNodeId).toBeNull()
       expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+  })
+
+  describe("swap target", () => {
+    it("defaults to null", () => {
+      expect(useUiStore.getState().swapTargetNodeId).toBeNull()
+    })
+
+    it("openSwapTarget sets the target node id", () => {
+      useUiStore.getState().openSwapTarget("node-42")
+      expect(useUiStore.getState().swapTargetNodeId).toBe("node-42")
+    })
+
+    it("clearSwapTarget resets to null", () => {
+      useUiStore.getState().openSwapTarget("node-42")
+      useUiStore.getState().clearSwapTarget()
+      expect(useUiStore.getState().swapTargetNodeId).toBeNull()
     })
   })
 })

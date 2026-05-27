@@ -32,8 +32,11 @@ interface UiState {
   activeDrag: DragSource | null
   contextMenu: ContextMenuState | null
   overlayMode: OverlayModeId
+  swapTargetNodeId: string | null
   setOverlayMode: (mode: OverlayModeId) => void
   cycleOverlayMode: () => void
+  openSwapTarget: (nodeId: string) => void
+  clearSwapTarget: () => void
   setToolboxTab: (tab: ToolboxTab) => void
   setSearchQuery: (query: string) => void
   setCommandPaletteOpen: (open: boolean) => void
@@ -66,7 +69,10 @@ export const useUiStore = create<UiState>()((set) => ({
   activeDrag: null,
   contextMenu: null,
   overlayMode: "none" as OverlayModeId,
+  swapTargetNodeId: null,
   setOverlayMode: (mode) => set({ overlayMode: mode }),
+  openSwapTarget: (nodeId) => set({ swapTargetNodeId: nodeId }),
+  clearSwapTarget: () => set({ swapTargetNodeId: null }),
   cycleOverlayMode: () => set((state) => {
     const currentIndex = OVERLAY_MODES.findIndex((m) => m.id === state.overlayMode)
     const nextIndex = (currentIndex + 1) % OVERLAY_MODES.length

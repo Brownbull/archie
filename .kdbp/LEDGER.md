@@ -131,3 +131,31 @@ DEFERRED: 0
 PLAN ALIGNMENT: ALIGNED (8/8 on-scope, 0 off-scope)
 COVERAGE: HIGH (all changed source files have corresponding test changes)
 CHURN: all STABLE except CanvasView (WARM)
+
+## 2026-05-27 — PHASE PUSH: Phases 3+4 — Ghost Placement & ALT-Mode Overlay System
+BRANCH: dev → main (PR #28)
+COMMITS: 13 (046259f..9885bb0)
+CI FIX: TS6133 — removed unused METRIC_CATEGORIES import in useEdgeOverlay.ts
+CI: ✅ 2/2 (1m53s) — ci pass, GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/28
+DEPLOYMENTS: P3+P4
+
+## 2026-05-27 05:27 — [6e1c494] feat(canvas): status dots, swap popover, and ripple animation
+FINDINGS: 2 (0 critical, 0 high, 1 medium, 1 low)
+ACTIONS: 1:write-test 2:update-docs
+DEFERRED: 0
+FILES: 13 changed (+711/-13)
+  NEW: StatusDot.tsx, SwapPopover.tsx, StatusDot.test.tsx, SwapPopover.test.tsx, status-dot-and-swap-popover.spec.ts
+  MOD: ArchieNode.tsx, CanvasView.tsx, RadialMenu.tsx, uiStore.ts, index.css, ArchieNode.test.tsx, uiStore.test.ts, 1-canvas.md
+TESTS: 2725/2725 pass | SwapPopover 100% | StatusDot 100% | ArchieNode 100% | uiStore 96%
+E2E: 5 passed, 4 skipped (swap popover skips — no same-category alternatives in test data), 5 screenshots
+PHASE: 5 — Connection Flow Animation + Status Dots (Exec=🔄, all tasks complete)
+
+## 2026-05-27 — PHASE REVIEW COMPLETE: Phase 5 — Connection Flow Animation + Status Dots
+SCORE: 100/100
+FINDINGS: 0 total
+FIXED: n/a
+DEFERRED: 0
+PLAN ALIGNMENT: ALIGNED (8/8 on-scope, 0 off-scope)
+COVERAGE: HIGH (all changed source files have corresponding test changes)
+CHURN: all STABLE except CanvasView (WARM), uiStore (WARM)

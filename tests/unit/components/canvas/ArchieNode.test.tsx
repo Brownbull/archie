@@ -46,6 +46,8 @@ type MockDragSource =
   | { kind: "connection"; sourceNodeId: string; sourceCategory: string }
 let mockActiveDrag: MockDragSource | null = null
 let mockArchNodes: Array<{ id: string; data: { archieComponentId: string; componentCategory: string } }> = []
+let mockRippleActiveNodeIds = new Set<string>()
+let mockAnimationsEnabled = false
 
 vi.mock("@/stores/architectureStore", () => {
   const fn = Object.assign(
@@ -54,12 +56,19 @@ vi.mock("@/stores/architectureStore", () => {
         heatmapColors: mockHeatmapColors,
         violationsByNodeId: mockViolationsByNodeId,
         constraints: mockConstraints,
+        rippleActiveNodeIds: mockRippleActiveNodeIds,
       }),
     ),
     { getState: () => ({ nodes: mockArchNodes }) },
   )
   return { useArchitectureStore: fn }
 })
+
+vi.mock("@/stores/preferencesStore", () => ({
+  usePreferencesStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
+    selector({ animationsEnabled: mockAnimationsEnabled }),
+  ),
+}))
 
 vi.mock("@/stores/uiStore", () => ({
   useUiStore: vi.fn((selector: (s: Record<string, unknown>) => unknown) =>
@@ -88,6 +97,8 @@ describe("ArchieNode", () => {
     mockGetComponent.mockReturnValue(undefined)
     mockActiveDrag = null
     mockArchNodes = []
+    mockRippleActiveNodeIds = new Set()
+    mockAnimationsEnabled = false
     mockCheckCompatibility.mockReturnValue({ isCompatible: true, reason: "" })
   })
 
@@ -420,6 +431,55 @@ describe("ArchieNode", () => {
       render(<ArchieNode {...defaultProps} />)
       const node = screen.getByTestId("archie-node")
       expect(node).toHaveAttribute("data-compat-dimmed")
+    })
+  })
+
+  describe("status dot (Phase 5)", () => {
+    it("renders status dot when heatmap enabled and status available", () => {
+      mockHeatmapEnabled = true
+      mockHeatmapColors.set("node-1", "healthy")
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("status-dot")).toBeInTheDocument()
+      expect(screen.getByTestId("status-dot")).toHaveAttribute("data-status", "healthy")
+    })
+
+    it("does not render status dot when heatmap disabled", () => {
+      mockHeatmapEnabled = false
+      mockHeatmapColors.set("node-1", "healthy")
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("status-dot")).not.toBeInTheDocument()
+    })
+
+    it("does not render status dot when no heatmap data for node", () => {
+      mockHeatmapEnabled = true
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("status-dot")).not.toBeInTheDocument()
+    })
+  })
+
+  describe("ripple animation (Phase 5)", () => {
+    it("applies ripple class when node is in rippleActiveNodeIds and animations enabled", () => {
+      mockRippleActiveNodeIds = new Set(["node-1"])
+      mockAnimationsEnabled = true
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.className).toContain("archie-ripple")
+    })
+
+    it("does not apply ripple class when animations disabled", () => {
+      mockRippleActiveNodeIds = new Set(["node-1"])
+      mockAnimationsEnabled = false
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.className).not.toContain("archie-ripple")
+    })
+
+    it("does not apply ripple class when node is not rippling", () => {
+      mockRippleActiveNodeIds = new Set(["other-node"])
+      mockAnimationsEnabled = true
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node.className).not.toContain("archie-ripple")
     })
   })
 })
