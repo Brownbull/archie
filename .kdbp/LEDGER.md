@@ -166,3 +166,11 @@ COMMITS: 4 (71039a8..0c38947)
 CI: ✅ 2/2 (2m2s) — ci pass, GitGuardian pass
 PR: https://github.com/Brownbull/archie/pull/29
 DEPLOYMENTS: P3
+
+## 2026-05-27 — PLAN COMPLETED: Factorio-fy Archie
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-27_factorio-fy-archie.md
+PHASES COMPLETED: 5 of 5
+REVIEW SCORES: P1 81→100, P2 81→100, P3 100, P4 96, P5 100
+PRs: #27 (P1-P2), #28 (P3-P4), #29 (P5)
+TIERS: all enterprise (5×ent, 0 escalations)
+DURATION: 2026-05-25 → 2026-05-27 (3 days)
