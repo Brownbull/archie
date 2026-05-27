@@ -35,9 +35,10 @@ function buildAdjacencySet(edges: GraphEdge[]): Map<string, Set<string>> {
 function bfsReachable(startId: string, adj: Map<string, Set<string>>): Set<string> {
   const visited = new Set<string>()
   const queue = [startId]
+  let head = 0
   visited.add(startId)
-  while (queue.length > 0) {
-    const current = queue.shift()!
+  while (head < queue.length) {
+    const current = queue[head++]
     const neighbors = adj.get(current)
     if (!neighbors) continue
     for (const neighbor of neighbors) {
@@ -130,28 +131,66 @@ export function detectUnreachable(nodes: GraphNode[], edges: GraphEdge[]): Topol
   return issues
 }
 
+// Tarjan's algorithm: finds articulation points (bridge nodes) in O(V+E)
+function findArticulationPoints(
+  nodeIds: Set<string>,
+  adj: Map<string, Set<string>>,
+): Set<string> {
+  const disc = new Map<string, number>()
+  const low = new Map<string, number>()
+  const parentMap = new Map<string, string>()
+  const ap = new Set<string>()
+  let time = 0
+
+  function dfs(u: string, isRoot: boolean): void {
+    disc.set(u, time)
+    low.set(u, time)
+    time++
+    let childCount = 0
+    const neighbors = adj.get(u)
+    if (!neighbors) return
+    for (const v of neighbors) {
+      if (!nodeIds.has(v)) continue
+      if (!disc.has(v)) {
+        childCount++
+        parentMap.set(v, u)
+        dfs(v, false)
+        low.set(u, Math.min(low.get(u)!, low.get(v)!))
+        if (isRoot && childCount > 1) ap.add(u)
+        if (!isRoot && low.get(v)! >= disc.get(u)!) ap.add(u)
+      } else if (v !== parentMap.get(u)) {
+        low.set(u, Math.min(low.get(u)!, disc.get(v)!))
+      }
+    }
+  }
+
+  for (const nodeId of nodeIds) {
+    if (!disc.has(nodeId)) dfs(nodeId, true)
+  }
+  return ap
+}
+
 /**
- * Detects missing hops — nodes that connect to a distant subgraph only through
- * a single bridge node. If removing one node would disconnect the graph,
- * the nodes on the smaller side are flagged as having a missing hop
- * (single point of failure in the architecture).
- *
- * Uses iterative bridge detection: for each node with degree >= 2,
- * temporarily remove it and check if its neighbors remain connected.
+ * Detects missing hops — nodes reachable only through a single bridge node
+ * (single point of failure). Uses Tarjan's O(V+E) articulation point algorithm
+ * to identify bridge nodes, then partitions to flag the smaller side.
  */
 export function detectMissingHops(nodes: GraphNode[], edges: GraphEdge[]): TopologyIssue[] {
   if (nodes.length <= 2 || edges.length <= 1) return []
 
   const adj = buildAdjacencySet(edges)
   const nodeIds = new Set(nodes.map((n) => n.id))
+
+  const articulationPoints = findArticulationPoints(nodeIds, adj)
+  if (articulationPoints.size === 0) return []
+
   const issues: TopologyIssue[] = []
   const flaggedNodes = new Set<string>()
 
-  for (const candidateId of nodeIds) {
+  for (const candidateId of articulationPoints) {
     const neighbors = adj.get(candidateId)
-    if (!neighbors || neighbors.size < 2) continue
+    if (!neighbors) continue
 
-    // Build adjacency without this candidate node
     const reducedAdj = new Map<string, Set<string>>()
     for (const edge of edges) {
       if (edge.source === candidateId || edge.target === candidateId) continue
@@ -162,7 +201,6 @@ export function detectMissingHops(nodes: GraphNode[], edges: GraphEdge[]): Topol
       reducedAdj.get(edge.target)!.add(edge.source)
     }
 
-    // Check if all neighbors of the removed node are still connected to each other
     const neighborArr = [...neighbors].filter((n) => nodeIds.has(n))
     if (neighborArr.length < 2) continue
 
@@ -170,7 +208,6 @@ export function detectMissingHops(nodes: GraphNode[], edges: GraphEdge[]): Topol
     const allConnected = neighborArr.every((n) => reachableFromFirst.has(n))
 
     if (!allConnected) {
-      // This node is a bridge — flag the smaller partition(s)
       const partitions: Set<string>[] = []
       const partVisited = new Set<string>()
       for (const neighbor of neighborArr) {
@@ -182,7 +219,6 @@ export function detectMissingHops(nodes: GraphNode[], edges: GraphEdge[]): Topol
 
       if (partitions.length <= 1) continue
 
-      // Find largest partition
       let largestPartIdx = 0
       for (let i = 1; i < partitions.length; i++) {
         if (partitions[i].size > partitions[largestPartIdx].size) largestPartIdx = i
@@ -208,10 +244,7 @@ export function detectMissingHops(nodes: GraphNode[], edges: GraphEdge[]): Topol
   return issues
 }
 
-/**
- * Runs all topology checks and returns a deduplicated list of issues.
- * Nodes flagged by multiple checks keep the highest-severity issue per type.
- */
+/** Runs all topology checks and returns the combined list of issues. */
 export function detectTopologyIssues(nodes: GraphNode[], edges: GraphEdge[]): TopologyIssue[] {
   const orphans = detectOrphans(nodes, edges)
   const unreachable = detectUnreachable(nodes, edges)

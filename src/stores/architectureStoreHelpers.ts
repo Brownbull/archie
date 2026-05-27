@@ -192,7 +192,12 @@ export function evaluateTopology(
   const issues = detectTopologyIssues(nodes, edges)
   const byNode = new Map<string, TopologyIssue[]>()
   for (const issue of issues) {
-    byNode.set(issue.nodeId, [...(byNode.get(issue.nodeId) ?? []), issue])
+    const arr = byNode.get(issue.nodeId)
+    if (arr) {
+      arr.push(issue)
+    } else {
+      byNode.set(issue.nodeId, [issue])
+    }
   }
   return { topologyIssues: issues, topologyIssuesByNodeId: byNode }
 }
