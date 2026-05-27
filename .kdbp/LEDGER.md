@@ -297,3 +297,10 @@ PR: https://github.com/Brownbull/archie/pull/30
 CI: ✅ 1/1 (GitGuardian pass)
 PROMOTION: N/A
 DEPLOYMENTS: P7 (added row to .kdbp/DEPLOYMENTS.md)
+
+## 2026-05-30 18:10 — [2322227] feat(data): author port definitions for all 18 components with full type coverage
+FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low)
+ACTIONS: 1:update-docs (well G6 doc — added Phase 5 key decision entry)
+DEFERRED: 0
+FILES: 16x src/data/components/*.yaml (+ports), docs/wells/6-blueprints-stacks.md (+4), .kdbp/PLAN.md
+TESTS: 2818/2818 pass
