@@ -291,3 +291,9 @@ ACTIONS: 1:accept 2:accept (well doc drift — perf internals, no user-facing do
 DEFERRED: 0
 FILES: src/engine/topologyChecker.ts (+54/-21), src/stores/architectureStoreHelpers.ts (+4/-3), docs/quality-reports/aislop-latest.md, docs/cost-tracking/session-costs.csv
 TESTS: 2818/2818 pass
+
+## 2026-05-29 18:15 — PUSH dev → main
+PR: https://github.com/Brownbull/archie/pull/30
+CI: ✅ 1/1 (GitGuardian pass)
+PROMOTION: N/A
+DEPLOYMENTS: P7 (added row to .kdbp/DEPLOYMENTS.md)
