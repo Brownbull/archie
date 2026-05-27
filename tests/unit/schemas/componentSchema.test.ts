@@ -299,6 +299,36 @@ describe("ComponentSchema", () => {
     expect(result.success).toBe(true)
   })
 
+  it("accepts component with optional ports array", () => {
+    const result = ComponentSchema.safeParse({
+      ...validComponent,
+      ports: [
+        { id: "http-in", type: "http", direction: "in" },
+        { id: "database-out", type: "database", direction: "out" },
+      ],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.ports).toHaveLength(2)
+    }
+  })
+
+  it("accepts component without ports (backward compat)", () => {
+    const result = ComponentSchema.safeParse(validComponent)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.ports).toBeUndefined()
+    }
+  })
+
+  it("rejects component with invalid port type", () => {
+    const result = ComponentSchema.safeParse({
+      ...validComponent,
+      ports: [{ id: "ws-in", type: "websocket", direction: "in" }],
+    })
+    expect(result.success).toBe(false)
+  })
+
   it("rejects component with missing required fields", () => {
     const result = ComponentSchema.safeParse({ id: "test" })
     expect(result.success).toBe(false)

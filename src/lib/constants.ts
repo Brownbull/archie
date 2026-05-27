@@ -354,6 +354,38 @@ export const FAILURE_PRESET_IDS = [
 ] as const
 export type FailurePresetId = (typeof FAILURE_PRESET_IDS)[number]
 
+// --- Port System (Epic 12) ---
+
+export const PORT_TYPES = {
+  http: { label: "HTTP", color: "#2563EB" },
+  database: { label: "Database", color: "#7C3AED" },
+  cache: { label: "Cache", color: "#DC2626" },
+  stream: { label: "Stream", color: "#D97706" },
+  monitor: { label: "Monitor", color: "#059669" },
+  auth: { label: "Auth", color: "#CA8A04" },
+  cdn: { label: "CDN", color: "#0891B2" },
+} as const
+
+export type PortType = keyof typeof PORT_TYPES
+
+export interface PortDefinition {
+  id: string
+  type: PortType
+  direction: "in" | "out"
+}
+
+export const PORT_SORT_ORDER: PortType[] = [
+  "http",
+  "database",
+  "cache",
+  "stream",
+  "monitor",
+  "auth",
+  "cdn",
+]
+
+// --- Failure Simulation ---
+
 export const FAILURE_MULTIPLIER_MIN = 0.1
 export const FAILURE_MULTIPLIER_MAX = 1.0
 export const FAILURE_NONE_LABEL = "No Failure"

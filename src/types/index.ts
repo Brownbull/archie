@@ -25,7 +25,9 @@ export type {
   CodeSnippet,
   MetricExplanation,
   ConnectionProperties,
+  PortDefinitionZod,
 } from "@/schemas/componentSchema"
+export type { PortType, PortDefinition } from "@/lib/constants"
 export type { Stack, StackDefinition } from "@/schemas/stackSchema"
 export type { Blueprint } from "@/schemas/blueprintSchema"
 export type { ArchieEdgeData } from "@/stores/architectureStore"

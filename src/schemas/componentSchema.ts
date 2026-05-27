@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { MetricValueSchema, MetricValueYamlSchema } from "@/schemas/metricSchema"
 import { DemandResponseSchema, FailureResponseSchema } from "@/schemas/demandSchema"
+import { PORT_TYPES } from "@/lib/constants"
 
 export const MAX_REASON_LENGTH = 500
 export const MAX_FACTOR_LENGTH = 200
@@ -47,6 +48,16 @@ export const ConnectionPropertiesSchema = z.object({
   coLocationPotential: z.boolean(),
 }).strict()
 
+const portTypeEnum = z.enum(
+  Object.keys(PORT_TYPES) as [string, ...string[]],
+)
+
+export const PortDefinitionSchema = z.object({
+  id: z.string().min(1),
+  type: portTypeEnum,
+  direction: z.enum(["in", "out"]),
+}).strict()
+
 export const ComponentSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -62,6 +73,7 @@ export const ComponentSchema = z.object({
   connectionProperties: ConnectionPropertiesSchema.optional(),
   demandResponses: DemandResponseSchema.optional(),
   failureResponses: FailureResponseSchema.optional(),
+  ports: z.array(PortDefinitionSchema).optional(),
 }).strict()
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
@@ -108,6 +120,7 @@ export const ComponentYamlSchema = z.object({
   connection_properties: ConnectionPropertiesYamlSchema.optional(),
   demand_responses: DemandResponseSchema.optional(),
   failure_responses: FailureResponseSchema.optional(),
+  ports: z.array(PortDefinitionSchema).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -123,6 +136,7 @@ export const ComponentYamlSchema = z.object({
   connectionProperties: data.connection_properties,
   demandResponses: data.demand_responses,
   failureResponses: data.failure_responses,
+  ports: data.ports,
 }))
 
 export type Component = z.infer<typeof ComponentSchema>
@@ -130,3 +144,4 @@ export type ConfigVariant = z.infer<typeof ConfigVariantSchema>
 export type CodeSnippet = z.infer<typeof CodeSnippetSchema>
 export type MetricExplanation = z.infer<typeof MetricExplanationSchema>
 export type ConnectionProperties = z.infer<typeof ConnectionPropertiesSchema>
+export type PortDefinitionZod = z.infer<typeof PortDefinitionSchema>
