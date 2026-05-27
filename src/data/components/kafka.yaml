@@ -167,3 +167,13 @@ demand_responses:
       message-throughput: 0.8
     unpredictable:
       message-throughput: 0.7
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -230,3 +230,13 @@ failure_responses:
   failure-database:
     query-latency: 0.5
     data-durability: 0.5
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

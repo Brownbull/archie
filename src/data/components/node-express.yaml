@@ -177,6 +177,9 @@ ports:
   - id: cache-out
     type: cache
     direction: out
+  - id: auth-in
+    type: auth
+    direction: in
   - id: monitor-out
     type: monitor
     direction: out

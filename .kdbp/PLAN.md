@@ -12,7 +12,7 @@ Epic 12: Typed Port System & Schema v3 — Replace generic source/target handles
 - **Maturity:** enterprise
 - **Domain:** Software architecture visualization and design tool
 - **Created:** 2026-05-27
-- **Last Updated:** 2026-05-29
+- **Last Updated:** 2026-05-30
 
 ## Phases
 
@@ -22,7 +22,7 @@ Epic 12: Typed Port System & Schema v3 — Replace generic source/target handles
 | 2 | Port-aware node rendering | Replace 2 generic Handles with dynamic colored port dots, inputs-left / outputs-right | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 3 | Port-compatible edge creation | Update addEdge for sourceHandle/targetHandle, rewrite compatibilityChecker, hybrid warn/block | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 4 | Topology checker engine | New topologyChecker: orphan nodes, missing hops, unreachable components; Issues panel integration | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 5 | Component library port data | Author port definitions for all 30+ components, validate coverage across categories | mvp | medium | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Component library port data | Author port definitions for all 30+ components, validate coverage across categories | mvp | medium | 🔄 | ⬜ | ⬜ | ⬜ |
 | 6 | Schema v3 migration & YAML round-trip | v2 detection, auto-mapping heuristic, legacy edge type, v3 export, E2E tests | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 7 | Edge visual upgrade | Color edges by port type, legacy edges grey dashed, particle color inheritance | mvp | medium | ⬜ | ⬜ | ⬜ | ⬜ |
 
@@ -180,7 +180,7 @@ decisions_entry: D12
 
 ## Current Phase
 
-Phase 4: Topology checker engine
+Phase 5: Component library port data
 
 ## Dependencies
 

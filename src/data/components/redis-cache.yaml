@@ -166,3 +166,10 @@ demand_responses:
       cache-efficiency: 0.9
     unpredictable:
       cache-efficiency: 0.8
+ports:
+  - id: cache-in
+    type: cache
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

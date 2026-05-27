@@ -172,3 +172,13 @@ demand_responses:
     extreme:
       message-durability: 0.6
       operational-complexity: 0.8
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

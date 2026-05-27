@@ -257,3 +257,13 @@ failure_responses:
   failure-data-corruption:
     data-durability: 0.3
     threat-detection: 0.5
+ports:
+  - id: monitor-in
+    type: monitor
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: auth-out
+    type: auth
+    direction: out

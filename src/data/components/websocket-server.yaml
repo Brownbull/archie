@@ -171,3 +171,16 @@ demand_responses:
     global:
       message-latency: 0.6
       operational-complexity: 0.8
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

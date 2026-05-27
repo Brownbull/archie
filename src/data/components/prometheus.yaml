@@ -169,3 +169,10 @@ demand_responses:
   burst-pattern:
     unpredictable:
       query-latency: 0.8
+ports:
+  - id: monitor-in
+    type: monitor
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

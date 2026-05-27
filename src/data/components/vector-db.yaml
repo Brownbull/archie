@@ -234,3 +234,10 @@ failure_responses:
   failure-data-corruption:
     data-durability: 0.3
     query-latency: 0.5
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

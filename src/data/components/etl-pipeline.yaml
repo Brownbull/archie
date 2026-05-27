@@ -266,3 +266,16 @@ failure_responses:
   failure-network-partition:
     processing-throughput: 0.4
     data-quality: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

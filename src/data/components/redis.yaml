@@ -210,3 +210,13 @@ demand_responses:
   burst-pattern:
     unpredictable:
       write-throughput: 0.7
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: cache-in
+    type: cache
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

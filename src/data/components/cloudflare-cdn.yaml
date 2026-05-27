@@ -149,3 +149,13 @@ demand_responses:
   burst-pattern:
     unpredictable:
       edge-latency: 0.9
+ports:
+  - id: cdn-in
+    type: cdn
+    direction: in
+  - id: cdn-out
+    type: cdn
+    direction: out
+  - id: http-in
+    type: http
+    direction: in
