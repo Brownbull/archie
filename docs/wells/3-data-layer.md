@@ -17,6 +17,12 @@
 
 <!-- Load-bearing choices for this well. Each entry: date + one-line title + 1-2 paragraph rationale. -->
 
+### 2026-05-27 — Typed Port System added to ComponentSchema (Epic 12, Phase 1)
+
+`ComponentSchema` and `ComponentYamlSchema` now accept an optional `ports: PortDefinition[]` array. Each port has an `id`, a `type` (one of 7 values: http, database, cache, stream, monitor, auth, cdn), and a `direction` (in/out). The field is optional for backward compatibility with v2 component data — components without ports parse cleanly.
+
+Port types are defined once in `src/lib/constants.ts` as `PORT_TYPES` (with jewel-tone hex colors and labels) and validated at import time via `PortDefinitionSchema` in `src/schemas/componentSchema.ts`. `PORT_SORT_ORDER` fixes the visual ordering for handle rendering in Phase 2. The Zod enum is derived from `Object.keys(PORT_TYPES)` so adding a new port type requires only one constant edit.
+
 ## Key Diagrams
 
 <!-- Suggested diagram type for this well: erDiagram -->

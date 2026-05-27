@@ -4,6 +4,13 @@
 |---|------|----------|-----------|------------------------|--------|----------------|
 | D1 | 2026-05-25 | Phase 1 tier: enterprise | Foundation phase — Phases 3/5 depend on scoped store + compatibility state | MVP (would create immediate tech debt for downstream phases) | active | When Phase 3 starts — verify compatibility state shape is reusable |
 | D2 | 2026-05-25 | Phase 2 tier: enterprise | Core interaction primitive — needs proper state matrix + keyboard nav for game-quality feel | MVP (validate interaction first, upgrade later) | active | After first user testing — does radial feel natural? |
+| D6 | 2026-05-27 | E12-P1 tier: mvp | Pure type definitions + Zod schemas, no user-facing code | enterprise (over-engineering for constants) | active | When port types need runtime validation beyond Zod |
+| D7 | 2026-05-27 | E12-P2 tier: enterprise | Core visual component users see constantly — needs state matrix + edge testing | MVP (validate rendering first) | active | At 50+ nodes — Handle positioning performance |
+| D8 | 2026-05-27 | E12-P3 tier: enterprise | Connection intelligence rewrite, hybrid warn/block, critical store logic | MVP (basic wiring only) | active | When challenge mode ships (Epic 16) — verify block mode |
+| D9 | 2026-05-27 | E12-P4 tier: enterprise | Follows constraintEvaluator pattern, edge-case-rich engine | MVP (basic orphan detection only) | active | When graph complexity exceeds 30 nodes |
+| D10 | 2026-05-27 | E12-P5 tier: mvp | Content authoring, schema validation only | enterprise (excessive for YAML data) | active | When community-contributed components arrive (Epic 17+) |
+| D11 | 2026-05-27 | E12-P6 tier: enterprise | Schema migration is #1 data-loss risk, heuristic needs edge-case coverage | MVP (would risk user YAML data) | active | When schema v4 is needed (Epic 13+ economics fields) |
+| D12 | 2026-05-27 | E12-P7 tier: mvp | Visual polish, straightforward CSS/rendering changes | enterprise (over-engineering for edge colors) | active | When simulation engine adds dynamic edge states (Epic 15) |
 | D3 | 2026-05-25 | Phase 3 tier: enterprise | Ghost suggestions must reactively update on canvas changes — stale recommendations destroy trust | MVP (manual refresh of suggestions) | active | When recommendation data grows — does engine performance hold? |
 | D4 | 2026-05-25 | Phase 4 tier: enterprise | 5+ overlay types need shared interface to avoid inline spaghetti — keyboard shortcuts are table stakes | MVP (inline renderers per overlay type) | active | When 3rd overlay implemented — is the interface holding? |
 | D5 | 2026-05-25 | Phase 5 tier: enterprise | Status dots must reactively reflect engine state, quick-replace needs auto-invalidation | MVP (CSS-only animation, manual state) | active | At 50+ nodes — does animation performance hold at 60fps? |
@@ -154,6 +161,8 @@ dim_overrides: []
 ### Status
 - accepted
 
+---
+
 ## D5 — Phase 5 tier: enterprise (2026-05-25)
 
 **Phase:** Connection Flow Animation + Status Dots
@@ -187,6 +196,242 @@ dim_overrides: []
 ### Review trigger (when to escalate this phase)
 - At 50+ nodes with 80+ connections — animation frame budget (16ms)
 - When quick-replace touches more than component swap (e.g., config migration between types)
+
+### Status
+- accepted
+
+---
+
+## D6 — E12-P1 tier: mvp (2026-05-27)
+
+**Phase:** Port types & schema foundation
+**Types:** [data-model, schema-migration]
+**Tier chosen:** mvp
+**Prototype:** no
+**Reason:** default MVP pick per U2 — pure type definitions + Zod schemas + constants, no user-facing code
+
+### Sections rendered
+- Core (always)
+
+### Dimensions suppressed (Layer 2 filter)
+- None (Core only, always full)
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- L × 1 (edge testing), L × 1 (typed error handling), M × 1 (structured log), S × 1 (1 interface)
+
+### Review trigger (when to escalate this phase)
+- When port types need runtime validation beyond Zod parse (e.g., dynamic port registration)
+
+### Status
+- accepted
+
+## D7 — E12-P2 tier: enterprise (2026-05-27)
+
+**Phase:** Port-aware node rendering
+**Types:** [user-facing, ui-kit, client-state]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Core visual component users see constantly — port dots need proper state matrix (hover/focus/disabled), scoped Zustand store coupling, edge-case testing (1-7 ports per node, dynamic height). Matches tier pattern of Factorio-fy phases D1-D5.
+
+### Sections rendered
+- Core (always)
+- UI/UX: 3 dims, 1 suppressed
+- UI Kit: 3 dims, 1 suppressed
+- Client State: 2 dims, 5 suppressed
+
+### Dimensions suppressed (Layer 2 filter)
+- UI/UX.Streaming — no AI/async processing in port rendering
+- UI Kit.Platform variance — desktop-only app
+- Client State.Cache invalidation — ports are derived from static component library
+- Client State.Optimistic updates — no server mutations
+- Client State.Cross-tab sync — single-tab canvas state
+- Client State.Offline support — local component library
+- Client State.Stale data — port definitions are static
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 3 (optimistic render, platform variant, subscribe/pubsub), L × 2 (ARIA+keyboard, ARIA+focus trap), S × 2 (circuit break, normalizer)
+
+### Review trigger (when to escalate this phase)
+- At 50+ nodes — Handle positioning performance budget
+- When mobile-web support is needed — platform variance upgrade
+
+### Status
+- accepted
+
+## D8 — E12-P3 tier: enterprise (2026-05-27)
+
+**Phase:** Port-compatible edge creation
+**Types:** [user-facing, client-state]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Compatibility checker rewrite + hybrid warn/block mode is core connection intelligence. Edge-case testing critical (wrong port type, self-connections, mode switch). Store coupling needs scoping for addEdge reading port data from both component library and challenge store.
+
+### Sections rendered
+- Core (always)
+- UI/UX: 2 dims, 2 suppressed
+- Client State: 2 dims, 5 suppressed
+
+### Dimensions suppressed (Layer 2 filter)
+- UI/UX.Streaming — edge creation is instant
+- UI/UX.Loading states — no async operation
+- Client State.Cache invalidation — edge data is local store state
+- Client State.Optimistic updates — local mutations, no server
+- Client State.Cross-tab sync — single-tab
+- Client State.Offline support — local engine
+- Client State.Stale data — edges are user-created, not fetched
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 2 (retry UI, subscribe/pubsub), L × 1 (ARIA+keyboard), S × 2 (circuit break, normalizer)
+
+### Review trigger (when to escalate this phase)
+- When challenge mode (Epic 16) ships — verify block mode enforcement works correctly
+- When connection count exceeds 100 — addEdge performance
+
+### Status
+- accepted
+
+## D9 — E12-P4 tier: enterprise (2026-05-27)
+
+**Phase:** Topology checker engine
+**Types:** [engine, client-state]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Follows constraintEvaluator pattern (already enterprise-tier). Edge-case testing matters: orphan nodes, cycles, partially connected graphs, nodes with only monitor ports. Engine feeds user-facing Issues panel.
+
+### Sections rendered
+- Core (always)
+- Client State: 1 dim (Store coupling), 6 suppressed
+
+### Dimensions suppressed (Layer 2 filter)
+- Client State.Cache invalidation — topology is derived on every graph change
+- Client State.Optimistic updates — read-only engine
+- Client State.Cross-tab sync — single-tab
+- Client State.Offline support — local engine
+- Client State.Stale data — recalculated reactively
+- Client State.Mutation propagation — topology checker is a consumer, not a mutator
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 1 (fuzz testing), S × 1 (normalizer), S × 1 (circuit break)
+
+### Review trigger (when to escalate this phase)
+- When graph complexity exceeds 30 nodes with 60+ edges — rule evaluation performance
+- When custom topology rules are needed (challenge-specific rules in Epic 16)
+
+### Status
+- accepted
+
+## D10 — E12-P5 tier: mvp (2026-05-27)
+
+**Phase:** Component library port data
+**Types:** [content, data-model]
+**Tier chosen:** mvp
+**Prototype:** no
+**Reason:** default MVP pick per U2 — content authoring with schema validation, no behavioral complexity
+
+### Sections rendered
+- Core (always)
+
+### Dimensions suppressed (Layer 2 filter)
+- None (Core only)
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- L × 1 (edge testing), L × 1 (typed error handling), M × 1 (structured log), S × 1 (1 interface)
+
+### Review trigger (when to escalate this phase)
+- When community-contributed components arrive — need validation beyond schema parse
+
+### Status
+- accepted
+
+## D11 — E12-P6 tier: enterprise (2026-05-27)
+
+**Phase:** Schema v3 migration & YAML round-trip
+**Types:** [schema-migration, data-model]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Schema migration is the #1 data-loss risk in the epic. v2→v3 auto-mapping heuristic needs edge-case testing: components with multiple matching port types, zero matches, malformed YAML. Legacy edge type needs typed error handling. This is where users lose saved architectures if we get it wrong.
+
+### Sections rendered
+- Core (always)
+
+### Dimensions suppressed (Layer 2 filter)
+- None (Core only)
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 1 (fuzz + load eval), S × 1 (circuit break)
+
+### Review trigger (when to escalate this phase)
+- When schema v4 is needed (Epic 13 economics fields) — verify migration chain v2→v3→v4
+
+### Status
+- accepted
+
+## D12 — E12-P7 tier: mvp (2026-05-27)
+
+**Phase:** Edge visual upgrade
+**Types:** [user-facing, ui-kit]
+**Tier chosen:** mvp
+**Prototype:** no
+**Reason:** default MVP pick per U2 — visual polish, straightforward CSS/rendering. Edge coloring is a lookup from port type to color constant. Legacy dashed edges are a CSS class.
+
+### Sections rendered
+- Core (always)
+- UI/UX: 2 dims, 2 suppressed
+- UI Kit: 2 dims, 2 suppressed
+
+### Dimensions suppressed (Layer 2 filter)
+- UI/UX.Streaming — edge rendering is synchronous
+- UI/UX.Loading states — no async
+- UI Kit.Platform variance — desktop-only
+- UI Kit.Atomic inventory — not adding new atoms
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- L × 2 (edge testing, error states), M × 2 (state matrix, a11y roles), L × 2 (semantic HTML, ARIA)
+
+### Review trigger (when to escalate this phase)
+- When simulation engine (Epic 15) adds dynamic edge state changes — edges need real-time color/width transitions
 
 ### Status
 - accepted
