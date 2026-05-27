@@ -121,3 +121,13 @@ FILES: src/lib/constants.ts (mod), src/stores/uiStore.ts (mod), src/components/c
 TESTS: 2709/2709 pass, 33 new (useNodeOverlay 6, useEdgeOverlay 8, OverlaySelector 4, uiStore overlay 4, CanvasView shortcuts 5, E2E 6)
 E2E: tests/e2e/overlay-system.spec.ts — 6 screenshots in test-results/overlay-system/
 RUNTIME EVIDENCE: Playwright desktop — overlay selector renders, mode toggle, badge on node, Alt+2 shortcut, cycle all modes, badge removal on none
+
+## 2026-05-27 — PHASE REVIEW COMPLETE: Phase 4 — ALT-Mode Overlay System
+SCORE: 96/100
+FINDINGS: 2 total (0 HIGH, 0 MEDIUM, 2 LOW)
+FIXED: n/a (both Scale-gate, below enterprise threshold)
+ACCEPTED: #1 (unused METRIC_CATEGORIES import in useEdgeOverlay.ts — LOW, Scale gate), #2 (phase-referencing comments — LOW, Scale gate)
+DEFERRED: 0
+PLAN ALIGNMENT: ALIGNED (8/8 on-scope, 0 off-scope)
+COVERAGE: HIGH (all changed source files have corresponding test changes)
+CHURN: all STABLE except CanvasView (WARM)
