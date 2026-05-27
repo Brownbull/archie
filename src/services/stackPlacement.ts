@@ -95,9 +95,12 @@ export function resolveStackPlacement(
 
     const edgeData: ArchieEdgeData = {
       isIncompatible: !result.isCompatible,
+      isPortMismatch: false,
       incompatibilityReason: result.reason || null,
       sourceArchieComponentId: sourceComponentId,
       targetArchieComponentId: targetComponentId,
+      sourceHandleId: null,
+      targetHandleId: null,
     }
 
     const edge: ArchieEdge = {

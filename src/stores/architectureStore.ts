@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
+import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
 import { computeWeightedNodeScore, computeHeatmapStatus } from "@/engine/heatmapCalculator"
 import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
@@ -54,9 +55,12 @@ export interface ArchieNodeData extends Record<string, unknown> {
 
 export interface ArchieEdgeData extends Record<string, unknown> {
   isIncompatible: boolean
+  isPortMismatch: boolean
   incompatibilityReason: string | null
   sourceArchieComponentId: string
   targetArchieComponentId: string
+  sourceHandleId: string | null
+  targetHandleId: string | null
   labelOffset?: { x: number; y: number }
 }
 
@@ -485,7 +489,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       nextDci.delete(nodeId)
       set({ dataContextItems: nextDci })
     }
-    // Tier + constraints: clear if canvas is empty, otherwise neighbor recalculation handles it
     if (get().nodes.length === 0) {
       set({ currentTier: null, constraintViolations: [], violationsByNodeId: new Map() })
     }
@@ -495,7 +498,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         get().triggerRecalculation(neighborId)
       }
     }
-    // Re-evaluate tier + constraints when no neighbors triggered recalculation (e.g., isolated node removal)
     if (neighborNodeIds.size === 0 && get().nodes.length > 0) {
       evaluateAndSetTier(get, set)
       _evaluateAndSetViolations(get, set)
@@ -529,7 +531,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       edges: survivingEdges,
     })
 
-    // Clean up computedMetrics and heatmapColors for removed nodes (parity with removeNode)
     const currentComputed = get().computedMetrics
     const currentHeatmap = get().heatmapColors
     const hasComputedToClean = [...idsToRemove].some(
@@ -544,7 +545,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       }
       set({ computedMetrics: nextComputed, heatmapColors: nextHeatmap })
     }
-    // Clean up dataContextItems for removed nodes
     const currentDci = get().dataContextItems
     const hasDciToClean = [...idsToRemove].some((id) => currentDci.has(id))
     if (hasDciToClean) {
@@ -552,7 +552,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       for (const id of idsToRemove) nextDci.delete(id)
       set({ dataContextItems: nextDci })
     }
-    // Tier + constraints: clear if canvas is empty, otherwise re-evaluate
     if (get().nodes.length === 0) {
       set({ currentTier: null, constraintViolations: [], violationsByNodeId: new Map() })
     } else {
@@ -583,18 +582,28 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       ? componentLibrary.getComponent(targetComponentId)
       : undefined
 
-    const result = checkCompatibility(sourceComponent, targetComponent)
+    const categoryResult = checkCompatibility(sourceComponent, targetComponent)
+    const portResult = checkPortCompatibility(
+      connection.sourceHandle, connection.targetHandle, sourceComponent, targetComponent,
+    )
+    const isIncompatible = !categoryResult.isCompatible || !portResult.isCompatible
+    const reason = portResult.reason || categoryResult.reason || null
 
     const newEdge: ArchieEdge = {
       id: crypto.randomUUID(),
       source: connection.source,
       target: connection.target,
+      sourceHandle: connection.sourceHandle,
+      targetHandle: connection.targetHandle,
       type: EDGE_TYPE_CONNECTION,
       data: {
-        isIncompatible: !result.isCompatible,
-        incompatibilityReason: result.reason || null,
+        isIncompatible,
+        isPortMismatch: portResult.isPortMismatch,
+        incompatibilityReason: reason,
         sourceArchieComponentId: sourceComponentId,
         targetArchieComponentId: targetComponentId,
+        sourceHandleId: connection.sourceHandle ?? null,
+        targetHandleId: connection.targetHandle ?? null,
       },
     }
 
@@ -605,7 +614,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
   removeEdges: (edgeIds) => {
     const idsToRemove = new Set(edgeIds)
-    // Capture affected endpoint nodes BEFORE filtering (Story 2-1)
     const affectedNodeIds = new Set<string>()
     for (const edge of get().edges) {
       if (idsToRemove.has(edge.id)) {
@@ -614,7 +622,6 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       }
     }
     set({ edges: get().edges.filter((e) => !idsToRemove.has(e.id)) })
-    // Trigger recalculation for affected endpoints AFTER edge removal
     for (const nodeId of affectedNodeIds) {
       get().triggerRecalculation(nodeId)
     }
@@ -630,10 +637,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   },
 
   loadArchitecture: (nodes, edges, weightProfile?, constraints?, dataContextItems?, activeScenarioId?, activeFailureScenarioId?) => {
-    // Cancel pending ripple timeouts from previous architecture
     clearPendingRippleTimeouts()
-
-    // Clear all computed state and set new architecture
     set({
       nodes,
       edges,
@@ -653,12 +657,9 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       activeFailureScenarioId: activeFailureScenarioId ?? null,
     })
 
-    // Clear uiStore selection state (cross-store pattern from removeNode)
     useUiStore.getState().setSelectedNodeId(null)
     useUiStore.getState().setSelectedEdgeId(null)
 
-    // Trigger full-graph recalculation for each node
-    // Each triggerRecalculation handles its own BFS propagation
     for (const node of nodes) {
       get().triggerRecalculation(node.id)
     }

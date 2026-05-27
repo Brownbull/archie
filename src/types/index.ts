@@ -33,6 +33,10 @@ export type { Blueprint } from "@/schemas/blueprintSchema"
 export type { ArchieEdgeData } from "@/stores/architectureStore"
 export type { CompatibilityResult } from "@/engine/compatibilityChecker"
 export type {
+  PortCompatibilityResult,
+  PortLookupContext,
+} from "@/engine/portCompatibilityChecker"
+export type {
   RecalculatedMetrics,
   ArchitectureMetrics,
   ConnectedNodeInfo,

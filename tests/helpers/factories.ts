@@ -99,9 +99,12 @@ export function makeNode(overrides?: Partial<Omit<ArchieNode, "data">> & { data?
 export function makeEdge(overrides?: Partial<Omit<ArchieEdge, "data">> & { data?: Partial<ArchieEdgeData> }): ArchieEdge {
   const defaultData: ArchieEdgeData = {
     isIncompatible: false,
+    isPortMismatch: false,
     incompatibilityReason: null,
     sourceArchieComponentId: "postgresql",
     targetArchieComponentId: "redis",
+    sourceHandleId: null,
+    targetHandleId: null,
   }
 
   const { data: dataOverrides, ...restOverrides } = overrides ?? {}

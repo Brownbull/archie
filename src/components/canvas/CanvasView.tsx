@@ -123,6 +123,8 @@ function CanvasViewInner() {
 				kind: "connection",
 				sourceNodeId: params.nodeId,
 				sourceCategory: node.data.componentCategory,
+				sourceHandle: params.handleId ?? null,
+				sourceComponentId: node.data.archieComponentId,
 			});
 		},
 		[setActiveDrag],

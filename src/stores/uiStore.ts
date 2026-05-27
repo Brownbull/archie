@@ -9,7 +9,7 @@ export type ToolboxTab = "components" | "stacks" | "blueprints"
 
 export type DragSource =
   | { kind: "toolbox"; componentId: string; componentCategory: string }
-  | { kind: "connection"; sourceNodeId: string; sourceCategory: string }
+  | { kind: "connection"; sourceNodeId: string; sourceCategory: string; sourceHandle: string | null; sourceComponentId: string }
 
 export interface ContextMenuState {
   nodeId: string

@@ -15,6 +15,7 @@ import { useTopMetrics } from "@/hooks/useTopMetrics"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { useNodePorts } from "@/hooks/useNodePorts"
+import { PORT_TYPES } from "@/lib/constants"
 
 const PORT_HEIGHT_PX = 20
 const MIN_PORT_SECTION_HEIGHT = 0
@@ -80,17 +81,26 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     if (activeDrag.kind === "connection" && activeDrag.sourceNodeId === id) {
       return { isDragSource: true, isCompatible: true, reason: "" }
     }
-    const dragComponent = activeDrag.kind === "toolbox"
-      ? componentLibrary.getComponent(activeDrag.componentId)
-      : (() => {
-          const comp = componentLibrary.getComponent(
-            // sourceCategory is the category string; we need the component from the source node
-            // but we only have the node id — read from store
-            useArchitectureStore.getState().nodes.find((n) => n.id === (activeDrag as { sourceNodeId: string }).sourceNodeId)?.data.archieComponentId ?? ""
-          )
-          return comp
-        })()
+    const dragComponentId = activeDrag.kind === "toolbox"
+      ? activeDrag.componentId
+      : activeDrag.sourceComponentId
+    const dragComponent = componentLibrary.getComponent(dragComponentId)
     const nodeComponent = componentLibrary.getComponent(data.archieComponentId)
+
+    if (activeDrag.kind === "connection" && activeDrag.sourceHandle && nodeComponent?.ports) {
+      const sourcePort = dragComponent?.ports?.find((p) => p.id === activeDrag.sourceHandle)
+      if (sourcePort) {
+        const hasMatch = nodeComponent.ports.some(
+          (p) => p.direction === "in" && p.type === sourcePort.type,
+        )
+        if (!hasMatch) {
+          const label = PORT_TYPES[sourcePort.type]?.label ?? sourcePort.type
+          return { isDragSource: false, isCompatible: false, reason: `No ${label} input port` }
+        }
+        return { isDragSource: false, isCompatible: true, reason: "" }
+      }
+    }
+
     const result = checkCompatibility(
       dragComponent ? { category: dragComponent.category, compatibility: dragComponent.compatibility } : undefined,
       nodeComponent ? { category: nodeComponent.category, compatibility: nodeComponent.compatibility } : undefined,

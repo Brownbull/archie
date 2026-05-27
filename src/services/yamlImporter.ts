@@ -386,9 +386,12 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       type: EDGE_TYPE_CONNECTION,
       data: {
         isIncompatible: !compatResult.isCompatible,
+        isPortMismatch: false,
         incompatibilityReason: compatResult.reason || null,
         sourceArchieComponentId: sourceComponentId,
         targetArchieComponentId: targetComponentId,
+        sourceHandleId: null,
+        targetHandleId: null,
       } as ArchieEdgeData,
     })
   }

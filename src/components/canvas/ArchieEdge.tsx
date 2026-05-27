@@ -166,7 +166,7 @@ export function ArchieEdge({
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
             }}
           >
-            <ConnectionWarning reason={data?.incompatibilityReason ?? null} />
+            <ConnectionWarning reason={data?.incompatibilityReason ?? null} isPortMismatch={data?.isPortMismatch} />
           </div>
         </EdgeLabelRenderer>
       )}
