@@ -18,7 +18,7 @@ Epic 12: Typed Port System & Schema v3 — Replace generic source/target handles
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Port types & schema foundation | PORT_TYPES constants, PortDefinition Zod schema, extend ComponentSchema with ports array | mvp | medium | ✅ | ✅ | ✅ | ⬜ |
+| 1 | Port types & schema foundation | PORT_TYPES constants, PortDefinition Zod schema, extend ComponentSchema with ports array | mvp | medium | ✅ | ✅ | ✅ | ✅ |
 | 2 | Port-aware node rendering | Replace 2 generic Handles with dynamic colored port dots, inputs-left / outputs-right | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Port-compatible edge creation | Update addEdge for sourceHandle/targetHandle, rewrite compatibilityChecker, hybrid warn/block | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Topology checker engine | New topologyChecker: orphan nodes, missing hops, unreachable components; Issues panel integration | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |

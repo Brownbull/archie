@@ -172,6 +172,13 @@ CI: ✅ 2/2 (2m2s) — ci pass, GitGuardian pass
 PR: https://github.com/Brownbull/archie/pull/29
 DEPLOYMENTS: P3
 
+## 2026-05-27 — PHASE PUSH: Phase 1 — Port types & schema foundation
+BRANCH: dev → main (PR #30)
+COMMITS: 11 (71039a8..8e691f0)
+CI: ✅ 1/1 (43s) — GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/30
+DEPLOYMENTS: P4
+
 ## 2026-05-27 — PHASE REVIEW COMPLETE: Phase 1 — Port types & schema foundation
 SCORE: 98 → 100/100 (after fixes)
 FINDINGS: 1 total (0 HIGH, 0 MEDIUM, 1 LOW)
