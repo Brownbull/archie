@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { OverlayModeId } from "@/lib/constants";
-import { HEATMAP_COLORS, METRIC_CATEGORIES } from "@/lib/constants";
+import { HEATMAP_COLORS } from "@/lib/constants";
 import { useArchitectureStore } from "@/stores/architectureStore";
 import { useUiStore } from "@/stores/uiStore";
 
