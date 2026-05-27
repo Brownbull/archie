@@ -284,3 +284,10 @@ DEFERRED: none
 ALIGNMENT: ALIGNED
 TIER: ent | DRIFT: none
 TICK: ✅
+
+## 2026-05-29 17:42 — [f785f63] perf(engine): optimize topology checker with Tarjan's algorithm and review fixes
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept 2:accept (well doc drift — perf internals, no user-facing doc impact)
+DEFERRED: 0
+FILES: src/engine/topologyChecker.ts (+54/-21), src/stores/architectureStoreHelpers.ts (+4/-3), docs/quality-reports/aislop-latest.md, docs/cost-tracking/session-costs.csv
+TESTS: 2818/2818 pass
