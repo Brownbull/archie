@@ -131,3 +131,11 @@ DEFERRED: 0
 PLAN ALIGNMENT: ALIGNED (8/8 on-scope, 0 off-scope)
 COVERAGE: HIGH (all changed source files have corresponding test changes)
 CHURN: all STABLE except CanvasView (WARM)
+
+## 2026-05-27 — PHASE PUSH: Phases 3+4 — Ghost Placement & ALT-Mode Overlay System
+BRANCH: dev → main (PR #28)
+COMMITS: 13 (046259f..9885bb0)
+CI FIX: TS6133 — removed unused METRIC_CATEGORIES import in useEdgeOverlay.ts
+CI: ✅ 2/2 (1m53s) — ci pass, GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/28
+DEPLOYMENTS: P3+P4
