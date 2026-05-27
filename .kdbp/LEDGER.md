@@ -159,3 +159,10 @@ DEFERRED: 0
 PLAN ALIGNMENT: ALIGNED (8/8 on-scope, 0 off-scope)
 COVERAGE: HIGH (all changed source files have corresponding test changes)
 CHURN: all STABLE except CanvasView (WARM), uiStore (WARM)
+
+## 2026-05-27 — PHASE PUSH: Phase 5 — Connection Flow Animation + Status Dots
+BRANCH: dev → main (PR #29)
+COMMITS: 4 (71039a8..0c38947)
+CI: ✅ 2/2 (2m2s) — ci pass, GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/29
+DEPLOYMENTS: P3
