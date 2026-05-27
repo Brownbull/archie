@@ -112,3 +112,12 @@ CI FIX: TS2322 — widened ReactFlow nodes array type assertion for ghost+store 
 CI: ✅ 2/2 — ci pass, GitGuardian pass
 PR: https://github.com/Brownbull/archie/pull/28
 DEPLOYMENTS: P2
+
+## 2026-05-27 04:50 — [883111c] feat(canvas): ALT-mode overlay system
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept 2:accept (wells doc drift — scaffold docs with 0 topics)
+DEFERRED: 0
+FILES: src/lib/constants.ts (mod), src/stores/uiStore.ts (mod), src/components/canvas/OverlaySelector.tsx (new), src/hooks/useNodeOverlay.ts (new), src/hooks/useEdgeOverlay.ts (new), src/components/canvas/ArchieNode.tsx (mod), src/components/canvas/ArchieEdge.tsx (mod), src/components/canvas/CanvasView.tsx (mod)
+TESTS: 2709/2709 pass, 33 new (useNodeOverlay 6, useEdgeOverlay 8, OverlaySelector 4, uiStore overlay 4, CanvasView shortcuts 5, E2E 6)
+E2E: tests/e2e/overlay-system.spec.ts — 6 screenshots in test-results/overlay-system/
+RUNTIME EVIDENCE: Playwright desktop — overlay selector renders, mode toggle, badge on node, Alt+2 shortcut, cycle all modes, badge removal on none

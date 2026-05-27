@@ -3,7 +3,8 @@
 <!-- status: active -->
 <!-- project_type: code -->
 <!-- created: 2026-05-25 -->
-<!-- last_updated: 2026-05-26T23:30 -->
+<!-- last_updated: 2026-05-27T04:50 -->
+<!-- phase_advanced: 3→4 on 2026-05-26 -->
 <!-- phase_advanced: 1→2 on 2026-05-26 -->
 <!-- goal: Factorio-fy Archie — transform from plain design platform to game-like interactive experience -->
 
@@ -18,7 +19,7 @@ Transform archie from a plain design platform into a game-like interactive exper
 | 1 | Compatibility Intelligence UI | Dim incompatible components during drag, highlight valid targets, "why not" tooltips, context-filtered palette | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 2 | Radial Context Menu | Right-click/hold → 6-8 item radial with contextual actions (connect, inspect, swap tier, duplicate, delete, trade-offs) | ent | med | ✅ | ✅ | ✅ | ✅ |
 | 3 | Ghost Placement & Suggestions | Semi-transparent ghost outlines of recommended next components near open connections, powered by recommendationEngine | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 4 | ALT-Mode Overlay System | Toggle between information layers (Compatibility, Performance, Cost, Tier, Flow) — each transforms visuals without changing layout | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | ALT-Mode Overlay System | Toggle between information layers (Compatibility, Performance, Cost, Tier, Flow) — each transforms visuals without changing layout | ent | med | ✅ | ⬜ | ✅ | ⬜ |
 | 5 | Connection Flow Animation + Status Dots | Animated traveling dots on connections, colored status indicators on components, quick-replace gesture | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
 
 ## Dependencies
@@ -36,7 +37,7 @@ Transform archie from a plain design platform into a game-like interactive exper
 
 ## Current Phase
 
-Phase 3 — Ghost Placement & Suggestions
+Phase 4 — ALT-Mode Overlay System
 
 ## Phase Details
 
