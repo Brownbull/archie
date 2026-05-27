@@ -246,6 +246,20 @@ CHURN: all STABLE except CanvasView (WARM), architectureStore (WARM)
 TIER: ent | DRIFT: none
 TICK: ✅
 
+## 2026-05-29 — PHASE PUSH: Phase 3 — Port-compatible edge creation
+BRANCH: dev → main (PR #30)
+COMMITS: 3 (5996924, b8c37c8, 3923402)
+CI: ✅ 1/1 (1s) — GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/30
+DEPLOYMENTS: P6
+
+## 2026-05-29 — [3923402] fix(tests): address Phase 3 review findings — port-mismatch + dimming coverage
+FINDINGS: 0 (0 critical, 0 high, 0 medium, 0 low)
+ACTIONS: none
+DEFERRED: 0
+FILES: tests/unit/components/canvas/ArchieNode.test.tsx (+77), tests/unit/components/canvas/ConnectionWarning.test.tsx (+25), .kdbp/LEDGER.md, .kdbp/PLAN.md
+TESTS: 64/64 pass (ArchieNode 54, ConnectionWarning 10)
+
 ## 2026-05-27 — PLAN COMPLETED: Factorio-fy Archie
 ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-27_factorio-fy-archie.md
 PHASES COMPLETED: 5 of 5

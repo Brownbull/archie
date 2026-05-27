@@ -1,28 +1,21 @@
 # aislop Quality Report
 
-**Date:** 20260527-151443
-**Score:** 9/100 (Critical)
+**Date:** 20260527-165916
+**Score:** 10/100 (Critical)
 **Scan:** `aislop scan --staged`
 
 ## Engine Summary
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 15 | 460ms |
-| code-quality | 98 | 3619ms |
-| ai-slop | 4 | 22ms |
-| security | 8 | 1896ms |
+| lint | 15 | 643ms |
+| code-quality | 93 | 6923ms |
+| ai-slop | 0 | 6ms |
+| security | 8 | 2203ms |
 
 ## Findings
 
-### ai-slop (4)
-
-- [!] `src/services/yamlImporter.ts:308` — ai-slop/trivial-comment: Trivial comment that restates the code
-- [i] `src/services/yamlImporter.ts:308` — ai-slop/todo-stub: Unresolved TODO/FIXME/HACK comment indicates incomplete code
-- [i] `src/services/yamlImporter.ts:310` — ai-slop/todo-stub: Unresolved TODO/FIXME/HACK comment indicates incomplete code
-- [!] `src/services/yamlImporter.ts:328` — ai-slop/double-type-assertion: Double type assertion (as unknown as X) bypasses type checking
-
-### code-quality (98)
+### code-quality (93)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
@@ -117,26 +110,21 @@
 - [!] `src/hooks/useNodeOverlay.ts:8` — knip/types: Unused type: NodeOverlayInfo
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
-- [!] `src/components/canvas/ArchieNode.tsx:36` — complexity/function-too-long: Function 'ArchieNodeComponent' has 220 lines (max: 80)
-- [!] `src/components/canvas/CanvasView.tsx:63` — complexity/function-too-long: Function 'CanvasViewInner' has 298 lines (max: 80)
-- [!] `src/services/yamlImporter.ts:123` — complexity/function-too-long: Function 'importYamlString' has 152 lines (max: 80)
-- [!] `src/services/yamlImporter.ts:284` — complexity/function-too-long: Function 'hydrateArchitectureSkeleton' has 140 lines (max: 80)
-- [!] `src/stores/architectureStore.ts:0` — complexity/file-too-large: File has 801 lines (max: 800)
 
 ### lint (15)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/hooks/useNodePorts.ts:3` — eslint/no-unused-vars: Type 'PortType' is imported but never used.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
-- [!] `src/hooks/useNodePorts.ts:3` — eslint/no-unused-vars: Type 'PortType' is imported but never used.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
