@@ -13,6 +13,7 @@ import { HEATMAP_COLORS, LABEL_INCOMPATIBILITY_OFFSET, MAX_LABEL_OFFSET } from "
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useConnectionHealth } from "@/hooks/useConnectionHealth"
+import { useEdgeOverlay } from "@/hooks/useEdgeOverlay"
 import { EdgeParticles } from "@/components/canvas/EdgeParticles"
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
@@ -50,6 +51,9 @@ export function ArchieEdge({
   const { density, status: healthStatus } = useConnectionHealth(source, target)
 
   const isIncompatible = data?.isIncompatible ?? false
+
+  // ALT-mode overlay edge styling (Phase 4 — Factorio-fy)
+  const overlayStyle = useEdgeOverlay(id, source, target, isIncompatible)
   const currentLabelOffset = data?.labelOffset ?? { x: 0, y: 0 }
 
   // Look up source component's connectionProperties for protocol label (TD-4-3b AC-1: useLibrary for reactivity)
@@ -110,12 +114,16 @@ export function ArchieEdge({
     setDragState(null)
   }
 
-  // Edge color priority logic (Story 2-2 Dev Notes, AC-ARCH-PATTERN-10)
+  // Edge color priority: overlay > heatmap > incompatible > default (Story 2-2, AC-ARCH-PATTERN-10, Phase 4)
   let strokeColor = "var(--archie-border)"
   let strokeWidth = 1.5
   let strokeDasharray: string | undefined
 
-  if (heatmapEnabled && edgeHeatmapStatus) {
+  if (overlayStyle) {
+    strokeColor = overlayStyle.strokeColor
+    strokeWidth = overlayStyle.strokeWidth
+    strokeDasharray = overlayStyle.strokeDasharray
+  } else if (heatmapEnabled && edgeHeatmapStatus) {
     strokeColor = HEATMAP_COLORS[edgeHeatmapStatus]
     strokeWidth = 2
     if (isIncompatible) strokeDasharray = "5 3"
@@ -126,7 +134,7 @@ export function ArchieEdge({
 
   if (selected) {
     strokeWidth = 2.5
-    if (!heatmapEnabled && !isIncompatible) strokeColor = "var(--archie-accent)"
+    if (!overlayStyle && !heatmapEnabled && !isIncompatible) strokeColor = "var(--archie-accent)"
   }
 
   // Shift protocol label up when incompatibility warning is also present at (labelX, labelY)

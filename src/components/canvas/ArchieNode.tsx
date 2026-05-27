@@ -8,6 +8,7 @@ import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, type ComponentCategor
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
+import { useNodeOverlay } from "@/hooks/useNodeOverlay"
 import { useTopMetrics } from "@/hooks/useTopMetrics"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
@@ -36,6 +37,9 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       .map((v) => constraintMap.get(v.constraintId)?.label ?? `${v.categoryId} constraint`)
       .join(", ")
   }, [nodeViolations, constraints])
+
+  // ALT-mode overlay badge (Phase 4 — Factorio-fy)
+  const overlayInfo = useNodeOverlay(id, data.archieComponentId)
 
   // Inline metrics: top 2 by weight (Story 10-1)
   const topMetrics = useTopMetrics(id)
@@ -139,6 +143,16 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
               color={m.color}
             />
           ))}
+        </div>
+      )}
+
+      {overlayInfo && (
+        <div
+          data-testid="overlay-badge"
+          className="absolute -top-2.5 -right-2.5 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold shadow-sm"
+          style={{ backgroundColor: overlayInfo.color, color: "#fff" }}
+        >
+          <span>{overlayInfo.value}</span>
         </div>
       )}
 

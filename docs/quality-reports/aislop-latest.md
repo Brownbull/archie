@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260526-151203
+**Date:** 20260526-165550
 **Score:** 11/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,25 +8,25 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 10 | 531ms |
-| code-quality | 84 | 4009ms |
-| ai-slop | 0 | 6ms |
-| security | 8 | 1587ms |
+| lint | 10 | 454ms |
+| code-quality | 86 | 3355ms |
+| ai-slop | 0 | 12ms |
+| security | 8 | 1803ms |
 
 ## Findings
 
-### code-quality (84)
+### code-quality (86)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:66` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:68` — knip/devDependencies: Unused devDependency: tw-animate-css
-- [!] `src/lib/constants.ts:131` — knip/exports: Unused export: SLUG_ID_FORMAT
-- [!] `src/lib/constants.ts:134` — knip/types: Unused type: StackComponent
-- [!] `src/lib/constants.ts:145` — knip/types: Unused type: StackConnection
-- [!] `src/lib/constants.ts:152` — knip/types: Unused type: StackCategoryScore
-- [!] `src/lib/constants.ts:224` — knip/types: Unused type: TailwindZIndex
-- [!] `src/lib/constants.ts:337` — knip/types: Unused type: FailurePresetId
+- [!] `src/lib/constants.ts:132` — knip/exports: Unused export: SLUG_ID_FORMAT
+- [!] `src/lib/constants.ts:135` — knip/types: Unused type: StackComponent
+- [!] `src/lib/constants.ts:146` — knip/types: Unused type: StackConnection
+- [!] `src/lib/constants.ts:153` — knip/types: Unused type: StackCategoryScore
+- [!] `src/lib/constants.ts:225` — knip/types: Unused type: TailwindZIndex
+- [!] `src/lib/constants.ts:343` — knip/types: Unused type: FailurePresetId
 - [!] `src/lib/constants.ts:0` — knip/duplicates: Duplicate export: unknown
 - [!] `src/schemas/metricCategorySchema.ts:39` — knip/types: Unused type: ScoreInterpretation
 - [!] `src/schemas/componentSchema.ts:132` — knip/types: Unused type: ConnectionProperties
@@ -44,6 +44,7 @@
 - [!] `src/services/yamlImporter.ts:38` — knip/types: Unused type: HydratedArchitecture
 - [!] `src/services/yamlImporter.ts:50` — knip/types: Unused type: ImportResult
 - [!] `src/engine/demandEngine.ts:7` — knip/types: Unused type: AdjustedMetric
+- [!] `src/engine/ghostSuggestionEngine.ts:10` — knip/types: Unused type: GhostPlacement
 - [!] `src/types/index.ts:2` — knip/types: Unused type: WeightProfile
 - [!] `src/types/index.ts:3` — knip/types: Unused type: Constraint
 - [!] `src/types/index.ts:4` — knip/types: Unused type: ConstraintOperator
@@ -100,14 +101,15 @@
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
 - [!] `src/stores/uiStore.ts:10` — knip/types: Unused type: DragSource
 - [!] `src/stores/uiStore.ts:14` — knip/types: Unused type: ContextMenuState
-- [!] `src/components/canvas/RadialMenu.tsx:26` — complexity/function-too-long: Function 'RadialMenu' has 204 lines (max: 80)
+- [!] `src/components/canvas/CanvasView.tsx:60` — complexity/function-too-long: Function 'CanvasViewInner' has 283 lines (max: 80)
+- [!] `src/components/canvas/GhostNode.tsx:24` — complexity/function-too-long: Function 'GhostNodeComponent' has 92 lines (max: 80)
 
 ### lint (10)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.

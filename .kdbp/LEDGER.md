@@ -79,3 +79,55 @@ PLAN ALIGNMENT: ALIGNED (5/5 on-scope, 0 off-scope)
 ## 2026-05-26 — [fcc784c] fix(radial-menu): memoize items array + keyboard nav test coverage
 FINDINGS: 0
 DEFERRED: 0
+
+## 2026-05-26 — PHASE PUSH: Phase 2 — Radial Context Menu
+BRANCH: dev → main (PR #27)
+COMMITS: 12 (e0c0b44..136578d)
+CI: ✅ 2/2 (113s) — ci pass, GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/27
+DEPLOYMENTS: P1
+
+## 2026-05-26 16:55 — [c13eb7d] feat(canvas): ghost placement suggestions
+FINDINGS: 0 (0 critical, 0 high, 0 medium, 0 low)
+ACTIONS: none
+DEFERRED: 0
+FILES: src/engine/ghostSuggestionEngine.ts (new), src/components/canvas/GhostNode.tsx (new), src/hooks/useGhostNodes.ts (new), src/components/canvas/CanvasView.tsx (mod), src/lib/constants.ts (mod)
+TESTS: 2682/2682 pass, 17 new (engine 8, component 5, hook 4)
+E2E: tests/e2e/ghost-placement.spec.ts — 6 screenshots in test-results/ghost-placement-journey/
+RUNTIME EVIDENCE: Playwright desktop — ghost nodes appear near open handles, dispatchEvent("click") materializes real node + auto-edge
+
+## 2026-05-26 — PHASE REVIEW COMPLETE: Phase 3 — Ghost Placement & Suggestions
+SCORE: 100/100
+FINDINGS: 0 total
+FIXED: n/a
+DEFERRED: 0
+PLAN ALIGNMENT: ALIGNED (9/9 on-scope, 0 off-scope)
+COVERAGE: HIGH (all changed source files have corresponding test changes)
+CHURN: all STABLE
+
+## 2026-05-26 — PHASE PUSH: Phase 3 — Ghost Placement & Suggestions
+BRANCH: dev → main (PR #28)
+COMMITS: 8 (136578d..b17f03d)
+CI FIX: TS2322 — widened ReactFlow nodes array type assertion for ghost+store merge
+CI: ✅ 2/2 — ci pass, GitGuardian pass
+PR: https://github.com/Brownbull/archie/pull/28
+DEPLOYMENTS: P2
+
+## 2026-05-27 04:50 — [883111c] feat(canvas): ALT-mode overlay system
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept 2:accept (wells doc drift — scaffold docs with 0 topics)
+DEFERRED: 0
+FILES: src/lib/constants.ts (mod), src/stores/uiStore.ts (mod), src/components/canvas/OverlaySelector.tsx (new), src/hooks/useNodeOverlay.ts (new), src/hooks/useEdgeOverlay.ts (new), src/components/canvas/ArchieNode.tsx (mod), src/components/canvas/ArchieEdge.tsx (mod), src/components/canvas/CanvasView.tsx (mod)
+TESTS: 2709/2709 pass, 33 new (useNodeOverlay 6, useEdgeOverlay 8, OverlaySelector 4, uiStore overlay 4, CanvasView shortcuts 5, E2E 6)
+E2E: tests/e2e/overlay-system.spec.ts — 6 screenshots in test-results/overlay-system/
+RUNTIME EVIDENCE: Playwright desktop — overlay selector renders, mode toggle, badge on node, Alt+2 shortcut, cycle all modes, badge removal on none
+
+## 2026-05-27 — PHASE REVIEW COMPLETE: Phase 4 — ALT-Mode Overlay System
+SCORE: 96/100
+FINDINGS: 2 total (0 HIGH, 0 MEDIUM, 2 LOW)
+FIXED: n/a (both Scale-gate, below enterprise threshold)
+ACCEPTED: #1 (unused METRIC_CATEGORIES import in useEdgeOverlay.ts — LOW, Scale gate), #2 (phase-referencing comments — LOW, Scale gate)
+DEFERRED: 0
+PLAN ALIGNMENT: ALIGNED (8/8 on-scope, 0 off-scope)
+COVERAGE: HIGH (all changed source files have corresponding test changes)
+CHURN: all STABLE except CanvasView (WARM)

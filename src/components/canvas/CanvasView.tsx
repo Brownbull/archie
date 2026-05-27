@@ -1,325 +1,361 @@
-import { useCallback, useEffect, useMemo, useRef, type DragEvent } from "react"
-import {
-  ReactFlow,
-  Background,
-  BackgroundVariant,
-  MiniMap,
-  Controls,
-  ReactFlowProvider,
-  useReactFlow,
-  applyEdgeChanges,
-} from "@xyflow/react"
 import type {
-  NodeTypes,
-  EdgeTypes,
-  NodeMouseHandler,
-  EdgeMouseHandler,
-  OnConnect,
-  OnConnectStart,
-  OnConnectEnd,
-  OnEdgesChange,
-  OnNodesDelete,
-  OnEdgesDelete,
-} from "@xyflow/react"
-import { toast } from "sonner"
+	EdgeMouseHandler,
+	EdgeTypes,
+	NodeMouseHandler,
+	NodeTypes,
+	OnConnect,
+	OnConnectEnd,
+	OnConnectStart,
+	OnEdgesChange,
+	OnEdgesDelete,
+	OnNodesDelete,
+} from "@xyflow/react";
 import {
-  useArchitectureStore,
-  type ArchieNode as ArchieNodeType,
-  type ArchieEdge as ArchieEdgeType,
-} from "@/stores/architectureStore"
-import { useUiStore } from "@/stores/uiStore"
-import { useImportAction } from "@/components/import-export/ImportDialog"
-import { componentLibrary } from "@/services/componentLibrary"
-import { resolveStackPlacement } from "@/services/stackPlacement"
-import { ArchieNode } from "@/components/canvas/ArchieNode"
-import { ArchieEdge } from "@/components/canvas/ArchieEdge"
-import { PlaceholderNode } from "@/components/canvas/PlaceholderNode"
-import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState"
-import { CanvasLegend } from "@/components/canvas/CanvasLegend"
-import { RadialMenu } from "@/components/canvas/RadialMenu"
-import { ScenarioSelector } from "@/components/canvas/ScenarioSelector"
-import { FailureSelector } from "@/components/canvas/FailureSelector"
+	applyEdgeChanges,
+	Background,
+	BackgroundVariant,
+	Controls,
+	MiniMap,
+	ReactFlow,
+	ReactFlowProvider,
+	useReactFlow,
+} from "@xyflow/react";
+import { type DragEvent, useCallback, useEffect, useMemo, useRef } from "react";
+import { toast } from "sonner";
+import { ArchieEdge } from "@/components/canvas/ArchieEdge";
+import { ArchieNode } from "@/components/canvas/ArchieNode";
+import { CanvasLegend } from "@/components/canvas/CanvasLegend";
+import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState";
+import { FailureSelector } from "@/components/canvas/FailureSelector";
+import { GhostNode } from "@/components/canvas/GhostNode";
+import { OverlaySelector } from "@/components/canvas/OverlaySelector";
+import { PlaceholderNode } from "@/components/canvas/PlaceholderNode";
+import { RadialMenu } from "@/components/canvas/RadialMenu";
+import { ScenarioSelector } from "@/components/canvas/ScenarioSelector";
+import { useImportAction } from "@/components/import-export/ImportDialog";
+import { useGhostNodes } from "@/hooks/useGhostNodes";
 import {
-  CANVAS_GRID_SIZE,
-  CANVAS_MIN_ZOOM,
-  CANVAS_MAX_ZOOM,
-  EDGE_TYPE_CONNECTION,
-  NODE_TYPE_COMPONENT,
-  NODE_TYPE_PLACEHOLDER,
-} from "@/lib/constants"
+	CANVAS_GRID_SIZE,
+	CANVAS_MAX_ZOOM,
+	CANVAS_MIN_ZOOM,
+	EDGE_TYPE_CONNECTION,
+	NODE_TYPE_COMPONENT,
+	NODE_TYPE_GHOST,
+	NODE_TYPE_PLACEHOLDER,
+	OVERLAY_MODES,
+} from "@/lib/constants";
+import { componentLibrary } from "@/services/componentLibrary";
+import { resolveStackPlacement } from "@/services/stackPlacement";
+import {
+	type ArchieEdge as ArchieEdgeType,
+	type ArchieNode as ArchieNodeType,
+	useArchitectureStore,
+} from "@/stores/architectureStore";
+import { useUiStore } from "@/stores/uiStore";
 
 const nodeTypes: NodeTypes = {
-  [NODE_TYPE_COMPONENT]: ArchieNode,
-  [NODE_TYPE_PLACEHOLDER]: PlaceholderNode,
-}
+	[NODE_TYPE_COMPONENT]: ArchieNode,
+	[NODE_TYPE_PLACEHOLDER]: PlaceholderNode,
+	[NODE_TYPE_GHOST]: GhostNode,
+};
 
 function CanvasViewInner() {
-  const nodes = useArchitectureStore((s) => s.nodes)
-  const edges = useArchitectureStore((s) => s.edges)
-  const onNodesChange = useArchitectureStore((s) => s.onNodesChange)
-  const addNode = useArchitectureStore((s) => s.addNode)
-  const placeStack = useArchitectureStore((s) => s.placeStack)
-  const addEdge = useArchitectureStore((s) => s.addEdge)
-  const removeEdges = useArchitectureStore((s) => s.removeEdges)
-  const removeNodes = useArchitectureStore((s) => s.removeNodes)
-  const setEdges = useArchitectureStore((s) => s.setEdges)
-  const setSelectedNodeId = useUiStore((s) => s.setSelectedNodeId)
-  const setSelectedEdgeId = useUiStore((s) => s.setSelectedEdgeId)
-  const clearSelection = useUiStore((s) => s.clearSelection)
-  const setActiveDrag = useUiStore((s) => s.setActiveDrag)
-  const openContextMenu = useUiStore((s) => s.openContextMenu)
-  const closeContextMenu = useUiStore((s) => s.closeContextMenu)
-  const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId)
-  const deselectAll = useArchitectureStore((s) => s.deselectAll)
-  const { screenToFlowPosition, fitView } = useReactFlow()
-  const { handleFileDrop } = useImportAction()
-  const containerRef = useRef<HTMLDivElement>(null)
+	const storeNodes = useArchitectureStore((s) => s.nodes);
+	const edges = useArchitectureStore((s) => s.edges);
+	const ghostNodes = useGhostNodes();
+	const nodes = useMemo(
+		() => [...storeNodes, ...ghostNodes] as ArchieNodeType[],
+		[storeNodes, ghostNodes],
+	);
+	const onNodesChange = useArchitectureStore((s) => s.onNodesChange);
+	const addNode = useArchitectureStore((s) => s.addNode);
+	const placeStack = useArchitectureStore((s) => s.placeStack);
+	const addEdge = useArchitectureStore((s) => s.addEdge);
+	const removeEdges = useArchitectureStore((s) => s.removeEdges);
+	const removeNodes = useArchitectureStore((s) => s.removeNodes);
+	const setEdges = useArchitectureStore((s) => s.setEdges);
+	const setSelectedNodeId = useUiStore((s) => s.setSelectedNodeId);
+	const setSelectedEdgeId = useUiStore((s) => s.setSelectedEdgeId);
+	const clearSelection = useUiStore((s) => s.clearSelection);
+	const setActiveDrag = useUiStore((s) => s.setActiveDrag);
+	const openContextMenu = useUiStore((s) => s.openContextMenu);
+	const closeContextMenu = useUiStore((s) => s.closeContextMenu);
+	const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId);
+	const deselectAll = useArchitectureStore((s) => s.deselectAll);
+	const { screenToFlowPosition, fitView } = useReactFlow();
+	const { handleFileDrop } = useImportAction();
+	const containerRef = useRef<HTMLDivElement>(null);
 
-  const edgeTypes: EdgeTypes = useMemo(
-    () => ({ [EDGE_TYPE_CONNECTION]: ArchieEdge }),
-    [],
-  )
+	const edgeTypes: EdgeTypes = useMemo(
+		() => ({ [EDGE_TYPE_CONNECTION]: ArchieEdge }),
+		[],
+	);
 
-  const defaultEdgeOptions = useMemo(
-    () => ({ type: EDGE_TYPE_CONNECTION }),
-    [],
-  )
+	const defaultEdgeOptions = useMemo(
+		() => ({ type: EDGE_TYPE_CONNECTION }),
+		[],
+	);
 
-  const handleNodeClick: NodeMouseHandler<ArchieNodeType> = useCallback(
-    (_event, node) => {
-      setSelectedNodeId(node.id)
-    },
-    [setSelectedNodeId],
-  )
+	const handleNodeClick: NodeMouseHandler<ArchieNodeType> = useCallback(
+		(_event, node) => {
+			setSelectedNodeId(node.id);
+		},
+		[setSelectedNodeId],
+	);
 
-  const handleEdgeClick: EdgeMouseHandler<ArchieEdgeType> = useCallback(
-    (_event, edge) => {
-      setSelectedEdgeId(edge.id)
-    },
-    [setSelectedEdgeId],
-  )
+	const handleEdgeClick: EdgeMouseHandler<ArchieEdgeType> = useCallback(
+		(_event, edge) => {
+			setSelectedEdgeId(edge.id);
+		},
+		[setSelectedEdgeId],
+	);
 
-  const handleConnectStart: OnConnectStart = useCallback(
-    (_event, params) => {
-      if (!params.nodeId) return
-      const node = useArchitectureStore.getState().nodes.find((n) => n.id === params.nodeId)
-      if (!node) return
-      setActiveDrag({
-        kind: "connection",
-        sourceNodeId: params.nodeId,
-        sourceCategory: node.data.componentCategory,
-      })
-    },
-    [setActiveDrag],
-  )
+	const handleConnectStart: OnConnectStart = useCallback(
+		(_event, params) => {
+			if (!params.nodeId) return;
+			const node = useArchitectureStore
+				.getState()
+				.nodes.find((n) => n.id === params.nodeId);
+			if (!node) return;
+			setActiveDrag({
+				kind: "connection",
+				sourceNodeId: params.nodeId,
+				sourceCategory: node.data.componentCategory,
+			});
+		},
+		[setActiveDrag],
+	);
 
-  const handleConnectEnd: OnConnectEnd = useCallback(() => {
-    setActiveDrag(null)
-  }, [setActiveDrag])
+	const handleConnectEnd: OnConnectEnd = useCallback(() => {
+		setActiveDrag(null);
+	}, [setActiveDrag]);
 
-  const handleConnect: OnConnect = useCallback(
-    (connection) => {
-      setActiveDrag(null)
-      addEdge(connection)
-    },
-    [addEdge, setActiveDrag],
-  )
+	const handleConnect: OnConnect = useCallback(
+		(connection) => {
+			setActiveDrag(null);
+			addEdge(connection);
+		},
+		[addEdge, setActiveDrag],
+	);
 
-  const handleEdgesChange: OnEdgesChange<ArchieEdgeType> = useCallback(
-    (changes) => {
-      // Only apply select and remove changes — edge creation is handled exclusively by onConnect
-      const filteredChanges = changes.filter(
-        (c) => c.type === "select" || c.type === "remove",
-      )
-      if (filteredChanges.length === 0) return
-      const currentEdges = useArchitectureStore.getState().edges
-      // applyEdgeChanges with select/remove changes preserves edge.data, so cast is safe
-      const nextEdges = applyEdgeChanges(filteredChanges, currentEdges) as ArchieEdgeType[]
-      setEdges(nextEdges)
-    },
-    [setEdges],
-  )
+	const handleEdgesChange: OnEdgesChange<ArchieEdgeType> = useCallback(
+		(changes) => {
+			// Only apply select and remove changes — edge creation is handled exclusively by onConnect
+			const filteredChanges = changes.filter(
+				(c) => c.type === "select" || c.type === "remove",
+			);
+			if (filteredChanges.length === 0) return;
+			const currentEdges = useArchitectureStore.getState().edges;
+			// applyEdgeChanges with select/remove changes preserves edge.data, so cast is safe
+			const nextEdges = applyEdgeChanges(
+				filteredChanges,
+				currentEdges,
+			) as ArchieEdgeType[];
+			setEdges(nextEdges);
+		},
+		[setEdges],
+	);
 
-  const handleNodesDelete: OnNodesDelete<ArchieNodeType> = useCallback(
-    (deleted) => {
-      removeNodes(deleted.map((n) => n.id))
-    },
-    [removeNodes],
-  )
+	const handleNodesDelete: OnNodesDelete<ArchieNodeType> = useCallback(
+		(deleted) => {
+			removeNodes(deleted.map((n) => n.id));
+		},
+		[removeNodes],
+	);
 
-  const handleEdgesDelete: OnEdgesDelete<ArchieEdgeType> = useCallback(
-    (deleted) => {
-      removeEdges(deleted.map((e) => e.id))
-    },
-    [removeEdges],
-  )
+	const handleEdgesDelete: OnEdgesDelete<ArchieEdgeType> = useCallback(
+		(deleted) => {
+			removeEdges(deleted.map((e) => e.id));
+		},
+		[removeEdges],
+	);
 
-  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    event.dataTransfer.dropEffect = "move"
-  }, [])
+	const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+		event.preventDefault();
+		event.dataTransfer.dropEffect = "move";
+	}, []);
 
-  const handleDrop = useCallback(
-    (event: DragEvent<HTMLDivElement>) => {
-      event.preventDefault()
+	const handleDrop = useCallback(
+		(event: DragEvent<HTMLDivElement>) => {
+			event.preventDefault();
 
-      // Check for YAML file drop first
-      const file = event.dataTransfer.files?.[0]
-      if (file) {
-        const name = file.name.toLowerCase()
-        if (name.endsWith(".yaml") || name.endsWith(".yml")) {
-          handleFileDrop(file)
-          return
-        }
-      }
+			// Check for YAML file drop first
+			const file = event.dataTransfer.files?.[0];
+			if (file) {
+				const name = file.name.toLowerCase();
+				if (name.endsWith(".yaml") || name.endsWith(".yml")) {
+					handleFileDrop(file);
+					return;
+				}
+			}
 
-      // Check for stack drag-and-drop (Story 8-3)
-      const stackId = event.dataTransfer.getData("application/archie-stack")
-      if (stackId) {
-        if (stackId.length > 200 || !/^[a-z0-9_-]+$/.test(stackId)) return
+			// Check for stack drag-and-drop (Story 8-3)
+			const stackId = event.dataTransfer.getData("application/archie-stack");
+			if (stackId) {
+				if (stackId.length > 200 || !/^[a-z0-9_-]+$/.test(stackId)) return;
 
-        const stackDef = componentLibrary.getStackById(stackId)
-        if (!stackDef) {
-          toast.error("Stack not found in library")
-          return
-        }
+				const stackDef = componentLibrary.getStackById(stackId);
+				if (!stackDef) {
+					toast.error("Stack not found in library");
+					return;
+				}
 
-        const position = screenToFlowPosition({
-          x: event.clientX,
-          y: event.clientY,
-        })
+				const position = screenToFlowPosition({
+					x: event.clientX,
+					y: event.clientY,
+				});
 
-        const result = resolveStackPlacement(stackDef, position)
-        if (result.nodes.length === 0) {
-          toast.error("Stack has no valid components")
-          return
-        }
+				const result = resolveStackPlacement(stackDef, position);
+				if (result.nodes.length === 0) {
+					toast.error("Stack has no valid components");
+					return;
+				}
 
-        placeStack(result.nodes, result.edges)
-        return
-      }
+				placeStack(result.nodes, result.edges);
+				return;
+			}
 
-      // Fall through to component drag-and-drop
-      const componentId = event.dataTransfer.getData("application/archie-component")
-      if (!componentId || componentId.length > 100 || !/^[a-z0-9-]+$/.test(componentId)) return
+			// Fall through to component drag-and-drop
+			const componentId = event.dataTransfer.getData(
+				"application/archie-component",
+			);
+			if (
+				!componentId ||
+				componentId.length > 100 ||
+				!/^[a-z0-9-]+$/.test(componentId)
+			)
+				return;
 
-      const position = screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
-      })
+			const position = screenToFlowPosition({
+				x: event.clientX,
+				y: event.clientY,
+			});
 
-      addNode(componentId, position)
-    },
-    [screenToFlowPosition, addNode, placeStack, handleFileDrop],
-  )
+			addNode(componentId, position);
+		},
+		[screenToFlowPosition, addNode, placeStack, handleFileDrop],
+	);
 
-  const handlePaneClick = useCallback(() => {
-    closeContextMenu()
-    clearSelection()
-    deselectAll()
-  }, [closeContextMenu, clearSelection, deselectAll])
+	const handlePaneClick = useCallback(() => {
+		closeContextMenu();
+		clearSelection();
+		deselectAll();
+	}, [closeContextMenu, clearSelection, deselectAll]);
 
-  const handleNodeContextMenu: NodeMouseHandler<ArchieNodeType> = useCallback(
-    (event, node) => {
-      event.preventDefault()
-      setSelectedNodeId(node.id)
-      openContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY })
-    },
-    [setSelectedNodeId, openContextMenu],
-  )
+	const handleNodeContextMenu: NodeMouseHandler<ArchieNodeType> = useCallback(
+		(event, node) => {
+			event.preventDefault();
+			setSelectedNodeId(node.id);
+			openContextMenu({ nodeId: node.id, x: event.clientX, y: event.clientY });
+		},
+		[setSelectedNodeId, openContextMenu],
+	);
 
-  // Keyboard listeners scoped to canvas container (AC-ARCH-PATTERN-7, AC-ARCH-NO-5)
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
+	// Keyboard listeners scoped to canvas container (AC-ARCH-PATTERN-7, AC-ARCH-NO-5)
+	useEffect(() => {
+		const container = containerRef.current;
+		if (!container) return;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Skip keyboard shortcuts when user is typing in an input
-      const target = event.target as HTMLElement
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
-        return
-      }
+		const handleKeyDown = (event: KeyboardEvent) => {
+			// Skip keyboard shortcuts when user is typing in an input
+			const target = event.target as HTMLElement;
+			if (
+				target.tagName === "INPUT" ||
+				target.tagName === "TEXTAREA" ||
+				target.isContentEditable
+			) {
+				return;
+			}
 
-      if (event.key === "Escape") {
-        closeContextMenu()
-        clearSelection()
-        deselectAll()
-      }
-      // H key toggles heatmap — guard against modifier keys (AC-ARCH-PATTERN-8)
-      if (
-        (event.key === "h" || event.key === "H") &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey
-      ) {
-        useUiStore.getState().toggleHeatmap()
-      }
-    }
+			if (event.key === "Escape") {
+				closeContextMenu();
+				clearSelection();
+				deselectAll();
+			}
+			// H key toggles heatmap — guard against modifier keys (AC-ARCH-PATTERN-8)
+			if (
+				(event.key === "h" || event.key === "H") &&
+				!event.ctrlKey &&
+				!event.altKey &&
+				!event.metaKey
+			) {
+				useUiStore.getState().toggleHeatmap();
+			}
+			// Alt+0-5 overlay mode shortcuts (Phase 4 — Factorio-fy)
+			if (event.altKey && !event.ctrlKey && !event.metaKey) {
+				const mode = OVERLAY_MODES.find((m) => m.shortcut === event.key);
+				if (mode) {
+					event.preventDefault();
+					useUiStore.getState().setOverlayMode(mode.id);
+				}
+			}
+		};
 
-    container.addEventListener("keydown", handleKeyDown)
-    return () => container.removeEventListener("keydown", handleKeyDown)
-  }, [closeContextMenu, clearSelection, deselectAll])
+		container.addEventListener("keydown", handleKeyDown);
+		return () => container.removeEventListener("keydown", handleKeyDown);
+	}, [closeContextMenu, clearSelection, deselectAll]);
 
-  // Navigate to a node when pendingNavNodeId is set (from IssuesSummary click)
-  useEffect(() => {
-    if (!pendingNavNodeId) return
-    useUiStore.getState().setPendingNavNodeId(null)
-    setSelectedNodeId(pendingNavNodeId)
-    fitView({ nodes: [{ id: pendingNavNodeId }], duration: 400, padding: 0.5 })
-  }, [pendingNavNodeId, setSelectedNodeId, fitView])
+	// Navigate to a node when pendingNavNodeId is set (from IssuesSummary click)
+	useEffect(() => {
+		if (!pendingNavNodeId) return;
+		useUiStore.getState().setPendingNavNodeId(null);
+		setSelectedNodeId(pendingNavNodeId);
+		fitView({ nodes: [{ id: pendingNavNodeId }], duration: 400, padding: 0.5 });
+	}, [pendingNavNodeId, setSelectedNodeId, fitView]);
 
-  return (
-    <div
-      ref={containerRef}
-      data-testid="canvas-panel"
-      data-drop-zone="import-drop-zone"
-      className="relative h-full w-full"
-      tabIndex={-1}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-    >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={handleEdgesChange}
-        onConnect={handleConnect}
-        onConnectStart={handleConnectStart}
-        onConnectEnd={handleConnectEnd}
-        onNodeClick={handleNodeClick}
-        onEdgeClick={handleEdgeClick}
-        onPaneClick={handlePaneClick}
-        onNodeContextMenu={handleNodeContextMenu}
-        onNodesDelete={handleNodesDelete}
-        onEdgesDelete={handleEdgesDelete}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        defaultEdgeOptions={defaultEdgeOptions}
-        deleteKeyCode={["Backspace", "Delete"]}
-        snapToGrid
-        snapGrid={[CANVAS_GRID_SIZE, CANVAS_GRID_SIZE]}
-        minZoom={CANVAS_MIN_ZOOM}
-        maxZoom={CANVAS_MAX_ZOOM}
-        fitView
-        proOptions={{ hideAttribution: true }}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={CANVAS_GRID_SIZE} />
-        <MiniMap nodeStrokeWidth={3} zoomable pannable />
-        <Controls />
-      </ReactFlow>
-      <RadialMenu />
-      <EmptyCanvasState />
-      <CanvasLegend />
-      <ScenarioSelector />
-      <FailureSelector />
-    </div>
-  )
+	return (
+		<div
+			ref={containerRef}
+			data-testid="canvas-panel"
+			data-drop-zone="import-drop-zone"
+			className="relative h-full w-full"
+			tabIndex={-1}
+			onDragOver={handleDragOver}
+			onDrop={handleDrop}
+		>
+			<ReactFlow
+				nodes={nodes}
+				edges={edges}
+				onNodesChange={onNodesChange}
+				onEdgesChange={handleEdgesChange}
+				onConnect={handleConnect}
+				onConnectStart={handleConnectStart}
+				onConnectEnd={handleConnectEnd}
+				onNodeClick={handleNodeClick}
+				onEdgeClick={handleEdgeClick}
+				onPaneClick={handlePaneClick}
+				onNodeContextMenu={handleNodeContextMenu}
+				onNodesDelete={handleNodesDelete}
+				onEdgesDelete={handleEdgesDelete}
+				nodeTypes={nodeTypes}
+				edgeTypes={edgeTypes}
+				defaultEdgeOptions={defaultEdgeOptions}
+				deleteKeyCode={["Backspace", "Delete"]}
+				snapToGrid
+				snapGrid={[CANVAS_GRID_SIZE, CANVAS_GRID_SIZE]}
+				minZoom={CANVAS_MIN_ZOOM}
+				maxZoom={CANVAS_MAX_ZOOM}
+				fitView
+				proOptions={{ hideAttribution: true }}
+			>
+				<Background variant={BackgroundVariant.Dots} gap={CANVAS_GRID_SIZE} />
+				<MiniMap nodeStrokeWidth={3} zoomable pannable />
+				<Controls />
+			</ReactFlow>
+			<RadialMenu />
+			<EmptyCanvasState />
+			<OverlaySelector />
+			<CanvasLegend />
+			<ScenarioSelector />
+			<FailureSelector />
+		</div>
+	);
 }
 
 export function CanvasView() {
-  return (
-    <ReactFlowProvider>
-      <CanvasViewInner />
-    </ReactFlowProvider>
-  )
+	return (
+		<ReactFlowProvider>
+			<CanvasViewInner />
+		</ReactFlowProvider>
+	);
 }
