@@ -222,6 +222,30 @@ TESTS: 2766/2766 pass, 17 new (useNodePorts 9, ArchieNode ports 8)
 E2E: tests/e2e/port-handles.spec.ts — 4 passed, 5 screenshots in test-results/port-handles/
 RUNTIME EVIDENCE: Playwright desktop — port colored dots on nginx (2 ports), node-express (5 ports), postgresql (2 ports); kafka generic fallback handles; hover tooltip verified
 
+## 2026-05-27 15:15 — [b8c37c8] feat(canvas): port-compatible edge creation with typed port checks
+FINDINGS: 6 (0 critical, 0 high, 1 medium, 5 low)
+ACTIONS: all:accept
+DEFERRED: 0
+FILES: src/engine/portCompatibilityChecker.ts (new), src/components/canvas/ArchieEdge.tsx (mod), src/components/canvas/ArchieNode.tsx (mod), src/components/canvas/CanvasView.tsx (mod), src/components/canvas/ConnectionWarning.tsx (mod), src/services/stackPlacement.ts (mod), src/services/yamlImporter.ts (mod), src/stores/architectureStore.ts (mod), src/stores/uiStore.ts (mod), src/types/index.ts (mod), tests/helpers/factories.ts (mod), tests/e2e/port-edge-creation.spec.ts (new), tests/unit/engine/portCompatibilityChecker.test.ts (new), tests/unit/stores/architectureStore-ports.test.ts (new)
+TESTS: 2785/2785 pass, 19 new (portCompatibilityChecker 14, architectureStore-ports 5)
+E2E: tests/e2e/port-edge-creation.spec.ts — 2 passed, 2 skipped (Phase 5 Firestore dep), 5 screenshots in test-results/port-edge-creation/
+RUNTIME EVIDENCE: Playwright desktop — generic handle edge creation verified; port-typed tests skip gracefully pending Phase 5 data authoring
+PHASE: 3 — Port-compatible edge creation (T1-T5/5 complete)
+
+## 2026-05-29 — PHASE REVIEW COMPLETE: Phase 3 — Port-compatible edge creation
+VERDICT: APPROVE
+SCORE: 87 → 97/100 (after fixes)
+FINDINGS: 2 total (0 HIGH, 2 MEDIUM, 0 LOW)
+FIXED: 2 of 2 Enterprise gate findings
+  - #1: TEST GAP ConnectionWarning.tsx port-mismatch branch — 4 tests added (data-port-mismatch attr, null reason defaults, aria-label)
+  - #2: TEST GAP ArchieNode.tsx port-aware dimming L90-101 — 3 tests added (matching port highlight, no-match dim with reason, null handle category fallback) + 1 existing test fixed (MockDragSource shape)
+DEFERRED: 0
+PLAN ALIGNMENT: ALIGNED (14/14 on-scope, 0 off-scope)
+COVERAGE: HIGH (all changed source files have corresponding test changes)
+CHURN: all STABLE except CanvasView (WARM), architectureStore (WARM)
+TIER: ent | DRIFT: none
+TICK: ✅
+
 ## 2026-05-27 — PLAN COMPLETED: Factorio-fy Archie
 ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-27_factorio-fy-archie.md
 PHASES COMPLETED: 5 of 5

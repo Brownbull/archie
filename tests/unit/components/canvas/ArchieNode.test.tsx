@@ -50,7 +50,7 @@ let mockConstraints: Constraint[] = []
 
 type MockDragSource =
   | { kind: "toolbox"; componentId: string; componentCategory: string }
-  | { kind: "connection"; sourceNodeId: string; sourceCategory: string }
+  | { kind: "connection"; sourceNodeId: string; sourceCategory: string; sourceHandle: string | null; sourceComponentId: string }
 let mockActiveDrag: MockDragSource | null = null
 let mockArchNodes: Array<{ id: string; data: { archieComponentId: string; componentCategory: string } }> = []
 let mockRippleActiveNodeIds = new Set<string>()
@@ -412,7 +412,7 @@ describe("ArchieNode", () => {
     })
 
     it("does not dim or highlight the drag source node during connection drag", () => {
-      mockActiveDrag = { kind: "connection", sourceNodeId: "node-1", sourceCategory: "data-storage" }
+      mockActiveDrag = { kind: "connection", sourceNodeId: "node-1", sourceCategory: "data-storage", sourceHandle: null, sourceComponentId: "postgresql" }
       render(<ArchieNode {...defaultProps} />)
       const node = screen.getByTestId("archie-node")
       expect(node).not.toHaveAttribute("data-compat-dimmed")
@@ -429,7 +429,7 @@ describe("ArchieNode", () => {
     })
 
     it("dims node during connection drag from another node", () => {
-      mockActiveDrag = { kind: "connection", sourceNodeId: "other-node", sourceCategory: "caching" }
+      mockActiveDrag = { kind: "connection", sourceNodeId: "other-node", sourceCategory: "caching", sourceHandle: null, sourceComponentId: "redis" }
       mockArchNodes = [
         { id: "other-node", data: { archieComponentId: "redis", componentCategory: "caching" } },
         { id: "node-1", data: { archieComponentId: "postgresql", componentCategory: "data-storage" } },
@@ -439,6 +439,77 @@ describe("ArchieNode", () => {
       render(<ArchieNode {...defaultProps} />)
       const node = screen.getByTestId("archie-node")
       expect(node).toHaveAttribute("data-compat-dimmed")
+    })
+  })
+
+  describe("port-aware dimming (Phase 3 — Epic 12)", () => {
+    const setupPortComponentMocks = () => {
+      mockGetComponent.mockImplementation((id: string) => {
+        if (id === "nginx") return {
+          id: "nginx", category: "networking", compatibility: {},
+          configVariants: [], ports: [
+            { id: "http-in", type: "http", direction: "in" },
+            { id: "http-out", type: "http", direction: "out" },
+          ],
+        }
+        if (id === "postgresql") return {
+          id: "postgresql", category: "data-storage", compatibility: {},
+          configVariants: [{ id: "default", name: "Standard" }], ports: [
+            { id: "db-in", type: "database", direction: "in" },
+            { id: "db-out", type: "database", direction: "out" },
+          ],
+        }
+        if (id === "redis") return {
+          id: "redis", category: "caching", compatibility: {},
+          configVariants: [], ports: [
+            { id: "cache-in", type: "cache", direction: "in" },
+            { id: "cache-out", type: "cache", direction: "out" },
+          ],
+        }
+        return undefined
+      })
+    }
+
+    it("highlights node with matching input port when dragging from typed source", () => {
+      mockActiveDrag = {
+        kind: "connection", sourceNodeId: "nginx-node", sourceCategory: "networking",
+        sourceHandle: "http-out", sourceComponentId: "nginx",
+      }
+      setupPortComponentMocks()
+      const props = {
+        ...defaultProps,
+        id: "nginx-target",
+        data: { ...defaultProps.data, archieComponentId: "nginx", componentCategory: "networking" as const },
+      } as Parameters<typeof ArchieNode>[0]
+      render(<ArchieNode {...props} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("data-compat-highlighted")
+      expect(node).not.toHaveAttribute("data-compat-dimmed")
+    })
+
+    it("dims node without matching input port when dragging from typed source", () => {
+      mockActiveDrag = {
+        kind: "connection", sourceNodeId: "nginx-node", sourceCategory: "networking",
+        sourceHandle: "http-out", sourceComponentId: "nginx",
+      }
+      setupPortComponentMocks()
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("data-compat-dimmed")
+      expect(node).toHaveAttribute("title", "⚠ No HTTP input port")
+    })
+
+    it("falls back to category check when sourceHandle is null", () => {
+      mockActiveDrag = {
+        kind: "connection", sourceNodeId: "redis-node", sourceCategory: "caching",
+        sourceHandle: null, sourceComponentId: "redis",
+      }
+      setupPortComponentMocks()
+      mockCheckCompatibility.mockReturnValue({ isCompatible: true, reason: "" })
+      render(<ArchieNode {...defaultProps} />)
+      const node = screen.getByTestId("archie-node")
+      expect(node).toHaveAttribute("data-compat-highlighted")
+      expect(mockCheckCompatibility).toHaveBeenCalled()
     })
   })
 

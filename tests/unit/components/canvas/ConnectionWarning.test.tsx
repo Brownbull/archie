@@ -37,4 +37,29 @@ describe("ConnectionWarning", () => {
     const el = screen.getByTestId("connection-warning")
     expect(el).toHaveAttribute("role", "status")
   })
+
+  it("shows data-port-mismatch attribute when isPortMismatch is true", () => {
+    render(<ConnectionWarning reason="Port type mismatch: http → database" isPortMismatch />)
+    const el = screen.getByTestId("connection-warning")
+    expect(el).toHaveAttribute("data-port-mismatch", "true")
+  })
+
+  it("omits data-port-mismatch attribute when isPortMismatch is false", () => {
+    render(<ConnectionWarning reason="Category mismatch" isPortMismatch={false} />)
+    const el = screen.getByTestId("connection-warning")
+    expect(el).not.toHaveAttribute("data-port-mismatch")
+  })
+
+  it("uses port mismatch default title when reason is null and isPortMismatch", () => {
+    render(<ConnectionWarning reason={null} isPortMismatch />)
+    const el = screen.getByTestId("connection-warning")
+    expect(el).toHaveAttribute("title", "Port type mismatch")
+    expect(el).toHaveAttribute("aria-label", "Port type mismatch")
+  })
+
+  it("uses category default title when reason is null and not port mismatch", () => {
+    render(<ConnectionWarning reason={null} />)
+    const el = screen.getByTestId("connection-warning")
+    expect(el).toHaveAttribute("title", "Incompatible connection")
+  })
 })
