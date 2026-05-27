@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260527-165916
+**Date:** 20260527-174242
 **Score:** 10/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,14 +8,14 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 15 | 643ms |
-| code-quality | 93 | 6923ms |
-| ai-slop | 0 | 6ms |
-| security | 8 | 2203ms |
+| lint | 15 | 389ms |
+| code-quality | 96 | 3310ms |
+| ai-slop | 0 | 10ms |
+| security | 8 | 1681ms |
 
 ## Findings
 
-### code-quality (93)
+### code-quality (96)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
@@ -35,7 +35,7 @@
 - [!] `src/engine/dashboardCalculator.ts:8` — knip/types: Unused type: ComponentCategoryMetric
 - [!] `src/engine/dashboardCalculator.ts:13` — knip/types: Unused type: CategoryBreakdown
 - [!] `src/engine/recalculator.ts:13` — knip/types: Unused type: MetricAdjustment
-- [!] `src/stores/architectureStore.ts:787` — knip/types: Unused type: ArchitectureSkeleton
+- [!] `src/stores/architectureStore.ts:780` — knip/types: Unused type: ArchitectureSkeleton
 - [!] `src/services/recalculationService.ts:23` — knip/types: Unused type: RecalculationResult
 - [!] `src/lib/demandTypes.ts:5` — knip/types: Unused type: DemandVariableMetadata
 - [!] `src/lib/demandTypes.ts:13` — knip/types: Unused type: DemandLevelMeta
@@ -75,35 +75,38 @@
 - [!] `src/types/index.ts:34` — knip/types: Unused type: CompatibilityResult
 - [!] `src/types/index.ts:36` — knip/types: Unused type: PortCompatibilityResult
 - [!] `src/types/index.ts:37` — knip/types: Unused type: PortLookupContext
-- [!] `src/types/index.ts:40` — knip/types: Unused type: RecalculatedMetrics
-- [!] `src/types/index.ts:41` — knip/types: Unused type: ArchitectureMetrics
-- [!] `src/types/index.ts:42` — knip/types: Unused type: ConnectedNodeInfo
-- [!] `src/types/index.ts:43` — knip/types: Unused type: MetricAdjustment
-- [!] `src/types/index.ts:45` — knip/types: Unused type: PropagationHop
-- [!] `src/types/index.ts:46` — knip/types: Unused type: RecalculationResult
-- [!] `src/types/index.ts:47` — knip/types: Unused type: HeatmapStatus
-- [!] `src/types/index.ts:48` — knip/types: Unused type: CategoryScore
-- [!] `src/types/index.ts:48` — knip/types: Unused type: CategoryBreakdown
-- [!] `src/types/index.ts:48` — knip/types: Unused type: ComponentCategoryMetric
-- [!] `src/types/index.ts:49` — knip/types: Unused type: VariantRecommendation
-- [!] `src/types/index.ts:50` — knip/types: Unused type: ConstraintViolation
-- [!] `src/types/index.ts:51` — knip/types: Unused type: PathwaySuggestion
-- [!] `src/types/index.ts:52` — knip/types: Unused type: AdjustedMetric
-- [!] `src/types/index.ts:53` — knip/types: Unused type: PathwaySuggestionsResult
-- [!] `src/types/index.ts:55` — knip/types: Unused type: TierDefinition
-- [!] `src/types/index.ts:56` — knip/types: Unused type: TierResult
-- [!] `src/types/index.ts:57` — knip/types: Unused type: TierGap
-- [!] `src/types/index.ts:58` — knip/types: Unused type: TierRequirement
-- [!] `src/types/index.ts:61` — knip/types: Unused type: ArchitectureFile
-- [!] `src/types/index.ts:62` — knip/types: Unused type: ArchitectureFileNode
-- [!] `src/types/index.ts:63` — knip/types: Unused type: ArchitectureFileEdge
-- [!] `src/types/index.ts:65` — knip/types: Unused type: DemandVariable
-- [!] `src/types/index.ts:65` — knip/types: Unused type: DemandLevel
-- [!] `src/types/index.ts:67` — knip/types: Unused type: DemandResponse
-- [!] `src/types/index.ts:68` — knip/types: Unused type: DemandProfile
-- [!] `src/types/index.ts:69` — knip/types: Unused type: ScenarioPreset
-- [!] `src/types/index.ts:70` — knip/types: Unused type: DemandVariableMetadata
-- [!] `src/types/index.ts:71` — knip/types: Unused type: DemandLevelMeta
+- [!] `src/types/index.ts:40` — knip/types: Unused type: TopologyIssue
+- [!] `src/types/index.ts:41` — knip/types: Unused type: TopologyIssueType
+- [!] `src/types/index.ts:42` — knip/types: Unused type: TopologyIssueSeverity
+- [!] `src/types/index.ts:45` — knip/types: Unused type: RecalculatedMetrics
+- [!] `src/types/index.ts:46` — knip/types: Unused type: ArchitectureMetrics
+- [!] `src/types/index.ts:47` — knip/types: Unused type: ConnectedNodeInfo
+- [!] `src/types/index.ts:48` — knip/types: Unused type: MetricAdjustment
+- [!] `src/types/index.ts:50` — knip/types: Unused type: PropagationHop
+- [!] `src/types/index.ts:51` — knip/types: Unused type: RecalculationResult
+- [!] `src/types/index.ts:52` — knip/types: Unused type: HeatmapStatus
+- [!] `src/types/index.ts:53` — knip/types: Unused type: CategoryScore
+- [!] `src/types/index.ts:53` — knip/types: Unused type: CategoryBreakdown
+- [!] `src/types/index.ts:53` — knip/types: Unused type: ComponentCategoryMetric
+- [!] `src/types/index.ts:54` — knip/types: Unused type: VariantRecommendation
+- [!] `src/types/index.ts:55` — knip/types: Unused type: ConstraintViolation
+- [!] `src/types/index.ts:56` — knip/types: Unused type: PathwaySuggestion
+- [!] `src/types/index.ts:57` — knip/types: Unused type: AdjustedMetric
+- [!] `src/types/index.ts:58` — knip/types: Unused type: PathwaySuggestionsResult
+- [!] `src/types/index.ts:60` — knip/types: Unused type: TierDefinition
+- [!] `src/types/index.ts:61` — knip/types: Unused type: TierResult
+- [!] `src/types/index.ts:62` — knip/types: Unused type: TierGap
+- [!] `src/types/index.ts:63` — knip/types: Unused type: TierRequirement
+- [!] `src/types/index.ts:66` — knip/types: Unused type: ArchitectureFile
+- [!] `src/types/index.ts:67` — knip/types: Unused type: ArchitectureFileNode
+- [!] `src/types/index.ts:68` — knip/types: Unused type: ArchitectureFileEdge
+- [!] `src/types/index.ts:70` — knip/types: Unused type: DemandVariable
+- [!] `src/types/index.ts:70` — knip/types: Unused type: DemandLevel
+- [!] `src/types/index.ts:72` — knip/types: Unused type: DemandResponse
+- [!] `src/types/index.ts:73` — knip/types: Unused type: DemandProfile
+- [!] `src/types/index.ts:74` — knip/types: Unused type: ScenarioPreset
+- [!] `src/types/index.ts:75` — knip/types: Unused type: DemandVariableMetadata
+- [!] `src/types/index.ts:76` — knip/types: Unused type: DemandLevelMeta
 - [!] `src/hooks/useEdgeOverlay.ts:7` — knip/types: Unused type: EdgeOverlayStyle
 - [!] `src/stores/uiStore.ts:10` — knip/types: Unused type: DragSource
 - [!] `src/stores/uiStore.ts:14` — knip/types: Unused type: ContextMenuState
@@ -114,17 +117,17 @@
 ### lint (15)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/hooks/useNodePorts.ts:3` — eslint/no-unused-vars: Type 'PortType' is imported but never used.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
-- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
