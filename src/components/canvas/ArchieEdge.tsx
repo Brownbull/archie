@@ -2,7 +2,7 @@ import { useState } from "react"
 import {
   BaseEdge,
   EdgeLabelRenderer,
-  getSmoothStepPath,
+  getBezierPath,
 } from "@xyflow/react"
 import type { EdgeProps } from "@xyflow/react"
 import type { ArchieEdge as ArchieEdgeType } from "@/stores/architectureStore"
@@ -32,7 +32,7 @@ export function ArchieEdge({
   selected,
   markerEnd,
 }: EdgeProps<ArchieEdgeType>) {
-  const [edgePath, labelX, labelY] = getSmoothStepPath({
+  const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
     targetX,
