@@ -431,3 +431,13 @@ TARGET: dev → origin/main (direct push)
 CI: ✅ 1/1 — Deploy Production pass
 DEPLOYMENTS: P11
 TICK: ✅ Phase 1 Push
+
+## 2026-06-02 — [30f7bbd] feat(economics): add cost computation + inline node cost badge
+FINDINGS: 0 (0 critical, 0 high, 0 medium, 0 low)
+ACTIONS: —
+
+## 2026-06-02 — PHASE EXEC COMPLETE: Phase 2 — Cost computation & inline node display
+TIER: ent
+TASKS: 5 tasks, 1 commit (30f7bbd)
+DEVIATIONS: 0 structural, 0 minor
+UX NOTE: Firestore needs re-seed for economics data to appear in production; cost badge renders correctly when data present (unit-tested), gracefully absent when not (E2E-verified)
