@@ -40,6 +40,9 @@ base_metrics:
 config_variants:
   - id: single-broker
     name: Single Broker
+    monthly_cost: 80
+    max_rps: 20000
+    base_latency_ms: 5
     metrics:
       - id: message-throughput
         value: medium
@@ -87,6 +90,9 @@ config_variants:
           - Migration to multi-broker requires topic reconfiguration
   - id: multi-broker
     name: Multi-Broker Cluster
+    monthly_cost: 250
+    max_rps: 100000
+    base_latency_ms: 5
     metrics:
       - id: message-throughput
         value: high

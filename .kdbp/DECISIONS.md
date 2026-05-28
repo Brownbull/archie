@@ -11,6 +11,10 @@
 | D10 | 2026-05-27 | E12-P5 tier: mvp | Content authoring, schema validation only | enterprise (excessive for YAML data) | active | When community-contributed components arrive (Epic 17+) |
 | D11 | 2026-05-27 | E12-P6 tier: enterprise | Schema migration is #1 data-loss risk, heuristic needs edge-case coverage | MVP (would risk user YAML data) | active | When schema v4 is needed (Epic 13+ economics fields) |
 | D12 | 2026-05-27 | E12-P7 tier: mvp | Visual polish, straightforward CSS/rendering changes | enterprise (over-engineering for edge colors) | active | When simulation engine adds dynamic edge states (Epic 15) |
+| D13 | 2026-06-02 | E13-P1 tier: enterprise | Edge case coverage — economics feeds E15/E16 downstream | MVP (safe for pure schema, but downstream risk) | active | When economics data sources diversify (real pricing APIs) |
+| D14 | 2026-06-02 | E13-P2 tier: enterprise | Edge cases on cost computation, missing data, variant switch | MVP (additive to existing ent components) | active | When replicas ship (E14) — cost × replicaCount |
+| D15 | 2026-06-02 | E13-P3 tier: enterprise | State matrix + a11y on HUD, graceful degradation on missing data | MVP (display-only widgets) | active | When challenge mode (E16) adds budget caps |
+| D16 | 2026-06-02 | E13-P4 tier: enterprise | Delta edge cases, first-switch, missing economics, formatting | MVP (extends existing delta pattern) | active | When simulation adds live cost tracking (E15) |
 | D3 | 2026-05-25 | Phase 3 tier: enterprise | Ghost suggestions must reactively update on canvas changes — stale recommendations destroy trust | MVP (manual refresh of suggestions) | active | When recommendation data grows — does engine performance hold? |
 | D4 | 2026-05-25 | Phase 4 tier: enterprise | 5+ overlay types need shared interface to avoid inline spaghetti — keyboard shortcuts are table stakes | MVP (inline renderers per overlay type) | active | When 3rd overlay implemented — is the interface holding? |
 | D5 | 2026-05-25 | Phase 5 tier: enterprise | Status dots must reactively reflect engine state, quick-replace needs auto-invalidation | MVP (CSS-only animation, manual state) | active | At 50+ nodes — does animation performance hold at 60fps? |
@@ -432,6 +436,138 @@ dim_overrides: []
 
 ### Review trigger (when to escalate this phase)
 - When simulation engine (Epic 15) adds dynamic edge state changes — edges need real-time color/width transitions
+
+### Status
+- accepted
+
+---
+
+## D13 — E13-P1 tier: enterprise (2026-06-02)
+
+**Phase:** Economics schema & variant data
+**Types:** [data-model, content]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Edge case coverage — economics data feeds simulation engine (E15) and challenge mode (E16). Typed error handling and edge-case testing on schema extension prevents compound bugs downstream. 46 variants need validated economics; malformed/missing values must fail explicitly.
+
+### Sections rendered
+- Core (always)
+
+### Dimensions suppressed (Layer 2 filter)
+- None (Core only)
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 1 (fuzz + load eval), S × 1 (circuit break), S × 1 (strategy + DI)
+
+### Review trigger (when to escalate this phase)
+- When economics data sources diversify (real cloud pricing APIs vs static values)
+
+### Status
+- accepted
+
+## D14 — E13-P2 tier: enterprise (2026-06-02)
+
+**Phase:** Cost computation & inline node display
+**Types:** [user-facing, client-state]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Edge case coverage — cost computation must handle missing economics data, zero-cost variants, variant switch race conditions. Node cost badge needs proper error state (not blank/NaN). Store selector for totalArchitectureCost must update correctly across add/remove/swap/variant-switch.
+
+### Sections rendered
+- Core (always)
+- UI/UX: 3 dims, 1 suppressed
+- Client State: 2 dims, 5 suppressed
+
+### Dimensions suppressed (Layer 2 filter)
+- UI/UX.Streaming — no AI/async processing
+- Client State.Cache invalidation — economics from local library
+- Client State.Optimistic updates — no server mutations
+- Client State.Stale data — local library always available
+- Client State.Cross-tab sync — single-tab
+- Client State.Offline support — local data
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 3 (optimistic render, subscribe/pubsub, retry UI + report), L × 1 (ARIA + keyboard), S × 2 (circuit break, normalizer)
+
+### Review trigger (when to escalate this phase)
+- When replicas ship (E14) — cost computation must multiply by replicaCount
+- When simulation engine (E15) needs real-time cost tracking during ticks
+
+### Status
+- accepted
+
+## D15 — E13-P3 tier: enterprise (2026-06-02)
+
+**Phase:** Budget HUD & toolbox cost ranges
+**Types:** [user-facing, ui-kit]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Edge case coverage — HUD must handle zero-component state, components with missing economics (graceful degradation), cost range computation across variants with mixed presence. State matrix (focus/disabled/error) matters for the progress bar component. Semantic HTML on the progress bar (aria-valuenow) ensures accessibility from day one.
+
+### Sections rendered
+- Core (always)
+- UI/UX: 3 dims, 1 suppressed
+- UI Kit: 3 dims, 1 suppressed
+
+### Dimensions suppressed (Layer 2 filter)
+- UI/UX.Streaming — no async processing
+- UI Kit.Platform variance — desktop-only app
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 4 (optimistic render, retry UI, full 14 atoms, platform variant), L × 2 (ARIA + keyboard, ARIA + focus trap), S × 1 (circuit break)
+
+### Review trigger (when to escalate this phase)
+- When challenge mode (E16) adds budget caps — HUD needs enforcement mode vs display mode
+- When mobile-web support needed — platform variance upgrade
+
+### Status
+- accepted
+
+## D16 — E13-P4 tier: enterprise (2026-06-02)
+
+**Phase:** Inspector economics & delta indicators
+**Types:** [user-facing]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Edge case coverage — delta indicators must handle first-variant-switch (no previous), missing economics on either old or new variant, zero deltas, and negative/positive formatting. Inline error recovery when economics data absent (show "N/A" not crash). Existing FR34 delta pattern at enterprise tier — this phase should match.
+
+### Sections rendered
+- Core (always)
+- UI/UX: 2 dims, 2 suppressed
+
+### Dimensions suppressed (Layer 2 filter)
+- UI/UX.Streaming — no async processing
+- UI/UX.Loading states — inspector already loaded
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 2 (retry UI + report, fuzz + load eval), L × 1 (ARIA + keyboard), S × 1 (circuit break)
+
+### Review trigger (when to escalate this phase)
+- When simulation engine (E15) adds live cost tracking — inspector needs real-time economics during sim playback
 
 ### Status
 - accepted

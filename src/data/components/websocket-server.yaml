@@ -36,6 +36,9 @@ base_metrics:
 config_variants:
   - id: single-server
     name: Single Server
+    monthly_cost: 25
+    max_rps: 5000
+    base_latency_ms: 2
     metrics:
       - id: concurrent-connections
         value: medium
@@ -86,6 +89,9 @@ config_variants:
           - Load balancer not needed — single server handles all connections
   - id: clustered
     name: Clustered with Redis Pub/Sub
+    monthly_cost: 80
+    max_rps: 50000
+    base_latency_ms: 2
     metrics:
       - id: concurrent-connections
         value: high

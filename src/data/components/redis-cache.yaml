@@ -40,6 +40,9 @@ base_metrics:
 config_variants:
   - id: simple-cache
     name: Simple Key-Value Cache
+    monthly_cost: 15
+    max_rps: 50000
+    base_latency_ms: 0.5
     metrics:
       - id: cache-hit-latency
         value: low
@@ -88,6 +91,9 @@ config_variants:
           - TTL-based expiry can serve stale data near expiration boundary
   - id: distributed-cache
     name: Distributed Cache
+    monthly_cost: 90
+    max_rps: 200000
+    base_latency_ms: 0.5
     metrics:
       - id: cache-hit-latency
         value: low

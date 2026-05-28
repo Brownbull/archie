@@ -41,6 +41,9 @@ base_metrics:
 config_variants:
   - id: raw-storage
     name: Raw Object Storage
+    monthly_cost: 25
+    max_rps: 5000
+    base_latency_ms: 50
     metrics:
       - id: cost-per-gb
         value: high
@@ -92,6 +95,9 @@ config_variants:
       query-frequency: "Not optimized for frequent queries; best as a staging layer before processing"
   - id: lakehouse
     name: Lakehouse (Delta/Iceberg)
+    monthly_cost: 100
+    max_rps: 10000
+    base_latency_ms: 20
     metrics:
       - id: query-latency
         value: medium
@@ -146,6 +152,9 @@ config_variants:
       query-frequency: "Suitable for moderate to high query frequency with partition pruning"
   - id: managed-lake
     name: Managed Warehouse/Lake
+    monthly_cost: 200
+    max_rps: 20000
+    base_latency_ms: 15
     metrics:
       - id: query-latency
         value: low

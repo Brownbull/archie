@@ -45,6 +45,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    monthly_cost: 40
+    max_rps: 1000
+    base_latency_ms: 10
     metrics:
       - id: traversal-latency
         value: low
@@ -107,6 +110,9 @@ config_variants:
       graph-size: "Limited to single-machine memory and disk; practical ceiling around 10B nodes"
   - id: distributed-cluster
     name: Distributed Cluster
+    monthly_cost: 200
+    max_rps: 5000
+    base_latency_ms: 5
     metrics:
       - id: horizontal-scalability
         value: high
@@ -172,6 +178,9 @@ config_variants:
       graph-size: "Scales to billions of nodes across cluster; limited by partitioning strategy"
   - id: managed-cloud
     name: Managed Cloud Service
+    monthly_cost: 350
+    max_rps: 10000
+    base_latency_ms: 8
     metrics:
       - id: operational-complexity
         value: low

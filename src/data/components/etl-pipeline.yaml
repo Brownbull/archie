@@ -41,6 +41,9 @@ base_metrics:
 config_variants:
   - id: batch
     name: Batch Processing
+    monthly_cost: 30
+    max_rps: 100
+    base_latency_ms: 500
     metrics:
       - id: processing-throughput
         value: high
@@ -109,6 +112,9 @@ config_variants:
       schedule-pattern: "Designed for hourly, daily, or weekly scheduled runs"
   - id: micro-batch
     name: Micro-Batch
+    monthly_cost: 80
+    max_rps: 1000
+    base_latency_ms: 100
     metrics:
       - id: processing-throughput
         value: medium
@@ -164,6 +170,9 @@ config_variants:
       schedule-pattern: "Continuous processing with 10-60 second micro-batch intervals"
   - id: streaming
     name: Real-Time Streaming
+    monthly_cost: 200
+    max_rps: 5000
+    base_latency_ms: 50
     metrics:
       - id: processing-throughput
         value: medium

@@ -32,6 +32,10 @@ const MetricExplanationYamlSchema = z.object({
   contributingFactors: data.contributing_factors,
 }))
 
+export const MAX_MONTHLY_COST = 100_000
+export const MAX_RPS = 10_000_000
+export const MAX_LATENCY_MS = 60_000
+
 export const ConfigVariantSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -39,6 +43,9 @@ export const ConfigVariantSchema = z.object({
   codeSnippet: CodeSnippetSchema.optional(),
   metricExplanations: z.record(z.string(), MetricExplanationSchema).optional(),
   dataFitProfile: z.record(z.string().max(100), z.string().max(200)).refine((r) => Object.keys(r).length <= 50, { message: "dataFitProfile: max 50 entries" }).optional(),
+  monthlyCost: z.number().min(0).max(MAX_MONTHLY_COST).optional(),
+  maxRPS: z.number().min(0).max(MAX_RPS).optional(),
+  baseLatencyMs: z.number().min(0).max(MAX_LATENCY_MS).optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
@@ -84,6 +91,9 @@ const ConfigVariantYamlSchema = z.object({
   code_snippet: CodeSnippetSchema.optional(),
   metric_explanations: z.record(z.string(), MetricExplanationYamlSchema).optional(),
   data_fit_profile: z.record(z.string().max(100), z.string().max(200)).refine((r) => Object.keys(r).length <= 50, { message: "dataFitProfile: max 50 entries" }).optional(),
+  monthly_cost: z.number().min(0).max(MAX_MONTHLY_COST).optional(),
+  max_rps: z.number().min(0).max(MAX_RPS).optional(),
+  base_latency_ms: z.number().min(0).max(MAX_LATENCY_MS).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -91,6 +101,9 @@ const ConfigVariantYamlSchema = z.object({
   codeSnippet: data.code_snippet,
   metricExplanations: data.metric_explanations,
   dataFitProfile: data.data_fit_profile,
+  monthlyCost: data.monthly_cost,
+  maxRPS: data.max_rps,
+  baseLatencyMs: data.base_latency_ms,
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({

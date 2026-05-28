@@ -40,6 +40,9 @@ base_metrics:
 config_variants:
   - id: single-process
     name: Single Process
+    monthly_cost: 20
+    max_rps: 1000
+    base_latency_ms: 15
     metrics:
       - id: concurrent-connections
         value: medium
@@ -86,6 +89,9 @@ config_variants:
           - Multi-core hardware is underutilized without clustering
   - id: cluster-mode
     name: Cluster Mode
+    monthly_cost: 40
+    max_rps: 4000
+    base_latency_ms: 15
     metrics:
       - id: concurrent-connections
         value: high

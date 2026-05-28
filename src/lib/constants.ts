@@ -20,6 +20,9 @@ export const SPACING_XL = 24
 // File limits (NFR7)
 export const MAX_FILE_SIZE = 1_048_576 // 1MB in bytes
 
+// Economics disclaimer — values are AI-generated approximations, not real cloud pricing
+export const ECONOMICS_DISCLAIMER = "Approximate values for educational comparison — not real cloud pricing"
+
 // Schema string limits — defense-in-depth against memory exhaustion from malformed YAML (TD-5-1a, Story 9-0)
 export const MAX_SCHEMA_STRING_LENGTH = 256
 

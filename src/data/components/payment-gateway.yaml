@@ -45,6 +45,9 @@ base_metrics:
 config_variants:
   - id: direct-integration
     name: Direct PSP Integration
+    monthly_cost: 0
+    max_rps: 100
+    base_latency_ms: 200
     metrics:
       - id: transaction-latency
         value: low
@@ -97,6 +100,9 @@ config_variants:
       payment-method: "Supports cards and digital wallets through Stripe's built-in methods"
   - id: payment-orchestrator
     name: Payment Orchestrator
+    monthly_cost: 50
+    max_rps: 500
+    base_latency_ms: 150
     metrics:
       - id: payment-availability
         value: high
@@ -161,6 +167,9 @@ config_variants:
       payment-method: "Broadest method coverage by routing to the PSP that supports each method"
   - id: recurring-billing
     name: Recurring Billing Engine
+    monthly_cost: 30
+    max_rps: 200
+    base_latency_ms: 180
     metrics:
       - id: transaction-latency
         value: medium

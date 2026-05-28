@@ -40,6 +40,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    monthly_cost: 30
+    max_rps: 5000
+    base_latency_ms: 3
     metrics:
       - id: message-throughput
         value: medium
@@ -90,6 +93,9 @@ config_variants:
           - Adding consumers increases processing but not broker throughput ceiling
   - id: clustered
     name: Clustered
+    monthly_cost: 100
+    max_rps: 20000
+    base_latency_ms: 3
     metrics:
       - id: message-throughput
         value: high

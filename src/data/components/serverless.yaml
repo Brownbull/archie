@@ -41,6 +41,9 @@ base_metrics:
 config_variants:
   - id: cold-start
     name: Standard (Cold Start)
+    monthly_cost: 5
+    max_rps: 1000
+    base_latency_ms: 100
     metrics:
       - id: cold-start-latency
         value: high
@@ -86,6 +89,9 @@ config_variants:
       invocation-pattern: "Most cost-effective for sporadic or bursty traffic"
   - id: provisioned-concurrency
     name: Provisioned Concurrency
+    monthly_cost: 50
+    max_rps: 5000
+    base_latency_ms: 15
     metrics:
       - id: cold-start-latency
         value: low
@@ -135,6 +141,9 @@ config_variants:
       invocation-pattern: "Best for steady baseline traffic with predictable load"
   - id: edge-function
     name: Edge Function
+    monthly_cost: 10
+    max_rps: 10000
+    base_latency_ms: 30
     metrics:
       - id: cold-start-latency
         value: low

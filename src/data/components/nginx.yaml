@@ -36,6 +36,9 @@ base_metrics:
 config_variants:
   - id: reverse-proxy
     name: Reverse Proxy
+    monthly_cost: 10
+    max_rps: 30000
+    base_latency_ms: 1
     metrics:
       - id: request-latency
         value: low
@@ -86,6 +89,9 @@ config_variants:
           - Memory per connection is minimal compared to thread-per-connection servers
   - id: load-balancer
     name: Load Balancer
+    monthly_cost: 25
+    max_rps: 50000
+    base_latency_ms: 1
     metrics:
       - id: request-latency
         value: low

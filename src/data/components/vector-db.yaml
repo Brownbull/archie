@@ -41,6 +41,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    monthly_cost: 25
+    max_rps: 500
+    base_latency_ms: 10
     metrics:
       - id: query-latency
         value: low
@@ -91,6 +94,9 @@ config_variants:
       query-pattern: "Optimized for low-concurrency exploratory queries"
   - id: distributed
     name: Distributed Cluster
+    monthly_cost: 100
+    max_rps: 5000
+    base_latency_ms: 5
     metrics:
       - id: query-latency
         value: low
@@ -145,6 +151,9 @@ config_variants:
       query-pattern: "Supports high-concurrency production workloads"
   - id: managed-cloud
     name: Managed Cloud
+    monthly_cost: 150
+    max_rps: 10000
+    base_latency_ms: 8
     metrics:
       - id: query-latency
         value: low

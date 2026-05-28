@@ -41,6 +41,9 @@ base_metrics:
 config_variants:
   - id: single-model
     name: Single Model Proxy
+    monthly_cost: 50
+    max_rps: 100
+    base_latency_ms: 500
     metrics:
       - id: inference-latency
         value: low
@@ -90,6 +93,9 @@ config_variants:
       inference-latency: "Low added latency due to simple proxy path"
   - id: multi-model-router
     name: Multi-Model Router
+    monthly_cost: 100
+    max_rps: 500
+    base_latency_ms: 300
     metrics:
       - id: inference-latency
         value: medium
@@ -145,6 +151,9 @@ config_variants:
       inference-latency: "Moderate added latency from routing decision logic"
   - id: streaming
     name: Streaming Gateway
+    monthly_cost: 150
+    max_rps: 2000
+    base_latency_ms: 50
     metrics:
       - id: inference-latency
         value: low

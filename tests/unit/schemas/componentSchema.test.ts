@@ -15,6 +15,9 @@ import {
   MAX_PROTOCOL_LENGTH,
   MAX_LATENCY_LENGTH,
   MAX_PATTERN_LENGTH,
+  MAX_MONTHLY_COST,
+  MAX_RPS,
+  MAX_LATENCY_MS,
 } from "@/schemas/componentSchema"
 
 const validVariant = {
@@ -135,6 +138,289 @@ describe("ConfigVariantSchema", () => {
       },
     })
     expect(result.success).toBe(false)
+  })
+})
+
+describe("ConfigVariantSchema — economics fields", () => {
+  const validVariantWithEcon = {
+    id: "default",
+    name: "Default Configuration",
+    metrics: [
+      { id: "latency", value: "low" as const, numericValue: 3, category: "performance" },
+    ],
+    monthlyCost: 45,
+    maxRPS: 500,
+    baseLatencyMs: 5,
+  }
+
+  it("accepts variant with all economics fields", () => {
+    const result = ConfigVariantSchema.safeParse(validVariantWithEcon)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.monthlyCost).toBe(45)
+      expect(result.data.maxRPS).toBe(500)
+      expect(result.data.baseLatencyMs).toBe(5)
+    }
+  })
+
+  it("accepts variant without economics fields (backward compat)", () => {
+    const result = ConfigVariantSchema.safeParse({
+      id: "default",
+      name: "Default",
+      metrics: [{ id: "latency", value: "low" as const, numericValue: 3, category: "performance" }],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.monthlyCost).toBeUndefined()
+      expect(result.data.maxRPS).toBeUndefined()
+      expect(result.data.baseLatencyMs).toBeUndefined()
+    }
+  })
+
+  it("accepts variant with partial economics (only monthlyCost)", () => {
+    const result = ConfigVariantSchema.safeParse({
+      ...validVariantWithEcon,
+      maxRPS: undefined,
+      baseLatencyMs: undefined,
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.monthlyCost).toBe(45)
+      expect(result.data.maxRPS).toBeUndefined()
+    }
+  })
+
+  it("accepts zero monthlyCost (free tier)", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, monthlyCost: 0 })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.monthlyCost).toBe(0)
+    }
+  })
+
+  it("accepts zero maxRPS", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, maxRPS: 0 })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts fractional baseLatencyMs", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, baseLatencyMs: 0.5 })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.baseLatencyMs).toBe(0.5)
+    }
+  })
+
+  it("rejects negative monthlyCost", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, monthlyCost: -1 })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects negative maxRPS", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, maxRPS: -100 })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects negative baseLatencyMs", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, baseLatencyMs: -5 })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects monthlyCost exceeding max", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, monthlyCost: MAX_MONTHLY_COST + 1 })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects maxRPS exceeding max", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, maxRPS: MAX_RPS + 1 })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects baseLatencyMs exceeding max", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, baseLatencyMs: MAX_LATENCY_MS + 1 })
+    expect(result.success).toBe(false)
+  })
+
+  it("accepts monthlyCost at exactly max", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, monthlyCost: MAX_MONTHLY_COST })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts maxRPS at exactly max", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, maxRPS: MAX_RPS })
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts baseLatencyMs at exactly max", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, baseLatencyMs: MAX_LATENCY_MS })
+    expect(result.success).toBe(true)
+  })
+
+  it("rejects string monthlyCost", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, monthlyCost: "45" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects string maxRPS", () => {
+    const result = ConfigVariantSchema.safeParse({ ...validVariantWithEcon, maxRPS: "500" })
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("ConfigVariantYamlSchema — economics snake_case transform", () => {
+  const yamlVariantWithEcon = {
+    id: "default",
+    name: "Default",
+    metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+    monthly_cost: 45,
+    max_rps: 500,
+    base_latency_ms: 5,
+  }
+
+  it("transforms snake_case economics to camelCase via ComponentYamlSchema", () => {
+    const result = ComponentYamlSchema.safeParse({
+      id: "test",
+      name: "Test",
+      category: "compute",
+      description: "Test component",
+      is: "A test",
+      gain: ["fast"],
+      cost: ["complex"],
+      tags: ["test"],
+      base_metrics: [{ id: "latency", value: "medium", numeric_value: 5, category: "performance" }],
+      config_variants: [yamlVariantWithEcon],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const variant = result.data.configVariants[0]
+      expect(variant.monthlyCost).toBe(45)
+      expect(variant.maxRPS).toBe(500)
+      expect(variant.baseLatencyMs).toBe(5)
+    }
+  })
+
+  it("transforms variant without economics (backward compat YAML)", () => {
+    const result = ComponentYamlSchema.safeParse({
+      id: "test",
+      name: "Test",
+      category: "compute",
+      description: "Test component",
+      is: "A test",
+      gain: ["fast"],
+      cost: ["complex"],
+      tags: ["test"],
+      base_metrics: [{ id: "latency", value: "medium", numeric_value: 5, category: "performance" }],
+      config_variants: [{
+        id: "default",
+        name: "Default",
+        metrics: [{ id: "latency", value: "low", numeric_value: 3, category: "performance" }],
+      }],
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const variant = result.data.configVariants[0]
+      expect(variant.monthlyCost).toBeUndefined()
+      expect(variant.maxRPS).toBeUndefined()
+      expect(variant.baseLatencyMs).toBeUndefined()
+    }
+  })
+
+  it("round-trip: YAML with economics matches ComponentSchema", () => {
+    const yamlResult = ComponentYamlSchema.safeParse({
+      id: "test",
+      name: "Test",
+      category: "compute",
+      description: "Test component",
+      is: "A test",
+      gain: ["fast"],
+      cost: ["complex"],
+      tags: ["test"],
+      base_metrics: [{ id: "latency", value: "medium", numeric_value: 5, category: "performance" }],
+      config_variants: [yamlVariantWithEcon],
+    })
+    expect(yamlResult.success).toBe(true)
+    if (yamlResult.success) {
+      const baseResult = ComponentSchema.safeParse(yamlResult.data)
+      expect(baseResult.success).toBe(true)
+    }
+  })
+})
+
+describe("Component YAML files — economics data quality", () => {
+  const componentDir = join(__dirname, "../../../src/data/components")
+  const componentFiles = [
+    "cloudflare-cdn.yaml", "data-lake.yaml", "etl-pipeline.yaml",
+    "graph-db.yaml", "kafka.yaml", "llm-gateway.yaml",
+    "nginx.yaml", "node-express.yaml", "payment-gateway.yaml",
+    "postgresql.yaml", "prometheus.yaml", "rabbitmq.yaml",
+    "redis-cache.yaml", "redis.yaml", "serverless.yaml",
+    "siem.yaml", "vector-db.yaml", "websocket-server.yaml",
+  ]
+
+  function parseComponent(filename: string) {
+    const content = readFileSync(join(componentDir, filename), "utf-8")
+    const raw = load(content) as Record<string, unknown>
+    return ComponentYamlSchema.safeParse(raw)
+  }
+
+  for (const filename of componentFiles) {
+    it(`${filename} — all variants have economics fields`, () => {
+      const result = parseComponent(filename)
+      expect(result.success).toBe(true)
+      if (result.success) {
+        for (const variant of result.data.configVariants) {
+          expect(variant.monthlyCost).toBeDefined()
+          expect(variant.maxRPS).toBeDefined()
+          expect(variant.baseLatencyMs).toBeDefined()
+          expect(typeof variant.monthlyCost).toBe("number")
+          expect(typeof variant.maxRPS).toBe("number")
+          expect(typeof variant.baseLatencyMs).toBe("number")
+        }
+      }
+    })
+  }
+
+  it("higher-tier variants cost more than lower-tier within same component", () => {
+    const result = parseComponent("postgresql.yaml")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const variants = result.data.configVariants
+      const singleNode = variants.find(v => v.id === "single-node")
+      const primaryReplica = variants.find(v => v.id === "primary-replica")
+      const citus = variants.find(v => v.id === "citus-distributed")
+      expect(singleNode!.monthlyCost!).toBeLessThan(primaryReplica!.monthlyCost!)
+      expect(primaryReplica!.monthlyCost!).toBeLessThan(citus!.monthlyCost!)
+    }
+  })
+
+  it("higher-tier variants have higher maxRPS within same component", () => {
+    const result = parseComponent("postgresql.yaml")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const variants = result.data.configVariants
+      const singleNode = variants.find(v => v.id === "single-node")
+      const citus = variants.find(v => v.id === "citus-distributed")
+      expect(singleNode!.maxRPS!).toBeLessThan(citus!.maxRPS!)
+    }
+  })
+
+  it("caching components have sub-millisecond latency", () => {
+    const result = parseComponent("redis-cache.yaml")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      for (const variant of result.data.configVariants) {
+        expect(variant.baseLatencyMs!).toBeLessThanOrEqual(1)
+      }
+    }
+  })
+
+  it("free-tier variants have zero monthlyCost", () => {
+    const result = parseComponent("cloudflare-cdn.yaml")
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const freeTier = result.data.configVariants.find(v => v.id === "static-caching")
+      expect(freeTier!.monthlyCost).toBe(0)
+    }
   })
 })
 

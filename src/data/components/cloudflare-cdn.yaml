@@ -36,6 +36,9 @@ base_metrics:
 config_variants:
   - id: static-caching
     name: Static Asset Caching
+    monthly_cost: 0
+    max_rps: 100000
+    base_latency_ms: 20
     metrics:
       - id: edge-latency
         value: low
@@ -85,6 +88,9 @@ config_variants:
           - 99.99% SLA backed by distributed edge infrastructure
   - id: full-site
     name: Full-Site Acceleration
+    monthly_cost: 25
+    max_rps: 500000
+    base_latency_ms: 10
     metrics:
       - id: edge-latency
         value: low

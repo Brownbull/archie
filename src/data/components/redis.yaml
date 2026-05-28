@@ -44,6 +44,9 @@ base_metrics:
 config_variants:
   - id: standalone
     name: Standalone
+    monthly_cost: 15
+    max_rps: 50000
+    base_latency_ms: 0.5
     metrics:
       - id: read-latency
         value: low
@@ -88,6 +91,9 @@ config_variants:
           - Scaling requires migration to Cluster variant
   - id: sentinel
     name: Sentinel HA
+    monthly_cost: 60
+    max_rps: 50000
+    base_latency_ms: 0.5
     metrics:
       - id: read-latency
         value: low
@@ -133,6 +139,9 @@ config_variants:
           - Dataset size still bounded by single node RAM
   - id: cluster
     name: Redis Cluster
+    monthly_cost: 120
+    max_rps: 200000
+    base_latency_ms: 0.5
     metrics:
       - id: read-latency
         value: low

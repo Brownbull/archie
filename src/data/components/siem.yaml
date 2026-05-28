@@ -41,6 +41,9 @@ base_metrics:
 config_variants:
   - id: on-premise
     name: On-Premise (ELK/Splunk)
+    monthly_cost: 150
+    max_rps: 5000
+    base_latency_ms: 10
     metrics:
       - id: threat-detection
         value: high
@@ -99,6 +102,9 @@ config_variants:
       retention-period: "Limited by local storage capacity; tiering to cold storage extends retention"
   - id: cloud-native
     name: Cloud-Native SIEM
+    monthly_cost: 300
+    max_rps: 100000
+    base_latency_ms: 3
     metrics:
       - id: operational-complexity
         value: low
@@ -152,6 +158,9 @@ config_variants:
       retention-period: "Long-term retention via integrated cold storage (S3, Azure Blob) at low cost"
   - id: hybrid
     name: Hybrid SIEM + SOAR
+    monthly_cost: 250
+    max_rps: 50000
+    base_latency_ms: 5
     metrics:
       - id: threat-detection
         value: high

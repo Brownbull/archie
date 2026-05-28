@@ -40,6 +40,9 @@ base_metrics:
 config_variants:
   - id: standalone
     name: Standalone
+    monthly_cost: 20
+    max_rps: 10000
+    base_latency_ms: 2
     metrics:
       - id: storage-efficiency
         value: medium
@@ -92,6 +95,9 @@ config_variants:
           - Grafana integration is a separate service but well-documented
   - id: federated
     name: Federated
+    monthly_cost: 80
+    max_rps: 50000
+    base_latency_ms: 5
     metrics:
       - id: storage-efficiency
         value: medium

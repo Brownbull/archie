@@ -397,3 +397,12 @@ CI FIX: TS2769 — narrowed portTypeEnum cast from [string, ...string[]] to [Por
 CI: ✅ 1/1 — Deploy Production pass (after fix)
 DEPLOYMENTS: P10
 TICK: ✅ Phase 7 Push
+
+## 2026-06-02 — PLAN COMPLETED: Epic 12: Typed Port System & Schema v3
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-06-02_typed-port-system-schema-v3.md
+PHASES COMPLETED: 7 of 7
+
+## 2026-06-02 — PLAN CREATED: Epic 13: Concrete Variant Economics
+PHASES: 4 | COMPLEXITY: medium (3), low (1) | MATURITY: enterprise
+TIERS: mvp × 0, ent × 4, scale × 0 | PROTOTYPES: 0
+DECISIONS: D13 → D16 (4 phase tier decisions logged)
