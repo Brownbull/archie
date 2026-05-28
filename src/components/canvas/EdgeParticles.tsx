@@ -7,6 +7,7 @@ interface EdgeParticlesProps {
   density: number
   status: HeatmapStatus
   edgeId: string
+  portColor?: string | null
 }
 
 const STATUS_COLORS: Record<HeatmapStatus, string> = {
@@ -15,7 +16,7 @@ const STATUS_COLORS: Record<HeatmapStatus, string> = {
   bottleneck: HEATMAP_COLORS.bottleneck,
 }
 
-export function EdgeParticles({ edgePath, density, status, edgeId }: EdgeParticlesProps) {
+export function EdgeParticles({ edgePath, density, status, edgeId, portColor }: EdgeParticlesProps) {
   const pathRef = useRef<SVGPathElement>(null)
   const circleRefs = useRef<(SVGCircleElement | null)[]>([])
   const rafRef = useRef<number>(0)
@@ -59,7 +60,7 @@ export function EdgeParticles({ edgePath, density, status, edgeId }: EdgeParticl
     return cleanup
   }, [density, edgePath])
 
-  const fillColor = STATUS_COLORS[status]
+  const fillColor = portColor ?? STATUS_COLORS[status]
 
   return (
     <g data-testid={`edge-particles-${edgeId}`} pointerEvents="none">

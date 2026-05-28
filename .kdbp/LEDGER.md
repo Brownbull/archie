@@ -341,3 +341,16 @@ DEFERRED: none
 ALIGNMENT: ALIGNED (13/13 on-scope, 0 off-scope)
 TIER: ent | DRIFT: none
 TICK: ✅
+
+## 2026-05-31 — [983a56d] fix(tests): add yamlExporter handle ID export coverage from review
+FINDINGS: 0 (0 critical, 0 high, 0 medium, 0 low)
+ACTIONS: none
+DEFERRED: 0
+FILES: tests/unit/services/yamlExporter.test.ts (+51), .kdbp/LEDGER.md, .kdbp/PLAN.md
+TESTS: 2831/2831 pass, 3 new (exporter handle ID export, omit when absent, schema validation)
+
+## 2026-05-31 — /gabe-push P9 (Phase 6)
+TARGET: dev → origin/dev → main (PR #30)
+COMMITS: 2bc866e feat(schema): add v3 migration with typed port edge extensions, 983a56d fix(tests): add yamlExporter handle ID export coverage from review
+CI: ✅ 1/1 (8s) — GitGuardian pass
+TICK: ✅ Phase 6 Push

@@ -180,4 +180,39 @@ describe("EdgeParticles", () => {
     const circles = container.querySelectorAll("circle")
     expect(circles).toHaveLength(3)
   })
+
+  describe("port color inheritance (Phase 7)", () => {
+    it("uses portColor when provided instead of status color", () => {
+      const { container } = render(
+        <svg>
+          <EdgeParticles edgePath="M 0 0 L 100 100" density={2} status="healthy" edgeId="e1" portColor="#2563EB" />
+        </svg>,
+      )
+
+      const circle = container.querySelector("circle")
+      expect(circle?.getAttribute("fill")).toBe("#2563EB")
+    })
+
+    it("falls back to status color when portColor is null", () => {
+      const { container } = render(
+        <svg>
+          <EdgeParticles edgePath="M 0 0 L 100 100" density={2} status="warning" edgeId="e1" portColor={null} />
+        </svg>,
+      )
+
+      const circle = container.querySelector("circle")
+      expect(circle?.getAttribute("fill")).toBe(HEATMAP_COLORS.warning)
+    })
+
+    it("falls back to status color when portColor is undefined", () => {
+      const { container } = render(
+        <svg>
+          <EdgeParticles edgePath="M 0 0 L 100 100" density={2} status="bottleneck" edgeId="e1" />
+        </svg>,
+      )
+
+      const circle = container.querySelector("circle")
+      expect(circle?.getAttribute("fill")).toBe(HEATMAP_COLORS.bottleneck)
+    })
+  })
 })

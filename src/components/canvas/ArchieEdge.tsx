@@ -9,7 +9,7 @@ import type { ArchieEdge as ArchieEdgeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
-import { HEATMAP_COLORS, LABEL_INCOMPATIBILITY_OFFSET, MAX_LABEL_OFFSET } from "@/lib/constants"
+import { HEATMAP_COLORS, LABEL_INCOMPATIBILITY_OFFSET, MAX_LABEL_OFFSET, PORT_TYPES, type PortType } from "@/lib/constants"
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useConnectionHealth } from "@/hooks/useConnectionHealth"
@@ -17,6 +17,18 @@ import { useEdgeOverlay } from "@/hooks/useEdgeOverlay"
 import { EdgeParticles } from "@/components/canvas/EdgeParticles"
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
+
+const LEGACY_EDGE_COLOR = "var(--color-muted)"
+
+function resolvePortColor(
+  component: ReturnType<ReturnType<typeof useLibrary>["getComponentById"]>,
+  handleId: string | null,
+): string | null {
+  if (!handleId || !component?.ports) return null
+  const port = component.ports.find((p: { id: string; type: PortType }) => p.id === handleId)
+  if (!port) return null
+  return PORT_TYPES[port.type as PortType]?.color ?? null
+}
 
 export function ArchieEdge({
   id,
@@ -63,6 +75,10 @@ export function ArchieEdge({
     ? getComponentById(sourceComponentId)
     : undefined
   const connectionProps = sourceComponent?.connectionProperties
+
+  const sourceHandleId = data?.sourceHandleId ?? null
+  const portColor = resolvePortColor(sourceComponent, sourceHandleId)
+  const isLegacy = !sourceHandleId
 
   // Drag state for label repositioning (AC-ARCH-PATTERN-5, TD-4-3a)
   // liveOffset tracks visual position during drag; store is committed once on pointerup
@@ -114,7 +130,7 @@ export function ArchieEdge({
     setDragState(null)
   }
 
-  // Edge color priority: overlay > heatmap > incompatible > default (Story 2-2, AC-ARCH-PATTERN-10, Phase 4)
+  // Edge color priority: overlay > heatmap > incompatible > port-type > legacy-dashed > default
   let strokeColor = "var(--archie-border)"
   let strokeWidth = 1.5
   let strokeDasharray: string | undefined
@@ -130,6 +146,12 @@ export function ArchieEdge({
   } else if (isIncompatible) {
     strokeColor = "var(--color-heatmap-yellow)"
     strokeDasharray = "5 3"
+  } else if (portColor) {
+    strokeColor = portColor
+    strokeWidth = 2
+  } else if (isLegacy) {
+    strokeColor = LEGACY_EDGE_COLOR
+    strokeDasharray = "6 4"
   }
 
   if (selected) {
@@ -155,7 +177,7 @@ export function ArchieEdge({
         data-testid="archie-edge"
       />
       {heatmapEnabled && animationsEnabled && edgeHeatmapStatus && edgeHeatmapStatus in HEATMAP_COLORS && (
-        <EdgeParticles edgePath={edgePath} density={density} status={healthStatus} edgeId={id} />
+        <EdgeParticles edgePath={edgePath} density={density} status={healthStatus} edgeId={id} portColor={portColor} />
       )}
       {isIncompatible && (
         <EdgeLabelRenderer>

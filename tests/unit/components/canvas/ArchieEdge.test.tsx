@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { ArchieEdge } from "@/components/canvas/ArchieEdge"
-import { HEATMAP_COLORS, MAX_LABEL_OFFSET, LABEL_INCOMPATIBILITY_OFFSET } from "@/lib/constants"
+import { HEATMAP_COLORS, MAX_LABEL_OFFSET, LABEL_INCOMPATIBILITY_OFFSET, PORT_TYPES } from "@/lib/constants"
 import type { ArchieEdgeData } from "@/stores/architectureStore"
 import type { EdgeProps, Position } from "@xyflow/react"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
@@ -248,7 +248,7 @@ describe("ArchieEdge", () => {
       expect(edge).toHaveStyle({ stroke: HEATMAP_COLORS.warning, strokeWidth: 2 })
     })
 
-    it("reverts to default stroke when heatmap disabled", () => {
+    it("reverts to legacy stroke when heatmap disabled and no handle IDs", () => {
       mockHeatmapEnabled = false
       mockEdgeHeatmapColors.set("edge-1", "bottleneck")
       render(
@@ -257,7 +257,7 @@ describe("ArchieEdge", () => {
         </svg>,
       )
       const edge = screen.getByTestId("archie-edge")
-      expect(edge).toHaveStyle({ stroke: "var(--archie-border)" })
+      expect(edge).toHaveStyle({ stroke: "var(--color-muted)" })
     })
 
     it("preserves dashed pattern for incompatible edges when heatmap active", () => {
@@ -695,6 +695,200 @@ describe("ArchieEdge", () => {
         x: MAX_LABEL_OFFSET,
         y: -MAX_LABEL_OFFSET,
       })
+    })
+  })
+
+  describe("port-type edge coloring (Phase 7)", () => {
+    const componentWithPorts = {
+      ports: [
+        { id: "http-out", type: "http", direction: "out" },
+        { id: "db-out", type: "database", direction: "out" },
+      ],
+    }
+
+    it("colors edge by source port type when sourceHandleId matches a port", () => {
+      mockGetComponentById.mockReturnValue(componentWithPorts)
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: false,
+                isPortMismatch: false,
+                incompatibilityReason: null,
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                sourceHandleId: "http-out",
+                targetHandleId: "http-in",
+              },
+            })}
+          />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: PORT_TYPES.http.color, strokeWidth: 2 })
+    })
+
+    it("colors edge by database port type when sourceHandleId is db-out", () => {
+      mockGetComponentById.mockReturnValue(componentWithPorts)
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: false,
+                isPortMismatch: false,
+                incompatibilityReason: null,
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                sourceHandleId: "db-out",
+                targetHandleId: "db-in",
+              },
+            })}
+          />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: PORT_TYPES.database.color, strokeWidth: 2 })
+    })
+
+    it("falls through to default when sourceHandleId does not match any port", () => {
+      mockGetComponentById.mockReturnValue(componentWithPorts)
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: false,
+                isPortMismatch: false,
+                incompatibilityReason: null,
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                sourceHandleId: "unknown-handle",
+                targetHandleId: "unknown-in",
+              },
+            })}
+          />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: "var(--archie-border)", strokeWidth: 1.5 })
+    })
+
+    it("incompatible overrides port-type color", () => {
+      mockGetComponentById.mockReturnValue(componentWithPorts)
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: true,
+                isPortMismatch: true,
+                incompatibilityReason: "Port mismatch",
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                sourceHandleId: "http-out",
+                targetHandleId: "db-in",
+              },
+            })}
+          />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: "var(--color-heatmap-yellow)", strokeDasharray: "5 3" })
+    })
+
+    it("heatmap overrides port-type color when enabled", () => {
+      mockHeatmapEnabled = true
+      mockEdgeHeatmapColors.set("edge-1", "bottleneck")
+      mockGetComponentById.mockReturnValue(componentWithPorts)
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: false,
+                isPortMismatch: false,
+                incompatibilityReason: null,
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                sourceHandleId: "http-out",
+                targetHandleId: "http-in",
+              },
+            })}
+          />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: HEATMAP_COLORS.bottleneck })
+    })
+
+    it("selected port-typed edge uses accent color", () => {
+      mockGetComponentById.mockReturnValue(componentWithPorts)
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              selected: true,
+              data: {
+                isIncompatible: false,
+                isPortMismatch: false,
+                incompatibilityReason: null,
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                sourceHandleId: "http-out",
+                targetHandleId: "http-in",
+              },
+            })}
+          />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: "var(--archie-accent)", strokeWidth: 2.5 })
+    })
+  })
+
+  describe("legacy edge visual (Phase 7)", () => {
+    it("renders grey dashed stroke for edges without handle IDs", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps()} />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: "var(--color-muted)", strokeDasharray: "6 4" })
+    })
+
+    it("legacy edge uses accent color when selected", () => {
+      render(
+        <svg>
+          <ArchieEdge {...createEdgeProps({ selected: true })} />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: "var(--archie-accent)", strokeWidth: 2.5 })
+    })
+
+    it("incompatible overrides legacy dashed style", () => {
+      render(
+        <svg>
+          <ArchieEdge
+            {...createEdgeProps({
+              data: {
+                isIncompatible: true,
+                isPortMismatch: false,
+                incompatibilityReason: "Incompatible categories",
+                sourceArchieComponentId: "comp-1",
+                targetArchieComponentId: "comp-2",
+                sourceHandleId: null,
+                targetHandleId: null,
+              },
+            })}
+          />
+        </svg>,
+      )
+      const edge = screen.getByTestId("archie-edge")
+      expect(edge).toHaveStyle({ stroke: "var(--color-heatmap-yellow)", strokeDasharray: "5 3" })
     })
   })
 })
