@@ -24,7 +24,7 @@ Epic 12: Typed Port System & Schema v3 — Replace generic source/target handles
 | 4 | Topology checker engine | New topologyChecker: orphan nodes, missing hops, unreachable components; Issues panel integration | ent | medium | ✅ | ✅ | ✅ | ✅ |
 | 5 | Component library port data | Author port definitions for all 18 components, validate coverage across categories | mvp | medium | ✅ | ✅ | ✅ | ✅ |
 | 6 | Schema v3 migration & YAML round-trip | v2 detection, auto-mapping heuristic, legacy edge type, v3 export, E2E tests | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 7 | Edge visual upgrade | Color edges by port type, legacy edges grey dashed, particle color inheritance | mvp | medium | ✅ | ✅ | ✅ | ⬜ |
+| 7 | Edge visual upgrade | Color edges by port type, legacy edges grey dashed, particle color inheritance | mvp | medium | ✅ | ✅ | ✅ | ✅ |
 
 <!-- Exec is written by /gabe-execute: ⬜ not started, 🔄 in progress, ✅ complete -->
 <!-- Review/Commit/Push auto-ticked by /gabe-review, /gabe-commit, /gabe-push -->

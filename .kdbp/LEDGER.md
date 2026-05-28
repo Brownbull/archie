@@ -390,3 +390,10 @@ DEFERRED: none
 ALIGNMENT: ALIGNED (4/4 on-scope, 0 off-scope)
 TIER: mvp | DRIFT: none
 TICK: ✅
+
+## 2026-06-02 — PUSH dev → main (Phase 7)
+TARGET: dev → origin/main (direct push, PR #30 already merged)
+CI FIX: TS2769 — narrowed portTypeEnum cast from [string, ...string[]] to [PortType, ...PortType[]] (5 downstream errors)
+CI: ✅ 1/1 — Deploy Production pass (after fix)
+DEPLOYMENTS: P10
+TICK: ✅ Phase 7 Push
