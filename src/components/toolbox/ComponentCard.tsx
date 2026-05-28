@@ -1,4 +1,4 @@
-import type { DragEvent, MouseEvent } from "react"
+import { type DragEvent, type MouseEvent, useMemo } from "react"
 import { Plus } from "lucide-react"
 import type { Component } from "@/schemas/componentSchema"
 import { Badge } from "@/components/ui/badge"
@@ -15,6 +15,17 @@ export function ComponentCard({ component, dimmed }: ComponentCardProps) {
   const addNodeSmartPosition = useArchitectureStore((s) => s.addNodeSmartPosition)
   const category = COMPONENT_CATEGORIES[component.category as ComponentCategoryId]
   const color = category?.color ?? "var(--color-muted)"
+
+  const costRange = useMemo(() => {
+    const costs = component.configVariants
+      .map((v) => v.monthlyCost)
+      .filter((c): c is number => c !== undefined)
+    if (costs.length === 0) return null
+    const min = Math.min(...costs)
+    const max = Math.max(...costs)
+    if (min === max) return min === 0 ? "Free" : `$${min}/mo`
+    return min === 0 ? `Free–$${max}/mo` : `$${min}–$${max}/mo`
+  }, [component.configVariants])
 
   const setActiveDrag = useUiStore((s) => s.setActiveDrag)
 
@@ -94,6 +105,12 @@ export function ComponentCard({ component, dimmed }: ComponentCardProps) {
             </Badge>
           ))}
         </div>
+
+        {costRange && (
+          <div data-testid={`cost-range-${component.id}`} className="pt-1 text-[0.625rem] font-medium text-emerald-400">
+            {costRange}
+          </div>
+        )}
       </div>
     </div>
   )

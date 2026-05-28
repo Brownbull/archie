@@ -149,4 +149,58 @@ describe("ComponentCard", () => {
       spy.mockRestore()
     })
   })
+
+  describe("cost range (Epic 13)", () => {
+    it("renders cost range when variants have economics", () => {
+      const comp: Component = {
+        ...mockComponent,
+        configVariants: [
+          { id: "single", name: "Single", metrics: [], monthlyCost: 45 },
+          { id: "replica", name: "Replica", metrics: [], monthlyCost: 120 },
+        ],
+      }
+      render(<ComponentCard component={comp} />)
+      expect(screen.getByTestId("cost-range-postgresql")).toHaveTextContent("$45–$120/mo")
+    })
+
+    it("renders single cost when all variants have same price", () => {
+      const comp: Component = {
+        ...mockComponent,
+        configVariants: [
+          { id: "a", name: "A", metrics: [], monthlyCost: 50 },
+          { id: "b", name: "B", metrics: [], monthlyCost: 50 },
+        ],
+      }
+      render(<ComponentCard component={comp} />)
+      expect(screen.getByTestId("cost-range-postgresql")).toHaveTextContent("$50/mo")
+    })
+
+    it("renders 'Free' when all variants are zero cost", () => {
+      const comp: Component = {
+        ...mockComponent,
+        configVariants: [
+          { id: "free", name: "Free", metrics: [], monthlyCost: 0 },
+        ],
+      }
+      render(<ComponentCard component={comp} />)
+      expect(screen.getByTestId("cost-range-postgresql")).toHaveTextContent("Free")
+    })
+
+    it("renders Free–$X range when one variant is free", () => {
+      const comp: Component = {
+        ...mockComponent,
+        configVariants: [
+          { id: "free", name: "Free", metrics: [], monthlyCost: 0 },
+          { id: "pro", name: "Pro", metrics: [], monthlyCost: 25 },
+        ],
+      }
+      render(<ComponentCard component={comp} />)
+      expect(screen.getByTestId("cost-range-postgresql")).toHaveTextContent("Free–$25/mo")
+    })
+
+    it("does not render cost range when no variants have economics", () => {
+      render(<ComponentCard component={mockComponent} />)
+      expect(screen.queryByTestId("cost-range-postgresql")).not.toBeInTheDocument()
+    })
+  })
 })

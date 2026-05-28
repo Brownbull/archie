@@ -4,7 +4,9 @@ import { type MetricCategoryId } from "@/lib/constants"
 import { CATEGORY_LOOKUP } from "@/lib/categoryLookup"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useDashboardWeights } from "@/hooks/useDashboardWeights"
+import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
 import { AggregateScore } from "@/components/dashboard/AggregateScore"
+import { BudgetHud } from "@/components/dashboard/BudgetHud"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
 import { DashboardOverlay } from "@/components/dashboard/DashboardOverlay"
@@ -13,8 +15,10 @@ import { Button } from "@/components/ui/button"
 import { AlertTriangle, Maximize2 } from "lucide-react"
 
 export function DashboardPanel() {
+  const nodes = useArchitectureStore((s) => s.nodes)
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
   const constraintViolationCount = useArchitectureStore((s) => s.constraintViolations).length
+  const totalCost = useMemo(() => computeTotalArchitectureCost(nodes), [nodes])
   const {
     categoryScores,
     aggregateScore,
@@ -53,6 +57,8 @@ export function DashboardPanel() {
       className="flex h-full items-center"
     >
       <TierBadge onOpenPathway={handleOpenPathway} />
+
+      <BudgetHud totalCost={totalCost} nodeCount={nodes.length} />
 
       <div className="self-stretch border-r border-archie-border" />
 
