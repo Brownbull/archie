@@ -365,6 +365,60 @@ describe("ArchieNode", () => {
     })
   })
 
+  describe("cost badge (Epic 13)", () => {
+    it("renders cost badge when variant has monthlyCost", () => {
+      mockGetComponent.mockReturnValue({
+        id: "postgresql",
+        configVariants: [{ id: "default", name: "Standard", monthlyCost: 45, maxRPS: 500, baseLatencyMs: 5 }],
+      })
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("archie-node-cost")).toHaveTextContent("$45/mo")
+    })
+
+    it("renders 'Free' for zero monthlyCost", () => {
+      mockGetComponent.mockReturnValue({
+        id: "cdn",
+        configVariants: [{ id: "default", name: "Free Tier", monthlyCost: 0 }],
+      })
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("archie-node-cost")).toHaveTextContent("Free")
+    })
+
+    it("does not render cost badge when monthlyCost is undefined", () => {
+      mockGetComponent.mockReturnValue({
+        id: "postgresql",
+        configVariants: [{ id: "default", name: "Standard" }],
+      })
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("archie-node-cost")).not.toBeInTheDocument()
+    })
+
+    it("does not render cost badge when component not found", () => {
+      mockGetComponent.mockReturnValue(undefined)
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("archie-node-cost")).not.toBeInTheDocument()
+    })
+
+    it("updates cost badge when variant changes", () => {
+      mockGetComponent.mockReturnValue({
+        id: "postgresql",
+        configVariants: [
+          { id: "default", name: "Standard", monthlyCost: 45 },
+          { id: "replica", name: "Replica", monthlyCost: 120 },
+        ],
+      })
+      const { rerender } = render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("archie-node-cost")).toHaveTextContent("$45/mo")
+
+      const replicaProps = {
+        ...defaultProps,
+        data: { ...defaultProps.data, activeConfigVariantId: "replica" },
+      } as Parameters<typeof ArchieNode>[0]
+      rerender(<ArchieNode {...replicaProps} />)
+      expect(screen.getByTestId("archie-node-cost")).toHaveTextContent("$120/mo")
+    })
+  })
+
   describe("compatibility dimming (Phase 1)", () => {
     const setupComponentMocks = () => {
       mockGetComponent.mockImplementation((id: string) => {

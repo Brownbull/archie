@@ -16,6 +16,7 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { useNodePorts } from "@/hooks/useNodePorts"
 import { PORT_TYPES } from "@/lib/constants"
+import { getNodeCost } from "@/stores/architectureStoreHelpers"
 
 const PORT_HEIGHT_PX = 20
 const MIN_PORT_SECTION_HEIGHT = 0
@@ -69,6 +70,11 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     const comp = componentLibrary.getComponent(data.archieComponentId)
     return comp?.configVariants.find((v) => v.id === data.activeConfigVariantId)?.name ?? null
   }, [data.archieComponentId, data.activeConfigVariantId])
+
+  const nodeCost = useMemo(
+    () => getNodeCost(data.archieComponentId, data.activeConfigVariantId),
+    [data.archieComponentId, data.activeConfigVariantId],
+  )
 
   const { inputs, outputs, hasPorts } = useNodePorts(data.archieComponentId)
   const maxPortSide = Math.max(inputs.length, outputs.length)
@@ -169,6 +175,12 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       {variantName && (
         <div data-testid="archie-node-variant" className="px-3 pb-0.5 text-[10px] text-text-secondary truncate">
           {variantName}
+        </div>
+      )}
+
+      {nodeCost.monthlyCost !== undefined && (
+        <div data-testid="archie-node-cost" className="px-3 pb-1 text-[10px] font-medium text-emerald-400 truncate">
+          {nodeCost.monthlyCost === 0 ? "Free" : `$${nodeCost.monthlyCost}/mo`}
         </div>
       )}
 

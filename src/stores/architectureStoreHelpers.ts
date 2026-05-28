@@ -1,3 +1,4 @@
+import { componentLibrary } from "@/services/componentLibrary"
 import { detectTopologyIssues, type TopologyIssue } from "@/engine/topologyChecker"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
@@ -237,5 +238,36 @@ export function getDemandProfileForScenario(scenarioId: string | null): DemandPr
 export function getFailureModifiersForScenario(failureScenarioId: string | null): FailureModifiers | null {
   if (!failureScenarioId) return null
   return getFailurePreset(failureScenarioId)?.failureModifiers ?? null
+}
+
+// --- Economics helpers (Epic 13) ---
+
+export interface NodeCostInfo {
+  readonly monthlyCost: number | undefined
+  readonly maxRPS: number | undefined
+  readonly baseLatencyMs: number | undefined
+}
+
+export function getNodeCost(archieComponentId: string, activeConfigVariantId: string): NodeCostInfo {
+  const component = componentLibrary.getComponent(archieComponentId)
+  const variant = component?.configVariants.find((v) => v.id === activeConfigVariantId)
+  return {
+    monthlyCost: variant?.monthlyCost,
+    maxRPS: variant?.maxRPS,
+    baseLatencyMs: variant?.baseLatencyMs,
+  }
+}
+
+export function computeTotalArchitectureCost(
+  nodes: ReadonlyArray<{ data: { archieComponentId: string; activeConfigVariantId: string } }>,
+): number {
+  let total = 0
+  for (const node of nodes) {
+    const { monthlyCost } = getNodeCost(node.data.archieComponentId, node.data.activeConfigVariantId)
+    if (monthlyCost !== undefined) {
+      total += monthlyCost
+    }
+  }
+  return total
 }
 
