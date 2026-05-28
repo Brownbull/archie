@@ -354,3 +354,39 @@ TARGET: dev → origin/dev → main (PR #30)
 COMMITS: 2bc866e feat(schema): add v3 migration with typed port edge extensions, 983a56d fix(tests): add yamlExporter handle ID export coverage from review
 CI: ✅ 1/1 (8s) — GitGuardian pass
 TICK: ✅ Phase 6 Push
+
+## 2026-06-01 — [fe82c25] feat(canvas): color edges by port type with legacy dashed fallback
+FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low)
+ACTIONS: 1:accept (well G1 Canvas doc drift — low, 0 verified topics)
+DEFERRED: 0
+FILES: src/components/canvas/ArchieEdge.tsx (+18), src/components/canvas/EdgeParticles.tsx (+3), tests/unit/components/canvas/ArchieEdge.test.tsx (+115), tests/unit/components/canvas/EdgeParticles.test.tsx (+28), .kdbp/PLAN.md, .kdbp/LEDGER.md, .kdbp/DEPLOYMENTS.md
+TESTS: 2843/2843 pass, 12 new (port-type coloring ×6, legacy edge ×3, particle inheritance ×3)
+COVERAGE: ArchieEdge.tsx 93.42% stmts / EdgeParticles.tsx 95.31% stmts
+
+## 2026-06-01 — PHASE 7 RUNTIME EVIDENCE: Edge visual upgrade
+TARGET RUNTIME: Browser (user-provided screenshot)
+JOURNEY: Loaded Telegram-style Messaging blueprint — 5 components (Nginx, Node.js+Express, RabbitMQ, Redis, PostgreSQL) with typed port edges
+OBSERVATIONS:
+  - Typed edges visible with port labels (HTTP, AMQP, TCP) rendered as badges
+  - Port dots (colored handles) visible on all component nodes — input left, output right
+  - Heatmap overlay active — amber warning color overrides port-type jewel tones (correct cascade: heatmap > port-type)
+  - Legacy dashed edge behavior not directly observable (all edges in screenshot are typed)
+  - Particle animations running on edges (circles visible along paths)
+ARTIFACT: User-provided screenshot (in-conversation, not persisted to disk)
+NOTE: Port-type jewel-tone colors would be visible with Performance overlay toggled off (heatmap sits above port-type in cascade)
+
+## 2026-06-01 — PHASE EXEC COMPLETE: Phase 7 — Edge visual upgrade
+TIER: mvp
+TASKS: 4 code tasks + 1 runtime evidence, 1 commit (fe82c25)
+DEVIATIONS: 0 structural, 0 minor
+UX FEEDBACK: Port handle dots need hover tooltips describing port type/direction (e.g., "HTTP Out") — tracked in PENDING.md
+
+## 2026-06-02 — PHASE 7 REVIEW: Edge visual upgrade
+VERDICT: APPROVE
+FINDINGS: 0 total (0 critical, 0 high, 0 medium, 0 low)
+COVERAGE: HIGH — all changed source files have corresponding test changes; 93-95% stmt coverage
+CONFIDENCE: 100/100
+DEFERRED: none
+ALIGNMENT: ALIGNED (4/4 on-scope, 0 off-scope)
+TIER: mvp | DRIFT: none
+TICK: ✅

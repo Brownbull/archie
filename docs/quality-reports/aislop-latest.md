@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260527-174242
+**Date:** 20260528-105216
 **Score:** 10/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,10 +8,10 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 15 | 389ms |
-| code-quality | 96 | 3310ms |
-| ai-slop | 0 | 10ms |
-| security | 8 | 1681ms |
+| lint | 16 | 604ms |
+| code-quality | 96 | 4860ms |
+| ai-slop | 0 | 20ms |
+| security | 8 | 2264ms |
 
 ## Findings
 
@@ -42,8 +42,8 @@
 - [!] `src/lib/demandTypes.ts:97` — knip/types: Unused type: FailureResponse
 - [!] `src/services/stackPlacement.ts:16` — knip/types: Unused type: StackPlacementResult
 - [!] `src/engine/compatibilityChecker.ts:3` — knip/types: Unused type: CompatibilityResult
-- [!] `src/services/yamlImporter.ts:38` — knip/types: Unused type: HydratedArchitecture
-- [!] `src/services/yamlImporter.ts:50` — knip/types: Unused type: ImportResult
+- [!] `src/services/yamlImporter.ts:39` — knip/types: Unused type: HydratedArchitecture
+- [!] `src/services/yamlImporter.ts:51` — knip/types: Unused type: ImportResult
 - [!] `src/engine/demandEngine.ts:7` — knip/types: Unused type: AdjustedMetric
 - [!] `src/engine/ghostSuggestionEngine.ts:10` — knip/types: Unused type: GhostPlacement
 - [!] `src/engine/portCompatibilityChecker.ts:4` — knip/types: Unused type: PortCompatibilityResult
@@ -114,14 +114,15 @@
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
 
-### lint (15)
+### lint (16)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/services/yamlImporter.ts:136` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/hooks/useNodePorts.ts:3` — eslint/no-unused-vars: Type 'PortType' is imported but never used.
