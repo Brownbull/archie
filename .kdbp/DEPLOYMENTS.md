@@ -15,3 +15,4 @@
 | P9 | 2026-05-31 16:45 | dev → main | #30 | ✅ 1/1 (8s) | Epic 12 Phase 6: schema v3 migration with typed port edge extensions | — |
 | P10 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 12 Phase 7: edge visual upgrade — port-type coloring, legacy dashed, particle inheritance; CI fix: narrowed portTypeEnum cast | — |
 | P11 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 1: economics schema + 46 variant data (monthlyCost/maxRPS/baseLatencyMs) | — |
+| P12 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 2: cost computation + inline node cost badge | — |
