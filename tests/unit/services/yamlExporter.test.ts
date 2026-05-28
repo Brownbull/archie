@@ -181,5 +181,62 @@ describe("yamlExporter", () => {
       expect(parsed.nodes[0].position.x).toBe(160)
       expect(parsed.nodes[0].position.y).toBe(320)
     })
+
+    it("exports source_handle_id and target_handle_id when present on edge data", () => {
+      const nodes = [
+        makeNode({ id: "node-1", data: { archieComponentId: "postgresql" } }),
+        makeNode({ id: "node-2", data: { archieComponentId: "redis" } }),
+      ]
+      const edges = [
+        makeEdge({
+          id: "edge-1",
+          source: "node-1",
+          target: "node-2",
+          data: { sourceHandleId: "db-out", targetHandleId: "db-in" },
+        }),
+      ]
+
+      const result = exportArchitecture(nodes, edges)
+      const parsed = load(result) as { edges: Record<string, unknown>[] }
+
+      expect(parsed.edges[0]).toHaveProperty("source_handle_id", "db-out")
+      expect(parsed.edges[0]).toHaveProperty("target_handle_id", "db-in")
+    })
+
+    it("omits handle IDs from exported edge when not present", () => {
+      const nodes = [
+        makeNode({ id: "node-1", data: { archieComponentId: "postgresql" } }),
+        makeNode({ id: "node-2", data: { archieComponentId: "redis" } }),
+      ]
+      const edges = [
+        makeEdge({ id: "edge-1", source: "node-1", target: "node-2" }),
+      ]
+
+      const result = exportArchitecture(nodes, edges)
+      const parsed = load(result) as { edges: Record<string, unknown>[] }
+
+      expect(parsed.edges[0]).not.toHaveProperty("source_handle_id")
+      expect(parsed.edges[0]).not.toHaveProperty("target_handle_id")
+    })
+
+    it("exports edges with handle IDs that pass YAML schema validation", () => {
+      const nodes = [
+        makeNode({ id: "node-1", position: { x: 96, y: 208 }, data: { archieComponentId: "postgresql" } }),
+        makeNode({ id: "node-2", position: { x: 352, y: 208 }, data: { archieComponentId: "redis" } }),
+      ]
+      const edges = [
+        makeEdge({
+          id: "edge-1",
+          source: "node-1",
+          target: "node-2",
+          data: { sourceHandleId: "db-out", targetHandleId: "cache-in" },
+        }),
+      ]
+
+      const result = exportArchitecture(nodes, edges)
+      const parsed = load(result)
+      const validation = ArchitectureFileYamlSchema.safeParse(parsed)
+      expect(validation.success).toBe(true)
+    })
   })
 })

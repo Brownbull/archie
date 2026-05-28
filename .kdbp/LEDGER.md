@@ -322,3 +322,22 @@ ENV: production | TARGET: main | PR: #30 (existing, OPEN)
 CI: ✅ GitGuardian (1s)
 DEPLOYMENTS: P8 (added row to .kdbp/DEPLOYMENTS.md)
 TICK: ✅ Push column — Phase 5 complete
+
+## 2026-05-31 — [2bc866e] feat(schema): add v3 migration with typed port edge extensions
+FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low)
+ACTIONS: 1:accept (yamlImporter.ts 440 lines — low shape, pre-existing size)
+DEFERRED: 0
+FILES: src/schemas/architectureFileSchema.ts (+83), src/services/yamlExporter.ts (+7/-5), src/services/yamlImporter.ts (+33/-11), tests/unit/services/yamlImporter-v3-migration.test.ts (new, 259), 7x test fixture updates
+TESTS: 2828/2828 pass, 10 new (v3 migration round-trip)
+
+## 2026-05-31 — PHASE 6 REVIEW: Schema v3 migration & YAML round-trip
+VERDICT: APPROVE
+FINDINGS: 1 total (0 critical, 1 high, 0 medium, 0 low)
+FIXED: 1 of 1 Enterprise gate findings
+  - #1: TEST GAP yamlExporter.ts handle ID conditionals — 3 tests added (handle export, omit when absent, schema validation)
+COVERAGE: HIGH (all changed source files have corresponding test changes)
+CONFIDENCE: 95/100 (post-triage; 83 pre-triage)
+DEFERRED: none
+ALIGNMENT: ALIGNED (13/13 on-scope, 0 off-scope)
+TIER: ent | DRIFT: none
+TICK: ✅
