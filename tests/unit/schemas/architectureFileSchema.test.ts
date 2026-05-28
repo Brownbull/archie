@@ -31,8 +31,8 @@ const validArchitectureFile = {
 }
 
 describe("CURRENT_SCHEMA_VERSION", () => {
-  it("is 2.0.0", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("2.0.0")
+  it("is 3.0.0", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("3.0.0")
   })
 })
 

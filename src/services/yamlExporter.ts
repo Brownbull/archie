@@ -58,11 +58,20 @@ export function exportArchitecture(
   // Extract skeleton from each edge (camelCase → snake_case transform)
   // NOTE: edge.data (including labelOffset) is intentionally excluded —
   // only structural IDs are part of the architecture skeleton (NFR11, AC-ARCH-PATTERN-4)
-  const yamlEdges = edges.map((edge) => ({
-    id: edge.id,
-    source_node_id: edge.source,
-    target_node_id: edge.target,
-  }))
+  const yamlEdges = edges.map((edge) => {
+    const edgeObj: Record<string, unknown> = {
+      id: edge.id,
+      source_node_id: edge.source,
+      target_node_id: edge.target,
+    }
+    if (edge.data?.sourceHandleId) {
+      edgeObj.source_handle_id = edge.data.sourceHandleId
+    }
+    if (edge.data?.targetHandleId) {
+      edgeObj.target_handle_id = edge.data.targetHandleId
+    }
+    return edgeObj
+  })
 
   // Assemble root object in logical field order (schema_version first)
   // AC-2 / AC-ARCH-PATTERN-1: omit weight_profile when all weights are default

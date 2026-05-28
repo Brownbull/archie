@@ -5,6 +5,7 @@ import {
   checkSchemaVersion,
   CURRENT_SCHEMA_VERSION,
   MIGRATIONS,
+  setPortResolver,
 } from "@/schemas/architectureFileSchema"
 import type { ArchitectureFile } from "@/schemas/architectureFileSchema"
 import { componentLibrary } from "@/services/componentLibrary"
@@ -191,6 +192,9 @@ export function importYamlString(text: string): ImportResult {
     }
   }
 
+  // Inject port resolver for v2→v3 migration (needs component library access)
+  setPortResolver((componentId) => componentLibrary.getComponent(componentId)?.ports)
+
   // Step 5: Version check (discriminated union — exhaustive switch)
   const versionStatus = checkSchemaVersion(data.schemaVersion, CURRENT_SCHEMA_VERSION)
   switch (versionStatus.status) {
@@ -213,11 +217,21 @@ export function importYamlString(text: string): ImportResult {
         }],
       }
     case "migrate": {
-      // Explicit String() mirrors checkSchemaVersion's own String(fileMajor) — aligns types
-      const migrationKey = String(versionStatus.migrationKey)
-      const migrateFn = MIGRATIONS[migrationKey]
-      if (migrateFn) {
-        // try/catch: a migration function that throws must not propagate uncaught
+      // Chain migrations: v1→v2→v3 etc. Each step bumps schemaVersion to the next major.
+      let currentMajor = versionStatus.migrationKey
+      const appMajor = Number(CURRENT_SCHEMA_VERSION.split(".")[0])
+      while (currentMajor < appMajor) {
+        const migrationKey = String(currentMajor)
+        const migrateFn = MIGRATIONS[migrationKey]
+        if (!migrateFn) {
+          return {
+            success: false,
+            errors: [{
+              code: "VERSION_TOO_OLD",
+              message: `No migration available for schema version ${currentMajor}.0.0`,
+            }],
+          }
+        }
         let migratedData: unknown
         try {
           migratedData = migrateFn(data)
@@ -228,7 +242,6 @@ export function importYamlString(text: string): ImportResult {
             errors: [{ code: "MIGRATION_ERROR", message }],
           }
         }
-        // null/undefined guard: Object.assign(data, null) is a JS no-op — catch it explicitly
         if (migratedData == null) {
           return {
             success: false,
@@ -238,20 +251,19 @@ export function importYamlString(text: string): ImportResult {
             }],
           }
         }
-        // Safe: migratedData is camelCase because migration runs after ArchitectureFileYamlSchema
-        // transform. Re-validation below confirms the merged result matches v2 schema.
         Object.assign(data, migratedData)
+        currentMajor++
+      }
 
-        // Re-validate migrated data against v2 schema (closes known gap from Story 3-1)
-        const revalidation = ArchitectureFileSchema.safeParse(data)
-        if (!revalidation.success) {
-          const errors: ImportError[] = revalidation.error.issues.map((issue) => ({
-            code: "MIGRATION_VALIDATION_ERROR",
-            message: issue.message,
-            path: issue.path.join("."),
-          }))
-          return { success: false, errors }
-        }
+      // Re-validate migrated data against current schema
+      const revalidation = ArchitectureFileSchema.safeParse(data)
+      if (!revalidation.success) {
+        const errors: ImportError[] = revalidation.error.issues.map((issue) => ({
+          code: "MIGRATION_VALIDATION_ERROR",
+          message: issue.message,
+          path: issue.path.join("."),
+        }))
+        return { success: false, errors }
       }
       break
     }
@@ -379,10 +391,15 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
 
     const compatResult = checkCompatibility(sourceComponent, targetComponent)
 
+    const sourceHandleId = yamlEdge.sourceHandleId ?? null
+    const targetHandleId = yamlEdge.targetHandleId ?? null
+
     hydratedEdges.push({
       id: yamlEdge.id,
       source: yamlEdge.sourceNodeId,
       target: yamlEdge.targetNodeId,
+      sourceHandle: sourceHandleId,
+      targetHandle: targetHandleId,
       type: EDGE_TYPE_CONNECTION,
       data: {
         isIncompatible: !compatResult.isCompatible,
@@ -390,8 +407,8 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
         incompatibilityReason: compatResult.reason || null,
         sourceArchieComponentId: sourceComponentId,
         targetArchieComponentId: targetComponentId,
-        sourceHandleId: null,
-        targetHandleId: null,
+        sourceHandleId,
+        targetHandleId,
       } as ArchieEdgeData,
     })
   }

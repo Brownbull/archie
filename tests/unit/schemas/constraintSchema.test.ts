@@ -230,7 +230,7 @@ describe("Constraint Label Sanitization (AC-5)", () => {
 describe("ArchitectureFileSchema with constraints (AC-2, AC-3)", () => {
   it("accepts empty constraints array (AC-3)", () => {
     const result = ArchitectureFileSchema.safeParse({
-      schemaVersion: "2.0.0",
+      schemaVersion: "3.0.0",
       nodes: [validNode],
       edges: [validEdge],
       constraints: [],
@@ -239,7 +239,7 @@ describe("ArchitectureFileSchema with constraints (AC-2, AC-3)", () => {
   })
 
   const validV2File = {
-    schemaVersion: "2.0.0",
+    schemaVersion: "3.0.0",
     nodes: [validNode],
     edges: [validEdge],
   }
@@ -294,13 +294,13 @@ describe("ArchitectureFileSchema with constraints (AC-2, AC-3)", () => {
 
 describe("Constraint Array Size Cap (TD-6-2a AC-1)", () => {
   const validV2Base = {
-    schemaVersion: "2.0.0",
+    schemaVersion: "3.0.0",
     nodes: [validNode],
     edges: [validEdge],
   }
 
   const yamlV2Base = {
-    schema_version: "2.0.0",
+    schema_version: "3.0.0",
     nodes: [{ id: "node-1", component_id: "postgresql", position: { x: 100, y: 200 } }],
     edges: [{ id: "edge-1", source_node_id: "node-1", target_node_id: "node-2" }],
   }
@@ -362,7 +362,7 @@ describe("Constraint Array Size Cap (TD-6-2a AC-1)", () => {
 
 describe("YAML Variant: Constraint Transform (AC-ARCH-PATTERN-5)", () => {
   const yamlInput = {
-    schema_version: "2.0.0",
+    schema_version: "3.0.0",
     nodes: [{
       id: "node-1",
       component_id: "postgresql",
@@ -478,7 +478,7 @@ describe("Constraint DRY base fields (TD-6-4b AC-1)", () => {
 
   it("YAML variant rejects same invalid inputs as camelCase variant (DRY behavioral parity)", () => {
     const yamlBase = {
-      schema_version: "2.0.0",
+      schema_version: "3.0.0",
       nodes: [{ id: "node-1", component_id: "postgresql", position: { x: 100, y: 200 } }],
       edges: [{ id: "edge-1", source_node_id: "node-1", target_node_id: "node-2" }],
     }

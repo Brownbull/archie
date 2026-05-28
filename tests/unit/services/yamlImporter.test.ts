@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { importYaml, importYamlString, hydrateArchitectureSkeleton } from "@/services/yamlImporter"
-import { MIGRATIONS } from "@/schemas/architectureFileSchema"
+import { MIGRATIONS, CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import { DEFAULT_WEIGHT_PROFILE, MAX_FILE_SIZE } from "@/lib/constants"
 
 const { testComponentMap } = vi.hoisted(() => {
@@ -507,6 +507,7 @@ edges:
     beforeEach(() => {
       migrationSpy = vi.fn((data) => ({
         ...(data as object),
+        schemaVersion: CURRENT_SCHEMA_VERSION,
         name: "migrated-architecture",
       }))
       MIGRATIONS["0"] = migrationSpy
@@ -529,7 +530,7 @@ edges: []
 
       expect(migrationSpy).toHaveBeenCalledTimes(1)
       expect(migrationSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ schemaVersion: "0.5.0", nodes: [], edges: [] }),
+        expect.objectContaining({ nodes: [], edges: [] }),
       )
       expect(result.architecture.name).toBe("migrated-architecture")
     })
@@ -713,7 +714,7 @@ describe("hydrateArchitectureSkeleton", () => {
   // Story 9-4 Task 4.5: Unknown scenario ID gracefully defaults to undefined
   it("restores activeScenarioId when it matches a known preset", () => {
     const data = {
-      schemaVersion: "2.0.0",
+      schemaVersion: "3.0.0",
       nodes: [{ id: "n1", componentId: "postgresql", configVariantId: "single-node", position: { x: 0, y: 0 } }],
       edges: [],
       activeScenarioId: "traffic-peak",
@@ -726,7 +727,7 @@ describe("hydrateArchitectureSkeleton", () => {
 
   it("defaults activeScenarioId to undefined when unknown preset", () => {
     const data = {
-      schemaVersion: "2.0.0",
+      schemaVersion: "3.0.0",
       nodes: [{ id: "n1", componentId: "postgresql", configVariantId: "single-node", position: { x: 0, y: 0 } }],
       edges: [],
       activeScenarioId: "unknown-scenario-xyz",
@@ -739,7 +740,7 @@ describe("hydrateArchitectureSkeleton", () => {
 
   it("defaults activeScenarioId to undefined when not provided", () => {
     const data = {
-      schemaVersion: "2.0.0",
+      schemaVersion: "3.0.0",
       nodes: [{ id: "n1", componentId: "postgresql", configVariantId: "single-node", position: { x: 0, y: 0 } }],
       edges: [],
     }

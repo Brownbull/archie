@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, type MetricCategoryId, type ConstraintOperator, } from "@/lib/constants"
+import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, PORT_SORT_ORDER, type MetricCategoryId, type ConstraintOperator, type PortDefinition, } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
@@ -11,7 +11,7 @@ if (METRIC_CATEGORIES.length !== 7) {
   )
 }
 
-export const CURRENT_SCHEMA_VERSION = "2.0.0"
+export const CURRENT_SCHEMA_VERSION = "3.0.0"
 
 // Weight profile Zod schema: one explicit key per metric category (AC-ARCH-PATTERN-2)
 // Uses z.object() NOT z.record() for precise per-field validation errors (AC-ARCH-NO-1)
@@ -77,8 +77,91 @@ function migrateV1ToV2(data: unknown): unknown {
   }
 }
 
+/**
+ * Port resolver for v2→v3 migration. Returns port definitions for a componentId.
+ * Injected by the importer to avoid circular dependency on componentLibrary.
+ */
+export type PortResolver = (componentId: string) => PortDefinition[] | undefined
+
+let _portResolver: PortResolver | undefined
+
+export function setPortResolver(resolver: PortResolver): void {
+  _portResolver = resolver
+}
+
+function migrateV2ToV3(data: unknown): unknown {
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Migration input must be an object")
+  }
+  const d = data as Record<string, unknown>
+  const nodes = d.nodes as Array<Record<string, unknown>> | undefined
+  const edges = d.edges as Array<Record<string, unknown>> | undefined
+
+  if (!nodes || !edges) {
+    return { ...d, schemaVersion: "3.0.0" }
+  }
+
+  const nodeComponentMap = new Map<string, string>()
+  for (const node of nodes) {
+    if (typeof node.id === "string" && typeof node.componentId === "string") {
+      nodeComponentMap.set(node.id, node.componentId)
+    }
+  }
+
+  const portPriority = new Map(PORT_SORT_ORDER.map((t, i) => [t, i]))
+
+  const migratedEdges = edges.map((edge) => {
+    const sourceNodeId = edge.sourceNodeId as string | undefined
+    const targetNodeId = edge.targetNodeId as string | undefined
+    if (!sourceNodeId || !targetNodeId || !_portResolver) {
+      return edge
+    }
+
+    const sourceComponentId = nodeComponentMap.get(sourceNodeId)
+    const targetComponentId = nodeComponentMap.get(targetNodeId)
+    if (!sourceComponentId || !targetComponentId) {
+      return edge
+    }
+
+    const sourcePorts = _portResolver(sourceComponentId)
+    const targetPorts = _portResolver(targetComponentId)
+    if (!sourcePorts || !targetPorts) {
+      return edge
+    }
+
+    const sourceOuts = sourcePorts.filter((p) => p.direction === "out")
+    const targetIns = targetPorts.filter((p) => p.direction === "in")
+
+    // Find matching port types between source outputs and target inputs
+    const matches: Array<{ sourcePort: PortDefinition; targetPort: PortDefinition; priority: number }> = []
+    for (const sp of sourceOuts) {
+      for (const tp of targetIns) {
+        if (sp.type === tp.type) {
+          matches.push({ sourcePort: sp, targetPort: tp, priority: portPriority.get(sp.type) ?? 999 })
+        }
+      }
+    }
+
+    if (matches.length === 0) {
+      return edge
+    }
+
+    // Pick highest-priority match (lowest priority number)
+    matches.sort((a, b) => a.priority - b.priority)
+    const best = matches[0]
+    return {
+      ...edge,
+      sourceHandleId: best.sourcePort.id,
+      targetHandleId: best.targetPort.id,
+    }
+  })
+
+  return { ...d, schemaVersion: "3.0.0", edges: migratedEdges }
+}
+
 export const MIGRATIONS: Record<string, (data: unknown) => unknown> = {
   "1": migrateV1ToV2,
+  "2": migrateV2ToV3,
 }
 
 // Defense-in-depth: numeric bounds prevent extreme float injection from malicious YAML (TD-5-1b)
@@ -125,6 +208,8 @@ export const ArchitectureFileEdgeSchema = z.object({
   id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   sourceNodeId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   targetNodeId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  sourceHandleId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
+  targetHandleId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
 }).strict()
 
 export const ArchitectureFileSchema = z.object({
@@ -162,10 +247,14 @@ const ArchitectureFileEdgeYamlSchema = z.object({
   id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   source_node_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   target_node_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
+  source_handle_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
+  target_handle_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   sourceNodeId: data.source_node_id,
   targetNodeId: data.target_node_id,
+  sourceHandleId: data.source_handle_id,
+  targetHandleId: data.target_handle_id,
 }))
 
 export const ArchitectureFileYamlSchema = z.object({

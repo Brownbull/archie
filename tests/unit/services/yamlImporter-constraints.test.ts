@@ -24,7 +24,7 @@ const ALL_CATEGORY_IDS = METRIC_CATEGORIES.map((c) => c.id)
 function makeV2Yaml(overrides: Record<string, unknown> = {}): string {
   const defaultProfile = Object.fromEntries(ALL_CATEGORY_IDS.map((id) => [id, 1.0]))
   return dump({
-    schema_version: "2.0.0",
+    schema_version: "3.0.0",
     name: "Test Architecture",
     nodes: [
       {

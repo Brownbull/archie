@@ -38,8 +38,8 @@ const validEdge = {
 }
 
 describe("Schema v2: Version and Migration Registration", () => {
-  it("CURRENT_SCHEMA_VERSION is 2.0.0 (AC-1)", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("2.0.0")
+  it("CURRENT_SCHEMA_VERSION is 3.0.0 (AC-1)", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("3.0.0")
   })
 
   it("MIGRATIONS has key '1' registered (AC-2)", () => {
@@ -151,7 +151,7 @@ describe("Schema v2: WeightProfileSchema Validation (AC-3)", () => {
 
 describe("Schema v2: ArchitectureFileSchema with weightProfile", () => {
   const validV2File = {
-    schemaVersion: "2.0.0",
+    schemaVersion: "3.0.0",
     nodes: [validNode],
     edges: [validEdge],
     weightProfile: validWeightProfile,
@@ -182,7 +182,7 @@ describe("Schema v2: ArchitectureFileSchema with weightProfile", () => {
 
 describe("Schema v2: YAML Variant Transform (AC-ARCH-PATTERN-4)", () => {
   const yamlInput = {
-    schema_version: "2.0.0",
+    schema_version: "3.0.0",
     nodes: [
       {
         id: "node-1",

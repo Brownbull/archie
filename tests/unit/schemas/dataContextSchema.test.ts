@@ -183,7 +183,7 @@ describe("ArchitectureFileNodeSchema + dataContext", () => {
 describe("DataContextItemYamlSchema (via ArchitectureFileYamlSchema)", () => {
   it("transforms snake_case data_context to camelCase dataContext", () => {
     const yamlInput = {
-      schema_version: "2.0.0",
+      schema_version: "3.0.0",
       nodes: [{
         id: "node-1",
         component_id: "redis",
