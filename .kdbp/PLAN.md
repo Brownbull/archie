@@ -21,7 +21,7 @@ Epic 13: Concrete Variant Economics — Add monthlyCost, maxRPS, and baseLatency
 | 1 | Economics schema & variant data | Extend ConfigVariant with monthlyCost/maxRPS/baseLatencyMs, author values for all 46 variants | ent | medium | ✅ | ✅ | ✅ | ✅ |
 | 2 | Cost computation & inline node display | totalArchitectureCost selector, cost badge on ArchieNode, recalculate on variant switch | ent | medium | ✅ | ✅ | ✅ | ✅ |
 | 3 | Budget HUD & toolbox cost ranges | Budget HUD progress bar in dashboard, cost range on toolbox cards | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 4 | Inspector economics & delta indicators | Cost/RPS/latency in inspector, delta indicators on variant switch | ent | low | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Inspector economics & delta indicators | Cost/RPS/latency in inspector, delta indicators on variant switch | ent | low | 🔄 | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec is written by /gabe-execute: ⬜ not started, 🔄 in progress, ✅ complete -->
 <!-- Review/Commit/Push auto-ticked by /gabe-review, /gabe-commit, /gabe-push -->
@@ -118,7 +118,7 @@ decisions_entry: D16
 
 ## Current Phase
 
-Phase 3: Budget HUD & toolbox cost ranges
+Phase 4: Inspector economics & delta indicators
 
 ## Dependencies
 

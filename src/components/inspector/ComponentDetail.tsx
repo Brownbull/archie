@@ -1,14 +1,16 @@
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeRecommendations } from "@/engine/recommendationEngine"
+import { getNodeCost } from "@/stores/architectureStoreHelpers"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ComponentSwapper } from "@/components/inspector/ComponentSwapper"
 import { ConfigSelector } from "@/components/inspector/ConfigSelector"
+import { EconomicsSection } from "@/components/inspector/EconomicsSection"
 import { MetricCard } from "@/components/inspector/MetricCard"
 import { MetricFilter } from "@/components/inspector/MetricFilter"
 import { VariantRecommendation } from "@/components/inspector/VariantRecommendation"
@@ -53,6 +55,20 @@ export function ComponentDetail({
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
   )
+
+  const currentEconomics = useMemo(
+    () => getNodeCost(component.id, activeVariantId),
+    [component.id, activeVariantId],
+  )
+  const previousVariantIdRef = useRef<string | null>(null)
+  const previousEconomics = useMemo(() => {
+    const prevId = previousVariantIdRef.current
+    if (!prevId || prevId === activeVariantId) return undefined
+    return getNodeCost(component.id, prevId)
+  }, [component.id, activeVariantId])
+  useEffect(() => {
+    previousVariantIdRef.current = activeVariantId
+  }, [activeVariantId])
 
   const { metricsByCategory, allMetricIds } = useMemo(() => {
     // Prefer computed metrics from recalculation engine over static variant metrics
@@ -165,6 +181,9 @@ export function ComponentDetail({
             onVariantChange={onVariantChange}
           />
         )}
+
+        {/* Economics (Epic 13 Phase 4) */}
+        <EconomicsSection current={currentEconomics} previous={previousEconomics} />
 
         {/* Code Snippet */}
         {activeVariant?.codeSnippet && (
