@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import { componentLibrary } from "@/services/componentLibrary"
-import { PORT_SORT_ORDER, PORT_TYPES, type PortDefinition, type PortType } from "@/lib/constants"
+import { PORT_SORT_ORDER, PORT_TYPES, type PortDefinition } from "@/lib/constants"
 
 export interface ResolvedPort extends PortDefinition {
   label: string

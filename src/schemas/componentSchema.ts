@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { MetricValueSchema, MetricValueYamlSchema } from "@/schemas/metricSchema"
 import { DemandResponseSchema, FailureResponseSchema } from "@/schemas/demandSchema"
-import { PORT_TYPES } from "@/lib/constants"
+import { PORT_TYPES, type PortType } from "@/lib/constants"
 
 export const MAX_REASON_LENGTH = 500
 export const MAX_FACTOR_LENGTH = 200
@@ -49,7 +49,7 @@ export const ConnectionPropertiesSchema = z.object({
 }).strict()
 
 const portTypeEnum = z.enum(
-  Object.keys(PORT_TYPES) as [string, ...string[]],
+  Object.keys(PORT_TYPES) as [PortType, ...PortType[]],
 )
 
 export const PortDefinitionSchema = z.object({
