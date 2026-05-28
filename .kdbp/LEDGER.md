@@ -406,3 +406,12 @@ PHASES COMPLETED: 7 of 7
 PHASES: 4 | COMPLEXITY: medium (3), low (1) | MATURITY: enterprise
 TIERS: mvp × 0, ent × 4, scale × 0 | PROTOTYPES: 0
 DECISIONS: D13 → D16 (4 phase tier decisions logged)
+
+## 2026-06-02 — [8f1a479] feat(economics): add monthlyCost/maxRPS/baseLatencyMs to ConfigVariant schema
+FINDINGS: 0 (0 critical, 0 high, 0 medium, 0 low)
+ACTIONS: —
+
+## 2026-06-02 — PHASE EXEC COMPLETE: Phase 1 — Economics schema & variant data
+TIER: ent
+TASKS: 4 tasks, 1 commit (8f1a479)
+DEVIATIONS: 0 structural, 0 minor
