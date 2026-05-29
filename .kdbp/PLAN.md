@@ -20,7 +20,7 @@ Epic 14: Replicas & Horizontal Scaling — scalable canvas nodes gain a per-node
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
 | 1 | Scaling-rules model + replicaCount schema foundation | CATEGORY_SCALING_RULES in constants; replicaCount on ArchieNodeData (default 1) + setNodeReplicaCount action; ArchitectureFile schema v4 (replicas field + migrateV3ToV4); YAML export/import round-trip | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 2 | Replica-aware economics | getNodeCost/computeTotalArchitectureCost multiply cost by replicaCount; effective capacity = maxRPS × replicaFactor (none→1, else linear); BudgetHud + EconomicsSection reflect scaled totals | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Replica-aware economics | getNodeCost/computeTotalArchitectureCost multiply cost by replicaCount; effective capacity = maxRPS × replicaFactor (none→1, else linear); BudgetHud + EconomicsSection reflect scaled totals | ent | medium | ✅ | ✅ | ✅ | ⬜ |
 | 3 | Canvas replica control + badges + topology rule | ArchieNode inline stepper (− N× +) for scalable nodes; badges "N×" / "reads only" / "needs LB" / "N backends"; topologyChecker detectReplicasWithoutLB ('replicas-without-lb' warning) | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | YAML/topology integration + E2E journey | Integration round-trip tests (replicas preserved, v3→v4 migration, omit-when-1); E2E replicas-and-scaling journey (set replicas → cost badge updates → needs-LB warning → export/import) | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
 

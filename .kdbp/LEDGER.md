@@ -584,3 +584,32 @@ TARGET: dev → origin/main (direct push)
 CI: ✅ 1/1 — Deploy Production pass (58s, run 26620393688)
 DEPLOYMENTS: P15
 TICK: ✅ Phase 1 Push
+- 2026-05-29 01:47 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-29 01:47 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-29 01:48 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-29 01:48 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-29 01:49 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-replica-economics.test.ts
+
+## 2026-05-29 01:50 — [f329d42] feat(replicas): scale node economics by replica count
+FINDINGS: 0 introduced (aislop baseline unchanged; D4 = pre-existing ComponentDetail eslint debt)
+CHECKS: lint ✅ changed files 0 new errors | types ✅ | tests ✅ 2974/2974 (10 new) | coverage ✅ new paths tested | shape ⚠ architectureStore.ts 815 (D3) | docs ✅ | structure ✅
+ACTIONS: D4 logged (pre-existing react-hooks/refs in ComponentDetail, not gating)
+DEFERRED: D4
+
+## 2026-05-29 01:50 — PHASE EXEC COMPLETE: Phase 2 — Replica-aware economics
+TIER: ent
+TASKS: 1 commit (f329d42) — getNodeCost/total cost scaling + ArchieNode + ComponentDetail wiring
+DEVIATIONS: 0 structural, 0 minor
+- 2026-05-29 01:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-replica-economics.test.ts
+- 2026-05-29 01:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-replica-economics.test.ts
+
+## 2026-05-29 01:56 — PHASE 2 REVIEW: Replica-aware economics
+VERDICT: APPROVE
+FINDINGS: 2 surfaced (0 critical, 0 high, 0 medium, 2 low) — 1 confirmed + fixed (Infinity test gap), 1 refuted (unknown-component path provably correct)
+COVERAGE: HIGH — all scaling branches (full/read-only/none), clamp/NaN/Infinity, undefined passthrough, total-cost multiply tested
+CONFIDENCE: 100/100
+METHOD: 2-lens adversarial workflow (correctness/numeric-edges + tests) + refutation pass; 4 agents
+DEFERRED: none (D4 carried from exec)
+ALIGNMENT: ALIGNED
+TIER: ent | DRIFT: none
+TICK: ✅
