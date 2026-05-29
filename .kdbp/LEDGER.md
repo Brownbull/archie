@@ -786,3 +786,24 @@ TICK: ✅
 
 ## 2026-05-29 13:44 — PUSH dev → main (Epic 15 Phase 2)
 TARGET: dev → origin/main (direct push) | CI: ✅ 1/1 (48s, run 26640... ) | DEPLOYMENTS: P20 | TICK: ✅ E15 P2 Push
+- 2026-05-29 09:47 | Write | /home/khujta/projects/bmad/archie/src/hooks/useNodeSimTelemetry.ts
+- 2026-05-29 09:47 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-29 09:47 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-29 09:47 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-29 09:48 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useNodeSimTelemetry.test.ts
+- 2026-05-29 09:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-29 09:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+
+## 2026-05-29 09:49 — [5f6b8f1] feat(simulation): per-node live telemetry overlay
+CHECKS: build ✅ tsc -b | tests ✅ 3054 (8 new) | lint ✅ 0
+## 2026-05-29 09:49 — PHASE EXEC COMPLETE: E15 Phase 3 — Per-node live telemetry overlay
+TIER: ent | TASKS: hook + ArchieNode strip + tests, 1 commit (5f6b8f1)
+RUNTIME EVIDENCE: jsdom real-render test (ArchieNode + live simulationStore tick); browser journey deferred to Phase 6 (trigger lands Phase 5)
+DEVIATIONS: 0 structural, 1 minor (dedicated hook vs overlayMode)
+
+## 2026-05-29 09:50 — PHASE 3 REVIEW: E15 Per-node live telemetry overlay
+VERDICT: APPROVE
+FINDINGS: 0 (clean — selector ref-stable, capacity clamp correct, idle-hide correct, no regression to 67 ArchieNode tests)
+COVERAGE: HIGH — 6 hook tests (data + color bands) + 2 ArchieNode render (idle-hide, overloaded-red)
+CONFIDENCE: 98/100 | METHOD: focused code-reviewer agent
+DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
