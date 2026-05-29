@@ -6,6 +6,8 @@ import type {
   TickState,
   NodeTelemetry,
   SimulationResult,
+  ScheduledEvent,
+  TickOverrides,
 } from "@/lib/simulationTypes"
 
 /**
@@ -61,12 +63,35 @@ function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): numbe
 }
 
 /**
+ * Resolves the scheduled events active at `timeS` into per-tick overrides (Epic 16).
+ * - component_failure: target node offline (sheds all traffic).
+ * - az_outage: every node whose category === target goes offline.
+ * - latency_spike: target node's latency is multiplied (default ×3).
+ */
+export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], timeS: number): TickOverrides {
+  const offlineNodeIds = new Set<string>()
+  const latencyMultipliers = new Map<string, number>()
+  for (const e of events) {
+    const active = timeS >= e.t && (e.durationS == null || timeS < e.t + e.durationS)
+    if (!active) continue
+    if (e.type === "component_failure") {
+      offlineNodeIds.add(e.target)
+    } else if (e.type === "az_outage") {
+      for (const n of nodes) if (n.category === e.target) offlineNodeIds.add(n.id)
+    } else if (e.type === "latency_spike") {
+      latencyMultipliers.set(e.target, (latencyMultipliers.get(e.target) ?? 1) * (e.multiplier ?? 3))
+    }
+  }
+  return { offlineNodeIds, latencyMultipliers }
+}
+
+/**
  * Routes `targetRps` through the graph for a single tick.
  * Directional flow (source → target), even split at fan-out, per-node shed on overload.
  * Processes nodes in topological order (Kahn); nodes in a cycle are processed once without
  * forwarding (v1 limitation — flagged for the engine's cycle handling).
  */
-export function simulateTick(graph: SimGraph, tick: number, targetRps: number): TickState {
+export function simulateTick(graph: SimGraph, tick: number, targetRps: number, overrides?: TickOverrides): TickState {
   const nodeById = new Map(graph.nodes.map((n) => [n.id, n]))
   const outAdj = new Map<string, string[]>()
   const indeg = new Map<string, number>()
@@ -114,18 +139,21 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number): 
   const process = (id: string, forward: boolean) => {
     const node = nodeById.get(id) as SimNode
     const incoming = inflow.get(id) ?? 0
+    const offline = overrides?.offlineNodeIds.has(id) ?? false
+    const latMult = overrides?.latencyMultipliers.get(id) ?? 1
     const capped = node.effectiveMaxRps > 0
-    const served = capped ? Math.min(incoming, node.effectiveMaxRps) : incoming
+    // Offline (scheduled failure / AZ outage): zero capacity → sheds all incoming traffic.
+    const served = offline ? 0 : capped ? Math.min(incoming, node.effectiveMaxRps) : incoming
     const failed = Math.max(0, incoming - served)
-    const capacityPercent = capped ? incoming / node.effectiveMaxRps : 0
+    const capacityPercent = offline ? (incoming > 0 ? 1 : 0) : capped ? incoming / node.effectiveMaxRps : 0
     telemetry.set(id, {
       nodeId: id,
       incomingRps: incoming,
       servedRps: served,
       failedRps: failed,
-      latencyMs: latencyUnderLoad(node.baseLatencyMs, capacityPercent),
+      latencyMs: (offline ? node.baseLatencyMs : latencyUnderLoad(node.baseLatencyMs, capacityPercent)) * latMult,
       capacityPercent,
-      overloaded: capped && incoming > node.effectiveMaxRps,
+      overloaded: offline ? incoming > 0 : capped && incoming > node.effectiveMaxRps,
     })
     if (forward) {
       const outs = outAdj.get(id) ?? []
@@ -153,13 +181,16 @@ export function runSimulation(
   curve: TrafficCurve,
   ticks: number = SIM_TICKS,
   durationS: number = SIM_DEFAULT_DURATION_S,
+  scheduledEvents: ScheduledEvent[] = [],
 ): SimulationResult {
   const safeTicks = Math.max(1, Math.floor(ticks))
   const frames: TickState[] = []
   for (let i = 0; i < safeTicks; i++) {
     const t = safeTicks === 1 ? 0 : (i / (safeTicks - 1)) * durationS
     const targetRps = interpolateRps(curve, t)
-    frames.push(simulateTick(graph, i, targetRps))
+    // Empty events → undefined overrides → simulateTick behaves exactly as pre-Epic-16 (no regression).
+    const overrides = scheduledEvents.length > 0 ? computeOverrides(graph.nodes, scheduledEvents, t) : undefined
+    frames.push(simulateTick(graph, i, targetRps, overrides))
   }
   return { ticks: frames, entryNodeIds: findEntryNodes(graph) }
 }

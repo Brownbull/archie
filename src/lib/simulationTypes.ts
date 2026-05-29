@@ -72,3 +72,25 @@ export interface SimulationResult {
   /** Node IDs with no incoming edge — where traffic is injected. Empty = no entry (no traffic). */
   entryNodeIds: string[]
 }
+
+// --- Scheduled failure events (Epic 16 Challenge Mode) ---
+
+export type ScheduledEventType = "component_failure" | "latency_spike" | "az_outage"
+
+export interface ScheduledEvent {
+  /** Seconds from start when the event begins. */
+  t: number
+  type: ScheduledEventType
+  /** Target node id (component_failure / latency_spike) or category id (az_outage). */
+  target: string
+  /** Duration in seconds; omit for "until the end of the run". */
+  durationS?: number
+  /** Latency multiplier for latency_spike (default 3). Ignored by other types. */
+  multiplier?: number
+}
+
+/** Per-tick simulation overrides derived from the scheduled events active at that tick. */
+export interface TickOverrides {
+  offlineNodeIds: Set<string>
+  latencyMultipliers: Map<string, number>
+}

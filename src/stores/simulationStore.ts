@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { runSimulation } from "@/engine/simulationEngine"
 import { SIM_BASE_TICK_MS } from "@/lib/constants"
-import type { SimGraph, TrafficCurve, TickState } from "@/lib/simulationTypes"
+import type { SimGraph, TrafficCurve, TickState, ScheduledEvent } from "@/lib/simulationTypes"
 
 export type SimulationStatus = "idle" | "running" | "paused" | "done"
 export type PlaybackSpeed = 1 | 2 | 5 | 10
@@ -17,7 +17,7 @@ interface SimulationState {
    * Start a simulation: runs the engine over the graph + curve, then plays back tick-by-tick.
    * Calling start() while a run is active discards it and restarts from tick 0 (intentional re-run).
    */
-  start: (graph: SimGraph, curve: TrafficCurve) => void
+  start: (graph: SimGraph, curve: TrafficCurve, scheduledEvents?: ScheduledEvent[]) => void
   pause: () => void
   resume: () => void
   /** Restart playback from tick 0 using the already-computed ticks. */
@@ -62,8 +62,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     speed: 1,
     entryNodeIds: [],
 
-    start: (graph, curve) => {
-      const result = runSimulation(graph, curve)
+    start: (graph, curve, scheduledEvents) => {
+      const result = runSimulation(graph, curve, undefined, undefined, scheduledEvents)
       stopTimer()
       const hasPlayback = result.ticks.length > 1
       set({

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest"
-import { interpolateRps, findEntryNodes, simulateTick, runSimulation, defaultTrafficCurve } from "@/engine/simulationEngine"
+import { interpolateRps, findEntryNodes, simulateTick, runSimulation, defaultTrafficCurve, computeOverrides } from "@/engine/simulationEngine"
+import type { ScheduledEvent } from "@/lib/simulationTypes"
 import { SIM_TICKS } from "@/lib/constants"
 import type { SimGraph, SimNode } from "@/lib/simulationTypes"
 
@@ -184,6 +185,68 @@ describe("runSimulation", () => {
     const r = runSimulation(g, ramp, 1)
     expect(r.ticks).toHaveLength(1)
     expect(r.ticks[0].targetRps).toBe(0) // t=0 at tick 0
+  })
+})
+
+describe("computeOverrides (scheduled events, Epic 16)", () => {
+  const nodes = [node("app", 100, { category: "compute" }), node("app2", 100, { category: "compute" }), node("db", 100, { category: "data-storage" })]
+
+  it("offlines a component_failure target only while the event is active", () => {
+    const ev: ScheduledEvent[] = [{ t: 30, type: "component_failure", target: "app", durationS: 20 }]
+    expect(computeOverrides(nodes, ev, 10).offlineNodeIds.size).toBe(0) // before
+    expect(computeOverrides(nodes, ev, 35).offlineNodeIds.has("app")).toBe(true) // during
+    expect(computeOverrides(nodes, ev, 55).offlineNodeIds.size).toBe(0) // after duration
+  })
+
+  it("offlines every node of the target category for an az_outage", () => {
+    const ov = computeOverrides(nodes, [{ t: 0, type: "az_outage", target: "compute" }], 5)
+    expect(ov.offlineNodeIds.has("app")).toBe(true)
+    expect(ov.offlineNodeIds.has("app2")).toBe(true)
+    expect(ov.offlineNodeIds.has("db")).toBe(false)
+  })
+
+  it("applies a latency multiplier for latency_spike (default ×3)", () => {
+    expect(computeOverrides(nodes, [{ t: 0, type: "latency_spike", target: "db" }], 5).latencyMultipliers.get("db")).toBe(3)
+    expect(computeOverrides(nodes, [{ t: 0, type: "latency_spike", target: "db", multiplier: 5 }], 5).latencyMultipliers.get("db")).toBe(5)
+  })
+})
+
+describe("simulateTick with overrides", () => {
+  it("an offline node sheds all incoming traffic and forwards nothing", () => {
+    const g: SimGraph = { nodes: [node("in", 1000), node("db", 1000)], edges: [edge("in", "db")] }
+    const overrides = { offlineNodeIds: new Set(["in"]), latencyMultipliers: new Map() }
+    const s = simulateTick(g, 0, 100, overrides)
+    const inT = s.nodes.find((n) => n.nodeId === "in")!
+    expect(inT.servedRps).toBe(0)
+    expect(inT.failedRps).toBe(100)
+    expect(inT.overloaded).toBe(true)
+    expect(s.nodes.find((n) => n.nodeId === "db")!.incomingRps).toBe(0) // nothing forwarded
+  })
+
+  it("multiplies latency for a node in latencyMultipliers", () => {
+    const g: SimGraph = { nodes: [node("in", 1000, { baseLatencyMs: 10 })], edges: [] }
+    const overrides = { offlineNodeIds: new Set<string>(), latencyMultipliers: new Map([["in", 4]]) }
+    const s = simulateTick(g, 0, 50, overrides)
+    expect(s.nodes.find((n) => n.nodeId === "in")!.latencyMs).toBe(40) // base 10 × 4 (50% load, no overload)
+  })
+})
+
+describe("runSimulation with scheduled events", () => {
+  it("a component_failure at t=0 sheds all traffic at the failed node for the whole run", () => {
+    const g: SimGraph = { nodes: [node("lb", 5000), node("app", 5000)], edges: [edge("lb", "app")] }
+    const events: ScheduledEvent[] = [{ t: 0, type: "component_failure", target: "lb" }]
+    const result = runSimulation(g, defaultTrafficCurve(90, 1000), undefined, undefined, events)
+    const last = result.ticks[result.ticks.length - 1]
+    expect(last.nodes.find((n) => n.nodeId === "lb")!.servedRps).toBe(0)
+    expect(last.totalServedRps).toBe(0) // entry offline → nothing reaches downstream
+    expect(last.totalFailedRps).toBeGreaterThan(0)
+  })
+
+  it("is identical to a no-events run when scheduledEvents is empty (regression guard)", () => {
+    const g: SimGraph = { nodes: [node("in", 80), node("db", 1000)], edges: [edge("in", "db")] }
+    const withoutParam = runSimulation(g, defaultTrafficCurve(90, 1000))
+    const withEmpty = runSimulation(g, defaultTrafficCurve(90, 1000), undefined, undefined, [])
+    expect(withEmpty.ticks.at(-1)!.totalFailedRps).toBe(withoutParam.ticks.at(-1)!.totalFailedRps)
   })
 })
 
