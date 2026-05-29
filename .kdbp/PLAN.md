@@ -24,7 +24,7 @@ Epic 16: Challenge Mode — a challenge selector with progressive architecture-d
 | 3 | Challenge selector + checklist + budget/timer HUD | ChallengeSelector level cards (difficulty/best-stars); RequiredComponentsChecklist + hints; BudgetBar (cap line) + countdown timer | ent | medium | ✅ | ✅ | ✅ | ✅ |
 | 4 | Results modal + Start button + challenge↔sim wiring | ChallengeStartButton (replaces RunSimulationButton in challenge mode); ResultsModal (stars/uptime/latency/budget/topology); auto-score on sim done | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 5 | Challenge content — 10 levels | src/data/challenges/*.yaml (10 levels per roadmap catalog), validated against schema | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 6 | Integration + E2E challenge journey | integration (select→build→start→score) + E2E (select level → place → Start → results modal with stars) | ent | medium | ✅ | ✅ | ✅ | ⬜ |
+| 6 | Integration + E2E challenge journey | integration (select→build→start→score) + E2E (select level → place → Start → results modal with stars) | ent | medium | ✅ | ✅ | ✅ | ✅ |
 
 <!-- Exec: ⬜/🔄/✅. Review/Commit/Push auto-ticked. User-facing/web phases require runtime journey evidence. -->
 

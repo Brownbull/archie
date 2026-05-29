@@ -1100,3 +1100,8 @@ TARGET: 725a259 | RAW: 11 → CONFIRMED: 7 (≥0.7 conf)
 - [high] E2E .first() / non-deterministic placement — FIXED (explicit challenge-card-first-service; Start only needs nodeCount>0 so no flake) + [medium×2] timing/order — FIXED (30s wait headroom)
 NOTE: required_components is an advisory checklist, not a scoring gate (by design) — consistent across P5/P6 reviews.
 RESOLUTION: all 7 fixed in bf6ae73. Full suite 3158 + E2E green. Confidence high.
+
+## 2026-05-29 — PUSH P30 (Epic 16 P6) — CI ✅ — EPIC 16 COMPLETE
+PUSH: dev:main 2576e58..912439e | run 26648812806 deploy-production 49s ✅
+DEPLOY: P30. Epic 16 (Challenge Mode) COMPLETE — all 6 phases shipped to production.
+EPIC 16 SUMMARY: schema+loader+scheduled-events engine (P1) → star rubric + challengeStore (P2) → selector + HUD (P3) → Start + auto-score + results modal (P4) → 10 levels (P5) → integration + E2E (P6). 6 prod deploys P25-P30, all CI-green.
