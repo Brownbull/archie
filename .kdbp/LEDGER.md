@@ -1169,3 +1169,14 @@ TARGET: 3181277 | RAW: 10 → CONFIRMED: 9 (≥0.7 conf)
 - [high] hook recompute-on-change untested — FIXED (new test)
 - [medium] sub-precision ±0 neutrality untested — FIXED; [medium] latency-degrading-saving test — already covered by P1 latency-guard test
 RESOLUTION: all 9 addressed in 6c5676b. Full suite 3178 green. Confidence high.
+
+## 2026-05-29 — PUSH P33 (Epic 17 P2) — CI ✅
+PUSH: dev:main 8e1a53b..73bd8e6 | run 26659718139 deploy-production 47s ✅
+DEPLOY: P33 — suggestion card live. Advancing to P3 (require auth for challenge mode, per D33).
+- 2026-05-29 16:13 | Write | /home/khujta/projects/bmad/archie/src/hooks/useCurrentUserId.ts
+- 2026-05-29 16:14 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useCurrentUserId.test.tsx
+
+## 2026-05-29 — [ac0c0a2] feat(auth): useCurrentUserId + P3 verification (Epic 17 P3)
+PHASE: Epic 17 P3 — challenge-mode auth satisfied by global AuthGuard (D35); useCurrentUserId seam for P4
+REVIEW: single code-reviewer (proportionate to a 2-line hook + verification). APPROVE — 0 crit/high/med, 1 low (non-idiomatic mock, functionally fine). D35 AuthGuard claim verified: no anonymous bypass.
+GATE: lint ✅ types ✅ tests 3181/3181 ✅
