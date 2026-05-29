@@ -94,6 +94,15 @@ export const MAX_CANVAS_NODES = 50
 export const MIN_REPLICAS = 1
 export const MAX_REPLICAS = 20
 
+// Simulation engine (Epic 15). Fixed tick count keeps telemetry buffers bounded and playback smooth.
+export const SIM_TICKS = 50
+export const SIM_DEFAULT_DURATION_S = 90
+// Latency-under-load coefficient: latency = baseLatencyMs × (1 + max(0, load−1) × LATENCY_LOAD_K).
+// At 2× capacity, latency ≈ baseLatency × (1 + LATENCY_LOAD_K). Tuned for visible-but-not-extreme growth.
+export const LATENCY_LOAD_K = 2
+// Wall-clock ms per tick at 1× playback speed; divided by playback speed (1/2/5/10×) in the store.
+export const SIM_BASE_TICK_MS = 1000
+
 // Canvas edge limit — defense-in-depth against memory exhaustion from malformed YAML (TD-5-1a)
 export const MAX_EDGES = 200
 
