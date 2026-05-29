@@ -410,6 +410,9 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   },
 
   setNodeReplicaCount: (nodeId, count) => {
+    // Reject non-finite input (NaN/Infinity from unparsed UI text) before clamping —
+    // NaN survives Math.max/min and the !== guard below, corrupting node state (Epic 14)
+    if (!Number.isFinite(count)) return
     // Clamp to valid bounds — guards against UI/import out-of-range values (Epic 14)
     const clamped = Math.max(MIN_REPLICAS, Math.min(MAX_REPLICAS, Math.floor(count)))
     const node = get().nodes.find((n) => n.id === nodeId)

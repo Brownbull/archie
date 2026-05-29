@@ -99,4 +99,19 @@ describe("architectureStore — replicaCount (Epic 14)", () => {
     const dup = useArchitectureStore.getState().nodes.find((n) => n.id === newId)
     expect(dup?.data.replicaCount).toBe(4)
   })
+
+  it("ignores a non-finite (NaN) count without mutating state or recalculating", () => {
+    seed(3)
+    useArchitectureStore.getState().setNodeReplicaCount("n1", Number.NaN)
+    expect(useArchitectureStore.getState().nodes[0].data.replicaCount).toBe(3)
+    expect(mockRecalc).not.toHaveBeenCalled()
+  })
+
+  it("swapNodeComponent preserves replicaCount across a swap to a scalable component", () => {
+    seed(4)
+    useArchitectureStore.getState().swapNodeComponent("n1", "redis")
+    const node = useArchitectureStore.getState().nodes[0]
+    expect(node.data.archieComponentId).toBe("redis")
+    expect(node.data.replicaCount).toBe(4)
+  })
 })

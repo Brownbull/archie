@@ -69,6 +69,13 @@ describe("yamlImporter — replicas hydration (Epic 14, schema v4)", () => {
     expect(result.architecture.nodes[0].data.replicaCount).toBe(1)
   })
 
+  it("hydrates replicaCount on a placeholder node for an unknown component", () => {
+    const result = importYamlString(makeYaml("4.0.0", { component_id: "unknown-component", replicas: 5 }))
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes[0].data.replicaCount).toBe(5)
+  })
+
   it("rejects an out-of-range replicas value at schema validation", () => {
     const result = importYamlString(makeYaml("4.0.0", { replicas: 999 }))
     expect(result.success).toBe(false)
