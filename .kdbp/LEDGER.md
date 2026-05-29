@@ -810,3 +810,28 @@ DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
 
 ## 2026-05-29 13:53 — PUSH dev → main (Epic 15 Phase 3)
 TARGET: dev → origin/main | CI: ✅ 1/1 (45s, run 26640726...) | DEPLOYMENTS: P21 | TICK: ✅ E15 P3 Push
+- 2026-05-29 09:55 | Write | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-05-29 09:55 | Write | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationTimeline.tsx
+- 2026-05-29 09:55 | Write | /home/khujta/projects/bmad/archie/src/components/simulation/PlaybackControls.tsx
+- 2026-05-29 09:56 | Write | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsPanel.tsx
+- 2026-05-29 09:56 | Write | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationBar.tsx
+- 2026-05-29 09:56 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-05-29 09:56 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-05-29 09:57 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/simulationStats.test.ts
+- 2026-05-29 09:58 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/simulation/SimulationBar.test.tsx
+
+## 2026-05-29 09:58 — [6e47e90] feat(simulation): stats panel + SVG timeline + playback controls
+CHECKS: build ✅ tsc -b | tests ✅ 3068 (14 new) | lint ✅ 0
+## 2026-05-29 09:58 — PHASE EXEC COMPLETE: E15 Phase 4 — Stats panel + SVG timeline + playback controls
+TIER: ent | TASKS: stats helper + 4 components + AppLayout mount + tests, 1 commit (6e47e90)
+RUNTIME EVIDENCE: SimulationBar render/interaction test (real components+store); browser journey Phase 6
+DEVIATIONS: 0 structural, 0 minor
+- 2026-05-29 10:01 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 10:01 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/simulationStore.test.ts
+
+## 2026-05-29 10:00 — PHASE 4 REVIEW: E15 Stats panel + SVG timeline + playback controls
+VERDICT: APPROVE
+FINDINGS: 5 (0 critical, 0 high, 2 medium [perf/style], 3 low) — seek NaN guard fixed; percentile/stacking verified correct; selector-count + memo + key noted not-actioned (no correctness impact)
+COVERAGE: HIGH — 7 stats helper tests + 7 SimulationBar render/interaction
+CONFIDENCE: 96/100 | METHOD: focused code-reviewer agent
+DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅

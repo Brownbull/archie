@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260529-095051
+**Date:** 20260529-100225
 **Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,14 +8,14 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 17 | 252ms |
-| code-quality | 101 | 3016ms |
-| ai-slop | 0 | 8ms |
-| security | 8 | 1835ms |
+| lint | 17 | 280ms |
+| code-quality | 100 | 3125ms |
+| ai-slop | 0 | 5ms |
+| security | 8 | 922ms |
 
 ## Findings
 
-### code-quality (101)
+### code-quality (100)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
@@ -114,20 +114,19 @@
 - [!] `src/stores/uiStore.ts:14` — knip/types: Unused type: ContextMenuState
 - [!] `src/hooks/useNodeOverlay.ts:8` — knip/types: Unused type: NodeOverlayInfo
 - [!] `src/stores/simulationStore.ts:6` — knip/types: Unused type: SimulationStatus
-- [!] `src/stores/simulationStore.ts:7` — knip/types: Unused type: PlaybackSpeed
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
-- [!] `src/components/canvas/ArchieNode.tsx:38` — complexity/function-too-long: Function 'ArchieNodeComponent' has 332 lines (max: 80)
+- [!] `src/lib/simulationStats.ts:3` — knip/types: Unused type: SimulationStats
 
 ### lint (17)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
