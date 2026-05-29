@@ -25,3 +25,4 @@
 | P19 | 2026-05-29 | dev → main | — | ✅ 1/1 (44s) | Epic 15 Phase 1: pure time-stepped simulation engine + types (routing, shed capacity, 28 tests) | — |
 | P20 | 2026-05-29 | dev → main | — | ✅ 1/1 (48s) | Epic 15 Phase 2: simulationStore playback state machine + buildSimGraph (16 tests) | — |
 | P21 | 2026-05-29 | dev → main | — | ✅ 1/1 (45s) | Epic 15 Phase 3: per-node live telemetry overlay (RPS/latency/capacity bar) | — |
+| P22 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 4: stats panel + SVG timeline + playback controls (SimulationBar) | — |
