@@ -982,3 +982,51 @@ RAW: 11 findings → CONFIRMED: 7 (after adversarial verification ≥0.7 conf)
 - [high×4] budget-bar tests assert data-over only, not color tier / width / 80% threshold / cost==cap boundary (false confidence) — FIXED 74dee08
 - [medium] cost==cap boundary untested — FIXED 74dee08
 RESOLUTION: all 7 fixed in 74dee08 (data-tier="ok|warn|over" + ARIA + 7 HUD tests). Confidence high.
+
+## 2026-05-29 — PUSH P27 (Epic 16 P3) — CI ✅
+PUSH: dev:main 63cc0f8..80c84b1 | run 26645289463 deploy-production 54s ✅
+DEPLOY: P27 recorded. Epic 16 Phase 3 COMPLETE (Exec/Review/Commit/Push all ✅). Advancing to Phase 4.
+- 2026-05-29 11:14 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-05-29 11:14 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 11:14 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 11:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 11:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/challengeStore.test.ts
+- 2026-05-29 11:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/challengeStore.test.ts
+- 2026-05-29 11:15 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-05-29 11:16 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-05-29 11:16 | Write | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-05-29 11:16 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-29 11:16 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-29 11:16 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-29 11:17 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeStartButton.test.tsx
+- 2026-05-29 11:18 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-29 11:18 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeStartButton.test.tsx
+
+## 2026-05-29 — [dec67d4] feat(challenges): Start button + auto-score + results modal
+PHASE: Epic 16 P4 — Results modal + Start button + challenge↔sim wiring
+FINDINGS: 0 critical (gate: lint ✅ types ✅ tests 3133/3133 ✅ shape ✅ structure ✅)
+FILES: ChallengeStartButton/ChallengeResultsModal.tsx, useChallengeAutoScore.ts, challengeStore.ts (+lastMeasured), challengeTypes.ts (MeasuredAttempt), RunSimulationButton.tsx, CanvasView.tsx + 3 tests
+NOTE: full browser Start→results E2E deferred to P6 (needs selectable level from P5 content). P4 evidence = jsdom hook+component+store tests.
+- 2026-05-29 11:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 11:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 11:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 11:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-05-29 11:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-05-29 11:31 | Write | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-05-29 11:32 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeAutoScore.test.tsx
+- 2026-05-29 11:33 | Write | /home/khujta/projects/bmad/archie/tests/integration/challengeFlow.test.tsx
+- 2026-05-29 11:33 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-29 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/RunSimulationButton.test.tsx
+- 2026-05-29 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/RunSimulationButton.test.tsx
+- 2026-05-29 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/RunSimulationButton.test.tsx
+- 2026-05-29 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeStartButton.test.tsx
+
+## 2026-05-29 — REVIEW Epic 16 P4 (adversarial workflow, 4 dims × verify)
+TARGET: dec67d4 | RAW: 18 → CONFIRMED: 10 (≥0.7 conf)
+- [critical×2] auto-score read cost+topology LIVE at done, not start-time snapshot (canvas editable mid-run breaks "decoupled" invariant) — FIXED c8ef051 (attemptSnapshot captured in startAttempt)
+- [high] stale getState read outside effect deps — RESOLVED by snapshot (sim+snapshot frozen during run; no live reads)
+- [high] no dedicated hook test — FIXED (tests/unit/hooks/useChallengeAutoScore: snapshot/once/guards/fallback)
+- [high×2] Start/Modal tests over-mocked start()+stats, hiding integration — FIXED (tests/integration/challengeFlow real engine)
+- [medium×2] manual setState realism / lastMeasured unasserted — FIXED (integration test + lastMeasured assertion)
+- [low×2] 0★ render + RunSim hide-in-challenge untested — FIXED
+RESOLUTION: all 10 fixed in c8ef051. Full suite 3141 green. Confidence high.

@@ -30,3 +30,4 @@
 | P24 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 6: integration + E2E simulation journey — Epic 15 COMPLETE | — |
 | P25 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 16 Phase 1: challenge schema + types + loader + scheduled-events engine (43 tests) | — |
 | P26 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 16 Phase 2: star rubric scorer + challengeStore state machine (14 tests) | — |
+| P27 | 2026-05-29 | dev → main | 80c84b1 | ✅ 1/1 (54s) | Epic 16 Phase 3: challenge selector + checklist + budget HUD (data-tier + ARIA; 9→11 tests) | run 26645289463 |
