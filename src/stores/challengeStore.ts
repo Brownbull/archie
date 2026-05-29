@@ -32,7 +32,9 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   },
 
   startAttempt: () => {
-    if (!get().activeChallenge || get().attemptState === "running") return
+    // Only startable from 'building' — a retry after 'scored' goes back through selectChallenge,
+    // preventing a stale scored→running re-entry that could double-score the same attempt.
+    if (!get().activeChallenge || get().attemptState !== "building") return
     set({ attemptState: "running", lastResult: null })
   },
 

@@ -58,6 +58,17 @@ describe("challengeStore (Epic 16)", () => {
     expect(s().scoreAttempt(stats(100, 50), 0, 100)).toBeNull()
   })
 
+  it("startAttempt is a no-op from 'scored' — a retry must go through selectChallenge first", () => {
+    s().selectChallenge(challenge)
+    s().startAttempt()
+    s().scoreAttempt(stats(100, 50), 0, 100) // → scored
+    s().startAttempt() // stale call from scored
+    expect(s().attemptState).toBe("scored") // not re-entered into running
+    s().selectChallenge(challenge) // proper retry path
+    s().startAttempt()
+    expect(s().attemptState).toBe("running")
+  })
+
   it("reset leaves challenge mode but keeps bestStars", () => {
     s().selectChallenge(challenge)
     s().scoreAttempt(stats(100, 50), 0, 100)
