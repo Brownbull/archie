@@ -791,3 +791,10 @@ dim_overrides: []
 **Decision:** The Firestore `attempts` doc persists `{ userId, challengeId, stars, uptimePercent, p99LatencyMs, totalCost, topologyIssueCount, createdAt }` — exactly the scored snapshot (lastResult + lastMeasured). The roadmap's `requestsTotal`/`requestsFailed` are omitted as redundant with `uptimePercent` (= served/total), avoiding churn to MeasuredAttempt + 4 test files.
 **Rules deploy:** CI deploys hosting only (action-hosting-deploy). `attempts` rules live in firestore.rules but require a manual `firebase deploy --only firestore:rules` to enforce. Until then, writes are DENY-by-default — recordAttempt is best-effort (catches the denial), so the app works; attempts just won't save until rules deploy. Tracked as PENDING D9.
 **Status:** accepted
+
+## D37 — Epic 17 P6: defer optional brand-logo polish (2026-05-29)
+
+**Decision:** Ship P6 as the integration coverage (score → persist → History loop + owner-scoping). Defer the roadmap's *optional* brand-logo polish (`brand`/`logoUrl` on ConfigVariant) rather than build it now.
+**Rationale:** (1) Explicitly optional in the roadmap. (2) Renders nothing without curated per-variant logo assets, which don't exist — building the plumbing now is unused code. (3) Adds a URL-injection surface (logoUrl must be https-only validated, no javascript: URIs per .claude/rules/security.md) — a security cost for zero current value. Aligns with "plan light, build real" + security-first. (4) Epic 17's value (suggestions + history) is fully delivered.
+**Implication:** Tracked as PENDING D10 (optional enhancement, do when brand assets are curated, with a URL-validation security pass).
+**Status:** accepted
