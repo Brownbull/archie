@@ -619,3 +619,47 @@ TARGET: dev → origin/main (direct push)
 CI: ✅ 1/1 — Deploy Production pass (50s, run 26620880784)
 DEPLOYMENTS: P16
 TICK: ✅ Phase 2 Push
+- 2026-05-29 02:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/topologyChecker.ts
+- 2026-05-29 02:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/topologyChecker.ts
+- 2026-05-29 02:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-29 02:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-29 02:03 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-29 02:03 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-29 02:03 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-29 02:05 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/topologyChecker-replicas.test.ts
+- 2026-05-29 02:05 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-replicas.test.ts
+- 2026-05-29 02:05 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-replicas.test.ts
+- 2026-05-29 02:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-29 02:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-29 02:08 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-29 02:08 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-29 02:16 | Write | /home/khujta/projects/bmad/archie/tests/e2e/replicas-and-scaling.spec.ts
+- 2026-05-29 02:26 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-29 02:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-replicas.test.ts
+- 2026-05-29 02:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-29 02:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+
+## 2026-05-29 02:23 — [cd0c1fd] feat(replicas): canvas stepper + badges + topology rule
+FINDINGS: addressed in review (ae2c5b4)
+CHECKS: types ✅ | tests ✅ 2993 | lint ✅ 0 err | runtime journey ✅ (chromium)
+
+## 2026-05-29 02:30 — [ae2c5b4] fix(replicas): setEdges topology + orphan-suppress + review test gaps
+FINDINGS: 7 confirmed fixed (2 code, 4 test, 1 contested-low left as-is)
+
+## 2026-05-29 02:30 — PHASE EXEC COMPLETE: Phase 3 — Canvas replica control + badges + topology rule
+TIER: ent
+TASKS: 4 tasks (T1-T4), 2 commits (cd0c1fd feat, ae2c5b4 review-fix)
+RUNTIME EVIDENCE: tests/e2e/replicas-and-scaling.spec.ts PASSED in chromium (desktop) — place node → 3× → 2×, cost badge scales ×replicas. Artifacts: test-results/replicas-and-scaling/{01-node-placed,02-replicas-3x,03-replicas-2x}.png
+DEVIATIONS: 0 structural, 0 minor
+
+## 2026-05-29 02:30 — PHASE 3 REVIEW: Canvas replica control + badges + topology rule
+VERDICT: APPROVE
+FINDINGS: 10 surfaced (0 critical, 1 high test-gap, 5 medium, 4 low) — 7 confirmed+fixed, 3 refuted (backendCount gating, nodrag walk-up, render-condition)
+COVERAGE: HIGH — topology 11, store-integration 15 (orphan-suppress + setEdges-live), ArchieNode 67 (stepper/badges/N-backends/max-disabled)
+CONFIDENCE: 95/100
+METHOD: 3-lens adversarial workflow + refutation; 13 agents
+RUNTIME EVIDENCE: replicas-and-scaling.spec.ts PASSED in chromium
+DEFERRED: D5 (stale Epic-12 e2e specs assert removed generic handles; ~36 full-run failures = stale specs + sandbox contention; e2e not in CI gate), D6 (ArchieNode.test.tsx near size limit)
+ALIGNMENT: ALIGNED
+TIER: ent | DRIFT: none
+TICK: ✅
