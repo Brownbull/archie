@@ -1105,3 +1105,11 @@ RESOLUTION: all 7 fixed in bf6ae73. Full suite 3158 + E2E green. Confidence high
 PUSH: dev:main 2576e58..912439e | run 26648812806 deploy-production 49s ✅
 DEPLOY: P30. Epic 16 (Challenge Mode) COMPLETE — all 6 phases shipped to production.
 EPIC 16 SUMMARY: schema+loader+scheduled-events engine (P1) → star rubric + challengeStore (P2) → selector + HUD (P3) → Start + auto-score + results modal (P4) → 10 levels (P5) → integration + E2E (P6). 6 prod deploys P25-P30, all CI-green.
+- 2026-05-29 15:06 | Edit | /home/khujta/projects/bmad/archie/.github/workflows/deploy-production.yml
+- 2026-05-29 15:06 | Edit | /home/khujta/projects/bmad/archie/.github/workflows/deploy-preview.yml
+- 2026-05-29 15:07 | Edit | /home/khujta/projects/bmad/archie/.github/workflows/ci.yml
+
+## 2026-05-29 — [b2e3a70] ci: node24 action bump — PUSH P31 — CI ✅ (D8 RESOLVED)
+PUSH: dev:main 912439e..b2e3a70 | run 26656837212 deploy-production 44s ✅
+checkout@v6 + setup-node@v6 (node24-native); FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 on deploy jobs.
+VALIDATED: Firebase action (v0.10.0, node20-targeted) ran under forced Node 24 and deployed successfully → 2026-06-02 cutoff will not break the gate. D8 closed.

@@ -34,3 +34,4 @@
 | P28 | 2026-05-29 | dev → main | b555ec6 | ✅ 1/1 | Epic 16 Phase 4: Start button + auto-score + results modal (snapshot-scored; +integration test) | run 26646590475 ⚠ node20-deprecation annotation |
 | P29 | 2026-05-29 | dev → main | 2576e58 | ✅ 1/1 | Epic 16 Phase 5: 10 challenge levels (engine-aligned content; Chaos Day made winnable) | run 26647741341 |
 | P30 | 2026-05-29 | dev → main | 912439e | ✅ 1/1 (49s) | Epic 16 Phase 6: integration + E2E challenge journey (+ durationSeconds bug fix) — EPIC 16 COMPLETE | run 26648812806 |
+| P31 | 2026-05-29 | dev → main | b2e3a70 | ✅ 1/1 (44s) | CI: node24 action bump (checkout/setup-node@v6 + FORCE node24) — D8 resolved, deploy gate validated under Node 24 | run 26656837212 |
