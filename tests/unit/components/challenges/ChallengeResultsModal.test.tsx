@@ -13,6 +13,10 @@ vi.mock("@/stores/architectureStoreHelpers", async (orig) => {
   return { ...actual, computeTotalArchitectureCost: () => 80 }
 })
 
+// Control the suggestion independently of the engine; null by default so existing cases are unaffected.
+let mockSuggestion: import("@/engine/suggestionEngine").SuggestionResult | null = null
+vi.mock("@/hooks/useChallengeSuggestion", () => ({ useChallengeSuggestion: () => mockSuggestion }))
+
 import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useSimulationStore } from "@/stores/simulationStore"
@@ -29,6 +33,7 @@ const frame = (tick: number): TickState => ({ tick, targetRps: 100, nodes: [], t
 
 describe("ChallengeResultsModal (Epic 16 P4)", () => {
   beforeEach(() => {
+    mockSuggestion = null
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, bestStars: {} })
     useSimulationStore.getState().reset()
     useArchitectureStore.setState({ nodes: [], topologyIssues: [], topologyIssuesByNodeId: new Map() })
@@ -98,6 +103,23 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(cs().attemptState).toBe("building")
     expect(cs().activeChallenge?.id).toBe("c1")
     expect(useSimulationStore.getState().status).toBe("idle") // sim cleared
+  })
+
+  it("shows the 'try this next' suggestion card when the engine returns one", () => {
+    mockSuggestion = {
+      kind: "suggestion",
+      best: { changeType: "add-replica", nodeId: "n-app", description: "Add a replica to App Server (1× → 2×)", uptimeDelta: 5, latencyDelta: -20, costDelta: 40 },
+      baseline: { uptimePercent: 90, avgLatencyMs: 0, p99LatencyMs: 100, currentRps: 0, servedRps: 0, failedRps: 0, totalServed: 0, totalFailed: 0 },
+      baselineCost: 40, considered: 3,
+    }
+    useChallengeStore.setState({
+      activeChallenge: challenge, attemptState: "scored",
+      lastResult: { stars: 1, passedMetrics: true, underBudget: false, cleanTopology: false },
+      lastMeasured: { uptimePercent: 95, p99LatencyMs: 120, totalCost: 200, topologyIssueCount: 1 },
+    })
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("suggestion-card")).toHaveAttribute("data-kind", "suggestion")
+    expect(screen.getByTestId("suggestion-description")).toHaveTextContent("Add a replica to App Server")
   })
 
   it("Close leaves challenge mode and clears the simulation", () => {

@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeAutoScore } from "@/hooks/useChallengeAutoScore"
+import { useChallengeSuggestion } from "@/hooks/useChallengeSuggestion"
+import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 
 function Criterion({ met, label, detail }: { met: boolean; label: string; detail: string }) {
   return (
@@ -32,6 +34,8 @@ function Criterion({ met, label, detail }: { met: boolean; label: string; detail
  */
 export function ChallengeResultsModal() {
   useChallengeAutoScore()
+
+  const suggestion = useChallengeSuggestion()
 
   const attemptState = useChallengeStore((s) => s.attemptState)
   const challenge = useChallengeStore((s) => s.activeChallenge)
@@ -86,6 +90,8 @@ export function ChallengeResultsModal() {
             detail={measured.topologyIssueCount === 0 ? "no issues" : `${measured.topologyIssueCount} issue${measured.topologyIssueCount === 1 ? "" : "s"}`}
           />
         </div>
+
+        {suggestion && <SuggestionCard result={suggestion} />}
 
         <DialogFooter>
           <Button data-testid="result-close" variant="ghost" size="sm" onClick={onClose}>

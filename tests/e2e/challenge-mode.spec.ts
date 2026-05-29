@@ -44,6 +44,8 @@ test.describe("Challenge Mode E2E (Epic 16)", () => {
     const stars = page.locator('[data-testid="result-stars"]')
     await expect(stars).toBeVisible()
     await expect(stars).toHaveAttribute("aria-label", /[0-3] of 3 stars/)
+    // "Try this next" card is computed from the build + renders (a suggestion or "well optimized").
+    await expect(page.locator('[data-testid="suggestion-card"]')).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/04-results.png`, fullPage: true })
 
     // CLOSE — leaving the modal exits challenge mode and restores the Run trigger.
