@@ -3,7 +3,7 @@ import { load, dump } from "js-yaml"
 import { exportArchitecture } from "@/services/yamlExporter"
 import { importYamlString } from "@/services/yamlImporter"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
-import { CANVAS_GRID_SIZE } from "@/lib/constants"
+import { CANVAS_GRID_SIZE, MAX_REPLICAS } from "@/lib/constants"
 import type { ArchieNode } from "@/stores/architectureStore"
 import { makeNode, makeEdge } from "../helpers"
 
@@ -284,6 +284,27 @@ describe("YAML round-trip (integration)", () => {
       edges: [],
     })
     const result = importYamlString(v3Yaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes[0].data.replicaCount).toBe(1)
+  })
+
+  it("preserves replicaCount at the MAX_REPLICAS boundary through round-trip", () => {
+    const nodes = [makeNode({ id: "node-1", data: { archieComponentId: "postgresql", replicaCount: MAX_REPLICAS } })]
+    const yaml = exportArchitecture(nodes, [])
+    const result = importYamlString(yaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes[0].data.replicaCount).toBe(MAX_REPLICAS)
+  })
+
+  it("hydrates an explicit replicas: 1 in YAML to replicaCount 1", () => {
+    const yaml = dump({
+      schema_version: CURRENT_SCHEMA_VERSION,
+      nodes: [{ id: "node-1", component_id: "postgresql", position: { x: 0, y: 0 }, replicas: 1 }],
+      edges: [],
+    })
+    const result = importYamlString(yaml)
     expect(result.success).toBe(true)
     if (!result.success) return
     expect(result.architecture.nodes[0].data.replicaCount).toBe(1)

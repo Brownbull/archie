@@ -85,7 +85,8 @@ test.describe("Replicas & Horizontal Scaling E2E (Epic 14)", () => {
       page.getByTestId("export-button").click(),
     ])
     const filePath = await download.path()
-    const yaml = readFileSync(filePath, "utf-8")
+    expect(filePath).not.toBeNull()
+    const yaml = readFileSync(filePath!, "utf-8")
     expect(yaml).toContain("replicas: 3")
     await page.screenshot({ path: `${SCREENSHOT_DIR}/04-export-with-replicas.png`, fullPage: true })
   })
