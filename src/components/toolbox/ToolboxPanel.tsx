@@ -28,7 +28,7 @@ export function ToolboxPanel() {
         <TabsContent value="stacks" className="flex-1 overflow-hidden">
           <StacksTab />
         </TabsContent>
-        <TabsContent value="blueprints" className="flex-1">
+        <TabsContent value="blueprints" className="flex-1 overflow-hidden">
           <BlueprintTab />
         </TabsContent>
       </Tabs>
