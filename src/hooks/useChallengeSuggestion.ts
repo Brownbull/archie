@@ -8,6 +8,12 @@ import { suggestArchitectureChange, type SuggestionResult } from "@/engine/sugge
  * Shadow-simulates candidate changes to the CURRENT architecture against the active challenge's
  * curve / events / duration / target metrics. Returns null outside a scored attempt. Memoized so
  * the (multi-sim) computation runs once per result, not on every render.
+ *
+ * Consistency with the results modal's snapshot criteria: the results dialog is modal (Radix
+ * overlay blocks canvas interaction), so nodes/edges cannot change while it is open. The engine is
+ * deterministic and runs the same curve/events/duration as the scored attempt, so the recomputed
+ * baseline matches the displayed lastMeasured snapshot — the suggestion deltas are relative to the
+ * same architecture the criteria describe.
  */
 export function useChallengeSuggestion(): SuggestionResult | null {
   const challenge = useChallengeStore((s) => s.activeChallenge)

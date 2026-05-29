@@ -61,14 +61,16 @@ export interface SuggestionInput {
   targetMetrics?: ChallengeTargetMetrics
 }
 
-export interface SuggestionResult {
-  kind: "suggestion" | "well-optimized"
-  best: ArchitectureSuggestion | null
+interface SuggestionResultBase {
   baseline: SimulationStats
   baselineCost: number
   /** Number of candidate changes simulated. */
   considered: number
 }
+/** Discriminated union — `best` is non-null iff `kind === "suggestion"` (no non-null assertions needed). */
+export type SuggestionResult =
+  | ({ kind: "suggestion"; best: ArchitectureSuggestion } & SuggestionResultBase)
+  | ({ kind: "well-optimized"; best: null } & SuggestionResultBase)
 
 const EPS = 1e-6
 // Default-mode normalization (no challenge targets): how many ms / $ count as "one unit" of gain.

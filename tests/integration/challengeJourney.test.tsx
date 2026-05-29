@@ -97,6 +97,8 @@ describe("challenge journey (integration): select → build → start → score 
     expect(screen.getByTestId("challenge-results")).toBeInTheDocument()
     expect(screen.getByTestId("result-stars").getAttribute("aria-label")).toMatch(/^[0-3] of 3 stars$/)
     expect(cs().lastMeasured?.totalCost).toBe(40) // ONE node at snapshot time — not the mid-run mutation (80)
+    // the "try this next" card is wired through the REAL hook + engine (not mocked here) and renders
+    expect(screen.getByTestId("suggestion-card")).toBeInTheDocument()
 
     // RETRY — re-enters build mode, clears the finished sim, keeps the level selected.
     fireEvent.click(screen.getByTestId("result-retry"))

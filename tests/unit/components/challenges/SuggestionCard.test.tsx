@@ -37,6 +37,21 @@ describe("SuggestionCard (Epic 17 P2)", () => {
     expect(screen.getByTestId("suggestion-delta-uptime")).toHaveAttribute("data-tone", "neutral")
   })
 
+  it("treats a sub-precision delta as neutral — no contradictory colored ±0", () => {
+    const result: SuggestionResult = {
+      kind: "suggestion",
+      best: { changeType: "cheaper-variant", nodeId: "n1", description: "marginal", uptimeDelta: 0.02, latencyDelta: -0.3, costDelta: 0.4 },
+      baseline: stats, baselineCost: 80, considered: 1,
+    }
+    render(<SuggestionCard result={result} />)
+    // each rounds to 0 at display precision → neutral tone + "0", never a green/red "±0"
+    expect(screen.getByTestId("suggestion-delta-uptime")).toHaveAttribute("data-tone", "neutral")
+    expect(screen.getByTestId("suggestion-delta-latency")).toHaveAttribute("data-tone", "neutral")
+    expect(screen.getByTestId("suggestion-delta-latency")).toHaveTextContent("0 ms")
+    expect(screen.getByTestId("suggestion-delta-latency")).not.toHaveTextContent("−0")
+    expect(screen.getByTestId("suggestion-delta-cost")).toHaveAttribute("data-tone", "neutral")
+  })
+
   it("renders the well-optimized state with no suggestion", () => {
     const result: SuggestionResult = { kind: "well-optimized", best: null, baseline: stats, baselineCost: 80, considered: 4 }
     render(<SuggestionCard result={result} />)

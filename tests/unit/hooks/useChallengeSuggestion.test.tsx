@@ -54,4 +54,18 @@ describe("useChallengeSuggestion (Epic 17 P2)", () => {
     expect(arg.nodes).toBe(nodes)
     expect(arg.edges).toBe(edges)
   })
+
+  it("recomputes when the architecture changes during a scored attempt", () => {
+    const nodesA = [{ id: "n1", data: { archieComponentId: "app", activeConfigVariantId: "v1", componentCategory: "compute", replicaCount: 1 } }]
+    useArchitectureStore.setState({ nodes: nodesA as never, edges: [] })
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored" })
+    const { rerender } = renderHook(() => useChallengeSuggestion())
+    expect(suggestSpy).toHaveBeenCalledTimes(1)
+
+    const nodesB = [...nodesA, { id: "n2", data: { archieComponentId: "app", activeConfigVariantId: "v1", componentCategory: "compute", replicaCount: 1 } }]
+    useArchitectureStore.setState({ nodes: nodesB as never })
+    rerender()
+    expect(suggestSpy).toHaveBeenCalledTimes(2) // memo dep on nodes → re-runs
+    expect(suggestSpy.mock.calls[1][0].nodes).toBe(nodesB)
+  })
 })
