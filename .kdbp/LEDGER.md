@@ -1030,3 +1030,42 @@ TARGET: dec67d4 | RAW: 18 → CONFIRMED: 10 (≥0.7 conf)
 - [medium×2] manual setState realism / lastMeasured unasserted — FIXED (integration test + lastMeasured assertion)
 - [low×2] 0★ render + RunSim hide-in-challenge untested — FIXED
 RESOLUTION: all 10 fixed in c8ef051. Full suite 3141 green. Confidence high.
+
+## 2026-05-29 — PUSH P28 (Epic 16 P4) — CI ✅
+PUSH: dev:main 80c84b1..b555ec6 | run 26646590475 deploy-production ✅
+DEPLOY: P28. Epic 16 Phase 4 COMPLETE (all columns ✅). Advancing to Phase 5 (10 challenge levels).
+NOTE: CI annotation — Node 20 actions deprecated, forced to Node 24 from 2026-06-02. See PENDING.
+- 2026-05-29 11:39 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeStartButton.test.tsx
+- 2026-05-29 11:41 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/01-first-service.yaml
+- 2026-05-29 11:42 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/02-add-a-database.yaml
+- 2026-05-29 11:42 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/03-cache-the-hot-path.yaml
+- 2026-05-29 11:42 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/04-edge-delivery.yaml
+- 2026-05-29 11:42 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/05-scale-out.yaml
+- 2026-05-29 11:42 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/06-async-pipeline.yaml
+- 2026-05-29 11:42 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/07-search-at-scale.yaml
+- 2026-05-29 11:42 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/08-zone-failure.yaml
+- 2026-05-29 11:43 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/09-always-on.yaml
+- 2026-05-29 11:43 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/10-chaos-day.yaml
+- 2026-05-29 11:43 | Write | /home/khujta/projects/bmad/archie/tests/unit/data/challenges.test.ts
+- 2026-05-29 11:56 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/10-chaos-day.yaml
+- 2026-05-29 11:56 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/08-zone-failure.yaml
+- 2026-05-29 11:56 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/03-cache-the-hot-path.yaml
+- 2026-05-29 11:57 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/04-edge-delivery.yaml
+- 2026-05-29 11:57 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/06-async-pipeline.yaml
+- 2026-05-29 11:57 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/06-async-pipeline.yaml
+- 2026-05-29 11:57 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/07-search-at-scale.yaml
+- 2026-05-29 11:57 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/09-always-on.yaml
+- 2026-05-29 11:57 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/04-edge-delivery.yaml
+
+## 2026-05-29 — [86745b9, 4391c9f] feat(challenges): 10 challenge levels
+PHASE: Epic 16 P5 — Challenge content (10 levels) + STRUCTURE pattern + ScheduledEvent test fix
+GATE: lint ✅ types ✅ tests ✅ (12 content + 3 loader tests; full suite green)
+
+## 2026-05-29 — REVIEW Epic 16 P5 (achievability + content, 2 dims × verify)
+TARGET: 86745b9 | RAW: 11 → CONFIRMED: 8 (≥0.7 conf)
+- [high] Chaos Day uptime 80% UNWINNABLE (~76% worst case; engine has no cache mitigation for DB outage) — FIXED 4391c9f (→70)
+- [high] Chaos Day hint claimed cache+messaging soften outage (false — engine has no such model) — FIXED
+- [high] Zone Failure 80% tight (84.4%, 4.4% margin) — FIXED (→78, deterministic so margin=headroom)
+- [medium×3] async "messaging buffers bursts", cache "absorbs reads", monitoring latency hints described unmodeled mechanics — FIXED (03/04/06/07/09 rewritten to capacity/flow/shed truth)
+- [medium] az_outage cross-category workaround / [low] flat early curve — ACCEPTED (realistic / intentional onboarding)
+RESOLUTION: 6 fixed in 4391c9f, 2 accepted-with-rationale. Numeric balance provisional pending P6 in-browser playtest. Confidence high.

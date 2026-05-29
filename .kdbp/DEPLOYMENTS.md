@@ -31,3 +31,4 @@
 | P25 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 16 Phase 1: challenge schema + types + loader + scheduled-events engine (43 tests) | — |
 | P26 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 16 Phase 2: star rubric scorer + challengeStore state machine (14 tests) | — |
 | P27 | 2026-05-29 | dev → main | 80c84b1 | ✅ 1/1 (54s) | Epic 16 Phase 3: challenge selector + checklist + budget HUD (data-tier + ARIA; 9→11 tests) | run 26645289463 |
+| P28 | 2026-05-29 | dev → main | b555ec6 | ✅ 1/1 | Epic 16 Phase 4: Start button + auto-score + results modal (snapshot-scored; +integration test) | run 26646590475 ⚠ node20-deprecation annotation |
