@@ -955,3 +955,30 @@ DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
 
 ## 2026-05-29 10:50 — PUSH dev → main (Epic 16 Phase 2)
 TARGET: dev → origin/main | CI: ✅ 1/1 | DEPLOYMENTS: P26 | TICK: ✅ E16 P2 Push
+- 2026-05-29 10:54 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-05-29 10:54 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-05-29 10:57 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-05-29 10:57 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-05-29 10:57 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-29 10:57 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-29 10:58 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeSelector.test.tsx
+- 2026-05-29 10:58 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
+- 2026-05-29 11:00 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
+
+## 2026-05-29 — [163fe47] feat(challenges): challenge selector, checklist + budget HUD
+PHASE: Epic 16 P3 — Challenge selector + checklist + budget/timer HUD
+FINDINGS: 0 critical (gate: lint ✅ types ✅ tests 3121/3121 ✅ shape ✅ structure ✅)
+FILES: src/components/challenges/{ChallengeSelector,ChallengeHud}.tsx, Toolbar.tsx, CanvasView.tsx + 2 test files
+NOTE: live countdown timer deferred to P4 (coupled to running attempt + Start button)
+- 2026-05-29 11:09 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-05-29 11:09 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-05-29 11:09 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-05-29 11:09 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
+
+## 2026-05-29 — REVIEW Epic 16 P3 (adversarial workflow, 4 dims × verify)
+TARGET: 163fe47 (selector + HUD)
+RAW: 11 findings → CONFIRMED: 7 (after adversarial verification ≥0.7 conf)
+- [high] hints toggle missing aria-expanded/aria-controls (a11y) — FIXED 74dee08
+- [high×4] budget-bar tests assert data-over only, not color tier / width / 80% threshold / cost==cap boundary (false confidence) — FIXED 74dee08
+- [medium] cost==cap boundary untested — FIXED 74dee08
+RESOLUTION: all 7 fixed in 74dee08 (data-tier="ok|warn|over" + ARIA + 7 HUD tests). Confidence high.
