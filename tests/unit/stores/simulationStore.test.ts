@@ -102,13 +102,37 @@ describe("simulationStore — playback state machine (Epic 15)", () => {
     expect(s().status).toBe("paused")
   })
 
-  it("reset returns to idle and clears ticks", () => {
+  it("reset returns to idle, clears ticks, and restores default speed", () => {
     s().start(graph, ramp)
+    s().setSpeed(10)
     s().reset()
     expect(s().status).toBe("idle")
     expect(s().ticks).toHaveLength(0)
     expect(s().currentTick).toBe(0)
     expect(s().isPlaying).toBe(false)
+    expect(s().speed).toBe(1)
+  })
+
+  it("replay while running restarts from 0 without leaking a timer", () => {
+    s().start(graph, ramp)
+    vi.advanceTimersByTime(SIM_BASE_TICK_MS * 5)
+    expect(s().currentTick).toBe(5)
+    s().replay()
+    expect(s().currentTick).toBe(0)
+    expect(s().status).toBe("running")
+    vi.advanceTimersByTime(SIM_BASE_TICK_MS)
+    expect(s().currentTick).toBe(1) // single timer — advances by exactly 1, not 2
+  })
+
+  it("start while running discards the in-progress run and restarts from 0", () => {
+    s().start(graph, ramp)
+    vi.advanceTimersByTime(SIM_BASE_TICK_MS * 10)
+    expect(s().currentTick).toBe(10)
+    s().start(graph, ramp)
+    expect(s().currentTick).toBe(0)
+    expect(s().status).toBe("running")
+    vi.advanceTimersByTime(SIM_BASE_TICK_MS)
+    expect(s().currentTick).toBe(1) // exactly one active timer
   })
 
   it("pause is a no-op when not running; resume a no-op when not paused", () => {

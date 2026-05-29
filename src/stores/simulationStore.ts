@@ -13,7 +13,10 @@ interface SimulationState {
   isPlaying: boolean
   speed: PlaybackSpeed
   entryNodeIds: string[]
-  /** Start a simulation: runs the engine over the graph + curve, then plays back tick-by-tick. */
+  /**
+   * Start a simulation: runs the engine over the graph + curve, then plays back tick-by-tick.
+   * Calling start() while a run is active discards it and restarts from tick 0 (intentional re-run).
+   */
   start: (graph: SimGraph, curve: TrafficCurve) => void
   pause: () => void
   resume: () => void
@@ -105,7 +108,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
 
     reset: () => {
       stopTimer()
-      set({ status: "idle", ticks: [], currentTick: 0, isPlaying: false, entryNodeIds: [] })
+      set({ status: "idle", ticks: [], currentTick: 0, isPlaying: false, speed: 1, entryNodeIds: [] })
     },
   }
 })
@@ -113,4 +116,10 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
 /** Telemetry frame for the current tick (null when idle/no run). */
 export function getCurrentTickState(state: SimulationState): TickState | null {
   return state.ticks[state.currentTick] ?? null
+}
+
+// Vite HMR: clear the module-level timer on hot-reload so an orphaned interval from the
+// previous module instance doesn't keep firing against stale state during development.
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => stopTimer())
 }
