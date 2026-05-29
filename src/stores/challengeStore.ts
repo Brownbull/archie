@@ -5,18 +5,30 @@ import type { SimulationStats } from "@/lib/simulationStats"
 
 export type AttemptState = "idle" | "building" | "running" | "scored"
 
+/** Cost + topology snapshot of the architecture as it was when the attempt's simulation began. */
+export interface AttemptSnapshot {
+  totalCost: number
+  topologyIssueCount: number
+}
+
 interface ChallengeState {
   activeChallenge: Challenge | null
   attemptState: AttemptState
   lastResult: StarBreakdown | null
   /** Measured actuals captured at score time, for the results modal (decoupled from live canvas). */
   lastMeasured: MeasuredAttempt | null
+  /**
+   * Cost/topology snapshot taken when the simulation started — the simulation runs on a graph
+   * snapshot, so scoring must use the cost/topology from that same moment, not the live canvas
+   * (which the user can edit mid-run). null outside a running attempt.
+   */
+  attemptSnapshot: AttemptSnapshot | null
   /** Best stars earned per challenge id (persists across attempts within the session). */
   bestStars: Record<string, number>
   /** Enter challenge mode with a challenge — clears any prior result, ready to build. */
   selectChallenge: (challenge: Challenge) => void
-  /** Mark the attempt as running (the Start button also kicks off the simulation). */
-  startAttempt: () => void
+  /** Mark the attempt as running; records the start-time cost/topology snapshot used for scoring. */
+  startAttempt: (snapshot?: AttemptSnapshot) => void
   /** Score the finished attempt against the rubric and record best stars. */
   scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number) => StarBreakdown | null
   /** Leave challenge mode (keeps bestStars history). */
@@ -28,17 +40,18 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   attemptState: "idle",
   lastResult: null,
   lastMeasured: null,
+  attemptSnapshot: null,
   bestStars: {},
 
   selectChallenge: (challenge) => {
-    set({ activeChallenge: challenge, attemptState: "building", lastResult: null, lastMeasured: null })
+    set({ activeChallenge: challenge, attemptState: "building", lastResult: null, lastMeasured: null, attemptSnapshot: null })
   },
 
-  startAttempt: () => {
+  startAttempt: (snapshot) => {
     // Only startable from 'building' — a retry after 'scored' goes back through selectChallenge,
     // preventing a stale scored→running re-entry that could double-score the same attempt.
     if (!get().activeChallenge || get().attemptState !== "building") return
-    set({ attemptState: "running", lastResult: null })
+    set({ attemptState: "running", lastResult: null, attemptSnapshot: snapshot ?? null })
   },
 
   scoreAttempt: (stats, topologyIssueCount, totalCost) => {
@@ -61,7 +74,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   },
 
   reset: () => {
-    set({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null })
+    set({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, attemptSnapshot: null })
   },
 }))
 

@@ -51,6 +51,10 @@ describe("ChallengeStartButton (Epic 16 P4)", () => {
     const [, curve, events] = startSpy.mock.calls[0]
     expect(curve).toEqual(challenge.trafficCurve)
     expect(events).toEqual(challenge.scheduledEvents)
+    // a start-time cost/topology snapshot is recorded for decoupled scoring
+    expect(cs().attemptSnapshot).not.toBeNull()
+    expect(cs().attemptSnapshot?.topologyIssueCount).toBe(0)
+    expect(typeof cs().attemptSnapshot?.totalCost).toBe("number")
   })
 
   it("is hidden once the attempt is already running", () => {

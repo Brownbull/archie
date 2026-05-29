@@ -49,11 +49,28 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     // hook scored: uptime 100≥99, p99 50≤200 (pass), cost 80≤100 (under), 0 issues (clean) → 3★
     expect(cs().attemptState).toBe("scored")
     expect(cs().lastResult?.stars).toBe(3)
+    // the snapshot of measured actuals is recorded for the modal
+    expect(cs().lastMeasured).toEqual({ uptimePercent: 100, p99LatencyMs: 50, totalCost: 80, topologyIssueCount: 0 })
     expect(screen.getByTestId("challenge-results")).toBeInTheDocument()
     expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "3 of 3 stars")
     expect(screen.getByTestId("result-metrics")).toHaveAttribute("data-met", "true")
     expect(screen.getByTestId("result-under-budget")).toHaveAttribute("data-met", "true")
     expect(screen.getByTestId("result-clean-topology")).toHaveAttribute("data-met", "true")
+  })
+
+  it("renders a 0★ failed result with every criterion unmet", () => {
+    useChallengeStore.setState({
+      activeChallenge: challenge, attemptState: "scored",
+      lastResult: { stars: 0, passedMetrics: false, underBudget: false, cleanTopology: false },
+      lastMeasured: { uptimePercent: 82.3, p99LatencyMs: 640, totalCost: 250, topologyIssueCount: 1 },
+    })
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "0 of 3 stars")
+    expect(screen.getByTestId("challenge-results")).toHaveTextContent("Targets not met")
+    expect(screen.getByTestId("result-metrics")).not.toHaveAttribute("data-met")
+    expect(screen.getByTestId("result-under-budget")).not.toHaveAttribute("data-met")
+    expect(screen.getByTestId("result-clean-topology")).not.toHaveAttribute("data-met")
+    expect(screen.getByTestId("result-clean-topology")).toHaveTextContent("1 issue") // singular
   })
 
   it("shows unmet criteria for a partial result", () => {

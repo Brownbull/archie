@@ -2,7 +2,7 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
 
 /**
  * "Start Challenge" trigger (Epic 16 Phase 4). Replaces RunSimulationButton while a challenge
@@ -24,9 +24,14 @@ export function ChallengeStartButton() {
   }
 
   const onStart = () => {
-    const { nodes, edges } = useArchitectureStore.getState()
+    const { nodes, edges, topologyIssues } = useArchitectureStore.getState()
     const graph = buildSimGraph(nodes, edges)
-    startAttempt() // building → running BEFORE the sim, so a single-tick run is still scored
+    // Snapshot cost + topology NOW: the sim runs on this graph, so scoring must use the
+    // architecture as it is at start, not the live canvas (the user can edit mid-run).
+    startAttempt({
+      totalCost: computeTotalArchitectureCost(nodes),
+      topologyIssueCount: topologyIssues.length,
+    }) // building → running BEFORE the sim, so a single-tick run is still scored
     startSim(graph, challenge.trafficCurve, challenge.scheduledEvents)
   }
 

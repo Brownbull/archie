@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { RunSimulationButton } from "@/components/canvas/RunSimulationButton"
 import { useSimulationStore } from "@/stores/simulationStore"
+import { useChallengeStore } from "@/stores/challengeStore"
 import type { SimGraph, TrafficCurve } from "@/lib/simulationTypes"
+import type { Challenge } from "@/lib/challengeTypes"
 
 let mockNodes: unknown[] = []
 let mockActiveScenarioId: string | null = null
@@ -36,6 +38,7 @@ describe("RunSimulationButton (Epic 15)", () => {
   })
   afterEach(() => {
     s().reset()
+    useChallengeStore.getState().reset()
     vi.clearAllTimers()
     vi.useRealTimers()
   })
@@ -54,6 +57,18 @@ describe("RunSimulationButton (Epic 15)", () => {
   it("is hidden while a simulation is already running", () => {
     mockNodes = [{ id: "n1" }]
     useSimulationStore.setState({ status: "running" })
+    render(<RunSimulationButton />)
+    expect(screen.queryByTestId("run-simulation")).not.toBeInTheDocument()
+  })
+
+  it("is hidden in challenge mode (ChallengeStartButton takes over)", () => {
+    mockNodes = [{ id: "n1" }]
+    const challenge = {
+      id: "c1", title: "T", brief: "b", difficulty: "beginner", budgetCap: 100, durationSeconds: 60,
+      trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }], requiredComponents: ["compute"],
+      targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 }, scheduledEvents: [], hints: [],
+    } as Challenge
+    useChallengeStore.getState().selectChallenge(challenge) // idle sim + nodes, but in challenge mode
     render(<RunSimulationButton />)
     expect(screen.queryByTestId("run-simulation")).not.toBeInTheDocument()
   })
