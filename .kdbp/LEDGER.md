@@ -1134,3 +1134,38 @@ TARGET: 7832ce1 | RAW: 9 → CONFIRMED: 7 (≥0.7 conf)
 - [medium×2] test 2 didn't assert baseline fails / test 6 redundant — FIXED (baseline assertions + evaluated-then-rejected)
 - [low×2] no non-scalable / multi-node coverage — FIXED (4 new tests)
 RESOLUTION: all 7 addressed in 6f38cd8. Full suite 3170 green (12 engine tests). Confidence high.
+
+## 2026-05-29 — PUSH P32 (Epic 17 P1) — CI ✅
+PUSH: dev:main b2e3a70..8e1a53b | run 26658951140 deploy-production 47s ✅
+DEPLOY: P32 — suggestion engine live. First production deploy on the node24 action stack (validates D8 fix). Advancing to P2 (Try this next card).
+- 2026-05-29 15:55 | Write | /home/khujta/projects/bmad/archie/src/hooks/useChallengeSuggestion.ts
+- 2026-05-29 15:56 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/SuggestionCard.tsx
+- 2026-05-29 15:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-29 15:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-29 15:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-29 15:57 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/SuggestionCard.test.tsx
+- 2026-05-29 15:57 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeSuggestion.test.tsx
+- 2026-05-29 15:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-29 15:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-29 15:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-29 15:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-mode.spec.ts
+
+## 2026-05-29 — [3181277] feat(suggestions): "Try this next" card (Epic 17 P2)
+PHASE: Epic 17 P2 — SuggestionCard + useChallengeSuggestion in ChallengeResultsModal
+GATE: lint ✅ types ✅ tests 3176/3176 ✅ | E2E challenge-mode 2/2 (card renders in live results modal)
+- 2026-05-29 16:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/suggestionEngine.ts
+- 2026-05-29 16:07 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/SuggestionCard.tsx
+- 2026-05-29 16:07 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeSuggestion.ts
+- 2026-05-29 16:08 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/SuggestionCard.test.tsx
+- 2026-05-29 16:08 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeSuggestion.test.tsx
+- 2026-05-29 16:08 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+
+## 2026-05-29 — REVIEW Epic 17 P2 (render + hook + test rigor, 3 dims × verify)
+TARGET: 3181277 | RAW: 10 → CONFIRMED: 9 (≥0.7 conf)
+- [high×4] delta tone computed on raw value but sign/number on rounded → contradictory colored ±0 / -0 → "+0" — FIXED 6c5676b (tone+icon+sign all from rounded value; -0 normalized)
+- [high] result.best! non-null assertion — FIXED (SuggestionResult discriminated union)
+- [high] live-nodes vs snapshot inconsistency — RESOLVED: results dialog is modal (overlay blocks edits) + deterministic recompute matches snapshot; documented
+- [high] modal test mocked the hook (hid wiring) — FIXED (integration journey asserts card via real hook+engine)
+- [high] hook recompute-on-change untested — FIXED (new test)
+- [medium] sub-precision ±0 neutrality untested — FIXED; [medium] latency-degrading-saving test — already covered by P1 latency-guard test
+RESOLUTION: all 9 addressed in 6c5676b. Full suite 3178 green. Confidence high.
