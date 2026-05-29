@@ -29,3 +29,4 @@
 | P23 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 5: traffic curves + Run Simulation trigger (sim now UI-runnable) | — |
 | P24 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 6: integration + E2E simulation journey — Epic 15 COMPLETE | — |
 | P25 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 16 Phase 1: challenge schema + types + loader + scheduled-events engine (43 tests) | — |
+| P26 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 16 Phase 2: star rubric scorer + challengeStore state machine (14 tests) | — |
