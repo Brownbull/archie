@@ -1,41 +1,43 @@
 # aislop Quality Report
 
-**Date:** 20260528-105216
-**Score:** 10/100 (Critical)
+**Date:** 20260529-014044
+**Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
 ## Engine Summary
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 16 | 604ms |
-| code-quality | 96 | 4860ms |
-| ai-slop | 0 | 20ms |
-| security | 8 | 2264ms |
+| lint | 15 | 220ms |
+| code-quality | 99 | 2961ms |
+| ai-slop | 0 | 9ms |
+| security | 8 | 1609ms |
 
 ## Findings
 
-### code-quality (96)
+### code-quality (99)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:66` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:68` — knip/devDependencies: Unused devDependency: tw-animate-css
-- [!] `src/lib/constants.ts:132` — knip/exports: Unused export: SLUG_ID_FORMAT
-- [!] `src/lib/constants.ts:135` — knip/types: Unused type: StackComponent
-- [!] `src/lib/constants.ts:146` — knip/types: Unused type: StackConnection
-- [!] `src/lib/constants.ts:153` — knip/types: Unused type: StackCategoryScore
-- [!] `src/lib/constants.ts:225` — knip/types: Unused type: TailwindZIndex
-- [!] `src/lib/constants.ts:355` — knip/types: Unused type: FailurePresetId
+- [!] `src/lib/constants.ts:172` — knip/exports: Unused export: SLUG_ID_FORMAT
+- [!] `src/lib/constants.ts:50` — knip/types: Unused type: ReplicaType
+- [!] `src/lib/constants.ts:52` — knip/types: Unused type: ScalingRule
+- [!] `src/lib/constants.ts:175` — knip/types: Unused type: StackComponent
+- [!] `src/lib/constants.ts:186` — knip/types: Unused type: StackConnection
+- [!] `src/lib/constants.ts:193` — knip/types: Unused type: StackCategoryScore
+- [!] `src/lib/constants.ts:265` — knip/types: Unused type: TailwindZIndex
+- [!] `src/lib/constants.ts:395` — knip/types: Unused type: FailurePresetId
 - [!] `src/lib/constants.ts:0` — knip/duplicates: Duplicate export: unknown
 - [!] `src/schemas/metricCategorySchema.ts:39` — knip/types: Unused type: ScoreInterpretation
-- [!] `src/schemas/componentSchema.ts:146` — knip/types: Unused type: ConnectionProperties
-- [!] `src/schemas/componentSchema.ts:147` — knip/types: Unused type: PortDefinitionZod
+- [!] `src/schemas/componentSchema.ts:159` — knip/types: Unused type: ConnectionProperties
+- [!] `src/schemas/componentSchema.ts:160` — knip/types: Unused type: PortDefinitionZod
 - [!] `src/schemas/blueprintSchema.ts:42` — knip/types: Unused type: Blueprint
 - [!] `src/engine/dashboardCalculator.ts:8` — knip/types: Unused type: ComponentCategoryMetric
 - [!] `src/engine/dashboardCalculator.ts:13` — knip/types: Unused type: CategoryBreakdown
 - [!] `src/engine/recalculator.ts:13` — knip/types: Unused type: MetricAdjustment
-- [!] `src/stores/architectureStore.ts:780` — knip/types: Unused type: ArchitectureSkeleton
+- [!] `src/stores/architectureStore.ts:805` — knip/types: Unused type: ArchitectureSkeleton
 - [!] `src/services/recalculationService.ts:23` — knip/types: Unused type: RecalculationResult
 - [!] `src/lib/demandTypes.ts:5` — knip/types: Unused type: DemandVariableMetadata
 - [!] `src/lib/demandTypes.ts:13` — knip/types: Unused type: DemandLevelMeta
@@ -113,23 +115,23 @@
 - [!] `src/hooks/useNodeOverlay.ts:8` — knip/types: Unused type: NodeOverlayInfo
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
+- [!] `src/stores/architectureStore.ts:0` — complexity/file-too-large: File has 819 lines (max: 800)
 
-### lint (16)
+### lint (15)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
 - [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/hooks/useNodePorts.ts:3` — eslint/no-unused-vars: Type 'PortType' is imported but never used.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 

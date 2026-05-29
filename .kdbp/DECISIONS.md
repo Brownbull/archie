@@ -572,3 +572,110 @@ dim_overrides: []
 
 ### Status
 - accepted
+
+## D17 — E14-P1 tier: enterprise (2026-05-29)
+
+**Phase:** Scaling-rules model + replicaCount schema foundation
+**Types:** [data-migration, client-state]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Schema version bump (3→4) with a migration is a persistence-format change — must be backward-compatible and exhaustively tested. v3 files must import cleanly (replicaCount defaults to 1), round-trip must be lossless, and the migration chain (v1→v2→v3→v4) must not regress. Enterprise edge coverage required: missing field, replicas=1 omitted, out-of-range clamp.
+
+### Sections rendered
+- Core (always)
+- Data: migration, round-trip, defaults
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 1 (property-based round-trip fuzz over replica ranges)
+
+### Review trigger (when to escalate this phase)
+- When community sharing (Phase 4 future) lets users import untrusted architectures at scale — schema validation hardening + fuzz becomes load-bearing.
+
+### Status
+- accepted
+
+## D18 — E14-P2 tier: enterprise (2026-05-29)
+
+**Phase:** Replica-aware economics
+**Types:** [client-state]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Cost/capacity multiplication is load-bearing for Epic 15 simulation. Must be correct at every layer (per-node, total sum, display) and degrade gracefully when economics data is absent (undefined cost → skip, never NaN). replicaFactor differs by replicaType (none→1, full/read-only→linear) — boundary coverage required so the simulation engine inherits trustworthy capacity numbers.
+
+### Sections rendered
+- Core (always)
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 1 (memoized total-cost selector — only if perf shows recompute cost)
+
+### Review trigger (when to escalate this phase)
+- When Epic 15 simulation reads effective capacity per tick — capacity scaling correctness becomes real-time-critical.
+
+### Status
+- accepted
+
+## D19 — E14-P3 tier: enterprise (2026-05-29)
+
+**Phase:** Canvas replica control + badges + topology rule
+**Types:** [user-facing, web, client-state]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** User-facing canvas interaction + new topology validation. Stepper must clamp at bounds, badges must not overflow the 140px node or collide with existing constraint/overlay/status badges, and the topology rule must be a pure function (scaling rules passed in) to keep graph functions clean. Runtime journey evidence mandated for user-facing/web phase type. WARN-mode topology (allow but warn) per project connection-rules invariant.
+
+### Sections rendered
+- Core (always)
+- UI/UX: badge layout, interaction states, accessibility of stepper
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: L × 1 (full keyboard/ARIA pass on stepper), M × 1 (badge virtualization — N/A at 50-node cap)
+
+### Review trigger (when to escalate this phase)
+- When WCAG accessibility pass (Phase 4 future) lands — stepper + badges need keyboard + screen-reader coverage.
+
+### Status
+- accepted
+
+## D20 — E14-P4 tier: enterprise (2026-05-29)
+
+**Phase:** YAML/topology integration + E2E journey
+**Types:** [user-facing, web, file-media]
+**Tier chosen:** enterprise
+**Prototype:** no
+**Reason:** Closes the epic with end-to-end proof: round-trip persistence + a full Playwright journey on the desktop project. file-media (YAML import/export) + user-facing both require runtime evidence; integration round-trip must cover migration and omit-when-default. Matches the Epic 13 closing-phase pattern (full economics E2E journey).
+
+### Sections rendered
+- Core (always)
+- Data: round-trip, migration integration
+
+### Per-dim tier overrides
+
+```yaml
+dim_overrides: []
+```
+
+### Δ deferred by tier choice
+- Deferred from E→S: M × 1 (visual regression snapshots on badges)
+
+### Review trigger (when to escalate this phase)
+- When challenge mode (E16) adds shareable challenge files — round-trip fidelity becomes user-data-integrity-critical.
+
+### Status
+- accepted
