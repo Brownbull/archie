@@ -17,3 +17,4 @@
 | P11 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 1: economics schema + 46 variant data (monthlyCost/maxRPS/baseLatencyMs) | — |
 | P12 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 2: cost computation + inline node cost badge | — |
 | P13 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 3: Budget HUD + toolbox cost ranges | — |
+| P14 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 4: inspector economics + delta indicators — Epic 13 COMPLETE | — |
