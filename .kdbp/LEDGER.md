@@ -1069,3 +1069,34 @@ TARGET: 86745b9 | RAW: 11 → CONFIRMED: 8 (≥0.7 conf)
 - [medium×3] async "messaging buffers bursts", cache "absorbs reads", monitoring latency hints described unmodeled mechanics — FIXED (03/04/06/07/09 rewritten to capacity/flow/shed truth)
 - [medium] az_outage cross-category workaround / [low] flat early curve — ACCEPTED (realistic / intentional onboarding)
 RESOLUTION: 6 fixed in 4391c9f, 2 accepted-with-rationale. Numeric balance provisional pending P6 in-browser playtest. Confidence high.
+
+## 2026-05-29 — PUSH P29 (Epic 16 P5) — CI ✅
+PUSH: dev:main b555ec6..2576e58 | run 26647741341 deploy-production ✅
+DEPLOY: P29. Epic 16 Phase 5 COMPLETE. Advancing to Phase 6 (integration + E2E — final phase of Epic 16).
+- 2026-05-29 12:02 | Write | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-05-29 12:03 | Write | /home/khujta/projects/bmad/archie/tests/e2e/challenge-mode.spec.ts
+- 2026-05-29 12:04 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-mode.spec.ts
+- 2026-05-29 12:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 12:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 12:15 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-05-29 12:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeStartButton.test.tsx
+- 2026-05-29 12:16 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-05-29 12:16 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-05-29 12:17 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-05-29 12:17 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-05-29 12:17 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-05-29 12:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-mode.spec.ts
+- 2026-05-29 12:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-mode.spec.ts
+
+## 2026-05-29 — [725a259, bf6ae73] test(challenges): integration journey + E2E (Epic 16 P6)
+PHASE: Epic 16 P6 — integration (select→build→start→score) + browser E2E (test-results/challenge/01-05)
+GATE: lint ✅ types ✅ tests 3158 ✅ | E2E 2/2 ✅ (runtime journey evidence for the user-facing phase)
+
+## 2026-05-29 — REVIEW Epic 16 P6 (integration rigor + E2E robustness, 2 dims × verify)
+TARGET: 725a259 | RAW: 11 → CONFIRMED: 7 (≥0.7 conf)
+- [critical] PRODUCTION BUG: ChallengeStartButton never passed challenge.durationSeconds → every level ran the 90s default, mismapping curve + events (Chaos Day 120s never peaked). Latent since P4 (code), live since P29 (content). FIXED bf6ae73 — start() threads durationS to runSimulation.
+- [high×2] integration test couldn't prove curve/events used (node unstressed, first-service has no events) — FIXED bf6ae73 (added stressed zone-failure scenario: overload→uptime<100, transient outage tick, last-tick targetRps=curve endpoint proves duration)
+- [low] snapshot-vs-live not proven in integration — FIXED (mid-run canvas mutation; score keeps start cost)
+- [high] E2E .first() / non-deterministic placement — FIXED (explicit challenge-card-first-service; Start only needs nodeCount>0 so no flake) + [medium×2] timing/order — FIXED (30s wait headroom)
+NOTE: required_components is an advisory checklist, not a scoring gate (by design) — consistent across P5/P6 reviews.
+RESOLUTION: all 7 fixed in bf6ae73. Full suite 3158 + E2E green. Confidence high.

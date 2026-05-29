@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260529-114546
+**Date:** 20260529-121957
 **Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,10 +8,10 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 20 | 288ms |
-| code-quality | 102 | 3162ms |
-| ai-slop | 0 | 2ms |
-| security | 8 | 1595ms |
+| lint | 20 | 257ms |
+| code-quality | 102 | 3572ms |
+| ai-slop | 0 | 6ms |
+| security | 8 | 1348ms |
 
 ## Findings
 
@@ -122,24 +122,24 @@
 
 ### lint (20)
 
-- [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
 - [!] `src/components/canvas/ArchieNode.tsx:209` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/ArchieNode.tsx:209` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
+- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'scheduled_events' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'hints' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
-- [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 
