@@ -1,9 +1,9 @@
 id: edge-delivery
 title: Edge Delivery
 brief: >-
-  Traffic is climbing and a lot of it is static. Put a delivery/network tier
-  (CDN/edge) in front of compute so the edge absorbs the bulk of requests and
-  origin load stays manageable. Hold a tight latency target at higher volume.
+  Traffic is climbing. Your design must front the compute tier with a
+  delivery/network (CDN/edge) tier as its entry point. Hold a tight latency
+  target at higher volume by keeping every tier on the path under capacity.
 difficulty: intermediate
 budget_cap: 350
 duration_seconds: 90
@@ -18,5 +18,5 @@ target_metrics:
   uptime_percent: 98
   p99_latency_ms: 200
 hints:
-  - The delivery/network tier is your entry point — route edge → compute.
-  - Edge nodes have very high capacity; they shield the origin from most traffic.
+  - The delivery/network tier is your entry point — route edge → compute so traffic enters there.
+  - Whatever a node serves flows on to what it points at, so the compute tier still sees the served load — give it (or its replicas) enough capacity to stay under 100% at peak.

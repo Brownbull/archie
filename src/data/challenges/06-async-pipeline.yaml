@@ -1,9 +1,9 @@
 id: async-pipeline
 title: Async Pipeline
 brief: >-
-  Spiky write traffic is overwhelming synchronous processing. Introduce a
-  messaging tier so producers hand off work and consumers drain it at their own
-  pace. Decouple the write path and keep the system up through the ramp.
+  Spiky write traffic is stressing the system. Your design must include a
+  messaging tier on the write path. Size every tier so that even at the peaks of
+  the up-and-down traffic curve no node is pushed past its capacity.
 difficulty: intermediate
 budget_cap: 500
 duration_seconds: 90
@@ -20,5 +20,5 @@ target_metrics:
   uptime_percent: 98
   p99_latency_ms: 300
 hints:
-  - Messaging buffers bursts so the database tier isn't hit with the full spike.
-  - Route compute → messaging → compute/data-storage for the async drain.
+  - The traffic curve peaks, dips, then peaks higher — provision for the highest peak, since the model has no cross-time queue to smooth it.
+  - Route compute → messaging → data-storage; give each tier capacity (or replicas) to carry the served load it receives without shedding.

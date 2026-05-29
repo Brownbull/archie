@@ -20,6 +20,6 @@ target_metrics:
   uptime_percent: 99
   p99_latency_ms: 180
 hints:
-  - Cache hot queries so the search tier isn't the bottleneck on every request.
+  - Your design must include the caching and search tiers; give each enough capacity that neither saturates at peak.
   - Scale compute with replicas behind the edge/LB; a single node won't hold p99 here.
   - Tight latency targets punish any overloaded tier — keep every node under 100% load.

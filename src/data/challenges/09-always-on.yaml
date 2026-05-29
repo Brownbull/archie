@@ -22,6 +22,6 @@ target_metrics:
   uptime_percent: 99.5
   p99_latency_ms: 200
 hints:
-  - Edge + cache should absorb most reads so compute and the database aren't saturated.
+  - Every tier on the request path carries the load routed to it — size edge, compute, cache, and data-storage so none exceeds 100% at peak.
   - Scale compute with replicas behind the edge/LB until peak traffic fits under capacity.
-  - Monitoring adds a little cost but no load path — it's there because production needs eyes.
+  - Keep monitoring off the request path — wired as a leaf it adds budget cost but no load or latency, which is the point.

@@ -17,11 +17,11 @@ required_components:
   - compute
   - data-storage
 target_metrics:
-  uptime_percent: 80
+  uptime_percent: 78
   p99_latency_ms: 250
 scheduled_events:
   - { t: 25, type: az_outage, target: compute, durationS: 20 }
 hints:
-  - The outage hits early while traffic is still low — provision so the rest of the run is clean.
-  - An az_outage takes every node of the targeted category down; redundancy within the same tier won't dodge it.
-  - Keep compute under 100% load outside the outage so p99 stays inside the target.
+  - The outage hits early while traffic is still low — that's the cheapest window to lose, but you can't prevent the drop.
+  - An az_outage takes every node of the targeted category down; adding more compute replicas won't dodge it (they're all the same category).
+  - Keep compute under 100% load outside the outage so p99 stays inside the target — that's where the pass is won.

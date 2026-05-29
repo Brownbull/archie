@@ -22,12 +22,12 @@ required_components:
   - messaging
   - monitoring
 target_metrics:
-  uptime_percent: 80
+  uptime_percent: 70
   p99_latency_ms: 220
 scheduled_events:
   - { t: 20, type: az_outage, target: compute, durationS: 15 }
   - { t: 70, type: az_outage, target: data-storage, durationS: 15 }
 hints:
-  - Two outages hit different tiers — size everything so the non-outage windows are flawless.
-  - Cache + messaging soften the blow when the data-storage tier blinks out.
-  - Outages take the whole category offline; the score rewards how clean and cheap the rest stays.
+  - Two outages hit different tiers — the requests dropped during each window are unavoidable.
+  - Nothing in the model recovers an offline tier early, so the win is in the non-outage windows — keep every serving node under 100% load there so latency and shed stay flat.
+  - Outages take the whole category offline; the score rewards how clean (topology) and cheap (budget) the surviving design is.
