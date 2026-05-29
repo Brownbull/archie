@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { load } from "js-yaml"
+import { load, dump } from "js-yaml"
 import { exportArchitecture } from "@/services/yamlExporter"
 import { importYamlString } from "@/services/yamlImporter"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
@@ -254,5 +254,38 @@ describe("YAML round-trip (integration)", () => {
     const parsed = load(yaml) as Record<string, unknown>
 
     expect(parsed.schema_version).toBe(CURRENT_SCHEMA_VERSION)
+  })
+
+  // --- Epic 14: replica round-trip ---
+
+  it("preserves replicaCount > 1 through a full export -> import round-trip", () => {
+    const nodes = [
+      makeNode({ id: "node-1", data: { archieComponentId: "postgresql", activeConfigVariantId: "single-node", replicaCount: 3 } }),
+      makeNode({ id: "node-2", data: { archieComponentId: "redis", replicaCount: 1 } }),
+    ]
+    const yaml = exportArchitecture(nodes, [])
+
+    // replicas serialized only when > 1 (default omitted)
+    const parsed = load(yaml) as { nodes: Array<Record<string, unknown>> }
+    expect(parsed.nodes[0].replicas).toBe(3)
+    expect(parsed.nodes[1]).not.toHaveProperty("replicas")
+
+    const result = importYamlString(yaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes.find((n) => n.id === "node-1")!.data.replicaCount).toBe(3)
+    expect(result.architecture.nodes.find((n) => n.id === "node-2")!.data.replicaCount).toBe(1)
+  })
+
+  it("migrates a v3.0.0 file (no replicas) to the current schema with replicaCount defaulting to 1", () => {
+    const v3Yaml = dump({
+      schema_version: "3.0.0",
+      nodes: [{ id: "node-1", component_id: "postgresql", position: { x: 0, y: 0 } }],
+      edges: [],
+    })
+    const result = importYamlString(v3Yaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes[0].data.replicaCount).toBe(1)
   })
 })

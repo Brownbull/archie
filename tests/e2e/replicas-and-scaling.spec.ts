@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+import { readFileSync } from "node:fs"
 import { waitForComponentLibrary, dragComponentToCanvas } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/replicas-and-scaling"
@@ -54,5 +55,38 @@ test.describe("Replicas & Horizontal Scaling E2E (Epic 14)", () => {
     await node.locator('[data-testid="replica-decrement"]').click()
     await expect(replicaCount).toHaveText("2×")
     await page.screenshot({ path: `${SCREENSHOT_DIR}/03-replicas-2x.png`, fullPage: true })
+  })
+
+  test("export serializes the replica count to YAML", async ({ page }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    const firstCard = page.locator('[data-testid^="component-card-"]').first()
+    await expect(firstCard).toBeVisible()
+    const componentId = (await firstCard.getAttribute("data-testid"))!.replace("component-card-", "")
+    const canvasPanel = page.locator('[data-testid="canvas-panel"]')
+    const bounds = await canvasPanel.boundingBox()
+    await dragComponentToCanvas(page, componentId, bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2)
+
+    const node = page.locator('[data-testid="archie-node"]').first()
+    await expect(node).toBeVisible({ timeout: 5_000 })
+
+    const inc = node.locator('[data-testid="replica-increment"]')
+    test.skip((await inc.count()) === 0, "Skipped: placed component category is not scalable")
+    await inc.click()
+    await inc.click()
+    await expect(node.locator('[data-testid="replica-count"]')).toHaveText("3×")
+
+    // Export and confirm the replica count is serialized into the YAML.
+    const [download] = await Promise.all([
+      page.waitForEvent("download"),
+      page.getByTestId("export-button").click(),
+    ])
+    const filePath = await download.path()
+    const yaml = readFileSync(filePath, "utf-8")
+    expect(yaml).toContain("replicas: 3")
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/04-export-with-replicas.png`, fullPage: true })
   })
 })
