@@ -23,7 +23,7 @@ Epic 15: Simulation Engine — a time-stepped (50-tick) simulation that routes a
 | 2 | simulationStore + playback state machine | Zustand simulationStore (currentTick, isPlaying, speed, tickHistory, requestsTimeline, replay); start/pause/resume/replay/setSpeed/seek; drives engine via interval; reads architectureStore snapshot + effective maxRPS | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 3 | Per-node live telemetry overlay | useNodeOverlay 'simulation' mode; ArchieNode renders live RPS/latency/capacity bar (green→yellow→red) during a run | ent | medium | ✅ | ✅ | ✅ | ✅ |
 | 4 | Stats panel + SVG timeline + playback controls | SimulationStatsPanel (uptime/p99/cost-vs-budget); hand-rolled SVG SimulationTimeline (success vs failed over time); PlaybackControls (play/pause/replay/1-10× /seek); mounted in AppLayout footer | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 5 | Traffic curves + scenario integration | trafficCurve {t,rps}[] optional on scenario presets (YAML, backward-compat); "Run Simulation" trigger wired to simulationStore; demandEngine stays pure (dual-mode coexistence) | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Traffic curves + scenario integration | trafficCurve {t,rps}[] optional on scenario presets (YAML, backward-compat); "Run Simulation" trigger wired to simulationStore; demandEngine stays pure (dual-mode coexistence) | ent | medium | ✅ | ✅ | ✅ | ⬜ |
 | 6 | Integration + E2E simulation journey | simulationFlow integration test (HTTP→App→DB chain); E2E simulation-engine journey (run → telemetry → timeline fills → playback) | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec: ⬜ not started, 🔄 in progress, ✅ complete. Review/Commit/Push auto-ticked. Phase complete when all 4 ✅. -->

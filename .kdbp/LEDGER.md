@@ -838,3 +838,30 @@ DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
 
 ## 2026-05-29 10:02 — PUSH dev → main (Epic 15 Phase 4)
 TARGET: dev → origin/main | CI: ✅ 1/1 | DEPLOYMENTS: P22 | TICK: ✅ E15 P4 Push
+- 2026-05-29 10:05 | Edit | /home/khujta/projects/bmad/archie/src/schemas/demandSchema.ts
+- 2026-05-29 10:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/demandTypes.ts
+- 2026-05-29 10:06 | Edit | /home/khujta/projects/bmad/archie/src/lib/demandTypes.ts
+- 2026-05-29 10:06 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-05-29 10:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:06 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-05-29 10:06 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-29 10:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-29 10:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-05-29 10:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-05-29 10:09 | Write | /home/khujta/projects/bmad/archie/tests/unit/schemas/scenarioTrafficCurve.test.ts
+- 2026-05-29 10:09 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/RunSimulationButton.test.tsx
+
+## 2026-05-29 10:10 — [bafc86f] feat(simulation): traffic curves + Run Simulation trigger
+CHECKS: build ✅ tsc -b | tests ✅ 3080 (16 new) | lint ✅ 0
+## 2026-05-29 10:10 — PHASE EXEC COMPLETE: E15 Phase 5 — Traffic curves + scenario integration
+TIER: ent | TASKS: trigger + defaultTrafficCurve + scenario traffic_curve schema + tests, 1 commit (bafc86f)
+RUNTIME EVIDENCE: RunSimulationButton render/interaction test (click starts real sim); full browser journey Phase 6
+DEVIATIONS: 0
+
+## 2026-05-29 10:11 — PHASE 5 REVIEW: E15 Traffic curves + scenario integration
+VERDICT: APPROVE
+FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low cosmetic useCallback — not actioned) — backward-compat verified, getState fresh, curve resolution correct, demandEngine untouched, no import cycle
+COVERAGE: HIGH — defaultTrafficCurve + scenario traffic_curve parse (incl legacy/absent) + RunSimulationButton gating/click (default + scenario curve)
+CONFIDENCE: 98/100 | METHOD: focused code-reviewer agent
+DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
