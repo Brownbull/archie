@@ -209,6 +209,20 @@ describe("computeOverrides (scheduled events, Epic 16)", () => {
     expect(computeOverrides(nodes, [{ t: 0, type: "latency_spike", target: "db" }], 5).latencyMultipliers.get("db")).toBe(3)
     expect(computeOverrides(nodes, [{ t: 0, type: "latency_spike", target: "db", multiplier: 5 }], 5).latencyMultipliers.get("db")).toBe(5)
   })
+
+  it("stacks concurrent latency spikes on the same node multiplicatively", () => {
+    const ev: ScheduledEvent[] = [
+      { t: 0, type: "latency_spike", target: "db", multiplier: 3 },
+      { t: 0, type: "latency_spike", target: "db", multiplier: 2 },
+    ]
+    expect(computeOverrides(nodes, ev, 5).latencyMultipliers.get("db")).toBe(6) // ×3 × ×2
+  })
+
+  it("treats the active window as half-open [t, t+durationS)", () => {
+    const ev: ScheduledEvent[] = [{ t: 30, type: "component_failure", target: "app", durationS: 20 }]
+    expect(computeOverrides(nodes, ev, 30).offlineNodeIds.has("app")).toBe(true) // inclusive start
+    expect(computeOverrides(nodes, ev, 50).offlineNodeIds.has("app")).toBe(false) // exclusive end
+  })
 })
 
 describe("simulateTick with overrides", () => {

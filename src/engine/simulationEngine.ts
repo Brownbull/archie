@@ -67,6 +67,8 @@ function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): numbe
  * - component_failure: target node offline (sheds all traffic).
  * - az_outage: every node whose category === target goes offline.
  * - latency_spike: target node's latency is multiplied (default ×3).
+ * Active window is half-open `[t, t + durationS)`; omitting durationS means "until the end".
+ * Concurrent latency_spike events on the same node multiply together (×3 × ×2 = ×6).
  */
 export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], timeS: number): TickOverrides {
   const offlineNodeIds = new Set<string>()

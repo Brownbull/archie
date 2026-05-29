@@ -12,7 +12,7 @@ export const ScheduledEventSchema = z
     t: z.number().min(0).max(3600),
     type: z.enum(["component_failure", "latency_spike", "az_outage"]),
     target: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
-    durationS: z.number().min(0).max(3600).optional(),
+    durationS: z.number().min(1).max(3600).optional(),
     multiplier: z.number().min(1).max(100).optional(),
   })
   .strict()
