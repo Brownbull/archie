@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { INSPECTOR_DEFAULT_WIDTH, INSPECTOR_MIN_WIDTH, INSPECTOR_MAX_WIDTH, OVERLAY_MODES, type OverlayModeId } from "@/lib/constants"
 
-export type ToolboxTab = "components" | "stacks" | "blueprints"
+export type ToolboxTab = "components" | "stacks" | "blueprints" | "history"
 
 // NOTE: architectureStore.removeNode directly writes selectedNodeId and
 // selectedEdgeId in this store to clear stale selection on node deletion.

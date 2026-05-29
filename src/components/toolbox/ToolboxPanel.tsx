@@ -4,6 +4,7 @@ import { SearchFilter } from "@/components/toolbox/SearchFilter"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
 import { StacksTab } from "@/components/toolbox/StacksTab"
 import { BlueprintTab } from "@/components/toolbox/BlueprintTab"
+import { HistoryTab } from "@/components/toolbox/HistoryTab"
 
 export function ToolboxPanel() {
   const toolboxTab = useUiStore((s) => s.toolboxTab)
@@ -17,10 +18,11 @@ export function ToolboxPanel() {
         onValueChange={(v) => setToolboxTab(v as ToolboxTab)}
         className="flex flex-1 flex-col overflow-hidden"
       >
-        <TabsList className="mx-3 grid w-auto grid-cols-3">
+        <TabsList className="mx-3 grid w-auto grid-cols-4">
           <TabsTrigger value="components" className="text-xs">Components</TabsTrigger>
           <TabsTrigger value="stacks" className="text-xs">Stacks</TabsTrigger>
           <TabsTrigger value="blueprints" className="text-xs">Blueprints</TabsTrigger>
+          <TabsTrigger value="history" className="text-xs">History</TabsTrigger>
         </TabsList>
         <TabsContent value="components" className="flex-1 overflow-hidden">
           <ComponentTab />
@@ -30,6 +32,9 @@ export function ToolboxPanel() {
         </TabsContent>
         <TabsContent value="blueprints" className="flex-1 overflow-hidden">
           <BlueprintTab />
+        </TabsContent>
+        <TabsContent value="history" className="flex-1 overflow-hidden">
+          <HistoryTab />
         </TabsContent>
       </Tabs>
     </div>
