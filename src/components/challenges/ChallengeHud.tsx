@@ -21,7 +21,8 @@ export function ChallengeHud() {
   const totalCost = computeTotalArchitectureCost(nodes)
   const pct = challenge.budgetCap > 0 ? Math.min(100, (totalCost / challenge.budgetCap) * 100) : 0
   const overBudget = totalCost > challenge.budgetCap
-  const budgetColor = overBudget ? "bg-red-500" : pct >= 80 ? "bg-yellow-500" : "bg-green-500"
+  const budgetTier = overBudget ? "over" : pct >= 80 ? "warn" : "ok"
+  const budgetColor = budgetTier === "over" ? "bg-red-500" : budgetTier === "warn" ? "bg-yellow-500" : "bg-green-500"
 
   return (
     <div data-testid="challenge-hud" className="absolute left-3 top-3 z-10 w-64 rounded-md border border-archie-border bg-panel/95 p-3 shadow-md">
@@ -47,7 +48,7 @@ export function ChallengeHud() {
           </span>
         </div>
         <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-archie-border">
-          <div data-testid="challenge-budget-bar" data-over={overBudget || undefined} className={`h-full transition-all ${budgetColor}`} style={{ width: `${pct}%` }} />
+          <div data-testid="challenge-budget-bar" data-tier={budgetTier} data-over={overBudget || undefined} className={`h-full transition-all ${budgetColor}`} style={{ width: `${pct}%` }} />
         </div>
       </div>
 
@@ -71,12 +72,14 @@ export function ChallengeHud() {
             type="button"
             data-testid="challenge-hints-toggle"
             onClick={() => setShowHints((v) => !v)}
+            aria-expanded={showHints}
+            aria-controls="challenge-hints-list"
             className="flex items-center gap-1 text-[10px] text-text-secondary hover:text-text-primary"
           >
             <Lightbulb className="h-3 w-3" /> Hints ({challenge.hints.length})
           </button>
           {showHints && (
-            <ul data-testid="challenge-hints" className="mt-1 list-disc pl-4 text-[10px] text-text-secondary">
+            <ul id="challenge-hints-list" data-testid="challenge-hints" className="mt-1 list-disc pl-4 text-[10px] text-text-secondary">
               {challenge.hints.map((h, i) => (
                 <li key={i}>{h}</li>
               ))}

@@ -46,34 +46,72 @@ describe("ChallengeHud (Epic 16)", () => {
     expect(screen.queryByTestId("challenge-hud")).not.toBeInTheDocument()
   })
 
-  it("shows the brief, budget figures, and required-components checklist", () => {
+  it("shows the brief, budget figures, and required-components checklist (green, well under cap)", () => {
     mockCost = 30
     cs().selectChallenge(challenge)
     setNodes("data-storage") // only one of the two required categories placed
     render(<ChallengeHud />)
     expect(screen.getByTestId("challenge-hud")).toHaveTextContent("Two-Tier")
     expect(screen.getByTestId("challenge-budget-label")).toHaveTextContent("$30/$100/mo")
-    expect(screen.getByTestId("challenge-budget-bar")).not.toHaveAttribute("data-over")
+    expect(screen.getByTestId("challenge-budget-label")).not.toHaveClass("text-red-400")
+    const bar = screen.getByTestId("challenge-budget-bar")
+    expect(bar).toHaveAttribute("data-tier", "ok")
+    expect(bar).toHaveClass("bg-green-500")
+    expect(bar).toHaveStyle({ width: "30%" })
+    expect(bar).not.toHaveAttribute("data-over")
     expect(screen.getByTestId("req-data-storage")).toHaveAttribute("data-present", "true")
     expect(screen.getByTestId("req-compute")).not.toHaveAttribute("data-present")
   })
 
-  it("marks the budget bar over-budget when cost exceeds the cap", () => {
-    mockCost = 150
-    cs().selectChallenge(challenge) // cap 100
-    setNodes("compute")
+  it("turns the budget bar yellow once usage crosses the 80% threshold", () => {
+    mockCost = 85
+    cs().selectChallenge(challenge) // cap 100 → 85%
     render(<ChallengeHud />)
-    expect(screen.getByTestId("challenge-budget-bar")).toHaveAttribute("data-over", "true")
-    expect(screen.getByTestId("challenge-budget-label")).toHaveTextContent("$150/$100/mo")
+    const bar = screen.getByTestId("challenge-budget-bar")
+    expect(bar).toHaveAttribute("data-tier", "warn")
+    expect(bar).toHaveClass("bg-yellow-500")
+    expect(bar).toHaveStyle({ width: "85%" })
+    expect(bar).not.toHaveAttribute("data-over") // 85 ≤ cap is not over budget
   })
 
-  it("toggles hints open and closed", () => {
+  it("treats cost exactly at the cap as warn (not over) and clamps the bar to 100%", () => {
+    mockCost = 100
+    cs().selectChallenge(challenge) // cap 100 → boundary
+    render(<ChallengeHud />)
+    const bar = screen.getByTestId("challenge-budget-bar")
+    expect(bar).toHaveAttribute("data-tier", "warn") // 100 is not > 100
+    expect(bar).not.toHaveAttribute("data-over")
+    expect(bar).toHaveStyle({ width: "100%" })
+  })
+
+  it("marks the budget bar over-budget (red) and clamps width when cost exceeds the cap", () => {
+    mockCost = 150
+    cs().selectChallenge(challenge) // cap 100 → 150%
+    setNodes("compute")
+    render(<ChallengeHud />)
+    const bar = screen.getByTestId("challenge-budget-bar")
+    expect(bar).toHaveAttribute("data-tier", "over")
+    expect(bar).toHaveAttribute("data-over", "true")
+    expect(bar).toHaveClass("bg-red-500")
+    expect(bar).toHaveStyle({ width: "100%" }) // clamped from 150%
+    expect(screen.getByTestId("challenge-budget-label")).toHaveTextContent("$150/$100/mo")
+    expect(screen.getByTestId("challenge-budget-label")).toHaveClass("text-red-400")
+  })
+
+  it("toggles hints open and closed, reflecting aria-expanded for assistive tech", () => {
     cs().selectChallenge(challenge)
     render(<ChallengeHud />)
+    const toggle = screen.getByTestId("challenge-hints-toggle")
+    expect(toggle).toHaveAttribute("aria-expanded", "false")
+    expect(toggle).toHaveAttribute("aria-controls", "challenge-hints-list")
     expect(screen.queryByTestId("challenge-hints")).not.toBeInTheDocument()
-    fireEvent.click(screen.getByTestId("challenge-hints-toggle"))
-    expect(screen.getByTestId("challenge-hints")).toHaveTextContent("Use a managed database")
-    fireEvent.click(screen.getByTestId("challenge-hints-toggle"))
+    fireEvent.click(toggle)
+    expect(toggle).toHaveAttribute("aria-expanded", "true")
+    const list = screen.getByTestId("challenge-hints")
+    expect(list).toHaveTextContent("Use a managed database")
+    expect(list).toHaveAttribute("id", "challenge-hints-list")
+    fireEvent.click(toggle)
+    expect(toggle).toHaveAttribute("aria-expanded", "false")
     expect(screen.queryByTestId("challenge-hints")).not.toBeInTheDocument()
   })
 
