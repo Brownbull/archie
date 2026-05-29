@@ -807,3 +807,6 @@ FINDINGS: 0 (clean — selector ref-stable, capacity clamp correct, idle-hide co
 COVERAGE: HIGH — 6 hook tests (data + color bands) + 2 ArchieNode render (idle-hide, overloaded-red)
 CONFIDENCE: 98/100 | METHOD: focused code-reviewer agent
 DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
+
+## 2026-05-29 13:53 — PUSH dev → main (Epic 15 Phase 3)
+TARGET: dev → origin/main | CI: ✅ 1/1 (45s, run 26640726...) | DEPLOYMENTS: P21 | TICK: ✅ E15 P3 Push
