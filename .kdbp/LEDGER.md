@@ -663,3 +663,17 @@ DEFERRED: D5 (stale Epic-12 e2e specs assert removed generic handles; ~36 full-r
 ALIGNMENT: ALIGNED
 TIER: ent | DRIFT: none
 TICK: ✅
+- 2026-05-29 02:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-05-29 02:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-05-29 02:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-05-29 02:37 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_ci-uses-tsc-b.md
+- 2026-05-29 02:38 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/MEMORY.md
+
+## 2026-05-29 06:37 — PUSH dev → main (Epic 14 Phase 3)
+TARGET: dev → origin/main (direct push)
+CI: ❌ run 26622131778 — tsc -b build break (IssuesSummary IssueKind missing 'replicas-without-lb'); production unchanged (deploy gated on build)
+FIX: [486d091] add 'replicas-without-lb' to IssueKind + ISSUE_COLORS + sort order
+CI: ✅ 1/1 — run 26622252288 Deploy Production pass (51s)
+DEPLOYMENTS: P17
+TICK: ✅ Phase 3 Push
+NOTE: tsc --noEmit (root config) missed the consumer; CI tsc -b caught it. Memory project_ci-uses-tsc-b saved — verify future pushes with npm run build.
