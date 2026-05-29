@@ -85,10 +85,15 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number): 
     order.push(id)
     for (const target of outAdj.get(id) ?? []) {
       workIndeg.set(target, (workIndeg.get(target) ?? 0) - 1)
-      if ((workIndeg.get(target) ?? 0) <= 0 && !seen.has(target)) queue.push(target)
+      // Canonical Kahn: enqueue only when in-degree hits exactly 0 (avoids premature/duplicate
+      // enqueue under duplicate edges; the `seen` guard at processing is a second safety net).
+      if ((workIndeg.get(target) ?? 0) === 0 && !seen.has(target)) queue.push(target)
     }
   }
-  // Nodes left in a cycle: append in declaration order, processed without forwarding.
+  // Nodes left in a cycle: processed once without forwarding (v1 limitation). For pure DAGs
+  // (the normal case) flow conserves: targetRps = totalServed + totalFailed. When a DAG node
+  // forwards into a cycle member, that member's served traffic neither forwards nor reaches a
+  // sink, so totalServedRps is approximate for cyclic topologies (tracked: D7).
   const cyclic = graph.nodes.filter((n) => !seen.has(n.id)).map((n) => n.id)
 
   const telemetry = new Map<string, NodeTelemetry>()

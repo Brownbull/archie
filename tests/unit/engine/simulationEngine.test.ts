@@ -114,6 +114,38 @@ describe("simulateTick — routing + capacity", () => {
     // no entry (both have incoming) — cyclic nodes still get telemetry, no hang
     expect(s.nodes).toHaveLength(2)
   })
+
+  it("conserves flow on a DAG (targetRps = totalServed + totalFailed) across two bottlenecks", () => {
+    const g: SimGraph = { nodes: [node("a", 60), node("b", 30)], edges: [edge("a", "b")] }
+    const s = simulateTick(g, 0, 100)
+    // a sheds 40 (100>60), forwards 60; b sheds 30 (60>30). Conservation must hold.
+    expect(s.totalServedRps + s.totalFailedRps).toBe(100)
+    expect(s.totalFailedRps).toBe(70)
+    expect(s.totalServedRps).toBe(30)
+  })
+
+  it("conserves flow on a fan-out DAG", () => {
+    const g: SimGraph = { nodes: [node("lb", 1000), node("a1", 30), node("a2", 1000)], edges: [edge("lb", "a1"), edge("lb", "a2")] }
+    const s = simulateTick(g, 0, 100) // 50 to each; a1 sheds 20
+    expect(s.totalFailedRps).toBe(20)
+    expect(s.totalServedRps + s.totalFailedRps).toBe(100)
+  })
+
+  it("handles duplicate edges between the same pair without breaking topo order", () => {
+    const g: SimGraph = { nodes: [node("a", 1000), node("b", 1000)], edges: [edge("a", "b"), edge("a", "b")] }
+    const s = simulateTick(g, 0, 100)
+    // a forwards served (100) split across its 2 out-edges (both to b) → b receives 100
+    expect(tel(s, "a").incomingRps).toBe(100)
+    expect(tel(s, "b").incomingRps).toBe(100)
+    expect(s.nodes).toHaveLength(2)
+  })
+
+  it("treats a negative effectiveMaxRps as uncapped (documented behavior)", () => {
+    const g: SimGraph = { nodes: [node("in", -5)], edges: [] }
+    const s = simulateTick(g, 0, 100)
+    expect(tel(s, "in").failedRps).toBe(0)
+    expect(tel(s, "in").overloaded).toBe(false)
+  })
 })
 
 describe("runSimulation", () => {
