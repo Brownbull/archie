@@ -121,12 +121,41 @@ describe("architectureStore — replicaCount (Epic 14)", () => {
         (i) => i.issueType === "replicas-without-lb",
       )
 
-    it("flags 'replicas-without-lb' after replicating an LB-requiring node with no upstream LB", () => {
+    it("flags 'replicas-without-lb' for a connected LB-requiring node with no upstream LB", () => {
       useArchitectureStore.setState({ nodes: [], edges: [] })
       useArchitectureStore.getState().setNodes([
         makeNode({ id: "app", data: { componentCategory: "compute", replicaCount: 1 } }),
+        makeNode({ id: "db", data: { componentCategory: "data-storage", replicaCount: 1 } }),
       ])
+      // app -> db: app is connected (not orphan) but has no upstream load balancer
+      useArchitectureStore.getState().setEdges([makeEdge({ id: "e1", source: "app", target: "db" })])
       useArchitectureStore.getState().setNodeReplicaCount("app", 3)
+      expect(replicaIssues("app")).toHaveLength(1)
+    })
+
+    it("suppresses 'replicas-without-lb' on a fully disconnected (orphan) node", () => {
+      useArchitectureStore.setState({ nodes: [], edges: [] })
+      useArchitectureStore.getState().setNodes([
+        makeNode({ id: "solo", data: { componentCategory: "compute", replicaCount: 1 } }),
+      ])
+      useArchitectureStore.getState().setNodeReplicaCount("solo", 3)
+      // orphan warning is the actionable signal — needs-LB is suppressed
+      expect(replicaIssues("solo")).toHaveLength(0)
+    })
+
+    it("re-evaluates topology on setEdges (needs-LB returns when the upstream LB edge is removed)", () => {
+      useArchitectureStore.setState({ nodes: [], edges: [] })
+      useArchitectureStore.getState().setNodes([
+        makeNode({ id: "lb", data: { componentCategory: "delivery-network", replicaCount: 1 } }),
+        makeNode({ id: "app", data: { componentCategory: "compute", replicaCount: 1 } }),
+      ])
+      useArchitectureStore.getState().setEdges([makeEdge({ id: "e1", source: "lb", target: "app" })])
+      useArchitectureStore.getState().setNodeReplicaCount("app", 3)
+      expect(replicaIssues("app")).toHaveLength(0) // upstream LB present
+
+      // Swap edges so the LB is downstream (app -> lb): app stays connected but loses its upstream LB.
+      // setEdges alone must re-run topology — no setNodeReplicaCount call here.
+      useArchitectureStore.getState().setEdges([makeEdge({ id: "e2", source: "app", target: "lb" })])
       expect(replicaIssues("app")).toHaveLength(1)
     })
 

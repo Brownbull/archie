@@ -194,10 +194,14 @@ export function evaluateTopology(
 ): { topologyIssues: TopologyIssue[]; topologyIssuesByNodeId: Map<string, TopologyIssue[]> } {
   const graphIssues = detectTopologyIssues(nodes, edges)
   // Epic 14: replica scaling topology — flag replicated nodes missing an upstream LB
-  const replicaIssues = detectReplicasWithoutLB(
+  const replicaIssuesRaw = detectReplicasWithoutLB(
     nodes.map((n) => ({ id: n.id, replicaCount: n.data.replicaCount, category: n.data.componentCategory })),
     edges,
   )
+  // Suppress 'replicas-without-lb' on orphan nodes — a fully disconnected node is already
+  // flagged as an orphan (the actionable signal); a redundant "needs LB" warning adds noise (Epic 14 review).
+  const orphanIds = new Set(graphIssues.filter((i) => i.issueType === "orphan").map((i) => i.nodeId))
+  const replicaIssues = replicaIssuesRaw.filter((i) => !orphanIds.has(i.nodeId))
   const issues = [...graphIssues, ...replicaIssues]
   const byNode = new Map<string, TopologyIssue[]>()
   for (const issue of issues) {

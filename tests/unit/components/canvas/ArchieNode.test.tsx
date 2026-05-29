@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { ArchieNode } from "@/components/canvas/ArchieNode"
-import { HEATMAP_COLORS, NODE_WIDTH, type Constraint } from "@/lib/constants"
+import { HEATMAP_COLORS, NODE_WIDTH, MAX_REPLICAS, type Constraint } from "@/lib/constants"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
 import type { TopMetric } from "@/hooks/useTopMetrics"
@@ -148,6 +148,26 @@ describe("ArchieNode", () => {
       ])
       render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "compute" as const, replicaCount: 3 }} />)
       expect(screen.getByTestId("replica-needs-lb")).toBeInTheDocument()
+    })
+
+    it("shows an 'N backends' badge on a load-balancer node with downstream edges", () => {
+      mockArchEdges = [
+        { source: "node-1", target: "a" },
+        { source: "node-1", target: "b" },
+      ]
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "delivery-network" as const }} />)
+      expect(screen.getByTestId("replica-backends")).toHaveTextContent("2 backends")
+    })
+
+    it("disables increment at the maximum replica count", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, replicaCount: MAX_REPLICAS }} />)
+      expect(screen.getByTestId("replica-increment")).toBeDisabled()
+    })
+
+    it("shows a static replica badge (not a stepper) for a non-scalable replicated node", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "monitoring" as const, replicaCount: 3 }} />)
+      expect(screen.getByTestId("replica-badge")).toHaveTextContent("3×")
+      expect(screen.queryByTestId("replica-increment")).not.toBeInTheDocument()
     })
   })
 

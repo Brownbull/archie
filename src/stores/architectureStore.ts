@@ -692,7 +692,11 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   },
 
   setNodes: (nodes) => set({ nodes }),
-  setEdges: (edges) => set({ edges }),
+  setEdges: (edges) => {
+    set({ edges })
+    // Edge changes affect topology (incl. 'replicas-without-lb'); keep issues fresh (Epic 14 review)
+    _evaluateTopology(get, set)
+  },
 
   deselectAll: () => {
     const { nodes, edges } = get()
