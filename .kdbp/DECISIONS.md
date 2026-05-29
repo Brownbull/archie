@@ -679,3 +679,86 @@ dim_overrides: []
 
 ### Status
 - accepted
+
+## D21 — E15-P1 tier: enterprise + simulation architecture (2026-05-29)
+
+**Phase:** Simulation core engine + types
+**Types:** [client-state]
+**Tier chosen:** enterprise
+**Reason:** The simulation engine is the highest-impact Phase 3 feature and the foundation for challenge mode (E16). Correctness of routing + capacity + failed-request accounting is load-bearing; needs thorough edge coverage (overload shed, fan-out split, no-entry, multi-entry, branch/merge graphs).
+
+### Resolved roadmap-open architecture decisions
+- **Tick granularity (roadmap #7):** fixed 50 ticks over a curve-defined duration (default 90s). Engine is pure + synchronous — precomputes all TickState[] at start; playback (Phase 2) indexes frames. No per-tick recompute.
+- **Routing at branches (roadmap #8):** directional BFS (source→target) along http/stream edges from entry nodes (http-in port, no upstream http edge). Even split at fan-out (round-robin LB model). Replica capacity aggregates via effective maxRPS = variant.maxRPS × replicaFactor (Epic 14).
+- **Failure cascade (roadmap #9):** per-component shed (default) — incoming > effectiveMaxRPS drops excess (counted failed); latency = baseLatencyMs × (1 + max(0, load−1) × LATENCY_LOAD_K). crash/queue deferred. No global cascade in v1.
+- **Charting (roadmap #10):** hand-rolled SVG timeline, NOT Recharts. Bundle already ~1.4MB (warning); Recharts adds ~150KB. Deviation from roadmap text — see D24. Revisit if E16 needs interactivity.
+- **Users/entry source:** designated entry nodes (no synthetic component) for sandbox; E16 may add explicit entry.
+
+### Status
+- accepted
+
+## D22 — E15-P2 tier: enterprise (2026-05-29)
+**Phase:** simulationStore + playback state machine | **Types:** [client-state] | **Tier:** enterprise
+**Reason:** Playback is a state machine (idle/running/paused/done) with interval lifecycle (no leaks), speed scaling, seek, and snapshot-at-start immutability. Race/lifecycle edges need enterprise coverage. Engine precompute keeps playback O(1) per frame.
+### Status
+- accepted
+
+## D23 — E15-P3 tier: enterprise (2026-05-29)
+**Phase:** Per-node live telemetry overlay | **Types:** [user-facing, web, client-state] | **Tier:** enterprise
+**Reason:** User-facing canvas overlay; must not regress existing overlay modes, must fall back cleanly when idle, color thresholds correct. Runtime journey mandated.
+### Status
+- accepted
+
+## D24 — E15-P4 tier: enterprise + charting decision (2026-05-29)
+**Phase:** Stats panel + SVG timeline + playback controls | **Types:** [user-facing, web] | **Tier:** enterprise
+**Reason:** Stats accuracy (p99, uptime, cost-vs-budget) + a custom SVG timeline. Charting decision: hand-rolled SVG (no Recharts) due to bundle pressure (1.4MB + warning) — deviates from roadmap line 126/136 which named Recharts; rationale is bundle size + the timeline is a simple stacked area. Runtime journey mandated.
+### Status
+- accepted
+
+## D25 — E15-P5 tier: enterprise (2026-05-29)
+**Phase:** Traffic curves + scenario integration | **Types:** [user-facing, web, data-migration] | **Tier:** enterprise
+**Reason:** trafficCurve is a new optional schema field on scenario presets — backward-compat with existing constant-level demand presets is load-bearing (must not break sandbox). demandEngine stays pure (dual-mode coexistence).
+### Status
+- accepted
+
+## D26 — E15-P6 tier: enterprise (2026-05-29)
+**Phase:** Integration + E2E simulation journey | **Types:** [user-facing, web] | **Tier:** enterprise
+**Reason:** Closes the epic with a full-pipeline integration test + Playwright journey on the desktop project. file/runtime evidence required.
+### Status
+- accepted
+
+## D27 — E16-P1 tier: enterprise + scheduled-events architecture (2026-05-29)
+**Phase:** Challenge schema + types + loader + scheduled-events engine | **Types:** [data-migration, client-state] | **Tier:** enterprise
+**Reason:** Extends the shipped E15 engine — regression risk is high, so scheduledEvents is an optional param (absent = current behavior) and events apply as additive per-tick overrides (offlineNodeIds + latencyMultipliers). Component_failure → effectiveMaxRps 0 (all shed); az_outage → all nodes of target category offline; latency_spike → ×multiplier for durationS. Challenge content is a persistence format (schema + loader) needing exhaustive validation.
+### Status
+- accepted
+
+## D28 — E16-P2 tier: enterprise + star rubric (2026-05-29)
+**Phase:** Star rubric scorer + challengeStore | **Types:** [client-state] | **Tier:** enterprise
+**Reason:** Rubric: 1★ if uptime≥target AND p99≤target; +1★ if cost≤budgetCap; +1★ if zero topology issues. Budget/topology stars require the base pass star (roadmap "pass → 1★ then +1/+1"). Thresholds are per-challenge data (targetMetrics/budgetCap), not hardcoded. Pure scorer + state-machine store, exhaustively unit-tested. Attempts in-memory (Firestore deferred to E17).
+### Status
+- accepted
+
+## D29 — E16-P3 tier: enterprise (2026-05-29)
+**Phase:** Challenge selector + checklist + budget/timer HUD | **Types:** [user-facing, web, client-state] | **Tier:** enterprise
+**Reason:** User-facing modal + live checklist/budget/timer; reuse existing Dialog primitive + overlay portal; runtime journey mandated.
+### Status
+- accepted
+
+## D30 — E16-P4 tier: enterprise (2026-05-29)
+**Phase:** Results modal + Start button + challenge↔sim wiring | **Types:** [user-facing, web] | **Tier:** enterprise
+**Reason:** The scoring payoff — auto-score on sim done, results modal accuracy (stars/uptime/budget/topology). Runtime journey mandated.
+### Status
+- accepted
+
+## D31 — E16-P5 tier: enterprise (2026-05-29)
+**Phase:** Challenge content (10 levels) | **Types:** [data-migration] | **Tier:** enterprise
+**Reason:** 10 authored challenge YAMLs — persistence content that must schema-validate; a data-quality test asserts every file parses with sane bounds (mirrors componentDataQuality tests).
+### Status
+- accepted
+
+## D32 — E16-P6 tier: enterprise (2026-05-29)
+**Phase:** Integration + E2E challenge journey | **Types:** [user-facing, web] | **Tier:** enterprise
+**Reason:** Full-pipeline integration (select→build→start→score) + Playwright journey to results modal. Runtime evidence required.
+### Status
+- accepted

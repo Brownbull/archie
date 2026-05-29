@@ -894,3 +894,39 @@ TARGET: dev → origin/main | CI: ✅ 1/1 | DEPLOYMENTS: P24 | TICK: ✅ E15 P6 
 ## 2026-05-29 10:25 — PLAN COMPLETED: Epic 15: Simulation Engine
 ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-29_simulation-engine.md
 PHASES COMPLETED: 6 of 6 (P19–P24 deployed)
+
+## 2026-05-29 10:32 — PLAN CREATED: Epic 16: Challenge Mode
+PHASES: 6 | COMPLEXITY: high | MATURITY: enterprise
+TIERS: mvp × 0, ent × 6, scale × 0 | PROTOTYPES: 0
+DECISIONS: D27 → D32 (D27 carries scheduled-events architecture; D28 star rubric)
+- 2026-05-29 10:34 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-05-29 10:34 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:34 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:35 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:35 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:35 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:35 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 10:35 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 10:36 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 10:36 | Write | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-05-29 10:36 | Write | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-05-29 10:37 | Write | /home/khujta/projects/bmad/archie/src/services/challengeLoader.ts
+- 2026-05-29 10:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-05-29 10:38 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-05-29 10:38 | Write | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+
+## 2026-05-29 10:39 — [96639de] feat(challenge): challenge schema + types + loader + scheduled-events engine
+CHECKS: build ✅ tsc -b | tests ✅ 3096 (43 new) | lint ✅ 0 | regression ✅ (E15 sim suite green)
+## 2026-05-29 10:39 — PHASE EXEC COMPLETE: E16 Phase 1 — Challenge schema + scheduled-events engine
+TIER: ent | TASKS: types/schema/loader/engine-overrides/store/tests, 1 commit (96639de)
+DEVIATIONS: 0
+- 2026-05-29 10:42 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 10:42 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-05-29 10:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-05-29 10:42 — PHASE 1 REVIEW: E16 Challenge schema + scheduled-events engine
+VERDICT: APPROVE
+FINDINGS: 2 (0 critical, 0 high, 1 medium [half-open window doc + concurrent-spike test], 1 low [zero-duration no-op]) — both fixed; regression path verified airtight, no import cycles
+COVERAGE: HIGH — 39 engine (incl scheduled-events, stacking, boundary, regression guard) + 6 schema
+CONFIDENCE: 97/100 | METHOD: focused code-reviewer agent
+DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
