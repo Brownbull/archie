@@ -22,15 +22,15 @@ Epic 17: Smart Suggestions & History — post-simulation "Try this next" card (s
 | 1 | Shadow-simulation suggestion engine | `suggestionEngine`: for each candidate change (add/drop a replica, swap to a cheaper/bigger variant, add a missing required category) re-run the sim and compute {uptimeDelta, latencyDelta, costDelta}; rank net-positive, return the best. Pure logic + deterministic tests. No UI/auth. | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 2 | "Try this next" card | Post-results suggestion card showing the best change + its deltas (↑uptime / ↓latency / ↓cost), or "well optimized" when none beats current. Mounted in the results modal / sim bar. | ent | medium | ✅ | ✅ | ✅ | ✅ |
 | 3 | Require auth for challenge mode | Gate challenge-mode entry on Firebase Auth (sign-in prompt); sandbox canvas stays anonymous. useAuth wiring + entry guard on the Challenges trigger/Start. (D33) | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 4 | attemptsStore + Firestore attempts collection | On score, persist `{ userId, challengeId, timestamp, stars, uptime, latency, budget, requestsTotal, requestsFailed }` to Firestore `attempts`; owner-only security rules; attemptsStore (load/subscribe per user). security-reviewer pass. | ent | high | ✅ | ✅ | ✅ | ⬜ |
-| 5 | History tab + submissions table | Sidebar History tab: past attempts with status icon, stars, key metrics; sortable submissions table (date/stars/challenge); best-stars surfaced. Reads attemptsStore. | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | attemptsStore + Firestore attempts collection | On score, persist `{ userId, challengeId, timestamp, stars, uptime, latency, budget, requestsTotal, requestsFailed }` to Firestore `attempts`; owner-only security rules; attemptsStore (load/subscribe per user). security-reviewer pass. | ent | high | ✅ | ✅ | ✅ | ✅ |
+| 5 | History tab + submissions table | Sidebar History tab: past attempts with status icon, stars, key metrics; sortable submissions table (date/stars/challenge); best-stars surfaced. Reads attemptsStore. | ent | medium | ✅ | ✅ | ✅ | ⬜ |
 | 6 | Integration + E2E + brand-logo polish | integration (score → persist → history) + E2E (signed-in attempt → appears in History); optional brand logos on variants (`brand`, `logoUrl`). | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec: ⬜/🔄/✅. Review/Commit/Push auto-ticked. User-facing/web phases require runtime journey evidence. -->
 
 ## Current Phase
 
-Phase 4: attemptsStore + Firestore attempts collection
+Phase 5: History tab + submissions table
 
 ## Dependencies
 

@@ -1217,3 +1217,34 @@ TARGET: 58c40f5 | RAW: 11 → CONFIRMED: 10 (≥0.7 conf)
 - [medium] Timestamp instanceof / falsy createdAt — TESTED (loadAttempts null-createdAt test)
 - [medium] schema↔rules allowlist consistency untested — FIXED (attemptRulesConsistency.test)
 RESOLUTION: critical + all highs fixed in b099b6c. Full suite 3199 green. Rules deploy still required (D9). Confidence high.
+
+## 2026-05-29 — PUSH P35 (Epic 17 P4) — CI ✅
+PUSH: dev:main b0bbf52..4bbaaad | run 26661527552 deploy-production 44s ✅
+DEPLOY: P35 — attempts persistence + hardened rules live (rules still need manual deploy, D9). Advancing to P5 (History tab).
+- 2026-05-29 16:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-05-29 16:53 | Write | /home/khujta/projects/bmad/archie/src/components/toolbox/HistoryTab.tsx
+- 2026-05-29 16:53 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-05-29 16:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-05-29 16:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-05-29 16:54 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/HistoryTab.test.tsx
+- 2026-05-29 16:56 | Write | /home/khujta/projects/bmad/archie/tests/e2e/history-tab.spec.ts
+
+## 2026-05-29 — [eef174e] feat(history): History toolbox tab (Epic 17 P5)
+PHASE: Epic 17 P5 — HistoryTab (4th toolbox tab) reads attemptsStore; sortable submissions log
+GATE: lint ✅ types ✅ tests 3204/3204 ✅ | E2E history-tab 2/2 (tab reachable + renders live)
+- 2026-05-29 17:06 | Edit | /home/khujta/projects/bmad/archie/src/stores/attemptsStore.ts
+- 2026-05-29 17:06 | Edit | /home/khujta/projects/bmad/archie/src/stores/attemptsStore.ts
+- 2026-05-29 17:06 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-05-29 17:07 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-05-29 17:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/HistoryTab.test.tsx
+- 2026-05-29 17:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/attemptsStore.test.ts
+- 2026-05-29 17:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/history-tab.spec.ts
+
+## 2026-05-29 — REVIEW Epic 17 P5 (correctness + state/UX + test rigor, 3 dims × verify)
+TARGET: eef174e | RAW: 11 → CONFIRMED: 7 (≥0.7 conf)
+- [critical] stale prior-user attempts could render during user switch (no clear-on-load + no out-of-order guard) — FIXED d8bc418 (clear-at-start + monotonic load token)
+- [high] attemptsStore not reset on sign-out (prior user's data lingered) — FIXED (signOut → attemptsStore.reset())
+- [high×2] missing tests: user-change reload, challenge-sort — FIXED
+- [medium×2] missing tests: unknown-challengeId fallback, E2E only reachability — FIXED (fallback test + E2E load-resolves assertion)
+- [low] createdAt=0 dash — confirmed CORRECT (no change)
+RESOLUTION: critical + highs fixed in d8bc418. Full suite 3209 + E2E green. Confidence high.
