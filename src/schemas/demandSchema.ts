@@ -110,10 +110,21 @@ const scenarioPresetBaseFields = {
   icon: z.string().min(1).max(50),
 }
 
+// Traffic curve (Epic 15) — optional time-varying load on a scenario preset.
+// Absent = legacy constant-level demand (backward compatible). Defense-in-depth bounds.
+export const TrafficCurvePointSchema = z
+  .object({
+    t: z.number().min(0).max(3600),
+    rps: z.number().min(0).max(10_000_000),
+  })
+  .strict()
+export const TrafficCurveSchema = z.array(TrafficCurvePointSchema).min(1).max(100)
+
 export const ScenarioPresetSchema = z
   .object({
     ...scenarioPresetBaseFields,
     demandProfile: DemandProfileSchema,
+    trafficCurve: TrafficCurveSchema.optional(),
   })
   .strict()
 
@@ -122,6 +133,7 @@ export const ScenarioPresetYamlSchema = z
   .object({
     ...scenarioPresetBaseFields,
     demand_profile: DemandProfileSchema,
+    traffic_curve: TrafficCurveSchema.optional(),
   })
   .strict()
   .transform((data) => ({
@@ -130,6 +142,7 @@ export const ScenarioPresetYamlSchema = z
     description: data.description,
     icon: data.icon,
     demandProfile: data.demand_profile,
+    trafficCurve: data.traffic_curve,
   }))
 
 // --- Failure Scenario Schemas (Story 9-7) ---

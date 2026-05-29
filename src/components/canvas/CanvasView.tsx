@@ -32,6 +32,7 @@ import { OverlaySelector } from "@/components/canvas/OverlaySelector";
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode";
 import { RadialMenu } from "@/components/canvas/RadialMenu";
 import { ScenarioSelector } from "@/components/canvas/ScenarioSelector";
+import { RunSimulationButton } from "@/components/canvas/RunSimulationButton";
 import { SwapPopover } from "@/components/canvas/SwapPopover";
 import { useImportAction } from "@/components/import-export/ImportDialog";
 import { useGhostNodes } from "@/hooks/useGhostNodes";
@@ -355,6 +356,7 @@ function CanvasViewInner() {
 			<CanvasLegend />
 			<ScenarioSelector />
 			<FailureSelector />
+			<RunSimulationButton />
 		</div>
 	);
 }

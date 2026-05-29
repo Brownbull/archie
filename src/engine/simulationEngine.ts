@@ -1,4 +1,4 @@
-import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_LOAD_K } from "@/lib/constants"
+import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_LOAD_K, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
 import type {
   SimGraph,
   SimNode,
@@ -29,6 +29,20 @@ export function interpolateRps(curve: TrafficCurve, t: number): number {
     }
   }
   return Math.max(0, last.rps)
+}
+
+/**
+ * Default traffic curve when a scenario defines none (Epic 15): a linear ramp 0 → targetRps
+ * over the duration, so bottlenecks emerge progressively as load climbs.
+ */
+export function defaultTrafficCurve(
+  durationS: number = SIM_DEFAULT_DURATION_S,
+  targetRps: number = DEFAULT_SIM_TARGET_RPS,
+): TrafficCurve {
+  return [
+    { t: 0, rps: 0 },
+    { t: durationS, rps: targetRps },
+  ]
 }
 
 /** Entry nodes = nodes with no incoming edge (in-degree 0). Traffic is injected here. */

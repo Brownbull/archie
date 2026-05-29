@@ -102,6 +102,8 @@ export const SIM_DEFAULT_DURATION_S = 90
 export const LATENCY_LOAD_K = 2
 // Wall-clock ms per tick at 1× playback speed; divided by playback speed (1/2/5/10×) in the store.
 export const SIM_BASE_TICK_MS = 1000
+// Default ramp target (req/sec) used when running a simulation with no scenario traffic curve.
+export const DEFAULT_SIM_TARGET_RPS = 1000
 
 // Canvas edge limit — defense-in-depth against memory exhaustion from malformed YAML (TD-5-1a)
 export const MAX_EDGES = 200

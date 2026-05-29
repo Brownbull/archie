@@ -1,4 +1,5 @@
 import type { DemandVariable, DemandLevel } from "@/lib/constants"
+import type { TrafficCurve } from "@/lib/simulationTypes"
 
 // --- Metadata Types ---
 
@@ -29,6 +30,8 @@ export interface ScenarioPreset {
   description: string
   icon: string
   demandProfile: DemandProfile
+  /** Epic 15: optional time-varying traffic curve for the simulation engine (absent = constant demand). */
+  trafficCurve?: TrafficCurve
 }
 
 // --- Metadata Constants ---

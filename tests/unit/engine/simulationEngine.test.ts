@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { interpolateRps, findEntryNodes, simulateTick, runSimulation } from "@/engine/simulationEngine"
+import { interpolateRps, findEntryNodes, simulateTick, runSimulation, defaultTrafficCurve } from "@/engine/simulationEngine"
 import { SIM_TICKS } from "@/lib/constants"
 import type { SimGraph, SimNode } from "@/lib/simulationTypes"
 
@@ -184,5 +184,16 @@ describe("runSimulation", () => {
     const r = runSimulation(g, ramp, 1)
     expect(r.ticks).toHaveLength(1)
     expect(r.ticks[0].targetRps).toBe(0) // t=0 at tick 0
+  })
+})
+
+describe("defaultTrafficCurve", () => {
+  it("ramps 0 → target over the duration", () => {
+    const c = defaultTrafficCurve(90, 1000)
+    expect(c[0]).toEqual({ t: 0, rps: 0 })
+    expect(c[c.length - 1]).toEqual({ t: 90, rps: 1000 })
+  })
+  it("interpolates to half-target at the midpoint", () => {
+    expect(interpolateRps(defaultTrafficCurve(90, 1000), 45)).toBe(500)
   })
 })
