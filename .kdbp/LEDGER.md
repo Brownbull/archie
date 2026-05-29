@@ -753,3 +753,33 @@ TARGET: dev → origin/main (direct push)
 CI: ✅ 1/1 — Deploy Production pass (44s, run 26640334131)
 DEPLOYMENTS: P19
 TICK: ✅ E15 Phase 1 Push
+- 2026-05-29 09:36 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-29 09:37 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-29 09:37 | Write | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 09:38 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/simulationStore.test.ts
+- 2026-05-29 09:38 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-replica-economics.test.ts
+- 2026-05-29 09:38 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-replica-economics.test.ts
+
+## 2026-05-29 09:39 — [6664470] feat(simulation): simulationStore playback state machine + buildSimGraph
+CHECKS: build ✅ tsc -b | tests ✅ 3044 (25 new) | lint ✅ 0
+
+## 2026-05-29 09:39 — PHASE EXEC COMPLETE: E15 Phase 2 — simulationStore + playback state machine
+TIER: ent
+TASKS: store state machine + buildSimGraph + tests, 1 commit (6664470)
+DEVIATIONS: 0
+- 2026-05-29 09:41 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 09:42 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 09:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/simulationStore.test.ts
+- 2026-05-29 09:42 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-05-29 09:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/simulationStore.test.ts
+
+## 2026-05-29 09:43 — PHASE 2 REVIEW: E15 simulationStore + playback state machine
+VERDICT: APPROVE
+FINDINGS: 3 (0 critical, 0 high, 1 medium [HMR timer leak], 2 low) — HMR guard added, reset-speed bug fixed (found via review), transitions documented+tested
+COVERAGE: HIGH — 16 store tests (start/pause/resume/replay/seek/setSpeed/reset, done, leak, while-running transitions) + 2 buildSimGraph
+CONFIDENCE: 96/100
+METHOD: focused code-reviewer agent on the state machine
+DEFERRED: none
+ALIGNMENT: ALIGNED
+TIER: ent | DRIFT: none
+TICK: ✅

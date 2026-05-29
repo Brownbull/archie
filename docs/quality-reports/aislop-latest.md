@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260529-093352
+**Date:** 20260529-094339
 **Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,20 +8,19 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 17 | 278ms |
-| code-quality | 99 | 3328ms |
-| ai-slop | 0 | 9ms |
-| security | 8 | 1253ms |
+| lint | 17 | 252ms |
+| code-quality | 100 | 3068ms |
+| ai-slop | 0 | 5ms |
+| security | 8 | 892ms |
 
 ## Findings
 
-### code-quality (99)
+### code-quality (100)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:66` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:68` — knip/devDependencies: Unused devDependency: tw-animate-css
-- [!] `src/lib/constants.ts:104` — knip/exports: Unused export: SIM_BASE_TICK_MS
 - [!] `src/lib/constants.ts:181` — knip/exports: Unused export: SLUG_ID_FORMAT
 - [!] `src/lib/constants.ts:50` — knip/types: Unused type: ReplicaType
 - [!] `src/lib/constants.ts:52` — knip/types: Unused type: ScalingRule
@@ -116,16 +115,18 @@
 - [!] `src/hooks/useNodeOverlay.ts:8` — knip/types: Unused type: NodeOverlayInfo
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
+- [!] `src/stores/simulationStore.ts:6` — knip/types: Unused type: SimulationStatus
+- [!] `src/stores/simulationStore.ts:7` — knip/types: Unused type: PlaybackSpeed
 
 ### lint (17)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
-- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
+- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
@@ -134,8 +135,8 @@
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
-- [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
+- [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 
 ### security (8)
 
