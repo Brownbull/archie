@@ -705,3 +705,13 @@ DEFERRED: none
 ALIGNMENT: ALIGNED
 TIER: ent | DRIFT: none
 TICK: ✅
+
+## 2026-05-29 13:13 — PUSH dev → main (Epic 14 Phase 4 — FINAL)
+TARGET: dev → origin/main (direct push)
+CI: ✅ 1/1 — Deploy Production pass (44s, run 26639291309)
+DEPLOYMENTS: P18
+TICK: ✅ Phase 4 Push
+
+## 2026-05-29 13:14 — PLAN COMPLETED: Epic 14: Replicas & Horizontal Scaling
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-29_replicas-horizontal-scaling.md
+PHASES COMPLETED: 4 of 4 (P15–P18 deployed)
