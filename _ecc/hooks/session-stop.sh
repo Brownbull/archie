@@ -1,10 +1,9 @@
 #!/bin/bash
-# Stop hook — Session cost report + cozempic checkpoint.
+# Stop hook — Session cost report.
 #
 # 1. Calculate session duration
 # 2. Read compaction count
 # 3. Append session data to cost tracking CSV
-# 4. Run cozempic checkpoint
 #
 # Exit 0 always.
 
@@ -51,9 +50,5 @@ echo "${DATE},${SESSION_ID},${DURATION},${COMPACTIONS},${BRANCH}," >> "$COST_FIL
 # Clean up temp files
 rm -f "$START_FILE" "$COUNTER_FILE" 2>/dev/null
 
-# Run cozempic checkpoint (if available)
-if command -v cozempic &>/dev/null; then
-    cozempic checkpoint current 2>/dev/null || true
-fi
 
 exit 0

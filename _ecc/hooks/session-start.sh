@@ -1,9 +1,8 @@
 #!/bin/bash
-# SessionStart hook — Initialize session tracking + start cozempic guard.
+# SessionStart hook — Initialize session tracking.
 #
 # 1. Record session start timestamp (for duration tracking)
 # 2. Initialize compaction counter to 0
-# 3. Start cozempic guard daemon
 #
 # Exit 0 always.
 
@@ -17,9 +16,5 @@ echo "$(date +%s)" > "/tmp/claude-session-start-${SESSION_KEY}"
 
 # 2. Initialize compaction counter
 echo "0" > "/tmp/claude-session-compactions-${SESSION_KEY}"
-
-# 3. Start cozempic guard — REMOVED from here.
-# Cozempic is already launched by the SessionStart hook in settings.json.
-# Running it twice caused duplicate daemon processes.
 
 exit 0

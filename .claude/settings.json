@@ -85,15 +85,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cozempic guard --daemon --cwd \"$CLAUDE_PROJECT_DIR\" -rx gentle --threshold 50 --no-reload",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/_kdbp/hooks/session-start.sh\"",
             "timeout": 5
           }
@@ -105,15 +96,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cozempic treat current -rx gentle --execute",
-            "timeout": 30
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/_kdbp/hooks/session-budget.py\"",
             "timeout": 10
           }
@@ -121,15 +103,6 @@
       }
     ],
     "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "cozempic checkpoint current 2>/dev/null || true",
-            "timeout": 10
-          }
-        ]
-      },
       {
         "hooks": [
           {
