@@ -18,7 +18,7 @@ const s = () => useChallengeStore.getState()
 
 describe("challengeStore (Epic 16)", () => {
   beforeEach(() => {
-    useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, bestStars: {} })
+    useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, bestStars: {} })
   })
 
   it("selectChallenge enters building mode", () => {
@@ -44,6 +44,20 @@ describe("challengeStore (Epic 16)", () => {
     expect(s().attemptState).toBe("scored")
     expect(s().lastResult?.stars).toBe(3)
     expect(s().bestStars["c1"]).toBe(3)
+  })
+
+  it("scoreAttempt captures the measured actuals for the results modal", () => {
+    s().selectChallenge(challenge)
+    s().startAttempt()
+    s().scoreAttempt(stats(99.5, 175), 2, 420)
+    expect(s().lastMeasured).toEqual({
+      uptimePercent: 99.5,
+      p99LatencyMs: 175,
+      totalCost: 420,
+      topologyIssueCount: 2,
+    })
+    s().reset()
+    expect(s().lastMeasured).toBeNull() // cleared on leaving challenge mode
   })
 
   it("bestStars keeps the maximum across attempts", () => {

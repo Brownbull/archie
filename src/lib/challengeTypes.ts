@@ -36,3 +36,14 @@ export interface StarBreakdown {
   /** Zero topology issues (only awarded if passedMetrics). */
   cleanTopology: boolean
 }
+
+/**
+ * The measured inputs captured at score time, so the results modal can show actual-vs-target
+ * even after the user edits the canvas (which would change live cost/topology).
+ */
+export interface MeasuredAttempt {
+  uptimePercent: number
+  p99LatencyMs: number
+  totalCost: number
+  topologyIssueCount: number
+}

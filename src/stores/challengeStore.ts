@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { evaluateAttempt } from "@/engine/rubricScorer"
-import type { Challenge, StarBreakdown } from "@/lib/challengeTypes"
+import type { Challenge, StarBreakdown, MeasuredAttempt } from "@/lib/challengeTypes"
 import type { SimulationStats } from "@/lib/simulationStats"
 
 export type AttemptState = "idle" | "building" | "running" | "scored"
@@ -9,6 +9,8 @@ interface ChallengeState {
   activeChallenge: Challenge | null
   attemptState: AttemptState
   lastResult: StarBreakdown | null
+  /** Measured actuals captured at score time, for the results modal (decoupled from live canvas). */
+  lastMeasured: MeasuredAttempt | null
   /** Best stars earned per challenge id (persists across attempts within the session). */
   bestStars: Record<string, number>
   /** Enter challenge mode with a challenge — clears any prior result, ready to build. */
@@ -25,10 +27,11 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   activeChallenge: null,
   attemptState: "idle",
   lastResult: null,
+  lastMeasured: null,
   bestStars: {},
 
   selectChallenge: (challenge) => {
-    set({ activeChallenge: challenge, attemptState: "building", lastResult: null })
+    set({ activeChallenge: challenge, attemptState: "building", lastResult: null, lastMeasured: null })
   },
 
   startAttempt: () => {
@@ -45,6 +48,12 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     const prevBest = get().bestStars[challenge.id] ?? 0
     set({
       lastResult: result,
+      lastMeasured: {
+        uptimePercent: stats.uptimePercent,
+        p99LatencyMs: stats.p99LatencyMs,
+        totalCost,
+        topologyIssueCount,
+      },
       attemptState: "scored",
       bestStars: { ...get().bestStars, [challenge.id]: Math.max(prevBest, result.stars) },
     })
@@ -52,7 +61,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   },
 
   reset: () => {
-    set({ activeChallenge: null, attemptState: "idle", lastResult: null })
+    set({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null })
   },
 }))
 

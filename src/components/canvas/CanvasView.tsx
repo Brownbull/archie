@@ -34,6 +34,8 @@ import { RadialMenu } from "@/components/canvas/RadialMenu";
 import { ScenarioSelector } from "@/components/canvas/ScenarioSelector";
 import { RunSimulationButton } from "@/components/canvas/RunSimulationButton";
 import { ChallengeHud } from "@/components/challenges/ChallengeHud";
+import { ChallengeStartButton } from "@/components/challenges/ChallengeStartButton";
+import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal";
 import { SwapPopover } from "@/components/canvas/SwapPopover";
 import { useImportAction } from "@/components/import-export/ImportDialog";
 import { useGhostNodes } from "@/hooks/useGhostNodes";
@@ -358,7 +360,9 @@ function CanvasViewInner() {
 			<ScenarioSelector />
 			<FailureSelector />
 			<RunSimulationButton />
+			<ChallengeStartButton />
 			<ChallengeHud />
+			<ChallengeResultsModal />
 		</div>
 	);
 }

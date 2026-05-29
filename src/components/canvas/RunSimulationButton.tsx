@@ -1,6 +1,7 @@
 import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
+import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { buildSimGraph } from "@/stores/architectureStoreHelpers"
 import { defaultTrafficCurve } from "@/engine/simulationEngine"
 import { getScenarioPreset } from "@/services/scenarioLoader"
@@ -8,14 +9,16 @@ import { getScenarioPreset } from "@/services/scenarioLoader"
 /**
  * "Run Simulation" trigger (Epic 15 Phase 5). Builds the SimGraph from the current canvas,
  * resolves a traffic curve (active scenario's curve, else a default ramp), and starts the
- * simulationStore. Hidden while a sim is active (the SimulationBar takes over) or canvas empty.
+ * simulationStore. Hidden while a sim is active (the SimulationBar takes over), the canvas is
+ * empty, or a challenge is active (ChallengeStartButton takes over — Epic 16 P4).
  */
 export function RunSimulationButton() {
   const status = useSimulationStore((s) => s.status)
   const start = useSimulationStore((s) => s.start)
   const nodeCount = useArchitectureStore((s) => s.nodes.length)
+  const inChallenge = useChallengeStore(isChallengeMode)
 
-  if (status !== "idle" || nodeCount === 0) return null
+  if (status !== "idle" || nodeCount === 0 || inChallenge) return null
 
   const onRun = () => {
     const { nodes, edges, activeScenarioId } = useArchitectureStore.getState()
