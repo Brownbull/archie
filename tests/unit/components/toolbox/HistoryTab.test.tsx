@@ -74,4 +74,27 @@ describe("HistoryTab (Epic 17 P5)", () => {
     expect(loadSpy).not.toHaveBeenCalled()
     expect(screen.getByTestId("history-empty")).toBeInTheDocument()
   })
+
+  it("reloads when the signed-in user changes (no cross-user staleness)", () => {
+    const { rerender } = render(<HistoryTab />)
+    expect(loadSpy).toHaveBeenLastCalledWith("user-1")
+    mockUid = "user-2"
+    rerender(<HistoryTab />)
+    expect(loadSpy).toHaveBeenLastCalledWith("user-2")
+  })
+
+  it("sorts by challenge title when the Challenge sort is chosen", () => {
+    // date order: 'fs' (newer) first; challenge sort → 'Chaos Day' < 'First Service' → chaos first.
+    useAttemptsStore.setState({ attempts: [rec("fs", { challengeId: "first-service", createdAt: 2000 }), rec("cd", { challengeId: "chaos-day", createdAt: 1000 })] })
+    render(<HistoryTab />)
+    expect(screen.getAllByTestId(/^attempt-row-/)[0]).toHaveAttribute("data-testid", "attempt-row-fs")
+    fireEvent.click(screen.getByTestId("history-sort-challenge"))
+    expect(screen.getAllByTestId(/^attempt-row-/)[0]).toHaveAttribute("data-testid", "attempt-row-cd")
+  })
+
+  it("falls back to the raw challengeId when the challenge is unknown", () => {
+    useAttemptsStore.setState({ attempts: [rec("x", { challengeId: "ghost-level" })] })
+    render(<HistoryTab />)
+    expect(screen.getByTestId("attempt-row-x")).toHaveTextContent("ghost-level")
+  })
 })

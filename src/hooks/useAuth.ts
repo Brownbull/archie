@@ -9,6 +9,7 @@ import {
 } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { componentLibrary } from "@/services/componentLibrary"
+import { useAttemptsStore } from "@/stores/attemptsStore"
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -89,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null)
     try {
       componentLibrary.reset()
+      useAttemptsStore.getState().reset() // clear the prior user's attempts — never leak across users
       await firebaseSignOut(auth)
     } catch (err) {
       setError(getErrorMessage(err))

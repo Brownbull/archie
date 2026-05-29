@@ -16,6 +16,10 @@ test.describe("History Tab E2E (Epic 17)", () => {
     await expect(page.locator('[data-testid="history-tab"]')).toBeVisible()
     await expect(page.locator('[data-testid="history-sort-date"]')).toBeVisible()
     await expect(page.locator('[data-testid="history-sort-stars"]')).toBeVisible()
+
+    // The load cycle must resolve (not hang): the loading state clears, leaving a definite state
+    // (list / empty / error — the data state depends on the attempts rules being deployed, D9).
+    await expect(page.locator('[data-testid="history-loading"]')).toHaveCount(0, { timeout: 10_000 })
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-history-tab.png`, fullPage: true })
   })
 })

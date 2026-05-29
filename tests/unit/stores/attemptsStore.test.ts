@@ -96,6 +96,36 @@ describe("attemptsStore (Epic 17 P4)", () => {
     expect(s().attempts).toEqual([])
   })
 
+  it("discards a superseded out-of-order load — never shows the prior user's data", async () => {
+    let resolveA!: (v: unknown) => void
+    let resolveB!: (v: unknown) => void
+    const pA = new Promise((r) => { resolveA = r })
+    const pB = new Promise((r) => { resolveB = r })
+    getDocsMock.mockReturnValueOnce(pA).mockReturnValueOnce(pB)
+
+    const p1 = s().loadAttempts("userA") // seq 1
+    const p2 = s().loadAttempts("userB") // seq 2 — the latest
+    resolveB({ docs: [docOf("b", { userId: "userB" })] }) // B resolves first
+    await p2
+    expect(s().attempts.map((a) => a.id)).toEqual(["b"])
+
+    resolveA({ docs: [docOf("a", { userId: "userA" })] }) // A resolves late
+    await p1
+    expect(s().attempts.map((a) => a.id)).toEqual(["b"]) // stale A response discarded
+  })
+
+  it("loadAttempts clears the previous list immediately while loading", async () => {
+    useAttemptsStore.setState({ attempts: [{ id: "old", userId: "prev", challengeId: "x", stars: 1, uptimePercent: 90, p99LatencyMs: 10, totalCost: 1, topologyIssueCount: 0, createdAt: 1 }] })
+    let resolve!: (v: unknown) => void
+    getDocsMock.mockReturnValueOnce(new Promise((r) => { resolve = r }))
+    const p = s().loadAttempts("user-1")
+    expect(s().attempts).toEqual([]) // cleared synchronously — no stale render during the fetch
+    expect(s().loading).toBe(true)
+    resolve({ docs: [docOf("fresh")] })
+    await p
+    expect(s().attempts.map((a) => a.id)).toEqual(["fresh"])
+  })
+
   it("loadAttempts surfaces a read failure as an error", async () => {
     getDocsMock.mockRejectedValueOnce(new Error("network"))
     await s().loadAttempts("user-1")

@@ -5,6 +5,11 @@ import { AttemptStoredSchema, type AttemptRecord, type AttemptStored } from "@/s
 
 const COLLECTION = "attempts"
 
+// Monotonic load token: guards against out-of-order resolution. If a slow load for user A resolves
+// after a newer load (e.g. user B, or a refetch) started, the stale response is discarded — user B
+// must never briefly see user A's attempts.
+let loadSeq = 0
+
 interface AttemptsState {
   attempts: AttemptRecord[]
   loading: boolean
@@ -60,10 +65,13 @@ export const useAttemptsStore = create<AttemptsState>((set) => ({
       set({ attempts: [], loading: false, error: null })
       return
     }
-    set({ loading: true, error: null })
+    const seq = ++loadSeq
+    // Clear immediately so a previous user's (or stale) list never renders during the fetch.
+    set({ loading: true, error: null, attempts: [] })
     try {
       const q = query(collection(db, COLLECTION), where("userId", "==", userId), orderBy("createdAt", "desc"))
       const snapshot = await getDocs(q)
+      if (seq !== loadSeq) return // superseded by a newer load — discard this stale response
       const attempts: AttemptRecord[] = []
       for (const docSnap of snapshot.docs) {
         const rec = toRecord(docSnap.id, docSnap.data() as Record<string, unknown>)
@@ -71,6 +79,7 @@ export const useAttemptsStore = create<AttemptsState>((set) => ({
       }
       set({ attempts, loading: false })
     } catch (err) {
+      if (seq !== loadSeq) return
       if (import.meta.env.DEV) console.error("Failed to load attempts:", err)
       set({ attempts: [], loading: false, error: "Could not load your attempt history." })
     }
