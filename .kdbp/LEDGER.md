@@ -677,3 +677,31 @@ CI: ✅ 1/1 — run 26622252288 Deploy Production pass (51s)
 DEPLOYMENTS: P17
 TICK: ✅ Phase 3 Push
 NOTE: tsc --noEmit (root config) missed the consumer; CI tsc -b caught it. Memory project_ci-uses-tsc-b saved — verify future pushes with npm run build.
+- 2026-05-29 02:39 | Edit | /home/khujta/projects/bmad/archie/tests/integration/yamlRoundTrip.test.ts
+- 2026-05-29 02:39 | Edit | /home/khujta/projects/bmad/archie/tests/integration/yamlRoundTrip.test.ts
+- 2026-05-29 02:40 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/replicas-and-scaling.spec.ts
+- 2026-05-29 02:41 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/replicas-and-scaling.spec.ts
+- 2026-05-29 02:45 | Edit | /home/khujta/projects/bmad/archie/tests/integration/yamlRoundTrip.test.ts
+- 2026-05-29 02:45 | Edit | /home/khujta/projects/bmad/archie/tests/integration/yamlRoundTrip.test.ts
+- 2026-05-29 02:45 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/replicas-and-scaling.spec.ts
+
+## 2026-05-29 09:11 — [207a022] test(replicas): integration round-trip + E2E export persistence
+CHECKS: build ✅ tsc -b | integration ✅ 11 | e2e ✅ 3/3 chromium
+
+## 2026-05-29 09:11 — PHASE EXEC COMPLETE: Phase 4 — YAML/topology integration + E2E journey
+TIER: ent
+TASKS: integration round-trip + E2E export persistence, 2 commits (207a022 + review-fix)
+RUNTIME EVIDENCE: tests/e2e/replicas-and-scaling.spec.ts 3/3 PASSED in chromium (desktop) — stepper journey + export serializes "replicas: 3". Artifacts: test-results/replicas-and-scaling/{01-node-placed,02-replicas-3x,03-replicas-2x,04-export-with-replicas}.png
+DEVIATIONS: 0 structural, 0 minor
+
+## 2026-05-29 09:11 — PHASE 4 REVIEW: YAML/topology integration + E2E journey
+VERDICT: APPROVE
+FINDINGS: 5 surfaced (0 critical, 0 high, 3 medium, 2 low) — MAX_REPLICAS boundary + explicit replicas:1 + null-guard fixed; schema-version-in-migration already unit-covered; toContain negligible
+COVERAGE: HIGH — integration round-trip 11 (preserve>1, omit-1, v3->v4 migrate, MAX boundary, explicit-1), e2e 3/3
+CONFIDENCE: 100/100
+METHOD: focused code-reviewer agent on test-only diff
+RUNTIME EVIDENCE: replicas-and-scaling.spec.ts 3/3 PASSED in chromium
+DEFERRED: none
+ALIGNMENT: ALIGNED
+TIER: ent | DRIFT: none
+TICK: ✅
