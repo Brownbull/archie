@@ -1,6 +1,8 @@
+import { getScalingRule, type ComponentCategoryId } from "@/lib/constants"
+
 // --- Types ---
 
-export type TopologyIssueType = "orphan" | "missing-hop" | "unreachable"
+export type TopologyIssueType = "orphan" | "missing-hop" | "unreachable" | "replicas-without-lb"
 export type TopologyIssueSeverity = "warning" | "error"
 
 export interface TopologyIssue {
@@ -17,6 +19,13 @@ interface GraphNode {
 interface GraphEdge {
   source: string
   target: string
+}
+
+/** Node enriched with replica/category data for scaling-topology checks (Epic 14). */
+export interface ReplicaGraphNode {
+  id: string
+  replicaCount: number
+  category: ComponentCategoryId
 }
 
 // --- Private Helpers ---
@@ -241,6 +250,39 @@ export function detectMissingHops(nodes: GraphNode[], edges: GraphEdge[]): Topol
     }
   }
 
+  return issues
+}
+
+/**
+ * Detects replicated nodes that lack a required upstream load balancer (Epic 14).
+ * A node warns when: replicaCount > 1 AND its category requires an upstream LB AND
+ * no incoming (upstream) edge originates from a load-balancer-capable category.
+ * Edge direction matters: source feeds target (output port → input port), so the LB
+ * must be the `source` of an edge whose `target` is the replicated node.
+ */
+export function detectReplicasWithoutLB(
+  nodes: ReplicaGraphNode[],
+  edges: GraphEdge[],
+): TopologyIssue[] {
+  const nodeById = new Map(nodes.map((n) => [n.id, n]))
+  const issues: TopologyIssue[] = []
+  for (const node of nodes) {
+    if (node.replicaCount <= 1) continue
+    if (!getScalingRule(node.category).requiresUpstreamLB) continue
+    const hasUpstreamLB = edges.some((e) => {
+      if (e.target !== node.id) return false
+      const source = nodeById.get(e.source)
+      return source ? getScalingRule(source.category).actsAsLoadBalancer : false
+    })
+    if (!hasUpstreamLB) {
+      issues.push({
+        nodeId: node.id,
+        issueType: "replicas-without-lb",
+        severity: "warning",
+        description: `${node.replicaCount} replicas need an upstream load balancer`,
+      })
+    }
+  }
   return issues
 }
 

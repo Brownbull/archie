@@ -1,0 +1,58 @@
+import { test, expect } from "@playwright/test"
+import { waitForComponentLibrary, dragComponentToCanvas } from "./helpers/canvas-helpers"
+
+const SCREENSHOT_DIR = "test-results/replicas-and-scaling"
+
+test.describe("Replicas & Horizontal Scaling E2E (Epic 14)", () => {
+  test("replica stepper raises count and scales the cost badge", async ({ page }) => {
+    await page.goto("/")
+
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Place the first available component on the canvas.
+    const firstCard = page.locator('[data-testid^="component-card-"]').first()
+    await expect(firstCard).toBeVisible()
+    const componentId = (await firstCard.getAttribute("data-testid"))!.replace("component-card-", "")
+
+    const canvasPanel = page.locator('[data-testid="canvas-panel"]')
+    const bounds = await canvasPanel.boundingBox()
+    expect(bounds).not.toBeNull()
+    await dragComponentToCanvas(page, componentId, bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2)
+
+    const node = page.locator('[data-testid="archie-node"]').first()
+    await expect(node).toBeVisible({ timeout: 5_000 })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/01-node-placed.png`, fullPage: true })
+
+    const scaling = node.locator('[data-testid="archie-node-scaling"]')
+    const isScalable = await scaling.locator('[data-testid="replica-increment"]').count()
+    test.skip(isScalable === 0, "Skipped: placed component category is not scalable")
+
+    // Capture starting replica count + cost.
+    const replicaCount = node.locator('[data-testid="replica-count"]')
+    await expect(replicaCount).toHaveText("1×")
+
+    const costBadge = node.locator('[data-testid="archie-node-cost"]')
+    const hasCost = (await costBadge.count()) > 0
+    const startCostText = hasCost ? await costBadge.textContent() : null
+
+    // Raise replicas: 1 -> 3.
+    await node.locator('[data-testid="replica-increment"]').click()
+    await node.locator('[data-testid="replica-increment"]').click()
+    await expect(replicaCount).toHaveText("3×")
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/02-replicas-3x.png`, fullPage: true })
+
+    // Cost badge should scale up (×3) when economics data is present.
+    if (hasCost && startCostText && /\$(\d+)\/mo/.test(startCostText)) {
+      const start = Number(startCostText.match(/\$(\d+)\/mo/)![1])
+      const scaledText = await costBadge.textContent()
+      const scaled = Number(scaledText!.match(/\$(\d+)\/mo/)![1])
+      expect(scaled).toBe(start * 3)
+    }
+
+    // Decrement back down and confirm the control responds.
+    await node.locator('[data-testid="replica-decrement"]').click()
+    await expect(replicaCount).toHaveText("2×")
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/03-replicas-2x.png`, fullPage: true })
+  })
+})

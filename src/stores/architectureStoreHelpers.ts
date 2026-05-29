@@ -1,5 +1,5 @@
 import { componentLibrary } from "@/services/componentLibrary"
-import { detectTopologyIssues, type TopologyIssue } from "@/engine/topologyChecker"
+import { detectTopologyIssues, detectReplicasWithoutLB, type TopologyIssue } from "@/engine/topologyChecker"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { getFailurePreset } from "@/services/failureLoader"
@@ -189,10 +189,16 @@ export function recomputeScoringLayer(
  * Called after topology mutations (addNode, removeNode, addEdge, removeEdges, loadArchitecture).
  */
 export function evaluateTopology(
-  nodes: { id: string }[],
+  nodes: { id: string; data: { replicaCount: number; componentCategory: ComponentCategoryId } }[],
   edges: { source: string; target: string }[],
 ): { topologyIssues: TopologyIssue[]; topologyIssuesByNodeId: Map<string, TopologyIssue[]> } {
-  const issues = detectTopologyIssues(nodes, edges)
+  const graphIssues = detectTopologyIssues(nodes, edges)
+  // Epic 14: replica scaling topology — flag replicated nodes missing an upstream LB
+  const replicaIssues = detectReplicasWithoutLB(
+    nodes.map((n) => ({ id: n.id, replicaCount: n.data.replicaCount, category: n.data.componentCategory })),
+    edges,
+  )
+  const issues = [...graphIssues, ...replicaIssues]
   const byNode = new Map<string, TopologyIssue[]>()
   for (const issue of issues) {
     const arr = byNode.get(issue.nodeId)

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { MAX_REPLICAS } from "@/lib/constants"
-import { makeNode } from "../../helpers"
+import { makeNode, makeEdge } from "../../helpers"
 
 // Component library returns a minimal compute component for any id so addNode succeeds.
 vi.mock("@/services/componentLibrary", () => ({
@@ -113,5 +113,41 @@ describe("architectureStore — replicaCount (Epic 14)", () => {
     const node = useArchitectureStore.getState().nodes[0]
     expect(node.data.archieComponentId).toBe("redis")
     expect(node.data.replicaCount).toBe(4)
+  })
+
+  describe("replica topology integration (Epic 14)", () => {
+    const replicaIssues = (id: string) =>
+      (useArchitectureStore.getState().topologyIssuesByNodeId.get(id) ?? []).filter(
+        (i) => i.issueType === "replicas-without-lb",
+      )
+
+    it("flags 'replicas-without-lb' after replicating an LB-requiring node with no upstream LB", () => {
+      useArchitectureStore.setState({ nodes: [], edges: [] })
+      useArchitectureStore.getState().setNodes([
+        makeNode({ id: "app", data: { componentCategory: "compute", replicaCount: 1 } }),
+      ])
+      useArchitectureStore.getState().setNodeReplicaCount("app", 3)
+      expect(replicaIssues("app")).toHaveLength(1)
+    })
+
+    it("clears 'replicas-without-lb' when an upstream load balancer is present", () => {
+      useArchitectureStore.setState({ nodes: [], edges: [] })
+      useArchitectureStore.getState().setNodes([
+        makeNode({ id: "lb", data: { componentCategory: "delivery-network", replicaCount: 1 } }),
+        makeNode({ id: "app", data: { componentCategory: "compute", replicaCount: 1 } }),
+      ])
+      useArchitectureStore.getState().setEdges([makeEdge({ id: "e1", source: "lb", target: "app" })])
+      useArchitectureStore.getState().setNodeReplicaCount("app", 3)
+      expect(replicaIssues("app")).toHaveLength(0)
+    })
+
+    it("does not flag a read-only (data-storage) node even when replicated", () => {
+      useArchitectureStore.setState({ nodes: [], edges: [] })
+      useArchitectureStore.getState().setNodes([
+        makeNode({ id: "db", data: { componentCategory: "data-storage", replicaCount: 1 } }),
+      ])
+      useArchitectureStore.getState().setNodeReplicaCount("db", 4)
+      expect(replicaIssues("db")).toHaveLength(0)
+    })
   })
 })

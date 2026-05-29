@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { ArchieNode } from "@/components/canvas/ArchieNode"
 import { HEATMAP_COLORS, NODE_WIDTH, type Constraint } from "@/lib/constants"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
@@ -53,8 +53,11 @@ type MockDragSource =
   | { kind: "connection"; sourceNodeId: string; sourceCategory: string; sourceHandle: string | null; sourceComponentId: string }
 let mockActiveDrag: MockDragSource | null = null
 let mockArchNodes: Array<{ id: string; data: { archieComponentId: string; componentCategory: string } }> = []
+let mockArchEdges: Array<{ source: string; target: string }> = []
 let mockRippleActiveNodeIds = new Set<string>()
 let mockAnimationsEnabled = false
+let mockTopologyIssuesByNodeId = new Map<string, Array<{ issueType: string }>>()
+const mockSetNodeReplicaCount = vi.fn()
 
 vi.mock("@/stores/architectureStore", () => {
   const fn = Object.assign(
@@ -64,6 +67,9 @@ vi.mock("@/stores/architectureStore", () => {
         violationsByNodeId: mockViolationsByNodeId,
         constraints: mockConstraints,
         rippleActiveNodeIds: mockRippleActiveNodeIds,
+        topologyIssuesByNodeId: mockTopologyIssuesByNodeId,
+        setNodeReplicaCount: mockSetNodeReplicaCount,
+        edges: mockArchEdges,
       }),
     ),
     { getState: () => ({ nodes: mockArchNodes }) },
@@ -108,6 +114,41 @@ describe("ArchieNode", () => {
     mockAnimationsEnabled = false
     mockCheckCompatibility.mockReturnValue({ isCompatible: true, reason: "" })
     mockNodePorts = { inputs: [], outputs: [], hasPorts: false }
+    mockArchEdges = []
+    mockTopologyIssuesByNodeId = new Map()
+    mockSetNodeReplicaCount.mockClear()
+  })
+
+  describe("replica controls (Epic 14)", () => {
+    it("renders the replica stepper for a scalable node showing the current count", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, replicaCount: 2 }} />)
+      expect(screen.getByTestId("archie-node-scaling")).toBeInTheDocument()
+      expect(screen.getByTestId("replica-count")).toHaveTextContent("2×")
+    })
+
+    it("increments replica count via setNodeReplicaCount on + click", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, replicaCount: 2 }} />)
+      fireEvent.click(screen.getByTestId("replica-increment"))
+      expect(mockSetNodeReplicaCount).toHaveBeenCalledWith("node-1", 3)
+    })
+
+    it("disables decrement at the minimum replica count", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, replicaCount: 1 }} />)
+      expect(screen.getByTestId("replica-decrement")).toBeDisabled()
+    })
+
+    it("shows a 'reads only' badge for replicated read-only (data-storage) nodes", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, replicaCount: 3 }} />)
+      expect(screen.getByTestId("replica-readonly")).toBeInTheDocument()
+    })
+
+    it("shows a 'needs LB' badge when topology flags replicas-without-lb", () => {
+      mockTopologyIssuesByNodeId = new Map([
+        ["node-1", [{ issueType: "replicas-without-lb" }]],
+      ])
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "compute" as const, replicaCount: 3 }} />)
+      expect(screen.getByTestId("replica-needs-lb")).toBeInTheDocument()
+    })
   })
 
   it("renders component name", () => {

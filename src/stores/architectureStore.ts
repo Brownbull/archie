@@ -426,6 +426,8 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       ),
     })
     get().triggerRecalculation(nodeId)
+    // Replica count feeds the 'replicas-without-lb' topology check (Epic 14)
+    _evaluateTopology(get, set)
   },
 
   updateNodePosition: (nodeId, position) => {

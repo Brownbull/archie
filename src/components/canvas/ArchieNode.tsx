@@ -4,7 +4,7 @@ import type { NodeProps } from "@xyflow/react"
 import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
-import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, type ComponentCategoryId } from "@/lib/constants"
+import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, MIN_REPLICAS, MAX_REPLICAS, getScalingRule, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
@@ -74,6 +74,18 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const nodeCost = useMemo(
     () => getNodeCost(data.archieComponentId, data.activeConfigVariantId, data.replicaCount),
     [data.archieComponentId, data.activeConfigVariantId, data.replicaCount],
+  )
+
+  // --- Replica scaling (Epic 14) ---
+  const replicaCount = data.replicaCount ?? 1
+  const scalingRule = getScalingRule(data.componentCategory)
+  const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)
+  const needsLB = useArchitectureStore((s) =>
+    (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
+  )
+  // "N backends" — only meaningful on a load-balancer-capable node; count its downstream targets.
+  const backendCount = useArchitectureStore((s) =>
+    scalingRule.actsAsLoadBalancer ? s.edges.filter((e) => e.source === id).length : 0,
   )
 
   const { inputs, outputs, hasPorts } = useNodePorts(data.archieComponentId)
@@ -181,6 +193,75 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       {nodeCost.monthlyCost !== undefined && (
         <div data-testid="archie-node-cost" className="px-3 pb-1 text-[10px] font-medium text-emerald-400 truncate">
           {nodeCost.monthlyCost === 0 ? "Free" : `$${nodeCost.monthlyCost}/mo`}
+        </div>
+      )}
+
+      {(scalingRule.scalable || replicaCount > 1 || needsLB || backendCount > 0) && (
+        <div
+          data-testid="archie-node-scaling"
+          className="nodrag flex flex-wrap items-center gap-1 px-3 pb-1.5"
+        >
+          {scalingRule.scalable ? (
+            <div
+              className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                data-testid="replica-decrement"
+                aria-label="Decrease replicas"
+                disabled={replicaCount <= MIN_REPLICAS}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setNodeReplicaCount(id, replicaCount - 1)
+                }}
+                className="px-1.5 text-[11px] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+              >
+                −
+              </button>
+              <span data-testid="replica-count" className="min-w-[22px] text-center text-[10px] font-semibold text-text-primary">
+                {replicaCount}×
+              </span>
+              <button
+                type="button"
+                data-testid="replica-increment"
+                aria-label="Increase replicas"
+                disabled={replicaCount >= MAX_REPLICAS}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setNodeReplicaCount(id, replicaCount + 1)
+                }}
+                className="px-1.5 text-[11px] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+              >
+                +
+              </button>
+            </div>
+          ) : (
+            replicaCount > 1 && (
+              <span data-testid="replica-badge" className="rounded-full bg-archie-border px-1.5 py-0.5 text-[9px] font-bold text-text-primary">
+                {replicaCount}×
+              </span>
+            )
+          )}
+          {scalingRule.replicaType === "read-only" && replicaCount > 1 && (
+            <span data-testid="replica-readonly" className="rounded-full bg-violet-500/20 px-1.5 py-0.5 text-[9px] font-medium text-violet-300">
+              reads only
+            </span>
+          )}
+          {needsLB && (
+            <span
+              data-testid="replica-needs-lb"
+              title="Replicas need an upstream load balancer"
+              className="rounded-full bg-amber-500/90 px-1.5 py-0.5 text-[9px] font-bold text-white"
+            >
+              needs LB
+            </span>
+          )}
+          {backendCount > 0 && (
+            <span data-testid="replica-backends" className="rounded-full bg-teal-500/20 px-1.5 py-0.5 text-[9px] font-medium text-teal-300">
+              {backendCount} backend{backendCount === 1 ? "" : "s"}
+            </span>
+          )}
         </div>
       )}
 
