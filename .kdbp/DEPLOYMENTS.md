@@ -35,3 +35,9 @@
 | P29 | 2026-05-29 | dev → main | 2576e58 | ✅ 1/1 | Epic 16 Phase 5: 10 challenge levels (engine-aligned content; Chaos Day made winnable) | run 26647741341 |
 | P30 | 2026-05-29 | dev → main | 912439e | ✅ 1/1 (49s) | Epic 16 Phase 6: integration + E2E challenge journey (+ durationSeconds bug fix) — EPIC 16 COMPLETE | run 26648812806 |
 | P31 | 2026-05-29 | dev → main | b2e3a70 | ✅ 1/1 (44s) | CI: node24 action bump (checkout/setup-node@v6 + FORCE node24) — D8 resolved, deploy gate validated under Node 24 | run 26656837212 |
+| P32 | 2026-05-29 | dev → main | 8e1a53b | ✅ 1/1 (47s) | Epic 17 Phase 1: shadow-simulation suggestion engine (first deploy on node24 stack) | run 26658951140 |
+| P33 | 2026-05-29 | dev → main | 73bd8e6 | ✅ 1/1 (47s) | Epic 17 Phase 2: "Try this next" suggestion card in challenge results | run 26659718139 |
+| P34 | 2026-05-29 | dev → main | b0bbf52 | ✅ 1/1 (53s) | Epic 17 Phase 3: challenge-mode auth verified (global AuthGuard, D35) + useCurrentUserId seam | run 26660008483 |
+| P35 | 2026-05-29 | dev → main | 4bbaaad | ✅ 1/1 (44s) | Epic 17 Phase 4: Firestore attempts persistence + hardened owner-only rules (anti-spoof) | run 26661527552 |
+| P36 | 2026-05-29 | dev → main | 986b5a6 | ✅ 1/1 (43s) | Epic 17 Phase 5: History tab (submissions log) + cross-user isolation hardening | run 26662388763 |
+| P37 | 2026-05-29 | dev → main | 5a3cc99 | ✅ 1/1 (52s) | Epic 17 Phase 6: score→persist→History integration + brand-logo deferral — EPIC 17 COMPLETE | run 26662690555 |

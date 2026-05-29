@@ -1259,3 +1259,10 @@ DEPLOY: P36 — History tab live. Advancing to P6 (final: integration loop + bra
 PHASE: Epic 17 P6 — full attempt-lifecycle integration (in-memory Firestore) + owner-scoping; brand logos deferred (D37/D10)
 REVIEW: single code-reviewer (proportionate to test + docs). APPROVE — 0 crit/high; 2 medium latent (loadSeq module-isolated + relative guard; data-passed false-branch covered in HistoryTab unit test); 2 low notes. Integration chain genuine (only firebase+useAuth mocked).
 GATE: lint ✅ types ✅ tests 3211/3211 ✅
+
+## 2026-05-29 — PUSH P37 (Epic 17 P6) — CI ✅ — EPIC 17 COMPLETE
+PUSH: dev:main 986b5a6..5a3cc99 | run 26662690555 deploy-production 52s ✅
+DEPLOY: P37. Epic 17 (Smart Suggestions & History) COMPLETE — all 6 phases live (P32-P37).
+EPIC 17 SUMMARY: suggestion engine (P1) → "Try this next" card (P2) → auth-gate verified (P3) → Firestore attempts + hardened owner-only rules (P4) → History tab (P5) → integration loop (P6).
+PHASE 3 ROADMAP COMPLETE: Epics 14 (replicas), 15 (simulation), 16 (challenge mode), 17 (suggestions+history) all shipped. Deploys P25-P37 (this session: Epics 16+17 + D8 CI bump).
+CARRIED: D9 (deploy attempts firestore.rules — needs creds), D10 (optional brand logos), D1-D7 (pre-existing TD).
