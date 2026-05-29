@@ -887,3 +887,10 @@ COVERAGE: HIGH — integration 3 (chain routing, replica relief, node conservati
 CONFIDENCE: 97/100 | METHOD: focused code-reviewer agent + refutation
 RUNTIME EVIDENCE: simulation-engine.spec.ts 2/2 chromium
 DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
+
+## 2026-05-29 10:24 — PUSH dev → main (Epic 15 Phase 6 — FINAL)
+TARGET: dev → origin/main | CI: ✅ 1/1 | DEPLOYMENTS: P24 | TICK: ✅ E15 P6 Push
+
+## 2026-05-29 10:25 — PLAN COMPLETED: Epic 15: Simulation Engine
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-29_simulation-engine.md
+PHASES COMPLETED: 6 of 6 (P19–P24 deployed)

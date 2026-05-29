@@ -27,3 +27,4 @@
 | P21 | 2026-05-29 | dev → main | — | ✅ 1/1 (45s) | Epic 15 Phase 3: per-node live telemetry overlay (RPS/latency/capacity bar) | — |
 | P22 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 4: stats panel + SVG timeline + playback controls (SimulationBar) | — |
 | P23 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 5: traffic curves + Run Simulation trigger (sim now UI-runnable) | — |
+| P24 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 6: integration + E2E simulation journey — Epic 15 COMPLETE | — |
