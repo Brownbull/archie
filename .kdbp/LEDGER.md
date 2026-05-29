@@ -1113,3 +1113,24 @@ EPIC 16 SUMMARY: schema+loader+scheduled-events engine (P1) → star rubric + ch
 PUSH: dev:main 912439e..b2e3a70 | run 26656837212 deploy-production 44s ✅
 checkout@v6 + setup-node@v6 (node24-native); FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 on deploy jobs.
 VALIDATED: Firebase action (v0.10.0, node20-targeted) ran under forced Node 24 and deployed successfully → 2026-06-02 cutoff will not break the gate. D8 closed.
+- 2026-05-29 15:39 | Write | /home/khujta/projects/bmad/archie/src/engine/suggestionEngine.ts
+- 2026-05-29 15:40 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/suggestionEngine.test.ts
+
+## 2026-05-29 — [7832ce1] feat(suggestions): shadow-simulation suggestion engine (Epic 17 P1)
+PHASE: Epic 17 P1 — pure suggestionEngine (replica±1, variant swap; challenge-aware ranking)
+GATE: lint ✅ types ✅ tests 3166/3166 ✅ | 8 deterministic engine tests
+DESIGN: synthesized from a grounded judge-panel workflow (3 architect lenses converged). Synthesis agent stalled at ~40min → stopped + synthesized from the 3 completed designs.
+- 2026-05-29 15:49 | Edit | /home/khujta/projects/bmad/archie/src/engine/suggestionEngine.ts
+- 2026-05-29 15:50 | Edit | /home/khujta/projects/bmad/archie/src/engine/suggestionEngine.ts
+- 2026-05-29 15:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/suggestionEngine.test.ts
+- 2026-05-29 15:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/suggestionEngine.test.ts
+- 2026-05-29 15:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/suggestionEngine.test.ts
+
+## 2026-05-29 — REVIEW Epic 17 P1 (ranking + candidate + test rigor, 3 dims × verify)
+TARGET: 7832ce1 | RAW: 9 → CONFIRMED: 7 (≥0.7 conf)
+- [high] safe-saving path suggested latency-degrading cost cuts on a passing baseline — FIXED 6f38cd8 (require latencyDelta ≤ 0)
+- [high] bigger-variant ignored cost on capacity ties (could pick pricier equivalent) — FIXED (cost tie-break; + capacity tie-break on cheaper-variant)
+- [high] stale activeConfigVariantId silently dropped variant candidates — DOCUMENTED intentional + tested (graceful, replicas still apply)
+- [medium×2] test 2 didn't assert baseline fails / test 6 redundant — FIXED (baseline assertions + evaluated-then-rejected)
+- [low×2] no non-scalable / multi-node coverage — FIXED (4 new tests)
+RESOLUTION: all 7 addressed in 6f38cd8. Full suite 3170 green (12 engine tests). Confidence high.
