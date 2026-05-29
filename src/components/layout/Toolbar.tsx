@@ -7,6 +7,7 @@ import { useImportAction } from "@/components/import-export/ImportDialog"
 import { ExportButton } from "@/components/import-export/ExportButton"
 import { ExportReportButton } from "@/components/toolbar/ExportReportButton"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
+import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 import { FileUp, BrainCircuit } from "lucide-react"
 
@@ -46,6 +47,7 @@ export function Toolbar() {
           <BrainCircuit className="h-3.5 w-3.5" />
           AI Prompt
         </Button>
+        <ChallengeSelector />
       </div>
 
       <div className="flex items-center gap-3">
