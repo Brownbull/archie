@@ -933,3 +933,22 @@ DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
 
 ## 2026-05-29 10:43 — PUSH dev → main (Epic 16 Phase 1)
 TARGET: dev → origin/main | CI: ✅ 1/1 | DEPLOYMENTS: P25 | TICK: ✅ E16 P1 Push
+- 2026-05-29 10:45 | Write | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-05-29 10:46 | Write | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 10:46 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+- 2026-05-29 10:46 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/challengeStore.test.ts
+
+## 2026-05-29 10:47 — [365c080] feat(challenge): star rubric scorer + challengeStore
+CHECKS: build ✅ tsc -b | tests ✅ (13 new) | lint ✅ 0
+## 2026-05-29 10:47 — PHASE EXEC COMPLETE: E16 Phase 2 — Star rubric scorer + challengeStore
+TIER: ent | TASKS: rubric + store + tests, 1 commit (365c080)
+DEVIATIONS: 0
+- 2026-05-29 10:49 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-05-29 10:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/challengeStore.test.ts
+
+## 2026-05-29 10:48 — PHASE 2 REVIEW: E16 Star rubric scorer + challengeStore
+VERDICT: APPROVE
+FINDINGS: 1 (0 critical, 0 high, 1 medium [startAttempt scored→running guard], 0 low) — fixed (restricted to building) + test; rubric math/gate verified correct, decoupling clean
+COVERAGE: HIGH — 7 rubric (all star combos + boundaries) + 7 store (transitions, bestStars max, scored-guard)
+CONFIDENCE: 98/100 | METHOD: focused code-reviewer agent
+DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
