@@ -125,22 +125,26 @@ function buildCandidates(input: SuggestionInput): Array<{ changeType: Suggestion
     }
 
     const variants = componentLibrary.getComponent(n.data.archieComponentId)?.configVariants ?? []
+    // If the active variant can't be resolved (corrupted/stale id), we can't reason about relative
+    // swaps — replica candidates above still apply; variant candidates are intentionally skipped.
     const current = variants.find((v) => v.id === n.data.activeConfigVariantId)
     if (current) {
-      // Cheaper: the lowest-cost variant strictly cheaper than the current one.
+      // Cheaper: the lowest-cost variant strictly cheaper than the current; on cost ties, the one
+      // with the most capacity (better value for the same price).
       if (current.monthlyCost !== undefined) {
         const cheaper = variants
           .filter((v) => v.monthlyCost !== undefined && v.monthlyCost < current.monthlyCost!)
-          .sort((a, b) => a.monthlyCost! - b.monthlyCost!)[0]
+          .sort((a, b) => a.monthlyCost! - b.monthlyCost! || (b.maxRPS ?? 0) - (a.maxRPS ?? 0))[0]
         if (cheaper) {
           out.push({ changeType: "cheaper-variant", nodeId: n.id, description: `Switch ${name} to a cheaper variant (${current.name} → ${cheaper.name})`, nodes: replaceNode(input.nodes, n.id, { activeConfigVariantId: cheaper.id }) })
         }
       }
-      // Bigger: the next variant up in capacity (smallest maxRPS strictly greater than current).
+      // Bigger: the next variant up in capacity (smallest maxRPS strictly greater than current); on
+      // capacity ties, the cheapest (don't recommend a needlessly pricier equivalent).
       if (current.maxRPS !== undefined) {
         const bigger = variants
           .filter((v) => v.maxRPS !== undefined && v.maxRPS > current.maxRPS!)
-          .sort((a, b) => a.maxRPS! - b.maxRPS!)[0]
+          .sort((a, b) => a.maxRPS! - b.maxRPS! || (a.monthlyCost ?? Infinity) - (b.monthlyCost ?? Infinity))[0]
         if (bigger) {
           out.push({ changeType: "bigger-variant", nodeId: n.id, description: `Scale up ${name}'s variant (${current.name} → ${bigger.name})`, nodes: replaceNode(input.nodes, n.id, { activeConfigVariantId: bigger.id }) })
         }
@@ -174,8 +178,9 @@ export function suggestArchitectureChange(input: SuggestionInput): SuggestionRes
   const qualifying = evaluated.filter((c) => {
     if (target) {
       if (basePassed) {
-        // Already passing → only suggest savings that keep it passing.
-        return c.passed && c.costDelta < -EPS
+        // Already passing → only suggest a saving that keeps it passing AND does not degrade
+        // latency (a cheaper-but-slower change is not an improvement for a healthy system).
+        return c.passed && c.costDelta < -EPS && c.latencyDelta <= EPS
       }
       // Failing → only suggest progress toward / achievement of a pass.
       return c.passed || c.uptimeDelta > EPS || c.latencyDelta < -EPS
