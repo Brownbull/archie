@@ -7,11 +7,15 @@ on:
 jobs:
   deploy-production:
     runs-on: ubuntu-latest
+    # Run JS actions under Node 24 ahead of GitHub's 2026-06-02 forced cutoff, so the
+    # Firebase deploy action (still node20-targeted at v0.10.0) is validated on this path. (D8)
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
