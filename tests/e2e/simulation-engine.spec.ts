@@ -36,18 +36,26 @@ test.describe("Simulation Engine E2E (Epic 15)", () => {
     await expect(page.locator('[data-testid="sim-telemetry"]').first()).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-running.png`, fullPage: true })
 
-    // Pause, then verify the tick label holds.
-    await page.locator('[data-testid="playback-toggle"]').click()
     const tickLabel = page.locator('[data-testid="playback-tick"]')
-    const frozen = await tickLabel.textContent()
-    await page.waitForTimeout(600)
-    await expect(tickLabel).toHaveText(frozen!)
+    const tickNum = async () => Number((await tickLabel.textContent())!.split("/")[0])
+
+    // Speed up to 10× (≈100ms/tick) and confirm playback is actually advancing.
+    await page.locator('[data-testid="playback-speed-10"]').click()
+    await expect(page.locator('[data-testid="playback-speed-10"]')).toHaveAttribute("aria-pressed", "true")
+    const beforeWait = await tickNum()
+    await expect.poll(tickNum, { timeout: 2_000 }).toBeGreaterThan(beforeWait) // timer is live
+
+    // Pause and confirm the tick freezes across MORE than one 10× tick interval.
+    await page.locator('[data-testid="playback-toggle"]').click()
+    const frozen = await tickNum()
+    await page.waitForTimeout(450) // ~4 ticks at 10× — would advance if not paused
+    expect(await tickNum()).toBe(frozen)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/03-paused.png`, fullPage: true })
 
-    // Speed change + replay are wired.
-    await page.locator('[data-testid="playback-speed-5"]').click()
-    await expect(page.locator('[data-testid="playback-speed-5"]')).toHaveAttribute("aria-pressed", "true")
+    // Replay resets to the start (tick drops below the paused position).
     await page.locator('[data-testid="playback-replay"]').click()
+    await page.locator('[data-testid="playback-toggle"]').click() // pause again to freeze the reset position
+    expect(await tickNum()).toBeLessThan(frozen)
 
     // Close the simulation — bar disappears, the Run button returns.
     await page.locator('[data-testid="sim-close"]').click()

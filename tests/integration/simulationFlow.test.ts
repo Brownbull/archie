@@ -46,9 +46,16 @@ describe("simulation flow (integration): buildSimGraph → runSimulation (Epic 1
     // Late tick (~1000 RPS): the 300-RPS app is the bottleneck → failures appear.
     const last = result.ticks[result.ticks.length - 1]
     expect(last.totalFailedRps).toBeGreaterThan(0)
+    const lbLast = last.nodes.find((n) => n.nodeId === "n-lb")!
     const appLast = last.nodes.find((n) => n.nodeId === "n-app")!
+    const dbLast = last.nodes.find((n) => n.nodeId === "n-db")!
     expect(appLast.overloaded).toBe(true)
-    expect(appLast.servedRps).toBeCloseTo(300, 5) // capped at capacity
+    expect(appLast.servedRps).toBeCloseTo(300, 1) // capped at capacity
+    // Bottleneck isolation: nginx (5000) and db (only sees app's ≤300) do NOT shed.
+    expect(lbLast.failedRps).toBe(0)
+    expect(dbLast.failedRps).toBe(0)
+    expect(lbLast.overloaded).toBe(false)
+    expect(dbLast.overloaded).toBe(false)
   })
 
   it("relieves the bottleneck when the app is scaled with replicas", () => {
@@ -60,10 +67,29 @@ describe("simulation flow (integration): buildSimGraph → runSimulation (Epic 1
     expect(lastScaled.totalFailedRps).toBeLessThan(lastSingle.totalFailedRps)
   })
 
-  it("conserves flow each tick (served + failed = target) on a DAG", () => {
-    const result = runSimulation(buildSimGraph([node("a", "app"), node("d", "db")], [edge("a", "d")]), defaultTrafficCurve(90, 1000))
-    for (const t of result.ticks) {
-      expect(t.totalServedRps + t.totalFailedRps).toBeCloseTo(t.targetRps, 4)
+  it("conserves flow per node and forwards served traffic downstream (real routing)", () => {
+    // nginx(5000) -> app(300) -> db(1000); peak 1000 RPS so the app sheds.
+    const result = runSimulation(
+      buildSimGraph(
+        [node("n-lb", "nginx"), node("n-app", "app"), node("n-db", "db")],
+        [edge("n-lb", "n-app"), edge("n-app", "n-db")],
+      ),
+      defaultTrafficCurve(90, 1000),
+    )
+    const last = result.ticks[result.ticks.length - 1]
+    const lb = last.nodes.find((n) => n.nodeId === "n-lb")!
+    const app = last.nodes.find((n) => n.nodeId === "n-app")!
+    const db = last.nodes.find((n) => n.nodeId === "n-db")!
+
+    // Per-node conservation: served + failed == incoming (not a target-level identity).
+    for (const t of last.nodes) {
+      expect(t.servedRps + t.failedRps).toBeCloseTo(t.incomingRps, 4)
     }
+    // Routing fidelity: nginx forwards everything it served to its single downstream (app).
+    expect(app.incomingRps).toBeCloseTo(lb.servedRps, 4)
+    // app sheds to its 300 cap; db receives ONLY app's served traffic (≤300), so db never overloads.
+    expect(db.incomingRps).toBeCloseTo(app.servedRps, 4)
+    expect(app.servedRps).toBeCloseTo(300, 1)
+    expect(db.incomingRps).toBeLessThanOrEqual(300)
   })
 })
