@@ -19,7 +19,7 @@ Epic 16: Challenge Mode — a challenge selector with progressive architecture-d
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Challenge schema + types + loader + scheduled-events engine | challengeTypes + ChallengeSchema + challengeLoader; extend simulationEngine/store with scheduledEvents (component_failure→offline, latency_spike→×latency, az_outage→category offline) applied as per-tick overrides | ent | high | ✅ | ✅ | ✅ | ⬜ |
+| 1 | Challenge schema + types + loader + scheduled-events engine | challengeTypes + ChallengeSchema + challengeLoader; extend simulationEngine/store with scheduledEvents (component_failure→offline, latency_spike→×latency, az_outage→category offline) applied as per-tick overrides | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 2 | Star rubric scorer + challengeStore | evaluateAttempt(simStats, challenge, topologyIssues, totalCost) → {stars 0-3, breakdown}; challengeStore (activeChallenge, attemptState, budget, required-checklist, timer, attempts) wired to simulationStore + architectureStore | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Challenge selector + checklist + budget/timer HUD | ChallengeSelector level cards (difficulty/best-stars); RequiredComponentsChecklist + hints; BudgetBar (cap line) + countdown timer | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Results modal + Start button + challenge↔sim wiring | ChallengeStartButton (replaces RunSimulationButton in challenge mode); ResultsModal (stars/uptime/latency/budget/topology); auto-score on sim done | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -137,7 +137,7 @@ decisions_entry: D32
 
 ## Current Phase
 
-Phase 1: Challenge schema + types + loader + scheduled-events engine
+Phase 2: Star rubric scorer + challengeStore
 
 ## Dependencies
 
