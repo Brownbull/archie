@@ -6,6 +6,10 @@ import { useUiStore } from "@/stores/uiStore"
 import { componentLibrary } from "@/services/componentLibrary"
 import { resolveStackPlacement } from "@/services/stackPlacement"
 
+// ChallengeResultsModal (mounted by CanvasView) runs the persistence hook, which needs auth
+// context; it has its own unit test + E2E, so stub it here to keep CanvasView isolated.
+vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
+
 const mockScreenToFlowPosition = vi.fn((pos: { x: number; y: number }) => pos)
 const mockFitView = vi.fn()
 

@@ -12,6 +12,7 @@ import { useChallengeStore } from "@/stores/challengeStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeAutoScore } from "@/hooks/useChallengeAutoScore"
 import { useChallengeSuggestion } from "@/hooks/useChallengeSuggestion"
+import { useAttemptPersistence } from "@/hooks/useAttemptPersistence"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 
 function Criterion({ met, label, detail }: { met: boolean; label: string; detail: string }) {
@@ -34,6 +35,7 @@ function Criterion({ met, label, detail }: { met: boolean; label: string; detail
  */
 export function ChallengeResultsModal() {
   useChallengeAutoScore()
+  useAttemptPersistence()
 
   const suggestion = useChallengeSuggestion()
 

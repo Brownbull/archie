@@ -41,6 +41,26 @@ service cloud.firestore {
     // ALWAYS enforce ownership: allow write: if request.auth.uid == resource.data.userId;
     // NEVER use match /{document=**} with allow write: if isAuthenticated();
 
+    // Challenge attempt history (Epic 17) — owner-only, immutable append-only log.
+    match /attempts/{attemptId} {
+      // Read only your own attempts.
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      // Create only attempts stamped with your own uid; validate the shape so a client can't
+      // write arbitrary fields or spoof another user's ownership.
+      allow create: if isAuthenticated()
+        && request.auth.uid == request.resource.data.userId
+        && request.resource.data.keys().hasOnly([
+             'userId', 'challengeId', 'stars', 'uptimePercent',
+             'p99LatencyMs', 'totalCost', 'topologyIssueCount', 'createdAt'
+           ])
+        && request.resource.data.stars is int
+        && request.resource.data.stars >= 0 && request.resource.data.stars <= 3
+        && request.resource.data.challengeId is string
+        && request.resource.data.challengeId.size() > 0;
+      // Attempts are an immutable history — no edits or deletes.
+      allow update, delete: if false;
+    }
+
     // Deny all by default
     match /{document=**} {
       allow read, write: if false;

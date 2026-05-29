@@ -785,3 +785,9 @@ dim_overrides: []
 **P3 deliverable (non-redundant):** `useCurrentUserId()` — the clean auth→persistence seam P4 uses to stamp/scope attempts. Guaranteed non-null inside the gated shell, but persistence treats null defensively (pre-resolve / safety).
 **Implication for P4:** attempts always carry a real `userId`; Firestore rules can assume `request.auth != null`.
 **Status:** accepted
+
+## D36 — Epic 17 P4: persisted attempt fields (2026-05-29)
+
+**Decision:** The Firestore `attempts` doc persists `{ userId, challengeId, stars, uptimePercent, p99LatencyMs, totalCost, topologyIssueCount, createdAt }` — exactly the scored snapshot (lastResult + lastMeasured). The roadmap's `requestsTotal`/`requestsFailed` are omitted as redundant with `uptimePercent` (= served/total), avoiding churn to MeasuredAttempt + 4 test files.
+**Rules deploy:** CI deploys hosting only (action-hosting-deploy). `attempts` rules live in firestore.rules but require a manual `firebase deploy --only firestore:rules` to enforce. Until then, writes are DENY-by-default — recordAttempt is best-effort (catches the denial), so the app works; attempts just won't save until rules deploy. Tracked as PENDING D9.
+**Status:** accepted

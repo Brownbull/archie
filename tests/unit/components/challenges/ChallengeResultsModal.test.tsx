@@ -16,6 +16,8 @@ vi.mock("@/stores/architectureStoreHelpers", async (orig) => {
 // Control the suggestion independently of the engine; null by default so existing cases are unaffected.
 let mockSuggestion: import("@/engine/suggestionEngine").SuggestionResult | null = null
 vi.mock("@/hooks/useChallengeSuggestion", () => ({ useChallengeSuggestion: () => mockSuggestion }))
+// Persistence needs auth context + Firestore; it has its own unit test + E2E coverage.
+vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
 
 import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal"
 import { useChallengeStore } from "@/stores/challengeStore"
