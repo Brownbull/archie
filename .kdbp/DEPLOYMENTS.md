@@ -19,3 +19,4 @@
 | P13 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 3: Budget HUD + toolbox cost ranges | — |
 | P14 | 2026-06-02 | dev → main | — | ✅ 1/1 | Epic 13 Phase 4: inspector economics + delta indicators — Epic 13 COMPLETE | — |
 | P15 | 2026-05-29 | dev → main | — | ✅ 1/1 (58s) | Epic 14 Phase 1: scaling-rules model + replicaCount schema v4 foundation | — |
+| P16 | 2026-05-29 | dev → main | — | ✅ 1/1 (50s) | Epic 14 Phase 2: replica-aware economics (cost × replicas, capacity × factor) | — |
