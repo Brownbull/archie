@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 
-type IssueKind = "bottleneck" | "warning" | "orphan" | "unreachable" | "missing-hop"
+type IssueKind = "bottleneck" | "warning" | "orphan" | "unreachable" | "missing-hop" | "replicas-without-lb"
 
 interface IssueItem {
   nodeId: string
@@ -28,6 +28,7 @@ const ISSUE_COLORS: Record<IssueKind, string> = {
   orphan: "bg-orange-400",
   unreachable: "bg-orange-400",
   "missing-hop": "bg-orange-400",
+  "replicas-without-lb": "bg-amber-500",
 }
 
 export function IssuesSummary() {
@@ -66,7 +67,7 @@ export function IssuesSummary() {
     }
 
     items.sort((a, b) => {
-      const order: IssueKind[] = ["bottleneck", "missing-hop", "unreachable", "orphan", "warning"]
+      const order: IssueKind[] = ["bottleneck", "missing-hop", "replicas-without-lb", "unreachable", "orphan", "warning"]
       return order.indexOf(a.kind) - order.indexOf(b.kind)
     })
 
