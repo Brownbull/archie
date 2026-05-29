@@ -865,3 +865,6 @@ FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low cosmetic useCallback — not ac
 COVERAGE: HIGH — defaultTrafficCurve + scenario traffic_curve parse (incl legacy/absent) + RunSimulationButton gating/click (default + scenario curve)
 CONFIDENCE: 98/100 | METHOD: focused code-reviewer agent
 DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
+
+## 2026-05-29 10:12 — PUSH dev → main (Epic 15 Phase 5)
+TARGET: dev → origin/main | CI: ✅ 1/1 | DEPLOYMENTS: P23 | TICK: ✅ E15 P5 Push

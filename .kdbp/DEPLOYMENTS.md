@@ -26,3 +26,4 @@
 | P20 | 2026-05-29 | dev → main | — | ✅ 1/1 (48s) | Epic 15 Phase 2: simulationStore playback state machine + buildSimGraph (16 tests) | — |
 | P21 | 2026-05-29 | dev → main | — | ✅ 1/1 (45s) | Epic 15 Phase 3: per-node live telemetry overlay (RPS/latency/capacity bar) | — |
 | P22 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 4: stats panel + SVG timeline + playback controls (SimulationBar) | — |
+| P23 | 2026-05-29 | dev → main | — | ✅ 1/1 | Epic 15 Phase 5: traffic curves + Run Simulation trigger (sim now UI-runnable) | — |
