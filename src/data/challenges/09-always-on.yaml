@@ -1,0 +1,27 @@
+id: always-on
+title: Always On
+brief: >-
+  A production platform under sustained heavy load, with observability expected.
+  Build a full multi-tier system — edge, scaled compute, cache, data-storage,
+  and monitoring — that holds a strict latency target at scale and stays under
+  a generous-but-not-infinite budget.
+difficulty: advanced
+budget_cap: 1300
+duration_seconds: 110
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 55, rps: 2000 }
+  - { t: 110, rps: 3000 }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+  - data-storage
+  - monitoring
+target_metrics:
+  uptime_percent: 99.5
+  p99_latency_ms: 200
+hints:
+  - Edge + cache should absorb most reads so compute and the database aren't saturated.
+  - Scale compute with replicas behind the edge/LB until peak traffic fits under capacity.
+  - Monitoring adds a little cost but no load path — it's there because production needs eyes.

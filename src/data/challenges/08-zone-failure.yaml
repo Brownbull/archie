@@ -1,0 +1,27 @@
+id: zone-failure
+title: Zone Failure
+brief: >-
+  An availability-zone outage takes your entire compute tier offline for 20
+  seconds mid-run. You can't prevent the requests dropped during the outage —
+  the goal is to keep overall uptime above the bar, hold latency steady before
+  and after, and keep a clean, well-provisioned topology around the failure.
+difficulty: advanced
+budget_cap: 850
+duration_seconds: 100
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 50, rps: 1000 }
+  - { t: 100, rps: 1600 }
+required_components:
+  - delivery-network
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 80
+  p99_latency_ms: 250
+scheduled_events:
+  - { t: 25, type: az_outage, target: compute, durationS: 20 }
+hints:
+  - The outage hits early while traffic is still low — provision so the rest of the run is clean.
+  - An az_outage takes every node of the targeted category down; redundancy within the same tier won't dodge it.
+  - Keep compute under 100% load outside the outage so p99 stays inside the target.

@@ -1,0 +1,21 @@
+id: first-service
+title: First Service
+brief: >-
+  Stand up a single compute service for a low-traffic internal tool. Keep it
+  cheap and keep it up. This is the smallest possible architecture — one node
+  that answers requests.
+difficulty: beginner
+budget_cap: 80
+duration_seconds: 60
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 80 }
+  - { t: 60, rps: 120 }
+required_components:
+  - compute
+target_metrics:
+  uptime_percent: 95
+  p99_latency_ms: 400
+hints:
+  - One compute node is enough at this traffic — pick the cheapest variant that keeps up.
+  - Watch the budget bar; a bigger instance than you need just burns money.

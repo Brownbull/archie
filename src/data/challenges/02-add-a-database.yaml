@@ -1,0 +1,22 @@
+id: add-a-database
+title: Persist It
+brief: >-
+  Your service needs to remember things. Put a data-storage tier behind the
+  compute node so state survives restarts. Wire compute → database and keep the
+  whole thing under budget.
+difficulty: beginner
+budget_cap: 160
+duration_seconds: 60
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 90 }
+  - { t: 60, rps: 150 }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 95
+  p99_latency_ms: 500
+hints:
+  - Connect compute to the database — traffic flows from the entry node downstream.
+  - The database adds latency; a single managed instance is plenty at this load.

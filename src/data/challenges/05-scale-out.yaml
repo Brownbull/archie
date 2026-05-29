@@ -1,0 +1,25 @@
+id: scale-out
+title: Scale Out
+brief: >-
+  One compute instance can't take this load. Scale the compute tier horizontally
+  with replicas — but stateless replicas need a load balancer upstream or the
+  topology checker will flag them. Earn the clean-topology star by wiring it
+  correctly, and keep p99 down under heavy traffic.
+difficulty: intermediate
+budget_cap: 600
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 900 }
+  - { t: 90, rps: 1500 }
+required_components:
+  - delivery-network
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 98.5
+  p99_latency_ms: 250
+hints:
+  - Raise the replica count on compute until it keeps up with peak traffic.
+  - Replicas without a load balancer upstream raise a topology warning — add the LB tier.
+  - Capacity scales with replicas; latency climbs once a node is past 100% load.

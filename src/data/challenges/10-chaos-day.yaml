@@ -1,0 +1,33 @@
+id: chaos-day
+title: Chaos Day
+brief: >-
+  The capstone. A high-traffic platform faces two rolling zone outages — compute
+  drops early, then data-storage later. Requests dropped during each outage are
+  unavoidable; your job is to over-provision every surviving tier so the system
+  recovers instantly, holds latency between outages, and still comes in under
+  budget with a clean topology. Three stars here means you have built for real.
+difficulty: advanced
+budget_cap: 1800
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 40, rps: 2500 }
+  - { t: 80, rps: 3500 }
+  - { t: 120, rps: 4000 }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+  - data-storage
+  - messaging
+  - monitoring
+target_metrics:
+  uptime_percent: 80
+  p99_latency_ms: 220
+scheduled_events:
+  - { t: 20, type: az_outage, target: compute, durationS: 15 }
+  - { t: 70, type: az_outage, target: data-storage, durationS: 15 }
+hints:
+  - Two outages hit different tiers — size everything so the non-outage windows are flawless.
+  - Cache + messaging soften the blow when the data-storage tier blinks out.
+  - Outages take the whole category offline; the score rewards how clean and cheap the rest stays.

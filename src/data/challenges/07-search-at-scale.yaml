@@ -1,0 +1,25 @@
+id: search-at-scale
+title: Search at Scale
+brief: >-
+  A product catalog needs fast search across heavy traffic. Combine an edge
+  tier, scaled compute, a search tier, and caching to hold a strict p99 while
+  thousands of requests per second pour in. Every tier has to pull its weight.
+difficulty: advanced
+budget_cap: 800
+duration_seconds: 100
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 50, rps: 1600 }
+  - { t: 100, rps: 2500 }
+required_components:
+  - delivery-network
+  - compute
+  - search
+  - caching
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 180
+hints:
+  - Cache hot queries so the search tier isn't the bottleneck on every request.
+  - Scale compute with replicas behind the edge/LB; a single node won't hold p99 here.
+  - Tight latency targets punish any overloaded tier — keep every node under 100% load.

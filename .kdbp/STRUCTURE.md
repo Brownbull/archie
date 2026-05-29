@@ -29,6 +29,7 @@
 | Pattern | Description | Tier |
 |---------|-------------|------|
 | `src/**/*.{ts,tsx,js,jsx}` | Application source | MVP |
+| `src/data/**/*.{yaml,yml}` | Content data (scenarios, challenges) — schema-validated at load | MVP |
 | `public/**` | Static assets | MVP |
 | `package.json` | Dependencies | MVP |
 

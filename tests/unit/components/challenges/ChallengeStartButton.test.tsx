@@ -11,7 +11,7 @@ const challenge: Challenge = {
   id: "c1", title: "Test", brief: "b", difficulty: "beginner", budgetCap: 100, durationSeconds: 60,
   trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }],
   requiredComponents: ["compute"], targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 },
-  scheduledEvents: [{ type: "component_failure", targetId: "x", atS: 30, durationS: 10 }], hints: [],
+  scheduledEvents: [{ type: "component_failure", target: "x", t: 30, durationS: 10 }], hints: [],
 }
 
 const cs = () => useChallengeStore.getState()
