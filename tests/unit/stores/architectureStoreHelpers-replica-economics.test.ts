@@ -55,9 +55,11 @@ describe("getNodeCost — replica scaling (Epic 14)", () => {
     expect(getNodeCost("c", "default", 0).monthlyCost).toBe(45)
   })
 
-  it("treats non-finite replicaCount as 1", () => {
+  it("treats non-finite replicaCount (NaN, ±Infinity) as 1", () => {
     mockGetComponent.mockReturnValue(makeComponent("compute", 45, 500))
     expect(getNodeCost("c", "default", Number.NaN).monthlyCost).toBe(45)
+    expect(getNodeCost("c", "default", Number.POSITIVE_INFINITY).monthlyCost).toBe(45)
+    expect(getNodeCost("c", "default", Number.NEGATIVE_INFINITY).monthlyCost).toBe(45)
   })
 
   it("floors fractional replicaCount", () => {
@@ -71,6 +73,13 @@ describe("getNodeCost — replica scaling (Epic 14)", () => {
       configVariants: [{ id: "default", name: "d", metrics: [] }],
     })
     const r = getNodeCost("x", "default", 5)
+    expect(r.monthlyCost).toBeUndefined()
+    expect(r.maxRPS).toBeUndefined()
+  })
+
+  it("returns undefined economics for an unknown component regardless of replicaCount", () => {
+    mockGetComponent.mockReturnValue(undefined)
+    const r = getNodeCost("nope", "default", 7)
     expect(r.monthlyCost).toBeUndefined()
     expect(r.maxRPS).toBeUndefined()
   })
