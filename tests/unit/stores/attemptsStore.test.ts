@@ -83,6 +83,13 @@ describe("attemptsStore (Epic 17 P4)", () => {
     expect(s().attempts[0].id).toBe("ok")
   })
 
+  it("loadAttempts tolerates a missing/pending createdAt (no crash, defaults to 0)", async () => {
+    getDocsMock.mockResolvedValueOnce({ docs: [docOf("pending", { createdAt: null })] })
+    await s().loadAttempts("user-1")
+    expect(s().attempts).toHaveLength(1)
+    expect(s().attempts[0].createdAt).toBe(0)
+  })
+
   it("loadAttempts with empty userId clears without querying", async () => {
     await s().loadAttempts("")
     expect(getDocsMock).not.toHaveBeenCalled()
