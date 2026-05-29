@@ -1180,3 +1180,40 @@ DEPLOY: P33 — suggestion card live. Advancing to P3 (require auth for challeng
 PHASE: Epic 17 P3 — challenge-mode auth satisfied by global AuthGuard (D35); useCurrentUserId seam for P4
 REVIEW: single code-reviewer (proportionate to a 2-line hook + verification). APPROVE — 0 crit/high/med, 1 low (non-idiomatic mock, functionally fine). D35 AuthGuard claim verified: no anonymous bypass.
 GATE: lint ✅ types ✅ tests 3181/3181 ✅
+
+## 2026-05-29 — PUSH P34 (Epic 17 P3) — CI ✅
+PUSH: dev:main 73bd8e6..b0bbf52 | run 26660008483 deploy-production 53s ✅
+DEPLOY: P34. Advancing to P4 (Firestore attempts + owner-only rules + security-reviewer pass).
+- 2026-05-29 16:21 | Write | /home/khujta/projects/bmad/archie/src/schemas/attemptSchema.ts
+- 2026-05-29 16:21 | Write | /home/khujta/projects/bmad/archie/src/stores/attemptsStore.ts
+- 2026-05-29 16:22 | Write | /home/khujta/projects/bmad/archie/src/hooks/useAttemptPersistence.ts
+- 2026-05-29 16:22 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-29 16:22 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-29 16:22 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-05-29 16:23 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/attemptsStore.test.ts
+- 2026-05-29 16:23 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useAttemptPersistence.test.tsx
+- 2026-05-29 16:24 | Edit | /home/khujta/projects/bmad/archie/src/stores/attemptsStore.ts
+- 2026-05-29 16:24 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useAttemptPersistence.test.tsx
+- 2026-05-29 16:25 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useAttemptPersistence.test.tsx
+- 2026-05-29 16:25 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-29 16:25 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-05-29 16:28 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeFlow.test.tsx
+- 2026-05-29 16:29 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+
+## 2026-05-29 — [58c40f5] feat(attempts): Firestore attempts persistence (Epic 17 P4)
+PHASE: Epic 17 P4 — attemptsStore + useAttemptPersistence + owner-only firestore.rules
+GATE: lint ✅ types ✅ tests 3194/3194 ✅ | E2E challenge-mode 2/2 (resilient persistence — denied write doesn't break flow)
+NOTE: rules need manual deploy (PENDING D9). Persisted fields per D36.
+- 2026-05-29 16:48 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-05-29 16:48 | Write | /home/khujta/projects/bmad/archie/tests/unit/schemas/attemptRulesConsistency.test.ts
+- 2026-05-29 16:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/attemptsStore.test.ts
+
+## 2026-05-29 — REVIEW Epic 17 P4 (security + correctness + test rigor, 3 dims × verify)
+TARGET: 58c40f5 | RAW: 11 → CONFIRMED: 10 (≥0.7 conf)
+- [CRITICAL] createdAt unvalidated → backdate/spoof via REST API (leaderboard fraud) — FIXED b099b6c (createdAt == request.time)
+- [high×4] create rule didn't require/type/range-check the 4 metric fields (incomplete + out-of-range docs via REST) — FIXED (full schema-mirror validation; hasOnly + per-field is/range)
+- [high] no emulator/rules tests — MITIGATED (static rules↔schema consistency test; emulator harness deferred → D9)
+- [medium] toRecord createdAt=0 on missing — TESTED (getDocs path resolved; null edge covered, no crash)
+- [medium] Timestamp instanceof / falsy createdAt — TESTED (loadAttempts null-createdAt test)
+- [medium] schema↔rules allowlist consistency untested — FIXED (attemptRulesConsistency.test)
+RESOLUTION: critical + all highs fixed in b099b6c. Full suite 3199 green. Rules deploy still required (D9). Confidence high.
