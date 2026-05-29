@@ -101,6 +101,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     },
 
     seek: (tick) => {
+      if (!Number.isFinite(tick)) return // guard NaN/Infinity from a non-numeric range onChange
       const max = Math.max(0, get().ticks.length - 1)
       const clamped = Math.max(0, Math.min(max, Math.floor(tick)))
       set({ currentTick: clamped })

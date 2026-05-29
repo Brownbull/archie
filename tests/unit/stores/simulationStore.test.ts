@@ -102,6 +102,13 @@ describe("simulationStore — playback state machine (Epic 15)", () => {
     expect(s().status).toBe("paused")
   })
 
+  it("seek ignores a non-finite value (NaN from a bad range onChange)", () => {
+    s().start(graph, ramp)
+    s().seek(5)
+    s().seek(Number.NaN)
+    expect(s().currentTick).toBe(5) // unchanged, never NaN
+  })
+
   it("reset returns to idle, clears ticks, and restores default speed", () => {
     s().start(graph, ramp)
     s().setSpeed(10)
