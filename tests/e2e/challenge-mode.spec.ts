@@ -9,13 +9,13 @@ test.describe("Challenge Mode E2E (Epic 16)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // SELECT — open the Challenges dialog and pick the first authored level.
+    // SELECT — open the Challenges dialog and pick a specific level (not order-dependent).
     await page.locator('[data-testid="open-challenges"]').click()
     await expect(page.locator('[data-testid="challenge-selector"]')).toBeVisible()
-    const firstCard = page.locator('[data-testid^="challenge-card-"]').first()
-    await expect(firstCard).toBeVisible()
+    const card = page.locator('[data-testid="challenge-card-first-service"]')
+    await expect(card).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-selector.png`, fullPage: true })
-    await firstCard.click()
+    await card.click()
 
     // BUILD — the HUD appears with the budget bar + required checklist; Run is replaced.
     await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible()
@@ -39,7 +39,8 @@ test.describe("Challenge Mode E2E (Epic 16)", () => {
     await page.locator('[data-testid="playback-speed-10"]').click()
 
     // SCORE — when the run finishes, the results modal opens with a star rating.
-    await expect(page.locator('[data-testid="challenge-results"]')).toBeVisible({ timeout: 20_000 })
+    // 50 ticks × 100ms at 10× ≈ 5s of playback; 30s gives generous CI headroom.
+    await expect(page.locator('[data-testid="challenge-results"]')).toBeVisible({ timeout: 30_000 })
     const stars = page.locator('[data-testid="result-stars"]')
     await expect(stars).toBeVisible()
     await expect(stars).toHaveAttribute("aria-label", /[0-3] of 3 stars/)

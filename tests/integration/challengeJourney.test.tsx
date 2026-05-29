@@ -16,14 +16,23 @@ import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsM
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { getChallenge } from "@/services/challengeLoader"
+import { interpolateRps } from "@/engine/simulationEngine"
 
-function comp() {
-  return { id: "app", name: "App Server", category: "compute", configVariants: [{ id: "default", name: "d", metrics: [], maxRPS: 500, baseLatencyMs: 15, monthlyCost: 40 }] }
+const LIB: Record<string, { category: string; maxRPS: number; baseLatencyMs: number; monthlyCost: number }> = {
+  edge: { category: "delivery-network", maxRPS: 5000, baseLatencyMs: 2, monthlyCost: 20 },
+  app: { category: "compute", maxRPS: 500, baseLatencyMs: 15, monthlyCost: 40 },
+  db: { category: "data-storage", maxRPS: 1000, baseLatencyMs: 8, monthlyCost: 30 },
 }
-const computeNode = {
-  id: "n-app", type: "archie" as const, position: { x: 0, y: 0 },
-  data: { archieComponentId: "app", activeConfigVariantId: "default", componentCategory: "compute" as ComponentCategoryId, replicaCount: 1 },
+function comp(id: string) {
+  const c = LIB[id]
+  return { id, name: id, category: c.category, configVariants: [{ id: "default", name: "d", metrics: [], maxRPS: c.maxRPS, baseLatencyMs: c.baseLatencyMs, monthlyCost: c.monthlyCost }] }
 }
+const node = (id: string, c: string) => ({
+  id, type: "archie" as const, position: { x: 0, y: 0 },
+  data: { archieComponentId: c, activeConfigVariantId: "default", componentCategory: LIB[c].category as ComponentCategoryId, replicaCount: 1 },
+})
+const computeNode = node("n-app", "app")
 const cs = () => useChallengeStore.getState()
 
 function ChallengeSurface() {
@@ -40,7 +49,7 @@ function ChallengeSurface() {
 describe("challenge journey (integration): select → build → start → score (Epic 16 P6)", () => {
   beforeEach(() => {
     vi.useFakeTimers()
-    mockGetComponent.mockImplementation((id: string) => (id === "app" ? comp() : undefined))
+    mockGetComponent.mockImplementation((id: string) => (LIB[id] ? comp(id) : undefined))
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, attemptSnapshot: null, bestStars: {} })
     useSimulationStore.getState().reset()
     useArchitectureStore.setState({ nodes: [], edges: [], topologyIssues: [], topologyIssuesByNodeId: new Map() })
@@ -74,6 +83,11 @@ describe("challenge journey (integration): select → build → start → score 
     expect(cs().attemptState).toBe("running")
     expect(useSimulationStore.getState().status).toBe("running")
 
+    // Mutate the canvas mid-run — scoring must still use the start-time snapshot, not this.
+    act(() => {
+      useArchitectureStore.setState({ nodes: [computeNode, { ...computeNode, id: "n-app-2" }] as never })
+    })
+
     // SCORE — play to completion; the auto-score hook scores and opens the results modal.
     act(() => {
       vi.advanceTimersByTime(70_000)
@@ -82,12 +96,47 @@ describe("challenge journey (integration): select → build → start → score 
     expect(cs().attemptState).toBe("scored")
     expect(screen.getByTestId("challenge-results")).toBeInTheDocument()
     expect(screen.getByTestId("result-stars").getAttribute("aria-label")).toMatch(/^[0-3] of 3 stars$/)
-    expect(cs().lastMeasured?.totalCost).toBe(40) // single compute node, snapshot at start
+    expect(cs().lastMeasured?.totalCost).toBe(40) // ONE node at snapshot time — not the mid-run mutation (80)
 
     // RETRY — re-enters build mode, clears the finished sim, keeps the level selected.
     fireEvent.click(screen.getByTestId("result-retry"))
     expect(cs().attemptState).toBe("building")
     expect(cs().activeChallenge?.id).toBe("first-service")
     expect(useSimulationStore.getState().status).toBe("idle")
+  })
+
+  it("honors the level's traffic curve, scheduled outage, and authored duration end-to-end", () => {
+    const zone = getChallenge("zone-failure")
+    expect(zone).toBeDefined()
+    if (!zone) return
+
+    render(<ChallengeSurface />)
+    fireEvent.click(screen.getByTestId("open-challenges"))
+    fireEvent.click(screen.getByTestId("challenge-card-zone-failure"))
+    // edge → compute → db; compute (maxRPS 500) is overloaded by the 1600-rps peak.
+    act(() => {
+      useArchitectureStore.setState({
+        nodes: [node("n-edge", "edge"), node("n-app", "app"), node("n-db", "db")] as never,
+        edges: [{ id: "e1", source: "n-edge", target: "n-app" }, { id: "e2", source: "n-app", target: "n-db" }] as never,
+      })
+    })
+    fireEvent.click(screen.getByTestId("start-challenge"))
+    act(() => {
+      vi.advanceTimersByTime(60_000)
+    })
+    expect(cs().attemptState).toBe("scored")
+
+    const ticks = useSimulationStore.getState().ticks
+    const computeFrames = ticks.map((t) => t.nodes.find((n) => n.nodeId === "n-app")).filter(Boolean) as { servedRps: number; incomingRps: number }[]
+
+    // CURVE used: overload at the 1600-rps peak forced shedding → uptime fell below 100.
+    expect(cs().lastMeasured!.uptimePercent).toBeLessThan(100)
+    // SCHEDULED EVENT processed: the compute tier is fully offline (serves 0 with inflow) during
+    // the az_outage window, but serving normally outside it — proves the event fired transiently.
+    expect(computeFrames.some((f) => f.servedRps === 0 && f.incomingRps > 0)).toBe(true)
+    expect(computeFrames.some((f) => f.servedRps > 0)).toBe(true)
+    // AUTHORED DURATION honored: the last tick maps to t = durationSeconds, so its target RPS is
+    // the curve endpoint (1600). With the old 90s default it would interpolate to ~1480.
+    expect(ticks[ticks.length - 1].targetRps).toBe(interpolateRps(zone.trafficCurve, zone.durationSeconds))
   })
 })

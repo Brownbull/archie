@@ -48,9 +48,10 @@ describe("ChallengeStartButton (Epic 16 P4)", () => {
     // attempt moved running and the sim was started with the challenge's curve + events
     expect(cs().attemptState).toBe("running")
     expect(startSpy).toHaveBeenCalledTimes(1)
-    const [, curve, events] = startSpy.mock.calls[0]
+    const [, curve, events, durationS] = startSpy.mock.calls[0]
     expect(curve).toEqual(challenge.trafficCurve)
     expect(events).toEqual(challenge.scheduledEvents)
+    expect(durationS).toBe(challenge.durationSeconds) // authored duration honored, not the 90s default
     // a start-time cost/topology snapshot is recorded for decoupled scoring
     expect(cs().attemptSnapshot).not.toBeNull()
     expect(cs().attemptSnapshot?.topologyIssueCount).toBe(0)

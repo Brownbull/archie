@@ -32,7 +32,9 @@ export function ChallengeStartButton() {
       totalCost: computeTotalArchitectureCost(nodes),
       topologyIssueCount: topologyIssues.length,
     }) // building → running BEFORE the sim, so a single-tick run is still scored
-    startSim(graph, challenge.trafficCurve, challenge.scheduledEvents)
+    // Pass the challenge's authored duration so the curve + scheduled events map over the
+    // intended window (not the engine's default 90s).
+    startSim(graph, challenge.trafficCurve, challenge.scheduledEvents, challenge.durationSeconds)
   }
 
   return (

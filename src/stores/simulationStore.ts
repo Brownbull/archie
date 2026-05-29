@@ -16,8 +16,10 @@ interface SimulationState {
   /**
    * Start a simulation: runs the engine over the graph + curve, then plays back tick-by-tick.
    * Calling start() while a run is active discards it and restarts from tick 0 (intentional re-run).
+   * `durationS` sets the simulated wall-clock the curve + events are mapped over (default
+   * SIM_DEFAULT_DURATION_S); challenges pass their authored duration so timing is honored.
    */
-  start: (graph: SimGraph, curve: TrafficCurve, scheduledEvents?: ScheduledEvent[]) => void
+  start: (graph: SimGraph, curve: TrafficCurve, scheduledEvents?: ScheduledEvent[], durationS?: number) => void
   pause: () => void
   resume: () => void
   /** Restart playback from tick 0 using the already-computed ticks. */
@@ -62,8 +64,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     speed: 1,
     entryNodeIds: [],
 
-    start: (graph, curve, scheduledEvents) => {
-      const result = runSimulation(graph, curve, undefined, undefined, scheduledEvents)
+    start: (graph, curve, scheduledEvents, durationS) => {
+      const result = runSimulation(graph, curve, undefined, durationS, scheduledEvents)
       stopTimer()
       const hasPlayback = result.ticks.length > 1
       set({
