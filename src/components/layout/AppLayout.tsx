@@ -9,6 +9,7 @@ import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 import { InspectorResizeHandle } from "@/components/inspector/InspectorResizeHandle"
 import { InspectorOverlay } from "@/components/inspector/InspectorOverlay"
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel"
+import { SimulationBar } from "@/components/simulation/SimulationBar"
 import { ImportProvider } from "@/components/import-export/ImportDialog"
 // NOTE: Direct service import for initialization only (not data access).
 // Data reads go through useLibrary hook per AC-ARCH-NO-2.
@@ -89,6 +90,8 @@ export function AppLayout() {
             <InspectorPanel />
           </aside>
         </div>
+
+        <SimulationBar />
 
         <footer
           data-testid="dashboard"
