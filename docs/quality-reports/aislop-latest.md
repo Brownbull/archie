@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260529-171009
+**Date:** 20260529-171555
 **Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,10 +8,10 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 20 | 287ms |
-| code-quality | 103 | 3347ms |
-| ai-slop | 0 | 7ms |
-| security | 8 | 1564ms |
+| lint | 20 | 254ms |
+| code-quality | 103 | 3325ms |
+| ai-slop | 0 | 2ms |
+| security | 8 | 2212ms |
 
 ## Findings
 
@@ -124,14 +124,14 @@
 ### lint (20)
 
 - [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
-- [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
 - [!] `src/components/canvas/ArchieNode.tsx:209` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/ArchieNode.tsx:209` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.

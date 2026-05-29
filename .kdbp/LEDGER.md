@@ -1248,3 +1248,14 @@ TARGET: eef174e | RAW: 11 → CONFIRMED: 7 (≥0.7 conf)
 - [medium×2] missing tests: unknown-challengeId fallback, E2E only reachability — FIXED (fallback test + E2E load-resolves assertion)
 - [low] createdAt=0 dash — confirmed CORRECT (no change)
 RESOLUTION: critical + highs fixed in d8bc418. Full suite 3209 + E2E green. Confidence high.
+
+## 2026-05-29 — PUSH P36 (Epic 17 P5) — CI ✅
+PUSH: dev:main 4bbaaad..986b5a6 | run 26662388763 deploy-production 43s ✅
+DEPLOY: P36 — History tab live. Advancing to P6 (final: integration loop + brand-logo decision).
+- 2026-05-29 17:13 | Write | /home/khujta/projects/bmad/archie/tests/integration/attemptHistory.test.tsx
+- 2026-05-29 17:14 | Edit | /home/khujta/projects/bmad/archie/tests/integration/attemptHistory.test.tsx
+
+## 2026-05-29 — [6ddd2ef] test(attempts): score→persist→History integration (Epic 17 P6)
+PHASE: Epic 17 P6 — full attempt-lifecycle integration (in-memory Firestore) + owner-scoping; brand logos deferred (D37/D10)
+REVIEW: single code-reviewer (proportionate to test + docs). APPROVE — 0 crit/high; 2 medium latent (loadSeq module-isolated + relative guard; data-passed false-branch covered in HistoryTab unit test); 2 low notes. Integration chain genuine (only firebase+useAuth mocked).
+GATE: lint ✅ types ✅ tests 3211/3211 ✅
