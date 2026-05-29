@@ -776,3 +776,12 @@ dim_overrides: []
 **Decision:** All Epic 17 phases at enterprise tier (per standing user directive "enterprise default for plans").
 **Rationale:** Production feature with a new backend write path + auth surface; enterprise tier warranted (coverage, security review, error handling).
 **Status:** accepted
+
+## D35 — Epic 17 P3: challenge-mode auth is satisfied by the global AuthGuard (2026-05-29)
+
+**Finding:** The plan's P3 assumed auth was optional with an anonymous sandbox. In reality the entire app (route `/`) is wrapped in `AuthGuard`, which redirects unauthenticated users to `/login`. There is no anonymous path — every user reaching the canvas (and thus challenge mode) is already authenticated.
+**Decision:** D33's "challenge mode requires auth" is satisfied transitively by the existing global gate. We do NOT build a redundant per-feature gate (would add complexity for zero behavior change; violates "plan light, build real").
+**Evidence:** `AuthGuard` (App.tsx route `/`) + tests `AuthGuard.test.tsx` (redirect/authenticated/loading) + `auth-and-app-shell` E2E.
+**P3 deliverable (non-redundant):** `useCurrentUserId()` — the clean auth→persistence seam P4 uses to stamp/scope attempts. Guaranteed non-null inside the gated shell, but persistence treats null defensively (pre-resolve / safety).
+**Implication for P4:** attempts always carry a real `userId`; Firestore rules can assume `request.auth != null`.
+**Status:** accepted
