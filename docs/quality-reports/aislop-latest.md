@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260529-101136
+**Date:** 20260529-102325
 **Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,19 +8,14 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 17 | 343ms |
-| code-quality | 102 | 3357ms |
-| ai-slop | 2 | 13ms |
-| security | 8 | 1546ms |
+| lint | 17 | 287ms |
+| code-quality | 101 | 3332ms |
+| ai-slop | 0 | 2ms |
+| security | 8 | 1558ms |
 
 ## Findings
 
-### ai-slop (2)
-
-- [!] `src/schemas/demandSchema.ts:26` — ai-slop/double-type-assertion: Double type assertion (as unknown as X) bypasses type checking
-- [!] `src/schemas/demandSchema.ts:87` — ai-slop/double-type-assertion: Double type assertion (as unknown as X) bypasses type checking
-
-### code-quality (102)
+### code-quality (101)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
@@ -123,17 +118,16 @@
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
 - [!] `src/lib/simulationStats.ts:3` — knip/types: Unused type: SimulationStats
-- [!] `src/components/canvas/CanvasView.tsx:64` — complexity/function-too-long: Function 'CanvasViewInner' has 299 lines (max: 80)
 
 ### lint (17)
 
-- [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/DashboardOverlay.tsx:232` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
-- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/inspector/ComponentSwapper.tsx:27` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
 - [!] `src/services/yamlImporter.ts:137` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/ArchieNode.tsx:7` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file

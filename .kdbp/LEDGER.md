@@ -868,3 +868,22 @@ DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
 
 ## 2026-05-29 10:12 — PUSH dev → main (Epic 15 Phase 5)
 TARGET: dev → origin/main | CI: ✅ 1/1 | DEPLOYMENTS: P23 | TICK: ✅ E15 P5 Push
+- 2026-05-29 10:15 | Write | /home/khujta/projects/bmad/archie/tests/integration/simulationFlow.test.ts
+- 2026-05-29 10:15 | Edit | /home/khujta/projects/bmad/archie/tests/integration/simulationFlow.test.ts
+- 2026-05-29 10:16 | Write | /home/khujta/projects/bmad/archie/tests/e2e/simulation-engine.spec.ts
+- 2026-05-29 10:21 | Edit | /home/khujta/projects/bmad/archie/tests/integration/simulationFlow.test.ts
+- 2026-05-29 10:21 | Edit | /home/khujta/projects/bmad/archie/tests/integration/simulationFlow.test.ts
+- 2026-05-29 10:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/simulation-engine.spec.ts
+
+## 2026-05-29 10:24 — PHASE EXEC COMPLETE: E15 Phase 6 — Integration + E2E simulation journey
+TIER: ent | TASKS: integration pipeline + E2E browser journey, 2 commits (84567c8 + review-fix)
+RUNTIME EVIDENCE: tests/e2e/simulation-engine.spec.ts 2/2 PASSED in chromium — place → Run Simulation → SimulationBar + SVG timeline + per-node telemetry → pause (freeze verified at 10×) → replay (reset verified) → close. Artifacts: test-results/simulation/{01-ready-to-run,02-running,03-paused,04-closed}.png
+DEVIATIONS: 0
+
+## 2026-05-29 10:24 — PHASE 6 REVIEW: E15 Integration + E2E simulation journey
+VERDICT: APPROVE
+FINDINGS: 6 surfaced (0 critical, 2 high test-quality, 2 medium, 2 low) — both HIGH fixed (tautological conservation → node-level routing/conservation; non-distinguishing pause test → 10× advance+freeze); bottleneck isolation + replay assertion added
+COVERAGE: HIGH — integration 3 (chain routing, replica relief, node conservation) + E2E 2 (full journey in chromium)
+CONFIDENCE: 97/100 | METHOD: focused code-reviewer agent + refutation
+RUNTIME EVIDENCE: simulation-engine.spec.ts 2/2 chromium
+DEFERRED: none | ALIGNMENT: ALIGNED | TIER: ent | DRIFT: none | TICK: ✅
