@@ -76,6 +76,7 @@ export function makeNode(overrides?: Partial<Omit<ArchieNode, "data">> & { data?
     activeConfigVariantId: "default",
     componentName: "PostgreSQL",
     componentCategory: "data-storage" as ComponentCategoryId,
+    replicaCount: 1,
   }
 
   const { data: dataOverrides, ...restOverrides } = overrides ?? {}

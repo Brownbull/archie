@@ -146,6 +146,7 @@ describe("architectureStore", () => {
         activeConfigVariantId: "default",
         componentName: "PostgreSQL",
         componentCategory: "data-storage",
+        replicaCount: 1,
       })
     })
 

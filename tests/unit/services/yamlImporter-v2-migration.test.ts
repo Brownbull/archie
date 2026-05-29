@@ -148,7 +148,7 @@ describe("v2 Import Validation Edge Cases (AC-3)", () => {
 })
 
 describe("Schema Version in Exports", () => {
-  it("CURRENT_SCHEMA_VERSION is 3.0.0 (AC-1)", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("3.0.0")
+  it("CURRENT_SCHEMA_VERSION is 4.0.0 (AC-1)", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("4.0.0")
   })
 })

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, PORT_SORT_ORDER, type MetricCategoryId, type ConstraintOperator, type PortDefinition, } from "@/lib/constants"
+import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, MIN_REPLICAS, MAX_REPLICAS, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, PORT_SORT_ORDER, type MetricCategoryId, type ConstraintOperator, type PortDefinition, } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
@@ -11,7 +11,7 @@ if (METRIC_CATEGORIES.length !== 7) {
   )
 }
 
-export const CURRENT_SCHEMA_VERSION = "3.0.0"
+export const CURRENT_SCHEMA_VERSION = "4.0.0"
 
 // Weight profile Zod schema: one explicit key per metric category (AC-ARCH-PATTERN-2)
 // Uses z.object() NOT z.record() for precise per-field validation errors (AC-ARCH-NO-1)
@@ -159,9 +159,23 @@ function migrateV2ToV3(data: unknown): unknown {
   return { ...d, schemaVersion: "3.0.0", edges: migratedEdges }
 }
 
+// v3-to-v4 migration (Epic 14): adds optional per-node `replicas`. Absent in v3 files —
+// hydration defaults replicaCount to 1, so this migration only advances the version marker.
+// Required so existing v3.0.0 files migrate instead of being rejected as too-old.
+function migrateV3ToV4(data: unknown): unknown {
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Migration input must be an object")
+  }
+  return {
+    ...(data as Record<string, unknown>),
+    schemaVersion: "4.0.0",
+  }
+}
+
 export const MIGRATIONS: Record<string, (data: unknown) => unknown> = {
   "1": migrateV1ToV2,
   "2": migrateV2ToV3,
+  "3": migrateV3ToV4,
 }
 
 // Defense-in-depth: numeric bounds prevent extreme float injection from malicious YAML (TD-5-1b)
@@ -201,6 +215,8 @@ export const ArchitectureFileNodeSchema = z.object({
   componentId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   configVariantId: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
   position: PositionSchema,
+  // Epic 14: per-node replica count. Optional + bounded; absent defaults to 1 at hydration.
+  replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
   dataContext: z.array(DataContextItemSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict()
 
@@ -234,12 +250,15 @@ const ArchitectureFileNodeYamlSchema = z.object({
   component_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   config_variant_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
   position: PositionSchema,
+  // Epic 14: `replicas` is a single word — same key in YAML and camelCase output.
+  replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
   data_context: z.array(DataContextItemYamlSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   componentId: data.component_id,
   configVariantId: data.config_variant_id,
   position: data.position,
+  replicas: data.replicas,
   dataContext: data.data_context,
 }))
 

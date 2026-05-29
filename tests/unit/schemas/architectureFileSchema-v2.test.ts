@@ -38,8 +38,8 @@ const validEdge = {
 }
 
 describe("Schema v2: Version and Migration Registration", () => {
-  it("CURRENT_SCHEMA_VERSION is 3.0.0 (AC-1)", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("3.0.0")
+  it("CURRENT_SCHEMA_VERSION is 4.0.0 (AC-1)", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("4.0.0")
   })
 
   it("MIGRATIONS has key '1' registered (AC-2)", () => {

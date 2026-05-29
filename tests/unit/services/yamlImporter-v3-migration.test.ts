@@ -253,7 +253,7 @@ describe("v1-to-v3 Chained Migration", () => {
 })
 
 describe("Schema Version", () => {
-  it("CURRENT_SCHEMA_VERSION is 3.0.0", () => {
-    expect(CURRENT_SCHEMA_VERSION).toBe("3.0.0")
+  it("CURRENT_SCHEMA_VERSION is 4.0.0", () => {
+    expect(CURRENT_SCHEMA_VERSION).toBe("4.0.0")
   })
 })

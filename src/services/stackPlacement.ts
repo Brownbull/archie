@@ -58,6 +58,7 @@ export function resolveStackPlacement(
       componentCategory: (component.category in COMPONENT_CATEGORIES
         ? component.category
         : "compute") as ComponentCategoryId,
+      replicaCount: 1, // Epic 14: stacks place single-replica nodes by default
     }
 
     const node: ArchieNode = {

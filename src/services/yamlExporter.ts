@@ -39,6 +39,11 @@ export function exportArchitecture(
       config_variant_id: node.data.activeConfigVariantId || undefined,
       position: { x: node.position.x, y: node.position.y },
     }
+    // Epic 14: emit replicas only when > 1 (default 1 omitted for file compactness,
+    // matching config_variant_id / weight_profile / constraints omit-default pattern)
+    if (node.data.replicaCount > 1) {
+      nodeObj.replicas = node.data.replicaCount
+    }
     // AC-ARCH-PATTERN-1: include data_context only when node has items
     // AC-ARCH-PATTERN-3: fit results NOT exported — only data definitions
     // AC-ARCH-PATTERN-5: camelCase → snake_case transform

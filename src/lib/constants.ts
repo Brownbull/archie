@@ -42,6 +42,38 @@ export const COMPONENT_CATEGORIES = {
 
 export type ComponentCategoryId = keyof typeof COMPONENT_CATEGORIES
 
+// Horizontal scaling rules per component category (Epic 14: Replicas & Horizontal Scaling)
+// - scalable: component supports a replica count > 1
+// - replicaType: 'full' = stateless linear scaling; 'read-only' = read-replica scaling (e.g. SQL); 'none' = singleton
+// - requiresUpstreamLB: replicas > 1 need a load balancer upstream (else topology warning)
+// - actsAsLoadBalancer: this category can serve as the upstream LB that satisfies requiresUpstreamLB
+export type ReplicaType = "full" | "read-only" | "none"
+
+export interface ScalingRule {
+  scalable: boolean
+  replicaType: ReplicaType
+  requiresUpstreamLB: boolean
+  actsAsLoadBalancer: boolean
+}
+
+export const CATEGORY_SCALING_RULES: Readonly<Record<ComponentCategoryId, ScalingRule>> = Object.freeze({
+  compute: { scalable: true, replicaType: "full", requiresUpstreamLB: true, actsAsLoadBalancer: false },
+  "data-storage": { scalable: true, replicaType: "read-only", requiresUpstreamLB: false, actsAsLoadBalancer: false },
+  caching: { scalable: true, replicaType: "full", requiresUpstreamLB: false, actsAsLoadBalancer: false },
+  messaging: { scalable: true, replicaType: "full", requiresUpstreamLB: false, actsAsLoadBalancer: false },
+  "delivery-network": { scalable: true, replicaType: "full", requiresUpstreamLB: false, actsAsLoadBalancer: true },
+  "real-time": { scalable: true, replicaType: "full", requiresUpstreamLB: true, actsAsLoadBalancer: false },
+  "auth-security": { scalable: true, replicaType: "full", requiresUpstreamLB: true, actsAsLoadBalancer: false },
+  monitoring: { scalable: false, replicaType: "none", requiresUpstreamLB: false, actsAsLoadBalancer: false },
+  search: { scalable: true, replicaType: "read-only", requiresUpstreamLB: false, actsAsLoadBalancer: false },
+  devops: { scalable: false, replicaType: "none", requiresUpstreamLB: false, actsAsLoadBalancer: false },
+})
+
+/** Returns the scaling rule for a category, defaulting to non-scalable for unknown categories. */
+export function getScalingRule(category: ComponentCategoryId): ScalingRule {
+  return CATEGORY_SCALING_RULES[category] ?? { scalable: false, replicaType: "none", requiresUpstreamLB: false, actsAsLoadBalancer: false }
+}
+
 // Metrics (directional scale 1-10)
 export const METRIC_MAX_VALUE = 10
 
@@ -56,6 +88,11 @@ export const EDGE_TYPE_CONNECTION = "archie-connection" as const
 
 // Canvas node limit — defense-in-depth against client-side performance degradation (TD-1-3a)
 export const MAX_CANVAS_NODES = 50
+
+// Replica count bounds per node (Epic 14). Upper bound keeps monthlyCost × replicas well under
+// MAX_MONTHLY_COST (100k) and reflects realistic horizontal-scaling fan-out on a 50-node canvas.
+export const MIN_REPLICAS = 1
+export const MAX_REPLICAS = 20
 
 // Canvas edge limit — defense-in-depth against memory exhaustion from malformed YAML (TD-5-1a)
 export const MAX_EDGES = 200

@@ -15,6 +15,8 @@ import {
   DEFAULT_WEIGHT_PROFILE,
   EDGE_TYPE_CONNECTION,
   MAX_CANVAS_NODES,
+  MIN_REPLICAS,
+  MAX_REPLICAS,
   NODE_TYPE_COMPONENT,
   NODE_WIDTH,
   RIPPLE_ANIMATION_DURATION_MS,
@@ -53,6 +55,8 @@ export interface ArchieNodeData extends Record<string, unknown> {
   activeConfigVariantId: string
   componentName: string
   componentCategory: ComponentCategoryId
+  // Epic 14: horizontal replica count for this node (default 1, range MIN_REPLICAS..MAX_REPLICAS)
+  replicaCount: number
 }
 
 export interface ArchieEdgeData extends Record<string, unknown> {
@@ -95,6 +99,7 @@ interface ArchitectureState {
     position: { x: number; y: number },
   ) => void
   updateNodeConfigVariant: (nodeId: string, variantId: string) => void
+  setNodeReplicaCount: (nodeId: string, count: number) => void
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
   duplicateNode: (nodeId: string) => string | null
   removeNode: (nodeId: string) => void
@@ -325,6 +330,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         componentCategory: (component.category in COMPONENT_CATEGORIES
           ? component.category
           : "compute") as ComponentCategoryId,
+        replicaCount: MIN_REPLICAS,
       },
       width: NODE_WIDTH,
     }
@@ -397,6 +403,22 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       nodes: get().nodes.map((n) =>
         n.id === nodeId
           ? { ...n, data: { ...n.data, activeConfigVariantId: variantId } }
+          : n,
+      ),
+    })
+    get().triggerRecalculation(nodeId)
+  },
+
+  setNodeReplicaCount: (nodeId, count) => {
+    // Clamp to valid bounds — guards against UI/import out-of-range values (Epic 14)
+    const clamped = Math.max(MIN_REPLICAS, Math.min(MAX_REPLICAS, Math.floor(count)))
+    const node = get().nodes.find((n) => n.id === nodeId)
+    if (!node || node.data.replicaCount === clamped) return
+
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === nodeId
+          ? { ...n, data: { ...n.data, replicaCount: clamped } }
           : n,
       ),
     })
