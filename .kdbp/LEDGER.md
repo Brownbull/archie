@@ -747,3 +747,9 @@ DEFERRED: D7 (cycle flow accounting, low)
 ALIGNMENT: ALIGNED
 TIER: ent | DRIFT: none
 TICK: ✅
+
+## 2026-05-29 13:35 — PUSH dev → main (Epic 15 Phase 1)
+TARGET: dev → origin/main (direct push)
+CI: ✅ 1/1 — Deploy Production pass (44s, run 26640334131)
+DEPLOYMENTS: P19
+TICK: ✅ E15 Phase 1 Push
