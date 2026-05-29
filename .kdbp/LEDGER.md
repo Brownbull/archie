@@ -715,3 +715,35 @@ TICK: ✅ Phase 4 Push
 ## 2026-05-29 13:14 — PLAN COMPLETED: Epic 14: Replicas & Horizontal Scaling
 ARCHIVE: .kdbp/archive/completed_PLAN_2026-05-29_replicas-horizontal-scaling.md
 PHASES COMPLETED: 4 of 4 (P15–P18 deployed)
+
+## 2026-05-29 09:23 — PLAN CREATED: Epic 15: Simulation Engine
+PHASES: 6 | COMPLEXITY: high | MATURITY: enterprise
+TIERS: mvp × 0, ent × 6, scale × 0 | PROTOTYPES: 0
+DECISIONS: D21 → D26 (6 phase tiers; D21 carries resolved roadmap architecture opens: tick=50, routing=even-split-BFS-from-entry, failure=shed, charting=SVG-not-Recharts, entry=designated-nodes)
+- 2026-05-29 09:26 | Write | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-05-29 09:26 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-05-29 09:27 | Write | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 09:28 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-05-29 09:29 — [e87f084] feat(simulation): pure time-stepped simulation engine + types
+CHECKS: build ✅ tsc -b | tests ✅ 24 engine | lint ✅ 0 err
+DEVIATION: capacityModel schema deferred (YAGNI, DEVIATIONS.md)
+
+## 2026-05-29 09:29 — PHASE EXEC COMPLETE: E15 Phase 1 — Simulation core engine + types
+TIER: ent
+TASKS: 4 (T1-T4), 1 commit (e87f084)
+DEVIATIONS: 0 structural, 1 minor (capacityModel deferred)
+- 2026-05-29 09:32 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 09:32 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-05-29 09:33 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-05-29 09:33 — PHASE 1 REVIEW: E15 Simulation core engine + types
+VERDICT: APPROVE (post-fix; provisional WARNING → APPROVE after triage)
+FINDINGS: 6 surfaced (0 critical, 1 high [multi-edge Kahn], 3 medium, 1 low) — Kahn ===0 fixed, conservation+edge tests added, cycle accounting deferred (D7), negative-maxRps documented
+COVERAGE: HIGH — 28 engine tests (interp, entry, routing, shed, fan-out/in, conservation, duplicate edges, cycle, negative cap)
+CONFIDENCE: 95/100
+METHOD: focused code-reviewer agent on pure-engine diff
+DEFERRED: D7 (cycle flow accounting, low)
+ALIGNMENT: ALIGNED
+TIER: ent | DRIFT: none
+TICK: ✅
