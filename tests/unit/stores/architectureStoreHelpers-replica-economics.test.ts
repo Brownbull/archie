@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { getNodeCost, computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { getNodeCost, computeTotalArchitectureCost, buildSimGraph } from "@/stores/architectureStoreHelpers"
 
 const mockGetComponent = vi.fn()
 vi.mock("@/services/componentLibrary", () => ({
@@ -105,5 +105,37 @@ describe("computeTotalArchitectureCost — replica scaling (Epic 14)", () => {
       { data: { archieComponentId: "web", activeConfigVariantId: "default" } },
     ])
     expect(total).toBe(80)
+  })
+})
+
+describe("buildSimGraph — engine input from architecture (Epic 15)", () => {
+  beforeEach(() => mockGetComponent.mockReset())
+
+  it("builds SimNodes with replica-scaled effectiveMaxRps + base latency, and SimEdges", () => {
+    mockGetComponent.mockReturnValue(makeComponent("compute", 50, 200, 8))
+    const graph = buildSimGraph(
+      [{ id: "n1", data: { archieComponentId: "c", activeConfigVariantId: "default", componentCategory: "compute", replicaCount: 3 } }],
+      [{ source: "n1", target: "n2" }],
+    )
+    expect(graph.nodes[0]).toMatchObject({
+      id: "n1",
+      category: "compute",
+      effectiveMaxRps: 600, // 200 × 3 (compute = full scaling)
+      baseLatencyMs: 8,
+      failureMode: "shed",
+    })
+    expect(graph.edges).toEqual([{ source: "n1", target: "n2" }])
+  })
+
+  it("uses 0 for effectiveMaxRps when the variant has no maxRPS", () => {
+    mockGetComponent.mockReturnValue({
+      id: "x", name: "x", category: "compute",
+      configVariants: [{ id: "default", name: "d", metrics: [] }],
+    })
+    const graph = buildSimGraph(
+      [{ id: "n1", data: { archieComponentId: "x", activeConfigVariantId: "default", componentCategory: "compute" } }],
+      [],
+    )
+    expect(graph.nodes[0].effectiveMaxRps).toBe(0)
   })
 })

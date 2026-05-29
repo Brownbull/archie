@@ -1,5 +1,6 @@
 import { componentLibrary } from "@/services/componentLibrary"
 import { detectTopologyIssues, detectReplicasWithoutLB, type TopologyIssue } from "@/engine/topologyChecker"
+import type { SimGraph, SimNode, SimEdge } from "@/lib/simulationTypes"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { getFailurePreset } from "@/services/failureLoader"
@@ -300,5 +301,28 @@ export function computeTotalArchitectureCost(
     }
   }
   return total
+}
+
+/**
+ * Builds the immutable SimGraph the simulation engine runs over (Epic 15).
+ * Each node's effective capacity (maxRPS scaled by replicas) + base latency come from getNodeCost.
+ * effectiveMaxRps 0 means "unknown/uncapped" (variant has no maxRPS authored).
+ */
+export function buildSimGraph(
+  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number } }>,
+  edges: ReadonlyArray<{ source: string; target: string }>,
+): SimGraph {
+  const simNodes: SimNode[] = nodes.map((n) => {
+    const cost = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1)
+    return {
+      id: n.id,
+      category: n.data.componentCategory,
+      effectiveMaxRps: cost.maxRPS ?? 0,
+      baseLatencyMs: cost.baseLatencyMs ?? 0,
+      failureMode: "shed",
+    }
+  })
+  const simEdges: SimEdge[] = edges.map((e) => ({ source: e.source, target: e.target }))
+  return { nodes: simNodes, edges: simEdges }
 }
 
