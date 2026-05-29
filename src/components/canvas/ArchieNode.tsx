@@ -15,6 +15,7 @@ import { useTopMetrics } from "@/hooks/useTopMetrics"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { useNodePorts } from "@/hooks/useNodePorts"
+import { useNodeSimTelemetry, simCapacityColorClass } from "@/hooks/useNodeSimTelemetry"
 import { PORT_TYPES } from "@/lib/constants"
 import { getNodeCost } from "@/stores/architectureStoreHelpers"
 
@@ -87,6 +88,9 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const backendCount = useArchitectureStore((s) =>
     scalingRule.actsAsLoadBalancer ? s.edges.filter((e) => e.source === id).length : 0,
   )
+
+  // Live simulation telemetry for this node at the current playback tick (Epic 15).
+  const simTelemetry = useNodeSimTelemetry(id)
 
   const { inputs, outputs, hasPorts } = useNodePorts(data.archieComponentId)
   const maxPortSide = Math.max(inputs.length, outputs.length)
@@ -262,6 +266,23 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
               {backendCount} backend{backendCount === 1 ? "" : "s"}
             </span>
           )}
+        </div>
+      )}
+
+      {simTelemetry && (
+        <div data-testid="sim-telemetry" className="px-3 pb-1.5">
+          <div className="flex items-center justify-between text-[9px] text-text-secondary">
+            <span data-testid="sim-rps">{Math.round(simTelemetry.incomingRps)} rps</span>
+            <span data-testid="sim-latency">{Math.round(simTelemetry.latencyMs)}ms</span>
+          </div>
+          <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-archie-border">
+            <div
+              data-testid="sim-capacity-bar"
+              data-overloaded={simTelemetry.overloaded || undefined}
+              className={`h-full transition-all ${simCapacityColorClass(simTelemetry.capacityPercent)}`}
+              style={{ width: `${Math.min(100, Math.round(simTelemetry.capacityPercent * 100))}%` }}
+            />
+          </div>
         </div>
       )}
 

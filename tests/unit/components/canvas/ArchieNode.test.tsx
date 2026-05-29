@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { ArchieNode } from "@/components/canvas/ArchieNode"
+import { useSimulationStore } from "@/stores/simulationStore"
 import { HEATMAP_COLORS, NODE_WIDTH, MAX_REPLICAS, type Constraint } from "@/lib/constants"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
@@ -117,6 +118,35 @@ describe("ArchieNode", () => {
     mockArchEdges = []
     mockTopologyIssuesByNodeId = new Map()
     mockSetNodeReplicaCount.mockClear()
+    useSimulationStore.getState().reset()
+  })
+
+  describe("simulation telemetry (Epic 15)", () => {
+    it("renders no telemetry strip when no simulation is running", () => {
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("sim-telemetry")).not.toBeInTheDocument()
+    })
+
+    it("renders live RPS/latency + an overloaded (red) capacity bar during a run", () => {
+      useSimulationStore.setState({
+        status: "running",
+        currentTick: 0,
+        ticks: [{
+          tick: 0,
+          targetRps: 100,
+          nodes: [{ nodeId: "node-1", incomingRps: 90, servedRps: 80, failedRps: 10, latencyMs: 30, capacityPercent: 1.1, overloaded: true }],
+          totalServedRps: 80,
+          totalFailedRps: 10,
+        }],
+      })
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("sim-telemetry")).toBeInTheDocument()
+      expect(screen.getByTestId("sim-rps")).toHaveTextContent("90 rps")
+      expect(screen.getByTestId("sim-latency")).toHaveTextContent("30ms")
+      const bar = screen.getByTestId("sim-capacity-bar")
+      expect(bar).toHaveAttribute("data-overloaded", "true")
+      expect(bar.className).toContain("bg-red-500")
+    })
   })
 
   describe("replica controls (Epic 14)", () => {
