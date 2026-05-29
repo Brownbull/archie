@@ -12,8 +12,10 @@ import { DEFAULT_TIER_DEFINITIONS, type TierResult } from "@/lib/tierDefinitions
 import type { RecalculatedMetrics } from "@/engine/recalculator"
 import {
   METRIC_CATEGORIES,
+  getScalingRule,
   type Constraint,
   type WeightProfile,
+  type ComponentCategoryId,
 } from "@/lib/constants"
 
 /**
@@ -248,22 +250,41 @@ export interface NodeCostInfo {
   readonly baseLatencyMs: number | undefined
 }
 
-export function getNodeCost(archieComponentId: string, activeConfigVariantId: string): NodeCostInfo {
+/**
+ * Returns effective economics for a node, scaled by replicaCount (Epic 14).
+ * - monthlyCost scales linearly: you pay per replica regardless of scaling type.
+ * - maxRPS scales by replicaFactor: linear for 'full'/'read-only' replicas, 1× for 'none'
+ *   (non-scalable categories add no throughput even if replicaCount > 1).
+ * - baseLatencyMs is unaffected by replication.
+ * replicaCount defaults to 1 so existing callers stay backward-compatible (×1 = unchanged).
+ */
+export function getNodeCost(
+  archieComponentId: string,
+  activeConfigVariantId: string,
+  replicaCount = 1,
+): NodeCostInfo {
   const component = componentLibrary.getComponent(archieComponentId)
   const variant = component?.configVariants.find((v) => v.id === activeConfigVariantId)
+  const replicas = Number.isFinite(replicaCount) ? Math.max(1, Math.floor(replicaCount)) : 1
+  const rule = component ? getScalingRule(component.category as ComponentCategoryId) : undefined
+  const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
   return {
-    monthlyCost: variant?.monthlyCost,
-    maxRPS: variant?.maxRPS,
+    monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
+    maxRPS: variant?.maxRPS === undefined ? undefined : variant.maxRPS * capacityFactor,
     baseLatencyMs: variant?.baseLatencyMs,
   }
 }
 
 export function computeTotalArchitectureCost(
-  nodes: ReadonlyArray<{ data: { archieComponentId: string; activeConfigVariantId: string } }>,
+  nodes: ReadonlyArray<{ data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number } }>,
 ): number {
   let total = 0
   for (const node of nodes) {
-    const { monthlyCost } = getNodeCost(node.data.archieComponentId, node.data.activeConfigVariantId)
+    const { monthlyCost } = getNodeCost(
+      node.data.archieComponentId,
+      node.data.activeConfigVariantId,
+      node.data.replicaCount ?? 1,
+    )
     if (monthlyCost !== undefined) {
       total += monthlyCost
     }

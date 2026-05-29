@@ -72,8 +72,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   }, [data.archieComponentId, data.activeConfigVariantId])
 
   const nodeCost = useMemo(
-    () => getNodeCost(data.archieComponentId, data.activeConfigVariantId),
-    [data.archieComponentId, data.activeConfigVariantId],
+    () => getNodeCost(data.archieComponentId, data.activeConfigVariantId, data.replicaCount),
+    [data.archieComponentId, data.activeConfigVariantId, data.replicaCount],
   )
 
   const { inputs, outputs, hasPorts } = useNodePorts(data.archieComponentId)

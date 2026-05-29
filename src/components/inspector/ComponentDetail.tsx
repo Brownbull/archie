@@ -52,20 +52,25 @@ export function ComponentDetail({
     (s) => (nodeId ? s.previousMetrics.get(nodeId) : undefined),
   )
 
+  // Epic 14: node replica count drives effective (scaled) economics display.
+  const replicaCount = useArchitectureStore(
+    (s) => (nodeId ? (s.nodes.find((n) => n.id === nodeId)?.data.replicaCount ?? 1) : 1),
+  )
+
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
   )
 
   const currentEconomics = useMemo(
-    () => getNodeCost(component.id, activeVariantId),
-    [component.id, activeVariantId],
+    () => getNodeCost(component.id, activeVariantId, replicaCount),
+    [component.id, activeVariantId, replicaCount],
   )
   const previousVariantIdRef = useRef<string | null>(null)
   const previousEconomics = useMemo(() => {
     const prevId = previousVariantIdRef.current
     if (!prevId || prevId === activeVariantId) return undefined
-    return getNodeCost(component.id, prevId)
-  }, [component.id, activeVariantId])
+    return getNodeCost(component.id, prevId, replicaCount)
+  }, [component.id, activeVariantId, replicaCount])
   useEffect(() => {
     previousVariantIdRef.current = activeVariantId
   }, [activeVariantId])
