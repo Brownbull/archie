@@ -762,3 +762,17 @@ dim_overrides: []
 **Reason:** Full-pipeline integration (select→build→start→score) + Playwright journey to results modal. Runtime evidence required.
 ### Status
 - accepted
+
+## D33 — Epic 17 attempt persistence: Firestore + require auth (2026-05-29)
+
+**Decision:** Challenge mode requires sign-in; all attempts persist to a Firestore `attempts` collection (owner-only rules). Resolves roadmap Open Decision #12.
+**Context:** First time Archie writes user-generated state to Firestore (previously library data only). Auth existed but was optional.
+**Rationale:** User direction (2026-05-29) chose the full retention loop over local-only/optional-auth. Simplest data model (always a userId), cross-device history, strongest retention. Trade-off: removes anonymous challenge play — accepted.
+**Implications:** Auth gate on challenge-mode entry (P3); Firestore `attempts` collection + owner-only security rules + security-reviewer pass (P4). Sandbox (non-challenge) canvas stays anonymous-usable.
+**Status:** accepted
+
+## D34 — Epic 17 phase tiers: enterprise (2026-05-29)
+
+**Decision:** All Epic 17 phases at enterprise tier (per standing user directive "enterprise default for plans").
+**Rationale:** Production feature with a new backend write path + auth surface; enterprise tier warranted (coverage, security review, error handling).
+**Status:** accepted
