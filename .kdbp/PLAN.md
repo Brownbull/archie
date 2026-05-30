@@ -1,46 +1,45 @@
 # Active Plan
 
-<!-- status: complete -->
+<!-- status: active -->
 <!-- project_type: code -->
 
 ## Goal
 
-Epic 17: Smart Suggestions & History — post-simulation "Try this next" card (shadow-simulates candidate changes and shows cost/latency/uptime deltas), plus persistent attempt history. Challenge mode now requires sign-in; attempts persist to a Firestore `attempts` collection (owner-only) and surface in a History tab + submissions table. Closes Phase 3. Builds on Epic 16 (challenge mode + scoring) and Epic 15 (simulation engine).
+Tech-debt cleanup — burn down the open PENDING items (D1–D7) accumulated across Phase 3. Behavior-preserving refactors (file splits, render-safe hooks) + restoring test/UX signal. No new product scope. Each phase verified by the full suite (3218 baseline) staying green.
 
 ## Context
 
 - **Maturity:** enterprise
 - **Domain:** Software architecture visualization and design tool
-- **Created:** 2026-05-29
-- **Last Updated:** 2026-05-29
-- **Roadmap:** Phase 3, Epic 17 (docs/roadmap/phase-3-plan.md) — final epic. Auth/persistence per D33; tiers per D34.
+- **Created:** 2026-05-30
+- **Last Updated:** 2026-05-30
+- **Source:** `.kdbp/PENDING.md` D1–D7 (Phase 3 deferred debt). Epic 17 + roadmap complete (archived).
 
 ## Phases
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Shadow-simulation suggestion engine | `suggestionEngine`: for each candidate change (add/drop a replica, swap to a cheaper/bigger variant, add a missing required category) re-run the sim and compute {uptimeDelta, latencyDelta, costDelta}; rank net-positive, return the best. Pure logic + deterministic tests. No UI/auth. | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 2 | "Try this next" card | Post-results suggestion card showing the best change + its deltas (↑uptime / ↓latency / ↓cost), or "well optimized" when none beats current. Mounted in the results modal / sim bar. | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 3 | Require auth for challenge mode | Gate challenge-mode entry on Firebase Auth (sign-in prompt); sandbox canvas stays anonymous. useAuth wiring + entry guard on the Challenges trigger/Start. (D33) | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 4 | attemptsStore + Firestore attempts collection | On score, persist `{ userId, challengeId, timestamp, stars, uptime, latency, budget, requestsTotal, requestsFailed }` to Firestore `attempts`; owner-only security rules; attemptsStore (load/subscribe per user). security-reviewer pass. | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 5 | History tab + submissions table | Sidebar History tab: past attempts with status icon, stars, key metrics; sortable submissions table (date/stars/challenge); best-stars surfaced. Reads attemptsStore. | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 6 | Integration + E2E + brand-logo polish | integration (score → persist → history) + E2E (signed-in attempt → appears in History); optional brand logos on variants (`brand`, `logoUrl`). | ent | medium | ✅ | ✅ | ✅ | ✅ |
+| 1 | D4 — ComponentDetail render-safe previous-variant | Replace the render-phase `previousVariantIdRef.current` read with React's "adjust state during render" previous-value pattern; clears the 6 react-hooks/refs errors. Behavior-preserving (variant-change cost delta unchanged). | ent | medium | ✅ | ✅ | ✅ | ⬜ |
+| 2 | D3 — split architectureStore.ts (<800) | Extract action groups (nodes / edges / constraints / data-context) into composed slice creators; keep the `useArchitectureStore` public API identical. Store test suite is the safety net. | ent | high | ✅ | ✅ | ✅ | ⬜ |
+| 3 | D2 + D6 — split oversized test files | Split architectureStore.test.ts (1455) + ArchieNode.test.tsx (834) into per-feature files mirroring the existing convention; shared fixtures extracted. | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | D5 — refresh stale Epic-12 E2E specs | Update specs asserting the old generic `archie-node-handle-*` testids to the typed `port-handle-*` model; re-green the e2e run. | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | D1 — port-handle hover tooltips | Tooltip on port dots communicating port type/direction (e.g. "HTTP Out", "Database In"). | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | D7 — cycle-topology flow accounting | Refine simulationEngine flow accounting for DAG-feeds-into-cycle topologies (overcount on cycle members). | ent | low | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec: ⬜/🔄/✅. Review/Commit/Push auto-ticked. User-facing/web phases require runtime journey evidence. -->
 
 ## Current Phase
 
-Phase 6: Integration + E2E + brand-logo polish
+Phase 1: D4 — ComponentDetail render-safe previous-variant
 
 ## Dependencies
 
-- P2 depends on P1 (card renders engine output). P4 depends on P3 (persistence needs an authed userId). P5 depends on P4 (History reads persisted attempts). P6 depends on all. P1+P2 (suggestions) are independent of the auth/persistence track (P3-P5) and can ship first.
+- Independent items; ordered by value/risk. P3 (test splits) preserves the store/component public APIs, so it's unaffected by P1/P2. Push in logical batches to limit deploy churn (refactors are not user-facing except D1/D5).
 
 ## Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| Firestore rules too permissive → users read/write others' attempts | high | Owner-only rules (`request.auth.uid == resource.data.userId`); security-reviewer pass in P4; rules unit-tested if emulator available |
-| Requiring auth breaks anonymous challenge flow shipped in Epic 16 | medium | Gate only challenge-mode entry; sandbox canvas + Run Simulation stay anonymous. E2E covers the signed-in path |
-| Shadow simulation is expensive (N candidates × full sim) | medium | Bounded candidate set; reuse the deterministic engine; compute lazily on results, not every tick |
-| Persisting unauthenticated/partial attempts | medium | Write only after a scored attempt with a valid userId; guard in attemptsStore |
+| Store split (D3) breaks internal get/set wiring | high | Slice creators receive (get,set); cross-slice calls via get(); full store test suite (1455 lines) must stay green |
+| Test-file split drops coverage or breaks hoisted mocks | medium | Move whole describe blocks verbatim; each file keeps its own vi.mock + fixtures; assert total test count is preserved |
+| D4 previous-variant timing changes the delta UX | medium | Adjust-state-during-render reproduces persist-until-next-change behavior; ComponentDetail tests cover the delta |
