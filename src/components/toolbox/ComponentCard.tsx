@@ -2,6 +2,7 @@ import { type DragEvent, type MouseEvent, useMemo } from "react"
 import { Plus } from "lucide-react"
 import type { Component } from "@/schemas/componentSchema"
 import { Badge } from "@/components/ui/badge"
+import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
@@ -72,7 +73,14 @@ export function ComponentCard({ component, dimmed }: ComponentCardProps) {
         <Plus className="h-3.5 w-3.5" />
       </button>
 
-      <h4 className="text-xs font-semibold text-text-primary">{component.name}</h4>
+      <div className="flex items-center gap-1.5">
+        <ComponentIcon
+          componentId={component.id}
+          category={component.category as ComponentCategoryId}
+          className="h-5 w-5 shrink-0"
+        />
+        <h4 className="text-xs font-semibold text-text-primary">{component.name}</h4>
+      </div>
 
       <div className="mt-1.5 space-y-1.5">
         <div>

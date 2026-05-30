@@ -17,3 +17,4 @@ Screenshots persist per-spec folder. Re-running a spec only overwrites that spec
 | `expanded-content/` | `expanded-content.spec.ts` | 11-6 | New components load, blueprints render, cost-efficiency visible, demand/failure V6 |
 | `challenge/` | `challenge-mode.spec.ts` | 16-6 | Challenge journey: select level → build + checklist/budget HUD → Start → real sim → scored results modal (stars) → close |
 | `history/` | `history-tab.spec.ts` | 17-5 | History toolbox tab reachable + submissions panel renders (sort controls) in the live app shell |
+| `component-icons/` | `component-icons.spec.ts` | 17-pol | Pixel-art component icons (PixelLab) render in the toolbox cards; src = local /icons/*.png |

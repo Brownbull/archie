@@ -798,3 +798,9 @@ dim_overrides: []
 **Rationale:** (1) Explicitly optional in the roadmap. (2) Renders nothing without curated per-variant logo assets, which don't exist — building the plumbing now is unused code. (3) Adds a URL-injection surface (logoUrl must be https-only validated, no javascript: URIs per .claude/rules/security.md) — a security cost for zero current value. Aligns with "plan light, build real" + security-first. (4) Epic 17's value (suggestions + history) is fully delivered.
 **Implication:** Tracked as PENDING D10 (optional enhancement, do when brand assets are curated, with a URL-validation security pass).
 **Status:** accepted
+
+## D38 — Component icons: local PixelLab pixel-art assets (supersedes D37 brand-logo deferral) (2026-05-30)
+
+**Decision:** Implement the Epic 17 "brand logo" polish as **our own pixel-art icons** generated with PixelLab (PixFlux, 64×64, Config C: black outline + detailed shading + transparent bg), one per component, stored in `public/icons/<component-id>.png`. Rendered via `<ComponentIcon>` (pixel `<img>` when an icon exists for the id, else the lucide category icon) in ArchieNode + ComponentCard.
+**Why (over the roadmap's external `brand`/`logoUrl`):** (1) Cohesive with the factorify-archie aesthetic; (2) no licensing/trademark concerns (original art); (3) **local same-origin assets → zero URL-injection surface** (the exact security cost that deferred D37); (4) filename = component id → no per-component data/schema change. Gated on a known id set (`COMPONENT_ICON_IDS`) so a missing id falls back cleanly; a consistency test keeps the set ⟷ files ⟷ components in lockstep.
+**Status:** accepted — resolves PENDING D10; D37 superseded.

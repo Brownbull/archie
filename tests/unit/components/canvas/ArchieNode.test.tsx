@@ -217,11 +217,16 @@ describe("ArchieNode", () => {
     expect(stripe).toHaveStyle({ backgroundColor: "var(--color-cat-data-storage)" })
   })
 
-  it("renders category icon", () => {
+  it("renders the component's pixel icon when one exists (postgresql)", () => {
     render(<ArchieNode {...defaultProps} />)
+    expect(screen.getByTestId("component-pixel-icon")).toHaveAttribute("src", "/icons/postgresql.png")
+  })
+
+  it("falls back to the lucide category icon for a component without a pixel icon", () => {
+    render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, archieComponentId: "no-icon-component" }} />)
     const node = screen.getByTestId("archie-node")
-    const svg = node.querySelector("svg")
-    expect(svg).toBeInTheDocument()
+    expect(node.querySelector("svg")).toBeInTheDocument()
+    expect(screen.queryByTestId("component-pixel-icon")).not.toBeInTheDocument()
   })
 
   it("has correct width", () => {

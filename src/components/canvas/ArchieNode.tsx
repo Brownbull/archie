@@ -5,7 +5,7 @@ import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, MIN_REPLICAS, MAX_REPLICAS, getScalingRule, type ComponentCategoryId } from "@/lib/constants"
-import { CATEGORY_ICONS } from "@/lib/categoryIcons"
+import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
 import { StatusDot } from "@/components/canvas/StatusDot"
@@ -38,7 +38,6 @@ function getMinHeight(portCount: number): number | undefined {
 function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const category = COMPONENT_CATEGORIES[data.componentCategory as ComponentCategoryId]
   const color = category?.color ?? "var(--color-muted)"
-  const IconComponent = category ? CATEGORY_ICONS[category.iconName] : undefined
 
   // Heatmap state — targeted selectors (AC-ARCH-PATTERN-5, AC-ARCH-NO-6)
   const heatmapStatus = useArchitectureStore((s) => s.heatmapColors.get(id))
@@ -177,12 +176,11 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       />
 
       <div className="flex items-center gap-2 px-3 py-2">
-        {IconComponent && (
-          <IconComponent
-            className="h-4 w-4 shrink-0"
-            style={{ color }}
-          />
-        )}
+        <ComponentIcon
+          componentId={data.archieComponentId}
+          category={data.componentCategory as ComponentCategoryId}
+          className="h-4 w-4 shrink-0"
+        />
         <span className="truncate text-xs font-medium text-text-primary">
           {data.componentName}
         </span>
