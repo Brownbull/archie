@@ -305,8 +305,8 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
     await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
 
     // Connect node 0 → node 1 via mouse drag on handles
-    const srcHandle = page.locator('[data-testid="archie-node-handle-source"]').nth(0)
-    const tgtHandle = page.locator('[data-testid="archie-node-handle-target"]').nth(1)
+    const srcHandle = page.locator('[data-testid="archie-node"]').nth(0).locator(".react-flow__handle.source").first()
+    const tgtHandle = page.locator('[data-testid="archie-node"]').nth(1).locator(".react-flow__handle.target").first()
     const srcBox = await srcHandle.boundingBox()
     const tgtBox = await tgtHandle.boundingBox()
     if (srcBox && tgtBox) {

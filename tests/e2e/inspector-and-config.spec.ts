@@ -375,8 +375,8 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     await addComponentToCanvas(page, 1)
 
     // Connect the two nodes
-    const sourceHandle = page.locator('[data-testid="archie-node-handle-source"]').nth(0)
-    const targetHandle = page.locator('[data-testid="archie-node-handle-target"]').nth(1)
+    const sourceHandle = page.locator('[data-testid="archie-node"]').nth(0).locator(".react-flow__handle.source").first()
+    const targetHandle = page.locator('[data-testid="archie-node"]').nth(1).locator(".react-flow__handle.target").first()
 
     // Hover first node to make handles visible
     await page.locator('[data-testid="archie-node"]').nth(0).hover()

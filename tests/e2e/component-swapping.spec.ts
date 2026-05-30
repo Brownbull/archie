@@ -105,8 +105,8 @@ async function connectNodes(
   sourceNodeIndex: number,
   targetNodeIndex: number,
 ) {
-  const sourceHandle = page.locator('[data-testid="archie-node-handle-source"]').nth(sourceNodeIndex)
-  const targetHandle = page.locator('[data-testid="archie-node-handle-target"]').nth(targetNodeIndex)
+  const sourceHandle = page.locator('[data-testid="archie-node"]').nth(sourceNodeIndex).locator(".react-flow__handle.source").first()
+  const targetHandle = page.locator('[data-testid="archie-node"]').nth(targetNodeIndex).locator(".react-flow__handle.target").first()
 
   await page.locator('[data-testid="archie-node"]').nth(sourceNodeIndex).hover()
 

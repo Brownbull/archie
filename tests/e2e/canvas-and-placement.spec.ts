@@ -96,8 +96,8 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     await expect(stripe).toBeVisible()
 
     // AC-1: Node has connection handles
-    await expect(page.locator('[data-testid="archie-node-handle-target"]').first()).toBeAttached()
-    await expect(page.locator('[data-testid="archie-node-handle-source"]').first()).toBeAttached()
+    await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.target").first()).toBeAttached()
+    await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.source").first()).toBeAttached()
 
     // Empty state should be gone now
     await expect(page.locator('[data-testid="canvas-empty-state"]')).not.toBeVisible()
@@ -283,8 +283,8 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     await expect(page.locator('[data-testid="archie-node-stripe"]').first()).toBeVisible()
 
     // Node has connection handles
-    await expect(page.locator('[data-testid="archie-node-handle-target"]').first()).toBeAttached()
-    await expect(page.locator('[data-testid="archie-node-handle-source"]').first()).toBeAttached()
+    await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.target").first()).toBeAttached()
+    await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.source").first()).toBeAttached()
 
     // Node has correct width
     await expect(archieNode).toHaveCSS("width", "140px")

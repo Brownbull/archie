@@ -16,8 +16,9 @@ test.describe("Connection Wiring & Management E2E (Story 1-4)", () => {
     const node = page.locator('[data-testid="archie-node"]').first()
     await expect(node).toBeVisible({ timeout: 5_000 })
 
-    // Before hover — handles exist but are invisible (opacity: 0)
-    const sourceHandle = page.locator('[data-testid="archie-node-handle-source"]').first()
+    // Before hover — handles exist but are invisible (opacity: 0). Node-scoped + type-based so it
+    // works whether the placed component has typed ports (Epic 12) or generic fallback handles.
+    const sourceHandle = node.locator(".react-flow__handle.source").first()
     await expect(sourceHandle).toBeAttached()
     await expect(sourceHandle).toHaveCSS("opacity", "0")
 
@@ -73,7 +74,7 @@ test.describe("Connection Wiring & Management E2E (Story 1-4)", () => {
 
     // Click the edge to select it
     const edgePath = page.locator(".react-flow__edge").first()
-    await edgePath.click()
+    await edgePath.click({ force: true }) // animated SVG edge — bypass the stability wait
 
     // Press Delete to remove
     await page.keyboard.press("Delete")

@@ -166,8 +166,11 @@ export async function connectNodes(
 ): Promise<void> {
   await page.locator('[data-testid="archie-node"]').nth(sourceIndex).hover()
 
-  const sourceHandle = page.locator('[data-testid="archie-node-handle-source"]').nth(sourceIndex)
-  const targetHandle = page.locator('[data-testid="archie-node-handle-target"]').nth(targetIndex)
+  // Node-scoped, type-based handle lookup — works for BOTH typed port handles (Epic 12,
+  // port-handle-*) and the generic fallback handles (archie-node-handle-*). react-flow tags every
+  // handle with a `source`/`target` class, so we grab each node's first source/target handle.
+  const sourceHandle = page.locator('[data-testid="archie-node"]').nth(sourceIndex).locator(".react-flow__handle.source").first()
+  const targetHandle = page.locator('[data-testid="archie-node"]').nth(targetIndex).locator(".react-flow__handle.target").first()
 
   const sourceBox = await sourceHandle.boundingBox()
   const targetBox = await targetHandle.boundingBox()
