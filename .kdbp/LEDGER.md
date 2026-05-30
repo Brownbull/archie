@@ -1285,3 +1285,16 @@ CARRIED: D9 (deploy attempts firestore.rules — needs creds), D10 (optional bra
 PUSH: dev:main a3ecd40..6e4f0a5 | run 26684678322 deploy-production 44s ✅
 18 pixel-art icons (1/component) generated via PixelLab MCP, public/icons/<id>.png; <ComponentIcon> (img + lucide fallback) in ArchieNode + ComponentCard. Local same-origin assets → no URL-injection surface (D38 supersedes D37). Review APPROVE (0 crit/high/med).
 USER ACTIONS DONE: D9 firestore rules deployed (attempts persistence live); PixelLab via subscription.
+- 2026-05-30 09:20 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-30 09:20 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-30 09:23 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-30 09:23 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-30 09:28 | Write | /home/khujta/projects/bmad/archie/src/stores/dataContextActions.ts
+
+## 2026-05-30 — Tech-debt cleanup (point 3): D1–D4, D6 resolved
+PUSH: P39 (D3+D4, 7434eba) + P40 (D1+D2+D6, db01acd) — both CI ✅. Full suite 3218 green throughout.
+- D4: ComponentDetail render-safe previous-variant + filter reset (eslint react-hooks clean). [546eea9]
+- D3: extracted data-context actions to a composed slice (architectureStore.ts 824→764, <800 guard). [7434eba]
+- D2+D6: split architectureStore.test.ts (1455→590 + 2 files) + ArchieNode.test.tsx (834→715 + ports file); counts preserved (109, 70). [db01acd]
+- D1: port-handle hover tooltips already implemented + tested (title="X In/Out") — closed.
+REMAINING: D5 (stale Epic-12 E2E specs — non-gated, full re-green gated on contended e2e env), D7 (cycle-topology flow overcount — rare; conserves for DAGs/normal case). Both low-ROI; recommend defer.
