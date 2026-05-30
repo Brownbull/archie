@@ -1266,3 +1266,22 @@ DEPLOY: P37. Epic 17 (Smart Suggestions & History) COMPLETE — all 6 phases liv
 EPIC 17 SUMMARY: suggestion engine (P1) → "Try this next" card (P2) → auth-gate verified (P3) → Firestore attempts + hardened owner-only rules (P4) → History tab (P5) → integration loop (P6).
 PHASE 3 ROADMAP COMPLETE: Epics 14 (replicas), 15 (simulation), 16 (challenge mode), 17 (suggestions+history) all shipped. Deploys P25-P37 (this session: Epics 16+17 + D8 CI bump).
 CARRIED: D9 (deploy attempts firestore.rules — needs creds), D10 (optional brand logos), D1-D7 (pre-existing TD).
+- 2026-05-29 17:20 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_ci-no-firestore-rules-deploy.md
+- 2026-05-29 17:21 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/MEMORY.md
+- 2026-05-30 09:01 | Write | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-30 09:01 | Write | /home/khujta/projects/bmad/archie/src/components/common/ComponentIcon.tsx
+- 2026-05-30 09:01 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-30 09:01 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-30 09:01 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-30 09:02 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentCard.tsx
+- 2026-05-30 09:02 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentCard.tsx
+- 2026-05-30 09:03 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/componentIcons.test.ts
+- 2026-05-30 09:03 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/common/ComponentIcon.test.tsx
+- 2026-05-30 09:06 | Edit | /home/khujta/projects/bmad/archie/src/components/common/ComponentIcon.tsx
+- 2026-05-30 09:06 | Edit | /home/khujta/projects/bmad/archie/src/components/common/ComponentIcon.tsx
+- 2026-05-30 09:06 | Write | /home/khujta/projects/bmad/archie/tests/e2e/component-icons.spec.ts
+
+## 2026-05-30 — [6e4f0a5] feat(icons): PixelLab component icons — PUSH P38 — CI ✅ (D10 RESOLVED)
+PUSH: dev:main a3ecd40..6e4f0a5 | run 26684678322 deploy-production 44s ✅
+18 pixel-art icons (1/component) generated via PixelLab MCP, public/icons/<id>.png; <ComponentIcon> (img + lucide fallback) in ArchieNode + ComponentCard. Local same-origin assets → no URL-injection surface (D38 supersedes D37). Review APPROVE (0 crit/high/med).
+USER ACTIONS DONE: D9 firestore rules deployed (attempts persistence live); PixelLab via subscription.

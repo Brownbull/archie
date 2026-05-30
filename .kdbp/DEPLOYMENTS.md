@@ -41,3 +41,4 @@
 | P35 | 2026-05-29 | dev → main | 4bbaaad | ✅ 1/1 (44s) | Epic 17 Phase 4: Firestore attempts persistence + hardened owner-only rules (anti-spoof) | run 26661527552 |
 | P36 | 2026-05-29 | dev → main | 986b5a6 | ✅ 1/1 (43s) | Epic 17 Phase 5: History tab (submissions log) + cross-user isolation hardening | run 26662388763 |
 | P37 | 2026-05-29 | dev → main | 5a3cc99 | ✅ 1/1 (52s) | Epic 17 Phase 6: score→persist→History integration + brand-logo deferral — EPIC 17 COMPLETE | run 26662690555 |
+| P38 | 2026-05-30 | dev → main | 6e4f0a5 | ✅ 1/1 (44s) | Epic 17 polish: 18 PixelLab pixel-art component icons (ComponentIcon + lucide fallback) — resolves D10 | run 26684678322 |
