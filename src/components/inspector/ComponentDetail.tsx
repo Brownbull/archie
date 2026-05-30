@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo, useCallback } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { useLibrary } from "@/hooks/useLibrary"
@@ -65,15 +65,20 @@ export function ComponentDetail({
     () => getNodeCost(component.id, activeVariantId, replicaCount),
     [component.id, activeVariantId, replicaCount],
   )
-  const previousVariantIdRef = useRef<string | null>(null)
+  // Track the previously-shown variant to render a cost delta on a variant switch — WITHOUT
+  // reading a ref during render (react-hooks/refs). React's "adjust state during render" pattern:
+  // when the active variant changes, shift the rendered id and remember the prior one. The delta
+  // then persists until the next variant change (same behavior as the old ref + effect).
+  const [shownVariantId, setShownVariantId] = useState(activeVariantId)
+  const [previousVariantId, setPreviousVariantId] = useState<string | null>(null)
+  if (activeVariantId !== shownVariantId) {
+    setPreviousVariantId(shownVariantId)
+    setShownVariantId(activeVariantId)
+  }
   const previousEconomics = useMemo(() => {
-    const prevId = previousVariantIdRef.current
-    if (!prevId || prevId === activeVariantId) return undefined
-    return getNodeCost(component.id, prevId, replicaCount)
-  }, [component.id, activeVariantId, replicaCount])
-  useEffect(() => {
-    previousVariantIdRef.current = activeVariantId
-  }, [activeVariantId])
+    if (!previousVariantId || previousVariantId === activeVariantId) return undefined
+    return getNodeCost(component.id, previousVariantId, replicaCount)
+  }, [component.id, activeVariantId, previousVariantId, replicaCount])
 
   const { metricsByCategory, allMetricIds } = useMemo(() => {
     // Prefer computed metrics from recalculation engine over static variant metrics
@@ -120,10 +125,14 @@ export function ComponentDetail({
   const [hiddenMetricIds, setHiddenMetricIds] = useState<Set<string>>(new Set())
   const [dataContextOpen, setDataContextOpen] = useState(true)
 
-  // Reset filter when inspecting a different component (AC-FUNC-3)
-  useEffect(() => {
+  // Reset the metric filter when inspecting a different component (AC-FUNC-3) — done during render
+  // (React's "reset state on prop change" pattern) rather than a setState-in-effect, which the
+  // react-compiler flags for cascading renders.
+  const [filterNodeId, setFilterNodeId] = useState(nodeId)
+  if (nodeId !== filterNodeId) {
+    setFilterNodeId(nodeId)
     setHiddenMetricIds(new Set())
-  }, [nodeId])
+  }
 
   const handleToggleMetric = useCallback((metricId: string) => {
     setHiddenMetricIds((prev) => {
