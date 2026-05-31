@@ -32,7 +32,7 @@ export function RunSimulationButton() {
       type="button"
       data-testid="run-simulation"
       onClick={onRun}
-      className="absolute left-1/2 top-3 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-blue-500/40 bg-blue-500/90 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-colors hover:bg-blue-500"
+      className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-blue-500/40 bg-blue-500/90 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-colors hover:bg-blue-500"
     >
       <Play className="h-3.5 w-3.5" />
       Run Simulation
