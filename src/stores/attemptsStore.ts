@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { collection, addDoc, getDocs, query, where, orderBy, serverTimestamp, Timestamp } from "firebase/firestore"
+import { collection, addDoc, getDocs, query, where, serverTimestamp, Timestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { AttemptStoredSchema, type AttemptRecord, type AttemptStored } from "@/schemas/attemptSchema"
 
@@ -69,7 +69,12 @@ export const useAttemptsStore = create<AttemptsState>((set) => ({
     // Clear immediately so a previous user's (or stale) list never renders during the fetch.
     set({ loading: true, error: null, attempts: [] })
     try {
-      const q = query(collection(db, COLLECTION), where("userId", "==", userId), orderBy("createdAt", "desc"))
+      // Equality-only query (no orderBy) so it relies on Firestore's automatic single-field
+      // index — a `where(userId) + orderBy(createdAt)` query needs a deployed COMPOSITE index,
+      // which CI doesn't deploy (hosting only), and its absence was the "Could not load your
+      // attempt history" failure. We sort newest-first client-side instead (a user's own
+      // attempts are a small, owner-scoped set).
+      const q = query(collection(db, COLLECTION), where("userId", "==", userId))
       const snapshot = await getDocs(q)
       if (seq !== loadSeq) return // superseded by a newer load — discard this stale response
       const attempts: AttemptRecord[] = []
@@ -77,6 +82,7 @@ export const useAttemptsStore = create<AttemptsState>((set) => ({
         const rec = toRecord(docSnap.id, docSnap.data() as Record<string, unknown>)
         if (rec) attempts.push(rec)
       }
+      attempts.sort((a, b) => b.createdAt - a.createdAt)
       set({ attempts, loading: false })
     } catch (err) {
       if (seq !== loadSeq) return

@@ -18,6 +18,9 @@ let mockSuggestion: import("@/engine/suggestionEngine").SuggestionResult | null 
 vi.mock("@/hooks/useChallengeSuggestion", () => ({ useChallengeSuggestion: () => mockSuggestion }))
 // Persistence needs auth context + Firestore; it has its own unit test + E2E coverage.
 vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
+// Attempt comparison reads auth + the attempts store; control it directly (own unit test covers logic).
+let mockPriorBest: import("@/schemas/attemptSchema").AttemptRecord | null = null
+vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => mockPriorBest }))
 
 import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -36,6 +39,7 @@ const frame = (tick: number): TickState => ({ tick, targetRps: 100, nodes: [], t
 describe("ChallengeResultsModal (Epic 16 P4)", () => {
   beforeEach(() => {
     mockSuggestion = null
+    mockPriorBest = null
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, bestStars: {} })
     useSimulationStore.getState().reset()
     useArchitectureStore.setState({ nodes: [], topologyIssues: [], topologyIssuesByNodeId: new Map() })
@@ -122,6 +126,41 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     render(<ChallengeResultsModal />)
     expect(screen.getByTestId("suggestion-card")).toHaveAttribute("data-kind", "suggestion")
     expect(screen.getByTestId("suggestion-description")).toHaveTextContent("Add a replica to App Server")
+  })
+
+  describe("vs your past attempts (P4)", () => {
+    it("shows 'first attempt' when there is no prior attempt", () => {
+      mockPriorBest = null
+      useChallengeStore.setState({
+        activeChallenge: challenge, attemptState: "scored",
+        lastResult: { stars: 2, passedMetrics: true, underBudget: true, cleanTopology: false },
+        lastMeasured: { uptimePercent: 99, p99LatencyMs: 120, totalCost: 80, topologyIssueCount: 1 },
+      })
+      render(<ChallengeResultsModal />)
+      expect(screen.getByTestId("vs-first-attempt")).toBeInTheDocument()
+    })
+
+    it("renders deltas + a 'new best' note vs the prior best attempt", () => {
+      mockPriorBest = {
+        id: "prev", userId: "u1", challengeId: challenge.id, stars: 1,
+        uptimePercent: 95, p99LatencyMs: 200, totalCost: 120, topologyIssueCount: 2, createdAt: 1000,
+      }
+      useChallengeStore.setState({
+        activeChallenge: challenge, attemptState: "scored",
+        lastResult: { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true },
+        lastMeasured: { uptimePercent: 99, p99LatencyMs: 120, totalCost: 80, topologyIssueCount: 0 },
+      })
+      render(<ChallengeResultsModal />)
+      expect(screen.getByTestId("vs-past-attempts")).toBeInTheDocument()
+      expect(screen.getByTestId("vs-stars")).toHaveTextContent("new best")
+      // cost dropped 120 → 80 = −40, which is an improvement (good when negative).
+      expect(screen.getByTestId("vs-delta-cost")).toHaveAttribute("data-tone", "good")
+      expect(screen.getByTestId("vs-delta-cost")).toHaveTextContent("40 $/mo")
+      // latency dropped 200 → 120 = improvement.
+      expect(screen.getByTestId("vs-delta-latency")).toHaveAttribute("data-tone", "good")
+      // uptime rose 95 → 99 = improvement (good when positive).
+      expect(screen.getByTestId("vs-delta-uptime")).toHaveAttribute("data-tone", "good")
+    })
   })
 
   it("Close leaves challenge mode and clears the simulation", () => {

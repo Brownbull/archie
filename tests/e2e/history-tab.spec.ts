@@ -17,9 +17,13 @@ test.describe("History Tab E2E (Epic 17)", () => {
     await expect(page.locator('[data-testid="history-sort-date"]')).toBeVisible()
     await expect(page.locator('[data-testid="history-sort-stars"]')).toBeVisible()
 
-    // The load cycle must resolve (not hang): the loading state clears, leaving a definite state
-    // (list / empty / error — the data state depends on the attempts rules being deployed, D9).
+    // The load cycle must resolve (not hang): the loading state clears.
     await expect(page.locator('[data-testid="history-loading"]')).toHaveCount(0, { timeout: 10_000 })
+
+    // P4: the query no longer uses a composite-index orderBy, so it resolves cleanly — NOT the
+    // "Could not load your attempt history" error. A fresh owner sees the empty state.
+    await expect(page.locator('[data-testid="history-error"]')).toHaveCount(0)
+    await expect(page.locator('[data-testid="history-empty"]')).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-history-tab.png`, fullPage: true })
   })
 })

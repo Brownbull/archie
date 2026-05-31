@@ -10,6 +10,7 @@ vi.mock("@/services/componentLibrary", () => ({
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
 // Persistence needs auth context; covered by its own unit test + E2E. Keep this flow focused.
 vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
+vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => null }))
 
 import { ChallengeStartButton } from "@/components/challenges/ChallengeStartButton"
 import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal"

@@ -13,7 +13,9 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeAutoScore } from "@/hooks/useChallengeAutoScore"
 import { useChallengeSuggestion } from "@/hooks/useChallengeSuggestion"
 import { useAttemptPersistence } from "@/hooks/useAttemptPersistence"
+import { useAttemptComparison } from "@/hooks/useAttemptComparison"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
+import { DeltaChip } from "@/components/challenges/DeltaChip"
 
 function Criterion({ met, label, detail }: { met: boolean; label: string; detail: string }) {
   return (
@@ -46,6 +48,15 @@ export function ChallengeResultsModal() {
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
   const reset = useChallengeStore((s) => s.reset)
   const resetSim = useSimulationStore((s) => s.reset)
+
+  // Solo progress loop (P4): compare this attempt to the user's best prior attempt at the
+  // same challenge. Called unconditionally (hooks rule); inert until a challenge is scored.
+  const priorBest = useAttemptComparison(challenge?.id ?? "", {
+    stars: result?.stars ?? 0,
+    totalCost: measured?.totalCost ?? 0,
+    p99LatencyMs: measured?.p99LatencyMs ?? 0,
+    uptimePercent: measured?.uptimePercent ?? 0,
+  })
 
   const open = attemptState === "scored" && !!challenge && !!result && !!measured
   if (!open) return null
@@ -91,6 +102,33 @@ export function ChallengeResultsModal() {
             label="Clean topology"
             detail={measured.topologyIssueCount === 0 ? "no issues" : `${measured.topologyIssueCount} issue${measured.topologyIssueCount === 1 ? "" : "s"}`}
           />
+        </div>
+
+        {/* Solo progress: how this attempt compares to your best prior run (P4). */}
+        <div data-testid="vs-past-attempts" className="rounded-md border border-archie-border bg-surface px-3 py-2">
+          {priorBest ? (
+            <>
+              <p className="mb-1.5 text-[11px] font-medium text-text-secondary">
+                vs your best ({priorBest.stars}★)
+              </p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span data-testid="vs-stars" className="text-[11px] text-text-secondary">
+                  {result.stars > priorBest.stars
+                    ? `★ ${priorBest.stars} → ${result.stars} (new best!)`
+                    : result.stars === priorBest.stars
+                      ? `★ matched best (${result.stars})`
+                      : `★ ${result.stars} (best ${priorBest.stars})`}
+                </span>
+                <DeltaChip testid="vs-delta-uptime" label="uptime" value={measured.uptimePercent - priorBest.uptimePercent} decimals={1} unit="pp" goodWhenNegative={false} />
+                <DeltaChip testid="vs-delta-latency" label="p99" value={measured.p99LatencyMs - priorBest.p99LatencyMs} decimals={0} unit="ms" goodWhenNegative />
+                <DeltaChip testid="vs-delta-cost" label="cost" value={measured.totalCost - priorBest.totalCost} decimals={0} unit="$/mo" goodWhenNegative />
+              </div>
+            </>
+          ) : (
+            <p data-testid="vs-first-attempt" className="text-[11px] text-text-secondary">
+              First attempt at this challenge — sets your baseline.
+            </p>
+          )}
         </div>
 
         {suggestion && <SuggestionCard result={suggestion} />}

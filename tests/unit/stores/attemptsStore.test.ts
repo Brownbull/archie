@@ -76,6 +76,22 @@ describe("attemptsStore (Epic 17 P4)", () => {
     expect(s().loading).toBe(false)
   })
 
+  it("loadAttempts sorts newest-first client-side without a composite-index orderBy (P4)", async () => {
+    getDocsMock.mockResolvedValueOnce({
+      docs: [
+        docOf("old", { createdAt: new Timestamp(1000) }),
+        docOf("new", { createdAt: new Timestamp(9000) }),
+        docOf("mid", { createdAt: new Timestamp(5000) }),
+      ],
+    })
+    await s().loadAttempts("user-1")
+    expect(s().attempts.map((a) => a.id)).toEqual(["new", "mid", "old"])
+    // The query must NOT use orderBy — that needs a deployed composite index (the cause of
+    // the "Could not load your attempt history" error). Guard against re-introducing it.
+    const { orderBy } = await import("firebase/firestore")
+    expect(orderBy).not.toHaveBeenCalled()
+  })
+
   it("loadAttempts drops malformed docs", async () => {
     getDocsMock.mockResolvedValueOnce({ docs: [docOf("ok"), docOf("bad", { stars: 99 })] })
     await s().loadAttempts("user-1")
