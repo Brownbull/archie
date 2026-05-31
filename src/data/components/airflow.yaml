@@ -1,0 +1,194 @@
+id: airflow
+name: Apache Airflow
+category: compute
+type_id: etl
+description: DAG-based workflow orchestrator for scheduling and monitoring data pipelines
+is: A Python-native orchestrator that schedules directed-acyclic-graph workflows, manages task dependencies and retries, and monitors batch data pipelines — it coordinates work rather than processing data itself
+gain:
+  - Python-defined DAGs with a vast operator/provider ecosystem
+  - First-class scheduling, dependency resolution, retries, and backfills
+  - Rich UI for run history, logs, and pipeline observability
+cost:
+  - Orchestrator, not a compute engine — heavy transforms run elsewhere
+  - Scheduler, workers, and metadata DB add real operational overhead
+  - Poor fit for sub-second / true streaming latency requirements
+tags:
+  - etl
+  - orchestration
+  - airflow
+  - dag
+  - scheduling
+base_metrics:
+  - id: processing-throughput
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: data-quality
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 7
+    category: scalability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: cost-per-run
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: self-managed
+    name: Self-Managed (CeleryExecutor)
+    monthly_cost: 90
+    max_rps: 200
+    base_latency_ms: 1000
+    metrics:
+      - id: processing-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: operational-complexity
+        value: high
+        numeric_value: 8
+        category: operational-complexity
+      - id: cost-per-run
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Apache Airflow - self-managed DAG (CeleryExecutor)
+        from airflow import DAG
+        from airflow.operators.python import PythonOperator
+        import pendulum
+
+        with DAG(
+            "etl_daily",
+            schedule="@daily",
+            start_date=pendulum.datetime(2026, 1, 1, tz="UTC"),
+            catchup=False,
+        ) as dag:
+            extract = PythonOperator(task_id="extract", python_callable=extract_fn)
+            transform = PythonOperator(task_id="transform", python_callable=transform_fn)
+            load = PythonOperator(task_id="load", python_callable=load_fn)
+
+            extract >> transform >> load
+    metric_explanations:
+      operational-complexity:
+        reason: A self-managed cluster means running and monitoring a scheduler, multiple Celery workers, a message broker, and a metadata database yourself.
+        contributing_factors:
+          - Scheduler, workers, broker, and metadata DB are separate moving parts
+          - Worker autoscaling and queue tuning are your responsibility
+          - Version upgrades and DAG-parsing performance need ongoing care
+      cost-per-run:
+        reason: On your own infrastructure you pay only for the underlying compute, so steady pipeline volume is cheap per run versus a managed premium.
+        contributing_factors:
+          - Workers run on commodity VMs you already operate
+          - No per-environment managed-service fee
+          - Idle workers can be scaled down between schedules
+  - id: managed-mwaa
+    name: Managed (MWAA / Composer)
+    monthly_cost: 350
+    max_rps: 400
+    base_latency_ms: 800
+    metrics:
+      - id: operational-complexity
+        value: medium
+        numeric_value: 4
+        category: operational-complexity
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: data-quality
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cost-per-run
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Apache Airflow - managed (MWAA) with sensor + provider operators
+        from airflow import DAG
+        from airflow.providers.amazon.aws.transfers.s3_to_redshift import (
+            S3ToRedshiftOperator,
+        )
+        from airflow.providers.amazon.aws.sensors.s3 import S3KeySensor
+        import pendulum
+
+        with DAG("s3_to_redshift", schedule="@hourly",
+                 start_date=pendulum.datetime(2026, 1, 1, tz="UTC"),
+                 catchup=False) as dag:
+            wait = S3KeySensor(task_id="wait_file", bucket_key="incoming/*.csv",
+                               bucket_name="data-lake")
+            copy = S3ToRedshiftOperator(task_id="copy", schema="public",
+                                        table="events", s3_bucket="data-lake",
+                                        s3_key="incoming")
+            wait >> copy
+    metric_explanations:
+      operational-complexity:
+        reason: Managed Airflow runs the scheduler, workers, and metadata DB for you with autoscaling, so you maintain only DAGs and connections.
+        contributing_factors:
+          - Provider hosts and patches the control plane
+          - Worker autoscaling is configured, not hand-operated
+          - Metadata DB backups and HA are handled for you
+      horizontal-scalability:
+        reason: Managed environments autoscale workers to the queued task load, absorbing bursts of parallel DAG runs without manual capacity planning.
+        contributing_factors:
+          - Worker fleet grows and shrinks with task demand
+          - Parallel task slots scale with the environment class
+          - No manual broker or worker provisioning
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - batch
+    - request-response
+  typical_latency: seconds-hours
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      processing-throughput: 0.7
+      cost-per-run: 0.7
+    extreme:
+      processing-throughput: 0.5
+      operational-complexity: 0.8
+  traffic-volume:
+    high:
+      processing-throughput: 0.8
+    extreme:
+      processing-throughput: 0.5
+      horizontal-scalability: 0.7
+  burst-pattern:
+    periodic-spikes:
+      processing-throughput: 0.7
+    unpredictable:
+      operational-complexity: 0.8
+      processing-throughput: 0.6
+failure_responses:
+  failure-single-node:
+    processing-throughput: 0.5
+    operational-complexity: 0.7
+  failure-database:
+    data-quality: 0.5
+    processing-throughput: 0.4
+  failure-data-corruption:
+    data-quality: 0.3
+    processing-throughput: 0.5
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

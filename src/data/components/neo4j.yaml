@@ -1,0 +1,207 @@
+id: neo4j
+name: Neo4j
+category: data-storage
+type_id: graph-db
+description: Native property-graph database with the Cypher query language
+is: The market-leading native graph database storing nodes and relationships with index-free adjacency, queried in Cypher, with ACID transactions and a graph data-science library
+gain:
+  - Expressive Cypher query language purpose-built for graph patterns
+  - Index-free adjacency gives constant-time hop traversal
+  - Rich tooling — Bloom visualization, GDS algorithms, ACID guarantees
+cost:
+  - Write scaling is bounded — clustering scales reads, not writes
+  - Memory-hungry; hot graph should fit in page cache for best latency
+  - Enterprise clustering features sit behind a commercial license
+tags:
+  - database
+  - graph
+  - cypher
+  - neo4j
+  - relationships
+base_metrics:
+  - id: traversal-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: query-expressiveness
+    value: high
+    numeric_value: 9
+    category: developer-experience
+  - id: cost-per-query
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: community-self-hosted
+    name: Community (Self-Hosted)
+    monthly_cost: 35
+    max_rps: 1500
+    base_latency_ms: 8
+    metrics:
+      - id: traversal-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: query-expressiveness
+        value: high
+        numeric_value: 9
+        category: developer-experience
+      - id: cost-per-query
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Neo4j - Community edition (self-hosted) via the official driver
+        import neo4j from 'neo4j-driver'
+
+        const driver = neo4j.driver(
+          'bolt://localhost:7687',
+          neo4j.auth.basic('neo4j', process.env.NEO4J_PASSWORD!)
+        )
+
+        export async function recommendFriends(userId: string) {
+          const session = driver.session({ defaultAccessMode: neo4j.session.READ })
+          try {
+            const res = await session.run(
+              `MATCH (u:User {id: $userId})-[:FRIEND]->()-[:FRIEND]->(fof)
+               WHERE NOT (u)-[:FRIEND]->(fof) AND fof.id <> $userId
+               RETURN fof.id AS id, count(*) AS mutual ORDER BY mutual DESC LIMIT 10`,
+              { userId }
+            )
+            return res.records.map((r) => ({ id: r.get('id'), mutual: r.get('mutual').toNumber() }))
+          } finally {
+            await session.close()
+          }
+        }
+    metric_explanations:
+      query-expressiveness:
+        reason: Cypher's ASCII-art pattern syntax expresses multi-hop relationships and variable-length paths far more concisely than SQL joins or imperative code.
+        contributing_factors:
+          - Pattern matching reads like the graph it queries
+          - Variable-length paths (`*1..3`) avoid recursive join gymnastics
+          - Built-in shortestPath and graph functions
+      cost-per-query:
+        reason: Self-hosting on a single right-sized instance is cheap per query, with no managed-service premium — you pay only for the VM.
+        contributing_factors:
+          - One commodity instance serves many queries from page cache
+          - No per-hour managed-service markup
+          - Community edition has no license fee
+  - id: aura-managed
+    name: AuraDB (Managed)
+    monthly_cost: 320
+    max_rps: 10000
+    base_latency_ms: 6
+    metrics:
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 7
+        category: scalability
+      - id: cost-per-query
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Neo4j - AuraDB managed cloud (encrypted bolt + connection pool)
+        import neo4j from 'neo4j-driver'
+
+        const driver = neo4j.driver(
+          process.env.AURA_URI!, // neo4j+s://xxxx.databases.neo4j.io
+          neo4j.auth.basic('neo4j', process.env.AURA_PASSWORD!),
+          { maxConnectionPoolSize: 100 }
+        )
+
+        export async function shortestPath(fromId: string, toId: string) {
+          const session = driver.session({ defaultAccessMode: neo4j.session.READ })
+          try {
+            const res = await session.run(
+              `MATCH p = shortestPath((a:User {id:$fromId})-[:KNOWS*..8]-(b:User {id:$toId}))
+               RETURN length(p) AS hops`,
+              { fromId, toId }
+            )
+            return res.records[0]?.get('hops')?.toNumber() ?? null
+          } finally {
+            await session.close()
+          }
+        }
+    metric_explanations:
+      operational-complexity:
+        reason: AuraDB is fully managed — provisioning, backups, patching, and scaling are handled by Neo4j, leaving only schema and queries to you.
+        contributing_factors:
+          - Automated backups and point-in-time restore
+          - Zero-downtime upgrades managed by the provider
+          - No JVM tuning, clustering, or OS patching to operate
+      data-durability:
+        reason: AuraDB replicates across availability zones with continuous backups, giving strong durability and automatic failover.
+        contributing_factors:
+          - Multi-AZ replication with automatic failover
+          - Continuous backup to durable cloud storage
+          - Point-in-time restore within the retention window
+connection_properties:
+  protocol: Bolt/TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 1-30ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      traversal-latency: 0.7
+    extreme:
+      traversal-latency: 0.5
+      data-durability: 0.8
+  traffic-volume:
+    high:
+      traversal-latency: 0.7
+    extreme:
+      traversal-latency: 0.4
+      operational-complexity: 0.8
+  concurrent-users:
+    high:
+      traversal-latency: 0.7
+    extreme:
+      traversal-latency: 0.4
+failure_responses:
+  failure-single-node:
+    data-durability: 0.4
+    traversal-latency: 0.5
+  failure-database:
+    data-durability: 0.3
+    traversal-latency: 0.4
+  failure-data-corruption:
+    data-durability: 0.3
+    traversal-latency: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

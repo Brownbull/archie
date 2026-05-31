@@ -1,0 +1,189 @@
+id: stripe
+name: Stripe
+category: compute
+type_id: payments
+description: Developer-first payment service provider with hosted PCI compliance
+is: A single-provider payment platform that handles cards, wallets, and subscriptions through a polished API, offloading most PCI scope to Stripe's hosted infrastructure
+gain:
+  - Best-in-class developer experience and documentation
+  - Hosted checkout offloads most PCI-DSS scope (SAQ-A)
+  - Mature ecosystem — Billing, Connect, Radar fraud, webhooks
+cost:
+  - Per-transaction fees (≈2.9% + 30¢) add up at scale
+  - Single provider — no built-in cross-PSP failover
+  - Vendor lock-in around Stripe-specific objects and webhooks
+tags:
+  - payment
+  - fintech
+  - transactions
+  - stripe
+  - managed
+base_metrics:
+  - id: transaction-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: payment-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: pci-compliance
+    value: high
+    numeric_value: 9
+    category: security
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: cost-per-transaction
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: hosted-checkout
+    name: Hosted Checkout
+    monthly_cost: 0
+    max_rps: 200
+    base_latency_ms: 250
+    metrics:
+      - id: pci-compliance
+        value: high
+        numeric_value: 9
+        category: security
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: cost-per-transaction
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Stripe - Hosted Checkout Session (SAQ-A, redirect to Stripe-hosted page)
+        import Stripe from 'stripe'
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+        export async function startCheckout(priceId: string) {
+          const session = await stripe.checkout.sessions.create({
+            mode: 'payment',
+            line_items: [{ price: priceId, quantity: 1 }],
+            success_url: 'https://app.example.com/success',
+            cancel_url: 'https://app.example.com/cancel',
+          })
+          return session.url // redirect the customer here
+        }
+    metric_explanations:
+      pci-compliance:
+        reason: Card data is entered on Stripe's hosted page, so it never touches your servers — qualifying you for the simplest SAQ-A compliance level.
+        contributing_factors:
+          - No card fields rendered or transmitted by your own frontend
+          - Stripe owns the card-data environment end to end
+          - Reduces audit scope to a self-assessment questionnaire
+      operational-complexity:
+        reason: A single hosted session redirect means almost nothing to build, secure, or monitor beyond one API call and a webhook.
+        contributing_factors:
+          - No card form, tokenization, or 3-D Secure flow to implement
+          - One webhook confirms payment asynchronously
+          - Stripe hosts the UI, retries, and localization
+  - id: payment-intents
+    name: Payment Intents API
+    monthly_cost: 0
+    max_rps: 500
+    base_latency_ms: 200
+    metrics:
+      - id: transaction-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: payment-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: operational-complexity
+        value: medium
+        numeric_value: 4
+        category: operational-complexity
+      - id: cost-per-transaction
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Stripe - Payment Intents with embedded Elements (SAQ-A-EP)
+        import Stripe from 'stripe'
+
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+
+        export async function createIntent(amount: number, currency: string) {
+          const intent = await stripe.paymentIntents.create({
+            amount,
+            currency,
+            automatic_payment_methods: { enabled: true },
+          })
+          // Confirm client-side with Stripe Elements using this secret
+          return { clientSecret: intent.client_secret, id: intent.id }
+        }
+    metric_explanations:
+      transaction-latency:
+        reason: Embedded Elements confirm the payment in-page without a redirect round trip, keeping the customer in your flow for a faster perceived checkout.
+        contributing_factors:
+          - No redirect hop to a hosted page and back
+          - Client-side confirmation talks directly to Stripe
+          - Connection reuse keeps the API call path short
+      operational-complexity:
+        reason: Embedding Elements means you own the payment form, 3-D Secure handling, and error states — more control but more to build and secure.
+        contributing_factors:
+          - Frontend renders and mounts Stripe Elements
+          - You handle confirmation, SCA challenges, and retries
+          - SAQ-A-EP scope is slightly larger than hosted checkout
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+    - webhook
+  typical_latency: 200-2000ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      transaction-latency: 0.7
+    extreme:
+      transaction-latency: 0.5
+      payment-availability: 0.8
+  concurrent-users:
+    high:
+      transaction-latency: 0.7
+    extreme:
+      transaction-latency: 0.5
+  burst-pattern:
+    periodic-spikes:
+      transaction-latency: 0.7
+    unpredictable:
+      transaction-latency: 0.5
+failure_responses:
+  failure-traffic-spike:
+    transaction-latency: 0.5
+    payment-availability: 0.7
+  failure-network-partition:
+    payment-availability: 0.4
+    transaction-latency: 0.4
+  failure-region-outage:
+    payment-availability: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

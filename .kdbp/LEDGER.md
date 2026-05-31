@@ -1594,3 +1594,24 @@ Added a 2nd provider to 3 single-provider types so they now offer real compariso
 - aws-kinesis (event-stream, alongside Kafka) — managed streaming; key differentiator is low ops-complexity; On-Demand vs Provisioned
 - aws-bedrock (llm-gateway, alongside the self-hosted gateway) — managed multi-model API; On-Demand vs Provisioned Throughput
 Each mirrors its sibling's metric ids for apples-to-apples swap comparison. +3 PixelLab icons (30 total). Firestore re-seeded → 30 components. 12/17 fundamental types now multi-provider.
+- 2026-05-31 16:46 | Write | /home/khujta/projects/bmad/archie/src/data/components/stripe.yaml
+- 2026-05-31 16:47 | Write | /home/khujta/projects/bmad/archie/src/data/components/neo4j.yaml
+- 2026-05-31 16:47 | Write | /home/khujta/projects/bmad/archie/src/data/components/airflow.yaml
+- 2026-05-31 16:48 | Edit | /home/khujta/projects/bmad/archie/src/data/components/stripe.yaml
+- 2026-05-31 16:48 | Edit | /home/khujta/projects/bmad/archie/src/data/components/neo4j.yaml
+- 2026-05-31 16:48 | Edit | /home/khujta/projects/bmad/archie/src/data/components/airflow.yaml
+- 2026-05-31 16:48 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/CodeSnippetViewer.tsx
+- 2026-05-31 16:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/CodeSnippetViewer.test.tsx
+- 2026-05-31 16:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/CodeSnippetViewer.test.tsx
+- 2026-05-31 16:53 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 16:53 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 16:53 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 16:54 | Edit | /home/khujta/projects/bmad/archie/src/declarations.d.ts
+
+## 2026-05-31 16:55 — commit: content batch 4 — Stripe / Neo4j / Airflow (3 types → multi-provider)
+FINDINGS: 0 (full suite 3425 ✅ yaml-validation ✅ data-quality ✅ icon-consistency ✅ tsc -b ✅ lint ✅)
+Added a 2nd provider to the last 3 high-value single-provider types:
+- stripe (payments, alongside the generic gateway) — hosted PCI (SAQ-A); Hosted Checkout vs Payment Intents
+- neo4j (graph-db) — native property graph + Cypher; Community self-hosted vs AuraDB managed
+- airflow (etl) — DAG orchestrator; Self-Managed (Celery) vs Managed (MWAA)
+Each mirrors its sibling's metric ids. Supporting fix: Airflow snippets are Python, so added python to the CodeSnippetViewer allowlist (+ prism import, declarations.d.ts module decl, test update) — previously python fell back to unhighlighted plaintext. +3 PixelLab icons (33 total). Firestore re-seeded → 33 components. 15/17 fundamental types now multi-provider (only graph-db... wait etl/payments/graph-db now covered; remaining single: realtime + security).
