@@ -48,3 +48,4 @@
 | P42 | 2026-05-30 | dev → main | e4ded41 | ✅ 1/1 (~30s) | P2 single-player: auto-fit on load + forgiving wiring (connectionRadius 40, connectOnClick) + clearer budget label | run 26701254717 |
 | P43 | 2026-05-30 | dev → main | cffad5e | ✅ 1/1 (~30s) | P3 single-player: information density — compact palette (collapsible categories) + inspector collapse-by-default hierarchy + per-node util% | run 26701637973 |
 | P44 | 2026-05-30 | dev → main | 9bf9b69 | ✅ 1/1 (~30s) | P4 single-player: History load fix (drop composite-index orderBy → client sort) + 'vs your past attempts' deltas on results modal | run 26701997932 |
+| P45 | 2026-05-31 | dev → main | 44a8505 | ✅ 1/1 (~30s) | P5 single-player: component model type→provider→tier — schema typeId, toolbox-by-type, in-node Provider picker, +3 providers (Fastly/Memcached/MySQL) + Firestore re-seed | run 26717273361 |
