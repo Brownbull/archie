@@ -1,0 +1,130 @@
+id: datadog
+name: Datadog
+category: monitoring
+type_id: observability
+description: A SaaS observability platform unifying metrics, traces, and logs with zero infrastructure to run
+is: A hosted monitoring service that ingests metrics, traces, and logs and renders dashboards, alerts, and APM out of the box
+gain:
+  - Zero operations — no collectors or storage to manage
+  - Unified metrics + traces + logs with rich correlation
+  - Polished dashboards, alerting, and APM out of the box
+cost:
+  - Per-host + per-ingestion pricing gets expensive at scale
+  - Vendor lock-in to a proprietary platform
+  - Data leaves your infrastructure to a third party
+tags:
+  - monitoring
+  - observability
+  - apm
+  - saas
+  - tracing
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: storage-efficiency
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+  - id: data-retention-reliability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: datadog-cost-efficiency
+    value: low
+    numeric_value: 3
+    category: cost-efficiency
+config_variants:
+  - id: apm
+    name: APM + Metrics
+    monthly_cost: 80
+    max_rps: 50000
+    base_latency_ms: 2
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: datadog-cost-efficiency
+        value: low
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # Datadog Agent — APM + metrics (datadog.yaml)
+        api_key: ${DD_API_KEY}
+        apm_config:
+          enabled: true
+        logs_enabled: false
+    metric_explanations:
+      query-latency:
+        reason: Pre-aggregated, indexed time series make dashboard and alert queries return in milliseconds even over large windows.
+        contributing_factors:
+          - Server-side rollups precomputed at ingestion
+          - Purpose-built columnar metrics store
+      operational-complexity:
+        reason: A hosted backend means no storage, sharding, or retention infrastructure to run — just install the agent.
+        contributing_factors:
+          - No self-hosted TSDB to scale or back up
+          - Agent auto-discovers and instruments services
+  - id: full-stack
+    name: Full-Stack (Logs + APM + Metrics)
+    monthly_cost: 200
+    max_rps: 100000
+    base_latency_ms: 3
+    metrics:
+      - id: storage-efficiency
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: data-retention-reliability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: datadog-cost-efficiency
+        value: low
+        numeric_value: 2
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # Datadog Agent — full stack (logs + APM + metrics)
+        api_key: ${DD_API_KEY}
+        apm_config: { enabled: true }
+        logs_enabled: true
+        logs_config:
+          container_collect_all: true
+    metric_explanations:
+      data-retention-reliability:
+        reason: Managed multi-region storage retains metrics, traces, and logs reliably for the configured window with no operator effort.
+        contributing_factors:
+          - Durable, replicated managed backend
+          - Configurable retention per data type
+      datadog-cost-efficiency:
+        reason: Ingesting logs on top of APM and metrics multiplies per-GB and per-host charges, making full-stack the priciest tier.
+        contributing_factors:
+          - Log ingestion + indexing billed per GB
+          - Per-host APM charges stack on metrics
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: "1-5ms"
+  co_location_potential: false
+ports:
+  - id: monitor-in
+    type: monitor
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

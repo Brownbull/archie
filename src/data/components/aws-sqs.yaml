@@ -1,0 +1,137 @@
+id: aws-sqs
+name: AWS SQS
+category: messaging
+type_id: message-queue
+description: A fully managed message queue that decouples producers and consumers at virtually any scale
+is: A managed queue service that buffers messages between services with at-least-once delivery and no servers to run
+gain:
+  - Zero operations — no brokers to provision or patch
+  - Scales to effectively unlimited throughput on demand
+  - Pay per request with no idle cost
+cost:
+  - At-least-once delivery means consumers must dedupe (standard)
+  - Per-request pricing adds up at very high volume
+  - No rich routing/exchange topologies like a broker
+tags:
+  - queue
+  - messaging
+  - sqs
+  - jobs
+  - decoupling
+base_metrics:
+  - id: message-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: message-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+  - id: sqs-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: standard-queue
+    name: Standard Queue
+    monthly_cost: 5
+    max_rps: 100000
+    base_latency_ms: 10
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 10
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: sqs-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # AWS SQS Standard — send + receive (boto3)
+        import boto3
+
+        sqs = boto3.client("sqs")
+        sqs.send_message(QueueUrl=url, MessageBody="job-42")
+        msgs = sqs.receive_message(QueueUrl=url, MaxNumberOfMessages=10)
+        # delete after processing → at-least-once; make handlers idempotent
+    metric_explanations:
+      message-throughput:
+        reason: Standard queues offer nearly unlimited throughput by spreading messages across many partitions transparently.
+        contributing_factors:
+          - No single-broker bottleneck — fully distributed
+          - Throughput scales automatically with load
+      sqs-cost-efficiency:
+        reason: Pay-per-request pricing with no idle cost makes a standard queue very cheap for bursty or low-baseline workloads.
+        contributing_factors:
+          - No always-on broker instance to pay for
+          - Free tier covers low volumes entirely
+  - id: fifo-queue
+    name: FIFO Queue
+    monthly_cost: 15
+    max_rps: 3000
+    base_latency_ms: 12
+    metrics:
+      - id: message-durability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: message-throughput
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: sqs-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # AWS SQS FIFO — exactly-once, ordered within a message group
+        sqs.send_message(
+            QueueUrl=fifo_url,
+            MessageBody="order-42",
+            MessageGroupId="orders",
+            MessageDeduplicationId="order-42",
+        )
+    metric_explanations:
+      message-durability:
+        reason: FIFO queues guarantee exactly-once processing and strict ordering within a message group, eliminating duplicate handling.
+        contributing_factors:
+          - Deduplication IDs drop duplicate sends in a 5-min window
+          - Ordering preserved per MessageGroupId
+      message-throughput:
+        reason: Exactly-once ordering caps throughput far below standard queues (a few thousand msgs/sec without batching).
+        contributing_factors:
+          - Ordering constraints limit parallelism per group
+          - Higher per-message coordination overhead
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - publish-subscribe
+    - request-response
+  typical_latency: "10-20ms"
+  co_location_potential: false
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

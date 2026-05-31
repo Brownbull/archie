@@ -1,0 +1,134 @@
+id: aws-s3
+name: AWS S3
+category: data-storage
+type_id: object-storage
+description: A fully managed object store with virtually unlimited capacity and eleven nines of durability
+is: A managed object storage service that holds files (blobs) addressable by key over HTTP, with near-infinite scale
+gain:
+  - Effectively unlimited capacity with no provisioning
+  - 99.999999999% durability across availability zones
+  - Pay only for what you store and transfer
+cost:
+  - Higher per-request latency than a database or cache
+  - Per-request + egress charges add up at high volume
+  - Eventually-consistent listing semantics in edge cases
+tags:
+  - storage
+  - object
+  - blob
+  - s3
+  - files
+base_metrics:
+  - id: query-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: storage-scalability
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 10
+    category: reliability
+  - id: cost-per-gb
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 25
+    max_rps: 5500
+    base_latency_ms: 40
+    metrics:
+      - id: storage-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: cost-per-gb
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # AWS S3 Standard — put/get an object (boto3)
+        import boto3
+
+        s3 = boto3.client("s3")
+        s3.put_object(Bucket="my-bucket", Key="reports/2026.csv", Body=data)
+        obj = s3.get_object(Bucket="my-bucket", Key="reports/2026.csv")
+    metric_explanations:
+      data-durability:
+        reason: Objects are redundantly stored across multiple availability zones, giving 99.999999999% durability with no operator effort.
+        contributing_factors:
+          - Automatic multi-AZ replication of every object
+          - Continuous integrity checks with self-healing
+      storage-scalability:
+        reason: Capacity is effectively unlimited and elastic — there is nothing to provision as data grows.
+        contributing_factors:
+          - No volume or partition sizing to manage
+          - Throughput scales by key-prefix sharding
+  - id: intelligent-tiering
+    name: Intelligent-Tiering
+    monthly_cost: 18
+    max_rps: 5500
+    base_latency_ms: 45
+    metrics:
+      - id: cost-per-gb
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+      - id: data-durability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+    code_snippet:
+      language: hcl
+      code: |
+        # S3 Intelligent-Tiering — auto-moves cold objects to cheaper tiers
+        resource "aws_s3_bucket" "data" {
+          bucket = "my-bucket"
+        }
+        resource "aws_s3_bucket_intelligent_tiering_configuration" "t" {
+          bucket = aws_s3_bucket.data.id
+          name   = "EntireBucket"
+          tiering { access_tier = "ARCHIVE_ACCESS"; days = 90 }
+        }
+    metric_explanations:
+      cost-per-gb:
+        reason: Objects automatically move to cheaper access tiers as they go cold, cutting storage cost for infrequently-read data with no retrieval fees.
+        contributing_factors:
+          - Automatic tiering based on access patterns
+          - No per-GB monitoring or lifecycle rules to hand-tune
+      data-durability:
+        reason: Tiering changes the storage class, not the durability guarantee — objects keep the same multi-AZ eleven-nines durability.
+        contributing_factors:
+          - Same underlying redundant storage as Standard
+          - Tier transitions are metadata-only, not re-copies
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: "20-60ms"
+  co_location_potential: false
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out
