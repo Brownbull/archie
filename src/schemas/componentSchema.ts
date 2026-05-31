@@ -84,7 +84,11 @@ export const ComponentSchema = z.object({
   demandResponses: DemandResponseSchema.optional(),
   failureResponses: FailureResponseSchema.optional(),
   ports: z.array(PortDefinitionSchema).optional(),
-}).strict()
+})
+  // D14: the RUNTIME reader (validates Firestore docs) is NOT .strict() — unknown top-level
+  // keys are stripped, not rejected. This keeps an already-deployed reader forward-compatible
+  // with a re-seed that adds a new field (the strict reader broke prod briefly during P5's
+  // typeId re-seed). The YAML authoring schema below stays .strict() so typos are still caught.
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
 const ConfigVariantYamlSchema = z.object({

@@ -635,9 +635,12 @@ describe("ComponentSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  it("rejects unknown keys with strict mode", () => {
+  it("strips unknown keys instead of rejecting them (D14 forward-compat reader)", () => {
     const result = ComponentSchema.safeParse({ ...validComponent, unknownField: "nope" })
-    expect(result.success).toBe(false)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect((result.data as Record<string, unknown>).unknownField).toBeUndefined()
+    }
   })
 })
 
