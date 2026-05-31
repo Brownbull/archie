@@ -1488,3 +1488,37 @@ TICK: ✅ (Commit + Review)
 NOTE: Firestore re-seeded via service-account; production restored after typeId-tolerant deploy (run succeeded).
 
 PUSH: P5 → main @ 44a8505 — Deploy Production success (run 26717273361); Firestore re-seeded. PHASE 5 COMPLETE. Next: Phase 6 live guidance + tour (final phase).
+- 2026-05-31 11:57 | Write | /home/khujta/projects/bmad/archie/src/hooks/useBuildGuidance.ts
+- 2026-05-31 11:58 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/BuildHealthPanel.tsx
+- 2026-05-31 11:58 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-31 11:58 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-31 11:59 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useBuildGuidance.test.ts
+- 2026-05-31 11:59 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/BuildHealthPanel.test.tsx
+- 2026-05-31 12:00 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-05-31 12:01 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-05-31 12:01 | Write | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-05-31 12:02 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-05-31 12:02 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-05-31 12:02 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-05-31 12:03 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-05-31 12:03 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/onboarding/GuidedTour.test.tsx
+- 2026-05-31 12:05 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-05-31 12:05 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-05-31 12:06 | Write | /home/khujta/projects/bmad/archie/tests/e2e/guidance.spec.ts
+- 2026-05-31 12:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/global-setup.ts
+- 2026-05-31 12:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/guidance.spec.ts
+- 2026-05-31 12:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/guidance.spec.ts
+
+## 2026-05-31 12:13 — [P6] feat(guidance): live build-health checklist + restartable first-run tour
+FINDINGS: 0 critical/high (commit gate clean)
+CHECKS: lint 0 err | tsc -b ok | tests 3302 pass | e2e guidance 2/2 + pathway-guidance restored
+
+## 2026-05-31 12:13 — PHASE 6 REVIEW: Live guidance: topology validation + tour
+VERDICT: APPROVE
+FINDINGS: 1 high CAUGHT+FIXED pre-commit — the auto-show tour modal blocked E2E specs that don't dismiss it (pathway-guidance timed out). Fixed by marking tourSeen=true in the auth storageState baseline (suite-wide), tour test re-triggers via Settings→Restart; pathway-guidance re-verified green. Other dims clean: BuildHealthPanel self-gates mutually-exclusive with the challenge HUD; tour uses adjust-during-render (no set-state-in-effect); real first-run users still get the tour; orphan nudge reuses the topology engine.
+COVERAGE: HIGH — 14 unit tests (useBuildGuidance 4, BuildHealthPanel 5, GuidedTour 5) + guidance E2E 2/2 + screenshots
+CONFIDENCE: 94/100
+DEFERRED: none
+ALIGNMENT: ALIGNED (P6 live topology nudges via existing engine + build-health checklist beyond challenge mode + restartable tour)
+TIER: ent | DRIFT: none
+TICK: ✅ (Commit + Review)
