@@ -1,7 +1,8 @@
 import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
+import { useArchitectureStore } from "@/stores/architectureStore"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId, type FitLevel } from "@/lib/constants"
 import { getCategoryIcon } from "@/lib/categoryIcons"
-import { Check, AlertTriangle } from "lucide-react"
+import { Check, AlertTriangle, Plus } from "lucide-react"
 
 const FIT_LEVEL_STYLES: Record<FitLevel, string> = {
   "great-fit": "bg-green-500/15 text-green-600",
@@ -11,10 +12,20 @@ const FIT_LEVEL_STYLES: Record<FitLevel, string> = {
   risky: "bg-red-500/15 text-red-600",
 }
 
-export function PathwayGuidancePanel() {
-  const { suggestions } = usePathwaySuggestions()
+interface PathwayGuidancePanelProps {
+  /** When true, render nothing instead of an empty-state message (for inline/toolbox use). */
+  hideWhenEmpty?: boolean
+  /** Cap the number of suggestions shown (inline/toolbox use shows a tight subset). */
+  maxItems?: number
+}
+
+export function PathwayGuidancePanel({ hideWhenEmpty = false, maxItems }: PathwayGuidancePanelProps = {}) {
+  const { suggestions: allSuggestions } = usePathwaySuggestions()
+  const suggestions = maxItems ? allSuggestions.slice(0, maxItems) : allSuggestions
+  const addNodeSmartPosition = useArchitectureStore((s) => s.addNodeSmartPosition)
 
   if (suggestions.length === 0) {
+    if (hideWhenEmpty) return null
     return (
       <div data-testid="pathway-guidance-panel">
         <p
@@ -89,6 +100,17 @@ export function PathwayGuidancePanel() {
                   {suggestion.fitLevel.replaceAll("-", " ")}
                 </span>
               )}
+
+              <button
+                type="button"
+                data-testid={`pathway-add-${suggestion.componentId}`}
+                onClick={() => addNodeSmartPosition(suggestion.componentId)}
+                className="ml-auto flex items-center gap-1 rounded-md border border-archie-border bg-surface px-2 py-0.5 text-xs font-medium text-text-primary transition-colors hover:border-archie-accent/50 hover:bg-surface/80"
+                title={`Add ${suggestion.componentName} to the canvas`}
+              >
+                <Plus className="h-3 w-3" />
+                Add
+              </button>
             </div>
           </div>
         )

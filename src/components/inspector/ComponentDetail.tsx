@@ -69,20 +69,30 @@ export function ComponentDetail({
     () => getNodeCost(component.id, activeVariantId, replicaCount),
     [component.id, activeVariantId, replicaCount],
   )
-  // Track the previously-shown variant to render a cost delta on a variant switch — WITHOUT
-  // reading a ref during render (react-hooks/refs). React's "adjust state during render" pattern:
-  // when the active variant changes, shift the rendered id and remember the prior one. The delta
-  // then persists until the next variant change (same behavior as the old ref + effect).
-  const [shownVariantId, setShownVariantId] = useState(activeVariantId)
-  const [previousVariantId, setPreviousVariantId] = useState<string | null>(null)
-  if (activeVariantId !== shownVariantId) {
-    setPreviousVariantId(shownVariantId)
-    setShownVariantId(activeVariantId)
+  // Cost delta: snapshot the displayed economics so a before→after shows on BOTH a provider
+  // swap AND a config-variant switch (the config identity = component + variant). Replica-only
+  // changes refresh the baseline without a delta; switching the inspected node resets it so a
+  // stale cross-node delta never shows. "Adjust state during render" pattern (no effect/ref).
+  const configKey = `${component.id}:${activeVariantId}`
+  const [econState, setEconState] = useState<{
+    nodeId: string | null
+    configKey: string
+    shown: typeof currentEconomics
+    previous: typeof currentEconomics | undefined
+  }>({ nodeId: nodeId ?? null, configKey, shown: currentEconomics, previous: undefined })
+
+  let previousEconomics = econState.previous
+  if (econState.nodeId !== (nodeId ?? null)) {
+    setEconState({ nodeId: nodeId ?? null, configKey, shown: currentEconomics, previous: undefined })
+    previousEconomics = undefined
+  } else if (econState.configKey !== configKey) {
+    // provider or variant changed on the same node → show the before→after delta
+    setEconState({ nodeId: nodeId ?? null, configKey, shown: currentEconomics, previous: econState.shown })
+    previousEconomics = econState.shown
+  } else if (econState.shown !== currentEconomics) {
+    // replica-only change → keep the baseline current, no delta
+    setEconState({ ...econState, shown: currentEconomics })
   }
-  const previousEconomics = useMemo(() => {
-    if (!previousVariantId || previousVariantId === activeVariantId) return undefined
-    return getNodeCost(component.id, previousVariantId, replicaCount)
-  }, [component.id, activeVariantId, previousVariantId, replicaCount])
 
   const { metricsByCategory, allMetricIds } = useMemo(() => {
     // Prefer computed metrics from recalculation engine over static variant metrics

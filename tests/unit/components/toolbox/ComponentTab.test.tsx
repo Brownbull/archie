@@ -4,6 +4,7 @@ import { ComponentTab } from "@/components/toolbox/ComponentTab"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import type { Component } from "@/schemas/componentSchema"
@@ -86,12 +87,52 @@ vi.mock("@/engine/compatibilityChecker", () => ({
   checkCompatibility: vi.fn(() => ({ isCompatible: true, reason: "" })),
 }))
 
+// usePathwaySuggestions drives the inline "Suggested next" panel. Default: no suggestions
+// (so existing tests are unaffected); a specific test overrides it.
+vi.mock("@/hooks/usePathwaySuggestions", () => ({
+  usePathwaySuggestions: vi.fn(() => ({ suggestions: [], hasGaps: false, nextTierName: null })),
+}))
+
 describe("ComponentTab", () => {
   beforeEach(() => {
     useUiStore.setState({ searchQuery: "", selectedNodeId: null })
     useChallengeStore.setState({ activeChallenge: null })
     vi.mocked(componentLibrary.getComponent).mockReturnValue(undefined)
     vi.mocked(checkCompatibility).mockReturnValue({ isCompatible: true, reason: "" })
+    vi.mocked(usePathwaySuggestions).mockReturnValue({ suggestions: [], hasGaps: false, nextTierName: null })
+  })
+
+  describe("inline pathway suggestions (item 1c)", () => {
+    const sampleSuggestion = {
+      componentId: "redis",
+      componentName: "Redis",
+      category: "caching",
+      gapClosed: "Add a caching layer",
+      weightedScore: 7.2,
+      isConstraintSafe: true,
+      reason: "caching improves read latency",
+    }
+
+    it("shows the 'Suggested next' panel inline when suggestions exist (free build)", () => {
+      vi.mocked(usePathwaySuggestions).mockReturnValue({ suggestions: [sampleSuggestion], hasGaps: true, nextTierName: "Established" })
+      render(<ComponentTab />)
+      expect(screen.getByTestId("component-tab-pathway")).toBeInTheDocument()
+      expect(screen.getByTestId("pathway-add-redis")).toBeInTheDocument()
+    })
+
+    it("hides the inline pathway during a challenge", () => {
+      vi.mocked(usePathwaySuggestions).mockReturnValue({ suggestions: [sampleSuggestion], hasGaps: true, nextTierName: "Established" })
+      useChallengeStore.setState({ activeChallenge: makeChallenge() })
+      render(<ComponentTab />)
+      expect(screen.queryByTestId("component-tab-pathway")).toBeNull()
+    })
+
+    it("hides the inline pathway while searching", () => {
+      vi.mocked(usePathwaySuggestions).mockReturnValue({ suggestions: [sampleSuggestion], hasGaps: true, nextTierName: "Established" })
+      useUiStore.setState({ searchQuery: "redis" })
+      render(<ComponentTab />)
+      expect(screen.queryByTestId("component-tab-pathway")).toBeNull()
+    })
   })
 
   it("renders component cards for all components", () => {

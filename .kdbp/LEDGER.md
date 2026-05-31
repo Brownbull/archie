@@ -1721,3 +1721,21 @@ Tour was stale (build→provider/tier→wire→score; omitted the 4 surfaces, ov
 ## 2026-05-31 19:45 — commit: provider cost comparison in the swap dropdown (architect-audit cluster 1a)
 FINDINGS: 0 (full suite 3465 ✅ tsc -b ✅ lint 0-err ✅)
 Decision-support: the in-node Provider picker now shows each provider's monthly-cost range ($X–$Y/mo or Free) next to its name, so an architect can compare providers at the point of choosing WITHOUT swapping each one in to read its cost. Contained to ComponentSwapper. (Remaining cluster-1 items — before/after delta on provider swap, and inline-actionable Pathway guidance with Add-to-canvas — are larger store/relocation changes, deferred for a follow-up.)
+- 2026-05-31 19:26 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 19:29 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/PathwayGuidancePanel.tsx
+- 2026-05-31 19:29 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/PathwayGuidancePanel.tsx
+- 2026-05-31 19:30 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/PathwayGuidancePanel.tsx
+- 2026-05-31 19:30 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 19:30 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 19:31 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 19:32 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/PathwayGuidancePanel.test.tsx
+- 2026-05-31 19:32 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/PathwayGuidancePanel.test.tsx
+- 2026-05-31 19:35 | Write | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+- 2026-05-31 19:36 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 19:36 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 19:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+
+## 2026-05-31 20:15 — commit: finish decision-support pair (swap delta + inline actionable pathway)
+FINDINGS: 0 (full suite 3471 ✅ tsc -b ✅ lint 0-err ✅ decision-support E2E swap-delta ✅)
+1b — provider-swap before/after delta: the economics delta was variant-only (recomputed new component + old variant on swap = wrong). Replaced with a unified 'snapshot the displayed economics' tracker in ComponentDetail that shows a before→after on BOTH provider swap AND variant change, refreshes on replica-only change, and resets on node switch. (Metric delta already worked — previousMetrics is captured by triggerRecalculation on swap.) Verified end-to-end: swap PostgreSQL→MySQL shows a delta.
+1c — inline actionable pathway: PathwayGuidancePanel gained a one-click 'Add' button per suggestion (→ addNodeSmartPosition) + hideWhenEmpty/maxItems props; surfaced inline as a 'Suggested next' panel at the top of the Components tab during free build (hidden while searching or in a challenge) — no longer buried 2 clicks deep in the dashboard overlay. +unit tests (Add/hideWhenEmpty/maxItems, inline gating) + decision-support.spec.ts E2E.

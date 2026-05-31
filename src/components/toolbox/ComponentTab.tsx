@@ -4,7 +4,9 @@ import { useLibrary } from "@/hooks/useLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
 import { ComponentCard } from "@/components/toolbox/ComponentCard"
+import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePanel"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
@@ -55,6 +57,12 @@ export function ComponentTab() {
   const searchQuery = useUiStore((s) => s.searchQuery)
   const selectedNodeId = useUiStore((s) => s.selectedNodeId)
   const activeChallenge = useChallengeStore((s) => s.activeChallenge)
+  const { suggestions: pathwaySuggestions } = usePathwaySuggestions()
+
+  // Surface "what to add next" inline in the toolbox (where you add components) during free
+  // build — not buried in the dashboard overlay. Hidden while searching or in a challenge
+  // (which has its own guidance banner), and only when the engine has suggestions.
+  const showPathway = !searchQuery && !activeChallenge && pathwaySuggestions.length > 0
 
   // Challenge guidance: required categories are always shown; allowedCategories (optional)
   // additionally restricts the palette to those categories for the duration of the challenge.
@@ -137,6 +145,12 @@ export function ComponentTab() {
       <div className="space-y-3 p-3">
         {activeChallenge && (
           <ChallengeGuidanceBanner required={requiredCategories} allowed={allowedCategories} />
+        )}
+        {showPathway && (
+          <div data-testid="component-tab-pathway" className="rounded-md border border-blue-500/30 bg-blue-500/5 p-2">
+            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">Suggested next</p>
+            <PathwayGuidancePanel hideWhenEmpty maxItems={2} />
+          </div>
         )}
         {groups.map((group) => {
           const category = COMPONENT_CATEGORIES[group.categoryId]

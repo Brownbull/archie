@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePanel"
+import { useArchitectureStore } from "@/stores/architectureStore"
 import type { PathwaySuggestionsResult } from "@/hooks/usePathwaySuggestions"
 import type { PathwaySuggestion } from "@/engine/pathwayEngine"
 
@@ -52,6 +53,41 @@ function mockSuggestions(result: Partial<PathwaySuggestionsResult>) {
 describe("PathwayGuidancePanel", () => {
   beforeEach(() => {
     vi.resetAllMocks()
+  })
+
+  describe("actionable suggestions (decision support)", () => {
+    it("Add button places the suggested component on the canvas", () => {
+      mockSuggestions({ suggestions: [makeSuggestion({ componentId: "redis", componentName: "Redis" })], hasGaps: true })
+      const addSpy = vi
+        .spyOn(useArchitectureStore.getState(), "addNodeSmartPosition")
+        .mockImplementation(() => {})
+
+      render(<PathwayGuidancePanel />)
+      fireEvent.click(screen.getByTestId("pathway-add-redis"))
+
+      expect(addSpy).toHaveBeenCalledWith("redis")
+    })
+
+    it("renders nothing when empty and hideWhenEmpty is set", () => {
+      mockSuggestions({ suggestions: [] })
+      const { container } = render(<PathwayGuidancePanel hideWhenEmpty />)
+      expect(container).toBeEmptyDOMElement()
+    })
+
+    it("caps the list to maxItems", () => {
+      mockSuggestions({
+        suggestions: [
+          makeSuggestion({ componentId: "a", componentName: "Alpha" }),
+          makeSuggestion({ componentId: "b", componentName: "Bravo" }),
+          makeSuggestion({ componentId: "c", componentName: "Charlie" }),
+        ],
+        hasGaps: true,
+      })
+      render(<PathwayGuidancePanel maxItems={2} />)
+      expect(screen.getByTestId("pathway-add-a")).toBeInTheDocument()
+      expect(screen.getByTestId("pathway-add-b")).toBeInTheDocument()
+      expect(screen.queryByTestId("pathway-add-c")).toBeNull()
+    })
   })
 
   // AC-4: Suggestion card content
