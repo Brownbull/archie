@@ -10,10 +10,13 @@ interface PreferencesState {
   fontSize: FontSize
   fontFamily: FontFamily
   animationsEnabled: boolean
+  /** First-run guided tour seen? Persisted so the tour auto-shows once; restartable from Settings. */
+  tourSeen: boolean
   setTheme: (theme: Theme) => void
   setFontSize: (fontSize: FontSize) => void
   setFontFamily: (fontFamily: FontFamily) => void
   setAnimationsEnabled: (enabled: boolean) => void
+  setTourSeen: (seen: boolean) => void
 }
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -23,10 +26,12 @@ export const usePreferencesStore = create<PreferencesState>()(
       fontSize: "medium",
       fontFamily: "inter",
       animationsEnabled: true,
+      tourSeen: false,
       setTheme: (theme) => set({ theme }),
       setFontSize: (fontSize) => set({ fontSize }),
       setFontFamily: (fontFamily) => set({ fontFamily }),
       setAnimationsEnabled: (enabled) => set({ animationsEnabled: enabled }),
+      setTourSeen: (seen) => set({ tourSeen: seen }),
     }),
     { name: "archie-preferences" }
   )

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -18,6 +19,7 @@ export function SettingsMenu() {
   const setTheme = usePreferencesStore((s) => s.setTheme)
   const setFontSize = usePreferencesStore((s) => s.setFontSize)
   const setFontFamily = usePreferencesStore((s) => s.setFontFamily)
+  const setTourSeen = usePreferencesStore((s) => s.setTourSeen)
 
   return (
     <DropdownMenu>
@@ -98,6 +100,12 @@ export function SettingsMenu() {
             System
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem data-testid="restart-tour" onSelect={() => setTourSeen(false)}>
+          Restart tour
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -24,6 +24,7 @@ import { type DragEvent, useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { ArchieEdge } from "@/components/canvas/ArchieEdge";
 import { ArchieNode } from "@/components/canvas/ArchieNode";
+import { BuildHealthPanel } from "@/components/canvas/BuildHealthPanel";
 import { CanvasLegend } from "@/components/canvas/CanvasLegend";
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState";
 import { FailureSelector } from "@/components/canvas/FailureSelector";
@@ -369,6 +370,7 @@ function CanvasViewInner() {
 				<Controls />
 			</ReactFlow>
 			<RadialMenu />
+			<BuildHealthPanel />
 			<SwapPopover />
 			<EmptyCanvasState />
 			<OverlaySelector />

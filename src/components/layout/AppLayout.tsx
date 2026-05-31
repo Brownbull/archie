@@ -4,6 +4,7 @@ import { Toolbar } from "@/components/layout/Toolbar"
 import { ToolboxPanel } from "@/components/toolbox/ToolboxPanel"
 import { CommandPalette } from "@/components/toolbox/CommandPalette"
 import { CanvasView } from "@/components/canvas/CanvasView"
+import { GuidedTour } from "@/components/onboarding/GuidedTour"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 import { InspectorResizeHandle } from "@/components/inspector/InspectorResizeHandle"
@@ -102,6 +103,7 @@ export function AppLayout() {
         </footer>
 
         <CommandPalette />
+        <GuidedTour />
 
         {hasSelection && (
           <InspectorOverlay>
