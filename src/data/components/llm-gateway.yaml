@@ -1,6 +1,7 @@
 id: llm-gateway
 name: LLM Gateway
 category: compute
+type_id: llm-gateway
 description: Routing and proxy layer for large language model inference across providers
 is: A unified API gateway that routes inference requests to one or more LLM providers with load balancing, fallback, and cost tracking
 gain:

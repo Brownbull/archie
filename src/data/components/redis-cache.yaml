@@ -1,6 +1,7 @@
 id: redis-cache
 name: Redis Cache
 category: caching
+type_id: cache
 description: Redis configured as a dedicated caching layer with eviction policies
 is: An in-memory cache that sits between your application and database to reduce load and latency
 gain:

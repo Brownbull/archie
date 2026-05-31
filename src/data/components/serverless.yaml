@@ -1,6 +1,7 @@
 id: serverless
 name: Serverless Compute
 category: compute
+type_id: serverless
 description: Ephemeral compute functions that scale to zero and execute on demand
 is: An event-driven compute platform where functions run on managed infrastructure with automatic scaling and pay-per-invocation pricing
 gain:

@@ -1,6 +1,7 @@
 id: node-express
 name: Node.js + Express
 category: compute
+type_id: compute
 description: JavaScript runtime with Express web framework for building APIs and web services
 is: A lightweight, event-driven server runtime ideal for I/O-heavy workloads and real-time applications
 gain:

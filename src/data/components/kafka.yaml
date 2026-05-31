@@ -1,6 +1,7 @@
 id: kafka
 name: Apache Kafka
 category: messaging
+type_id: event-stream
 description: Distributed event streaming platform for high-throughput data pipelines
 is: A distributed commit log designed for high-throughput, fault-tolerant event streaming
 gain:

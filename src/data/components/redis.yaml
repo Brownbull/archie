@@ -1,6 +1,7 @@
 id: redis
 name: Redis
 category: data-storage
+type_id: cache
 description: In-memory data structure store used as database, cache, and message broker
 is: A blazing-fast in-memory key-value store supporting rich data structures
 gain:

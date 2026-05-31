@@ -1,6 +1,7 @@
 id: graph-db
 name: Graph Database
 category: data-storage
+type_id: graph-db
 description: Database optimized for storing and querying highly connected data as nodes and relationships
 is: A native graph storage engine that represents data as nodes, edges, and properties, enabling constant-time relationship traversal regardless of dataset size
 gain:

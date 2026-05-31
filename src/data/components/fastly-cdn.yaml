@@ -1,0 +1,136 @@
+id: fastly-cdn
+name: Fastly CDN
+category: delivery-network
+type_id: cdn
+description: A developer-focused edge cloud platform with instant purge and programmable edge compute
+is: A globally distributed edge network that caches content and runs custom logic close to users with sub-second cache invalidation
+gain:
+  - Instant (<150ms) global cache purge for dynamic content
+  - Programmable edge compute (VCL / Compute@Edge)
+  - High throughput with fine-grained cache control
+cost:
+  - Pricier than commodity CDNs at low volume
+  - VCL configuration has a real learning curve
+  - Smaller PoP footprint than the largest CDNs
+tags:
+  - cdn
+  - edge
+  - compute
+  - global
+base_metrics:
+  - id: edge-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 4
+    category: operational-complexity
+  - id: cdn-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: edge-caching
+    name: Edge Caching
+    monthly_cost: 20
+    max_rps: 150000
+    base_latency_ms: 15
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cdn-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: vcl
+      code: |
+        # Fastly VCL — cache static assets, instant-purgeable
+        sub vcl_recv {
+          if (req.url ~ "\.(js|css|png|woff2)$") {
+            return(lookup);
+          }
+        }
+        sub vcl_fetch {
+          set beresp.ttl = 1y;          # immutable hashed assets
+          set beresp.http.Surrogate-Key = "static";  # purge by key
+        }
+    metric_explanations:
+      edge-latency:
+        reason: Cached objects are served from the Fastly PoP nearest the user, eliminating the long-haul round trip to origin.
+        contributing_factors:
+          - Anycast routes users to the closest edge PoP
+          - Hot objects served from edge RAM, not origin
+      global-availability:
+        reason: Content is replicated across Fastly's global PoPs, so the edge keeps serving even when a region or the origin is degraded.
+        contributing_factors:
+          - Many PoPs provide redundant serving paths
+          - Stale-while-revalidate shields users from origin blips
+  - id: compute-edge
+    name: Compute@Edge
+    monthly_cost: 60
+    max_rps: 400000
+    base_latency_ms: 8
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cdn-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Fastly Compute@Edge — run logic at the edge (JS SDK)
+        addEventListener("fetch", (event) => event.respondWith(handler(event)));
+
+        async function handler(event) {
+          const req = event.request;
+          // A/B split, auth, or rewrite — all at the edge
+          return await fetch(req, { backend: "origin" });
+        }
+    metric_explanations:
+      edge-latency:
+        reason: Running request logic at the edge avoids a round trip to origin for personalization, keeping responses fast even for dynamic content.
+        contributing_factors:
+          - Compute executes in the same PoP serving the user
+          - Cold starts are sub-millisecond (WASM isolates)
+      cdn-cost-efficiency:
+        reason: Edge compute bills for invocations on top of bandwidth, so rich edge logic costs more per request than plain caching.
+        contributing_factors:
+          - Per-invocation compute charges add to egress
+          - Higher tier than static edge caching
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+    - streaming
+  typical_latency: "<10ms (edge)"
+  co_location_potential: false
+ports:
+  - id: cdn-in
+    type: cdn
+    direction: in
+  - id: cdn-out
+    type: cdn
+    direction: out
+  - id: http-in
+    type: http
+    direction: in

@@ -1,6 +1,7 @@
 id: etl-pipeline
 name: ETL Pipeline
 category: compute
+type_id: etl
 description: Data extraction, transformation, and loading pipeline for batch and streaming workloads
 is: An orchestrated data processing system that extracts data from sources, applies transformations, and loads results into target stores on a schedule or in real time
 gain:

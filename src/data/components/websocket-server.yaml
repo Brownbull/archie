@@ -1,6 +1,7 @@
 id: websocket-server
 name: WebSocket Server
 category: real-time
+type_id: realtime
 description: Persistent bidirectional communication channel for real-time features
 is: A full-duplex communication protocol enabling real-time data exchange between client and server
 gain:

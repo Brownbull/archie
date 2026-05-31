@@ -12,6 +12,7 @@ const mockComponents: Component[] = [
     id: "postgresql",
     name: "PostgreSQL",
     category: "data-storage",
+    typeId: "relational-db",
     description: "Relational database",
     is: "An open-source relational database",
     gain: ["ACID compliance"],
@@ -26,6 +27,7 @@ const mockComponents: Component[] = [
     id: "redis",
     name: "Redis",
     category: "caching",
+    typeId: "cache",
     description: "In-memory data store",
     is: "A fast key-value store",
     gain: ["Sub-ms latency"],
@@ -86,36 +88,38 @@ describe("ComponentTab", () => {
     expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
   })
 
-  it("renders category headings", () => {
+  it("renders fundamental-type headings (P5)", () => {
     render(<ComponentTab />)
-    expect(screen.getByTestId("category-data-storage")).toBeInTheDocument()
-    expect(screen.getByTestId("category-caching")).toBeInTheDocument()
+    expect(screen.getByTestId("type-group-relational-db")).toBeInTheDocument()
+    expect(screen.getByTestId("type-group-cache")).toBeInTheDocument()
+    expect(screen.getByText("Relational Database")).toBeInTheDocument()
+    expect(screen.getByText("Cache")).toBeInTheDocument()
   })
 
-  describe("collapsible categories (P3)", () => {
-    it("renders categories expanded by default", () => {
+  describe("collapsible type sections (P3 + P5)", () => {
+    it("renders types expanded by default", () => {
       render(<ComponentTab />)
-      expect(screen.getByTestId("category-toggle-data-storage")).toHaveAttribute("aria-expanded", "true")
+      expect(screen.getByTestId("type-toggle-relational-db")).toHaveAttribute("aria-expanded", "true")
       expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
     })
 
-    it("collapsing a category hides its cards but keeps others", () => {
+    it("collapsing a type hides its providers but keeps others", () => {
       render(<ComponentTab />)
-      fireEvent.click(screen.getByTestId("category-toggle-data-storage"))
-      expect(screen.getByTestId("category-toggle-data-storage")).toHaveAttribute("aria-expanded", "false")
+      fireEvent.click(screen.getByTestId("type-toggle-relational-db"))
+      expect(screen.getByTestId("type-toggle-relational-db")).toHaveAttribute("aria-expanded", "false")
       expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
-      // Other categories remain expanded.
+      // Other types remain expanded.
       expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
     })
 
-    it("an active search force-expands all categories", () => {
+    it("an active search force-expands all types and matches by concept synonym", () => {
       useUiStore.setState({ searchQuery: "" })
       render(<ComponentTab />)
-      fireEvent.click(screen.getByTestId("category-toggle-data-storage"))
+      fireEvent.click(screen.getByTestId("type-toggle-relational-db"))
       expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
-      // Searching overrides the collapse so matches aren't hidden.
+      // "sql" is a synonym of the relational-db type → surfaces Postgres even with no name match.
       act(() => {
-        useUiStore.setState({ searchQuery: "postgre" })
+        useUiStore.setState({ searchQuery: "sql" })
       })
       expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
     })

@@ -4,12 +4,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Component } from "@/types"
 import { useArchitectureStore } from "@/stores/architectureStore"
 
-// Mock useLibrary hook (used by ComponentSwapper internally)
+// Mock useLibrary hook. P5: ComponentDetail derives provider alternatives from `components`
+// (same typeId, fallback same category) via providersForComponent — so the library `components`
+// list, not getComponentsByCategory, drives the swapper. Mutable so tests can vary it.
 const mockGetComponentsByCategory = vi.fn()
+let mockLibraryComponents: import("@/types").Component[] = []
 vi.mock("@/hooks/useLibrary", () => ({
   useLibrary: () => ({
     isReady: true,
-    components: [],
+    components: mockLibraryComponents,
     getComponentById: vi.fn(),
     getComponentsByCategory: mockGetComponentsByCategory,
     searchComponents: vi.fn(),
@@ -94,8 +97,9 @@ const multipleComponentsInCategory = [
 describe("ComponentDetail", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    // Default: single component in category (swapper hidden)
+    // Default: the only provider of its type is the component itself → swapper hidden.
     mockGetComponentsByCategory.mockReturnValue([mockComponent])
+    mockLibraryComponents = [mockComponent]
   })
 
   /** Render with default props (mockComponent, standard variant). Override via partial. */
@@ -231,6 +235,7 @@ describe("ComponentDetail", () => {
 
   // ComponentSwapper integration tests
   it("renders ComponentSwapper when multiple components in category", () => {
+    mockLibraryComponents = multipleComponentsInCategory
     mockGetComponentsByCategory.mockReturnValue(multipleComponentsInCategory)
     renderDefault()
     expect(screen.getByTestId("component-swapper")).toBeInTheDocument()

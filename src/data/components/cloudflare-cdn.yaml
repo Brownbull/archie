@@ -1,6 +1,7 @@
 id: cloudflare-cdn
 name: Cloudflare CDN
 category: delivery-network
+type_id: cdn
 description: Global content delivery network with edge caching and DDoS protection
 is: A globally distributed network that caches and serves content from edge locations closest to users
 gain:

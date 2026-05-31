@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
+import { providersForComponent } from "@/lib/componentTypes"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeRecommendations } from "@/engine/recommendationEngine"
@@ -33,12 +34,13 @@ export function ComponentDetail({
   component,
   activeVariantId,
   onVariantChange,
-  currentCategory,
   onSwapComponent,
   nodeId,
 }: ComponentDetailProps) {
-  const { getComponentsByCategory } = useLibrary()
-  const alternatives = getComponentsByCategory(currentCategory)
+  // P5: alternatives are same-TYPE providers (e.g. Redis ↔ Memcached), not just same category.
+  // providersForComponent falls back to same-category when the component has no typeId (pre-seed).
+  const { components } = useLibrary()
+  const alternatives = providersForComponent(component, components)
 
   // Use computed metrics from recalculation engine when available (AC-7),
   // fall back to library variant metrics for nodes not yet recalculated.
@@ -205,6 +207,7 @@ export function ComponentDetail({
           currentComponentId={component.id}
           alternatives={alternatives}
           onSwapComponent={onSwapComponent}
+          label="Provider"
         />
 
         <Separator />

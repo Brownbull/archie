@@ -1,0 +1,142 @@
+id: mysql
+name: MySQL
+category: data-storage
+type_id: relational-db
+description: A widely deployed open-source relational database known for fast reads and operational simplicity
+is: A mature relational database that stores structured data in tables with ACID transactions and SQL queries
+gain:
+  - Fast, predictable read performance for OLTP workloads
+  - Huge ecosystem, tooling, and managed offerings everywhere
+  - Simple replication setup for read scaling
+cost:
+  - Weaker support for complex queries and rich types vs Postgres
+  - Horizontal write scaling needs external sharding
+  - Some storage engines trade durability for speed
+tags:
+  - sql
+  - relational
+  - database
+  - oltp
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: write-throughput
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: horizontal-scalability
+    value: low
+    numeric_value: 3
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 4
+    category: operational-complexity
+  - id: mysql-cost-efficiency
+    value: high
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: single-node
+    name: Single Node
+    monthly_cost: 40
+    max_rps: 600
+    base_latency_ms: 4
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: data-durability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: mysql-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- MySQL single node (InnoDB, durable defaults)
+        CREATE TABLE users (
+          id BIGINT PRIMARY KEY AUTO_INCREMENT,
+          email VARCHAR(255) NOT NULL UNIQUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB;
+
+        -- innodb_flush_log_at_trx_commit=1 → ACID-durable on commit
+    metric_explanations:
+      read-latency:
+        reason: Primary-key and indexed lookups against the InnoDB buffer pool return in a few milliseconds for typical OLTP rows.
+        contributing_factors:
+          - Hot pages stay cached in the InnoDB buffer pool
+          - B-tree primary-key lookups are O(log n) on disk
+      mysql-cost-efficiency:
+        reason: A single node covers most small-to-mid OLTP workloads, so a modest instance delivers strong value before any scaling cost.
+        contributing_factors:
+          - One instance, no replica or proxy to pay for
+          - Free engine; cost is just the compute/storage
+  - id: primary-replica
+    name: Primary + Replica
+    monthly_cost: 120
+    max_rps: 2000
+    base_latency_ms: 5
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: mysql-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- MySQL primary + read replica (asynchronous replication)
+        -- On primary:
+        CREATE USER 'repl'@'%' IDENTIFIED BY '***';
+        GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+
+        -- On replica:
+        CHANGE REPLICATION SOURCE TO SOURCE_HOST='primary', SOURCE_USER='repl';
+        START REPLICA;   -- route SELECTs here to scale reads
+    metric_explanations:
+      horizontal-scalability:
+        reason: Read replicas absorb SELECT traffic so read throughput scales out, though all writes still funnel through the single primary.
+        contributing_factors:
+          - SELECTs route to one or more async replicas
+          - Writes remain single-primary (no write scale-out)
+      data-durability:
+        reason: A replica provides a warm standby and a second physical copy, improving durability and recovery over a lone node.
+        contributing_factors:
+          - Replica is a continuously-updated second copy
+          - Enables fast failover if the primary is lost
+connection_properties:
+  protocol: MySQL
+  communication_patterns:
+    - request-response
+  typical_latency: "1-5ms"
+  co_location_potential: false
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

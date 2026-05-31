@@ -1,6 +1,7 @@
 id: siem
 name: SIEM
 category: monitoring
+type_id: security
 description: Security information and event management platform for threat detection, investigation, and compliance
 is: A centralized security platform that ingests logs from infrastructure and applications, correlates events using detection rules, and generates alerts for security analysts to investigate and respond
 gain:

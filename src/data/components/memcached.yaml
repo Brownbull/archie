@@ -1,0 +1,133 @@
+id: memcached
+name: Memcached
+category: caching
+type_id: cache
+description: A high-performance, multi-threaded in-memory key-value cache for simple, ephemeral data
+is: A lightweight distributed memory cache that stores simple key-value pairs entirely in RAM with no persistence
+gain:
+  - Extremely low latency for simple GET/SET workloads
+  - Multi-threaded design saturates multi-core nodes
+  - Minimal operational surface — nothing to persist or tune
+cost:
+  - No persistence — a restart drops the entire cache
+  - No rich data structures (lists, sorted sets, pub/sub)
+  - Eviction is LRU-only with less control than Redis
+tags:
+  - cache
+  - in-memory
+  - key-value
+  - ephemeral
+base_metrics:
+  - id: cache-hit-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: cache-efficiency
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: cache-scalability
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: cache-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: simple-cache
+    name: Single Node
+    monthly_cost: 10
+    max_rps: 60000
+    base_latency_ms: 0.3
+    metrics:
+      - id: cache-hit-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: cache-efficiency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: cache-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Memcached single node — pymemcache client
+        from pymemcache.client.base import Client
+
+        cache = Client(("127.0.0.1", 11211))
+        cache.set("user:42", "alice", expire=3600)   # 1h TTL
+        value = cache.get("user:42")                  # b"alice" or None on miss
+    metric_explanations:
+      cache-hit-latency:
+        reason: A single in-RAM node answers GET/SET in well under a millisecond with no disk or network hop beyond the LAN.
+        contributing_factors:
+          - All data lives in RAM with O(1) hash lookups
+          - Multi-threaded event loop avoids per-core contention
+      cache-cost-efficiency:
+        reason: One small node serves tens of thousands of ops/sec, so cost-per-op is extremely low for simple key-value caching.
+        contributing_factors:
+          - No replication or persistence overhead to pay for
+          - Commodity RAM is the only meaningful resource
+  - id: multi-node
+    name: Multi-Node Pool
+    monthly_cost: 50
+    max_rps: 250000
+    base_latency_ms: 0.4
+    metrics:
+      - id: cache-hit-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: cache-scalability
+        value: high
+        numeric_value: 7
+        category: scalability
+      - id: cache-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Memcached pool — client-side consistent hashing across nodes
+        from pymemcache.client.hash import HashClient
+
+        cache = HashClient([
+            ("cache-1", 11211),
+            ("cache-2", 11211),
+            ("cache-3", 11211),
+        ])
+        cache.set("session:abc", "...", expire=1800)
+    metric_explanations:
+      cache-scalability:
+        reason: Client-side consistent hashing spreads keys across nodes, scaling total throughput and memory roughly linearly with the pool size.
+        contributing_factors:
+          - Each node owns a key range, so reads/writes fan out
+          - Adding a node reshards only a fraction of keys
+      cache-cost-efficiency:
+        reason: Throughput scales with node count, but the fixed per-node cost makes a multi-node pool pricier per op than a single node.
+        contributing_factors:
+          - More nodes mean more idle headroom to pay for
+          - Cross-node client routing adds minor overhead
+connection_properties:
+  protocol: Memcached
+  communication_patterns:
+    - request-response
+  typical_latency: "<1ms"
+  co_location_potential: true
+ports:
+  - id: cache-in
+    type: cache
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,6 +1,7 @@
 id: data-lake
 name: Data Lake
 category: data-storage
+type_id: object-storage
 description: Scalable storage layer for raw and processed data at any scale with schema-on-read semantics
 is: A centralized repository that stores structured, semi-structured, and unstructured data in its native format, enabling schema-on-read analytics and batch processing
 gain:

@@ -1,6 +1,7 @@
 id: payment-gateway
 name: Payment Gateway
 category: compute
+type_id: payments
 description: Transaction processing layer that routes payments through one or more payment service providers
 is: A middleware service that accepts payment requests, applies fraud checks, routes to the appropriate PSP (Stripe, Adyen, PayPal), and handles settlement reconciliation
 gain:

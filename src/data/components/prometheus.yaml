@@ -1,6 +1,7 @@
 id: prometheus
 name: Prometheus
 category: monitoring
+type_id: observability
 description: Open-source monitoring and alerting toolkit with time-series database
 is: A pull-based monitoring system that collects metrics, stores them in a time-series database, and triggers alerts
 gain:

@@ -5,9 +5,9 @@ import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { ComponentCard } from "@/components/toolbox/ComponentCard"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
+import { COMPONENT_CATEGORIES } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
-import { groupByCategory } from "@/lib/componentUtils"
+import { groupComponentsByType, typeMatchesQuery } from "@/lib/componentTypes"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 
@@ -43,20 +43,30 @@ export function ComponentTab() {
     return ids
   }, [selectedComponent, components])
 
-  // Collapsible categories (P3 density). Default expanded; an active search force-expands all
-  // so matches are never hidden behind a collapsed header.
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
-  const toggleCategory = useCallback((categoryId: string) => {
-    setCollapsedCategories((prev) => {
+  // Collapsible TYPE sections (P3 density + P5 type grouping). Default expanded; an active search
+  // force-expands all so matches are never hidden behind a collapsed header.
+  const [collapsedTypes, setCollapsedTypes] = useState<Set<string>>(new Set())
+  const toggleType = useCallback((key: string) => {
+    setCollapsedTypes((prev) => {
       const next = new Set(prev)
-      if (next.has(categoryId)) next.delete(categoryId)
-      else next.add(categoryId)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
       return next
     })
   }, [])
 
-  const filtered = searchQuery ? searchComponents(searchQuery) : components
-  const grouped = groupByCategory(filtered)
+  // P5: search matches provider name/tags (existing) OR the fundamental type's label/synonyms,
+  // so concept queries ("cache", "lb") surface the right type even if no provider name matches.
+  const filtered = useMemo(() => {
+    if (!searchQuery) return components
+    const q = searchQuery.toLowerCase()
+    const nameMatches = new Set(searchComponents(searchQuery).map((c) => c.id))
+    return components.filter((c) => nameMatches.has(c.id) || typeMatchesQuery(c, q))
+  }, [searchQuery, components, searchComponents])
+
+  // P5: organize the palette by fundamental TYPE (Cache, Relational DB, …); each type lists its
+  // provider components. Pre-P5 components without a typeId fall back to a per-category group.
+  const groups = useMemo(() => groupComponentsByType(filtered), [filtered])
 
   if (filtered.length === 0) {
     return (
@@ -69,19 +79,18 @@ export function ComponentTab() {
   return (
     <ScrollArea data-testid="component-tab" className="h-full">
       <div className="space-y-3 p-3">
-        {Object.entries(grouped).map(([categoryId, comps]) => {
-          const category = COMPONENT_CATEGORIES[categoryId as ComponentCategoryId]
+        {groups.map((group) => {
+          const category = COMPONENT_CATEGORIES[group.categoryId]
           const IconComponent = category ? CATEGORY_ICONS[category.iconName] : undefined
-
-          const isCollapsed = !searchQuery && collapsedCategories.has(categoryId)
+          const isCollapsed = !searchQuery && collapsedTypes.has(group.key)
 
           return (
-            <div key={categoryId} data-testid={`category-${categoryId}`}>
+            <div key={group.key} data-testid={`type-group-${group.key}`}>
               <button
                 type="button"
-                data-testid={`category-toggle-${categoryId}`}
+                data-testid={`type-toggle-${group.key}`}
                 aria-expanded={!isCollapsed}
-                onClick={() => toggleCategory(categoryId)}
+                onClick={() => toggleType(group.key)}
                 className="mb-2 flex w-full items-center gap-1.5 rounded px-0.5 py-0.5 hover:bg-surface"
               >
                 {isCollapsed
@@ -97,13 +106,13 @@ export function ComponentTab() {
                   className="text-[0.6875rem] font-semibold uppercase tracking-wider"
                   style={{ color: category?.color }}
                 >
-                  {category?.label ?? categoryId}
+                  {group.label}
                 </h3>
-                <span className="text-[0.625rem] text-text-secondary">({comps.length})</span>
+                <span className="text-[0.625rem] text-text-secondary">({group.providers.length})</span>
               </button>
               {!isCollapsed && (
                 <div className="space-y-2">
-                  {comps.map((comp) => (
+                  {group.providers.map((comp) => (
                     <ComponentCard
                       key={comp.id}
                       component={comp}

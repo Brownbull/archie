@@ -1,6 +1,7 @@
 id: vector-db
 name: Vector Database
 category: data-storage
+type_id: vector-store
 description: Stores and retrieves vector embeddings for similarity search and semantic queries
 is: A specialized database optimized for storing high-dimensional vectors and performing approximate nearest neighbor search at scale
 gain:
