@@ -117,14 +117,17 @@ const StackDefinitionYamlBaseSchema = z.object({
   description: z.string().min(1).max(STACK_DESC_MAX_LENGTH),
   components: z.array(StackComponentYamlSchema).min(1).max(MAX_STACK_COMPONENTS),
   connections: z.array(StackConnectionYamlSchema).max(MAX_STACK_CONNECTIONS),
-  trade_off_profile: z.array(StackCategoryScoreYamlSchema),
+  // Optional in authored YAML: the seed script derives the trade-off profile from the
+  // referenced components' metrics (see computeStackTradeOffProfile) so the card preview
+  // stays consistent with what the canvas computes. Authors may still override it explicitly.
+  trade_off_profile: z.array(StackCategoryScoreYamlSchema).optional(),
 }).strict().transform((d) => ({
   id: d.id,
   name: d.name,
   description: d.description,
   components: d.components,
   connections: d.connections,
-  tradeOffProfile: d.trade_off_profile,
+  tradeOffProfile: d.trade_off_profile ?? [],
 }))
 
 // Pipe through StackDefinitionSchema to run superRefine cross-validation (connection index

@@ -1,0 +1,26 @@
+id: serverless-rest-api
+name: Serverless REST API
+description: A pay-per-use API with no servers to run — a CDN edge in front of serverless functions that read a managed database and serve assets from object storage.
+components:
+  - component_id: cloudflare-cdn
+    variant_id: full-site
+    relative_position: { x: 0, y: 0 }
+  - component_id: aws-lambda
+    variant_id: on-demand
+    relative_position: { x: 240, y: 0 }
+  - component_id: postgresql
+    variant_id: single-node
+    relative_position: { x: 480, y: -90 }
+  - component_id: aws-s3
+    variant_id: standard
+    relative_position: { x: 480, y: 90 }
+connections:
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: http
+  - source_component_index: 1
+    target_component_index: 2
+    connection_type: database
+  - source_component_index: 1
+    target_component_index: 3
+    connection_type: storage

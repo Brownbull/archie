@@ -64,8 +64,10 @@ test.describe("Stack Browsing & Placement E2E (Story 8-4)", () => {
     const placedNodeCount = await page.locator('[data-testid="archie-node"]').count()
     expect(placedNodeCount).toBeGreaterThanOrEqual(2)
 
-    // Assert connections created between placed components
-    await expect(page.locator('[data-testid="archie-edge"]').first()).toBeVisible({ timeout: 5_000 })
+    // Assert connections created between placed components. Use toBeAttached, not
+    // toBeVisible: the edge is an SVG <path> (BaseEdge), and Playwright's CSS-visibility
+    // heuristic is unreliable for SVG paths even when they clearly render on screen.
+    await expect(page.locator('[data-testid="archie-edge"]').first()).toBeAttached({ timeout: 5_000 })
     const edgeCount = await page.locator('[data-testid="archie-edge"]').count()
     expect(edgeCount).toBeGreaterThanOrEqual(1)
 

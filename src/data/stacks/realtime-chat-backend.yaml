@@ -1,0 +1,26 @@
+id: realtime-chat-backend
+name: Real-Time Chat Backend
+description: Push live messages without running socket servers — an app tier fans out through a managed realtime service, keeps presence/session state in a cache, and persists history to a database.
+components:
+  - component_id: node-express
+    variant_id: cluster-mode
+    relative_position: { x: 0, y: 0 }
+  - component_id: pusher
+    variant_id: presence-channels
+    relative_position: { x: 240, y: -90 }
+  - component_id: redis
+    variant_id: cluster
+    relative_position: { x: 240, y: 90 }
+  - component_id: postgresql
+    variant_id: single-node
+    relative_position: { x: 480, y: 0 }
+connections:
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: http
+  - source_component_index: 0
+    target_component_index: 2
+    connection_type: cache
+  - source_component_index: 0
+    target_component_index: 3
+    connection_type: database

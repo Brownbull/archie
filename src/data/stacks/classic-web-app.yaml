@@ -1,0 +1,26 @@
+id: classic-web-app
+name: Classic 3-Tier Web App
+description: The bread-and-butter web architecture — a load balancer in front of stateless app servers, backed by a relational database with a cache for hot reads.
+components:
+  - component_id: nginx
+    variant_id: load-balancer
+    relative_position: { x: 0, y: 0 }
+  - component_id: node-express
+    variant_id: cluster-mode
+    relative_position: { x: 240, y: 0 }
+  - component_id: postgresql
+    variant_id: primary-replica
+    relative_position: { x: 480, y: -90 }
+  - component_id: redis
+    variant_id: standalone
+    relative_position: { x: 480, y: 90 }
+connections:
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: http
+  - source_component_index: 1
+    target_component_index: 2
+    connection_type: database
+  - source_component_index: 1
+    target_component_index: 3
+    connection_type: cache

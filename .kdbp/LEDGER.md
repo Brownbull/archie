@@ -1627,3 +1627,29 @@ Final two single-provider types now offer comparison — ALL 17 fundamental type
 - pusher (realtime, alongside websocket-server) — managed hosted realtime; Public Channels vs Presence+Private
 - splunk (security, alongside the generic SIEM) — market-leading SIEM, best detection but pricey ingestion; Enterprise self-hosted vs Splunk Cloud
 Each mirrors its sibling's metric ids. Note on security: kept it a real SIEM (not Vault/WAF) so the swap comparison measures the same things. +2 PixelLab icons (35 total). Firestore re-seeded → 35 components. CONTENT MILESTONE: 17/17 types, 35 providers.
+- 2026-05-31 17:23 | Edit | /home/khujta/projects/bmad/archie/src/schemas/stackSchema.ts
+- 2026-05-31 17:23 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-05-31 17:23 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-05-31 17:24 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-05-31 17:24 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-05-31 17:24 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-05-31 17:25 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/classic-web-app.yaml
+- 2026-05-31 17:25 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/serverless-rest-api.yaml
+- 2026-05-31 17:25 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/event-stream-workers.yaml
+- 2026-05-31 17:25 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/realtime-chat-backend.yaml
+- 2026-05-31 17:26 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/cache-aside-read-heavy.yaml
+- 2026-05-31 17:26 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/rag-ai-service.yaml
+- 2026-05-31 17:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/scripts/seed-helpers.ts
+- 2026-05-31 17:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/scripts/seed-helpers.ts
+- 2026-05-31 17:28 | Write | /home/khujta/projects/bmad/archie/tests/unit/scripts/seed-stacks.test.ts
+- 2026-05-31 17:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/stack-browsing.spec.ts
+
+## 2026-05-31 17:35 — commit: Stacks tab populated (6 starter stacks + seed pipeline)
+FINDINGS: 0 (full suite 3460 ✅ seed-stacks 15 new ✅ tsc -b ✅ lint 0-err ✅ stack-browsing E2E 4/4 ✅)
+The Stacks tab was wired-but-empty (StacksTab/StackCard/stackRepository/stackPlacement existed; no data, no seed path). Closed the gap:
+- seed-firestore.ts: +loadAndValidateStacks, +validateStackReferences, +computeStackTradeOffProfile, +seedStacksToFirestore; wired into main() → seeds the `stacks` collection.
+- stackSchema.ts: trade_off_profile now OPTIONAL in YAML — the seed DERIVES it from the referenced components' metrics (matches dashboardCalculator's plain per-category average, so the card preview = the canvas).
+- src/data/stacks/*.yaml: 6 starter stacks (classic-web-app, serverless-rest-api, event-stream-workers, realtime-chat-backend, cache-aside-read-heavy, rag-ai-service) — each references real component+variant ids, 0 ref warnings.
+- tests: +seed-stacks.test.ts (15 tests) + makeStack/makeStackYaml helpers.
+- stack-browsing.spec.ts: edge assertion toBeVisible→toBeAttached (SVG <path> visibility heuristic is unreliable; feature renders edges fine — screenshot-confirmed).
+Firestore seeded: 35 components + 15 blueprints + 6 stacks. Story-8-4 E2E (was skipping on empty data) now activates & passes 4/4.

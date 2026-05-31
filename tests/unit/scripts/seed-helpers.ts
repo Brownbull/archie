@@ -13,6 +13,7 @@ import { dump } from "js-yaml"
 import { readdirSync, readFileSync, statSync } from "node:fs"
 import type { Component } from "@/schemas/componentSchema"
 import type { BlueprintFull } from "@/schemas/blueprintSchema"
+import type { Stack } from "@/schemas/stackSchema"
 import type { seedToFirestore, SeedLogger } from "../../../scripts/seed-firestore"
 
 /** No-op logger that suppresses all output. Use in tests that don't check log messages. */
@@ -234,4 +235,45 @@ export function makeComponent(id: string): Component {
       },
     ],
   }
+}
+
+/**
+ * Creates a camelCase Stack object for seedStacksToFirestore / computeStackTradeOffProfile tests.
+ * tradeOffProfile defaults to [] so the seed computes it from components.
+ */
+export function makeStack(id: string, overrides: Partial<Stack> = {}): Stack {
+  return {
+    id,
+    name: `Stack ${id}`,
+    description: `Description for stack ${id}`,
+    components: [
+      { componentId: "comp-a", variantId: "default", relativePosition: { x: 0, y: 0 } },
+      { componentId: "comp-b", variantId: "default", relativePosition: { x: 240, y: 0 } },
+    ],
+    connections: [
+      { sourceComponentIndex: 0, targetComponentIndex: 1, connectionType: "http" },
+    ],
+    tradeOffProfile: [],
+    ...overrides,
+  }
+}
+
+/**
+ * Creates a valid snake_case stack YAML string that passes StackDefinitionYamlSchema.
+ * References real component/variant ids so reference validation passes; omits
+ * trade_off_profile (the seed derives it).
+ */
+export function makeStackYaml(id: string): string {
+  return dump({
+    id,
+    name: `Stack ${id}`,
+    description: `Description for stack ${id}`,
+    components: [
+      { component_id: "nginx", variant_id: "load-balancer", relative_position: { x: 0, y: 0 } },
+      { component_id: "postgresql", variant_id: "single-node", relative_position: { x: 240, y: 0 } },
+    ],
+    connections: [
+      { source_component_index: 0, target_component_index: 1, connection_type: "database" },
+    ],
+  })
 }
