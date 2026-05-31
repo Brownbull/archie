@@ -1408,3 +1408,33 @@ TIER: ent | DRIFT: none
 TICK: ✅ (Commit + Review)
 
 PUSH: P3 → main @ cffad5e — Deploy Production success (run 26701637973). PHASE 3 COMPLETE. Next: Phase 4 solo progress loop.
+- 2026-05-30 23:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/attemptsStore.ts
+- 2026-05-30 23:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/attemptsStore.ts
+- 2026-05-30 23:03 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/attemptsStore.test.ts
+- 2026-05-30 23:07 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/DeltaChip.tsx
+- 2026-05-30 23:07 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/SuggestionCard.tsx
+- 2026-05-30 23:07 | Write | /home/khujta/projects/bmad/archie/src/hooks/useAttemptComparison.ts
+- 2026-05-30 23:08 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAttemptComparison.ts
+- 2026-05-30 23:08 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-30 23:08 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-30 23:08 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-30 23:09 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-30 23:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-30 23:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-05-30 23:11 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useAttemptComparison.test.tsx
+- 2026-05-30 23:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/history-tab.spec.ts
+
+## 2026-05-30 23:20 — [90ee192] fix(challenges): repair History load + "vs your past attempts" deltas
+FINDINGS: 0 critical/high (commit gate clean)
+CHECKS: lint 0 err | tsc -b ok | tests 3250 pass | e2e history-tab loads clean (no-error + empty)
+
+## 2026-05-30 23:20 — PHASE 4 REVIEW: Solo progress loop reliability
+VERDICT: APPROVE
+FINDINGS: 1 medium DEFERRED (D12: unbounded attempts fetch — pre-existing, fixing reintroduces index deploy dependency; fine at scale)
+ROOT CAUSE: History "Could not load" = missing composite index for where(userId)+orderBy(createdAt); fixed by dropping orderBy (auto single-field index) + client-side sort. E2E confirms clean load.
+COVERAGE: HIGH — 12 unit tests + hardened history E2E; vs-past deltas unit-covered (hook + modal)
+CONFIDENCE: 93/100
+DEFERRED: +D12 (unbounded fetch, low)
+ALIGNMENT: ALIGNED (P4 history fix + vs-past deltas; empty-state + round-trip already covered)
+TIER: ent | DRIFT: none
+TICK: ✅ (Commit + Review)
