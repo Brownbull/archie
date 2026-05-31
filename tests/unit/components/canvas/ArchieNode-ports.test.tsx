@@ -11,7 +11,10 @@ vi.mock("@xyflow/react", () => ({
   Handle: ({ type, position, ...props }: Record<string, unknown>) => (
     <div data-testid={`handle-${type}`} data-position={position} {...props} />
   ),
-  Position: { Left: "left", Right: "right" },
+  Position: { Left: "left", Right: "right", Top: "top" },
+  // ArchieNode mounts NodeActionToolbar (via NodeToolbar); stub it to mirror `isVisible`.
+  NodeToolbar: ({ children, isVisible }: { children: React.ReactNode; isVisible?: boolean }) =>
+    isVisible ? <div data-testid="node-toolbar-portal">{children}</div> : null,
 }))
 
 vi.mock("@/lib/firebase", () => ({

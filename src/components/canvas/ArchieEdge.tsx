@@ -10,7 +10,9 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { HEATMAP_COLORS, LABEL_INCOMPATIBILITY_OFFSET, MAX_LABEL_OFFSET, PORT_TYPES, type PortType } from "@/lib/constants"
+import { Trash2 } from "lucide-react"
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
+import { ObjectActionToolbar } from "@/components/canvas/ObjectActionToolbar"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useConnectionHealth } from "@/hooks/useConnectionHealth"
 import { useEdgeOverlay } from "@/hooks/useEdgeOverlay"
@@ -56,7 +58,11 @@ export function ArchieEdge({
   // Heatmap state
   const edgeHeatmapStatus = useArchitectureStore((s) => s.edgeHeatmapColors.get(id))
   const updateEdgeLabelOffset = useArchitectureStore((s) => s.updateEdgeLabelOffset)
+  const removeEdges = useArchitectureStore((s) => s.removeEdges)
   const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
+  // On-object toolbar shows when this edge is the app-selected edge (drives Remove —
+  // connectors had no UI delete path before; only the Delete-key accelerator).
+  const isSelected = useUiStore((s) => s.selectedEdgeId === id)
   const animationsEnabled = usePreferencesStore((s) => s.animationsEnabled)
 
   // Connection health for particle animation (Story 9-6)
@@ -207,6 +213,30 @@ export function ArchieEdge({
             onPointerCancel={endDrag}
           >
             {connectionProps.protocol}
+          </div>
+        </EdgeLabelRenderer>
+      )}
+      {isSelected && (
+        <EdgeLabelRenderer>
+          <div
+            className="pointer-events-auto absolute"
+            style={{
+              // Float above the midpoint so it clears the protocol / incompatibility labels at (labelX, labelY).
+              transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY - 28}px)`,
+            }}
+          >
+            <ObjectActionToolbar
+              testId="edge-action-toolbar"
+              actions={[
+                {
+                  id: "remove",
+                  label: "Remove connection",
+                  icon: <Trash2 size={15} />,
+                  variant: "danger",
+                  onClick: () => removeEdges([id]),
+                },
+              ]}
+            />
           </div>
         </EdgeLabelRenderer>
       )}

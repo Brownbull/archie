@@ -6,6 +6,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, MIN_REPLICAS, MAX_REPLICAS, getScalingRule, type ComponentCategoryId } from "@/lib/constants"
 import { ComponentIcon } from "@/components/common/ComponentIcon"
+import { NodeActionToolbar } from "@/components/canvas/NodeActionToolbar"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
 import { StatusDot } from "@/components/canvas/StatusDot"
@@ -166,6 +167,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       aria-label={ariaLabel}
       title={isDimmed && compatStatus?.reason ? `⚠ ${compatStatus.reason}` : undefined}
     >
+      <NodeActionToolbar nodeId={id} />
+
       <ConstraintViolationBadge violationCount={violationCount} tooltipText={tooltipText} />
 
       {/* Category stripe — identity, never heatmap (UX18, AC-ARCH-NO-9) */}
