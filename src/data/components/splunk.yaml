@@ -1,0 +1,185 @@
+id: splunk
+name: Splunk
+category: monitoring
+type_id: security
+description: Market-leading security analytics and SIEM platform with the SPL search language
+is: A powerful log analytics and SIEM platform that indexes machine data at scale and runs SPL searches and correlation rules for threat detection, with the trade-off of ingestion-based pricing
+gain:
+  - Best-in-class detection — SPL, Enterprise Security, and ML Toolkit
+  - Huge app/integration ecosystem (Splunkbase) and mature tooling
+  - Scales to very high ingestion with fast indexed search
+cost:
+  - Ingestion-volume pricing is notoriously expensive at scale
+  - Self-managed indexer/search-head clusters are complex to operate
+  - Vendor lock-in around SPL, apps, and data models
+tags:
+  - security
+  - siem
+  - splunk
+  - threat-detection
+  - analytics
+base_metrics:
+  - id: alert-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: threat-detection
+    value: high
+    numeric_value: 9
+    category: security
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: cost-per-gb-ingested
+    value: low
+    numeric_value: 3
+    category: cost-efficiency
+config_variants:
+  - id: enterprise-self-hosted
+    name: Splunk Enterprise (Self-Hosted)
+    monthly_cost: 400
+    max_rps: 50000
+    base_latency_ms: 5
+    metrics:
+      - id: threat-detection
+        value: high
+        numeric_value: 9
+        category: security
+      - id: operational-complexity
+        value: high
+        numeric_value: 8
+        category: operational-complexity
+      - id: cost-per-gb-ingested
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Splunk Enterprise - run an SPL search via the Python SDK
+        import splunklib.client as client
+        import splunklib.results as results
+
+        service = client.connect(
+            host="splunk.internal", port=8089,
+            username="admin", password="<token>",
+        )
+
+        job = service.jobs.create(
+            'search index=security sourcetype=auth action=failure '
+            '| stats count by src_ip | where count > 20',
+            exec_mode="blocking",
+        )
+        for row in results.JSONResultsReader(job.results(output_mode="json")):
+            alert_on_bruteforce(row)
+    metric_explanations:
+      threat-detection:
+        reason: SPL plus Enterprise Security correlation searches and the ML Toolkit give deep, fully customizable detection across any indexed data source.
+        contributing_factors:
+          - SPL expresses complex multi-stage correlation succinctly
+          - Enterprise Security ships curated correlation searches and risk scoring
+          - ML Toolkit adds anomaly detection on top of rule-based alerts
+      cost-per-gb-ingested:
+        reason: Splunk's classic licensing is priced on daily indexed volume, so heavy log sources make ingestion the dominant — and expensive — line item.
+        contributing_factors:
+          - License tiers are tied to GB/day indexed
+          - High-volume sources (DNS, proxy, flow) inflate ingest fast
+          - Cost control requires filtering and routing data before indexing
+  - id: splunk-cloud
+    name: Splunk Cloud (Managed)
+    monthly_cost: 700
+    max_rps: 150000
+    base_latency_ms: 3
+    metrics:
+      - id: operational-complexity
+        value: medium
+        numeric_value: 4
+        category: operational-complexity
+      - id: alert-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: cost-per-gb-ingested
+        value: low
+        numeric_value: 2
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Splunk Cloud - submit events via the managed HTTP Event Collector (HEC)
+        curl -sS "https://http-inputs.example.splunkcloud.com/services/collector/event" \
+          -H "Authorization: Splunk ${SPLUNK_HEC_TOKEN}" \
+          -d '{
+            "sourcetype": "auth:failure",
+            "event": { "src_ip": "203.0.113.10", "user": "root", "action": "failure" }
+          }'
+    metric_explanations:
+      operational-complexity:
+        reason: Splunk Cloud removes indexer and search-head cluster operations — Splunk runs and scales the back end while you manage searches and data onboarding.
+        contributing_factors:
+          - No indexer/search-head clusters to size or patch
+          - Ingestion via managed HEC endpoints rather than self-run forwarders
+          - Provider handles availability, upgrades, and scaling
+      cost-per-gb-ingested:
+        reason: Managed convenience adds a premium on top of already ingestion-based pricing, so high-volume security logging remains the budget driver.
+        contributing_factors:
+          - Cloud tier carries a managed-service markup
+          - Pricing still scales with ingested/workload volume
+          - Cost governance needs ingest filtering and index routing
+connection_properties:
+  protocol: TCP/HTTPS
+  communication_patterns:
+    - push-based
+    - streaming
+  typical_latency: 1-10s
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      alert-latency: 0.7
+      cost-per-gb-ingested: 0.6
+    extreme:
+      alert-latency: 0.5
+      cost-per-gb-ingested: 0.3
+      operational-complexity: 0.8
+  traffic-volume:
+    high:
+      alert-latency: 0.7
+    extreme:
+      alert-latency: 0.5
+      threat-detection: 0.8
+  burst-pattern:
+    periodic-spikes:
+      alert-latency: 0.6
+      cost-per-gb-ingested: 0.6
+    unpredictable:
+      alert-latency: 0.4
+      cost-per-gb-ingested: 0.5
+failure_responses:
+  failure-traffic-spike:
+    alert-latency: 0.4
+    threat-detection: 0.6
+  failure-network-partition:
+    alert-latency: 0.4
+    threat-detection: 0.5
+  failure-single-node:
+    data-durability: 0.5
+    operational-complexity: 0.7
+  failure-data-corruption:
+    data-durability: 0.3
+    threat-detection: 0.5
+ports:
+  - id: monitor-in
+    type: monitor
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: auth-out
+    type: auth
+    direction: out

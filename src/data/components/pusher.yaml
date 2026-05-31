@@ -1,0 +1,182 @@
+id: pusher
+name: Pusher
+category: real-time
+type_id: realtime
+description: Managed hosted realtime messaging with channels, presence, and global edge
+is: A fully managed pub-sub realtime service that delivers messages over WebSockets through hosted Channels, handling connection state, presence, and fan-out so you run no socket servers
+gain:
+  - Zero servers to run — no sticky sessions or Redis fan-out to operate
+  - Built-in presence, private, and encrypted channels with client SDKs
+  - Global edge keeps message latency low for distributed users
+cost:
+  - Per-message and per-connection pricing climbs with scale
+  - Vendor lock-in to Pusher's channel and auth model
+  - Less control over transport tuning than a self-hosted server
+tags:
+  - realtime
+  - websocket
+  - pub-sub
+  - managed
+  - pusher
+base_metrics:
+  - id: message-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: pusher-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: public-channels
+    name: Public Channels
+    monthly_cost: 49
+    max_rps: 10000
+    base_latency_ms: 30
+    metrics:
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: message-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: pusher-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Pusher - public channel publish (server) + subscribe (client)
+        import Pusher from 'pusher'
+
+        const pusher = new Pusher({
+          appId: process.env.PUSHER_APP_ID!,
+          key: process.env.PUSHER_KEY!,
+          secret: process.env.PUSHER_SECRET!,
+          cluster: 'eu',
+        })
+
+        // Server: broadcast to everyone subscribed to "updates"
+        await pusher.trigger('updates', 'new-message', { text: 'hello' })
+        // Client subscribes with pusher-js: channel.bind('new-message', handler)
+    metric_explanations:
+      operational-complexity:
+        reason: Pusher hosts the socket layer entirely — there are no servers, load balancers, sticky sessions, or pub-sub backplane to provision or monitor.
+        contributing_factors:
+          - No WebSocket servers or Redis fan-out to run
+          - Connection scaling and reconnection handled by Pusher
+          - You publish via the API and subscribe via the client SDK
+      message-latency:
+        reason: Public channels broadcast through Pusher's global edge with no auth round trip, so subscribers receive events with minimal delay.
+        contributing_factors:
+          - Edge points of presence sit close to clients
+          - No per-subscribe authorization hop for public channels
+          - Persistent connections avoid repeated handshakes
+  - id: presence-channels
+    name: Presence + Private Channels
+    monthly_cost: 99
+    max_rps: 20000
+    base_latency_ms: 35
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: pusher-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // Pusher - presence channel auth endpoint (who's online + private auth)
+        import Pusher from 'pusher'
+
+        const pusher = new Pusher({
+          appId: process.env.PUSHER_APP_ID!,
+          key: process.env.PUSHER_KEY!,
+          secret: process.env.PUSHER_SECRET!,
+          cluster: 'eu',
+        })
+
+        // Express handler the client calls to join a presence channel
+        export function authPresence(socketId: string, channel: string, user: { id: string; name: string }) {
+          return pusher.authorizeChannel(socketId, channel, {
+            user_id: user.id,
+            user_info: { name: user.name },
+          })
+        }
+    metric_explanations:
+      concurrent-connections:
+        reason: Pusher's managed fleet absorbs large connection counts and presence-set fan-out without you sizing any infrastructure.
+        contributing_factors:
+          - Provider scales the socket fleet transparently
+          - Presence membership tracked server-side by Pusher
+          - Subscription fan-out handled across the managed edge
+      pusher-cost-efficiency:
+        reason: Presence and private channels add an auth round trip and richer events, and higher tiers raise per-message cost — efficiency dips versus plain public channels.
+        contributing_factors:
+          - Each presence join requires a signed auth request
+          - Presence member events multiply message volume
+          - Higher feature tier carries a higher per-message rate
+connection_properties:
+  protocol: WebSocket/HTTPS
+  communication_patterns:
+    - bidirectional
+    - pub-sub
+  typical_latency: 20-80ms
+  co_location_potential: false
+demand_responses:
+  concurrent-users:
+    high:
+      concurrent-connections: 0.9
+      message-latency: 0.9
+    extreme:
+      concurrent-connections: 0.8
+      message-latency: 0.8
+  burst-pattern:
+    periodic-spikes:
+      concurrent-connections: 0.9
+      message-latency: 0.9
+    unpredictable:
+      concurrent-connections: 0.8
+      message-latency: 0.8
+  traffic-volume:
+    high:
+      message-latency: 0.9
+    extreme:
+      message-latency: 0.8
+      pusher-cost-efficiency: 0.6
+  geographic-spread:
+    multi-region:
+      message-latency: 0.9
+    global:
+      message-latency: 0.9
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1615,3 +1615,15 @@ Added a 2nd provider to the last 3 high-value single-provider types:
 - neo4j (graph-db) — native property graph + Cypher; Community self-hosted vs AuraDB managed
 - airflow (etl) — DAG orchestrator; Self-Managed (Celery) vs Managed (MWAA)
 Each mirrors its sibling's metric ids. Supporting fix: Airflow snippets are Python, so added python to the CodeSnippetViewer allowlist (+ prism import, declarations.d.ts module decl, test update) — previously python fell back to unhighlighted plaintext. +3 PixelLab icons (33 total). Firestore re-seeded → 33 components. 15/17 fundamental types now multi-provider (only graph-db... wait etl/payments/graph-db now covered; remaining single: realtime + security).
+- 2026-05-31 17:06 | Write | /home/khujta/projects/bmad/archie/src/data/components/pusher.yaml
+- 2026-05-31 17:07 | Write | /home/khujta/projects/bmad/archie/src/data/components/splunk.yaml
+- 2026-05-31 17:07 | Edit | /home/khujta/projects/bmad/archie/src/data/components/splunk.yaml
+- 2026-05-31 17:08 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 17:09 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+
+## 2026-05-31 17:10 — commit: content batch 5 — Pusher / Splunk → 17/17 types multi-provider
+FINDINGS: 0 (full suite 3445 ✅ yaml-validation ✅ data-quality ✅ icon-consistency ✅ tsc -b ✅ lint ✅)
+Final two single-provider types now offer comparison — ALL 17 fundamental types are multi-provider:
+- pusher (realtime, alongside websocket-server) — managed hosted realtime; Public Channels vs Presence+Private
+- splunk (security, alongside the generic SIEM) — market-leading SIEM, best detection but pricey ingestion; Enterprise self-hosted vs Splunk Cloud
+Each mirrors its sibling's metric ids. Note on security: kept it a real SIEM (not Vault/WAF) so the swap comparison measures the same things. +2 PixelLab icons (35 total). Firestore re-seeded → 35 components. CONTENT MILESTONE: 17/17 types, 35 providers.
