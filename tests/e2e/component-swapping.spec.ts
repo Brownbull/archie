@@ -141,7 +141,8 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
 
     const swapper = page.locator('[data-testid="component-swapper"]')
     await expect(swapper).toBeVisible()
-    await expect(swapper.locator("label")).toContainText("Component Type")
+    // P5: the swapper now picks among same-TYPE providers and is labelled "Provider".
+    await expect(swapper.locator("label")).toContainText("Provider")
 
     const trigger = swapper.locator("button").first()
     const triggerText = await trigger.textContent()

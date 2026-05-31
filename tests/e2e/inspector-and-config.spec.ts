@@ -3,6 +3,7 @@ import {
   waitForComponentLibrary,
   addComponentToCanvas,
   selectNodeOnCanvas,
+  expandInspectorSection,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/inspector-and-config"
@@ -48,13 +49,9 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const descriptionParagraph = inspectorPanel.locator("p").first()
     await expect(descriptionParagraph).toBeVisible()
 
-    // AC-1: Gains section displayed
-    const gainsHeading = inspectorPanel.locator("h3", { hasText: "Gains" })
-    await expect(gainsHeading).toBeVisible()
-
-    // AC-1: Costs section displayed
-    const costsHeading = inspectorPanel.locator("h3", { hasText: "Costs" })
-    await expect(costsHeading).toBeVisible()
+    // AC-1: Gains + Costs sections present (P3: now collapse-by-default disclosure triggers)
+    await expect(page.locator('[data-testid="disclosure-gains"]')).toBeVisible()
+    await expect(page.locator('[data-testid="disclosure-costs"]')).toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/01-inspector-opens-with-detail.png`,
@@ -119,6 +116,8 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Place a component and select it
     await addComponentToCanvas(page)
     await selectNodeOnCanvas(page)
+    // Metrics live in a collapse-by-default disclosure (P3) — expand to read the bars.
+    await expandInspectorSection(page, "disclosure-metrics")
 
     // Verify config selector exists with more than 1 variant
     const configSelector = page.locator('[data-testid="config-selector"]')
@@ -254,9 +253,9 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
     await expect(inspectorPanel).toBeVisible()
 
-    // Verify "Metrics" section heading exists
-    const metricsHeading = inspectorPanel.locator("h3", { hasText: "Metrics" })
-    await expect(metricsHeading).toBeVisible()
+    // Metrics is a collapse-by-default disclosure (P3) — expand it before asserting its content.
+    await expect(page.locator('[data-testid="disclosure-metrics"]')).toBeVisible()
+    await expandInspectorSection(page, "disclosure-metrics")
 
     // Verify at least one metric card (category group) is rendered
     const metricCards = page.locator('[data-testid^="metric-card-"]')
@@ -306,10 +305,11 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const inspector = page.locator('[data-testid="inspector"]')
     await expect(inspector).toHaveCSS("width", "300px")
 
-    // Click on the canvas background (pane click) to deselect
-    // Use the React Flow pane element which covers the canvas background
+    // Click on the canvas background (pane click) to deselect. Use a mid-left spot in the gap
+    // between the top-left build-health panel (P6) and the bottom-left heatmap legend, and left
+    // of the fit-view-centered node — so the click lands on the pane, not an overlay or node.
     const canvasPane = page.locator(".react-flow__pane")
-    await canvasPane.click({ position: { x: 50, y: 50 } })
+    await canvasPane.click({ position: { x: 60, y: 250 } })
 
     // Assertion-based wait: inspector-panel hidden confirms transition complete (TD-1-5a Item 1)
     await expect(page.locator('[data-testid="inspector-panel"]')).not.toBeVisible({ timeout: 3_000 })
@@ -603,6 +603,7 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
 
     const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
     await expect(inspectorPanel).toBeVisible()
+    await expandInspectorSection(page, "disclosure-metrics")
 
     // Find a metric bar that has an explanation (identified by the chevron testid)
     const chevron = page.locator('[data-testid="metric-explanation-chevron"]').first()
@@ -657,6 +658,7 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
 
     const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
     await expect(inspectorPanel).toBeVisible()
+    await expandInspectorSection(page, "disclosure-metrics")
 
     // Count total metric bars and total chevrons
     const allMetricBars = page.locator('[data-testid="metric-bar"]')

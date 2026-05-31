@@ -122,6 +122,18 @@ export async function selectNodeOnCanvas(
 }
 
 /**
+ * Expand a collapse-by-default inspector disclosure (P3) — e.g. "disclosure-metrics",
+ * "disclosure-gains" — so its content is visible/interactable. No-op if already open.
+ */
+export async function expandInspectorSection(page: Page, testId: string): Promise<void> {
+  const trigger = page.locator(`[data-testid="${testId}"]`)
+  await trigger.waitFor({ state: "visible", timeout: 5_000 })
+  if ((await trigger.getAttribute("aria-expanded")) === "false") {
+    await trigger.click()
+  }
+}
+
+/**
  * Place two components on the canvas using drag-and-drop.
  * Drops the first card at 30% canvas width and the second at 70%.
  * Returns the number of nodes placed (0 if fewer than 2 component cards available).
