@@ -351,6 +351,44 @@ describe("architectureStore", () => {
     })
   })
 
+  describe("removeEdges — selection clearing", () => {
+    it("clears selectedEdgeId when the selected edge is removed", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      const edge: ArchieEdge = {
+        id: "e1", source: nodes[0].id, target: nodes[1].id, type: EDGE_TYPE_CONNECTION,
+        data: { isIncompatible: false, incompatibilityReason: null, sourceArchieComponentId: "postgresql", targetArchieComponentId: "redis" },
+      }
+      useArchitectureStore.setState({ edges: [edge] })
+      useUiStore.getState().setSelectedEdgeId("e1")
+
+      useArchitectureStore.getState().removeEdges(["e1"])
+      expect(useUiStore.getState().selectedEdgeId).toBeNull()
+    })
+
+    it("leaves selectedEdgeId intact when a different edge is removed", () => {
+      useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+      useArchitectureStore.getState().addNode("redis", { x: 200, y: 0 })
+      const nodes = useArchitectureStore.getState().nodes
+      const edges: ArchieEdge[] = [
+        {
+          id: "e1", source: nodes[0].id, target: nodes[1].id, type: EDGE_TYPE_CONNECTION,
+          data: { isIncompatible: false, incompatibilityReason: null, sourceArchieComponentId: "postgresql", targetArchieComponentId: "redis" },
+        },
+        {
+          id: "e2", source: nodes[1].id, target: nodes[0].id, type: EDGE_TYPE_CONNECTION,
+          data: { isIncompatible: false, incompatibilityReason: null, sourceArchieComponentId: "redis", targetArchieComponentId: "postgresql" },
+        },
+      ]
+      useArchitectureStore.setState({ edges })
+      useUiStore.getState().setSelectedEdgeId("e2")
+
+      useArchitectureStore.getState().removeEdges(["e1"])
+      expect(useUiStore.getState().selectedEdgeId).toBe("e2")
+    })
+  })
+
   describe("removeNode — selectedEdgeId cascade", () => {
     it("clears selectedEdgeId when cascade-deleting the selected edge", () => {
       useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })

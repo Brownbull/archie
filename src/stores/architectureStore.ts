@@ -633,6 +633,13 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
   removeEdges: (edgeIds) => {
     const idsToRemove = new Set(edgeIds)
+    // Clear stale edge selection so the inspector closes instead of lingering empty
+    // (mirrors removeNode). Covers every removal path: Delete key, the on-edge Remove
+    // toolbar, and node-cascade callers.
+    const selectedEdgeId = useUiStore.getState().selectedEdgeId
+    if (selectedEdgeId && idsToRemove.has(selectedEdgeId)) {
+      useUiStore.getState().setSelectedEdgeId(null)
+    }
     const affectedNodeIds = new Set<string>()
     for (const edge of get().edges) {
       if (idsToRemove.has(edge.id)) {

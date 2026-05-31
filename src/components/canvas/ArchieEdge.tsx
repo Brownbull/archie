@@ -219,7 +219,7 @@ export function ArchieEdge({
       {isSelected && (
         <EdgeLabelRenderer>
           <div
-            className="pointer-events-auto absolute"
+            className="pointer-events-auto nodrag nopan absolute"
             style={{
               // Float above the midpoint so it clears the protocol / incompatibility labels at (labelX, labelY).
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY - 28}px)`,
