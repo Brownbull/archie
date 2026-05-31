@@ -1298,3 +1298,40 @@ PUSH: P39 (D3+D4, 7434eba) + P40 (D1+D2+D6, db01acd) — both CI ✅. Full suite
 - D2+D6: split architectureStore.test.ts (1455→590 + 2 files) + ArchieNode.test.tsx (834→715 + ports file); counts preserved (109, 70). [db01acd]
 - D1: port-handle hover tooltips already implemented + tested (title="X In/Out") — closed.
 REMAINING: D5 (stale Epic-12 E2E specs — non-gated, full re-green gated on contended e2e env), D7 (cycle-topology flow overcount — rare; conserves for DAGs/normal case). Both low-ROI; recommend defer.
+- 2026-05-30 10:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-05-30 10:01 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-wiring.spec.ts
+- 2026-05-30 20:47 | Write | /home/khujta/projects/bmad/archie/docs/research/competitive-gap-analysis-prompt.md
+- 2026-05-30 21:42 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ObjectActionToolbar.test.tsx
+- 2026-05-30 21:42 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/NodeActionToolbar.test.tsx
+- 2026-05-30 21:42 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/ObjectActionToolbar.tsx
+- 2026-05-30 21:42 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/NodeActionToolbar.tsx
+- 2026-05-30 21:43 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-30 21:43 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-30 21:43 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieEdge.tsx
+- 2026-05-30 21:43 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieEdge.tsx
+- 2026-05-30 21:43 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieEdge.tsx
+- 2026-05-30 21:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-30 21:44 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieEdge-toolbar.test.tsx
+- 2026-05-30 21:47 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode-ports.test.tsx
+- 2026-05-30 21:49 | Write | /home/khujta/projects/bmad/archie/tests/e2e/object-toolbars.spec.ts
+
+## 2026-05-30 22:13 — [44a3ce7] feat(canvas): on-object Remove/Duplicate toolbars for nodes + edges
+FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low)
+ACTIONS: D11:skip
+DEFERRED: none (D11 left open — unrelated pre-existing e2e flaky cluster, confirmed via baseline diff)
+CHECKS: lint ok (0 err) | tsc -b ok | tests 3230 pass | e2e object-toolbars 2/2, 0 new regressions
+- 2026-05-30 22:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-05-30 22:15 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieEdge.tsx
+- 2026-05-30 22:17 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+
+## 2026-05-30 22:19 — PHASE 1 REVIEW: On-object Remove/Duplicate toolbars (node + edge)
+VERDICT: APPROVE
+FINDINGS: 2 total (0 critical, 0 high, 1 medium, 1 low) — both FIXED
+  - F1 MEDIUM: removeEdges left selectedEdgeId stale -> inspector lingered empty (fixed in store, +2 tests)
+  - F2 LOW: edge-toolbar wrapper missing nodrag/nopan (fixed)
+COVERAGE: HIGH — 14 unit tests (toolbars + removeEdges) + object-toolbars E2E 2/2
+CONFIDENCE: 96/100
+DEFERRED: none
+ALIGNMENT: ALIGNED (scope: canvas selection toolbars per PLAN Phase 1)
+TIER: ent | DRIFT: none
+TICK: ✅ (Review)
