@@ -1542,3 +1542,10 @@ P1 on-object toolbars · P2 canvas authoring · P3 density · P4 solo loop/Histo
 ## 2026-05-31 14:32 — Tech debt (deploy P47, run 26720895039)
 D14 RESOLVED: ComponentSchema runtime reader now non-strict (forward-compatible) — re-seeds with new fields no longer break old readers. Lesson in memory.
 D11 reduced 11→4: P3/P5/P6 E2E spec-drift fixed (inspector disclosures, provider-swap label, pane-click target, tour baseline); residual 4 are original drag-connect + inspector-width-collapse flakiness (re-scoped, not in CI gate).
+- 2026-05-31 14:33 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-s3.yaml
+- 2026-05-31 14:33 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-sqs.yaml
+- 2026-05-31 14:34 | Write | /home/khujta/projects/bmad/archie/src/data/components/datadog.yaml
+- 2026-05-31 14:36 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+
+## 2026-05-31 14:42 — Content expansion (deploy P48, run 26721134116)
+Added 3 providers (aws-s3, aws-sqs, datadog) under existing types + PixelLab icons; Firestore re-seeded to 24 components. 6/17 fundamental types now offer multi-provider comparison (cdn, cache, relational-db, object-storage, message-queue, observability). Non-breaking (D14 reader + icon fallback).
