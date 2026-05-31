@@ -1696,3 +1696,4 @@ FINDINGS: 0 (full suite 3464 ✅ tsc -b ✅ lint 0-err ✅)
 ## 2026-05-31 18:45 — commit: +6 stacks (12 total) + de-collide cache stack name (items 2-rename + 3)
 FINDINGS: 0 (dry-run validate 12 stacks ✅ 0 ref warnings)
 Added 6 stacks using the newer providers: microservices-gateway (HAProxy L7 + 2× Go + PG), streaming-analytics (Go→Kinesis→Lambda→S3), batch-etl-orchestration (PG→Airflow→Lakehouse→Datadog), payment-checkout (Express→Stripe+SQS+PG), graph-recommendations (Express→Neo4j+Redis), jamstack-static-functions (Fastly→Lambda→S3). Renamed the cache-aside stack display name → "Read-Heavy Cache Tier" (kept id, no orphan) to stop it shadowing the Blueprints' cache-first starter; description now notes the cache-aside vs cache-first distinction. Firestore re-seeded: 35 components + 15 blueprints + 12 stacks.
+- 2026-05-31 18:33 | Write | /home/khujta/projects/bmad/archie/tests/e2e/ux-connections.spec.ts
