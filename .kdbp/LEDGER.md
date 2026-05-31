@@ -1568,3 +1568,5 @@ P50: +3 providers (aws-lambda, go-service, pinecone) + icons; reseeded to 27 com
 ## 2026-05-31 15:35 — commit: icon-only overlay toolbar (deeper visual sweep)
 FINDINGS: 0 (lint ✅ types ✅ tests 3365 ✅ shape ✅ coverage ✅ docs ✅ structure ✅)
 Deeper visual sweep (user request) found a 2nd overlap beyond P49: with the inspector open (narrowest canvas) the wide overlay-mode toolbar slid under the top-right scenario/failure selectors (z-40), partially occluding the Flow button. Fix: OverlaySelector renders inactive modes icon-only (label -> sr-only, hover title keeps "Label (Alt+N)"); the ACTIVE mode keeps its visible label so the current view stays legible. +ui-layout inspector-open guard (3/3 green), +ui-sweep.spec.ts (7-state visual sweep, all clean). tsc -b build green, eslint clean.
+- 2026-05-31 15:44 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-05-31 15:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
