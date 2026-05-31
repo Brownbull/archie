@@ -1549,3 +1549,15 @@ D11 reduced 11→4: P3/P5/P6 E2E spec-drift fixed (inspector disclosures, provid
 
 ## 2026-05-31 14:42 — Content expansion (deploy P48, run 26721134116)
 Added 3 providers (aws-s3, aws-sqs, datadog) under existing types + PixelLab icons; Firestore re-seeded to 24 components. 6/17 fundamental types now offer multi-provider comparison (cdn, cache, relational-db, object-storage, message-queue, observability). Non-breaking (D14 reader + icon fallback).
+- 2026-05-31 15:05 | Write | /home/khujta/projects/bmad/archie/tests/e2e/ui-layout.spec.ts
+- 2026-05-31 15:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-05-31 15:07 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-05-31 15:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-layout.spec.ts
+- 2026-05-31 15:13 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-lambda.yaml
+- 2026-05-31 15:14 | Write | /home/khujta/projects/bmad/archie/src/data/components/go-service.yaml
+- 2026-05-31 15:14 | Write | /home/khujta/projects/bmad/archie/src/data/components/pinecone.yaml
+- 2026-05-31 15:18 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+
+## 2026-05-31 15:21 — UI fix + content batch 2 (deploys P49, P50)
+P49: Run Simulation + Start Challenge moved off the overlay-mode toolbar (bottom-center) — fixes the reported overlap making Cost/Tier/Flow unclickable; + ui-layout audit E2E (overlap + clickability guards, free + challenge modes).
+P50: +3 providers (aws-lambda, go-service, pinecone) + icons; reseeded to 27 components. 9/17 fundamental types now offer multi-provider comparison.

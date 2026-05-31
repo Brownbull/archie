@@ -52,3 +52,5 @@
 | P46 | 2026-05-31 | dev → main | 6bc35ed | ✅ 1/1 (~30s) | P6 single-player: live build-health checklist + restartable first-run guided tour (final phase) — EPIC COMPLETE | run 26717729471 |
 | P47 | 2026-05-31 | dev → main | 86df56b | ✅ 1/1 (~30s) | Tech debt: D14 (forward-compatible component reader schema) + D11 (E2E spec-drift fixes, flaky set 11→4) | run 26720895039 |
 | P48 | 2026-05-31 | dev → main | 841883b | ✅ 1/1 (~30s) | Content: +3 providers (AWS S3 / AWS SQS / Datadog) — object-storage, message-queue, observability now offer comparison (6/17 types); Firestore re-seeded (24 components) | run 26721134116 |
+| P49 | 2026-05-31 | dev → main | b0a0bfa | ✅ 1/1 (~30s) | UI fix: Run Simulation + Start Challenge moved off the overlay-mode toolbar (were occluding Cost/Tier/Flow) → bottom-center; + ui-layout audit E2E (overlap guards) | run 26721885354 |
+| P50 | 2026-05-31 | dev → main | (content b2) | ✅ 1/1 (~30s) | Content b2: +3 providers (AWS Lambda / Go Service / Pinecone) — serverless, compute, vector-store now offer comparison (9/17 types); Firestore re-seeded (27 components) | run 26722061913 |
