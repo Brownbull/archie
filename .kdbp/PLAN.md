@@ -22,7 +22,7 @@ Single-Player UX & Component Model — improve Archie as a solo tool, driven by 
 |---|-------|-------------|------|------------|------|--------|--------|------|
 | 1 | On-object Remove/Duplicate toolbars (node + edge) | Floating toolbar on node AND edge selection with Remove + Duplicate. Fixes the functional gap: connectors can't be deleted from the UI today, and node delete is hidden keyboard-only. Keep the Delete-key accelerator. | ent | medium | ✅ | ✅ | ✅ | ✅ |
 | 2 | Canvas authoring fixes | Auto-fit/frame on load + import (Fit View leaves an empty viewport with nodes only in the minimap); forgiving wiring (larger port hit-targets, hover-highlight ports, click-source→click-target fallback); fix the budget label glitch ("$260/$80/mo"). | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 3 | Information density: palette + inspector | Compact palette rows (icon + name + price range; collapsible categories; IS/GAIN/COST detail moved to hover/inspector). Inspector collapse-by-default into a hierarchy (header: name, provider/variant, $·throughput·latency, Remove; YAML/Gains/Costs/Recommendations/Metrics behind disclosures). Per-node utilization % overlay. | ent | high | ✅ | ✅ | ✅ | ⬜ |
+| 3 | Information density: palette + inspector | Compact palette rows (icon + name + price range; collapsible categories; IS/GAIN/COST detail moved to hover/inspector). Inspector collapse-by-default into a hierarchy (header: name, provider/variant, $·throughput·latency, Remove; YAML/Gains/Costs/Recommendations/Metrics behind disclosures). Per-node utilization % overlay. | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 4 | Solo progress loop reliability | Diagnose + fix the History "Could not load your attempt history" error (verify vs deployed Firestore rules + auth state); clean empty state; confirm lossless YAML round-trip; add "vs your past attempts" deltas on the results modal (solo only — no cross-user percentile). | ent | medium | ⬜ | ⬜ | ⬜ | ⬜ |
 | 5 | Component model: type → provider → tier | Schema gains a provider layer (type_id / provider_id / variant_id). Migrate the 18 provider-components to fundamental types + seed 1–3 providers each (migration map in response1 §3). Toolbox organized by TYPE; in-node provider + tier picker showing $·RPS·ms with deltas. Lossless YAML migration map (cloudflare-cdn → cdn/cloudflare, …). The strategic bet — enables lighter UI + type-keyed validation. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 6 | Live guidance: topology validation + tour | Live graph nudges ("X placed but not connected to traffic", "missing required type"); a live Required checklist beyond challenge mode; a restartable first-run guided tour replacing static hint bullets. Builds on P5's type-first model. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -31,7 +31,7 @@ Single-Player UX & Component Model — improve Archie as a solo tool, driven by 
 
 ## Current Phase
 
-Phase 3: Information density: palette + inspector
+Phase 4: Solo progress loop reliability
 
 ## Dependencies
 
