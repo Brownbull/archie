@@ -66,3 +66,4 @@
 | P60 | 2026-05-31 | dev → main | 41129e3 | ✅ 1/1 (46s) | Architect-audit c2 (reveal tools): Scenario/Failure selector tooltips + banners now show preset descriptions; overlay toolbar legend per active mode | run 26727205384 |
 | P61 | 2026-05-31 | dev → main | 0620219 | ✅ 1/1 (53s) | Architect-audit c3 (tour): rewrote guided tour to 6 steps - 3 ways to start, type→provider→tier, analyze & stress-test (overlays + scenarios/failures) | run 26727258980 |
 | P62 | 2026-05-31 | dev → main | bc97ea6 | ✅ 1/1 | Architect-audit c1a (decision support): Provider swap dropdown shows per-provider monthly-cost range - compare providers without swapping | run 26727398922 |
+| P63 | 2026-05-31 | dev → main | 668a157 | ✅ 1/1 | Decision support complete (1b+1c): provider-swap before/after delta (unified economics tracker; metric delta already worked); inline actionable Pathway 'Suggested next' panel in Components tab with one-click Add. E2E-verified swap delta | run 26727817314 |
