@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { Star, Check, X as XIcon } from "lucide-react"
 import { useAttemptsStore } from "@/stores/attemptsStore"
+import { useUiStore } from "@/stores/uiStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { getChallenge } from "@/services/challengeLoader"
 import type { AttemptRecord } from "@/schemas/attemptSchema"
@@ -45,6 +46,7 @@ export function HistoryTab() {
   const loading = useAttemptsStore((s) => s.loading)
   const error = useAttemptsStore((s) => s.error)
   const loadAttempts = useAttemptsStore((s) => s.loadAttempts)
+  const setChallengesOpen = useUiStore((s) => s.setChallengesOpen)
   const [sortKey, setSortKey] = useState<SortKey>("date")
 
   useEffect(() => {
@@ -77,7 +79,17 @@ export function HistoryTab() {
         ) : error ? (
           <p data-testid="history-error" className="py-6 text-center text-xs text-red-400">{error}</p>
         ) : sorted.length === 0 ? (
-          <p data-testid="history-empty" className="py-6 text-center text-xs text-text-secondary">No attempts yet — play a challenge to start your history.</p>
+          <div data-testid="history-empty" className="flex flex-col items-center gap-3 py-6 text-center">
+            <p className="text-xs text-text-secondary">No attempts yet — play a challenge to start your history.</p>
+            <button
+              type="button"
+              data-testid="history-start-challenge"
+              onClick={() => setChallengesOpen(true)}
+              className="rounded-md border border-archie-border bg-surface px-3 py-1.5 text-xs font-medium text-text-primary transition-colors hover:border-archie-accent/50 hover:bg-surface/80"
+            >
+              Start a challenge
+            </button>
+          </div>
         ) : (
           <ul className="flex flex-col gap-1.5">
             {sorted.map((a) => {

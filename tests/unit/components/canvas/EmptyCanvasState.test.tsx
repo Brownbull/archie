@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useUiStore } from "@/stores/uiStore"
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
@@ -19,6 +20,7 @@ vi.mock("@/lib/firebase", () => ({
 describe("EmptyCanvasState", () => {
   beforeEach(() => {
     useArchitectureStore.setState({ nodes: [], edges: [] })
+    useUiStore.setState({ toolboxTab: "components", challengesOpen: false })
   })
 
   it("renders when nodes array is empty", () => {
@@ -46,18 +48,44 @@ describe("EmptyCanvasState", () => {
     expect(screen.queryByTestId("canvas-empty-state")).not.toBeInTheDocument()
   })
 
-  it("renders all three suggestion items", () => {
+  it("renders all five start options, none disabled", () => {
     render(<EmptyCanvasState />)
-    expect(screen.getByTestId("suggestion-import")).toBeInTheDocument()
-    expect(screen.getByTestId("suggestion-example")).toBeInTheDocument()
-    expect(screen.getByTestId("suggestion-drag")).toBeInTheDocument()
+    for (const id of [
+      "suggestion-blueprints",
+      "suggestion-stacks",
+      "suggestion-components",
+      "suggestion-challenge",
+      "suggestion-import",
+    ]) {
+      const btn = screen.getByTestId(id)
+      expect(btn).toBeInTheDocument()
+      expect(btn).not.toBeDisabled()
+    }
   })
 
-  it("contains correct suggestion text", () => {
+  it("contains the start-option labels", () => {
     render(<EmptyCanvasState />)
+    expect(screen.getByText("Start from a Blueprint")).toBeInTheDocument()
+    expect(screen.getByText("Drop in a Stack")).toBeInTheDocument()
+    expect(screen.getByText("Browse Components")).toBeInTheDocument()
+    expect(screen.getByText("Take a Challenge")).toBeInTheDocument()
     expect(screen.getByText("Import a YAML file")).toBeInTheDocument()
-    expect(screen.getByText("Try an example from Blueprints")).toBeInTheDocument()
-    expect(screen.getByText("Drag a component from the toolbox")).toBeInTheDocument()
+  })
+
+  it("routes each option to the right surface", () => {
+    render(<EmptyCanvasState />)
+
+    fireEvent.click(screen.getByTestId("suggestion-blueprints"))
+    expect(useUiStore.getState().toolboxTab).toBe("blueprints")
+
+    fireEvent.click(screen.getByTestId("suggestion-stacks"))
+    expect(useUiStore.getState().toolboxTab).toBe("stacks")
+
+    fireEvent.click(screen.getByTestId("suggestion-components"))
+    expect(useUiStore.getState().toolboxTab).toBe("components")
+
+    fireEvent.click(screen.getByTestId("suggestion-challenge"))
+    expect(useUiStore.getState().challengesOpen).toBe(true)
   })
 
   it("overlay has pointer-events-none class", () => {

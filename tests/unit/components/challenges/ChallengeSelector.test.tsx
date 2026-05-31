@@ -25,12 +25,15 @@ vi.mock("@/services/challengeLoader", () => ({ getAllChallenges: () => getAllCha
 
 import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { useUiStore } from "@/stores/uiStore"
 
 const s = () => useChallengeStore.getState()
 
 describe("ChallengeSelector (Epic 16)", () => {
   beforeEach(() => {
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, bestStars: {} })
+    // Open state now lives in uiStore — reset it so each test starts with the dialog closed.
+    useUiStore.setState({ challengesOpen: false })
     getAllChallenges.mockReturnValue(sample)
   })
 

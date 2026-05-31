@@ -1,4 +1,3 @@
-import { useState } from "react"
 import { Trophy, Star } from "lucide-react"
 import {
   Dialog,
@@ -11,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { getAllChallenges } from "@/services/challengeLoader"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { useUiStore } from "@/stores/uiStore"
 import type { Challenge, ChallengeDifficulty } from "@/lib/challengeTypes"
 
 const DIFFICULTY_STYLE: Record<ChallengeDifficulty, string> = {
@@ -30,7 +30,10 @@ function StarRow({ earned }: { earned: number }) {
 }
 
 export function ChallengeSelector() {
-  const [open, setOpen] = useState(false)
+  // Open state lives in uiStore so other surfaces (empty-canvas card, History tab)
+  // can open the challenge picker, not just the toolbar trigger button.
+  const open = useUiStore((s) => s.challengesOpen)
+  const setOpen = useUiStore((s) => s.setChallengesOpen)
   const challenges = getAllChallenges()
   const bestStars = useChallengeStore((s) => s.bestStars)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)

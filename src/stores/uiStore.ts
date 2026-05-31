@@ -21,6 +21,7 @@ interface UiState {
   toolboxTab: ToolboxTab
   searchQuery: string
   commandPaletteOpen: boolean
+  challengesOpen: boolean
   selectedNodeId: string | null
   selectedEdgeId: string | null
   inspectorCollapsed: boolean
@@ -40,6 +41,7 @@ interface UiState {
   setToolboxTab: (tab: ToolboxTab) => void
   setSearchQuery: (query: string) => void
   setCommandPaletteOpen: (open: boolean) => void
+  setChallengesOpen: (open: boolean) => void
   setSelectedNodeId: (id: string | null) => void
   setSelectedEdgeId: (id: string | null) => void
   setInspectorCollapsed: (collapsed: boolean) => void
@@ -58,6 +60,7 @@ export const useUiStore = create<UiState>()((set) => ({
   toolboxTab: "components",
   searchQuery: "",
   commandPaletteOpen: false,
+  challengesOpen: false,
   selectedNodeId: null,
   selectedEdgeId: null,
   inspectorCollapsed: false,
@@ -81,6 +84,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setToolboxTab: (tab) => set({ toolboxTab: tab }),
   setSearchQuery: (query) => set({ searchQuery: query }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
+  setChallengesOpen: (open) => set({ challengesOpen: open }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),
   setSelectedEdgeId: (id) => set({ selectedEdgeId: id, selectedNodeId: null }),
   setInspectorCollapsed: (collapsed) => set({ inspectorCollapsed: collapsed }),

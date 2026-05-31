@@ -1653,3 +1653,22 @@ The Stacks tab was wired-but-empty (StacksTab/StackCard/stackRepository/stackPla
 - tests: +seed-stacks.test.ts (15 tests) + makeStack/makeStackYaml helpers.
 - stack-browsing.spec.ts: edge assertion toBeVisible→toBeAttached (SVG <path> visibility heuristic is unreliable; feature renders edges fine — screenshot-confirmed).
 Firestore seeded: 35 components + 15 blueprints + 6 stacks. Story-8-4 E2E (was skipping on empty data) now activates & passes 4/4.
+- 2026-05-31 18:13 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-05-31 18:13 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-05-31 18:13 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-05-31 18:14 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-05-31 18:14 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-05-31 18:14 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-05-31 18:14 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-05-31 18:15 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-05-31 18:15 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/HistoryTab.tsx
+- 2026-05-31 18:15 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/HistoryTab.tsx
+- 2026-05-31 18:15 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/HistoryTab.tsx
+- 2026-05-31 18:17 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-05-31 18:18 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-05-31 18:18 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-05-31 18:18 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeSelector.test.tsx
+
+## 2026-05-31 18:10 — commit: connect the surfaces (Get-started card + History CTA)
+FINDINGS: 0 (full suite 3461 ✅ tsc -b ✅ lint 0-err ✅)
+UX connectivity sprint, part 1 (fixes the verified P0 dead-buttons bug). The empty-canvas "Get started" card had 2 of 3 buttons disabled (action:null) and never mentioned Stacks/Challenges. Now 5 actionable options: Start from a Blueprint / Drop in a Stack / Browse Components (→ setToolboxTab) / Take a Challenge (→ opens picker) / Import YAML. Lifted ChallengeSelector open-state to uiStore (challengesOpen + setChallengesOpen) so any surface can open the picker. History empty state gains a "Start a challenge" button. +tests (EmptyCanvasState routes each option; ChallengeSelector resets lifted state).
