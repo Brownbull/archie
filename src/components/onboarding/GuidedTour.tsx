@@ -21,20 +21,24 @@ const STEPS: TourStep[] = [
     body: "Design a software architecture and watch it scored live across performance, reliability, scale, ops, and cost.",
   },
   {
-    title: "1 · Pick a component type",
-    body: "The toolbox on the left is organized by fundamental type — CDN, Cache, Database, and so on. Click + (or drag) to drop one onto the canvas.",
+    title: "1 · Three ways to start",
+    body: "Start however you like: drag a Component (one building block), drop a Stack (a small ready-made pattern), or Load a Blueprint (a full example — it replaces the canvas). The empty-canvas card links all three, plus Challenges.",
   },
   {
-    title: "2 · Choose a provider & tier",
-    body: "Select a node to open the inspector, then pick a Provider (e.g. Cloudflare vs Fastly) and a Configuration tier — each carries its own $ · throughput · latency.",
+    title: "2 · Type → provider → tier",
+    body: "Every component is a type (Cache, Database…), grouped in the toolbox. Select a node to open the inspector, swap the Provider (e.g. Redis vs Memcached), and pick a Configuration tier — each carries its own $ · throughput · latency.",
   },
   {
     title: "3 · Wire it up",
     body: "Drag between component handles to connect them. Select a node or connector for its Duplicate / Remove toolbar. The Build-health panel flags anything not yet connected to traffic.",
   },
   {
-    title: "4 · Score & challenge",
-    body: "Run a simulation, or take a Challenge to hit target metrics under a budget. Attempts are saved to History so you can beat your past runs.",
+    title: "4 · Analyze & stress-test",
+    body: "Use the overlay modes up top (Alt+1–5) to recolour the canvas by Cost, Performance, Tier, and more. Then pick a demand Scenario or inject a Failure (top-right) and Run Simulation to stress-test the design.",
+  },
+  {
+    title: "5 · Score & challenge",
+    body: "Watch the live scores, or take a Challenge to hit target metrics under a budget. Attempts are saved to History so you can beat your past runs.",
   },
 ]
 

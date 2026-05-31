@@ -32,7 +32,7 @@ describe("GuidedTour (P6)", () => {
   it("advances and rewinds through steps", () => {
     render(<GuidedTour />)
     fireEvent.click(screen.getByTestId("tour-next"))
-    expect(screen.getByTestId("tour-title")).toHaveTextContent("Pick a component type")
+    expect(screen.getByTestId("tour-title")).toHaveTextContent("Three ways to start")
     fireEvent.click(screen.getByTestId("tour-back"))
     expect(screen.getByTestId("tour-title")).toHaveTextContent("Welcome to Archie")
   })

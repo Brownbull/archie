@@ -1707,3 +1707,9 @@ Added 6 stacks using the newer providers: microservices-gateway (HAProxy L7 + 2�
 ## 2026-05-31 19:10 — commit: reveal the analysis tools (architect-audit cluster 2)
 FINDINGS: 0 (full suite 3464 ✅ tsc -b ✅ lint 0-err ✅)
 Made the hidden what-if/analysis tools self-explanatory: Scenario + Failure selectors now have explanatory tooltips and their banners surface the preset DESCRIPTION (was name-only; descriptions existed in YAML but never shown). Overlay toolbar shows a one-line legend under it when a mode is active (Cost/Performance/Tier/Flow/Compatibility — explains what the canvas colors/edges mean). Addresses the architect audit's 'analysis tools are invisible' gap.
+- 2026-05-31 19:11 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-05-31 19:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/onboarding/GuidedTour.test.tsx
+
+## 2026-05-31 19:25 — commit: refresh the guided tour (architect-audit cluster 3)
+FINDINGS: 0 (GuidedTour 5 tests ✅ tsc -b ✅ lint 0-err ✅)
+Tour was stale (build→provider/tier→wire→score; omitted the 4 surfaces, overlays, what-if). Rewrote to 6 steps: Welcome → 1·Three ways to start (Component vs Stack vs Blueprint, add-vs-replace) → 2·Type→provider→tier (now explicit) → 3·Wire it up → 4·Analyze & stress-test (overlay modes + scenarios/failures + Run Simulation) → 5·Score & challenge. Now matches the connected app.
