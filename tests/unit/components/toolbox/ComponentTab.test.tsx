@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent, act } from "@testing-library/react"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
@@ -90,6 +90,35 @@ describe("ComponentTab", () => {
     render(<ComponentTab />)
     expect(screen.getByTestId("category-data-storage")).toBeInTheDocument()
     expect(screen.getByTestId("category-caching")).toBeInTheDocument()
+  })
+
+  describe("collapsible categories (P3)", () => {
+    it("renders categories expanded by default", () => {
+      render(<ComponentTab />)
+      expect(screen.getByTestId("category-toggle-data-storage")).toHaveAttribute("aria-expanded", "true")
+      expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
+    })
+
+    it("collapsing a category hides its cards but keeps others", () => {
+      render(<ComponentTab />)
+      fireEvent.click(screen.getByTestId("category-toggle-data-storage"))
+      expect(screen.getByTestId("category-toggle-data-storage")).toHaveAttribute("aria-expanded", "false")
+      expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
+      // Other categories remain expanded.
+      expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
+    })
+
+    it("an active search force-expands all categories", () => {
+      useUiStore.setState({ searchQuery: "" })
+      render(<ComponentTab />)
+      fireEvent.click(screen.getByTestId("category-toggle-data-storage"))
+      expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
+      // Searching overrides the collapse so matches aren't hidden.
+      act(() => {
+        useUiStore.setState({ searchQuery: "postgre" })
+      })
+      expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
+    })
   })
 
   it("shows empty state when no components loaded", async () => {

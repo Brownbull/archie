@@ -274,6 +274,13 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         <div data-testid="sim-telemetry" className="px-3 pb-1.5">
           <div className="flex items-center justify-between text-[9px] text-text-secondary">
             <span data-testid="sim-rps">{Math.round(simTelemetry.incomingRps)} rps</span>
+            <span
+              data-testid="sim-utilization"
+              data-overloaded={simTelemetry.overloaded || undefined}
+              className={`font-semibold ${simTelemetry.overloaded ? "text-red-400" : simTelemetry.capacityPercent >= 0.7 ? "text-yellow-400" : "text-text-secondary"}`}
+            >
+              {Math.round(simTelemetry.capacityPercent * 100)}%
+            </span>
             <span data-testid="sim-latency">{Math.round(simTelemetry.latencyMs)}ms</span>
           </div>
           <div className="mt-0.5 h-1.5 w-full overflow-hidden rounded-full bg-archie-border">

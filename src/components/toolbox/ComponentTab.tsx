@@ -1,4 +1,5 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
+import { ChevronDown, ChevronRight } from "lucide-react"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
@@ -42,6 +43,18 @@ export function ComponentTab() {
     return ids
   }, [selectedComponent, components])
 
+  // Collapsible categories (P3 density). Default expanded; an active search force-expands all
+  // so matches are never hidden behind a collapsed header.
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const toggleCategory = useCallback((categoryId: string) => {
+    setCollapsedCategories((prev) => {
+      const next = new Set(prev)
+      if (next.has(categoryId)) next.delete(categoryId)
+      else next.add(categoryId)
+      return next
+    })
+  }, [])
+
   const filtered = searchQuery ? searchComponents(searchQuery) : components
   const grouped = groupByCategory(filtered)
 
@@ -60,9 +73,20 @@ export function ComponentTab() {
           const category = COMPONENT_CATEGORIES[categoryId as ComponentCategoryId]
           const IconComponent = category ? CATEGORY_ICONS[category.iconName] : undefined
 
+          const isCollapsed = !searchQuery && collapsedCategories.has(categoryId)
+
           return (
             <div key={categoryId} data-testid={`category-${categoryId}`}>
-              <div className="mb-2 flex items-center gap-1.5">
+              <button
+                type="button"
+                data-testid={`category-toggle-${categoryId}`}
+                aria-expanded={!isCollapsed}
+                onClick={() => toggleCategory(categoryId)}
+                className="mb-2 flex w-full items-center gap-1.5 rounded px-0.5 py-0.5 hover:bg-surface"
+              >
+                {isCollapsed
+                  ? <ChevronRight className="h-3 w-3 shrink-0 text-text-secondary" />
+                  : <ChevronDown className="h-3 w-3 shrink-0 text-text-secondary" />}
                 {IconComponent && (
                   <IconComponent
                     className="h-3.5 w-3.5"
@@ -76,16 +100,18 @@ export function ComponentTab() {
                   {category?.label ?? categoryId}
                 </h3>
                 <span className="text-[0.625rem] text-text-secondary">({comps.length})</span>
-              </div>
-              <div className="space-y-2">
-                {comps.map((comp) => (
-                  <ComponentCard
-                    key={comp.id}
-                    component={comp}
-                    dimmed={incompatibleIds.has(comp.id)}
-                  />
-                ))}
-              </div>
+              </button>
+              {!isCollapsed && (
+                <div className="space-y-2">
+                  {comps.map((comp) => (
+                    <ComponentCard
+                      key={comp.id}
+                      component={comp}
+                      dimmed={incompatibleIds.has(comp.id)}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )
         })}

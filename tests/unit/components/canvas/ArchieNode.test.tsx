@@ -150,6 +150,11 @@ describe("ArchieNode", () => {
       const bar = screen.getByTestId("sim-capacity-bar")
       expect(bar).toHaveAttribute("data-overloaded", "true")
       expect(bar.className).toContain("bg-red-500")
+      // P3: per-node utilization % readout, flagged overloaded (>100%) in red.
+      const util = screen.getByTestId("sim-utilization")
+      expect(util).toHaveTextContent("110%")
+      expect(util).toHaveAttribute("data-overloaded", "true")
+      expect(util.className).toContain("text-red-400")
     })
   })
 

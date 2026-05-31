@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Component } from "@/types"
@@ -110,6 +110,28 @@ describe("ComponentDetail", () => {
       />,
     )
   }
+
+  describe("inspector node actions (P3)", () => {
+    it("Remove button deletes the bound node", () => {
+      const removeSpy = vi
+        .spyOn(useArchitectureStore.getState(), "removeNode")
+        .mockImplementation(() => {})
+      renderDefault({ nodeId: "node-1" })
+      fireEvent.click(screen.getByTestId("inspector-remove-node"))
+      expect(removeSpy).toHaveBeenCalledWith("node-1")
+    })
+
+    it("hides the Remove button in palette-preview mode (no nodeId)", () => {
+      renderDefault()
+      expect(screen.queryByTestId("inspector-remove-node")).toBeNull()
+    })
+
+    it("collapses the verbose sections by default (disclosure triggers present)", () => {
+      renderDefault({ nodeId: "node-1" })
+      expect(screen.getByTestId("disclosure-gains")).toHaveAttribute("aria-expanded", "false")
+      expect(screen.getByTestId("disclosure-costs")).toHaveAttribute("aria-expanded", "false")
+    })
+  })
 
   it("renders the component name", () => {
     renderDefault()

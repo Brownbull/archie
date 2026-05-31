@@ -17,7 +17,8 @@ import { VariantRecommendation } from "@/components/inspector/VariantRecommendat
 import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 import { DataContextPanel } from "@/components/inspector/DataContextPanel"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
-import { ChevronDown, ChevronRight } from "lucide-react"
+import { InspectorDisclosure } from "@/components/inspector/InspectorDisclosure"
+import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
 
 interface ComponentDetailProps {
   component: Component
@@ -56,6 +57,7 @@ export function ComponentDetail({
   const replicaCount = useArchitectureStore(
     (s) => (nodeId ? (s.nodes.find((n) => n.id === nodeId)?.data.replicaCount ?? 1) : 1),
   )
+  const removeNode = useArchitectureStore((s) => s.removeNode)
 
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
@@ -159,20 +161,40 @@ export function ComponentDetail({
   return (
     <ScrollArea className="h-full">
       <div className="min-w-0 space-y-3 p-3">
-        {/* Header: name + category badge */}
+        {/* Header: name + Remove + compact summary (variant · $/mo) — P3 density */}
         <div>
-          <h2 className="text-sm font-semibold text-text-primary">
-            {component.name}
-          </h2>
-          {categoryMeta && (
-            <Badge
-              variant="outline"
-              className="mt-1 text-xs"
-              style={{ borderColor: categoryMeta.color, color: categoryMeta.color }}
-            >
-              {categoryMeta.label}
-            </Badge>
-          )}
+          <div className="flex items-start justify-between gap-2">
+            <h2 className="min-w-0 text-sm font-semibold text-text-primary">
+              {component.name}
+            </h2>
+            {nodeId && (
+              <button
+                type="button"
+                data-testid="inspector-remove-node"
+                aria-label="Remove from canvas"
+                title="Remove from canvas"
+                onClick={() => removeNode(nodeId)}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-text-secondary transition-colors hover:bg-red-500/15 hover:text-red-400"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[0.6875rem] text-text-secondary">
+            {categoryMeta && (
+              <Badge
+                variant="outline"
+                className="text-xs"
+                style={{ borderColor: categoryMeta.color, color: categoryMeta.color }}
+              >
+                {categoryMeta.label}
+              </Badge>
+            )}
+            {activeVariant?.name && <span data-testid="inspector-summary-variant">{activeVariant.name}</span>}
+            <span data-testid="inspector-summary-cost" className="font-medium text-emerald-400">
+              {currentEconomics.monthlyCost === 0 ? "Free" : `$${currentEconomics.monthlyCost}/mo`}
+            </span>
+          </div>
         </div>
 
         {/* Description */}
@@ -208,16 +230,16 @@ export function ComponentDetail({
 
         <Separator />
 
-        {/* IS section */}
+        {/* IS section (collapse-by-default — P3 density) */}
         <div data-section="details">
-          <h3 className="mb-1 text-xs font-medium text-text-primary">What it is</h3>
-          <p className="text-xs text-text-secondary">{component.is}</p>
+          <InspectorDisclosure title="What it is" testId="disclosure-is">
+            <p className="pt-0.5 text-xs text-text-secondary">{component.is}</p>
+          </InspectorDisclosure>
         </div>
 
         {/* Gain section */}
-        <div>
-          <h3 className="mb-1 text-xs font-medium text-green-600">Gains</h3>
-          <ul className="space-y-0.5">
+        <InspectorDisclosure title="Gains" testId="disclosure-gains" titleClassName="text-green-600">
+          <ul className="space-y-0.5 pt-0.5">
             {component.gain.map((item, index) => (
               <li key={`gain-${index}`} className="flex items-start gap-1 text-xs wrap-break-word text-text-secondary">
                 <span className="mt-0.5 shrink-0 text-green-500">+</span>
@@ -225,12 +247,11 @@ export function ComponentDetail({
               </li>
             ))}
           </ul>
-        </div>
+        </InspectorDisclosure>
 
         {/* Cost section */}
-        <div>
-          <h3 className="mb-1 text-xs font-medium text-red-600">Costs</h3>
-          <ul className="space-y-0.5">
+        <InspectorDisclosure title="Costs" testId="disclosure-costs" titleClassName="text-red-600">
+          <ul className="space-y-0.5 pt-0.5">
             {component.cost.map((item, index) => (
               <li key={`cost-${index}`} className="flex items-start gap-1 text-xs wrap-break-word text-text-secondary">
                 <span className="mt-0.5 shrink-0 text-red-500">-</span>
@@ -238,27 +259,31 @@ export function ComponentDetail({
               </li>
             ))}
           </ul>
-        </div>
+        </InspectorDisclosure>
 
         {/* Recommendations (Story 4-2b, AC-FUNC-1/2) */}
         {recommendations.length > 0 && (
-          <div className="space-y-1.5" data-testid="recommendations-section">
-            <h3 className="text-xs font-medium text-text-primary">Recommendations</h3>
-            {recommendations.map((rec) => (
-              <VariantRecommendation
-                key={`${rec.weakMetricId}-${rec.improvedVariantId}`}
-                recommendation={rec}
-              />
-            ))}
+          <div data-testid="recommendations-section">
+            <InspectorDisclosure title="Recommendations" testId="disclosure-recommendations">
+              <div className="space-y-1.5 pt-0.5">
+                {recommendations.map((rec) => (
+                  <VariantRecommendation
+                    key={`${rec.weakMetricId}-${rec.improvedVariantId}`}
+                    recommendation={rec}
+                  />
+                ))}
+              </div>
+            </InspectorDisclosure>
           </div>
         )}
 
-        {/* Metrics by category */}
+        {/* Metrics by category (collapse-by-default — the heaviest section) */}
         {metricsByCategory.size > 0 && (
           <>
             <Separator />
-            <div className="space-y-2" data-section="metrics">
-              <h3 className="text-xs font-medium text-text-primary">Metrics</h3>
+            <div data-section="metrics">
+              <InspectorDisclosure title="Metrics" testId="disclosure-metrics">
+              <div className="space-y-2 pt-0.5">
               <MetricFilter
                 allMetricIds={allMetricIds}
                 hiddenMetricIds={hiddenMetricIds}
@@ -297,6 +322,8 @@ export function ComponentDetail({
                     hiddenMetricIds={hiddenMetricIds}
                   />
                 ))}
+              </div>
+              </InspectorDisclosure>
             </div>
           </>
         )}

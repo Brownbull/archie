@@ -12,6 +12,12 @@ interface ComponentCardProps {
   dimmed?: boolean
 }
 
+/**
+ * Compact palette row (P3 density): the always-visible line is icon + name + price range.
+ * The richer IS / GAIN / COST / tags detail stays in the DOM but is revealed on hover
+ * (`group-hover`) so the palette scans cleanly while the full detail is one hover away
+ * (and the full picture lives in the inspector once a component is placed).
+ */
 export function ComponentCard({ component, dimmed }: ComponentCardProps) {
   const addNodeSmartPosition = useArchitectureStore((s) => s.addNodeSmartPosition)
   const category = COMPONENT_CATEGORIES[component.category as ComponentCategoryId]
@@ -48,7 +54,7 @@ export function ComponentCard({ component, dimmed }: ComponentCardProps) {
   return (
     <div
       data-testid={`component-card-${component.id}`}
-      className={`relative cursor-grab rounded-md border border-archie-border bg-panel p-3 pl-5 pr-8 transition-opacity duration-200 active:cursor-grabbing ${
+      className={`group relative cursor-grab rounded-md border border-archie-border bg-panel py-1.5 pl-4 pr-8 transition-opacity duration-200 active:cursor-grabbing ${
         dimmed ? "opacity-40 grayscale" : "opacity-100"
       }`}
       draggable
@@ -73,16 +79,23 @@ export function ComponentCard({ component, dimmed }: ComponentCardProps) {
         <Plus className="h-3.5 w-3.5" />
       </button>
 
+      {/* Compact always-visible row: icon + name + price */}
       <div className="flex items-center gap-1.5">
         <ComponentIcon
           componentId={component.id}
           category={component.category as ComponentCategoryId}
-          className="h-5 w-5 shrink-0"
+          className="h-4 w-4 shrink-0"
         />
-        <h4 className="text-xs font-semibold text-text-primary">{component.name}</h4>
+        <h4 className="min-w-0 flex-1 truncate text-xs font-semibold text-text-primary">{component.name}</h4>
+        {costRange && (
+          <span data-testid={`cost-range-${component.id}`} className="shrink-0 text-[0.625rem] font-medium text-emerald-400">
+            {costRange}
+          </span>
+        )}
       </div>
 
-      <div className="mt-1.5 space-y-1.5">
+      {/* Detail — revealed on hover; stays in the DOM (collapsed) so it's previewable without placing. */}
+      <div className="hidden space-y-1.5 pt-1.5 group-hover:block">
         <div>
           <span className="text-[0.625rem] font-semibold uppercase text-text-secondary">IS</span>
           <p className="text-[0.8125rem] leading-tight text-text-primary">{component.is}</p>
@@ -113,12 +126,6 @@ export function ComponentCard({ component, dimmed }: ComponentCardProps) {
             </Badge>
           ))}
         </div>
-
-        {costRange && (
-          <div data-testid={`cost-range-${component.id}`} className="pt-1 text-[0.625rem] font-medium text-emerald-400">
-            {costRange}
-          </div>
-        )}
       </div>
     </div>
   )
