@@ -1,0 +1,148 @@
+id: go-service
+name: Go Service
+category: compute
+type_id: compute
+description: A compiled Go backend service with lightweight goroutine concurrency and low resource use
+is: A long-running HTTP service written in Go, handling many concurrent requests per instance with low CPU and memory
+gain:
+  - Very high concurrency per instance via cheap goroutines
+  - Low latency and small memory footprint from compiled binaries
+  - Single static binary deploys trivially in containers
+cost:
+  - More boilerplate than scripting runtimes for simple CRUD
+  - Smaller library ecosystem than Node or Python in some niches
+  - Long-running instances cost even when idle (no scale-to-zero)
+tags:
+  - compute
+  - service
+  - go
+  - golang
+  - backend
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: cpu-efficiency
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: operational-complexity
+    value: medium
+    numeric_value: 4
+    category: operational-complexity
+  - id: go-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: single-binary
+    name: Single Instance
+    monthly_cost: 20
+    max_rps: 20000
+    base_latency_ms: 3
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: cpu-efficiency
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: go-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: go
+      code: |
+        // Go service — net/http handles each request on its own goroutine
+        package main
+
+        import ("encoding/json"; "net/http")
+
+        func main() {
+          http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+            json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+          })
+          http.ListenAndServe(":8080", nil)
+        }
+    metric_explanations:
+      concurrent-connections:
+        reason: Goroutines are extremely lightweight (a few KB each), so a single instance handles tens of thousands of concurrent connections.
+        contributing_factors:
+          - Goroutine scheduling is cheaper than OS threads
+          - Non-blocking netpoller multiplexes many sockets
+      cpu-efficiency:
+        reason: Compiled native code with a low-overhead runtime delivers high throughput per CPU core versus interpreted runtimes.
+        contributing_factors:
+          - Ahead-of-time compilation to machine code
+          - Efficient GC tuned for low pause times
+  - id: horizontal-pods
+    name: Horizontally Scaled
+    monthly_cost: 70
+    max_rps: 100000
+    base_latency_ms: 4
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: request-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: go-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # Go service — horizontally scaled behind a load balancer (k8s)
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata: { name: go-service }
+        spec:
+          replicas: 6
+          template:
+            spec:
+              containers:
+                - name: app
+                  image: registry/go-service:latest
+                  resources: { requests: { cpu: "100m", memory: "64Mi" } }
+    metric_explanations:
+      concurrent-connections:
+        reason: Multiple replicas behind a load balancer multiply the already-high per-instance concurrency for near-linear horizontal scale.
+        contributing_factors:
+          - Stateless replicas scale out independently
+          - Load balancer spreads connections across pods
+      go-cost-efficiency:
+        reason: Running many always-on replicas raises baseline cost, trading some efficiency for headroom and availability.
+        contributing_factors:
+          - Replicas billed continuously, not per-request
+          - Provisioned for peak, idle at trough
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: "2-10ms"
+  co_location_potential: true
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

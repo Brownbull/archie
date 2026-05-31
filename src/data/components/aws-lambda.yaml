@@ -1,0 +1,137 @@
+id: aws-lambda
+name: AWS Lambda
+category: compute
+type_id: serverless
+description: Event-driven functions that scale to zero and bill per invocation, with no servers to manage
+is: A serverless compute service that runs your code on demand in response to events, scaling automatically from zero
+gain:
+  - Scales to zero — no cost when idle
+  - Automatic horizontal scaling to thousands of concurrent executions
+  - No servers, patching, or capacity planning
+cost:
+  - Cold starts add latency to infrequently-used functions
+  - 15-minute execution ceiling and limited local state
+  - Per-invocation pricing can exceed always-on compute at steady high load
+tags:
+  - serverless
+  - lambda
+  - functions
+  - faas
+  - event-driven
+base_metrics:
+  - id: cold-start-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: auto-scaling
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: cost-per-invocation
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+  - id: developer-experience
+    value: high
+    numeric_value: 8
+    category: developer-experience
+config_variants:
+  - id: on-demand
+    name: On-Demand
+    monthly_cost: 5
+    max_rps: 10000
+    base_latency_ms: 50
+    metrics:
+      - id: auto-scaling
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: cost-per-invocation
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+      - id: cold-start-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+    code_snippet:
+      language: javascript
+      code: |
+        // AWS Lambda — on-demand handler (Node.js)
+        export const handler = async (event) => {
+          const body = JSON.parse(event.body ?? "{}")
+          return { statusCode: 200, body: JSON.stringify({ ok: true, echo: body }) }
+        }
+    metric_explanations:
+      auto-scaling:
+        reason: Lambda spins up a new execution environment per concurrent request, scaling from zero to thousands automatically with no configuration.
+        contributing_factors:
+          - Per-request isolation lets concurrency grow elastically
+          - No instances to pre-provision or autoscale-group to tune
+      cost-per-invocation:
+        reason: On-demand billing charges only for actual execution time, so idle periods cost nothing — ideal for spiky or low-baseline traffic.
+        contributing_factors:
+          - Scales to zero between requests
+          - Sub-second metered billing per invocation
+  - id: provisioned-concurrency
+    name: Provisioned Concurrency
+    monthly_cost: 40
+    max_rps: 20000
+    base_latency_ms: 8
+    metrics:
+      - id: cold-start-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: auto-scaling
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: cost-per-invocation
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: hcl
+      code: |
+        # Lambda provisioned concurrency — pre-warmed, no cold starts
+        resource "aws_lambda_provisioned_concurrency_config" "api" {
+          function_name                    = aws_lambda_function.api.function_name
+          provisioned_concurrent_executions = 10
+          qualifier                         = aws_lambda_function.api.version
+        }
+    metric_explanations:
+      cold-start-latency:
+        reason: Pre-initialized execution environments are kept warm, eliminating cold-start latency for latency-sensitive APIs.
+        contributing_factors:
+          - Environments initialized ahead of traffic
+          - No runtime/dependency bootstrap on the request path
+      cost-per-invocation:
+        reason: You pay an always-on fee to keep environments warm, so cost efficiency drops versus pure on-demand for bursty workloads.
+        contributing_factors:
+          - Provisioned environments billed even when idle
+          - Best value only at sustained, predictable load
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+    - event-driven
+  typical_latency: "8-300ms (cold/warm)"
+  co_location_potential: false
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

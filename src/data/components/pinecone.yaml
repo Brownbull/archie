@@ -1,0 +1,132 @@
+id: pinecone
+name: Pinecone
+category: data-storage
+type_id: vector-store
+description: A fully managed vector database for low-latency similarity search at scale, with zero operations
+is: A hosted vector database that indexes embeddings and serves approximate-nearest-neighbour queries with no infra to run
+gain:
+  - Fully managed — no index tuning or sharding to operate
+  - Low-latency ANN search that scales to billions of vectors
+  - Metadata filtering and namespaces built in
+cost:
+  - Proprietary SaaS with vendor lock-in
+  - Pod/serverless pricing climbs with index size and QPS
+  - Data leaves your infrastructure to a third party
+tags:
+  - vector
+  - embeddings
+  - search
+  - rag
+  - similarity
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: cost-per-query
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+config_variants:
+  - id: serverless
+    name: Serverless
+    monthly_cost: 30
+    max_rps: 5000
+    base_latency_ms: 25
+    metrics:
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: cost-per-query
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+    code_snippet:
+      language: python
+      code: |
+        # Pinecone serverless — upsert + query (python client)
+        from pinecone import Pinecone
+
+        pc = Pinecone(api_key=KEY)
+        index = pc.Index("docs")
+        index.upsert([("doc-1", embedding, {"source": "kb"})])
+        hits = index.query(vector=query_vec, top_k=5, filter={"source": "kb"})
+    metric_explanations:
+      operational-complexity:
+        reason: Serverless indexes auto-scale storage and compute with nothing to provision, patch, or shard — you only call the API.
+        contributing_factors:
+          - No pods or replicas to size
+          - Capacity grows transparently with the dataset
+      cost-per-query:
+        reason: Serverless bills per read/write unit with no idle pod cost, making it cheap for spiky or low-baseline query volumes.
+        contributing_factors:
+          - Pay only for actual reads and writes
+          - No always-on pod fee at idle
+  - id: pod-based
+    name: Pod-Based
+    monthly_cost: 140
+    max_rps: 20000
+    base_latency_ms: 8
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: cost-per-query
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Pinecone pod-based — dedicated pods for predictable high QPS
+        pc.create_index(
+            name="docs",
+            dimension=1536,
+            spec=PodSpec(environment="us-east-1", pod_type="p1.x2", pods=2),
+        )
+    metric_explanations:
+      query-latency:
+        reason: Dedicated pods keep the index hot in memory, delivering single-digit-millisecond ANN queries at high, predictable QPS.
+        contributing_factors:
+          - Index resident in pod memory (no cold reads)
+          - Provisioned capacity avoids noisy-neighbour contention
+      cost-per-query:
+        reason: Always-on dedicated pods are billed continuously, so cost-per-query is high unless you sustain heavy traffic.
+        contributing_factors:
+          - Pods billed hourly regardless of load
+          - Sized for peak, idle at trough
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: "5-30ms"
+  co_location_potential: false
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out
