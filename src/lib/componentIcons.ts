@@ -10,6 +10,8 @@
  * `tests/unit/lib/componentIcons.test.ts` fails if they drift.
  */
 export const COMPONENT_ICON_IDS: ReadonlySet<string> = new Set([
+  "aws-bedrock",
+  "aws-kinesis",
   "aws-lambda",
   "aws-s3",
   "aws-sqs",
@@ -21,6 +23,7 @@ export const COMPONENT_ICON_IDS: ReadonlySet<string> = new Set([
   "etl-pipeline",
   "fastly-cdn",
   "graph-db",
+  "haproxy",
   "kafka",
   "llm-gateway",
   "memcached",

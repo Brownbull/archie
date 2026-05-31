@@ -1,0 +1,198 @@
+id: aws-bedrock
+name: AWS Bedrock
+category: compute
+type_id: llm-gateway
+description: Fully managed gateway to multiple foundation models through one AWS API
+is: A managed multi-model inference service exposing Claude, Llama, Mistral, Titan, and more behind a single IAM-secured endpoint with no infrastructure to run
+gain:
+  - One managed API across many foundation models, no servers to operate
+  - AWS-native security — IAM, VPC, and KMS instead of juggling API keys
+  - Built-in Guardrails, Knowledge Bases, and serverless scaling
+cost:
+  - Strong vendor lock-in to AWS and its model catalog
+  - Model availability varies by region and needs explicit access grants
+  - Per-token pricing with no cross-cloud provider fallback
+tags:
+  - ai
+  - llm
+  - inference
+  - managed
+  - aws
+base_metrics:
+  - id: inference-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: model-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: cost-per-inference
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+config_variants:
+  - id: on-demand
+    name: On-Demand
+    monthly_cost: 80
+    max_rps: 200
+    base_latency_ms: 400
+    metrics:
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: cost-per-inference
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+      - id: inference-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+    code_snippet:
+      language: typescript
+      code: |
+        // AWS Bedrock - On-Demand invoke via AWS SDK v3
+        import {
+          BedrockRuntimeClient,
+          InvokeModelCommand,
+        } from '@aws-sdk/client-bedrock-runtime'
+
+        const bedrock = new BedrockRuntimeClient({ region: 'us-east-1' })
+
+        const res = await bedrock.send(new InvokeModelCommand({
+          modelId: 'anthropic.claude-3-5-sonnet-20241022-v2:0',
+          contentType: 'application/json',
+          body: JSON.stringify({
+            anthropic_version: 'bedrock-2023-05-31',
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: prompt }],
+          }),
+        }))
+        const out = JSON.parse(new TextDecoder().decode(res.body))
+    metric_explanations:
+      operational-complexity:
+        reason: On-Demand is serverless — no endpoints to provision, scale, or patch, and IAM replaces per-provider key management entirely.
+        contributing_factors:
+          - No capacity to reserve or autoscaling to tune
+          - IAM roles secure access instead of rotating API keys
+          - AWS handles model hosting, patching, and availability
+      cost-per-inference:
+        reason: Pay strictly per input/output token with no idle cost, which is economical for spiky or low-baseline inference traffic.
+        contributing_factors:
+          - Zero cost when no requests are in flight
+          - Token pricing varies by model — route cheap models for simple tasks
+          - No reserved capacity fees at low volume
+    data_fit_profile:
+      model-size: "Access to small through frontier models via one endpoint"
+      token-throughput: "Good for moderate, bursty traffic within account rate limits"
+      inference-latency: "Standard managed-inference latency, model-dependent"
+  - id: provisioned-throughput
+    name: Provisioned Throughput
+    monthly_cost: 600
+    max_rps: 2000
+    base_latency_ms: 250
+    metrics:
+      - id: inference-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cost-per-inference
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // AWS Bedrock - Provisioned Throughput (reserved model units)
+        import {
+          BedrockRuntimeClient,
+          InvokeModelCommand,
+        } from '@aws-sdk/client-bedrock-runtime'
+
+        const bedrock = new BedrockRuntimeClient({ region: 'us-east-1' })
+
+        // Target a provisioned model-units ARN for guaranteed capacity + lower latency
+        await bedrock.send(new InvokeModelCommand({
+          modelId: process.env.BEDROCK_PROVISIONED_ARN,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            anthropic_version: 'bedrock-2023-05-31',
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: prompt }],
+          }),
+        }))
+    metric_explanations:
+      inference-latency:
+        reason: Reserved model units keep capacity warm and dedicated, cutting queueing delay for steady high-volume inference.
+        contributing_factors:
+          - Dedicated throughput avoids shared-pool contention
+          - Capacity stays warm, reducing cold-start variance
+          - Predictable latency under sustained concurrent load
+      cost-per-inference:
+        reason: Reserved units are billed hourly, so per-request cost drops only when you keep utilization high — wasteful if traffic is intermittent.
+        contributing_factors:
+          - Hourly commitment is paid whether or not requests arrive
+          - Economical only at sustained high utilization
+          - Over-provisioning erases the per-token savings
+    data_fit_profile:
+      model-size: "Best for a committed model where steady volume justifies reserved units"
+      token-throughput: "High, predictable throughput from dedicated capacity"
+      inference-latency: "Lower and more consistent than on-demand under load"
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+    - streaming
+  typical_latency: 250-600ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      inference-latency: 0.7
+      cost-per-inference: 0.7
+    extreme:
+      inference-latency: 0.6
+      cost-per-inference: 0.5
+  concurrent-users:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.6
+  burst-pattern:
+    periodic-spikes:
+      inference-latency: 0.8
+    unpredictable:
+      inference-latency: 0.6
+failure_responses:
+  failure-single-node:
+    model-availability: 0.7
+  failure-region-outage:
+    model-availability: 0.3
+    inference-latency: 0.4
+  failure-traffic-spike:
+    inference-latency: 0.4
+    cost-per-inference: 0.4
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,0 +1,168 @@
+id: haproxy
+name: HAProxy
+category: compute
+type_id: load-balancer
+description: Dedicated high-performance TCP/HTTP load balancer and reverse proxy
+is: A specialized layer-4/7 load balancer built for reliability and observability, distributing traffic across backend pools with rich health checking
+gain:
+  - Extremely fast L4/L7 proxying with very low added latency
+  - First-class health checks, ACL routing, and a built-in stats dashboard
+  - Battle-tested for high-availability front ends at massive scale
+cost:
+  - No static file serving — purely a proxy/balancer, needs backends
+  - Advanced ACL and configuration syntax has a learning curve
+  - Reloads for config changes need care to avoid dropped connections
+tags:
+  - load-balancer
+  - proxy
+  - high-availability
+  - networking
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: haproxy-cost-efficiency
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+config_variants:
+  - id: tcp-l4
+    name: TCP (Layer 4)
+    monthly_cost: 12
+    max_rps: 60000
+    base_latency_ms: 1
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: haproxy-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # HAProxy - Layer 4 (TCP) load balancing
+        # /etc/haproxy/haproxy.cfg
+
+        frontend tcp_in
+            bind *:443
+            mode tcp
+            default_backend app_pool
+
+        backend app_pool
+            mode tcp
+            balance leastconn
+            option tcp-check
+            server app1 10.0.1.10:443 check
+            server app2 10.0.1.11:443 check
+            server app3 10.0.1.12:443 check
+    metric_explanations:
+      request-latency:
+        reason: Layer-4 balancing forwards raw TCP segments without parsing application data, so per-connection overhead is near zero.
+        contributing_factors:
+          - No HTTP header parsing or rewriting on the hot path
+          - Connection-level routing decided once at connect time
+          - Kernel splicing moves bytes with minimal user-space copying
+      concurrent-connections:
+        reason: An event-driven, single-purpose proxy holds hundreds of thousands of TCP connections with a tiny per-connection memory cost.
+        contributing_factors:
+          - Multi-threaded event loops scale across all CPU cores
+          - No application processing means memory stays low per connection
+          - leastconn spreads load evenly across healthy backends
+  - id: http-l7
+    name: HTTP (Layer 7)
+    monthly_cost: 20
+    max_rps: 45000
+    base_latency_ms: 2
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: haproxy-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # HAProxy - Layer 7 (HTTP) routing with ACLs + stats
+        # /etc/haproxy/haproxy.cfg
+
+        frontend http_in
+            bind *:80
+            mode http
+            acl is_api path_beg /api
+            use_backend api_pool if is_api
+            default_backend web_pool
+
+        backend api_pool
+            mode http
+            balance roundrobin
+            option httpchk GET /health
+            server api1 10.0.2.10:8080 check
+            server api2 10.0.2.11:8080 check
+
+        listen stats
+            bind *:8404
+            stats enable
+            stats uri /stats
+    metric_explanations:
+      request-latency:
+        reason: Layer-7 mode parses HTTP requests to apply ACL routing and health-aware backend selection, adding a small but measurable per-request cost.
+        contributing_factors:
+          - HTTP header parsing and ACL evaluation run on every request
+          - Path-based routing picks a backend pool per request
+          - Active httpchk health probes keep failed backends out of rotation
+      concurrent-connections:
+        reason: HTTP keep-alive and per-request processing raise memory per connection versus L4, but capacity stays very high on commodity hardware.
+        contributing_factors:
+          - Keep-alive connection reuse amortizes TCP handshake cost
+          - Request buffering adds modest per-connection memory
+          - Backends scale out independently behind the same frontend
+connection_properties:
+  protocol: TCP/HTTP
+  communication_patterns:
+    - request-response
+    - streaming
+  typical_latency: "<1ms"
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    extreme:
+      request-latency: 0.9
+  concurrent-users:
+    extreme:
+      request-latency: 0.9
+  burst-pattern:
+    unpredictable:
+      request-latency: 0.9
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

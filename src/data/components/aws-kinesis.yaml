@@ -1,0 +1,166 @@
+id: aws-kinesis
+name: AWS Kinesis
+category: messaging
+type_id: event-stream
+description: Fully managed event streaming service for real-time data at scale
+is: A managed, serverless-leaning streaming platform that ingests and delivers ordered records across shards with zero brokers to operate
+gain:
+  - No brokers, ZooKeeper, or cluster to run — fully managed by AWS
+  - Native integration with Lambda, Firehose, and the AWS ecosystem
+  - Elastic shard scaling with configurable 1-365 day retention
+cost:
+  - Proprietary AWS service with strong vendor lock-in
+  - Per-shard and per-PUT pricing climbs with sustained throughput
+  - 1 MB/s write and 2 MB/s read ceiling per shard requires planning
+tags:
+  - streaming
+  - event-driven
+  - managed
+  - aws
+base_metrics:
+  - id: message-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: message-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: kinesis-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: on-demand
+    name: On-Demand
+    monthly_cost: 70
+    max_rps: 40000
+    base_latency_ms: 70
+    metrics:
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: kinesis-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // AWS Kinesis - On-Demand stream via AWS SDK v3
+        import { KinesisClient, PutRecordCommand } from '@aws-sdk/client-kinesis'
+
+        const kinesis = new KinesisClient({ region: 'us-east-1' })
+
+        await kinesis.send(new PutRecordCommand({
+          StreamName: 'events',
+          PartitionKey: userId,
+          Data: Buffer.from(JSON.stringify({ type: 'user.created', id: userId })),
+        }))
+    metric_explanations:
+      operational-complexity:
+        reason: On-Demand mode auto-scales shard capacity to match traffic with nothing to provision, patch, or rebalance — you only call the API.
+        contributing_factors:
+          - Capacity adjusts automatically as throughput changes
+          - No shard count to size, monitor, or resplit
+          - AWS manages durability, replication, and failover
+      horizontal-scalability:
+        reason: AWS transparently splits and merges shards under the hood, absorbing traffic growth without consumer reconfiguration.
+        contributing_factors:
+          - Throughput scales without manual shard math
+          - Records stay ordered within their partition key
+          - Lambda and Firehose consumers scale alongside the stream
+  - id: provisioned
+    name: Provisioned Shards
+    monthly_cost: 150
+    max_rps: 100000
+    base_latency_ms: 60
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: kinesis-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+    code_snippet:
+      language: typescript
+      code: |
+        // AWS Kinesis - Provisioned shards, batched writes for throughput
+        import { KinesisClient, PutRecordsCommand } from '@aws-sdk/client-kinesis'
+
+        const kinesis = new KinesisClient({ region: 'us-east-1' })
+
+        // Each shard sustains 1 MB/s or 1000 records/s — batch up to 500 per call
+        await kinesis.send(new PutRecordsCommand({
+          StreamName: 'events',
+          Records: batch.map((e) => ({
+            PartitionKey: e.userId,
+            Data: Buffer.from(JSON.stringify(e)),
+          })),
+        }))
+    metric_explanations:
+      message-throughput:
+        reason: Provisioned shards give dedicated, predictable capacity — batched PutRecords across many shards sustains very high steady-state throughput.
+        contributing_factors:
+          - Each shard adds a fixed 1 MB/s write lane
+          - Batched PutRecords amortizes per-call overhead
+          - Throughput is predictable and reserved, not best-effort
+      kinesis-cost-efficiency:
+        reason: At steady high volume, reserved shards cost less per record than On-Demand's per-throughput premium, rewarding predictable workloads.
+        contributing_factors:
+          - Flat per-shard-hour pricing beats per-throughput at scale
+          - Right-sized shard counts avoid paying for idle elasticity
+          - Best when traffic is steady rather than spiky
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - pub-sub
+    - streaming
+  typical_latency: 50-200ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    extreme:
+      message-throughput: 0.8
+  data-size:
+    extreme:
+      message-throughput: 0.7
+  geographic-spread:
+    multi-region:
+      message-durability: 0.8
+    global:
+      message-durability: 0.7
+  burst-pattern:
+    periodic-spikes:
+      message-throughput: 0.8
+    unpredictable:
+      message-throughput: 0.7
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

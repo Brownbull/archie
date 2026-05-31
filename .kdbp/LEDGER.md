@@ -1581,3 +1581,16 @@ Deeper visual sweep round 2 (edge cases) found a readability bug: inspector code
 
 ## 2026-05-31 15:58 — commit: sweep round 3 — inspector Metrics/Data capture (test-only)
 FINDINGS: 0 — inspector Metrics + Data sections reviewed clean (collapsible hierarchy per P3, code snippet wrap confirmed across views, no horizontal overflow). Completes the deeper visual sweep: 19 states / 3 rounds / 2 real bugs fixed (P51 overlay, P52 code-clip).
+- 2026-05-31 16:29 | Write | /home/khujta/projects/bmad/archie/src/data/components/haproxy.yaml
+- 2026-05-31 16:29 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-kinesis.yaml
+- 2026-05-31 16:30 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-bedrock.yaml
+- 2026-05-31 16:34 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 16:34 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+
+## 2026-05-31 16:35 — commit: content batch 3 — HAProxy / Kinesis / Bedrock (3 types → multi-provider)
+FINDINGS: 0 (yaml-validation 301 ✅ data-quality ✅ icon-consistency ✅ tsc -b ✅ lint ✅)
+Added a 2nd provider to 3 single-provider types so they now offer real comparison:
+- haproxy (load-balancer, alongside nginx) — dedicated L4/L7 balancer; TCP vs HTTP variants
+- aws-kinesis (event-stream, alongside Kafka) — managed streaming; key differentiator is low ops-complexity; On-Demand vs Provisioned
+- aws-bedrock (llm-gateway, alongside the self-hosted gateway) — managed multi-model API; On-Demand vs Provisioned Throughput
+Each mirrors its sibling's metric ids for apples-to-apples swap comparison. +3 PixelLab icons (30 total). Firestore re-seeded → 30 components. 12/17 fundamental types now multi-provider.
