@@ -1,0 +1,23 @@
+id: jamstack-static-functions
+name: JAMstack (Static + Functions)
+description: Serve a static front end from the edge and handle dynamic bits with serverless functions — a CDN serves assets from object storage and routes API calls to functions that read the same bucket.
+components:
+  - component_id: fastly-cdn
+    variant_id: edge-caching
+    relative_position: { x: 0, y: 0 }
+  - component_id: aws-lambda
+    variant_id: on-demand
+    relative_position: { x: 240, y: -90 }
+  - component_id: aws-s3
+    variant_id: standard
+    relative_position: { x: 240, y: 90 }
+connections:
+  - source_component_index: 0
+    target_component_index: 2
+    connection_type: storage
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: http
+  - source_component_index: 1
+    target_component_index: 2
+    connection_type: storage

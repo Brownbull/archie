@@ -1685,3 +1685,14 @@ UX connectivity sprint, part 1 (fixes the verified P0 dead-buttons bug). The emp
 FINDINGS: 0 (full suite 3464 ✅ tsc -b ✅ lint 0-err ✅)
 - ToolboxPanel: added explanatory tooltips to all 4 tabs, including the add-vs-replace distinction (Stacks ADD; Blueprints REPLACE) — addresses the 'bare labels, no explanation' gap.
 - ComponentTab: when a challenge is active, a guidance banner names the required component categories (always-on, since every challenge has required_components). Implemented the previously-unused allowedCategories — when a challenge sets it, the palette is restricted to those categories and the banner reflects it. +3 unit tests.
+- 2026-05-31 18:30 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/microservices-gateway.yaml
+- 2026-05-31 18:30 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/streaming-analytics.yaml
+- 2026-05-31 18:30 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/batch-etl-orchestration.yaml
+- 2026-05-31 18:30 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/payment-checkout.yaml
+- 2026-05-31 18:30 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/graph-recommendations.yaml
+- 2026-05-31 18:31 | Write | /home/khujta/projects/bmad/archie/src/data/stacks/jamstack-static-functions.yaml
+- 2026-05-31 18:31 | Edit | /home/khujta/projects/bmad/archie/src/data/stacks/cache-aside-read-heavy.yaml
+
+## 2026-05-31 18:45 — commit: +6 stacks (12 total) + de-collide cache stack name (items 2-rename + 3)
+FINDINGS: 0 (dry-run validate 12 stacks ✅ 0 ref warnings)
+Added 6 stacks using the newer providers: microservices-gateway (HAProxy L7 + 2× Go + PG), streaming-analytics (Go→Kinesis→Lambda→S3), batch-etl-orchestration (PG→Airflow→Lakehouse→Datadog), payment-checkout (Express→Stripe+SQS+PG), graph-recommendations (Express→Neo4j+Redis), jamstack-static-functions (Fastly→Lambda→S3). Renamed the cache-aside stack display name → "Read-Heavy Cache Tier" (kept id, no orphan) to stop it shadowing the Blueprints' cache-first starter; description now notes the cache-aside vs cache-first distinction. Firestore re-seeded: 35 components + 15 blueprints + 12 stacks.

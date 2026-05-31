@@ -1,0 +1,20 @@
+id: graph-recommendations
+name: Graph Recommendations
+description: Power "people you may know" or "related items" with a graph database — an app service runs multi-hop graph traversals and caches hot results for fast repeat reads.
+components:
+  - component_id: node-express
+    variant_id: cluster-mode
+    relative_position: { x: 0, y: 0 }
+  - component_id: neo4j
+    variant_id: aura-managed
+    relative_position: { x: 240, y: -90 }
+  - component_id: redis-cache
+    variant_id: distributed-cache
+    relative_position: { x: 240, y: 90 }
+connections:
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: database
+  - source_component_index: 0
+    target_component_index: 2
+    connection_type: cache

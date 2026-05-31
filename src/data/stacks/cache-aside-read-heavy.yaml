@@ -1,6 +1,6 @@
 id: cache-aside-read-heavy
-name: Cache-Aside Read-Heavy
-description: Absorb read-dominant traffic cheaply — a load balancer spreads requests across app servers that check a distributed cache first and fall through to a read-replica database on a miss.
+name: Read-Heavy Cache Tier
+description: Absorb read-dominant traffic cheaply — a load balancer spreads requests across app servers that check a distributed cache first and fall through to a read-replica database on a miss. (Cache-aside pattern; distinct from the Blueprints' cache-first starter.)
 components:
   - component_id: haproxy
     variant_id: http-l7

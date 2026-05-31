@@ -1,0 +1,26 @@
+id: streaming-analytics
+name: Managed Streaming Analytics
+description: A fully managed real-time analytics pipeline — a producer service publishes events to a streaming service, serverless functions process each record, and results land in object storage.
+components:
+  - component_id: go-service
+    variant_id: horizontal-pods
+    relative_position: { x: 0, y: 0 }
+  - component_id: aws-kinesis
+    variant_id: on-demand
+    relative_position: { x: 240, y: 0 }
+  - component_id: aws-lambda
+    variant_id: on-demand
+    relative_position: { x: 480, y: 0 }
+  - component_id: aws-s3
+    variant_id: standard
+    relative_position: { x: 720, y: 0 }
+connections:
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: stream
+  - source_component_index: 1
+    target_component_index: 2
+    connection_type: stream
+  - source_component_index: 2
+    target_component_index: 3
+    connection_type: storage

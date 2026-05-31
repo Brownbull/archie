@@ -1,0 +1,29 @@
+id: microservices-gateway
+name: Microservices behind a Gateway
+description: Horizontally scaled microservices fronted by a layer-7 load balancer that routes by path, with each service sharing a replicated database.
+components:
+  - component_id: haproxy
+    variant_id: http-l7
+    relative_position: { x: 0, y: 0 }
+  - component_id: go-service
+    variant_id: horizontal-pods
+    relative_position: { x: 240, y: -90 }
+  - component_id: go-service
+    variant_id: horizontal-pods
+    relative_position: { x: 240, y: 90 }
+  - component_id: postgresql
+    variant_id: primary-replica
+    relative_position: { x: 480, y: 0 }
+connections:
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: http
+  - source_component_index: 0
+    target_component_index: 2
+    connection_type: http
+  - source_component_index: 1
+    target_component_index: 3
+    connection_type: database
+  - source_component_index: 2
+    target_component_index: 3
+    connection_type: database

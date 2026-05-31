@@ -1,0 +1,26 @@
+id: batch-etl-orchestration
+name: Batch ETL Orchestration
+description: Scheduled data pipelines run by a DAG orchestrator — it extracts from an operational database, loads into a lakehouse for analytics, and ships run metrics to observability.
+components:
+  - component_id: postgresql
+    variant_id: single-node
+    relative_position: { x: 0, y: 0 }
+  - component_id: airflow
+    variant_id: managed-mwaa
+    relative_position: { x: 240, y: 0 }
+  - component_id: data-lake
+    variant_id: lakehouse
+    relative_position: { x: 480, y: -90 }
+  - component_id: datadog
+    variant_id: full-stack
+    relative_position: { x: 480, y: 90 }
+connections:
+  - source_component_index: 0
+    target_component_index: 1
+    connection_type: database
+  - source_component_index: 1
+    target_component_index: 2
+    connection_type: storage
+  - source_component_index: 1
+    target_component_index: 3
+    connection_type: monitor
