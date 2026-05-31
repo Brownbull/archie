@@ -1526,3 +1526,19 @@ TICK: ✅ (Commit + Review)
 PUSH: P6 → main @ 6bc35ed — Deploy Production success (run 26717729471). PHASE 6 COMPLETE.
 ## EPIC COMPLETE — Single-Player UX & Component Model (P1–P6, deploys P41–P46)
 P1 on-object toolbars · P2 canvas authoring · P3 density · P4 solo loop/History · P5 type→provider→tier (+reseed) · P6 live guidance. All CI-green; Firestore re-seeded. Deferred: D7,D11,D12,D14.
+- 2026-05-31 14:07 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-05-31 14:08 | Write | /home/khujta/projects/bmad/archie/tests/unit/schemas/componentSchema-forward-compat.test.ts
+- 2026-05-31 14:18 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-05-31 14:18 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 14:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 14:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 14:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 14:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 14:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 14:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 14:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-05-31 14:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+
+## 2026-05-31 14:32 — Tech debt (deploy P47, run 26720895039)
+D14 RESOLVED: ComponentSchema runtime reader now non-strict (forward-compatible) — re-seeds with new fields no longer break old readers. Lesson in memory.
+D11 reduced 11→4: P3/P5/P6 E2E spec-drift fixed (inspector disclosures, provider-swap label, pane-click target, tour baseline); residual 4 are original drag-connect + inspector-width-collapse flakiness (re-scoped, not in CI gate).

@@ -50,3 +50,4 @@
 | P44 | 2026-05-30 | dev → main | 9bf9b69 | ✅ 1/1 (~30s) | P4 single-player: History load fix (drop composite-index orderBy → client sort) + 'vs your past attempts' deltas on results modal | run 26701997932 |
 | P45 | 2026-05-31 | dev → main | 44a8505 | ✅ 1/1 (~30s) | P5 single-player: component model type→provider→tier — schema typeId, toolbox-by-type, in-node Provider picker, +3 providers (Fastly/Memcached/MySQL) + Firestore re-seed | run 26717273361 |
 | P46 | 2026-05-31 | dev → main | 6bc35ed | ✅ 1/1 (~30s) | P6 single-player: live build-health checklist + restartable first-run guided tour (final phase) — EPIC COMPLETE | run 26717729471 |
+| P47 | 2026-05-31 | dev → main | 86df56b | ✅ 1/1 (~30s) | Tech debt: D14 (forward-compatible component reader schema) + D11 (E2E spec-drift fixes, flaky set 11→4) | run 26720895039 |
