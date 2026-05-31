@@ -52,7 +52,7 @@ describe("ChallengeHud (Epic 16)", () => {
     setNodes("data-storage") // only one of the two required categories placed
     render(<ChallengeHud />)
     expect(screen.getByTestId("challenge-hud")).toHaveTextContent("Two-Tier")
-    expect(screen.getByTestId("challenge-budget-label")).toHaveTextContent("$30/$100/mo")
+    expect(screen.getByTestId("challenge-budget-label")).toHaveTextContent("$30 of $100/mo")
     expect(screen.getByTestId("challenge-budget-label")).not.toHaveClass("text-red-400")
     const bar = screen.getByTestId("challenge-budget-bar")
     expect(bar).toHaveAttribute("data-tier", "ok")
@@ -94,7 +94,7 @@ describe("ChallengeHud (Epic 16)", () => {
     expect(bar).toHaveAttribute("data-over", "true")
     expect(bar).toHaveClass("bg-red-500")
     expect(bar).toHaveStyle({ width: "100%" }) // clamped from 150%
-    expect(screen.getByTestId("challenge-budget-label")).toHaveTextContent("$150/$100/mo")
+    expect(screen.getByTestId("challenge-budget-label")).toHaveTextContent("$150 of $100/mo")
     expect(screen.getByTestId("challenge-budget-label")).toHaveClass("text-red-400")
   })
 

@@ -44,7 +44,7 @@ export function ChallengeHud() {
         <div className="flex justify-between text-[10px]">
           <span className="text-text-secondary">Budget</span>
           <span data-testid="challenge-budget-label" className={overBudget ? "font-semibold text-red-400" : "text-text-secondary"}>
-            ${totalCost}/${challenge.budgetCap}/mo
+            ${totalCost} of ${challenge.budgetCap}/mo
           </span>
         </div>
         <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-archie-border">

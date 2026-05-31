@@ -40,6 +40,8 @@ import { SwapPopover } from "@/components/canvas/SwapPopover";
 import { useImportAction } from "@/components/import-export/ImportDialog";
 import { useGhostNodes } from "@/hooks/useGhostNodes";
 import {
+	CANVAS_CONNECTION_RADIUS,
+	CANVAS_FIT_PADDING,
 	CANVAS_GRID_SIZE,
 	CANVAS_MAX_ZOOM,
 	CANVAS_MIN_ZOOM,
@@ -87,6 +89,7 @@ function CanvasViewInner() {
 	const closeContextMenu = useUiStore((s) => s.closeContextMenu);
 	const clearSwapTarget = useUiStore((s) => s.clearSwapTarget);
 	const pendingNavNodeId = useUiStore((s) => s.pendingNavNodeId);
+	const loadNonce = useArchitectureStore((s) => s.loadNonce);
 	const deselectAll = useArchitectureStore((s) => s.deselectAll);
 	const { screenToFlowPosition, fitView } = useReactFlow();
 	const { handleFileDrop } = useImportAction();
@@ -313,6 +316,17 @@ function CanvasViewInner() {
 		fitView({ nodes: [{ id: pendingNavNodeId }], duration: 400, padding: 0.5 });
 	}, [pendingNavNodeId, setSelectedNodeId, fitView]);
 
+	// Auto-fit the viewport to the graph after a load/import (loadNonce bumps in
+	// loadArchitecture). The `fitView` prop only frames the initial mount, so a YAML
+	// import or blueprint load otherwise left the new graph off-screen (visible only in
+	// the minimap). loadNonce starts at 0, so the initial mount is skipped. React Flow
+	// syncs the new nodes into its internal store before this parent effect runs (child
+	// effects fire first), so fitView sees the freshly-loaded nodes.
+	useEffect(() => {
+		if (loadNonce === 0) return;
+		fitView({ duration: 400, padding: CANVAS_FIT_PADDING });
+	}, [loadNonce, fitView]);
+
 	return (
 		<div
 			ref={containerRef}
@@ -341,6 +355,8 @@ function CanvasViewInner() {
 				edgeTypes={edgeTypes}
 				defaultEdgeOptions={defaultEdgeOptions}
 				deleteKeyCode={["Backspace", "Delete"]}
+				connectOnClick
+				connectionRadius={CANVAS_CONNECTION_RADIUS}
 				snapToGrid
 				snapGrid={[CANVAS_GRID_SIZE, CANVAS_GRID_SIZE]}
 				minZoom={CANVAS_MIN_ZOOM}

@@ -489,6 +489,12 @@ describe("architectureStore", () => {
       expect(state.edges[0].id).toBe("imported-edge-1")
     })
 
+    it("bumps loadNonce so the canvas can auto-fit the loaded graph", () => {
+      const before = useArchitectureStore.getState().loadNonce
+      useArchitectureStore.getState().loadArchitecture(importedNodes, importedEdges)
+      expect(useArchitectureStore.getState().loadNonce).toBe(before + 1)
+    })
+
     it("clears computed state on load", () => {
       // Add a node to generate computed metrics
       useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })

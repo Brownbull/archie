@@ -77,6 +77,8 @@ export interface ArchitectureState {
   edgeHeatmapColors: Map<string, HeatmapStatus>
   rippleActiveNodeIds: Set<string>
   recalcGeneration: number
+  /** Bumped on every loadArchitecture (import/blueprint/restore) so the canvas can auto-fit the new graph. */
+  loadNonce: number
   currentTier: TierResult | null
   weightProfile: WeightProfile
   constraints: Constraint[]
@@ -170,6 +172,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   edgeHeatmapColors: new Map<string, HeatmapStatus>(),
   rippleActiveNodeIds: new Set<string>(),
   recalcGeneration: 0,
+  loadNonce: 0,
   currentTier: null,
   weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
   constraints: [],
@@ -674,6 +677,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       edgeHeatmapColors: new Map(),
       rippleActiveNodeIds: new Set(),
       recalcGeneration: get().recalcGeneration + 1,
+      loadNonce: get().loadNonce + 1,
       currentTier: null,
       weightProfile: weightProfile ?? get().weightProfile,
       constraints: (constraints ?? []).map((c) => ({ ...c, id: crypto.randomUUID() })),

@@ -81,6 +81,10 @@ export const METRIC_MAX_VALUE = 10
 export const CANVAS_GRID_SIZE = 16
 export const CANVAS_MIN_ZOOM = 0.5
 export const CANVAS_MAX_ZOOM = 2
+/** Snap radius (px) for drag-to-connect — enlarged from React Flow's 20px default for more forgiving wiring. */
+export const CANVAS_CONNECTION_RADIUS = 40
+/** Padding (fraction) used when auto-fitting the viewport to the graph after a load/import. */
+export const CANVAS_FIT_PADDING = 0.2
 export const NODE_TYPE_COMPONENT = "archie-component" as const
 export const NODE_TYPE_PLACEHOLDER = "placeholder" as const
 export const NODE_TYPE_GHOST = "ghost" as const

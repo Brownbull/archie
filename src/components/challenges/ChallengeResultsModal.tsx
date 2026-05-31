@@ -84,7 +84,7 @@ export function ChallengeResultsModal() {
           <Criterion
             met={result.underBudget}
             label="Under budget"
-            detail={`$${measured.totalCost}/$${challenge.budgetCap}/mo`}
+            detail={`$${measured.totalCost} of $${challenge.budgetCap}/mo`}
           />
           <Criterion
             met={result.cleanTopology}

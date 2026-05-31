@@ -89,7 +89,7 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(screen.getByTestId("result-metrics")).toHaveAttribute("data-met", "true")
     expect(screen.getByTestId("result-under-budget")).not.toHaveAttribute("data-met")
     expect(screen.getByTestId("result-clean-topology")).not.toHaveAttribute("data-met")
-    expect(screen.getByTestId("challenge-results")).toHaveTextContent("$320/$100/mo")
+    expect(screen.getByTestId("challenge-results")).toHaveTextContent("$320 of $100/mo")
     expect(screen.getByTestId("challenge-results")).toHaveTextContent("2 issues")
   })
 

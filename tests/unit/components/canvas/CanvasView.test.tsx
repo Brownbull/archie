@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { render, screen, fireEvent } from "@testing-library/react"
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
@@ -261,6 +261,29 @@ describe("CanvasView", () => {
     const rfMock = screen.getByTestId("react-flow-mock")
     const props = JSON.parse(rfMock.getAttribute("data-props") ?? "{}")
     expect(props.deleteKeyCode).toEqual(["Backspace", "Delete"])
+  })
+
+  it("enables forgiving wiring (connectOnClick + enlarged connectionRadius)", () => {
+    render(<CanvasView />)
+    const rfMock = screen.getByTestId("react-flow-mock")
+    const props = JSON.parse(rfMock.getAttribute("data-props") ?? "{}")
+    expect(props.connectOnClick).toBe(true)
+    expect(props.connectionRadius).toBe(40)
+  })
+
+  it("auto-fits the viewport when an architecture is loaded (loadNonce bump)", async () => {
+    useArchitectureStore.setState({ loadNonce: 0 })
+    render(<CanvasView />)
+    // Initial mount (loadNonce 0) must NOT auto-fit.
+    expect(mockFitView).not.toHaveBeenCalled()
+
+    act(() => {
+      useArchitectureStore.getState().loadArchitecture([], [])
+    })
+
+    await waitFor(() =>
+      expect(mockFitView).toHaveBeenCalledWith({ duration: 400, padding: 0.2 }),
+    )
   })
 
   describe("H key heatmap toggle", () => {
