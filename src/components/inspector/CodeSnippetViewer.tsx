@@ -64,7 +64,24 @@ export function CodeSnippetViewer({ codeSnippet }: CodeSnippetViewerProps) {
             style={vscDarkPlus}
             showLineNumbers={false}
             wrapLongLines
-            customStyle={{ margin: 0, fontSize: "0.7rem" }}
+            // The prism theme sets `white-space: pre` on <pre>/<code>, so `wrapLongLines`
+            // alone leaves long lines clipped by the narrow inspector panel. Force wrap on
+            // both elements (and break long identifiers) so the full snippet stays readable.
+            customStyle={{
+              margin: 0,
+              fontSize: "0.7rem",
+              maxWidth: "100%",
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
+              overflowWrap: "anywhere",
+            }}
+            codeTagProps={{
+              style: {
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                overflowWrap: "anywhere",
+              },
+            }}
           >
             {codeSnippet.code}
           </SyntaxHighlighter>

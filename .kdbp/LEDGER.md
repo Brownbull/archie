@@ -1570,3 +1570,10 @@ FINDINGS: 0 (lint ✅ types ✅ tests 3365 ✅ shape ✅ coverage ✅ docs ✅ s
 Deeper visual sweep (user request) found a 2nd overlap beyond P49: with the inspector open (narrowest canvas) the wide overlay-mode toolbar slid under the top-right scenario/failure selectors (z-40), partially occluding the Flow button. Fix: OverlaySelector renders inactive modes icon-only (label -> sr-only, hover title keeps "Label (Alt+N)"); the ACTIVE mode keeps its visible label so the current view stays legible. +ui-layout inspector-open guard (3/3 green), +ui-sweep.spec.ts (7-state visual sweep, all clean). tsc -b build green, eslint clean.
 - 2026-05-31 15:44 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
 - 2026-05-31 15:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-05-31 15:54 | Write | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-05-31 15:58 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/CodeSnippetViewer.tsx
+- 2026-05-31 15:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+
+## 2026-05-31 15:50 — commit: inspector code-snippet wrap fix (deeper sweep round 2)
+FINDINGS: 0 (lint ✅ types ✅ tests ✅ build ✅)
+Deeper visual sweep round 2 (edge cases) found a readability bug: inspector code snippets clipped at the panel's right edge — react-syntax-highlighter's `wrapLongLines` alone doesn't override the prism theme's `white-space: pre` on the <code> tag, so long lines (e.g. `export const handler: APIGatewayProxyHandler`) were cut off with no wrap/scroll in the narrow inspector. Fix: force `white-space: pre-wrap` + `word-break: break-word` + `overflow-wrap: anywhere` on both <pre> (customStyle) and <code> (codeTagProps). +ui-sweep-edge.spec.ts (7 edge states: empty canvas, filtered/no-result search, long-name overflow w/ code-overflow guard, settings dropdown in-viewport, LIGHT theme, import). Light theme + all other edge states reviewed clean. CodeSnippetViewer 20/20 unit pass, tsc -b green.
