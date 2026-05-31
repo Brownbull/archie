@@ -1337,3 +1337,33 @@ TIER: ent | DRIFT: none
 TICK: ✅ (Review)
 
 PUSH: P1 → main @ 45b6192 — Deploy Production success (run 26700944887). PHASE 1 COMPLETE. Next: Phase 2 canvas authoring fixes.
+- 2026-05-30 22:27 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-05-30 22:27 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-05-30 22:27 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-05-30 22:28 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-05-30 22:28 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-30 22:28 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-30 22:28 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-30 22:28 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-05-30 22:29 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-05-30 22:29 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-05-30 22:30 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-recalc.test.ts
+- 2026-05-30 22:31 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-05-30 22:31 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-05-30 22:31 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-05-30 22:32 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-05-30 22:35 | Write | /home/khujta/projects/bmad/archie/tests/e2e/canvas-authoring.spec.ts
+
+## 2026-05-30 22:37 — [3609573] feat(canvas): auto-fit on load, forgiving wiring, clearer budget label
+FINDINGS: 0 critical/high/medium/low (commit gate clean)
+CHECKS: lint 0 err | tsc -b ok | tests 3235 pass | e2e canvas-authoring 2/2 (auto-fit framing + budget label)
+
+## 2026-05-30 22:37 — PHASE 2 REVIEW: Canvas authoring fixes
+VERDICT: APPROVE
+FINDINGS: 0 — adversarial checks clean (loadNonce no export leak / no stray consumers; auto-fit scoped to explicit loadArchitecture; connectionRadius only loosens wiring)
+COVERAGE: HIGH — 5 unit tests (loadNonce, connectOnClick+connectionRadius props, auto-fit-on-load, 3 budget labels) + canvas-authoring E2E 2/2
+CONFIDENCE: 95/100
+DEFERRED: none
+ALIGNMENT: ALIGNED (P2 canvas authoring: auto-fit, wiring, budget glitch)
+TIER: ent | DRIFT: none
+TICK: ✅ (Commit + Review)

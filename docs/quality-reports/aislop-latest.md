@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260530-221914
+**Date:** 20260530-223631
 **Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,27 +8,27 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 23 | 382ms |
-| code-quality | 104 | 3791ms |
-| ai-slop | 0 | 10ms |
-| security | 8 | 2257ms |
+| lint | 23 | 378ms |
+| code-quality | 106 | 3387ms |
+| ai-slop | 0 | 35ms |
+| security | 8 | 2501ms |
 
 ## Findings
 
-### code-quality (104)
+### code-quality (106)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:41` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:66` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:68` — knip/devDependencies: Unused devDependency: tw-animate-css
-- [!] `src/lib/constants.ts:183` — knip/exports: Unused export: SLUG_ID_FORMAT
+- [!] `src/lib/constants.ts:187` — knip/exports: Unused export: SLUG_ID_FORMAT
 - [!] `src/lib/constants.ts:50` — knip/types: Unused type: ReplicaType
 - [!] `src/lib/constants.ts:52` — knip/types: Unused type: ScalingRule
-- [!] `src/lib/constants.ts:186` — knip/types: Unused type: StackComponent
-- [!] `src/lib/constants.ts:197` — knip/types: Unused type: StackConnection
-- [!] `src/lib/constants.ts:204` — knip/types: Unused type: StackCategoryScore
-- [!] `src/lib/constants.ts:276` — knip/types: Unused type: TailwindZIndex
-- [!] `src/lib/constants.ts:406` — knip/types: Unused type: FailurePresetId
+- [!] `src/lib/constants.ts:190` — knip/types: Unused type: StackComponent
+- [!] `src/lib/constants.ts:201` — knip/types: Unused type: StackConnection
+- [!] `src/lib/constants.ts:208` — knip/types: Unused type: StackCategoryScore
+- [!] `src/lib/constants.ts:280` — knip/types: Unused type: TailwindZIndex
+- [!] `src/lib/constants.ts:410` — knip/types: Unused type: FailurePresetId
 - [!] `src/lib/constants.ts:0` — knip/duplicates: Duplicate export: unknown
 - [!] `src/schemas/demandSchema.ts:115` — knip/exports: Unused export: TrafficCurvePointSchema
 - [!] `src/schemas/metricCategorySchema.ts:39` — knip/types: Unused type: ScoreInterpretation
@@ -38,7 +38,7 @@
 - [!] `src/stores/challengeStore.ts:6` — knip/types: Unused type: AttemptState
 - [!] `src/stores/challengeStore.ts:9` — knip/types: Unused type: AttemptSnapshot
 - [!] `src/stores/simulationStore.ts:6` — knip/types: Unused type: SimulationStatus
-- [!] `src/stores/architectureStore.ts:758` — knip/types: Unused type: ArchitectureSkeleton
+- [!] `src/stores/architectureStore.ts:762` — knip/types: Unused type: ArchitectureSkeleton
 - [!] `src/engine/dashboardCalculator.ts:8` — knip/types: Unused type: ComponentCategoryMetric
 - [!] `src/engine/dashboardCalculator.ts:13` — knip/types: Unused type: CategoryBreakdown
 - [!] `src/engine/recalculator.ts:13` — knip/types: Unused type: MetricAdjustment
@@ -121,6 +121,8 @@
 - [!] `src/stores/preferencesStore.ts:4` — knip/types: Unused type: Theme
 - [!] `src/stores/preferencesStore.ts:5` — knip/types: Unused type: FontSize
 - [!] `src/stores/dataContextActions.ts:16` — knip/types: Unused type: DataContextActions
+- [!] `src/components/canvas/CanvasView.tsx:69` — complexity/function-too-long: Function 'CanvasViewInner' has 316 lines (max: 80)
+- [!] `src/components/challenges/ChallengeHud.tsx:12` — complexity/function-too-long: Function 'ChallengeHud' has 81 lines (max: 80)
 
 ### lint (23)
 
@@ -134,17 +136,17 @@
 - [!] `src/components/canvas/ArchieNode.tsx:210` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/ConfigSelector.tsx:23` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'scheduled_events' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'hints' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
-- [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
+- [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 
