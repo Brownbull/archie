@@ -1713,3 +1713,11 @@ Made the hidden what-if/analysis tools self-explanatory: Scenario + Failure sele
 ## 2026-05-31 19:25 — commit: refresh the guided tour (architect-audit cluster 3)
 FINDINGS: 0 (GuidedTour 5 tests ✅ tsc -b ✅ lint 0-err ✅)
 Tour was stale (build→provider/tier→wire→score; omitted the 4 surfaces, overlays, what-if). Rewrote to 6 steps: Welcome → 1·Three ways to start (Component vs Stack vs Blueprint, add-vs-replace) → 2·Type→provider→tier (now explicit) → 3·Wire it up → 4·Analyze & stress-test (overlay modes + scenarios/failures + Run Simulation) → 5·Score & challenge. Now matches the connected app.
+- 2026-05-31 19:14 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentSwapper.tsx
+- 2026-05-31 19:14 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentSwapper.tsx
+- 2026-05-31 19:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentSwapper.test.tsx
+- 2026-05-31 19:17 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentSwapper.test.tsx
+
+## 2026-05-31 19:45 — commit: provider cost comparison in the swap dropdown (architect-audit cluster 1a)
+FINDINGS: 0 (full suite 3465 ✅ tsc -b ✅ lint 0-err ✅)
+Decision-support: the in-node Provider picker now shows each provider's monthly-cost range ($X–$Y/mo or Free) next to its name, so an architect can compare providers at the point of choosing WITHOUT swapping each one in to read its cost. Contained to ComponentSwapper. (Remaining cluster-1 items — before/after delta on provider swap, and inline-actionable Pathway guidance with Add-to-canvas — are larger store/relocation changes, deferred for a follow-up.)

@@ -104,6 +104,31 @@ describe("ComponentSwapper", () => {
     expect(onSwap).toHaveBeenCalledWith("mongodb")
   })
 
+  it("shows a monthly-cost range per provider option (decision support)", async () => {
+    const withCosts: Component[] = [
+      {
+        ...mockAlternatives[0],
+        configVariants: [
+          { id: "small", name: "Small", monthlyCost: 20, metrics: [] },
+          { id: "large", name: "Large", monthlyCost: 200, metrics: [] },
+        ],
+      },
+      {
+        ...mockAlternatives[2],
+        configVariants: [{ id: "default", name: "Default", monthlyCost: 50, metrics: [] }],
+      },
+    ]
+    const user = userEvent.setup()
+    render(
+      <ComponentSwapper currentComponentId="postgresql" alternatives={withCosts} onSwapComponent={vi.fn()} />,
+    )
+    await user.click(screen.getByRole("combobox"))
+    // postgresql is the selected value, so Radix also mirrors it into the trigger → 2 nodes.
+    expect(screen.getAllByTestId("swap-cost-postgresql")[0]).toHaveTextContent("$20–$200/mo")
+    // mysql is only in the dropdown list → unique.
+    expect(screen.getByTestId("swap-cost-mysql")).toHaveTextContent("$50/mo")
+  })
+
   it("is pure presentational — no useLibrary hook (TD-1-6a)", () => {
     // This test file has NO useLibrary mock. If ComponentSwapper imported
     // useLibrary, the import at line 4 would throw, failing ALL tests.
