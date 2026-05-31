@@ -1697,3 +1697,13 @@ FINDINGS: 0 (full suite 3464 ✅ tsc -b ✅ lint 0-err ✅)
 FINDINGS: 0 (dry-run validate 12 stacks ✅ 0 ref warnings)
 Added 6 stacks using the newer providers: microservices-gateway (HAProxy L7 + 2× Go + PG), streaming-analytics (Go→Kinesis→Lambda→S3), batch-etl-orchestration (PG→Airflow→Lakehouse→Datadog), payment-checkout (Express→Stripe+SQS+PG), graph-recommendations (Express→Neo4j+Redis), jamstack-static-functions (Fastly→Lambda→S3). Renamed the cache-aside stack display name → "Read-Heavy Cache Tier" (kept id, no orphan) to stop it shadowing the Blueprints' cache-first starter; description now notes the cache-aside vs cache-first distinction. Firestore re-seeded: 35 components + 15 blueprints + 12 stacks.
 - 2026-05-31 18:33 | Write | /home/khujta/projects/bmad/archie/tests/e2e/ux-connections.spec.ts
+- 2026-05-31 19:05 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ScenarioSelector.tsx
+- 2026-05-31 19:05 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ScenarioSelector.tsx
+- 2026-05-31 19:05 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/FailureSelector.tsx
+- 2026-05-31 19:06 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/FailureSelector.tsx
+- 2026-05-31 19:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/OverlaySelector.tsx
+- 2026-05-31 19:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/OverlaySelector.tsx
+
+## 2026-05-31 19:10 — commit: reveal the analysis tools (architect-audit cluster 2)
+FINDINGS: 0 (full suite 3464 ✅ tsc -b ✅ lint 0-err ✅)
+Made the hidden what-if/analysis tools self-explanatory: Scenario + Failure selectors now have explanatory tooltips and their banners surface the preset DESCRIPTION (was name-only; descriptions existed in YAML but never shown). Overlay toolbar shows a one-line legend under it when a mode is active (Cost/Performance/Tier/Flow/Compatibility — explains what the canvas colors/edges mean). Addresses the architect audit's 'analysis tools are invisible' gap.

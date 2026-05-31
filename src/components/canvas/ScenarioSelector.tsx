@@ -62,7 +62,10 @@ export function ScenarioSelector() {
           onValueChange={handleChange}
           disabled={nodes.length === 0}
         >
-          <SelectTrigger className="w-[200px] border-archie-border bg-panel/90 backdrop-blur-sm">
+          <SelectTrigger
+            className="w-[200px] border-archie-border bg-panel/90 backdrop-blur-sm"
+            title="Demand scenario — stress-test the architecture under a different traffic, user-load, and data pattern. Pick one, then Run Simulation."
+          >
             <SelectValue placeholder={SCENARIO_NONE_LABEL} />
           </SelectTrigger>
           <SelectContent>
@@ -92,8 +95,9 @@ export function ScenarioSelector() {
           data-testid={SCENARIO_BANNER_TESTID}
           className={`pointer-events-none absolute right-4 top-16 ${Z_INDEX.CANVAS_OVERLAY}`}
         >
-          <div className="pointer-events-auto rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-xs font-medium text-yellow-200 backdrop-blur-sm">
-            Simulating: {activePreset.name}
+          <div className="pointer-events-auto max-w-[240px] rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-yellow-200 backdrop-blur-sm">
+            <div className="text-xs font-medium">Simulating: {activePreset.name}</div>
+            <p className="mt-0.5 text-[10px] font-normal leading-snug text-yellow-200/80">{activePreset.description}</p>
           </div>
         </div>
       )}

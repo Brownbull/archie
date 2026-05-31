@@ -19,6 +19,17 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 	GitBranch,
 };
 
+// One-line legend per overlay mode, shown under the toolbar while the mode is active so the
+// architect knows what the canvas colors/edges mean (kept here, not on the shared OVERLAY_MODES const).
+const OVERLAY_DESCRIPTIONS: Record<OverlayModeId, string> = {
+	none: "",
+	compatibility: "Edges turn red where two connected components are a poor fit.",
+	performance: "Nodes shaded by latency — redder is slower.",
+	cost: "Nodes shaded by monthly cost — redder is pricier.",
+	tier: "Nodes shaded by how much they lift your maturity tier.",
+	flow: "Edge thickness shows relative traffic volume between components.",
+};
+
 function OverlaySelectorComponent() {
 	const overlayMode = useUiStore((s) => s.overlayMode);
 	const setOverlayMode = useUiStore((s) => s.setOverlayMode);
@@ -64,6 +75,14 @@ function OverlaySelectorComponent() {
 					);
 				})}
 			</div>
+			{overlayMode !== "none" && (
+				<div
+					data-testid="overlay-legend"
+					className="pointer-events-auto mx-auto mt-1 w-fit max-w-[260px] rounded-md border border-archie-border bg-panel/90 px-2 py-1 text-center text-[10px] leading-snug text-text-secondary shadow-sm backdrop-blur-sm"
+				>
+					{OVERLAY_DESCRIPTIONS[overlayMode]}
+				</div>
+			)}
 		</div>
 	);
 }

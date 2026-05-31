@@ -66,7 +66,10 @@ export function FailureSelector() {
           onValueChange={handleChange}
           disabled={nodeCount === 0}
         >
-          <SelectTrigger className="w-[200px] border-archie-border bg-panel/90 backdrop-blur-sm">
+          <SelectTrigger
+            className="w-[200px] border-archie-border bg-panel/90 backdrop-blur-sm"
+            title="Failure injection — test resilience by simulating an outage (zone down, network partition, DB failure). Pick one, then Run Simulation."
+          >
             <SelectValue placeholder={FAILURE_NONE_LABEL} />
           </SelectTrigger>
           <SelectContent>
@@ -96,8 +99,9 @@ export function FailureSelector() {
           data-testid={FAILURE_BANNER_TESTID}
           className={`pointer-events-none absolute right-4 ${bannerTopOffset} ${Z_INDEX.CANVAS_OVERLAY}`}
         >
-          <div className="pointer-events-auto rounded-md border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-medium text-red-200 backdrop-blur-sm">
-            Failure: {activePreset.name}
+          <div className="pointer-events-auto max-w-[240px] rounded-md border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-red-200 backdrop-blur-sm">
+            <div className="text-xs font-medium">Failure: {activePreset.name}</div>
+            <p className="mt-0.5 text-[10px] font-normal leading-snug text-red-200/80">{activePreset.description}</p>
           </div>
         </div>
       )}
