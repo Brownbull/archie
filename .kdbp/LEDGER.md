@@ -1440,3 +1440,49 @@ TIER: ent | DRIFT: none
 TICK: ✅ (Commit + Review)
 
 PUSH: P4 → main @ 9bf9b69 — Deploy Production success (run 26701997932). PHASE 4 COMPLETE. Next: Phase 5 component model type→provider→tier (the strategic refactor).
+- 2026-05-31 11:25 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-05-31 11:25 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-05-31 11:25 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-05-31 11:27 | Write | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-05-31 11:27 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-05-31 11:28 | Write | /home/khujta/projects/bmad/archie/src/data/components/memcached.yaml
+- 2026-05-31 11:29 | Write | /home/khujta/projects/bmad/archie/src/data/components/mysql.yaml
+- 2026-05-31 11:29 | Write | /home/khujta/projects/bmad/archie/src/data/components/fastly-cdn.yaml
+- 2026-05-31 11:31 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 11:31 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 11:31 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 11:31 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-05-31 11:32 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentSwapper.tsx
+- 2026-05-31 11:32 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 11:33 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 11:33 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 11:33 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 11:36 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-05-31 11:36 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-05-31 11:36 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-05-31 11:37 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/componentTypes.test.ts
+- 2026-05-31 11:41 | Write | /home/khujta/projects/bmad/archie/src/data/components/memcached.yaml
+- 2026-05-31 11:41 | Write | /home/khujta/projects/bmad/archie/src/data/components/mysql.yaml
+- 2026-05-31 11:41 | Write | /home/khujta/projects/bmad/archie/src/data/components/fastly-cdn.yaml
+- 2026-05-31 11:45 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 11:48 | Write | /home/khujta/projects/bmad/archie/tests/e2e/component-types.spec.ts
+- 2026-05-31 11:53 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_seed-ordering-strict-schema.md
+- 2026-05-31 11:53 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/MEMORY.md
+
+## 2026-05-31 11:53 — [44a8505] feat(components): model components as type → provider → tier
+FINDINGS: 0 critical/high (commit gate clean)
+CHECKS: lint 0 err | tsc -b ok | tests 3288 pass | dry-run validated 21 components | Firestore re-seeded (21, all typeId) | e2e component-types 2/2
+
+## 2026-05-31 11:53 — PHASE 5 REVIEW: Component model type → provider → tier
+VERDICT: APPROVE
+FINDINGS: 1 medium DEFERRED (D14: strict reader schema is forward-incompatible — re-seed broke live readers briefly; resolved by deploying typeId-tolerant code; lesson saved to memory). Adversarial checks: schema additive/non-breaking (optional typeId + category fallback, tested); YAML round-trip lossless (IDs preserved, suite green); providersForComponent + groupComponentsByType unit-tested; new providers meet full data-quality bar (explanations + snippets + icons).
+COVERAGE: HIGH — 16 unit tests (componentTypes 8 + fixtures) + component-types E2E 2/2 (toolbox-by-type + provider picker) + screenshots; data-quality + icon completeness tests green
+CONFIDENCE: 92/100 (−deploy-ordering operational risk, now mitigated + documented)
+DEFERRED: +D14 (passthrough reader schema)
+ALIGNMENT: ALIGNED (P5 type→provider→tier + starter catalog + toolbox-by-type + in-node provider picker)
+TIER: ent | DRIFT: none
+TICK: ✅ (Commit + Review)
+NOTE: Firestore re-seeded via service-account; production restored after typeId-tolerant deploy (run succeeded).
