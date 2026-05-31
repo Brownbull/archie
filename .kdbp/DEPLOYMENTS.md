@@ -45,3 +45,4 @@
 | P39 | 2026-05-30 | dev → main | 7434eba | ✅ 1/1 (55s) | Tech debt: D4 (ComponentDetail render-safe hooks) + D3 (split architectureStore.ts → slice, <800) | run 26685135445 |
 | P40 | 2026-05-30 | dev → main | db01acd | ✅ 1/1 (47s) | Tech debt: D2+D6 (split oversized test files) + D1 (port tooltips already done) | run 26685433334 |
 | P41 | 2026-05-30 | dev → main | 45b6192 | ✅ 1/1 (~30s) | P1 single-player: on-object Remove/Duplicate toolbars (node+edge) + removeEdges selection-clear fix | run 26700944887 |
+| P42 | 2026-05-30 | dev → main | e4ded41 | ✅ 1/1 (~30s) | P2 single-player: auto-fit on load + forgiving wiring (connectionRadius 40, connectOnClick) + clearer budget label | run 26701254717 |
