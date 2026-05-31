@@ -37,14 +37,17 @@ test.describe("Information density (P3)", () => {
     // Inspector header now offers a Remove action (consistency with the on-object toolbar).
     await expect(page.locator('[data-testid="inspector-remove-node"]')).toBeVisible()
 
-    // Verbose sections start collapsed.
+    // Verbose sections start collapsed — content is genuinely hidden (not just aria state).
     const gains = page.locator('[data-testid="disclosure-gains"]')
+    const gainsContent = page.locator('[data-testid="disclosure-gains-content"]')
     await expect(gains).toHaveAttribute("aria-expanded", "false")
+    await expect(gainsContent).toBeHidden()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/03-inspector-collapsed.png`, fullPage: true })
 
     // Expanding a disclosure reveals its content.
     await gains.click()
     await expect(gains).toHaveAttribute("aria-expanded", "true")
+    await expect(gainsContent).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/04-inspector-expanded.png`, fullPage: true })
   })
 })

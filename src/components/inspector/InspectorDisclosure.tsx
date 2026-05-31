@@ -43,7 +43,11 @@ export function InspectorDisclosure({
           )}
         </button>
       </CollapsibleTrigger>
-      <CollapsibleContent forceMount className="data-[state=closed]:hidden">
+      <CollapsibleContent
+        forceMount
+        data-testid={testId ? `${testId}-content` : undefined}
+        className="data-[state=closed]:hidden"
+      >
         {children}
       </CollapsibleContent>
     </Collapsible>
