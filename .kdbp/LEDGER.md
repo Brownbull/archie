@@ -1672,3 +1672,16 @@ Firestore seeded: 35 components + 15 blueprints + 6 stacks. Story-8-4 E2E (was s
 ## 2026-05-31 18:10 — commit: connect the surfaces (Get-started card + History CTA)
 FINDINGS: 0 (full suite 3461 ✅ tsc -b ✅ lint 0-err ✅)
 UX connectivity sprint, part 1 (fixes the verified P0 dead-buttons bug). The empty-canvas "Get started" card had 2 of 3 buttons disabled (action:null) and never mentioned Stacks/Challenges. Now 5 actionable options: Start from a Blueprint / Drop in a Stack / Browse Components (→ setToolboxTab) / Take a Challenge (→ opens picker) / Import YAML. Lifted ChallengeSelector open-state to uiStore (challengesOpen + setChallengesOpen) so any surface can open the picker. History empty state gains a "Start a challenge" button. +tests (EmptyCanvasState routes each option; ChallengeSelector resets lifted state).
+- 2026-05-31 18:23 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 18:24 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 18:24 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 18:24 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 18:25 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-05-31 18:26 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 18:26 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 18:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+
+## 2026-05-31 18:30 — commit: tab clarity + challenge guides the toolbox (items 2-tooltips + 4b)
+FINDINGS: 0 (full suite 3464 ✅ tsc -b ✅ lint 0-err ✅)
+- ToolboxPanel: added explanatory tooltips to all 4 tabs, including the add-vs-replace distinction (Stacks ADD; Blueprints REPLACE) — addresses the 'bare labels, no explanation' gap.
+- ComponentTab: when a challenge is active, a guidance banner names the required component categories (always-on, since every challenge has required_components). Implemented the previously-unused allowedCategories — when a challenge sets it, the palette is restricted to those categories and the banner reflects it. +3 unit tests.

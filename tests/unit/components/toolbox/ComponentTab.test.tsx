@@ -3,9 +3,20 @@ import { render, screen, fireEvent, act } from "@testing-library/react"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useChallengeStore } from "@/stores/challengeStore"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import type { Component } from "@/schemas/componentSchema"
+import type { Challenge } from "@/lib/challengeTypes"
+
+function makeChallenge(over: Partial<Challenge> = {}): Challenge {
+  return {
+    id: "c1", title: "Test Challenge", brief: "brief", difficulty: "beginner",
+    budgetCap: 100, durationSeconds: 60, trafficCurve: [{ t: 0, rps: 0 }],
+    requiredComponents: ["compute"], targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 },
+    scheduledEvents: [], hints: [], ...over,
+  }
+}
 
 const mockComponents: Component[] = [
   {
@@ -78,6 +89,7 @@ vi.mock("@/engine/compatibilityChecker", () => ({
 describe("ComponentTab", () => {
   beforeEach(() => {
     useUiStore.setState({ searchQuery: "", selectedNodeId: null })
+    useChallengeStore.setState({ activeChallenge: null })
     vi.mocked(componentLibrary.getComponent).mockReturnValue(undefined)
     vi.mocked(checkCompatibility).mockReturnValue({ isCompatible: true, reason: "" })
   })
@@ -157,6 +169,34 @@ describe("ComponentTab", () => {
     render(<ComponentTab />)
     const counts = screen.getAllByText("(1)")
     expect(counts).toHaveLength(2) // One per category (data-storage, caching)
+  })
+
+  describe("challenge guidance (item 4b)", () => {
+    it("no guidance banner when no challenge is active", () => {
+      useChallengeStore.setState({ activeChallenge: null })
+      render(<ComponentTab />)
+      expect(screen.queryByTestId("challenge-component-guidance")).toBeNull()
+    })
+
+    it("shows the guidance banner while a challenge is active", () => {
+      useChallengeStore.setState({ activeChallenge: makeChallenge({ requiredComponents: ["data-storage", "caching"] }) })
+      render(<ComponentTab />)
+      expect(screen.getByTestId("challenge-component-guidance")).toBeInTheDocument()
+      // Both providers still visible — required is guidance, not a restriction.
+      expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
+      expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
+    })
+
+    it("allowedCategories restricts the palette to those categories", () => {
+      useChallengeStore.setState({
+        activeChallenge: makeChallenge({ requiredComponents: ["caching"], allowedCategories: ["caching"] }),
+      })
+      render(<ComponentTab />)
+      expect(screen.getByTestId("challenge-component-guidance")).toBeInTheDocument()
+      // Only caching (redis) shows; data-storage (postgresql) is filtered out.
+      expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
+      expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
+    })
   })
 
   describe("compatibility filtering", () => {

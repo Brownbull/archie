@@ -19,10 +19,34 @@ export function ToolboxPanel() {
         className="flex flex-1 flex-col overflow-hidden"
       >
         <TabsList className="mx-3 grid w-auto grid-cols-4">
-          <TabsTrigger value="components" className="text-xs">Components</TabsTrigger>
-          <TabsTrigger value="stacks" className="text-xs">Stacks</TabsTrigger>
-          <TabsTrigger value="blueprints" className="text-xs">Blueprints</TabsTrigger>
-          <TabsTrigger value="history" className="text-xs">History</TabsTrigger>
+          <TabsTrigger
+            value="components"
+            className="text-xs"
+            title="Individual building blocks — drag one onto the canvas"
+          >
+            Components
+          </TabsTrigger>
+          <TabsTrigger
+            value="stacks"
+            className="text-xs"
+            title="Small reusable patterns — drag to ADD a few connected components to your canvas"
+          >
+            Stacks
+          </TabsTrigger>
+          <TabsTrigger
+            value="blueprints"
+            className="text-xs"
+            title="Complete starter architectures — Load one to REPLACE the canvas"
+          >
+            Blueprints
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            className="text-xs"
+            title="Your past challenge attempts and scores"
+          >
+            History
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="components" className="flex-1 overflow-hidden">
           <ComponentTab />
