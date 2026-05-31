@@ -55,7 +55,11 @@ function OverlaySelectorComponent() {
 							title={`${mode.label} (Alt+${mode.shortcut})`}
 						>
 							{Icon && <Icon className="h-3.5 w-3.5" />}
-							<span className="hidden sm:inline">{mode.label}</span>
+							{/* Icon-only to keep the toolbar compact (avoids crowding the scenario/failure
+							    selectors when the inspector narrows the canvas). The label stays available
+							    to screen readers; the hover title shows "Label (Alt+N)". The active mode
+							    keeps its label visible so the current view is legible at a glance. */}
+							<span className={isActive ? "" : "sr-only"}>{mode.label}</span>
 						</button>
 					);
 				})}

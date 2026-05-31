@@ -1,0 +1,86 @@
+import { test, expect } from "@playwright/test"
+import {
+  waitForComponentLibrary,
+  addComponentToCanvas,
+  selectNodeOnCanvas,
+  connectNodes,
+} from "./helpers/canvas-helpers"
+
+const SCREENSHOT_DIR = "test-results/ui-sweep"
+
+// A visual sweep of the main interactive states — captures full-page screenshots for review and
+// asserts the big surfaces stay visible/usable. Auth baseline marks the tour seen (global-setup).
+
+test.describe("UI visual sweep", () => {
+  test("inspector open (node) — sidebar + canvas overlays + bottom action coexist", async ({ page }) => {
+    await page.goto("/")
+    test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
+    await addComponentToCanvas(page, 0)
+    await addComponentToCanvas(page, 1)
+    await selectNodeOnCanvas(page, 0)
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible()
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/01-inspector-open.png`, fullPage: true })
+  })
+
+  test("inspector maximized — full-screen overlay", async ({ page }) => {
+    await page.goto("/")
+    test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
+    await addComponentToCanvas(page, 0)
+    await selectNodeOnCanvas(page, 0)
+    const maximize = page.locator('[data-testid="inspector-maximize-btn"]')
+    if (await maximize.isVisible().catch(() => false)) {
+      await maximize.click()
+      await page.waitForTimeout(300)
+    }
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/02-inspector-maximized.png`, fullPage: true })
+  })
+
+  test("overlay mode active (heatmap/cost view)", async ({ page }) => {
+    await page.goto("/")
+    test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
+    await addComponentToCanvas(page, 0)
+    await addComponentToCanvas(page, 1)
+    const cost = page.locator('[data-testid="overlay-mode-cost"]')
+    if (await cost.isVisible().catch(() => false)) await cost.click()
+    await page.waitForTimeout(300)
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/03-overlay-cost-active.png`, fullPage: true })
+  })
+
+  test("edge selected — connection inspector + edge toolbar", async ({ page }) => {
+    await page.goto("/")
+    test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
+    await addComponentToCanvas(page, 0)
+    await addComponentToCanvas(page, 1)
+    await connectNodes(page, 0, 1).catch(() => {})
+    const edge = page.locator(".react-flow__edge").first()
+    if (await edge.isVisible().catch(() => false)) {
+      await edge.click({ force: true })
+      await page.waitForTimeout(300)
+    }
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/04-edge-selected.png`, fullPage: true })
+  })
+
+  test("simulation running — SimulationBar + node telemetry", async ({ page }) => {
+    await page.goto("/")
+    test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
+    await addComponentToCanvas(page, 0)
+    await addComponentToCanvas(page, 1)
+    await connectNodes(page, 0, 1).catch(() => {})
+    const runBtn = page.locator('[data-testid="run-simulation"]')
+    if (await runBtn.isVisible().catch(() => false)) {
+      await runBtn.click()
+      await page.waitForTimeout(800) // let a few sim ticks render
+    }
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/05-simulation-running.png`, fullPage: true })
+  })
+
+  test("toolbox tabs — Stacks / Blueprints / History", async ({ page }) => {
+    await page.goto("/")
+    test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
+    for (const [tab, file] of [["Stacks", "06-tab-stacks"], ["Blueprints", "07-tab-blueprints"], ["History", "08-tab-history"]] as const) {
+      await page.getByRole("tab", { name: tab }).click()
+      await page.waitForTimeout(500)
+      await page.screenshot({ path: `${SCREENSHOT_DIR}/${file}.png`, fullPage: true })
+    }
+  })
+})

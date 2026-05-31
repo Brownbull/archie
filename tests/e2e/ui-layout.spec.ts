@@ -55,6 +55,26 @@ test.describe("UI layout — controls are well-distributed & non-overlapping", (
     }
   })
 
+  test("with the inspector open (narrowest canvas), the overlay toolbar stays clear of the scenario/failure selectors", async ({ page }) => {
+    await page.goto("/")
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Open the inspector — this shrinks the canvas to its narrowest, crowding the top row.
+    await addComponentToCanvas(page, 0)
+    await page.locator('[data-testid="archie-node"]').first().click()
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/03-inspector-open-top-row.png`, fullPage: true })
+
+    const overlayBox = await box(page.locator('[data-testid="overlay-selector"] >> div').first())
+    const scenarioBox = await box(page.locator('[data-testid="scenario-selector"]'))
+    const failureBox = await box(page.locator('[data-testid="failure-selector"]'))
+
+    expect(overlaps(overlayBox, scenarioBox), "Overlay toolbar overlaps the scenario selector").toBe(false)
+    expect(overlaps(overlayBox, failureBox), "Overlay toolbar overlaps the failure selector").toBe(false)
+  })
+
   test("challenge-mode controls (HUD, Start button) do not overlap the overlay toolbar", async ({ page }) => {
     await page.goto("/")
     const hasComponents = await waitForComponentLibrary(page)
