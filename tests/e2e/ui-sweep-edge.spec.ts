@@ -97,6 +97,25 @@ test.describe("UI sweep — edge cases & polish", () => {
     await page.screenshot({ path: `${SCREENSHOT_DIR}/06-light-theme.png`, fullPage: true })
   })
 
+  test("inspector Metrics + Data sections — no overflow", async ({ page }) => {
+    await page.goto("/")
+    test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
+    await addComponentToCanvas(page, 0)
+    await page.locator('[data-testid="archie-node"]').first().click()
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+
+    for (const [label, file] of [["Metrics", "08-inspector-metrics"], ["Data", "09-inspector-data"]] as const) {
+      await page.locator('[data-testid="inspector-section-nav"]').getByText(label, { exact: true }).click()
+      await page.waitForTimeout(400) // smooth scroll settle
+      await page.screenshot({ path: `${SCREENSHOT_DIR}/${file}.png`, fullPage: true })
+    }
+    // Inspector content must not overflow the page horizontally.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    )
+    expect(overflow, "inspector sections must not cause horizontal page overflow").toBeLessThanOrEqual(1)
+  })
+
   test("import dialog — renders without clipping", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")

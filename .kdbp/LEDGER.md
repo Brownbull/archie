@@ -1577,3 +1577,7 @@ Deeper visual sweep (user request) found a 2nd overlap beyond P49: with the insp
 ## 2026-05-31 15:50 — commit: inspector code-snippet wrap fix (deeper sweep round 2)
 FINDINGS: 0 (lint ✅ types ✅ tests ✅ build ✅)
 Deeper visual sweep round 2 (edge cases) found a readability bug: inspector code snippets clipped at the panel's right edge — react-syntax-highlighter's `wrapLongLines` alone doesn't override the prism theme's `white-space: pre` on the <code> tag, so long lines (e.g. `export const handler: APIGatewayProxyHandler`) were cut off with no wrap/scroll in the narrow inspector. Fix: force `white-space: pre-wrap` + `word-break: break-word` + `overflow-wrap: anywhere` on both <pre> (customStyle) and <code> (codeTagProps). +ui-sweep-edge.spec.ts (7 edge states: empty canvas, filtered/no-result search, long-name overflow w/ code-overflow guard, settings dropdown in-viewport, LIGHT theme, import). Light theme + all other edge states reviewed clean. CodeSnippetViewer 20/20 unit pass, tsc -b green.
+- 2026-05-31 16:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+
+## 2026-05-31 15:58 — commit: sweep round 3 — inspector Metrics/Data capture (test-only)
+FINDINGS: 0 — inspector Metrics + Data sections reviewed clean (collapsible hierarchy per P3, code snippet wrap confirmed across views, no horizontal overflow). Completes the deeper visual sweep: 19 states / 3 rounds / 2 real bugs fixed (P51 overlay, P52 code-clip).
