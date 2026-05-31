@@ -1,0 +1,3 @@
+Yes, I want you to go deeper in your revisions on what we had checked so far. I haven't seen you in IEA through the coding docs webpage, so I just loaded that webpage on the left side.
+
+It already has one of the challenges. You can change anything around, test the buttons, and see the different things and see why the information density and abstraction layer on the left are better on this webpage. You can start a new, completely new architecture if you would. Proceed with the analysis now, considering this webpage also

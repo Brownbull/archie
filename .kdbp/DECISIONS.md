@@ -804,3 +804,13 @@ dim_overrides: []
 **Decision:** Implement the Epic 17 "brand logo" polish as **our own pixel-art icons** generated with PixelLab (PixFlux, 64×64, Config C: black outline + detailed shading + transparent bg), one per component, stored in `public/icons/<component-id>.png`. Rendered via `<ComponentIcon>` (pixel `<img>` when an icon exists for the id, else the lucide category icon) in ArchieNode + ComponentCard.
 **Why (over the roadmap's external `brand`/`logoUrl`):** (1) Cohesive with the factorify-archie aesthetic; (2) no licensing/trademark concerns (original art); (3) **local same-origin assets → zero URL-injection surface** (the exact security cost that deferred D37); (4) filename = component id → no per-component data/schema change. Gated on a known id set (`COMPONENT_ICON_IDS`) so a missing id falls back cleanly; a consistency test keeps the set ⟷ files ⟷ components in lockstep.
 **Status:** accepted — resolves PENDING D10; D37 superseded.
+
+## D39 — Single-player improvement plan from the Coding Ducks gap analysis (2026-05-30)
+
+**Decision:** Adopt a 6-phase single-player improvement epic (PLAN.md) derived from the Claude-in-Chrome gap analysis vs Coding Ducks (docs/research/20260530). Sequence: P1 on-object delete/duplicate toolbars → P2 canvas authoring fixes → P3 information density → P4 solo progress loop → P5 component model (type→provider→tier) → P6 live guidance.
+**Key sub-decisions:**
+- **Adopt type → provider → tier** component model (P5): top-level = fundamental types (CDN, Cache, Relational DB…), provider chosen in-node with $·RPS·ms, existing config variants become the tier. Schema-additive: insert `provider_id` between type_id and variant_id; static YAML migration map keeps import/export lossless. Confirmed by the analysis as the highest-impact change + enabler of lighter UI + type-keyed validation.
+- **Deletion is a functional gap, not polish** (P1): connectors cannot be removed from the UI at all today (Delete-key only, undiscoverable) — highest-leverage correctness fix.
+- **Exclude community/benchmarking** (per user directive "before sharing features"): the analysis's "anonymized percentile / beats X% of builds" needs cross-user data → deferred. Only solo "vs your past attempts" is in scope (P4).
+- **History error (P4)** flagged in the analysis ("Could not load…") — diagnose vs the deployed Firestore rules / auth before assuming a code bug (D9-adjacent).
+**Status:** accepted — supersedes the community-first framing of the roadmap's "Phase 4 (Future)" for now; single-player track runs first.
