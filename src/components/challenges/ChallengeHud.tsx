@@ -3,6 +3,7 @@ import { Check, X as XIcon, Lightbulb } from "lucide-react"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { ChallengeCoach } from "@/components/challenges/ChallengeCoach"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 
 /**
@@ -41,6 +42,8 @@ export function ChallengeHud() {
         </button>
       </div>
       <p className="mt-0.5 text-[10px] leading-snug text-text-secondary">{challenge.brief}</p>
+
+      <ChallengeCoach />
 
       <div className="mt-2">
         <div className="flex justify-between text-[10px]">

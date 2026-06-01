@@ -2103,3 +2103,9 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 11:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
 - 2026-06-01 11:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
 - 2026-06-01 11:54 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/constants.test.ts
+- 2026-06-01 12:20 | Write | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-01 12:20 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeCoach.tsx
+- 2026-06-01 12:20 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-01 12:20 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-01 12:21 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeCoach.test.ts
+- 2026-06-01 12:21 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeCoach.test.tsx
