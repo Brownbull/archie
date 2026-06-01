@@ -2240,3 +2240,56 @@ PR: — (direct dev→main; commits f949ffd + c987d56)
 CI: all passed (run 26781773804, 42s)
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P98, P99 (added rows to .kdbp/DEPLOYMENTS.md)
+- 2026-06-01 17:21 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 17:21 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 17:21 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 17:22 | Write | /home/khujta/projects/bmad/archie/src/icons/officialIconMap.ts
+- 2026-06-01 17:22 | Write | /home/khujta/projects/bmad/archie/scripts/gen-logos.mts
+- 2026-06-01 17:22 | Edit | /home/khujta/projects/bmad/archie/package.json
+- 2026-06-01 17:24 | Write | /home/khujta/projects/bmad/archie/src/icons/registry.ts
+- 2026-06-01 17:24 | Write | /home/khujta/projects/bmad/archie/src/icons/LogoIcon.tsx
+- 2026-06-01 17:24 | Write | /home/khujta/projects/bmad/archie/src/icons/officialIcons.ts
+- 2026-06-01 17:25 | Write | /home/khujta/projects/bmad/archie/src/icons/officialTypeIcons.tsx
+- 2026-06-01 17:25 | Write | /home/khujta/projects/bmad/archie/src/components/common/TypeIcon.tsx
+- 2026-06-01 17:25 | Edit | /home/khujta/projects/bmad/archie/src/main.tsx
+- 2026-06-01 17:25 | Write | /home/khujta/projects/bmad/archie/src/components/common/ComponentIcon.tsx
+- 2026-06-01 17:25 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 17:25 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 17:25 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 17:25 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-01 17:25 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-01 17:25 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-01 17:26 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-01 17:29 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/preferencesStore.test.ts
+- 2026-06-01 17:29 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/preferencesStore.test.ts
+- 2026-06-01 17:29 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/common/ComponentIcon.test.tsx
+- 2026-06-01 17:29 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/SettingsMenu.test.tsx
+- 2026-06-01 17:29 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/SettingsMenu.test.tsx
+- 2026-06-01 17:29 | Write | /home/khujta/projects/bmad/archie/tests/unit/icons/officialIconMap.test.ts
+- 2026-06-01 17:30 | Write | /home/khujta/projects/bmad/archie/tests/unit/icons/officialTypeIcons.test.ts
+- 2026-06-01 17:39 | Edit | /home/khujta/projects/bmad/archie/src/components/common/TypeIcon.tsx
+- 2026-06-01 17:40 | Edit | /home/khujta/projects/bmad/archie/src/components/common/TypeIcon.tsx
+- 2026-06-01 17:40 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 17:40 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 17:40 | Edit | /home/khujta/projects/bmad/archie/src/icons/officialIcons.ts
+- 2026-06-01 17:40 | Edit | /home/khujta/projects/bmad/archie/scripts/gen-logos.mts
+- 2026-06-01 17:41 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+
+## 2026-06-01 18:00 — [f1021ed] feat(icons): configurable icon set — pixel-art or official vendor logos
+FINDINGS: 3 (0 critical, 0 high, 1 medium, 2 low)
+ACTIONS: structure→update-structure (broadened scripts/** to include ts/mts/mjs); README doc-drift→accept (internal toggle + dev-deps); ArchieNode shape 549L→accept (pre-existing, +2L)
+REVIEW: adversarial 3-lens (ts/quality/security) + verify pass — 0 confirmed critical/high; fixed 2 react-hooks/static-components errors + Object.hasOwn guard + gen-logos not_found arg
+DEFERRED: none
+
+## 2026-06-01 21:55 — PUSH dev -> main
+PR: — (direct; carried 03cf224 [P98/P99 bookkeeping] + f1021ed [P100 feature] + 01cd21c [P101 chore])
+CI: deploy-production ✅ green (run 26784384126, 1m2s). NOTE: npm-audit gate lives in PR-only ci.yml, not the push→main deploy path; vitest criticals fixed pre-emptively regardless.
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P100, P101
