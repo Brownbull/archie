@@ -20,11 +20,25 @@ import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { useNodePorts } from "@/hooks/useNodePorts"
 import { useNodeSimTelemetry, simCapacityColorClass } from "@/hooks/useNodeSimTelemetry"
 import { PORT_TYPES } from "@/lib/constants"
-import { getNodeCost } from "@/stores/architectureStoreHelpers"
+import { getNodeCost, getNodeComplexity, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
+import { Gauge } from "lucide-react"
 
 const PORT_HEIGHT_PX = 20
 const MIN_PORT_SECTION_HEIGHT = 0
 const DYNAMIC_HEIGHT_THRESHOLD = 5
+
+// On-node operational-complexity badge: label + colour per level. Switch (not a lookup map)
+// to keep the access static for the object-injection lint rule. Low ops cost reads green.
+function complexityMeta(level: ComplexityLevel): { label: string; cls: string } {
+  switch (level) {
+    case "low":
+      return { label: "Low", cls: "bg-emerald-500/20 text-emerald-300" }
+    case "medium":
+      return { label: "Med", cls: "bg-amber-500/20 text-amber-300" }
+    case "high":
+      return { label: "High", cls: "bg-red-500/20 text-red-300" }
+  }
+}
 
 function getPortOffset(index: number, total: number): number {
   if (total <= 1) return 50
@@ -100,6 +114,13 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     if (r === undefined) return null
     return r >= 1000 ? `${+(r / 1000).toFixed(1)}k rps` : `${r} rps`
   }, [nodeCost.maxRPS])
+
+  // Operational-complexity level for the active variant — drives the badge on the right of the
+  // scaling row (below the price). Tells a junior architect how much effort this block is to run.
+  const complexity = useMemo(
+    () => getNodeComplexity(data.archieComponentId, data.activeConfigVariantId),
+    [data.archieComponentId, data.activeConfigVariantId],
+  )
 
   // --- Replica scaling (Epic 14) ---
   const replicaCount = data.replicaCount ?? 1
@@ -244,7 +265,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         </div>
       )}
 
-      {(scalingRule.scalable || replicaCount > 1 || needsLB || backendCount > 0) && (
+      {(scalingRule.scalable || replicaCount > 1 || needsLB || backendCount > 0 || complexity) && (
         <div
           data-testid="archie-node-scaling"
           className="nodrag flex flex-wrap items-center gap-1 px-3 pb-1.5"
@@ -308,6 +329,18 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
           {backendCount > 0 && (
             <span data-testid="replica-backends" className="rounded-full bg-teal-500/20 px-1.5 py-0.5 text-[9px] font-medium text-teal-300">
               {backendCount} backend{backendCount === 1 ? "" : "s"}
+            </span>
+          )}
+          {/* Operational-complexity badge — pushed to the right (below the price). */}
+          {complexity && (
+            <span
+              data-testid="archie-node-complexity"
+              data-complexity={complexity}
+              title={`Operational complexity: ${complexityMeta(complexity).label}`}
+              className={`ml-auto flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-medium ${complexityMeta(complexity).cls}`}
+            >
+              <Gauge className="h-2.5 w-2.5" aria-hidden />
+              {complexityMeta(complexity).label}
             </span>
           )}
         </div>

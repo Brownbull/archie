@@ -286,6 +286,26 @@ export function getNodeCost(
   }
 }
 
+export type ComplexityLevel = "low" | "medium" | "high"
+
+/**
+ * Effective operational-complexity level for a node's active variant — the variant's override
+ * if it sets one, else the component's base metric. Drives the on-node complexity badge so an
+ * architect sees "how hard is this to run/operate" at a glance. Null when the component or the
+ * metric is unknown.
+ */
+export function getNodeComplexity(
+  archieComponentId: string,
+  activeConfigVariantId: string,
+): ComplexityLevel | null {
+  const component = componentLibrary.getComponent(archieComponentId)
+  if (!component) return null
+  const variant = component.configVariants?.find((v) => v.id === activeConfigVariantId)
+  const fromVariant = variant?.metrics?.find((m) => m.category === "operational-complexity")
+  const fromBase = component.baseMetrics?.find((m) => m.category === "operational-complexity")
+  return (fromVariant ?? fromBase)?.value ?? null
+}
+
 export function computeTotalArchitectureCost(
   nodes: ReadonlyArray<{ data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number } }>,
 ): number {

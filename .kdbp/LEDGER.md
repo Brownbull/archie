@@ -1819,3 +1819,14 @@ Per screenshot feedback: the canvas node now shows the chosen VENDOR's icon left
 ## 2026-06-01 02:40 — commit: +5 compute providers (Python/Java/Ruby/.NET/PHP) + PHP highlighting
 FINDINGS: 0 (full suite 3528 ✅ yaml-validation 509 ✅ icon-consistency ✅ tsc -b ✅ lint 0-err ✅)
 Compute had only Node + Go. Added 5 mainstream backends so the 'Compute' block has real choice: python-django (Python+Django, WSGI vs ASGI), spring-boot (Java+Spring Boot, JVM vs GraalVM native), rails (Ruby on Rails, Puma vs scaled), dotnet (C#+ASP.NET, standard vs Native AOT), laravel (PHP+Laravel, FPM vs Octane). Each mirrors the compute metric ids + full data quality + a PixelLab vendor icon (40 total). Added PHP to the inspector code-highlighter allowlist (Laravel snippets). Firestore re-seeded → 40 components. Compute now offers 7 providers. (C/C++ left out as default app servers — niche high-perf only.)
+- 2026-05-31 23:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-05-31 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 23:03 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-05-31 23:03 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+
+## 2026-06-01 03:10 — commit: on-node operational-complexity badge
+FINDINGS: 0 (ArchieNode 67 ✅ canvas+stores+integration 711 ✅ tsc -b ✅ lint 0-err ✅)
+User wanted a complexity indicator to the right of replicas / below price. Added getNodeComplexity(componentId, variantId) in architectureStoreHelpers — resolves operational-complexity (variant override → base metric, defensive against malformed Firestore docs). ArchieNode renders a Gauge pill (Low=green / Med=amber / High=red) pushed right (ml-auto) inside the scaling row, so it sits right of the replica stepper and below the cost. Pure UI/derivation — NO schema/data change, no reseed needed.

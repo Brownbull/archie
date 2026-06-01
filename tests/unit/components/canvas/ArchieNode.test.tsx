@@ -210,6 +210,45 @@ describe("ArchieNode", () => {
     })
   })
 
+  describe("complexity indicator", () => {
+    function componentWith(complexity: "low" | "medium" | "high", variantOverride?: "low" | "medium" | "high") {
+      return {
+        configVariants: [
+          {
+            id: "default",
+            name: "Default",
+            metrics: variantOverride
+              ? [{ id: "operational-complexity", value: variantOverride, numericValue: 5, category: "operational-complexity" }]
+              : [],
+          },
+        ],
+        baseMetrics: [{ id: "operational-complexity", value: complexity, numericValue: 5, category: "operational-complexity" }],
+      }
+    }
+
+    it("renders the operational-complexity badge from the base metric", () => {
+      mockGetComponent.mockReturnValue(componentWith("medium"))
+      render(<ArchieNode {...defaultProps} />)
+      const badge = screen.getByTestId("archie-node-complexity")
+      expect(badge).toHaveAttribute("data-complexity", "medium")
+      expect(badge).toHaveTextContent("Med")
+    })
+
+    it("prefers the active variant's complexity override over the base metric", () => {
+      mockGetComponent.mockReturnValue(componentWith("low", "high"))
+      render(<ArchieNode {...defaultProps} />)
+      const badge = screen.getByTestId("archie-node-complexity")
+      expect(badge).toHaveAttribute("data-complexity", "high")
+      expect(badge).toHaveTextContent("High")
+    })
+
+    it("renders no complexity badge when the component is unknown", () => {
+      mockGetComponent.mockReturnValue(undefined)
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.queryByTestId("archie-node-complexity")).not.toBeInTheDocument()
+    })
+  })
+
   it("renders component name", () => {
     render(<ArchieNode {...defaultProps} />)
     expect(screen.getByText("PostgreSQL")).toBeInTheDocument()
