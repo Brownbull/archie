@@ -2293,3 +2293,33 @@ PR: — (direct; carried 03cf224 [P98/P99 bookkeeping] + f1021ed [P100 feature] 
 CI: deploy-production ✅ green (run 26784384126, 1m2s). NOTE: npm-audit gate lives in PR-only ci.yml, not the push→main deploy path; vitest criticals fixed pre-emptively regardless.
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P100, P101
+- 2026-06-01 18:03 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 18:05 | Write | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-01 18:08 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/BuildHealthPanel.tsx
+- 2026-06-01 18:08 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/BuildHealthPanel.tsx
+- 2026-06-01 18:08 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasLegend.tsx
+- 2026-06-01 18:08 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasLegend.tsx
+- 2026-06-01 18:08 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasLegend.tsx
+- 2026-06-01 18:08 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/NodeProviderSelect.tsx
+- 2026-06-01 18:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-01 18:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-01 18:14 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/BuildHealthPanel.tsx
+- 2026-06-01 18:14 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+
+## 2026-06-01 18:18 — [fcc2f65] fix(ui): toolbox tab overlap + overlay-panel legibility + tighter provider dropdown
+FINDINGS: 0 critical/high (tsc✓ eslint 0✓ unit 4166✓; Playwright visual-audit 6/6 incl. tab↔palette + panel↔toolbar overlap guards)
+ACTIONS: Playwright-driven visual audit of every surface; 4 layout/font fixes + new tests/e2e/visual-audit.spec.ts
+DEFERRED: none (optional: palette card label truncation "Traffi c…" at 2-col width — pre-existing, not flagged)
+- 2026-06-01 18:33 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-01 18:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+
+## 2026-06-01 18:37 — [6bf5343] fix(toolbox): palette card labels wrap cleanly (stack icon above label)
+FINDINGS: 0 critical/high (tsc✓ eslint 0✓ unit 4166✓; Playwright visual-audit 6/6 — palette crop confirms word-boundary wrap)
+ACTIONS: stack concept-loop above a full-width label in TypeBlockCard
+DEFERRED: none
+
+## 2026-06-01 22:38 — PUSH dev -> main
+PR: — (direct; carried bcce0cb [P100/P101 bookkeeping] + fcc2f65 [P102 UI polish] + 6bf5343 [P103 palette])
+CI: deploy-production ✅ green (run 26786273976, 54s)
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P102, P103
