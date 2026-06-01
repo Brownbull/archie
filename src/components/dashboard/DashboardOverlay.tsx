@@ -23,6 +23,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
+import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { WeightSliders } from "@/components/dashboard/WeightSliders"
 import { ConstraintPanel } from "@/components/dashboard/ConstraintPanel"
 import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePanel"
@@ -98,7 +99,10 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
         className="sm:max-w-4xl max-h-[90vh] overflow-y-auto"
       >
         <DialogHeader>
-          <DialogTitle>Architecture Scores</DialogTitle>
+          <div className="flex items-center gap-2">
+            <DialogTitle>Architecture Scores</DialogTitle>
+            <PanelInfoButton guideId="optimize" side="bottom" />
+          </div>
           <DialogDescription>
             {isEmpty
               ? "No components on canvas"

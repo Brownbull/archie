@@ -5,6 +5,7 @@ import { ToolboxPanel } from "@/components/toolbox/ToolboxPanel"
 import { CommandPalette } from "@/components/toolbox/CommandPalette"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { GuidedTour } from "@/components/onboarding/GuidedTour"
+import { FocusedTour } from "@/components/onboarding/FocusedTour"
 import { useCanvasAutosave } from "@/hooks/useCanvasAutosave"
 import { useFirstNodeNudge } from "@/hooks/useFirstNodeNudge"
 import { useCanvasShortcuts } from "@/hooks/useCanvasShortcuts"
@@ -115,6 +116,7 @@ export function AppLayout() {
 
         <CommandPalette />
         <GuidedTour />
+        <FocusedTour />
         <KeyboardShortcutsDialog />
 
         {hasSelection && (

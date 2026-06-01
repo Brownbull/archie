@@ -19,6 +19,7 @@ import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 import { DataContextPanel } from "@/components/inspector/DataContextPanel"
 import { DataSourceNote } from "@/components/common/DataSourceNote"
 import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
+import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { formatRps, formatLatencyMs } from "@/lib/formatStats"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { InspectorDisclosure } from "@/components/inspector/InspectorDisclosure"
@@ -187,18 +188,21 @@ export function ComponentDetail({
             <h2 data-testid="inspector-heading" className="min-w-0 text-sm font-semibold text-text-primary">
               {headingLabel}
             </h2>
-            {nodeId && (
-              <button
-                type="button"
-                data-testid="inspector-remove-node"
-                aria-label="Remove from canvas"
-                title="Remove from canvas"
-                onClick={() => removeNode(nodeId)}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-text-secondary transition-colors hover:bg-red-500/15 hover:text-red-400"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            )}
+            <div className="flex shrink-0 items-center gap-1">
+              <PanelInfoButton guideId="inspector" side="left" />
+              {nodeId && (
+                <button
+                  type="button"
+                  data-testid="inspector-remove-node"
+                  aria-label="Remove from canvas"
+                  title="Remove from canvas"
+                  onClick={() => removeNode(nodeId)}
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-text-secondary transition-colors hover:bg-red-500/15 hover:text-red-400"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[0.6875rem] text-text-secondary">
             {categoryMeta && (

@@ -1,6 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUiStore, type ToolboxTab } from "@/stores/uiStore"
 import { SearchFilter } from "@/components/toolbox/SearchFilter"
+import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
 import { StacksTab } from "@/components/toolbox/StacksTab"
 import { BlueprintTab } from "@/components/toolbox/BlueprintTab"
@@ -12,6 +13,10 @@ export function ToolboxPanel() {
 
   return (
     <div data-testid="toolbox-panel" className="flex h-full flex-col">
+      <div className="flex items-center justify-between px-3 pb-1 pt-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-text-secondary">Toolbox</span>
+        <PanelInfoButton guideId="toolbox" side="bottom" />
+      </div>
       <SearchFilter />
       <Tabs
         value={toolboxTab}

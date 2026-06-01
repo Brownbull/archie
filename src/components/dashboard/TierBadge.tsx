@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Trophy, ChevronUp, ChevronDown, Check } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
+import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { Z_INDEX } from "@/lib/constants"
 
 interface TierBadgeProps {
@@ -90,6 +91,7 @@ export function TierBadge({ onOpenPathway }: TierBadgeProps) {
           )}
         </>
       )}
+      <PanelInfoButton guideId="tier" side="top" className="ml-0.5" />
     </div>
   )
 }
