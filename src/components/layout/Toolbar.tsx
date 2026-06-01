@@ -8,6 +8,7 @@ import { ExportButton } from "@/components/import-export/ExportButton"
 import { ExportReportButton } from "@/components/toolbar/ExportReportButton"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
 import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
+import { UndoRedoControls } from "@/components/canvas/UndoRedoControls"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 import { FileUp, BrainCircuit } from "lucide-react"
 
@@ -24,6 +25,7 @@ export function Toolbar() {
     >
       <div className="flex items-center gap-3">
         <span className="text-sm font-semibold text-text-primary">Archie</span>
+        <UndoRedoControls />
         <Button
           data-testid="import-button"
           variant="ghost"

@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { usePreferencesStore, type FontFamily } from "@/stores/preferencesStore"
+import { useShortcutsDialog } from "@/components/help/shortcutsDialogStore"
 
 export function SettingsMenu() {
   const theme = usePreferencesStore((s) => s.theme)
@@ -105,6 +106,12 @@ export function SettingsMenu() {
 
         <DropdownMenuItem data-testid="restart-tour" onSelect={() => setTourSeen(false)}>
           Restart tour
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          data-testid="open-shortcuts"
+          onSelect={() => useShortcutsDialog.getState().setOpen(true)}
+        >
+          Keyboard shortcuts
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

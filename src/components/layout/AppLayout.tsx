@@ -7,6 +7,8 @@ import { CanvasView } from "@/components/canvas/CanvasView"
 import { GuidedTour } from "@/components/onboarding/GuidedTour"
 import { useCanvasAutosave } from "@/hooks/useCanvasAutosave"
 import { useFirstNodeNudge } from "@/hooks/useFirstNodeNudge"
+import { useCanvasShortcuts } from "@/hooks/useCanvasShortcuts"
+import { KeyboardShortcutsDialog } from "@/components/help/KeyboardShortcutsDialog"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 import { InspectorResizeHandle } from "@/components/inspector/InspectorResizeHandle"
@@ -62,6 +64,8 @@ export function AppLayout() {
   useCanvasAutosave()
   // One-time "configure & connect" momentum nudge on the user's first placed node.
   useFirstNodeNudge()
+  // Undo/redo recorder + keyboard shortcuts (undo/redo, copy/paste, ? help).
+  useCanvasShortcuts()
 
   return (
     <ImportProvider>
@@ -111,6 +115,7 @@ export function AppLayout() {
 
         <CommandPalette />
         <GuidedTour />
+        <KeyboardShortcutsDialog />
 
         {hasSelection && (
           <InspectorOverlay>

@@ -1941,3 +1941,24 @@ UX review bundle 1 of 4 (user picked all four). architectureStore was NOT persis
 ## 2026-06-01 06:55 — commit: Bundle 2 — anchored spotlight tour + first-node nudge
 FINDINGS: 0 (full suite 4013 ✅ GuidedTour 5 ✅ tsc -b ✅ lint 0-err ✅ e2e: spotlight anchors to toolbox/start-card distinct regions; first node auto-selects + nudge toast)
 UX bundle 2 of 4 (user's flagged issue). Rewrote GuidedTour from a centered text-only modal into a non-blocking SPOTLIGHT: each step (after Welcome) dims the screen except the real region it teaches (canvas-empty-state, toolbox, canvas, overlay-selector, scenario-selector, dashboard) via a box-shadow ring + a hint card floated beside it (clamped, below/above). Graceful centered fallback when a target isn't on screen; same testids/titles preserved (Welcome / Three ways to start) so unit test stays green. measure() runs only via rAF/resize (no synchronous in-effect setState — react-compiler lint). First-node momentum: useFirstNodeNudge auto-selects the very first placed node (opens inspector) + one-time toast, gated on new persisted firstNodeHintSeen flag (never repeats / never on autosave restore). Fixed stale guidance.spec step-1 title. Pure client UI.
+- 2026-06-01 07:44 | Write | /home/khujta/projects/bmad/archie/src/services/canvasHistory.ts
+- 2026-06-01 07:45 | Write | /home/khujta/projects/bmad/archie/src/components/help/KeyboardShortcutsDialog.tsx
+- 2026-06-01 07:45 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/UndoRedoControls.tsx
+- 2026-06-01 07:45 | Write | /home/khujta/projects/bmad/archie/src/hooks/useCanvasShortcuts.ts
+- 2026-06-01 07:45 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-01 07:46 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-01 07:46 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-01 07:46 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-01 07:46 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-01 07:46 | Edit | /home/khujta/projects/bmad/archie/src/services/canvasHistory.ts
+- 2026-06-01 07:47 | Write | /home/khujta/projects/bmad/archie/tests/unit/services/canvasHistory.test.ts
+- 2026-06-01 07:47 | Write | /home/khujta/projects/bmad/archie/src/components/help/shortcutsDialogStore.ts
+- 2026-06-01 07:48 | Edit | /home/khujta/projects/bmad/archie/src/components/help/KeyboardShortcutsDialog.tsx
+- 2026-06-01 07:48 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useCanvasShortcuts.ts
+- 2026-06-01 07:48 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-01 07:48 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-01 07:50 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useCanvasShortcuts.ts
+
+## 2026-06-01 07:30 — commit: Bundle 3 — undo/redo, copy/paste, shortcuts (multi-select native)
+FINDINGS: 0 (full suite 4018 ✅ canvasHistory 5 ✅ tsc -b ✅ lint 0-err ✅ e2e: undo/redo buttons, Ctrl+C/V clone, ? + Settings open shortcuts)
+UX bundle 3 of 4. Undo/redo: snapshot-based canvasHistory service (watches store; records {nodes,edges} on ref-change, debounced 350ms so a drag = 1 step; apply via setNodes/setEdges + guarded triggerRecalculation; loadNonce bump resets baseline so 'open' isn't undoable). useHistoryStore drives Undo/Redo toolbar buttons; ⌘/Ctrl+Z, ⌘⇧Z/Ctrl+Y bound in useCanvasShortcuts. Copy/paste: ⌘/Ctrl+C remembers selected node, ⌘/Ctrl+V clones via duplicateNode + selects it (copy-once paste-many). KeyboardShortcutsDialog (+ shortcutsDialogStore split for fast-refresh lint) opens via ? (handles '/'+shift in headless) and a new Settings 'Keyboard shortcuts' item. Multi-select + multi-delete already work via React Flow defaults (shift-drag box / shift-click → existing onNodesDelete→removeNodes) — documented in the dialog, no new code. Typing-target guard so inputs aren't hijacked. Pure client UI.
