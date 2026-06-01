@@ -127,6 +127,12 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     if (r === undefined) return null
     return r >= 1000 ? `${+(r / 1000).toFixed(1)}k rps` : `${r} rps`
   }, [nodeCost.maxRPS])
+  // Compact RPS figure (no "rps" suffix) for the traffic-source stepper readout.
+  const rpsStepValue = useMemo(() => {
+    const r = nodeCost.maxRPS
+    if (r === undefined) return "—"
+    return r >= 1000 ? `${+(r / 1000).toFixed(1)}k` : `${r}`
+  }, [nodeCost.maxRPS])
   const latencyLabel = nodeCost.baseLatencyMs !== undefined ? `${nodeCost.baseLatencyMs}ms` : null
 
   // Operational-complexity level for the active variant — drives the badge on the right of the
@@ -139,6 +145,9 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // --- Replica scaling (Epic 14) ---
   const replicaCount = data.replicaCount ?? 1
   const scalingRule = getScalingRule(data.componentCategory)
+  // Traffic sources aren't "scaled" with replicas — instead the stepper drives how many
+  // requests/sec they emit (replicaCount multiplies the variant's max_rps via getNodeCost).
+  const isTraffic = data.componentCategory === "traffic"
   const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)
   const needsLB = useArchitectureStore((s) =>
     (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
@@ -295,12 +304,48 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         </div>
       )}
 
-      {(scalingRule.scalable || replicaCount > 1 || needsLB || backendCount > 0 || complexity) && (
+      {(isTraffic || scalingRule.scalable || replicaCount > 1 || needsLB || backendCount > 0 || complexity) && (
         <div
           data-testid="archie-node-scaling"
           className="nodrag flex flex-wrap items-center gap-1 px-3 pb-1.5"
         >
-          {scalingRule.scalable ? (
+          {isTraffic ? (
+            <div
+              className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
+              onClick={(e) => e.stopPropagation()}
+              title="Requests per second this source sends. Add more to drive higher load (or pick a bigger tier above)."
+            >
+              <button
+                type="button"
+                data-testid="rps-decrement"
+                aria-label="Fewer requests per second"
+                disabled={replicaCount <= MIN_REPLICAS}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setNodeReplicaCount(id, replicaCount - 1)
+                }}
+                className="px-1.5 text-[0.6875rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+              >
+                −
+              </button>
+              <span data-testid="rps-stepper-value" className="min-w-[42px] text-center text-[0.625rem] font-semibold text-text-primary">
+                {rpsStepValue} rps
+              </span>
+              <button
+                type="button"
+                data-testid="rps-increment"
+                aria-label="More requests per second"
+                disabled={replicaCount >= MAX_REPLICAS}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setNodeReplicaCount(id, replicaCount + 1)
+                }}
+                className="px-1.5 text-[0.6875rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+              >
+                +
+              </button>
+            </div>
+          ) : scalingRule.scalable ? (
             <div
               className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
               onClick={(e) => e.stopPropagation()}

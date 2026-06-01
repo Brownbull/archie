@@ -214,6 +214,26 @@ describe("ArchieNode", () => {
     })
   })
 
+  describe("traffic-source RPS stepper (P97)", () => {
+    it("renders an RPS stepper (not a replica stepper) for a traffic source", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const }} />)
+      expect(screen.getByTestId("rps-stepper-value")).toHaveTextContent("rps")
+      expect(screen.queryByTestId("replica-increment")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("replica-count")).not.toBeInTheDocument()
+    })
+
+    it("raises RPS via setNodeReplicaCount on + click", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const, replicaCount: 2 }} />)
+      fireEvent.click(screen.getByTestId("rps-increment"))
+      expect(mockSetNodeReplicaCount).toHaveBeenCalledWith("node-1", 3)
+    })
+
+    it("disables the RPS decrement at the minimum", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const, replicaCount: 1 }} />)
+      expect(screen.getByTestId("rps-decrement")).toBeDisabled()
+    })
+  })
+
   describe("complexity indicator", () => {
     function componentWith(complexity: "low" | "medium" | "high", variantOverride?: "low" | "medium" | "high") {
       return {

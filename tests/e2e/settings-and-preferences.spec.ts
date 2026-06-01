@@ -5,9 +5,9 @@ const SCREENSHOT_DIR = "test-results/settings-and-preferences"
 
 // Font preset maps (mirror src/lib/constants.ts)
 const FONT_SIZE_PRESETS: Record<string, string> = {
-  small: "14px",
-  medium: "16px",
-  large: "18px",
+  small: "16px",
+  medium: "18px",
+  large: "20px",
 }
 
 const FONT_FAMILY_PRESETS: Record<string, string> = {
@@ -347,8 +347,8 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
       // Measure computed font-sizes on elements across all panels
       measurements[size] = await measureFontSizes(page)
 
-      // Canvas node width must remain fixed at 192px regardless of font size (AC-ARCH-NO-3)
-      await expect(page.locator('[data-testid="archie-node"]').first()).toHaveCSS("width", "192px")
+      // Canvas node width must remain fixed at 208px regardless of font size (AC-ARCH-NO-3)
+      await expect(page.locator('[data-testid="archie-node"]').first()).toHaveCSS("width", "208px")
 
       const num = size === "small" ? "21" : size === "medium" ? "22" : "23"
       await page.screenshot({

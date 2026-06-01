@@ -7,10 +7,10 @@ export const INSPECTOR_MIN_WIDTH = 200
 export const INSPECTOR_MAX_WIDTH = 700
 export const INSPECTOR_COLLAPSED_WIDTH = 40
 export const DASHBOARD_HEIGHT = 100
-// Canvas node width. Wider, more rectangular cards (P87) — declutters the on-node vendor
-// dropdown + stats rows that crowded at the old 140px. 192 = 12× the 16px grid, so placement
-// math (duplicate offset, traffic-source/stack spacing) stays grid-aligned.
-export const NODE_WIDTH = 192
+// Canvas node width. Widened again (P97 → 208 = 13× the 16px grid) to give the on-node vendor
+// dropdown room for bigger icons + readable option text. Still grid-aligned, so placement math
+// (duplicate offset, traffic-source/stack spacing) stays consistent.
+export const NODE_WIDTH = 208
 export const BORDER_RADIUS = 6
 
 // Spacing scale (UX16 — 4px base)

@@ -2214,3 +2214,12 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 15:57 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
 - 2026-06-01 16:01 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/preferencesStore.test.ts
 - 2026-06-01 16:01 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/preferencesStore.test.ts
+- 2026-06-01 16:05 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/NodeProviderSelect.tsx
+- 2026-06-01 16:06 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/NodeProviderSelect.tsx
+- 2026-06-01 16:06 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-01 16:06 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
+- 2026-06-01 16:06 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-01 16:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 16:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 16:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 16:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
