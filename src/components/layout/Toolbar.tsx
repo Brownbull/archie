@@ -9,6 +9,7 @@ import { ExportReportButton } from "@/components/toolbar/ExportReportButton"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
 import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
 import { UndoRedoControls } from "@/components/canvas/UndoRedoControls"
+import { ResetCanvasButton } from "@/components/layout/ResetCanvasButton"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 import { FileUp, BrainCircuit } from "lucide-react"
 
@@ -51,6 +52,7 @@ export function Toolbar() {
           AI Prompt
         </Button>
         <ChallengeSelector />
+        <ResetCanvasButton />
       </div>
 
       <div className="flex items-center gap-3">

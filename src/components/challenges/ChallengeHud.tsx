@@ -32,10 +32,12 @@ export function ChallengeHud() {
           type="button"
           data-testid="challenge-exit"
           aria-label="Exit challenge"
+          title="Leave this challenge (your canvas is kept)"
           onClick={() => reset()}
-          className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-text-secondary hover:bg-surface hover:text-text-primary"
+          className="flex shrink-0 items-center gap-1 rounded border border-archie-border px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:bg-surface hover:text-text-primary"
         >
-          <XIcon className="h-3.5 w-3.5" />
+          <XIcon className="h-3 w-3" />
+          Exit
         </button>
       </div>
       <p className="mt-0.5 text-[10px] leading-snug text-text-secondary">{challenge.brief}</p>
