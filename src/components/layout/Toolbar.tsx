@@ -1,23 +1,22 @@
-import { useState } from "react"
-import { useAuth } from "@/hooks/useAuth"
-import { Button } from "@/components/ui/button"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { ExperienceLevelControl } from "@/components/layout/ExperienceLevelControl"
+import { AppMenuBar } from "@/components/layout/AppMenuBar"
+import { AccountMenu } from "@/components/layout/AccountMenu"
 import { IssuesSummary } from "@/components/layout/IssuesSummary"
-import { useImportAction } from "@/components/import-export/ImportDialog"
-import { ExportButton } from "@/components/import-export/ExportButton"
-import { ExportReportButton } from "@/components/toolbar/ExportReportButton"
+import { ResetCanvasDialog } from "@/components/layout/ResetCanvasDialog"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
 import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
-import { UndoRedoControls } from "@/components/canvas/UndoRedoControls"
-import { ResetCanvasButton } from "@/components/layout/ResetCanvasButton"
+import { useUiStore } from "@/stores/uiStore"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
-import { FileUp, BrainCircuit } from "lucide-react"
 
+/**
+ * Top bar (P95) — a clean menu bar. Brand + File/Edit/Build menus on the left; the global
+ * experience-level dropdown, issues, settings and account menu on the right. The dialogs the
+ * menus open (Reset, AI Prompt, Challenges) are rendered here once, controlled via uiStore.
+ */
 export function Toolbar() {
-  const { user, signOut } = useAuth()
-  const { triggerFilePicker, isImporting } = useImportAction()
-  const [promptOpen, setPromptOpen] = useState(false)
+  const promptOpen = useUiStore((s) => s.promptOpen)
+  const setPromptOpen = useUiStore((s) => s.setPromptOpen)
 
   return (
     <header
@@ -25,52 +24,22 @@ export function Toolbar() {
       className="flex items-center justify-between border-b border-archie-border bg-panel px-4"
       style={{ height: `${TOOLBAR_HEIGHT}px` }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-text-primary">Archie</span>
-        <UndoRedoControls />
-        <Button
-          data-testid="import-button"
-          variant="ghost"
-          size="sm"
-          onClick={triggerFilePicker}
-          disabled={isImporting}
-          className="gap-1.5"
-        >
-          <FileUp className="h-3.5 w-3.5" />
-          Import
-        </Button>
-        <ExportButton />
-        <ExportReportButton />
-        <Button
-          data-testid="prompt-template-button"
-          variant="ghost"
-          size="sm"
-          onClick={() => setPromptOpen(true)}
-          title="Copy a ready-made prompt to generate an architecture in Claude/ChatGPT, then Import the YAML it returns."
-          className="gap-1.5"
-        >
-          <BrainCircuit className="h-3.5 w-3.5" />
-          AI Prompt
-        </Button>
-        <ChallengeSelector />
-        <ResetCanvasButton />
+        <AppMenuBar />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <ExperienceLevelControl />
-        {user?.displayName && (
-          <span className="text-sm text-text-secondary">
-            {user.displayName}
-          </span>
-        )}
         <IssuesSummary />
         <SettingsMenu />
-        <Button variant="ghost" size="sm" onClick={signOut}>
-          Sign out
-        </Button>
+        <AccountMenu />
       </div>
 
+      {/* Dialogs opened from the menu bar — open state lives in uiStore. */}
       <PromptTemplateDialog open={promptOpen} onOpenChange={setPromptOpen} />
+      <ChallengeSelector hideTrigger />
+      <ResetCanvasDialog />
     </header>
   )
 }

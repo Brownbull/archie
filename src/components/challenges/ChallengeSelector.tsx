@@ -35,9 +35,10 @@ function StarRow({ earned }: { earned: number }) {
   )
 }
 
-export function ChallengeSelector() {
-  // Open state lives in uiStore so other surfaces (empty-canvas card, History tab)
-  // can open the challenge picker, not just the toolbar trigger button.
+export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boolean } = {}) {
+  // Open state lives in uiStore so other surfaces (the Build menu, empty-canvas card, History tab)
+  // can open the challenge picker, not just the inline trigger button. `hideTrigger` renders the
+  // dialog without its own button — used by the menu bar, which opens it via setChallengesOpen.
   const open = useUiStore((s) => s.challengesOpen)
   const setOpen = useUiStore((s) => s.setChallengesOpen)
   const challenges = getAllChallenges()
@@ -78,12 +79,14 @@ export function ChallengeSelector() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button data-testid="open-challenges" variant="ghost" size="sm" className="gap-1.5">
-          <Trophy className="h-3.5 w-3.5" />
-          Challenges
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button data-testid="open-challenges" variant="ghost" size="sm" className="gap-1.5">
+            <Trophy className="h-3.5 w-3.5" />
+            Challenges
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent data-testid="challenge-selector" className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Architecture Challenges</DialogTitle>
