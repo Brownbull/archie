@@ -20,7 +20,11 @@ export function ConfigSelector({
 }: ConfigSelectorProps) {
   return (
     <div data-testid="config-selector" className="space-y-1">
-      <label id="config-selector-label" className="text-xs font-medium text-text-secondary">
+      <label
+        id="config-selector-label"
+        className="text-xs font-medium text-text-secondary"
+        title="Configuration tier — a cost vs. performance/scale trade-off for this provider. Each tier carries its own $/mo, throughput, and latency."
+      >
         Configuration
       </label>
       <Select value={activeVariantId} onValueChange={onVariantChange}>

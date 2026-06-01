@@ -1962,3 +1962,15 @@ UX bundle 2 of 4 (user's flagged issue). Rewrote GuidedTour from a centered text
 ## 2026-06-01 07:30 — commit: Bundle 3 — undo/redo, copy/paste, shortcuts (multi-select native)
 FINDINGS: 0 (full suite 4018 ✅ canvasHistory 5 ✅ tsc -b ✅ lint 0-err ✅ e2e: undo/redo buttons, Ctrl+C/V clone, ? + Settings open shortcuts)
 UX bundle 3 of 4. Undo/redo: snapshot-based canvasHistory service (watches store; records {nodes,edges} on ref-change, debounced 350ms so a drag = 1 step; apply via setNodes/setEdges + guarded triggerRecalculation; loadNonce bump resets baseline so 'open' isn't undoable). useHistoryStore drives Undo/Redo toolbar buttons; ⌘/Ctrl+Z, ⌘⇧Z/Ctrl+Y bound in useCanvasShortcuts. Copy/paste: ⌘/Ctrl+C remembers selected node, ⌘/Ctrl+V clones via duplicateNode + selects it (copy-once paste-many). KeyboardShortcutsDialog (+ shortcutsDialogStore split for fast-refresh lint) opens via ? (handles '/'+shift in headless) and a new Settings 'Keyboard shortcuts' item. Multi-select + multi-delete already work via React Flow defaults (shift-drag box / shift-click → existing onNodesDelete→removeNodes) — documented in the dialog, no new code. Typing-target guard so inputs aren't hijacked. Pure client UI.
+- 2026-06-01 07:56 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-01 07:56 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-01 07:56 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ConfigSelector.tsx
+- 2026-06-01 07:56 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 07:57 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-01 07:57 | Edit | /home/khujta/projects/bmad/archie/src/components/import-export/PromptTemplateDialog.tsx
+- 2026-06-01 07:57 | Edit | /home/khujta/projects/bmad/archie/src/components/import-export/PromptTemplateDialog.tsx
+- 2026-06-01 07:58 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+
+## 2026-06-01 08:05 — commit: Bundle 4 — clarity quick wins (grade, jargon tooltips, AI-prompt framing)
+FINDINGS: 0 (full suite 4018 ✅ AggregateScore 16 ✅ tsc -b ✅ lint 0-err ✅ e2e: AI-prompt dialog clarity)
+UX bundle 4 of 4 (safe high-value subset). (1) AggregateScore: letter grade A/B/C/D/F beside the overall number + GRADE_HELP tooltip (makes '7.2' interpretable); 'Overall' label kept so existing tests pass. (2) Jargon tooltips: ConfigSelector 'Configuration' (tier = cost vs perf/scale trade-off), ArchieNode replica stepper (horizontal replicas need upstream LB), AI Prompt button title. (3) AI Prompt clarity: button tooltip + new DialogDescription stating it's a copy-paste prompt for Claude/ChatGPT, not in-app AI. DEFERRED (riskier/flow-specific, noted to user): scenario/failure 'test conditions' grouping label, edge heatmap-status a11y pattern, challenge results 'run again' + scoring-rule text, heatmap numeric hover. Pure client UI.

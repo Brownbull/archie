@@ -17,8 +17,21 @@ function bgToTextColor(bgClass: string): string {
   return SCORE_TEXT_COLORS[bgClass] ?? "text-text-primary"
 }
 
+/** Turns the 0–10 score into a familiar letter grade so a number like "7.2" reads as good/bad. */
+function letterGrade(score: number): string {
+  const pct = score / METRIC_MAX_VALUE
+  if (pct >= 0.85) return "A"
+  if (pct >= 0.7) return "B"
+  if (pct >= 0.55) return "C"
+  if (pct >= 0.4) return "D"
+  return "F"
+}
+
+const GRADE_HELP = "Letter grade from the overall score — A ≥8.5, B ≥7, C ≥5.5, D ≥4, else F (out of 10)."
+
 export function AggregateScore({ score, balancedScore }: AggregateScoreProps) {
   const textColor = bgToTextColor(getScoreColor(score))
+  const grade = letterGrade(score)
   const showDual =
     balancedScore !== undefined &&
     balancedScore.toFixed(1) !== score.toFixed(1)
@@ -55,10 +68,19 @@ export function AggregateScore({ score, balancedScore }: AggregateScoreProps) {
         </>
       ) : (
         <>
-          <span className={`text-3xl font-bold ${textColor}`}>
-            {score.toFixed(1)}
-          </span>
-          <span className="text-xs text-text-secondary">Overall</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className={`text-3xl font-bold ${textColor}`}>
+              {score.toFixed(1)}
+            </span>
+            <span
+              data-testid="aggregate-score-grade"
+              title={GRADE_HELP}
+              className={`text-lg font-bold ${textColor}`}
+            >
+              {grade}
+            </span>
+          </div>
+          <span className="text-xs text-text-secondary" title={GRADE_HELP}>Overall</span>
         </>
       )}
     </div>

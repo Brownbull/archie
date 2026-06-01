@@ -44,6 +44,7 @@ export function Toolbar() {
           variant="ghost"
           size="sm"
           onClick={() => setPromptOpen(true)}
+          title="Copy a ready-made prompt to generate an architecture in Claude/ChatGPT, then Import the YAML it returns."
           className="gap-1.5"
         >
           <BrainCircuit className="h-3.5 w-3.5" />

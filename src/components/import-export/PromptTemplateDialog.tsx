@@ -6,6 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Copy, Check } from "lucide-react"
@@ -60,6 +61,10 @@ export function PromptTemplateDialog({ open, onOpenChange }: PromptTemplateDialo
               )}
             </Button>
           </div>
+          <DialogDescription>
+            Copy this prompt, paste it into Claude or ChatGPT, then bring the YAML it returns back
+            via Import. (Archie doesn't call the AI itself — this is a ready-made prompt.)
+          </DialogDescription>
         </DialogHeader>
         <ScrollArea className="flex-1 min-h-0">
           <pre className="whitespace-pre-wrap text-xs font-mono text-text-primary p-1">

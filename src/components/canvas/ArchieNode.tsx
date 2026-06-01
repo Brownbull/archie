@@ -277,6 +277,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
             <div
               className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
               onClick={(e) => e.stopPropagation()}
+              title="Horizontal replicas — identical copies that share load (multiple replicas need a load balancer upstream)."
             >
               <button
                 type="button"
