@@ -2176,3 +2176,15 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 14:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/TierBadge.test.tsx
 - 2026-06-01 14:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/TierBadge.test.tsx
 - 2026-06-01 14:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/TierBadge.test.tsx
+- 2026-06-01 14:53 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-06-01 14:53 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 14:53 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 14:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/componentTypes-levels.test.ts
+- 2026-06-01 14:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/componentTypes-levels.test.ts
+- 2026-06-01 14:57 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx

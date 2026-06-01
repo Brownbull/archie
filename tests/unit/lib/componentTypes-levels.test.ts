@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { levelRank, typeLevel, typeWithinLevel } from "@/lib/componentTypes"
+import { levelRank, typeLevel, typeWithinLevel, maxTypeLevel, levelWithin } from "@/lib/componentTypes"
 
 describe("componentTypes — experience levels (P86)", () => {
   it("ranks levels in ascending order", () => {
@@ -29,6 +29,26 @@ describe("componentTypes — experience levels (P86)", () => {
     expect(typeLevel(null)).toBe("beginner")
     expect(typeLevel(undefined)).toBe("beginner")
     expect(typeLevel("not-a-real-type")).toBe("beginner")
+  })
+
+  it("maxTypeLevel takes the highest level among a composite's block types (P92/Phase D)", () => {
+    // A stack/blueprint of only beginner blocks stays beginner.
+    expect(maxTypeLevel(["compute", "relational-db", "cache"])).toBe("beginner")
+    // One intermediate block lifts it to intermediate.
+    expect(maxTypeLevel(["compute", "message-queue"])).toBe("intermediate")
+    // One advanced block (event-stream) lifts the whole thing to advanced.
+    expect(maxTypeLevel(["compute", "cache", "event-stream"])).toBe("advanced")
+    // Empty / unknown → beginner (always visible).
+    expect(maxTypeLevel([])).toBe("beginner")
+    expect(maxTypeLevel([null, undefined, "not-a-type"])).toBe("beginner")
+  })
+
+  it("levelWithin is true when the item's level is at or below the user's", () => {
+    expect(levelWithin("beginner", "beginner")).toBe(true)
+    expect(levelWithin("intermediate", "beginner")).toBe(false)
+    expect(levelWithin("advanced", "intermediate")).toBe(false)
+    expect(levelWithin("intermediate", "advanced")).toBe(true)
+    expect(levelWithin("advanced", "advanced")).toBe(true)
   })
 
   it("typeWithinLevel includes at-or-below tiers and excludes above", () => {

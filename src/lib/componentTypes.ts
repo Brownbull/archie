@@ -137,6 +137,25 @@ export function typeWithinLevel(typeId: string | null | undefined, level: BlockL
   return levelRank(typeLevel(typeId)) <= levelRank(level)
 }
 
+/**
+ * The experience level of a COMPOSITE (a stack or blueprint) = the highest level among its
+ * constituent block types (P92/Phase D). A pattern using a Vector DB is "advanced" because
+ * Vector DB is; one of only beginner blocks stays "beginner". Empty input → beginner.
+ */
+export function maxTypeLevel(typeIds: Array<string | null | undefined>): ExperienceLevel {
+  let rank = 0
+  for (const t of typeIds) {
+    const r = levelRank(typeLevel(t))
+    if (r > rank) rank = r
+  }
+  return rank >= 2 ? "advanced" : rank >= 1 ? "intermediate" : "beginner"
+}
+
+/** Is an item's level at or below the active experience level? */
+export function levelWithin(itemLevel: ExperienceLevel, userLevel: ExperienceLevel): boolean {
+  return levelRank(itemLevel) <= levelRank(userLevel)
+}
+
 export interface ComponentTypeGroup {
   /** Grouping key: the typeId, or a `category:<cat>` fallback for pre-P5 components. */
   key: string

@@ -1,7 +1,10 @@
 import { useState, Component, type ErrorInfo, type ReactNode } from "react"
+import { ChevronDown, ChevronRight, Sparkles } from "lucide-react"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
+import { maxTypeLevel, levelWithin } from "@/lib/componentTypes"
 import { hydrateArchitectureSkeleton } from "@/services/yamlImporter"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -17,6 +20,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import type { BlueprintFull } from "@/schemas/blueprintSchema"
+
+/** A blueprint's experience level = the highest level among its skeleton's block types. */
+function blueprintLevel(bp: BlueprintFull) {
+  return maxTypeLevel(bp.skeleton.nodes.map((n) => componentLibrary.getComponent(n.componentId)?.typeId))
+}
 
 // --- ErrorBoundary ---
 
@@ -97,6 +105,8 @@ function BlueprintTabInner() {
   const { isReady } = useLibrary()
   const [confirmingBlueprint, setConfirmingBlueprint] = useState<BlueprintFull | null>(null)
   const [hydrateError, setHydrateError] = useState<string | null>(null)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
+  const experienceLevel = usePreferencesStore((s) => s.experienceLevel)
   const loadArchitecture = useArchitectureStore((s) => s.loadArchitecture)
   const nodes = useArchitectureStore((s) => s.nodes)
 
@@ -110,6 +120,11 @@ function BlueprintTabInner() {
   }
 
   const blueprints = componentLibrary.getAllBlueprints()
+
+  // P92/Phase D: at/below-level blueprints show; above-level ones collapse into a drawer.
+  const inLevel = blueprints.filter((bp) => levelWithin(blueprintLevel(bp), experienceLevel))
+  const advanced = blueprints.filter((bp) => !levelWithin(blueprintLevel(bp), experienceLevel))
+  const advancedExpanded = advancedOpen || inLevel.length === 0
 
   if (blueprints.length === 0) {
     return (
@@ -170,9 +185,37 @@ function BlueprintTabInner() {
       <ScrollArea data-testid="blueprint-tab" className="h-full">
         <div className="space-y-3 p-3">
           <DataSourceNote kind="blueprint" />
-          {blueprints.map((bp) => (
+          {inLevel.map((bp) => (
             <BlueprintCard key={bp.id} blueprint={bp} onLoad={handleLoad} />
           ))}
+
+          {advanced.length > 0 && (
+            <div data-testid="advanced-blueprints">
+              <button
+                type="button"
+                data-testid="advanced-blueprints-toggle"
+                aria-expanded={advancedExpanded}
+                onClick={() => setAdvancedOpen((o) => !o)}
+                className="mb-2 flex w-full items-center gap-1.5 rounded px-0.5 py-0.5 hover:bg-surface"
+              >
+                {advancedExpanded
+                  ? <ChevronDown className="h-3 w-3 shrink-0 text-text-secondary" />
+                  : <ChevronRight className="h-3 w-3 shrink-0 text-text-secondary" />}
+                <Sparkles className="h-3.5 w-3.5 text-text-secondary" />
+                <h3 className="text-[0.6875rem] font-semibold uppercase tracking-wider text-text-secondary">
+                  More advanced blueprints
+                </h3>
+                <span className="text-[0.625rem] text-text-secondary">({advanced.length})</span>
+              </button>
+              {advancedExpanded && (
+                <div className="space-y-3">
+                  {advanced.map((bp) => (
+                    <BlueprintCard key={bp.id} blueprint={bp} onLoad={handleLoad} />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </ScrollArea>
 
