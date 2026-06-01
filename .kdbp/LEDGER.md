@@ -2234,3 +2234,9 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 16:38 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter-v3-migration.test.ts
 - 2026-06-01 16:39 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/portResolution.test.ts
 - 2026-06-01 16:40 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/stackPlacement.test.ts
+
+## 2026-06-01 21:01 — PUSH dev -> main
+PR: — (direct dev→main; commits f949ffd + c987d56)
+CI: all passed (run 26781773804, 42s)
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P98, P99 (added rows to .kdbp/DEPLOYMENTS.md)
