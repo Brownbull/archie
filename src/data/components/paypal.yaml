@@ -1,0 +1,154 @@
+id: paypal
+name: PayPal / Braintree
+category: compute
+type_id: payments
+description: Ubiquitous consumer wallet plus Braintree's developer-focused gateway
+is: A payments provider pairing the widely-trusted PayPal consumer wallet with Braintree's developer-friendly gateway for cards and alternative methods, offering fast checkout conversion and broad coverage
+gain:
+  - Huge consumer trust and one-touch checkout
+  - Braintree adds cards, wallets, and a clean API
+  - PCI scope reduced via hosted fields / vaulting
+cost:
+  - Per-transaction fees plus currency conversion
+  - Account holds and dispute handling can be rigid
+  - Two product surfaces (PayPal + Braintree) to learn
+tags:
+  - payments
+  - wallet
+  - paypal
+  - braintree
+  - checkout
+base_metrics:
+  - id: transaction-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: payment-availability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: pci-compliance
+    value: high
+    numeric_value: 8
+    category: security
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: cost-per-transaction
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: paypal-checkout
+    name: PayPal Checkout
+    monthly_cost: 0
+    max_rps: 1500
+    base_latency_ms: 400
+    metrics:
+      - id: transaction-latency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: pci-compliance
+        value: high
+        numeric_value: 9
+        category: security
+      - id: cost-per-transaction
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // PayPal Checkout — create an order server-side, approve client-side
+        const order = await fetch("https://api-m.paypal.com/v2/checkout/orders", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ intent: "CAPTURE", purchase_units: [{ amount: { currency_code: "USD", value: "20.00" } }] }),
+        });
+    metric_explanations:
+      pci-compliance:
+        reason: The customer authenticates and pays on PayPal's hosted flow, so card data never touches your servers.
+        contributing_factors:
+          - Payment captured on PayPal-hosted pages
+          - No raw PAN handled by your backend
+          - Reduces your PCI scope to SAQ-A
+      transaction-latency:
+        reason: A redirect/popup approval round-trip to PayPal adds latency versus an inline card charge.
+        contributing_factors:
+          - Buyer approval step on PayPal
+          - Extra network hop to capture
+          - Conversion benefit usually outweighs it
+  - id: braintree-direct
+    name: Braintree (Direct API)
+    monthly_cost: 0
+    max_rps: 2500
+    base_latency_ms: 280
+    metrics:
+      - id: transaction-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: pci-compliance
+        value: high
+        numeric_value: 8
+        category: security
+      - id: cost-per-transaction
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Braintree — charge a tokenized payment method (no raw card on server)
+        const result = await gateway.transaction.sale({
+          amount: "20.00",
+          paymentMethodNonce: nonceFromClient,
+          options: { submitForSettlement: true },
+        });
+    metric_explanations:
+      transaction-latency:
+        reason: A direct server-to-gateway charge with a client-side nonce avoids redirect hops, keeping latency low.
+        contributing_factors:
+          - Tokenized nonce charged in one call
+          - No buyer redirect for card payments
+          - Hosted fields keep PCI scope low
+      cost-per-transaction:
+        reason: Standard card-present-equivalent rates apply per transaction, competitive with peer gateways.
+        contributing_factors:
+          - Percentage + fixed fee per charge
+          - Volume discounts at higher tiers
+          - Currency conversion adds a margin
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 200-900ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      transaction-latency: 0.8
+    extreme:
+      transaction-latency: 0.6
+      payment-availability: 0.8
+  burst-pattern:
+    periodic-spikes:
+      transaction-latency: 0.8
+    unpredictable:
+      transaction-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,0 +1,145 @@
+id: fivetran
+name: Fivetran
+category: compute
+type_id: etl
+description: Managed ELT with prebuilt connectors that sync sources into the warehouse
+is: A managed ELT service with hundreds of prebuilt connectors that automatically extract from SaaS and database sources and load them into your warehouse, handling schema drift and incremental syncs for you
+gain:
+  - Hundreds of maintained prebuilt connectors
+  - Automatic schema-drift handling and incremental syncs
+  - Near-zero pipeline maintenance
+cost:
+  - Priced on Monthly Active Rows — can get expensive
+  - Less control over extraction internals
+  - Vendor dependency for ingestion
+tags:
+  - etl
+  - elt
+  - ingestion
+  - fivetran
+  - connectors
+base_metrics:
+  - id: processing-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: data-quality
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: fivetran-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 120
+    max_rps: 400
+    base_latency_ms: 6000
+    metrics:
+      - id: processing-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: fivetran-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Fivetran — trigger a connector sync via the REST API
+        curl -X POST "https://api.fivetran.com/v1/connectors/$CONNECTOR/sync" \
+          -u "$API_KEY:$API_SECRET" \
+          -H "Content-Type: application/json"
+    metric_explanations:
+      operational-complexity:
+        reason: Fully managed connectors handle extraction, schema drift, and retries, so there is almost no pipeline to maintain.
+        contributing_factors:
+          - Prebuilt, vendor-maintained connectors
+          - Automatic schema migration
+          - Managed retries and monitoring
+      fivetran-cost-efficiency:
+        reason: Standard sync frequency at moderate row volume keeps Monthly Active Row charges reasonable.
+        contributing_factors:
+          - Billed on Monthly Active Rows
+          - Less frequent syncs lower MAR
+          - No engineering time on connectors
+  - id: enterprise
+    name: Enterprise (High-Frequency)
+    monthly_cost: 400
+    max_rps: 700
+    base_latency_ms: 3000
+    metrics:
+      - id: processing-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: fivetran-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Fivetran — set a connector to 5-minute sync frequency
+        curl -X PATCH "https://api.fivetran.com/v1/connectors/$CONNECTOR" \
+          -u "$API_KEY:$API_SECRET" \
+          -d '{"sync_frequency": 5}'
+    metric_explanations:
+      processing-throughput:
+        reason: High-frequency syncs keep warehouse data fresh to within minutes of the source.
+        contributing_factors:
+          - Sub-15-minute sync schedules
+          - Parallel connector execution
+          - Incremental change capture
+      fivetran-cost-efficiency:
+        reason: Frequent syncs re-touch more rows, raising Monthly Active Rows and therefore cost.
+        contributing_factors:
+          - More syncs increase MAR counts
+          - Enterprise tier and SLA premiums
+          - Freshness traded against spend
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - batch
+  typical_latency: 1-60s
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      processing-throughput: 0.8
+    extreme:
+      processing-throughput: 0.6
+  traffic-volume:
+    high:
+      processing-throughput: 0.8
+    extreme:
+      processing-throughput: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

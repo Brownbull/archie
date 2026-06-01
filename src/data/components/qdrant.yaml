@@ -1,0 +1,150 @@
+id: qdrant
+name: Qdrant
+category: data-storage
+type_id: vector-store
+description: Open-source vector database written in Rust for fast similarity search
+is: A Rust-based vector database with HNSW indexing and rich payload filtering that runs self-hosted or as managed cloud, tuned for low-latency similarity search at scale
+gain:
+  - Fast HNSW search with payload pre-filtering
+  - Open source — self-host with no per-query fees
+  - Rust core keeps memory and latency low
+cost:
+  - Self-hosting means you operate the cluster
+  - Recall/latency trade-offs need index tuning
+  - Smaller ecosystem than incumbent managed options
+tags:
+  - vector
+  - embeddings
+  - similarity
+  - rust
+  - qdrant
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: data-durability
+    value: medium
+    numeric_value: 6
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: cost-per-query
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: self-hosted
+    name: Self-Hosted
+    monthly_cost: 40
+    max_rps: 4000
+    base_latency_ms: 8
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 6
+        category: operational-complexity
+      - id: cost-per-query
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Qdrant — top-k similarity search with a payload filter
+        from qdrant_client import QdrantClient
+        from qdrant_client.models import Filter, FieldCondition, MatchValue
+
+        client = QdrantClient(url="http://localhost:6333")
+        hits = client.search(
+            collection_name="docs",
+            query_vector=embedding,
+            query_filter=Filter(must=[FieldCondition(key="lang", match=MatchValue(value="en"))]),
+            limit=5,
+        )
+    metric_explanations:
+      cost-per-query:
+        reason: Self-hosting on your own hardware means no per-query or managed-service fees — you pay only for the box.
+        contributing_factors:
+          - No usage-based vendor pricing
+          - Rust core packs more vectors per GB of RAM
+          - Quantization shrinks the memory footprint further
+      operational-complexity:
+        reason: You run, upgrade, back up, and scale the cluster yourself, which is more hands-on than a managed offering.
+        contributing_factors:
+          - You own deployment and upgrades
+          - Snapshots and backups are your responsibility
+          - Sharding/replication tuned by hand
+  - id: cloud
+    name: Managed Cloud
+    monthly_cost: 120
+    max_rps: 9000
+    base_latency_ms: 6
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: cost-per-query
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Qdrant Cloud — same client, just point at the managed endpoint + API key
+        client = QdrantClient(
+            url="https://xyz.cloud.qdrant.io",
+            api_key="<QDRANT_API_KEY>",
+        )
+    metric_explanations:
+      operational-complexity:
+        reason: The managed cloud handles provisioning, scaling, and backups, so there is almost nothing to operate.
+        contributing_factors:
+          - Provisioning and upgrades are automatic
+          - Managed backups and monitoring included
+          - Scaling handled by the platform
+      query-latency:
+        reason: Tuned cloud nodes with provisioned resources keep search latency consistently low under load.
+        contributing_factors:
+          - Right-sized instances for the index
+          - Warm caches on dedicated hardware
+          - No noisy-neighbour contention at higher tiers
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 4-30ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

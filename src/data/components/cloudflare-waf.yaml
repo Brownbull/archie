@@ -1,0 +1,146 @@
+id: cloudflare-waf
+name: Cloudflare WAF
+category: monitoring
+type_id: security
+description: Edge web application firewall with managed rules, bot, and DDoS protection
+is: A web application firewall running at Cloudflare's edge that filters malicious HTTP traffic with managed and custom rules, layering bot management and DDoS mitigation in front of your origin
+gain:
+  - Blocks OWASP-class attacks at the edge
+  - Managed rulesets updated against new threats
+  - Absorbs DDoS before traffic reaches origin
+cost:
+  - Adds a small inspection hop per request
+  - Tuning rules to avoid false positives takes care
+  - Advanced bot/rate features are paid tiers
+tags:
+  - security
+  - waf
+  - cloudflare
+  - firewall
+  - edge
+base_metrics:
+  - id: alert-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: threat-detection
+    value: high
+    numeric_value: 9
+    category: security
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: waf-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Managed Ruleset
+    monthly_cost: 20
+    max_rps: 50000
+    base_latency_ms: 4
+    metrics:
+      - id: threat-detection
+        value: high
+        numeric_value: 8
+        category: security
+      - id: alert-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: waf-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Cloudflare WAF — enable the managed ruleset for a zone
+        curl -X PUT "https://api.cloudflare.com/client/v4/zones/$ZONE/rulesets/phases/http_request_firewall_managed/entrypoint" \
+          -H "Authorization: Bearer $TOKEN" \
+          -d '{"rules":[{"action":"execute","action_parameters":{"id":"<cf-managed-ruleset>"}}]}'
+    metric_explanations:
+      threat-detection:
+        reason: Cloudflare's managed rules cover common injection, XSS, and CVE patterns and are updated centrally as new threats emerge.
+        contributing_factors:
+          - Curated OWASP-style managed rules
+          - Continuous updates from global signal
+          - Edge sees attacks across all customers
+      waf-cost-efficiency:
+        reason: Edge filtering on the existing CDN footprint is inexpensive and offloads attack traffic from origin.
+        contributing_factors:
+          - Runs on the shared edge network
+          - Blocks bad traffic before origin cost
+          - Flat tier covers managed rules
+  - id: bot-and-rate
+    name: Managed + Bot / Rate Limiting
+    monthly_cost: 75
+    max_rps: 45000
+    base_latency_ms: 6
+    metrics:
+      - id: threat-detection
+        value: high
+        numeric_value: 10
+        category: security
+      - id: alert-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: waf-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Cloudflare — add a rate-limiting rule on top of the WAF
+        curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/rulesets" \
+          -H "Authorization: Bearer $TOKEN" \
+          -d '{"name":"login-rl","kind":"zone","phase":"http_ratelimit","rules":[{"action":"block","ratelimit":{"characteristics":["ip.src"],"period":60,"requests_per_period":20}}]}'
+    metric_explanations:
+      threat-detection:
+        reason: Bot management and rate limiting catch credential stuffing and scraping that signature rules alone miss.
+        contributing_factors:
+          - Behavioral bot scoring per request
+          - Rate limits throttle abusive sources
+          - Layered defenses raise coverage
+      waf-cost-efficiency:
+        reason: Bot management and rate limiting are premium add-ons billed above the base WAF.
+        contributing_factors:
+          - Bot management is a paid tier
+          - Rate-limiting rules metered separately
+          - Higher value for high-abuse targets
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 2-25ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      alert-latency: 0.9
+    extreme:
+      alert-latency: 0.8
+      threat-detection: 0.9
+  burst-pattern:
+    periodic-spikes:
+      alert-latency: 0.9
+    unpredictable:
+      alert-latency: 0.8
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

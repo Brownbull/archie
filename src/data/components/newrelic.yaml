@@ -1,0 +1,141 @@
+id: newrelic
+name: New Relic
+category: monitoring
+type_id: observability
+description: Full-platform observability with APM, infrastructure, logs, and usage pricing
+is: A SaaS observability platform unifying APM, infrastructure, logs, browser, and synthetics under one query language (NRQL), priced on data ingested plus per-user, with auto-instrumentation agents
+gain:
+  - One platform spanning APM, infra, logs, and synthetics
+  - Auto-instrumentation agents across languages
+  - NRQL queries across every telemetry type
+cost:
+  - Ingest-based pricing can spike with verbose data
+  - Per-user billing adds up for large teams
+  - SaaS — telemetry leaves your environment
+tags:
+  - observability
+  - apm
+  - newrelic
+  - monitoring
+  - saas
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: storage-efficiency
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: data-retention-reliability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: newrelic-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard (APM)
+    monthly_cost: 100
+    max_rps: 7000
+    base_latency_ms: 35
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: data-retention-reliability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: newrelic-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # New Relic — auto-instrument a Node app via the agent
+        npm install newrelic
+        # then require it first in your entrypoint:
+        # node -r newrelic ./app.js   (NEW_RELIC_LICENSE_KEY set in env)
+    metric_explanations:
+      query-latency:
+        reason: Telemetry lands in a managed, indexed store, so NRQL dashboards and alerts query quickly.
+        contributing_factors:
+          - Managed columnar telemetry database
+          - Pre-aggregated metrics for dashboards
+          - No self-managed query backend to tune
+      newrelic-cost-efficiency:
+        reason: Core APM at moderate ingest is cost-effective; the first 100 GB/month is free before metered rates apply.
+        contributing_factors:
+          - Free monthly ingest allowance
+          - Pay per GB beyond the allowance
+          - One platform avoids multiple tool fees
+  - id: full-platform
+    name: Full Platform (+ Logs/Infra)
+    monthly_cost: 280
+    max_rps: 6000
+    base_latency_ms: 45
+    metrics:
+      - id: query-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: data-retention-reliability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: newrelic-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # New Relic — ship infra + logs alongside APM
+        curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash
+        sudo NEW_RELIC_API_KEY=$KEY newrelic install
+    metric_explanations:
+      newrelic-cost-efficiency:
+        reason: Adding logs and infrastructure telemetry multiplies ingest volume, pushing well past the free allowance.
+        contributing_factors:
+          - Verbose logs drive large GB ingest
+          - Infra metrics from every host add up
+          - Long retention tiers cost more
+      data-retention-reliability:
+        reason: The full platform retains correlated metrics, logs, and traces durably for long lookback windows.
+        contributing_factors:
+          - Extended managed retention tiers
+          - Correlated signals kept together
+          - Durable, replicated telemetry store
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 20-160ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+ports:
+  - id: monitor-in
+    type: monitor
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,0 +1,144 @@
+id: weaviate
+name: Weaviate
+category: data-storage
+type_id: vector-store
+description: Open-source vector database with built-in vectorization and hybrid search
+is: An open-source vector database that can generate embeddings via pluggable modules and blend keyword (BM25) with vector search, so you get hybrid retrieval without a separate embedding pipeline
+gain:
+  - Hybrid keyword + vector search out of the box
+  - Optional built-in vectorizer modules (no separate pipeline)
+  - Open source with managed cloud option
+cost:
+  - Module-based vectorization adds moving parts
+  - Memory-hungry for large in-RAM indexes
+  - Hybrid tuning (alpha) needs experimentation
+tags:
+  - vector
+  - embeddings
+  - hybrid-search
+  - semantic
+  - weaviate
+base_metrics:
+  - id: query-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: data-durability
+    value: medium
+    numeric_value: 6
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: cost-per-query
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+config_variants:
+  - id: self-hosted
+    name: Self-Hosted
+    monthly_cost: 55
+    max_rps: 3500
+    base_latency_ms: 10
+    metrics:
+      - id: query-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 6
+        category: operational-complexity
+      - id: cost-per-query
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Weaviate — hybrid search blends BM25 keyword + vector similarity
+        import weaviate
+        client = weaviate.connect_to_local()
+        docs = client.collections.get("Doc")
+        res = docs.query.hybrid(query="vector database", alpha=0.5, limit=5)
+    metric_explanations:
+      cost-per-query:
+        reason: Running open source on your own hardware avoids per-query fees; you fund only the instance.
+        contributing_factors:
+          - No usage-based vendor billing
+          - Vectorizer can run locally to avoid API costs
+          - Index compression reduces RAM needs
+      operational-complexity:
+        reason: You operate the cluster and any vectorizer modules, which is more involved than a fully managed service.
+        contributing_factors:
+          - Self-managed upgrades and backups
+          - Module containers add deployment surface
+          - Sharding/replication configured by you
+  - id: cloud
+    name: Weaviate Cloud
+    monthly_cost: 135
+    max_rps: 8000
+    base_latency_ms: 7
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: cost-per-query
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Weaviate Cloud — managed cluster behind an API key
+        client = weaviate.connect_to_weaviate_cloud(
+            cluster_url="https://xyz.weaviate.network",
+            auth_credentials=weaviate.auth.AuthApiKey("<WEAVIATE_API_KEY>"),
+        )
+    metric_explanations:
+      operational-complexity:
+        reason: The managed cloud runs the cluster and vectorizers for you, removing most day-to-day operations.
+        contributing_factors:
+          - Provisioning and scaling handled by the platform
+          - Managed backups and upgrades
+          - Hosted vectorizer modules
+      query-latency:
+        reason: Provisioned managed nodes keep hybrid query latency low and predictable under load.
+        contributing_factors:
+          - Dedicated resources per cluster tier
+          - Warm indexes on managed hardware
+          - Autoscaling absorbs query bursts
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 5-35ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

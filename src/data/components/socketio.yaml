@@ -1,0 +1,149 @@
+id: socketio
+name: Socket.IO
+category: real-time
+type_id: realtime
+description: Self-hosted realtime library for Node with rooms and automatic reconnection
+is: A self-hosted realtime library for Node.js offering event-based messaging, rooms, and automatic reconnection over websockets with long-polling fallback, scaled across instances via a Redis adapter
+gain:
+  - Full control, self-hosted, no per-message fees
+  - Rooms, namespaces, and auto-reconnect built in
+  - Websocket with graceful long-polling fallback
+cost:
+  - You operate and scale the servers yourself
+  - Multi-instance needs a Redis adapter for fan-out
+  - Sticky sessions required behind a load balancer
+tags:
+  - realtime
+  - websocket
+  - nodejs
+  - socketio
+  - self-hosted
+base_metrics:
+  - id: message-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: concurrent-connections
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 6
+    category: operational-complexity
+  - id: socketio-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: single-node
+    name: Single Node
+    monthly_cost: 15
+    max_rps: 6000
+    base_latency_ms: 8
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: concurrent-connections
+        value: low
+        numeric_value: 3
+        category: scalability
+      - id: socketio-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Socket.IO — single Node server with rooms
+        import { Server } from "socket.io";
+        const io = new Server(3000);
+        io.on("connection", (socket) => {
+          socket.join("room:42");
+          io.to("room:42").emit("msg", { text: "hi" });
+        });
+    metric_explanations:
+      concurrent-connections:
+        reason: One Node process holds all websocket connections in memory, so concurrency is capped by a single server's resources.
+        contributing_factors:
+          - All sockets live in one process
+          - Event-loop bound under heavy fan-out
+          - Vertical scaling only without an adapter
+      socketio-cost-efficiency:
+        reason: A single small server with no managed-service fees is the cheapest way to run realtime.
+        contributing_factors:
+          - One commodity instance to fund
+          - No per-message vendor billing
+          - Open-source library, no license cost
+  - id: redis-adapter
+    name: Clustered (Redis Adapter)
+    monthly_cost: 70
+    max_rps: 22000
+    base_latency_ms: 11
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: socketio-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Socket.IO — Redis adapter fans events across all instances
+        import { createAdapter } from "@socket.io/redis-adapter";
+        import { createClient } from "redis";
+        const pub = createClient(); const sub = pub.duplicate();
+        io.adapter(createAdapter(pub, sub));
+    metric_explanations:
+      concurrent-connections:
+        reason: A Redis adapter relays events between instances, so connections scale horizontally across a fleet of servers.
+        contributing_factors:
+          - Pub/sub fan-out via Redis across nodes
+          - Add servers behind a load balancer
+          - Sticky sessions keep a socket on one node
+      message-latency:
+        reason: Cross-instance fan-out adds a Redis hop versus a single in-memory server, a small latency cost for scale.
+        contributing_factors:
+          - Redis publish/subscribe round-trip
+          - Extra serialization between nodes
+          - Still single-digit-ms within a region
+connection_properties:
+  protocol: WebSocket/HTTPS
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: 5-60ms
+  co_location_potential: true
+demand_responses:
+  concurrent-users:
+    high:
+      concurrent-connections: 0.7
+    extreme:
+      concurrent-connections: 0.4
+      message-latency: 0.7
+  burst-pattern:
+    periodic-spikes:
+      message-latency: 0.8
+    unpredictable:
+      message-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

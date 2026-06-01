@@ -1,0 +1,149 @@
+id: envoy
+name: Envoy Proxy
+category: compute
+type_id: load-balancer
+description: High-performance L4/L7 proxy and the data plane for modern service meshes
+is: A high-performance C++ proxy with rich L4/L7 routing, observability, and dynamic xDS configuration, used both as an edge load balancer and as the sidecar data plane in service meshes
+gain:
+  - Rich L4/L7 routing, retries, and circuit breaking
+  - Deep observability (stats, tracing, access logs)
+  - Dynamic xDS config — no reloads to change routes
+cost:
+  - Powerful but complex to configure well
+  - Sidecar mode adds a hop and memory per pod
+  - Needs a control plane (Istio, etc.) at scale
+tags:
+  - load-balancer
+  - proxy
+  - service-mesh
+  - envoy
+  - layer7
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: envoy-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: edge
+    name: Edge / Standalone
+    monthly_cost: 30
+    max_rps: 40000
+    base_latency_ms: 2
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: envoy-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # Envoy — static edge route to an upstream cluster
+        static_resources:
+          listeners:
+            - address: { socket_address: { address: 0.0.0.0, port_value: 8080 } }
+              filter_chains:
+                - filters:
+                    - name: envoy.filters.network.http_connection_manager
+                      typed_config:
+                        route_config:
+                          virtual_hosts:
+                            - name: api
+                              domains: ["*"]
+                              routes:
+                                - match: { prefix: "/" }
+                                  route: { cluster: api_service }
+    metric_explanations:
+      request-latency:
+        reason: A tuned C++ event loop forwards requests with very low per-hop overhead at the edge.
+        contributing_factors:
+          - Non-blocking C++ data path
+          - Connection pooling to upstreams
+          - Minimal processing for simple routes
+      operational-complexity:
+        reason: A single standalone proxy is simpler than a mesh, but Envoy's config surface is still large.
+        contributing_factors:
+          - Verbose static or xDS configuration
+          - Many filters and tuning knobs
+          - No control plane needed for one node
+  - id: service-mesh
+    name: Service Mesh (Sidecar)
+    monthly_cost: 120
+    max_rps: 30000
+    base_latency_ms: 4
+    metrics:
+      - id: request-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: operational-complexity
+        value: high
+        numeric_value: 9
+        category: operational-complexity
+      - id: envoy-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Envoy as the data plane — Istio injects a sidecar per pod
+        kubectl label namespace app istio-injection=enabled
+        kubectl rollout restart deployment/api -n app
+    metric_explanations:
+      operational-complexity:
+        reason: Running Envoy as a mesh sidecar adds a control plane, cert rotation, and per-pod proxies to operate.
+        contributing_factors:
+          - Control plane (Istio/Consul) to run
+          - mTLS certificate lifecycle to manage
+          - A sidecar per workload to observe
+      request-latency:
+        reason: Each call traverses two sidecars (client and server), adding a small but real hop versus direct calls.
+        contributing_factors:
+          - Two extra proxy hops per request
+          - mTLS handshake/encryption overhead
+          - Still low-single-digit ms when tuned
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 1-15ms
+  co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.8
+    extreme:
+      request-latency: 0.6
+      concurrent-connections: 0.7
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.8
+    unpredictable:
+      request-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out

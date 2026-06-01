@@ -1,0 +1,140 @@
+id: minio
+name: MinIO
+category: data-storage
+type_id: object-storage
+description: Self-hosted S3-compatible object storage for on-prem and hybrid clouds
+is: A high-performance, S3-API-compatible object store you run yourself on commodity disks, giving on-prem or hybrid blob storage without cloud egress fees or vendor lock-in
+gain:
+  - Drop-in S3 API — existing SDKs just work
+  - Self-hosted with no egress fees and full data control
+  - Runs on commodity hardware, on-prem or hybrid
+cost:
+  - You operate the cluster, disks, and erasure coding
+  - Durability depends on your hardware and topology
+  - No managed global replication out of the box
+tags:
+  - storage
+  - object
+  - s3-compatible
+  - self-hosted
+  - minio
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: storage-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: data-durability
+    value: medium
+    numeric_value: 6
+    category: reliability
+  - id: cost-per-gb
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+config_variants:
+  - id: single-node
+    name: Single Node
+    monthly_cost: 20
+    max_rps: 6000
+    base_latency_ms: 5
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: data-durability
+        value: low
+        numeric_value: 3
+        category: reliability
+      - id: cost-per-gb
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # MinIO — single-node S3-compatible server on local disks
+        minio server /data --console-address ":9001"
+        # use any S3 SDK against http://host:9000
+    metric_explanations:
+      cost-per-gb:
+        reason: One box of local disks with no managed-service or egress fees is the cheapest possible per-GB option.
+        contributing_factors:
+          - Commodity disks, no cloud storage rates
+          - Zero egress charges within your network
+          - No per-operation API billing
+      data-durability:
+        reason: A single node has no cross-node redundancy, so a disk or host failure can lose data.
+        contributing_factors:
+          - No erasure coding across nodes
+          - Single host is a failure domain
+          - Backups must be arranged separately
+  - id: distributed
+    name: Distributed (Erasure Coded)
+    monthly_cost: 110
+    max_rps: 14000
+    base_latency_ms: 7
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: data-durability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-gb
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # MinIO distributed — erasure-coded across 4 nodes / 16 drives
+        minio server http://node{1...4}/data{1...4} \
+          --console-address ":9001"
+    metric_explanations:
+      data-durability:
+        reason: Erasure coding spreads each object across drives and nodes, so the cluster survives multiple drive or node failures.
+        contributing_factors:
+          - Reed-Solomon parity across drives
+          - Tolerates loss of up to half the drives
+          - Self-healing rebuilds from parity
+      query-latency:
+        reason: Parallel reads across drives keep latency low even as the cluster scales out.
+        contributing_factors:
+          - Object shards read in parallel
+          - More spindles raise aggregate throughput
+          - Local network keeps round-trips short
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 3-30ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.7
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

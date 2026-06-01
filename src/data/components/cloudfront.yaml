@@ -1,0 +1,143 @@
+id: cloudfront
+name: AWS CloudFront
+category: delivery-network
+type_id: cdn
+description: AWS global CDN with deep origin integration and edge compute
+is: AWS's global content delivery network that caches static and dynamic content at edge locations worldwide, integrates tightly with S3/ALB origins, and runs edge logic via CloudFront Functions or Lambda@Edge
+gain:
+  - Deep AWS-origin integration (S3, ALB, API GW)
+  - Global edge cache lowers latency and origin load
+  - Edge compute via CloudFront Functions / Lambda@Edge
+cost:
+  - AWS-only; egress and request fees apply
+  - Cache invalidations beyond the free tier cost
+  - Config (behaviors, TTLs) has a learning curve
+tags:
+  - cdn
+  - edge
+  - aws
+  - cloudfront
+  - caching
+base_metrics:
+  - id: edge-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: cloudfront-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard Caching
+    monthly_cost: 30
+    max_rps: 50000
+    base_latency_ms: 15
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cloudfront-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # AWS CloudFront — distribution fronting an S3 origin
+        aws cloudfront create-distribution \
+          --origin-domain-name my-bucket.s3.amazonaws.com \
+          --default-root-object index.html
+    metric_explanations:
+      edge-latency:
+        reason: Cached objects are served from the nearest edge location, so users get content without a round-trip to origin.
+        contributing_factors:
+          - Hundreds of global edge POPs
+          - Cache hits skip the origin entirely
+          - Regional edge caches absorb misses
+      cloudfront-cost-efficiency:
+        reason: Offloading reads to the edge cuts origin egress and compute, and AWS-origin transfer is discounted.
+        contributing_factors:
+          - High cache-hit ratio reduces origin traffic
+          - Free transfer from S3/EC2 origins to CloudFront
+          - Pay only for edge egress and requests
+  - id: edge-functions
+    name: With Edge Functions
+    monthly_cost: 70
+    max_rps: 40000
+    base_latency_ms: 20
+    metrics:
+      - id: edge-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cloudfront-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // CloudFront Functions — rewrite/redirect at the edge on viewer request
+        function handler(event) {
+          var req = event.request;
+          if (!req.uri.includes(".")) req.uri = "/index.html";
+          return req;
+        }
+    metric_explanations:
+      edge-latency:
+        reason: Running logic on each request at the edge adds a small processing step before the cached response is returned.
+        contributing_factors:
+          - Function executes per viewer request
+          - Lambda@Edge heavier than CloudFront Functions
+          - Still sub-30ms for lightweight logic
+      cloudfront-cost-efficiency:
+        reason: Edge function invocations are billed per request on top of standard delivery cost.
+        contributing_factors:
+          - Per-invocation edge compute charges
+          - Lambda@Edge priced above CloudFront Functions
+          - Logic at edge avoids extra origin calls
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 10-80ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      edge-latency: 0.9
+    extreme:
+      edge-latency: 0.8
+  geographic-spread:
+    multi-region:
+      edge-latency: 0.9
+    global:
+      edge-latency: 0.8
+ports:
+  - id: cdn-in
+    type: cdn
+    direction: in
+  - id: cdn-out
+    type: cdn
+    direction: out
+  - id: http-in
+    type: http
+    direction: in

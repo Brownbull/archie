@@ -1,0 +1,140 @@
+id: aws-alb
+name: AWS ALB
+category: compute
+type_id: load-balancer
+description: Managed layer-7 application load balancer with health checks and autoscaling
+is: A fully managed AWS layer-7 load balancer that routes HTTP/HTTPS by host/path, scales its own capacity with traffic, and integrates health checks, TLS termination, and optional WAF
+gain:
+  - Managed — scales capacity automatically with traffic
+  - Layer-7 host/path routing and TLS termination
+  - Native health checks and AWS WAF integration
+cost:
+  - AWS-only; billed per hour plus LCU usage
+  - Less low-level tuning than self-managed proxies
+  - Cross-AZ data processing charges apply
+tags:
+  - load-balancer
+  - layer7
+  - managed
+  - aws
+  - alb
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: alb-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 25
+    max_rps: 25000
+    base_latency_ms: 3
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: alb-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # AWS ALB — path-based routing rule to a target group
+        aws elbv2 create-rule \
+          --listener-arn $LISTENER \
+          --conditions Field=path-pattern,Values='/api/*' \
+          --actions Type=forward,TargetGroupArn=$API_TG
+    metric_explanations:
+      concurrent-connections:
+        reason: The ALB scales its own capacity (LCUs) with connection and request volume, absorbing large concurrency without manual sizing.
+        contributing_factors:
+          - Capacity units scale with active connections
+          - No instance to provision or right-size
+          - Spreads traffic across healthy targets in all AZs
+      operational-complexity:
+        reason: AWS runs and scales the balancer, so there is no proxy fleet to patch or tune.
+        contributing_factors:
+          - Managed scaling and patching
+          - Built-in health checks and TLS
+          - Config via listeners and rules, not config files
+  - id: with-waf
+    name: With WAF
+    monthly_cost: 70
+    max_rps: 22000
+    base_latency_ms: 5
+    metrics:
+      - id: request-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: alb-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # AWS ALB — attach a WAF web ACL for layer-7 filtering
+        aws wafv2 associate-web-acl \
+          --web-acl-arn $WEB_ACL \
+          --resource-arn $ALB_ARN
+    metric_explanations:
+      request-latency:
+        reason: Inspecting each request against WAF rules adds a small processing step before forwarding.
+        contributing_factors:
+          - Rule evaluation per request
+          - Managed rule groups add inspection cost
+          - Still single-digit ms in typical configs
+      alb-cost-efficiency:
+        reason: WAF adds per-ACL and per-request charges on top of the balancer's own cost.
+        contributing_factors:
+          - WAF web ACL monthly fee
+          - Per-million-request inspection charges
+          - Managed rule subscriptions extra
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 2-20ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.8
+    extreme:
+      request-latency: 0.6
+      concurrent-connections: 0.7
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.8
+    unpredictable:
+      request-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out

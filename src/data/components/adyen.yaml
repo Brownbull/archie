@@ -1,0 +1,153 @@
+id: adyen
+name: Adyen
+category: compute
+type_id: payments
+description: Enterprise unified-commerce platform spanning online, in-app, and POS
+is: An enterprise payments platform that unifies online, in-app, and point-of-sale on one acquiring stack with global method coverage and built-in risk tooling, aimed at large multi-channel merchants
+gain:
+  - One platform for online, in-app, and in-store
+  - Direct acquiring with broad global method coverage
+  - Built-in risk/fraud (RevenueProtect) tooling
+cost:
+  - Enterprise onboarding is heavier than drop-in SDKs
+  - Interchange++ pricing is powerful but complex
+  - Best value at large, multi-channel volume
+tags:
+  - payments
+  - enterprise
+  - adyen
+  - unified-commerce
+  - acquiring
+base_metrics:
+  - id: transaction-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: payment-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: pci-compliance
+    value: high
+    numeric_value: 9
+    category: security
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: cost-per-transaction
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Online (Checkout API)
+    monthly_cost: 0
+    max_rps: 3000
+    base_latency_ms: 260
+    metrics:
+      - id: transaction-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: pci-compliance
+        value: high
+        numeric_value: 9
+        category: security
+      - id: cost-per-transaction
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Adyen — create a payment session for the Drop-in/Components UI
+        const session = await checkout.sessions({
+          amount: { currency: "EUR", value: 2000 },
+          reference: "order-42",
+          returnUrl: "https://shop.example/return",
+          merchantAccount: ACCOUNT,
+        });
+    metric_explanations:
+      cost-per-transaction:
+        reason: Direct acquiring with Interchange++ pricing keeps the effective rate competitive at scale by passing through true costs.
+        contributing_factors:
+          - Interchange++ exposes the real cost breakdown
+          - No reseller markup as a direct acquirer
+          - Volume tiers lower the processing margin
+      transaction-latency:
+        reason: A direct acquiring path with global edge endpoints keeps authorization round-trips fast.
+        contributing_factors:
+          - Direct connection to card networks
+          - Regional endpoints reduce round-trip time
+          - Tokenized flows avoid extra hops
+  - id: unified-commerce
+    name: Unified Commerce (+ POS)
+    monthly_cost: 60
+    max_rps: 2500
+    base_latency_ms: 320
+    metrics:
+      - id: transaction-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: pci-compliance
+        value: high
+        numeric_value: 10
+        category: security
+      - id: cost-per-transaction
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Adyen Terminal API — POS payment request to a paired card reader
+        curl -X POST https://terminal-api-live.adyen.com/sync \
+          -H "x-API-key: $ADYEN_KEY" \
+          -d '{"SaleToPOIRequest":{"PaymentRequest":{"AmountsReq":{"Currency":"EUR","RequestedAmount":20.0}}}}'
+    metric_explanations:
+      pci-compliance:
+        reason: Card data is captured and encrypted by certified terminals and hosted components, keeping merchant PCI scope minimal across channels.
+        contributing_factors:
+          - P2PE-certified terminals encrypt at the reader
+          - Shopper data tokenized across channels
+          - One compliance posture for web and POS
+      transaction-latency:
+        reason: Coordinating in-store terminals with the online stack adds a small overhead versus a pure online charge.
+        contributing_factors:
+          - Terminal round-trip to the reader
+          - Cross-channel shopper reconciliation
+          - Still sub-second end to end
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 150-800ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      transaction-latency: 0.8
+    extreme:
+      transaction-latency: 0.6
+      payment-availability: 0.8
+  burst-pattern:
+    periodic-spikes:
+      transaction-latency: 0.8
+    unpredictable:
+      transaction-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

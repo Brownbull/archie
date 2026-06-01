@@ -1,0 +1,157 @@
+id: cloudflare-workers
+name: Cloudflare Workers
+category: compute
+type_id: serverless
+description: Edge serverless runtime on V8 isolates with near-zero cold starts
+is: A serverless platform that runs JavaScript/Wasm in lightweight V8 isolates at Cloudflare's edge, giving near-zero cold starts and global low latency, with Durable Objects for stateful coordination
+gain:
+  - Near-zero cold starts via V8 isolates
+  - Runs at the edge — low latency worldwide
+  - Generous free tier; cheap per-request pricing
+cost:
+  - CPU-time and memory limits per request
+  - Not a full Node runtime — Workers APIs only
+  - Stateful needs (Durable Objects/KV) add concepts
+tags:
+  - serverless
+  - edge
+  - workers
+  - cloudflare
+  - faas
+base_metrics:
+  - id: cold-start-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: auto-scaling
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: cost-per-invocation
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: developer-experience
+    value: high
+    numeric_value: 8
+    category: developer-experience
+config_variants:
+  - id: standard
+    name: Standard (Stateless)
+    monthly_cost: 5
+    max_rps: 20000
+    base_latency_ms: 8
+    metrics:
+      - id: cold-start-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: auto-scaling
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: cost-per-invocation
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Cloudflare Workers — stateless fetch handler at the edge
+        export default {
+          async fetch(request, env) {
+            const url = new URL(request.url);
+            if (url.pathname === "/health") return new Response("ok");
+            return new Response("hello from the edge");
+          },
+        };
+    metric_explanations:
+      cold-start-latency:
+        reason: V8 isolates start in well under a millisecond, so there is effectively no cold-start penalty even for idle Workers.
+        contributing_factors:
+          - Isolates avoid per-request container boot
+          - Code kept warm across the edge fleet
+          - No VM or container to provision
+      cost-per-invocation:
+        reason: Per-request pricing on shared edge capacity is extremely low, with a large free allowance.
+        contributing_factors:
+          - No idle compute to pay for
+          - Requests billed in tiny units
+          - Generous free tier covers small apps
+  - id: durable-objects
+    name: With Durable Objects (Stateful)
+    monthly_cost: 30
+    max_rps: 9000
+    base_latency_ms: 14
+    metrics:
+      - id: cold-start-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: auto-scaling
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: cost-per-invocation
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Cloudflare Durable Objects — single-instance coordination point
+        export class Counter {
+          constructor(state) { this.state = state; }
+          async fetch() {
+            let n = (await this.state.storage.get("n")) || 0;
+            await this.state.storage.put("n", ++n);
+            return new Response(String(n));
+          }
+        }
+    metric_explanations:
+      cold-start-latency:
+        reason: A Durable Object pins state to one instance, so requests may route to a specific location and occasionally wait for it to wake.
+        contributing_factors:
+          - Single-instance object for consistency
+          - Requests routed to the object's location
+          - Storage reads add a small step
+      cost-per-invocation:
+        reason: Durable Objects add request, duration, and storage charges beyond plain stateless Workers.
+        contributing_factors:
+          - Per-request and active-duration billing
+          - Stateful storage operations metered
+          - Still cheap, but above stateless tier
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 5-50ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      cold-start-latency: 0.9
+    extreme:
+      cold-start-latency: 0.8
+  burst-pattern:
+    periodic-spikes:
+      cold-start-latency: 0.9
+    unpredictable:
+      cold-start-latency: 0.8
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

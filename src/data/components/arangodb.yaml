@@ -1,0 +1,145 @@
+id: arangodb
+name: ArangoDB
+category: data-storage
+type_id: graph-db
+description: Multi-model database combining graph, document, and key/value in one engine
+is: An open-source multi-model database that stores graph, document, and key/value data in a single engine with one query language (AQL), letting you mix traversals and document queries without separate systems
+gain:
+  - Graph, document, and key/value in one engine
+  - One query language (AQL) across all models
+  - Open source with a clustered, shardable deployment
+cost:
+  - Jack-of-all-models — less tuned than a specialist
+  - Cluster mode adds coordination overhead
+  - Smaller ecosystem than Neo4j for pure graph
+tags:
+  - database
+  - graph
+  - multi-model
+  - document
+  - arangodb
+base_metrics:
+  - id: traversal-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: query-expressiveness
+    value: high
+    numeric_value: 8
+    category: developer-experience
+  - id: cost-per-query
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: single-server
+    name: Single Server
+    monthly_cost: 60
+    max_rps: 5000
+    base_latency_ms: 6
+    metrics:
+      - id: traversal-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 3
+        category: scalability
+      - id: cost-per-query
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // ArangoDB — AQL graph traversal mixed with document filters
+        FOR f IN 1..2 OUTBOUND @userId GRAPH 'social'
+          FILTER f.active == true
+          RETURN { id: f._key, name: f.name }
+    metric_explanations:
+      traversal-latency:
+        reason: A single server keeps the whole graph local, so traversals avoid any inter-node coordination.
+        contributing_factors:
+          - All edges resolved within one process
+          - No network hops between shards
+          - Working set cached in local memory
+      cost-per-query:
+        reason: One node serving multiple data models means no separate databases to license or run, keeping cost per query low.
+        contributing_factors:
+          - One engine replaces graph + document stores
+          - No cluster coordination overhead to fund
+          - Open-source core with no per-query fees
+  - id: cluster
+    name: Cluster (Sharded)
+    monthly_cost: 220
+    max_rps: 16000
+    base_latency_ms: 12
+    metrics:
+      - id: traversal-latency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: cost-per-query
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # ArangoDB cluster — shard a graph collection across DB-Servers
+        arangosh --javascript.execute-string \
+          'db._create("followers", { numberOfShards: 9, replicationFactor: 2 });'
+    metric_explanations:
+      horizontal-scalability:
+        reason: Collections shard across DB-Servers, so adding nodes raises both storage and query throughput.
+        contributing_factors:
+          - SmartGraphs keep related vertices co-sharded
+          - Coordinators fan queries out to shards
+          - Replication factor adds read capacity
+      traversal-latency:
+        reason: Traversals that cross shard boundaries pay a network hop between DB-Servers, adding latency versus a single node.
+        contributing_factors:
+          - Cross-shard edges require inter-node calls
+          - SmartGraph sharding reduces but cannot remove hops
+          - Coordinator aggregation adds a step
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 5-45ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      traversal-latency: 0.8
+    extreme:
+      traversal-latency: 0.6
+  traffic-volume:
+    high:
+      traversal-latency: 0.8
+    extreme:
+      traversal-latency: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

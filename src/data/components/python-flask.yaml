@@ -1,0 +1,172 @@
+id: python-flask
+name: Python + Flask
+category: compute
+type_id: compute
+description: Minimal, unopinionated Python microframework for APIs and small services
+is: A lightweight Python microframework that ships only routing and request handling — you assemble the ORM, auth, and validation you want, trading batteries-included for a small, explicit core
+gain:
+  - Tiny surface area — easy to learn and read
+  - Pick your own ORM, auth, and validation (no lock-in)
+  - Great for small services, prototypes, and glue APIs
+cost:
+  - You wire up ORM/auth/migrations yourself (less out of the box)
+  - The GIL limits CPU-bound parallelism within a process
+  - Sync by default; concurrency needs gevent or extra workers
+tags:
+  - server
+  - python
+  - flask
+  - api
+  - microframework
+base_metrics:
+  - id: request-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: concurrent-connections
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: cpu-efficiency
+    value: medium
+    numeric_value: 4
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: flask-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: wsgi-gunicorn
+    name: WSGI (Gunicorn)
+    monthly_cost: 18
+    max_rps: 1800
+    base_latency_ms: 22
+    metrics:
+      - id: concurrent-connections
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: cpu-efficiency
+        value: medium
+        numeric_value: 4
+        category: performance
+      - id: flask-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Python + Flask — sync route behind Gunicorn (WSGI)
+        from flask import Flask, jsonify
+        from .db import get_user
+
+        app = Flask(__name__)
+
+        @app.get("/users/<int:user_id>")
+        def show_user(user_id):
+            user = get_user(user_id)
+            if user is None:
+                return jsonify(error="Not found"), 404
+            return jsonify(id=user.id, name=user.name)
+        # run: gunicorn app:app --workers 4
+    metric_explanations:
+      concurrent-connections:
+        reason: Gunicorn runs a fixed pool of sync workers; each serves one request at a time, so concurrency is bounded by the worker count.
+        contributing_factors:
+          - One in-flight request per sync worker
+          - Worker count sized to CPU cores (≈2·cores + 1)
+          - A slow downstream call ties up a worker for the whole request
+      flask-cost-efficiency:
+        reason: A tiny framework with no built-in extras keeps memory and CPU per worker low, so each instance handles useful load cheaply.
+        contributing_factors:
+          - Minimal core means low per-request overhead
+          - Small memory footprint packs more workers per box
+          - You only pay for the extensions you actually add
+  - id: gevent-async
+    name: Gevent (Async Workers)
+    monthly_cost: 38
+    max_rps: 5000
+    base_latency_ms: 16
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 7
+        category: scalability
+      - id: request-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: flask-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Python + Flask — gevent workers monkey-patch I/O for cooperative concurrency
+        gunicorn app:app \
+          --worker-class gevent \
+          --workers 4 \
+          --worker-connections 1000
+    metric_explanations:
+      concurrent-connections:
+        reason: Gevent's greenlets cooperatively multiplex many I/O-bound requests on each worker, lifting concurrency far above the one-per-worker sync model.
+        contributing_factors:
+          - Greenlets yield on awaited I/O to other requests
+          - worker-connections caps in-flight requests per worker
+          - Best for I/O-heavy handlers, not CPU-bound work
+      request-latency:
+        reason: Cooperative scheduling avoids requests queueing behind a busy sync worker, so tail latency stays lower under bursty load.
+        contributing_factors:
+          - No head-of-line blocking behind one busy worker
+          - Concurrency absorbs spikes without queue build-up
+          - Any blocking C call still stalls the greenlet loop
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 8-70ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.7
+      cpu-efficiency: 0.7
+    extreme:
+      request-latency: 0.5
+      concurrent-connections: 0.6
+  concurrent-users:
+    high:
+      concurrent-connections: 0.6
+    extreme:
+      concurrent-connections: 0.4
+      request-latency: 0.6
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.7
+    unpredictable:
+      request-latency: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: auth-in
+    type: auth
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

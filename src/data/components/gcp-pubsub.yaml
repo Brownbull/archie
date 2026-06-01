@@ -1,0 +1,147 @@
+id: gcp-pubsub
+name: Google Pub/Sub
+category: messaging
+type_id: event-stream
+description: Fully managed, globally-scalable event ingestion and delivery service
+is: A serverless Google Cloud messaging service that auto-scales to absorb global event ingestion with no partitions or capacity to manage, offering push or pull delivery with at-least-once semantics
+gain:
+  - Serverless — no partitions or capacity to plan
+  - Auto-scales to massive global throughput
+  - Push or pull delivery with at-least-once semantics
+cost:
+  - GCP-only; priced per message and byte
+  - Less ordering control than partitioned logs
+  - No infinite replay like a Kafka log by default
+tags:
+  - messaging
+  - streaming
+  - managed
+  - gcp
+  - pubsub
+base_metrics:
+  - id: message-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: message-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: pubsub-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard (Global)
+    monthly_cost: 60
+    max_rps: 100000
+    base_latency_ms: 20
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: pubsub-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Google Pub/Sub — publish then pull-subscribe
+        from google.cloud import pubsub_v1
+        publisher = pubsub_v1.PublisherClient()
+        topic = publisher.topic_path("my-proj", "orders")
+        publisher.publish(topic, b'{"id": 42}')
+    metric_explanations:
+      horizontal-scalability:
+        reason: Pub/Sub is serverless and globally distributed, scaling to any throughput without provisioning partitions.
+        contributing_factors:
+          - No partitions or shards to size
+          - Capacity scales transparently with load
+          - Global topic accessible from any region
+      message-throughput:
+        reason: The managed fleet absorbs very high publish rates, buffering bursts without back-pressure on producers.
+        contributing_factors:
+          - Elastic backend fleet
+          - Automatic buffering of spikes
+          - Parallel delivery to many subscribers
+  - id: lite
+    name: Pub/Sub Lite (Zonal)
+    monthly_cost: 18
+    max_rps: 40000
+    base_latency_ms: 25
+    metrics:
+      - id: message-throughput
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: pubsub-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Pub/Sub Lite — provision zonal capacity; far cheaper at predictable load
+        gcloud pubsub lite-topics create orders \
+          --location=us-central1-a \
+          --partitions=2 --per-partition-bytes=30GiB
+    metric_explanations:
+      pubsub-cost-efficiency:
+        reason: Lite trades elasticity for pre-provisioned zonal capacity at a fraction of standard per-message cost.
+        contributing_factors:
+          - Provisioned throughput billed flat
+          - No per-message premium
+          - Best for steady, predictable volume
+      horizontal-scalability:
+        reason: Lite capacity is provisioned per zone and partition, so scaling is manual rather than automatic.
+        contributing_factors:
+          - Fixed partitions set throughput ceiling
+          - Zonal, not global, footprint
+          - Resize requires reconfiguration
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - publish-subscribe
+    - event-streaming
+  typical_latency: 15-100ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      message-throughput: 0.8
+    extreme:
+      message-throughput: 0.7
+  burst-pattern:
+    periodic-spikes:
+      message-throughput: 0.8
+    unpredictable:
+      message-throughput: 0.7
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

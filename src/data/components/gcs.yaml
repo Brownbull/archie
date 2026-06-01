@@ -1,0 +1,143 @@
+id: gcs
+name: Google Cloud Storage
+category: data-storage
+type_id: object-storage
+description: Google's managed object storage with unified API across storage classes
+is: A managed object store on Google Cloud with one API across Standard, Nearline, and Coldline classes, so hot and archival data share the same bucket interface with lifecycle-based tiering
+gain:
+  - One API across hot and archival storage classes
+  - Strong global consistency on object reads/writes
+  - Lifecycle rules auto-tier data to cut cost
+cost:
+  - GCP-only; egress and retrieval fees add up
+  - Cold tiers charge for early deletion / retrieval
+  - Per-operation costs matter for tiny-object workloads
+tags:
+  - storage
+  - object
+  - blob
+  - gcp
+  - bucket
+base_metrics:
+  - id: query-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: storage-scalability
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 10
+    category: reliability
+  - id: cost-per-gb
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+config_variants:
+  - id: standard
+    name: Standard (Hot)
+    monthly_cost: 25
+    max_rps: 5000
+    base_latency_ms: 30
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: storage-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: cost-per-gb
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Google Cloud Storage — upload an object to a Standard bucket
+        from google.cloud import storage
+        client = storage.Client()
+        bucket = client.bucket("my-app-assets")
+        bucket.blob("avatars/u1.png").upload_from_filename("u1.png")
+    metric_explanations:
+      query-latency:
+        reason: Standard (hot) storage serves objects with low first-byte latency, suited to frequently accessed data.
+        contributing_factors:
+          - Data kept on always-ready hot media
+          - No retrieval thaw delay
+          - Edge caching available via Cloud CDN
+      storage-scalability:
+        reason: Buckets scale to effectively unlimited objects and bytes with no capacity planning.
+        contributing_factors:
+          - No provisioned size — pay per byte stored
+          - Auto-partitions hot key ranges
+          - Global namespace per bucket
+  - id: nearline-coldline
+    name: Nearline / Coldline (Archival)
+    monthly_cost: 6
+    max_rps: 2000
+    base_latency_ms: 120
+    metrics:
+      - id: query-latency
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: storage-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: cost-per-gb
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # GCS — lifecycle rule: move objects to Coldline after 30 days
+        gcloud storage buckets update gs://my-app-assets \
+          --lifecycle-file=lifecycle.json
+        # lifecycle.json: SetStorageClass COLDLINE when age > 30
+    metric_explanations:
+      cost-per-gb:
+        reason: Archival classes price storage far below hot tiers, so rarely-accessed data is very cheap to keep.
+        contributing_factors:
+          - Lowest per-GB storage rate
+          - Lifecycle rules auto-demote cold data
+          - Best for backups and infrequent reads
+      query-latency:
+        reason: Archival objects carry higher access latency and retrieval fees, so reads are slower and metered.
+        contributing_factors:
+          - Retrieval costs apply per read
+          - Minimum storage duration penalties on early delete
+          - Not suited to latency-sensitive serving
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 20-200ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.7
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.7
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

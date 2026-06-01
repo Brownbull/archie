@@ -1,0 +1,147 @@
+id: grafana
+name: Grafana Stack
+category: monitoring
+type_id: observability
+description: Open observability stack — Grafana dashboards over Loki, Mimir, and Tempo
+is: An open-source observability stack pairing Grafana dashboards with Loki (logs), Mimir/Prometheus (metrics), and Tempo (traces), giving unified visualization self-hosted or on Grafana Cloud
+gain:
+  - Unified metrics, logs, and traces in one UI
+  - Open source — no per-host vendor lock-in
+  - Huge dashboard and data-source ecosystem
+cost:
+  - Self-hosting the LGTM stack is real ops work
+  - Long retention needs object storage tuning
+  - Cloud tier is metered on ingest and users
+tags:
+  - observability
+  - dashboards
+  - grafana
+  - loki
+  - tracing
+base_metrics:
+  - id: query-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: storage-efficiency
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: data-retention-reliability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: grafana-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: self-hosted
+    name: Self-Hosted (LGTM)
+    monthly_cost: 50
+    max_rps: 4000
+    base_latency_ms: 40
+    metrics:
+      - id: query-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: operational-complexity
+        value: high
+        numeric_value: 8
+        category: operational-complexity
+      - id: grafana-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # Grafana — provision a Prometheus data source as code
+        apiVersion: 1
+        datasources:
+          - name: Prometheus
+            type: prometheus
+            access: proxy
+            url: http://mimir:9009/prometheus
+            isDefault: true
+    metric_explanations:
+      grafana-cost-efficiency:
+        reason: Open-source components on object storage avoid per-host SaaS fees, so high-cardinality data is cheap to retain.
+        contributing_factors:
+          - No per-host or per-metric licensing
+          - Loki/Mimir store on cheap object storage
+          - Pay only for the infra you run
+      operational-complexity:
+        reason: You deploy, scale, and tune Loki, Mimir, and Tempo yourself — several stateful systems to operate.
+        contributing_factors:
+          - Multiple components to run and upgrade
+          - Storage/retention tuning per signal
+          - Capacity planning for ingest spikes
+  - id: cloud
+    name: Grafana Cloud
+    monthly_cost: 150
+    max_rps: 9000
+    base_latency_ms: 30
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: grafana-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Grafana Cloud — push metrics via remote_write to the hosted endpoint
+        # prometheus.yml
+        remote_write:
+          - url: https://prometheus-prod.grafana.net/api/prom/push
+            basic_auth: { username: "<id>", password: "<token>" }
+    metric_explanations:
+      operational-complexity:
+        reason: Grafana Cloud runs the full LGTM backend, so there is nothing to deploy or scale yourself.
+        contributing_factors:
+          - Hosted Loki/Mimir/Tempo backends
+          - Managed scaling and retention
+          - Just point agents at the endpoint
+      grafana-cost-efficiency:
+        reason: The hosted tier meters ingest, retention, and active users, costing more than self-hosting at high volume.
+        contributing_factors:
+          - Billed on metrics/logs/traces ingested
+          - Active-user and retention add-ons
+          - Convenience premium over self-managed
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 20-150ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+ports:
+  - id: monitor-in
+    type: monitor
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

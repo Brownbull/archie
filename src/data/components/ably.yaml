@@ -1,0 +1,147 @@
+id: ably
+name: Ably
+category: real-time
+type_id: realtime
+description: Managed realtime messaging platform with global edge and guaranteed delivery
+is: A managed pub/sub realtime platform with a global edge network, message ordering, history, and presence, delivering low-latency websockets at scale with connection-state recovery built in
+gain:
+  - Global edge network for low realtime latency
+  - Guaranteed ordering, history, and presence
+  - Connection recovery survives drops without gaps
+cost:
+  - Priced per message and peak connections
+  - Vendor dependency for a core realtime path
+  - Overkill for tiny, single-region apps
+tags:
+  - realtime
+  - websocket
+  - pubsub
+  - ably
+  - managed
+base_metrics:
+  - id: message-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: ably-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard (Single Region)
+    monthly_cost: 30
+    max_rps: 12000
+    base_latency_ms: 25
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: ably-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Ably — publish and subscribe on a channel
+        import Ably from "ably";
+        const ably = new Ably.Realtime({ key: "<API_KEY>" });
+        const channel = ably.channels.get("orders");
+        channel.subscribe("created", (msg) => render(msg.data));
+        channel.publish("created", { id: 42 });
+    metric_explanations:
+      message-latency:
+        reason: Clients connect to a nearby edge POP and messages route through Ably's mesh, keeping single-region latency low.
+        contributing_factors:
+          - Edge entry points near clients
+          - Optimized fan-out within the mesh
+          - Persistent websockets avoid reconnect cost
+      ably-cost-efficiency:
+        reason: A single-region footprint with standard message volume keeps per-message and connection costs modest.
+        contributing_factors:
+          - No cross-region replication premium
+          - Billed on messages and peak connections
+          - Free tier covers small workloads
+  - id: global-multi-region
+    name: Global (Multi-Region)
+    monthly_cost: 120
+    max_rps: 40000
+    base_latency_ms: 18
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: ably-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Ably — fan a message to all regions; presence tracks who's online
+        const channel = ably.channels.get("room:42");
+        await channel.presence.enter({ name: "alice" });
+        channel.publish("msg", { text: "hi" });
+    metric_explanations:
+      concurrent-connections:
+        reason: A globally distributed mesh spreads connections across regions, scaling to very large concurrent audiences.
+        contributing_factors:
+          - Connections terminate at the nearest region
+          - Cross-region routing handled by the mesh
+          - No single regional connection ceiling
+      message-latency:
+        reason: Routing each subscriber to its closest region keeps latency low even for a worldwide audience.
+        contributing_factors:
+          - Localized edge termination per user
+          - Inter-region links carry only fan-out
+          - Presence/history served regionally
+connection_properties:
+  protocol: WebSocket/HTTPS
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: 15-90ms
+  co_location_potential: false
+demand_responses:
+  concurrent-users:
+    high:
+      message-latency: 0.8
+    extreme:
+      message-latency: 0.6
+      concurrent-connections: 0.7
+  burst-pattern:
+    periodic-spikes:
+      message-latency: 0.8
+    unpredictable:
+      message-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

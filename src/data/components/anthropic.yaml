@@ -1,0 +1,152 @@
+id: anthropic
+name: Anthropic Claude API
+category: compute
+type_id: llm-gateway
+description: Hosted Claude models for chat, long-context reasoning, and tool use
+is: A hosted inference API for Anthropic's Claude family, with a balanced mid model for everyday reasoning and a fast small model for cheap high-volume calls, strong on long context and instruction-following
+gain:
+  - Strong reasoning and long-context handling
+  - Balanced and fast tiers for cost/latency control
+  - Tool use and structured outputs over a simple API
+cost:
+  - Per-token pricing scales with usage
+  - Vendor dependency and rate limits
+  - Latency and data residency outside your control
+tags:
+  - llm
+  - ai
+  - claude
+  - anthropic
+  - inference
+base_metrics:
+  - id: inference-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: model-availability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: cost-per-inference
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+config_variants:
+  - id: balanced
+    name: Balanced (Sonnet-class)
+    monthly_cost: 180
+    max_rps: 1200
+    base_latency_ms: 700
+    metrics:
+      - id: inference-latency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-inference
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Anthropic — balanced Claude model for everyday reasoning
+        from anthropic import Anthropic
+        client = Anthropic()
+        msg = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=1024,
+            messages=[{"role": "user", "content": prompt}],
+        )
+    metric_explanations:
+      inference-latency:
+        reason: The balanced model trades a little speed for stronger reasoning, giving moderate latency on typical prompts.
+        contributing_factors:
+          - Mid-size model evaluates more per token than small
+          - Long contexts add prefill time
+          - Streaming hides some latency from users
+      cost-per-inference:
+        reason: Mid-tier per-token pricing sits between the premium and the cheap fast tier.
+        contributing_factors:
+          - Moderate per-token input/output rates
+          - Context length drives token totals
+          - Cheaper than a flagship for similar tasks
+  - id: fast
+    name: Fast (Haiku-class)
+    monthly_cost: 50
+    max_rps: 4000
+    base_latency_ms: 250
+    metrics:
+      - id: inference-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-inference
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Anthropic — fast Claude model for high-volume, latency-sensitive calls
+        msg = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=512,
+            messages=[{"role": "user", "content": prompt}],
+        )
+    metric_explanations:
+      cost-per-inference:
+        reason: The fast tier prices tokens well below the balanced model, making high-volume use cheap.
+        contributing_factors:
+          - Lowest per-token rates in the family
+          - Smaller model, cheaper compute
+          - Best for routing, extraction, short replies
+      inference-latency:
+        reason: A smaller model returns tokens faster, keeping latency low for simple, high-throughput tasks.
+        contributing_factors:
+          - Fast forward pass per token
+          - Low time-to-first-token
+          - Scales to high request rates
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 150-1800ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.5
+      model-availability: 0.7
+  concurrent-users:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

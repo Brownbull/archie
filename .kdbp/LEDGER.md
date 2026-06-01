@@ -1830,3 +1830,37 @@ Compute had only Node + Go. Added 5 mainstream backends so the 'Compute' block h
 ## 2026-06-01 03:10 — commit: on-node operational-complexity badge
 FINDINGS: 0 (ArchieNode 67 ✅ canvas+stores+integration 711 ✅ tsc -b ✅ lint 0-err ✅)
 User wanted a complexity indicator to the right of replicas / below price. Added getNodeComplexity(componentId, variantId) in architectureStoreHelpers — resolves operational-complexity (variant override → base metric, defensive against malformed Firestore docs). ArchieNode renders a Gauge pill (Low=green / Med=amber / High=red) pushed right (ml-auto) inside the scaling row, so it sits right of the replica stepper and below the cost. Pure UI/derivation — NO schema/data change, no reseed needed.
+- 2026-05-31 23:07 | Write | /home/khujta/projects/bmad/archie/src/data/components/python-flask.yaml
+- 2026-05-31 23:08 | Write | /home/khujta/projects/bmad/archie/src/data/components/python-fastapi.yaml
+- 2026-05-31 23:09 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 23:13 | Write | /home/khujta/projects/bmad/archie/src/data/components/cockroachdb.yaml
+- 2026-05-31 23:14 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-aurora.yaml
+- 2026-05-31 23:14 | Write | /home/khujta/projects/bmad/archie/src/data/components/neptune.yaml
+- 2026-05-31 23:15 | Write | /home/khujta/projects/bmad/archie/src/data/components/arangodb.yaml
+- 2026-05-31 23:16 | Write | /home/khujta/projects/bmad/archie/src/data/components/qdrant.yaml
+- 2026-05-31 23:16 | Write | /home/khujta/projects/bmad/archie/src/data/components/weaviate.yaml
+- 2026-05-31 23:17 | Write | /home/khujta/projects/bmad/archie/src/data/components/gcs.yaml
+- 2026-05-31 23:17 | Write | /home/khujta/projects/bmad/archie/src/data/components/minio.yaml
+- 2026-05-31 23:18 | Write | /home/khujta/projects/bmad/archie/src/data/components/nats.yaml
+- 2026-05-31 23:18 | Write | /home/khujta/projects/bmad/archie/src/data/components/amazon-mq.yaml
+- 2026-05-31 23:18 | Write | /home/khujta/projects/bmad/archie/src/data/components/redpanda.yaml
+- 2026-05-31 23:19 | Write | /home/khujta/projects/bmad/archie/src/data/components/gcp-pubsub.yaml
+- 2026-05-31 23:19 | Edit | /home/khujta/projects/bmad/archie/src/data/components/minio.yaml
+- 2026-05-31 23:20 | Write | /home/khujta/projects/bmad/archie/src/data/components/openai.yaml
+- 2026-05-31 23:20 | Write | /home/khujta/projects/bmad/archie/src/data/components/anthropic.yaml
+- 2026-05-31 23:21 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-alb.yaml
+- 2026-05-31 23:21 | Write | /home/khujta/projects/bmad/archie/src/data/components/envoy.yaml
+- 2026-05-31 23:21 | Write | /home/khujta/projects/bmad/archie/src/data/components/cloudflare-workers.yaml
+- 2026-05-31 23:22 | Write | /home/khujta/projects/bmad/archie/src/data/components/paypal.yaml
+- 2026-05-31 23:22 | Write | /home/khujta/projects/bmad/archie/src/data/components/adyen.yaml
+- 2026-05-31 23:23 | Write | /home/khujta/projects/bmad/archie/src/data/components/cloudfront.yaml
+- 2026-05-31 23:23 | Write | /home/khujta/projects/bmad/archie/src/data/components/ably.yaml
+- 2026-05-31 23:24 | Write | /home/khujta/projects/bmad/archie/src/data/components/socketio.yaml
+- 2026-05-31 23:24 | Write | /home/khujta/projects/bmad/archie/src/data/components/grafana.yaml
+- 2026-05-31 23:24 | Write | /home/khujta/projects/bmad/archie/src/data/components/newrelic.yaml
+- 2026-05-31 23:25 | Write | /home/khujta/projects/bmad/archie/src/data/components/cloudflare-waf.yaml
+- 2026-05-31 23:25 | Write | /home/khujta/projects/bmad/archie/src/data/components/vault.yaml
+- 2026-05-31 23:26 | Write | /home/khujta/projects/bmad/archie/src/data/components/dbt.yaml
+- 2026-05-31 23:26 | Write | /home/khujta/projects/bmad/archie/src/data/components/fivetran.yaml
+- 2026-05-31 23:26 | Edit | /home/khujta/projects/bmad/archie/src/data/components/newrelic.yaml
+- 2026-05-31 23:27 | Edit | /home/khujta/projects/bmad/archie/src/data/components/cloudfront.yaml

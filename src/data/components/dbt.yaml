@@ -1,0 +1,148 @@
+id: dbt
+name: dbt
+category: compute
+type_id: etl
+description: SQL-first transformation framework — the "T" in ELT, run in your warehouse
+is: A transformation framework that lets analysts build, test, and document data models in SQL that run inside the warehouse, turning raw loaded tables into trusted datasets with lineage and tests
+gain:
+  - Transformations as version-controlled SQL models
+  - Built-in data tests and auto-generated docs/lineage
+  - Runs in-warehouse — no separate compute to move data
+cost:
+  - Transform only — you still need an ingestion tool
+  - Warehouse compute cost scales with model runs
+  - Large DAGs need orchestration discipline
+tags:
+  - etl
+  - elt
+  - transformation
+  - dbt
+  - sql
+base_metrics:
+  - id: processing-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: data-quality
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: dbt-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: dbt-core
+    name: dbt Core (Self-Run)
+    monthly_cost: 10
+    max_rps: 200
+    base_latency_ms: 5000
+    metrics:
+      - id: processing-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: dbt-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- dbt model — incremental transform that runs in the warehouse
+        {{ config(materialized='incremental', unique_key='id') }}
+        select id, lower(email) as email, created_at
+        from {{ source('raw', 'users') }}
+        {% if is_incremental() %}
+          where created_at > (select max(created_at) from {{ this }})
+        {% endif %}
+    metric_explanations:
+      dbt-cost-efficiency:
+        reason: dbt Core is free and open source — you pay only for the warehouse compute the models consume.
+        contributing_factors:
+          - No license fee for the open-source CLI
+          - Incremental models limit rows processed
+          - Reuse warehouse you already pay for
+      operational-complexity:
+        reason: You schedule and run dbt yourself (cron, Airflow, CI), wiring orchestration and credentials by hand.
+        contributing_factors:
+          - Bring your own scheduler/orchestrator
+          - Manage profiles and warehouse creds
+          - Self-host CI for runs and docs
+  - id: dbt-cloud
+    name: dbt Cloud (Managed)
+    monthly_cost: 100
+    max_rps: 300
+    base_latency_ms: 4000
+    metrics:
+      - id: processing-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: dbt-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # dbt Cloud — trigger a job run via the API (managed scheduler + IDE)
+        curl -X POST "https://cloud.getdbt.com/api/v2/accounts/$ACCT/jobs/$JOB/run/" \
+          -H "Authorization: Token $DBT_CLOUD_TOKEN" \
+          -d '{"cause": "nightly build"}'
+    metric_explanations:
+      operational-complexity:
+        reason: dbt Cloud provides a managed scheduler, IDE, and CI integration, so there is no orchestration to run yourself.
+        contributing_factors:
+          - Managed job scheduler and runs
+          - Hosted IDE and docs serving
+          - Built-in CI and run history
+      dbt-cost-efficiency:
+        reason: The managed seats and run minutes add a fee on top of the warehouse compute cost.
+        contributing_factors:
+          - Per-developer seat pricing
+          - Managed run minutes metered
+          - Still pays warehouse compute underneath
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - batch
+  typical_latency: 1-60s
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      processing-throughput: 0.8
+    extreme:
+      processing-throughput: 0.6
+  traffic-volume:
+    high:
+      processing-throughput: 0.8
+    extreme:
+      processing-throughput: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

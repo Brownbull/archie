@@ -1,0 +1,147 @@
+id: aws-aurora
+name: AWS Aurora
+category: data-storage
+type_id: relational-db
+description: Managed MySQL/Postgres-compatible database with a distributed storage layer
+is: A fully managed AWS relational database that separates compute from a multi-AZ distributed storage layer, giving fast failover and read replicas with MySQL/Postgres compatibility
+gain:
+  - Storage auto-scales and replicates across 3 AZs
+  - Fast failover and up to 15 low-lag read replicas
+  - MySQL/Postgres compatible — minimal app changes
+cost:
+  - AWS-only; lock-in to the managed service
+  - Costs climb with I/O, replicas, and storage
+  - Less control over the underlying engine internals
+tags:
+  - database
+  - sql
+  - managed
+  - aws
+  - aurora
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 7
+    category: performance
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: aurora-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: provisioned
+    name: Provisioned
+    monthly_cost: 200
+    max_rps: 12000
+    base_latency_ms: 5
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: aurora-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- AWS Aurora (Postgres-compatible) — writer endpoint for writes,
+        -- reader endpoint load-balances across replicas
+        SELECT id, email FROM users WHERE email = $1;
+        -- app routes SELECTs to <cluster>.cluster-ro-<id>.rds.amazonaws.com
+    metric_explanations:
+      write-throughput:
+        reason: A provisioned writer with dedicated capacity sustains high write rates against the distributed storage layer.
+        contributing_factors:
+          - Fixed instance class reserves CPU and memory
+          - Log-structured storage offloads page writes
+          - No cold-start or scale-up pauses under steady load
+      horizontal-scalability:
+        reason: Reads scale out via replicas, but writes funnel through a single writer, capping write-side horizontal scale.
+        contributing_factors:
+          - Up to 15 read replicas share the storage volume
+          - Single writer instance for all mutations
+          - Reader endpoint balances read traffic
+  - id: serverless-v2
+    name: Serverless v2 (Auto-Scaling)
+    monthly_cost: 90
+    max_rps: 9000
+    base_latency_ms: 8
+    metrics:
+      - id: write-throughput
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: aurora-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # AWS Aurora Serverless v2 — capacity scales in 0.5-ACU steps with load
+        aws rds create-db-cluster \
+          --engine aurora-postgresql \
+          --serverless-v2-scaling-configuration MinCapacity=0.5,MaxCapacity=16
+    metric_explanations:
+      aurora-cost-efficiency:
+        reason: Capacity tracks actual load in fine-grained steps, so spiky or low-baseline workloads avoid paying for idle provisioned instances.
+        contributing_factors:
+          - Scales down toward minimum ACUs when idle
+          - No need to provision for peak around the clock
+          - Per-second billing on consumed capacity
+      operational-complexity:
+        reason: AWS manages scaling, patching, and failover, so there is little to tune beyond the capacity range.
+        contributing_factors:
+          - Auto-scaling removes manual instance sizing
+          - Managed backups and multi-AZ failover
+          - One scaling range to configure, not a fleet
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 4-30ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      read-latency: 0.8
+    extreme:
+      read-latency: 0.6
+      write-throughput: 0.7
+  traffic-volume:
+    high:
+      write-throughput: 0.8
+    extreme:
+      write-throughput: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

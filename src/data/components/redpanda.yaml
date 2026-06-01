@@ -1,0 +1,144 @@
+id: redpanda
+name: Redpanda
+category: messaging
+type_id: event-stream
+description: Kafka-compatible streaming platform in a single C++ binary, no ZooKeeper
+is: A Kafka-API-compatible event streaming platform written in C++ that runs as one binary with no JVM or ZooKeeper, delivering lower tail latency and a simpler operational story than Kafka
+gain:
+  - Kafka API compatible — existing clients just work
+  - Single binary, no JVM or ZooKeeper to run
+  - Lower, more predictable tail latency
+cost:
+  - Newer ecosystem than Kafka proper
+  - Some Kafka tooling assumes JVM internals
+  - Thread-per-core tuning matters for peak perf
+tags:
+  - messaging
+  - streaming
+  - kafka-compatible
+  - redpanda
+  - events
+base_metrics:
+  - id: message-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: message-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 4
+    category: operational-complexity
+  - id: redpanda-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: self-hosted
+    name: Self-Hosted
+    monthly_cost: 90
+    max_rps: 200000
+    base_latency_ms: 4
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: redpanda-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Redpanda — single binary; create a topic with the Kafka-compatible CLI
+        rpk topic create orders --partitions 6 --replicas 3
+        rpk topic produce orders <<< '{"id":42}'
+    metric_explanations:
+      operational-complexity:
+        reason: One C++ binary with no JVM or ZooKeeper removes most of Kafka's moving parts, though you still run the cluster.
+        contributing_factors:
+          - No separate ZooKeeper/KRaft quorum to manage
+          - No JVM heap/GC tuning
+          - Self-managed nodes and rebalancing remain
+      message-throughput:
+        reason: A thread-per-core architecture pinned to NVMe sustains very high throughput with low overhead.
+        contributing_factors:
+          - Thread-per-core avoids lock contention
+          - Direct I/O to fast local disks
+          - No JVM GC pauses on the hot path
+  - id: cloud
+    name: Redpanda Cloud
+    monthly_cost: 220
+    max_rps: 150000
+    base_latency_ms: 6
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: redpanda-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Redpanda Cloud — managed cluster; point any Kafka client at the bootstrap URL
+        rpk profile create cloud --from-cloud <cluster-id>
+        rpk topic create orders --partitions 6
+    metric_explanations:
+      operational-complexity:
+        reason: The managed cloud provisions, scales, and patches the cluster, so there is no infrastructure to run.
+        contributing_factors:
+          - Provisioning and upgrades automated
+          - Scaling and rebalancing handled by the platform
+          - Monitoring and backups included
+      redpanda-cost-efficiency:
+        reason: Managed convenience carries a markup over self-hosting on your own hardware.
+        contributing_factors:
+          - Platform fee on top of compute/storage
+          - Pay for managed availability and support
+          - Cheaper than staffing your own ops team
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - publish-subscribe
+    - event-streaming
+  typical_latency: 3-25ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      message-throughput: 0.8
+    extreme:
+      message-throughput: 0.6
+  burst-pattern:
+    periodic-spikes:
+      message-throughput: 0.8
+    unpredictable:
+      message-throughput: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

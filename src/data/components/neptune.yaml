@@ -1,0 +1,145 @@
+id: neptune
+name: Amazon Neptune
+category: data-storage
+type_id: graph-db
+description: Fully managed graph database supporting Gremlin, openCypher, and SPARQL
+is: A managed AWS graph database with a multi-AZ distributed storage layer that runs property-graph (Gremlin/openCypher) and RDF (SPARQL) workloads without operating graph infrastructure yourself
+gain:
+  - Fully managed — no graph cluster to operate
+  - Supports Gremlin, openCypher, and SPARQL
+  - Multi-AZ storage with up to 15 read replicas
+cost:
+  - AWS-only; lock-in to the managed service
+  - Less tunable than self-hosted graph engines
+  - Bulk loads and large traversals can get pricey
+tags:
+  - database
+  - graph
+  - managed
+  - aws
+  - neptune
+base_metrics:
+  - id: traversal-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: query-expressiveness
+    value: high
+    numeric_value: 8
+    category: developer-experience
+  - id: cost-per-query
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: provisioned
+    name: Provisioned
+    monthly_cost: 240
+    max_rps: 6000
+    base_latency_ms: 7
+    metrics:
+      - id: traversal-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: cost-per-query
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Amazon Neptune — openCypher query over the HTTPS endpoint
+        curl -X POST https://my-neptune.cluster-xyz.us-east-1.neptune.amazonaws.com:8182/openCypher \
+          -d "query=MATCH (u:User)-[:FOLLOWS]->(f) WHERE u.id=\$id RETURN f.name"
+    metric_explanations:
+      traversal-latency:
+        reason: A provisioned instance keeps the working graph warm in memory, so multi-hop traversals resolve quickly.
+        contributing_factors:
+          - Adjacency lists cached in instance memory
+          - Dedicated CPU for traversal evaluation
+          - Local storage layer avoids cross-AZ hops on reads
+      query-expressiveness:
+        reason: Native support for Gremlin, openCypher, and SPARQL covers both property-graph and RDF query styles.
+        contributing_factors:
+          - Property-graph traversals via Gremlin/openCypher
+          - RDF/semantic queries via SPARQL
+          - One store for multiple graph models
+  - id: serverless
+    name: Serverless
+    monthly_cost: 110
+    max_rps: 4500
+    base_latency_ms: 11
+    metrics:
+      - id: traversal-latency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: cost-per-query
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Amazon Neptune Serverless — capacity scales in NCUs with demand
+        aws neptune create-db-cluster \
+          --engine neptune \
+          --serverless-v2-scaling-configuration MinCapacity=1,MaxCapacity=8
+    metric_explanations:
+      cost-per-query:
+        reason: Capacity scales with demand and drops toward the minimum when idle, so intermittent graph workloads avoid paying for a full provisioned instance.
+        contributing_factors:
+          - NCU capacity tracks actual load
+          - Scales down between query bursts
+          - No always-on instance to fund at baseline
+      traversal-latency:
+        reason: Scaling up from a low baseline adds a brief warm-up before large traversals hit full speed.
+        contributing_factors:
+          - Cold capacity ramps as load arrives
+          - Smaller warm cache at minimum NCUs
+          - Steady traffic keeps capacity provisioned
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 5-40ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      traversal-latency: 0.8
+    extreme:
+      traversal-latency: 0.6
+  traffic-volume:
+    high:
+      traversal-latency: 0.8
+    extreme:
+      traversal-latency: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,0 +1,171 @@
+id: python-fastapi
+name: Python + FastAPI
+category: compute
+type_id: compute
+description: Modern async Python framework with type hints and automatic validation
+is: An async-first Python framework built on Starlette and Pydantic — high throughput for I/O-bound APIs with request/response validation and OpenAPI docs generated from type hints
+gain:
+  - Async-first — high concurrency for I/O-bound APIs
+  - Pydantic validation and OpenAPI docs from type hints
+  - Modern, well-documented, strong editor support
+cost:
+  - Async code needs async-aware drivers end to end
+  - The GIL still caps CPU-bound parallelism per process
+  - Younger ecosystem than Django for full-app features
+tags:
+  - server
+  - python
+  - fastapi
+  - api
+  - async
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 7
+    category: scalability
+  - id: cpu-efficiency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: fastapi-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: uvicorn
+    name: Uvicorn (Single Process)
+    monthly_cost: 22
+    max_rps: 7000
+    base_latency_ms: 12
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 7
+        category: scalability
+      - id: cpu-efficiency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: fastapi-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Python + FastAPI — async endpoint on Uvicorn (ASGI)
+        from fastapi import FastAPI, HTTPException
+        from .db import get_user
+
+        app = FastAPI()
+
+        @app.get("/users/{user_id}")
+        async def show_user(user_id: int):
+            user = await get_user(user_id)
+            if user is None:
+                raise HTTPException(status_code=404, detail="Not found")
+            return {"id": user.id, "name": user.name}
+        # run: uvicorn app:app
+    metric_explanations:
+      concurrent-connections:
+        reason: A single Uvicorn event loop multiplexes many I/O-bound requests, yielding on awaited calls so one process handles high concurrency.
+        contributing_factors:
+          - awaited I/O hands the loop to other requests
+          - Many in-flight requests per process for I/O work
+          - Needs async DB/HTTP drivers to avoid blocking the loop
+      request-latency:
+        reason: Non-blocking I/O avoids queueing under load, keeping tail latency low for I/O-bound endpoints.
+        contributing_factors:
+          - No head-of-line blocking behind a busy worker
+          - Event loop absorbs bursts without queue build-up
+          - CPU-bound handlers block the loop — offload them
+  - id: gunicorn-uvicorn
+    name: Gunicorn + Uvicorn Workers
+    monthly_cost: 45
+    max_rps: 18000
+    base_latency_ms: 10
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: cpu-efficiency
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: fastapi-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Python + FastAPI — Gunicorn manages N Uvicorn workers across cores
+        gunicorn app:app \
+          --worker-class uvicorn.workers.UvicornWorker \
+          --workers 4
+    metric_explanations:
+      concurrent-connections:
+        reason: Multiple Uvicorn workers each run their own event loop, so per-loop concurrency multiplies across cores for very high aggregate throughput.
+        contributing_factors:
+          - Each worker has an independent event loop
+          - Worker count scales with available cores
+          - Aggregate concurrency = per-loop concurrency · workers
+      cpu-efficiency:
+        reason: Spreading workers across cores sidesteps the GIL for CPU-touching paths, lifting useful work per machine versus a single process.
+        contributing_factors:
+          - Separate processes give true multi-core parallelism
+          - More cores absorb mixed I/O- and CPU-bound load
+          - Diminishing returns past ≈cores worth of workers
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 5-50ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.8
+      cpu-efficiency: 0.7
+    extreme:
+      request-latency: 0.6
+      concurrent-connections: 0.7
+  concurrent-users:
+    high:
+      concurrent-connections: 0.7
+    extreme:
+      concurrent-connections: 0.5
+      request-latency: 0.6
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.8
+    unpredictable:
+      request-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: auth-in
+    type: auth
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

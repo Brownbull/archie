@@ -1,0 +1,150 @@
+id: openai
+name: OpenAI API
+category: compute
+type_id: llm-gateway
+description: Hosted GPT models for chat, embeddings, and tool use over a simple API
+is: A hosted inference API for OpenAI's GPT family, offering a flagship model for hard reasoning and a small fast model for high-volume cheap calls, accessed over HTTPS with no infrastructure to run
+gain:
+  - State-of-the-art models with no infra to operate
+  - Tiered models trade quality against cost/speed
+  - Rich tooling — function calling, structured outputs
+cost:
+  - Per-token pricing scales with usage
+  - Vendor dependency and rate limits
+  - Data governance and latency are out of your control
+tags:
+  - llm
+  - ai
+  - gpt
+  - openai
+  - inference
+base_metrics:
+  - id: inference-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: model-availability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: cost-per-inference
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+config_variants:
+  - id: gpt-flagship
+    name: Flagship (GPT-4-class)
+    monthly_cost: 300
+    max_rps: 800
+    base_latency_ms: 900
+    metrics:
+      - id: inference-latency
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-inference
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # OpenAI — flagship model for hard reasoning / tool use
+        from openai import OpenAI
+        client = OpenAI()
+        resp = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "user", "content": prompt}],
+        )
+    metric_explanations:
+      inference-latency:
+        reason: Large flagship models run more compute per token, so time-to-first-token and full completions are slower.
+        contributing_factors:
+          - More parameters per forward pass
+          - Longer reasoning chains on hard prompts
+          - Queueing under shared capacity at peak
+      cost-per-inference:
+        reason: Flagship per-token pricing is the highest tier, so heavy use is expensive versus smaller models.
+        contributing_factors:
+          - Premium per-token input/output rates
+          - Long contexts multiply token counts
+          - Tool-use round-trips add tokens
+  - id: gpt-mini
+    name: Mini (Fast / Cheap)
+    monthly_cost: 60
+    max_rps: 3000
+    base_latency_ms: 300
+    metrics:
+      - id: inference-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-inference
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # OpenAI — mini model for high-volume, latency-sensitive calls
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+        )
+    metric_explanations:
+      cost-per-inference:
+        reason: The small model prices tokens far below the flagship, making high-volume workloads economical.
+        contributing_factors:
+          - Much lower per-token rates
+          - Smaller model = cheaper compute
+          - Ideal for classification and short replies
+      inference-latency:
+        reason: Fewer parameters mean faster forward passes and quicker completions for simple tasks.
+        contributing_factors:
+          - Smaller model evaluates tokens faster
+          - Lower time-to-first-token
+          - Less queueing on cheaper capacity
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 200-2000ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.5
+      model-availability: 0.7
+  concurrent-users:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

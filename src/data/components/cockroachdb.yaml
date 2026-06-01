@@ -1,0 +1,151 @@
+id: cockroachdb
+name: CockroachDB
+category: data-storage
+type_id: relational-db
+description: Distributed SQL database with horizontal scale and survivability built in
+is: A Postgres-wire-compatible distributed SQL database that shards and replicates data across nodes automatically, giving horizontal write scale and zone/region survivability without manual sharding
+gain:
+  - Horizontal write scale without manual sharding
+  - Survives node/zone/region failure with consensus replication
+  - Postgres wire protocol — familiar SQL and drivers
+cost:
+  - Cross-range transactions add latency vs a single node
+  - Operationally heavier than a single Postgres instance
+  - Multi-region writes pay a consensus round-trip
+tags:
+  - database
+  - sql
+  - distributed
+  - newsql
+  - cockroachdb
+base_metrics:
+  - id: read-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 6
+    category: operational-complexity
+  - id: cockroachdb-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: regional
+    name: Single Region
+    monthly_cost: 120
+    max_rps: 8000
+    base_latency_ms: 6
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: cockroachdb-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- CockroachDB — standard SQL; ranges auto-shard across nodes in one region
+        CREATE TABLE users (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          email STRING UNIQUE NOT NULL,
+          created_at TIMESTAMPTZ DEFAULT now()
+        );
+        SELECT id, email FROM users WHERE email = $1;
+    metric_explanations:
+      read-latency:
+        reason: Within one region, replicas are close together, so quorum reads resolve in a few milliseconds.
+        contributing_factors:
+          - Replicas co-located in nearby availability zones
+          - Leaseholder serves consistent reads without cross-region hops
+          - Range caches avoid extra lookups on hot keys
+      horizontal-scalability:
+        reason: Adding nodes rebalances ranges automatically, so read and write capacity grows roughly linearly with the cluster.
+        contributing_factors:
+          - Data auto-shards into ranges across nodes
+          - No manual partition keys or resharding
+          - Load-based rebalancing spreads hot ranges
+  - id: multi-region
+    name: Multi-Region (Survivable)
+    monthly_cost: 380
+    max_rps: 14000
+    base_latency_ms: 22
+    metrics:
+      - id: read-latency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: data-durability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: cockroachdb-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- CockroachDB — pin a table's home region; survive a full region outage
+        ALTER DATABASE app SET PRIMARY REGION = "us-east1";
+        ALTER DATABASE app ADD REGION "europe-west1";
+        ALTER DATABASE app SURVIVE REGION FAILURE;
+    metric_explanations:
+      data-durability:
+        reason: Replicas span regions with Raft consensus, so the cluster keeps serving even when an entire region goes offline.
+        contributing_factors:
+          - Raft quorum tolerates a full region loss
+          - Replicas placed across distinct regions
+          - No data loss on committed transactions
+      read-latency:
+        reason: Cross-region quorum writes and remote reads add a wide-area round-trip versus a single-region deployment.
+        contributing_factors:
+          - Consensus may span continents on writes
+          - Non-local follower reads add network latency
+          - Region-pinned tables mitigate for local access
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 5-40ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      read-latency: 0.8
+    extreme:
+      read-latency: 0.6
+      write-throughput: 0.7
+  traffic-volume:
+    high:
+      write-throughput: 0.8
+    extreme:
+      write-throughput: 0.6
+      read-latency: 0.7
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

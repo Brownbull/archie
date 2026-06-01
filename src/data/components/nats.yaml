@@ -1,0 +1,149 @@
+id: nats
+name: NATS
+category: messaging
+type_id: message-queue
+description: Lightweight, high-throughput messaging system with optional persistence
+is: A tiny, fast messaging system for pub/sub and request/reply that adds durable streams via JetStream when you need them, trading RabbitMQ's rich routing for raw speed and simplicity
+gain:
+  - Extremely lightweight and fast to run
+  - Core pub/sub plus optional durable JetStream
+  - Simple clustering and tiny operational footprint
+cost:
+  - Core NATS is fire-and-forget (at-most-once)
+  - Fewer routing features than AMQP brokers
+  - Durability/replay only with JetStream enabled
+tags:
+  - messaging
+  - queue
+  - pubsub
+  - nats
+  - lightweight
+base_metrics:
+  - id: message-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: message-durability
+    value: medium
+    numeric_value: 5
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: nats-cost-efficiency
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+config_variants:
+  - id: core
+    name: Core (At-Most-Once)
+    monthly_cost: 15
+    max_rps: 50000
+    base_latency_ms: 1
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 10
+        category: performance
+      - id: message-durability
+        value: low
+        numeric_value: 2
+        category: reliability
+      - id: nats-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // NATS core — fire-and-forget pub/sub (at-most-once)
+        import { connect } from "nats";
+        const nc = await connect({ servers: "nats://localhost:4222" });
+        nc.publish("orders.created", JSON.stringify({ id: 42 }));
+        const sub = nc.subscribe("orders.created");
+        for await (const m of sub) handle(m.data);
+    metric_explanations:
+      message-throughput:
+        reason: Core NATS does no disk persistence, so it forwards messages in memory at very high rates with sub-millisecond latency.
+        contributing_factors:
+          - No disk write on the hot path
+          - Minimal per-message protocol overhead
+          - In-memory fan-out to subscribers
+      message-durability:
+        reason: Core delivery is at-most-once — messages with no connected subscriber are dropped, with no replay.
+        contributing_factors:
+          - No persistence of in-flight messages
+          - Offline subscribers miss messages
+          - No acknowledgements or redelivery
+  - id: jetstream
+    name: JetStream (Persistent)
+    monthly_cost: 45
+    max_rps: 20000
+    base_latency_ms: 3
+    metrics:
+      - id: message-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: message-durability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: nats-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // NATS JetStream — durable stream with at-least-once consumers
+        const js = nc.jetstream();
+        await js.publish("orders.created", JSON.stringify({ id: 42 }));
+        const c = await js.consumers.get("ORDERS", "workers");
+        for await (const m of await c.consume()) { handle(m.data); m.ack(); }
+    metric_explanations:
+      message-durability:
+        reason: JetStream persists and replicates messages, so consumers get at-least-once delivery with replay after downtime.
+        contributing_factors:
+          - Messages written to a replicated store
+          - Acknowledgements with redelivery on failure
+          - Consumers can replay from a sequence/time
+      message-throughput:
+        reason: Persisting and replicating each message costs some throughput versus pure in-memory core NATS.
+        contributing_factors:
+          - Disk writes on the publish path
+          - Replication round-trips for durability
+          - Still high, but below core fire-and-forget
+connection_properties:
+  protocol: NATS/TCP
+  communication_patterns:
+    - publish-subscribe
+    - request-response
+  typical_latency: 1-10ms
+  co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      message-throughput: 0.8
+    extreme:
+      message-throughput: 0.6
+  burst-pattern:
+    periodic-spikes:
+      message-throughput: 0.8
+    unpredictable:
+      message-throughput: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out
