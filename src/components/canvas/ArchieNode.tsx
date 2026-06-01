@@ -120,12 +120,13 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     [data.archieComponentId, data.activeConfigVariantId, data.replicaCount],
   )
 
-  // Throughput label (requests/sec) shown on the left of the stats row; cost goes on the right.
+  // Throughput (requests/sec) + base latency shown on the left of the stats row; cost on the right.
   const rpsLabel = useMemo(() => {
     const r = nodeCost.maxRPS
     if (r === undefined) return null
     return r >= 1000 ? `${+(r / 1000).toFixed(1)}k rps` : `${r} rps`
   }, [nodeCost.maxRPS])
+  const latencyLabel = nodeCost.baseLatencyMs !== undefined ? `${nodeCost.baseLatencyMs}ms` : null
 
   // Operational-complexity level for the active variant — drives the badge on the right of the
   // scaling row (below the price). Tells a junior architect how much effort this block is to run.
@@ -268,11 +269,11 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         </div>
       )}
 
-      {(rpsLabel || nodeCost.monthlyCost !== undefined) && (
+      {(rpsLabel || latencyLabel || nodeCost.monthlyCost !== undefined) && (
         <div className="flex items-center justify-between gap-2 px-3 pb-1 text-[10px] font-medium">
-          {/* Throughput on the left … */}
+          {/* Throughput · latency on the left … */}
           <span data-testid="archie-node-rps" className="truncate text-text-secondary">
-            {rpsLabel ?? ""}
+            {[rpsLabel, latencyLabel].filter(Boolean).join(" · ")}
           </span>
           {/* … monthly cost on the right. */}
           {nodeCost.monthlyCost !== undefined && (

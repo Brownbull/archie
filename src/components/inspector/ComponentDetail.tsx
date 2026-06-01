@@ -19,6 +19,7 @@ import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 import { DataContextPanel } from "@/components/inspector/DataContextPanel"
 import { DataSourceNote } from "@/components/common/DataSourceNote"
 import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
+import { formatRps, formatLatencyMs } from "@/lib/formatStats"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { InspectorDisclosure } from "@/components/inspector/InspectorDisclosure"
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
@@ -215,6 +216,13 @@ export function ComponentDetail({
             <span data-testid="inspector-summary-cost" className="font-medium text-emerald-400">
               {currentEconomics.monthlyCost === 0 ? "Free" : `$${currentEconomics.monthlyCost}/mo`}
             </span>
+            {/* Throughput + latency alongside cost, so the summary carries all three at a glance. */}
+            {formatRps(currentEconomics.maxRPS) && (
+              <span data-testid="inspector-summary-rps">{formatRps(currentEconomics.maxRPS)}</span>
+            )}
+            {formatLatencyMs(currentEconomics.baseLatencyMs) && (
+              <span data-testid="inspector-summary-latency">{formatLatencyMs(currentEconomics.baseLatencyMs)}</span>
+            )}
           </div>
         </div>
 

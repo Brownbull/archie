@@ -6,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { formatVariantStats } from "@/lib/formatStats"
 
 interface ConfigSelectorProps {
   variants: ConfigVariant[]
@@ -32,11 +33,17 @@ export function ConfigSelector({
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {variants.map((variant) => (
-            <SelectItem key={variant.id} value={variant.id}>
-              {variant.name}
-            </SelectItem>
-          ))}
+          {variants.map((variant) => {
+            const stats = formatVariantStats(variant)
+            return (
+              <SelectItem key={variant.id} value={variant.id}>
+                <span className="flex w-full items-center justify-between gap-3">
+                  <span>{variant.name}</span>
+                  {stats && <span className="text-[10px] text-text-secondary">{stats}</span>}
+                </span>
+              </SelectItem>
+            )
+          })}
         </SelectContent>
       </Select>
     </div>

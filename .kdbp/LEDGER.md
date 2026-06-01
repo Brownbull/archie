@@ -1990,3 +1990,14 @@ UX bundle 4 of 4 (safe high-value subset). (1) AggregateScore: letter grade A/B/
 ## 2026-06-01 08:45 — commit: deferred clarity items (test-conditions label, edge a11y, heatmap score, challenge scoring rule)
 FINDINGS: 0 (full suite 4018 ✅ ArchieNode/ports/Edge/challenge ✅ tsc -b ✅ lint 0-err ✅ e2e: test-conditions label)
 Closed the 4 deferred UX-review clarity items. (1) Scenario+Failure grouped under a 'TEST CONDITIONS' caption (zero reflow — label sits left of the scenario selector). (2) Edge heatmap a11y: line-style now also encodes health (solid=healthy, dashed=warning, dotted=bottleneck) — non-colour cue for colour-blind users. (3) Node heatmap hover: numeric weighted score (computed locally from computedMetrics+weightProfile) added to the node title + aria-label alongside the status. (4) Challenge results: explicit scoring rule ('1★ per criterion met') + 'Retry'→'Adjust & retry' with a tooltip (a literal identical re-run is a no-op for a deterministic sim; clarified the edit-and-rerun path instead). Updated 2 ArchieNode test mocks (computedMetrics/weightProfile) + the aria-label assertion. Pure client UI.
+- 2026-06-01 09:35 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 09:35 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 09:36 | Write | /home/khujta/projects/bmad/archie/src/lib/formatStats.ts
+- 2026-06-01 09:37 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ConfigSelector.tsx
+- 2026-06-01 09:37 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ConfigSelector.tsx
+- 2026-06-01 09:37 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 09:37 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+
+## 2026-06-01 09:20 — commit: Part C — cost + latency + RPS shown for all blocks
+FINDINGS: 0 (full suite 4018 ✅ tsc -b ✅ lint 0-err ✅; data 100% present across all variants)
+User: when swapping backend (Django→FastAPI etc.) show latency + rps, not just cost — for all blocks. Inspector EconomicsSection already shows cost/throughput/latency WITH before→after deltas on swap; gaps were the canvas node (rps+cost, no latency) and the pickers/header (cost only). Added shared formatStats util (formatRps/formatLatencyMs/formatMonthlyCost/formatVariantStats). Node stats row now shows 'rps · latency' left, cost right. ConfigSelector dropdown shows '$/mo · rps · ms' per tier. Inspector header summary now carries throughput + latency beside cost. Pure UI; no data/schema change.
