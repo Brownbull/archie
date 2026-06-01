@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Component } from "@/types"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 
 // Mock useLibrary hook. P5: ComponentDetail derives provider alternatives from `components`
 // (same typeId, fallback same category) via providersForComponent — so the library `components`
@@ -100,6 +101,9 @@ describe("ComponentDetail", () => {
     // Default: the only provider of its type is the component itself → swapper hidden.
     mockGetComponentsByCategory.mockReturnValue([mockComponent])
     mockLibraryComponents = [mockComponent]
+    // These tests exercise the FULL inspector; run at advanced so every section renders.
+    // Level-gating itself is covered by the dedicated describe below.
+    usePreferencesStore.setState({ experienceLevel: "advanced" })
   })
 
   /** Render with default props (mockComponent, standard variant). Override via partial. */
@@ -498,6 +502,41 @@ describe("ComponentDetail", () => {
       }
       renderDefault({ component: healthyComponent })
       expect(screen.queryByTestId("recommendations-section")).not.toBeInTheDocument()
+    })
+  })
+
+  describe("experience-level disclosure (P89/Phase C)", () => {
+    it("beginner shows essentials only — trade-offs + technical hidden, hint shown", () => {
+      usePreferencesStore.setState({ experienceLevel: "beginner" })
+      renderDefault()
+      // Essentials remain.
+      expect(screen.getByTestId("inspector-heading")).toBeInTheDocument()
+      // Trade-offs hidden.
+      expect(screen.queryByTestId("disclosure-gains")).toBeNull()
+      expect(screen.queryByTestId("disclosure-costs")).toBeNull()
+      expect(screen.queryByTestId("disclosure-is")).toBeNull()
+      // Technical hidden.
+      expect(screen.queryByTestId("disclosure-metrics")).toBeNull()
+      expect(screen.queryByTestId("disclosure-code")).toBeNull()
+      // Discoverability hint shown.
+      expect(screen.getByTestId("inspector-level-hint")).toBeInTheDocument()
+    })
+
+    it("intermediate reveals trade-offs but not the technical sections", () => {
+      usePreferencesStore.setState({ experienceLevel: "intermediate" })
+      renderDefault()
+      expect(screen.getByTestId("disclosure-gains")).toBeInTheDocument()
+      expect(screen.getByTestId("disclosure-costs")).toBeInTheDocument()
+      expect(screen.queryByTestId("disclosure-metrics")).toBeNull()
+      expect(screen.queryByTestId("disclosure-code")).toBeNull()
+      expect(screen.getByTestId("inspector-level-hint")).toBeInTheDocument()
+    })
+
+    it("advanced reveals everything and drops the hint", () => {
+      usePreferencesStore.setState({ experienceLevel: "advanced" })
+      renderDefault()
+      expect(screen.getByTestId("disclosure-gains")).toBeInTheDocument()
+      expect(screen.queryByTestId("inspector-level-hint")).toBeNull()
     })
   })
 })

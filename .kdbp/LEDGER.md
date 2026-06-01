@@ -2149,3 +2149,15 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 13:12 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/tourStore.test.ts
 - 2026-06-01 13:13 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/onboarding/SpotlightTour.test.tsx
 - 2026-06-01 13:13 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/help/PanelInfoButton.test.tsx
+- 2026-06-01 14:21 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 14:21 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 14:22 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 14:22 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 14:22 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 14:22 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 14:22 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 14:24 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-01 14:24 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-01 14:24 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-01 14:25 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/InspectorPanel.test.tsx
+- 2026-06-01 14:25 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/InspectorPanel.test.tsx

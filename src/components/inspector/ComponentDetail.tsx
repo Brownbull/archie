@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
-import { providersForComponent, COMPONENT_TYPES } from "@/lib/componentTypes"
+import { providersForComponent, COMPONENT_TYPES, levelRank } from "@/lib/componentTypes"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import { computeRecommendations } from "@/engine/recommendationEngine"
 import { getNodeCost } from "@/stores/architectureStoreHelpers"
 import { Badge } from "@/components/ui/badge"
@@ -45,6 +46,14 @@ export function ComponentDetail({
   // providersForComponent falls back to same-category when the component has no typeId (pre-seed).
   const { components } = useLibrary()
   const alternatives = providersForComponent(component, components)
+
+  // Progressive disclosure by experience level (P89/Phase C). Beginners get the decision-relevant
+  // essentials (what it is, swap/tier, cost·RPS·latency); trade-offs (description, gains, costs,
+  // recommendations) appear at intermediate; the heaviest technical sections (code, full metrics,
+  // data context) appear at advanced. The ⓘ explainer points users to the level control.
+  const experienceLevel = usePreferencesStore((s) => s.experienceLevel)
+  const showTradeoffs = levelRank(experienceLevel) >= levelRank("intermediate")
+  const showTechnical = levelRank(experienceLevel) >= levelRank("advanced")
 
   // Use computed metrics from recalculation engine when available (AC-7),
   // fall back to library variant metrics for nodes not yet recalculated.
@@ -272,7 +281,7 @@ export function ComponentDetail({
         {/* Code Snippet — collapse-by-default (P3 density): the snippet is the heaviest
             single block, so it lives behind a disclosure and the inspector leads with the
             decision-relevant summary, scores, and economics. */}
-        {activeVariant?.codeSnippet && (
+        {showTechnical && activeVariant?.codeSnippet && (
           <div data-section="code">
             <InspectorDisclosure title="Code example" testId="disclosure-code">
               <div className="pt-0.5">
@@ -287,6 +296,8 @@ export function ComponentDetail({
           <DataSourceNote kind="block" />
         </div>
 
+        {showTradeoffs && (
+          <>
         <Separator />
 
         {/* IS section (collapse-by-default — P3 density) */}
@@ -335,9 +346,11 @@ export function ComponentDetail({
             </InspectorDisclosure>
           </div>
         )}
+          </>
+        )}
 
         {/* Metrics by category (collapse-by-default — the heaviest section) */}
-        {metricsByCategory.size > 0 && (
+        {showTechnical && metricsByCategory.size > 0 && (
           <>
             <Separator />
             <div data-section="metrics">
@@ -387,7 +400,7 @@ export function ComponentDetail({
           </>
         )}
         {/* Data Context (Story 7-2, AC-1 through AC-5) */}
-        {nodeId && (
+        {showTechnical && nodeId && (
           <div data-section="data">
             <Separator />
             <Collapsible open={dataContextOpen} onOpenChange={setDataContextOpen}>
@@ -411,6 +424,15 @@ export function ComponentDetail({
               </CollapsibleContent>
             </Collapsible>
           </div>
+        )}
+
+        {/* Progressive-disclosure hint: tell lower levels where the rest went (P89/Phase C). */}
+        {!showTechnical && (
+          <p data-testid="inspector-level-hint" className="px-1 pt-1 text-[10px] leading-snug text-text-secondary/70">
+            {showTradeoffs
+              ? "Code and full metrics appear at the Advanced level."
+              : "Trade-offs, metrics and code appear at higher experience levels — raise it in the top bar."}
+          </p>
         )}
       </div>
     </ScrollArea>

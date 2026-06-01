@@ -2,6 +2,7 @@ import { render, screen, fireEvent } from "@testing-library/react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore, type ArchieNode, type ArchieEdge } from "@/stores/architectureStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import { NODE_TYPE_COMPONENT } from "@/lib/constants"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 
@@ -66,6 +67,8 @@ describe("InspectorPanel", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     mockGetComponentsByCategory.mockReturnValue([])
+    // Render the full inspector (advanced level); level-gating is covered in ComponentDetail.test.
+    usePreferencesStore.setState({ experienceLevel: "advanced" })
     useUiStore.setState({
       selectedNodeId: null,
       selectedEdgeId: null,
