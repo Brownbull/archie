@@ -4,6 +4,8 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { computeSimStats } from "@/lib/simulationStats"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { getScenarioPreset } from "@/services/scenarioLoader"
+import { getFailurePreset } from "@/services/failureLoader"
 
 type BlockMetric = "rps" | "latency" | "util"
 const METRICS: { id: BlockMetric; label: string }[] = [
@@ -40,6 +42,8 @@ export function SimulationStatsSidePanel() {
   const durationS = useSimulationStore((s) => s.durationS)
   const tickState = useSimulationStore(getCurrentTickState)
   const nodes = useArchitectureStore((s) => s.nodes)
+  const activeScenarioId = useArchitectureStore((s) => s.activeScenarioId)
+  const activeFailureScenarioId = useArchitectureStore((s) => s.activeFailureScenarioId)
   const budgetCap = useChallengeStore((s) => s.activeChallenge?.budgetCap ?? null)
 
   const [metric, setMetric] = useState<BlockMetric>("rps")
@@ -62,6 +66,9 @@ export function SimulationStatsSidePanel() {
   const lastTick = Math.max(1, ticks.length - 1)
   const elapsedS = Math.round((currentTick / lastTick) * durationS)
   const overBudget = budgetCap !== null && monthlyCost > budgetCap
+  // Active test conditions (the selectors are hidden during a run; surface them here instead).
+  const scenarioName = activeScenarioId ? getScenarioPreset(activeScenarioId)?.name : undefined
+  const failureName = activeFailureScenarioId ? getFailurePreset(activeFailureScenarioId)?.name : undefined
 
   const blockValue = (b: { incomingRps: number; latencyMs: number; capacityPercent: number; overloaded: boolean }) => {
     if (metric === "rps") return `${Math.round(b.incomingRps)} rps`
@@ -73,12 +80,19 @@ export function SimulationStatsSidePanel() {
   return (
     <aside
       data-testid="sim-stats-side-panel"
-      className="pointer-events-auto absolute right-3 top-32 z-20 flex max-h-[calc(100%-9rem)] w-56 flex-col overflow-hidden rounded-md border border-archie-border bg-panel/95 shadow-xl backdrop-blur-sm"
+      className="pointer-events-auto absolute right-4 top-4 z-20 flex max-h-[calc(100%-2rem)] w-56 flex-col overflow-hidden rounded-md border border-archie-border bg-panel/95 shadow-xl backdrop-blur-sm"
     >
       <div className="flex items-center justify-between border-b border-archie-border px-3 py-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Stats</span>
         <span data-testid="sim-elapsed" className="text-[10px] tabular-nums text-text-secondary">t={elapsedS}s</span>
       </div>
+
+      {(scenarioName || failureName) && (
+        <div data-testid="sim-conditions" className="flex flex-wrap gap-1 border-b border-archie-border/60 px-3 py-1.5 text-[9px]">
+          {scenarioName && <span className="rounded bg-yellow-500/15 px-1.5 py-0.5 text-yellow-300">{scenarioName}</span>}
+          {failureName && <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-red-300">{failureName}</span>}
+        </div>
+      )}
 
       <div className="overflow-y-auto">
         <Metric

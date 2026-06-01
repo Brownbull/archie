@@ -27,12 +27,11 @@ import { ArchieNode } from "@/components/canvas/ArchieNode";
 import { BuildHealthPanel } from "@/components/canvas/BuildHealthPanel";
 import { CanvasLegend } from "@/components/canvas/CanvasLegend";
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState";
-import { FailureSelector } from "@/components/canvas/FailureSelector";
+import { TestConditionsPanel } from "@/components/canvas/TestConditionsPanel";
 import { GhostNode } from "@/components/canvas/GhostNode";
 import { OverlaySelector } from "@/components/canvas/OverlaySelector";
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode";
 import { RadialMenu } from "@/components/canvas/RadialMenu";
-import { ScenarioSelector } from "@/components/canvas/ScenarioSelector";
 import { SimulationStatsSidePanel } from "@/components/simulation/SimulationStatsSidePanel";
 import { RunSimulationButton } from "@/components/canvas/RunSimulationButton";
 import { ChallengeHud } from "@/components/challenges/ChallengeHud";
@@ -384,8 +383,7 @@ function CanvasViewInner() {
 			<EmptyCanvasState />
 			<OverlaySelector />
 			<CanvasLegend />
-			<ScenarioSelector />
-			<FailureSelector />
+			<TestConditionsPanel />
 			<SimulationStatsSidePanel />
 			<RunSimulationButton />
 			<ChallengeStartButton />
