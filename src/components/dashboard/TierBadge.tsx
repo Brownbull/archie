@@ -2,6 +2,8 @@ import { useState } from "react"
 import { Trophy, ChevronUp, ChevronDown, Check } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
+import { usePreferencesStore } from "@/stores/preferencesStore"
+import { levelRank } from "@/lib/componentTypes"
 import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { Z_INDEX } from "@/lib/constants"
 
@@ -13,6 +15,9 @@ export function TierBadge({ onOpenPathway }: TierBadgeProps) {
   const currentTier = useArchitectureStore((s) => s.currentTier)
   const { suggestions } = usePathwaySuggestions()
   const [isExpanded, setIsExpanded] = useState(false)
+  // Beginners get a simpler badge — the "N/total" tier fraction is jargon they don't need yet
+  // (P92/Phase D). It returns at intermediate+. The tier name + next-step detail stay for all.
+  const showTierFraction = levelRank(usePreferencesStore((s) => s.experienceLevel)) >= levelRank("intermediate")
 
   return (
     <div data-testid="tier-badge" className="relative flex items-center">
@@ -35,9 +40,11 @@ export function TierBadge({ onOpenPathway }: TierBadgeProps) {
           >
             <Trophy className="h-4 w-4" />
             <span>{currentTier.tierName}</span>
-            <span className="opacity-70">
-              {currentTier.tierIndex + 1}/{currentTier.totalTiers}
-            </span>
+            {showTierFraction && (
+              <span data-testid="tier-fraction" className="opacity-70">
+                {currentTier.tierIndex + 1}/{currentTier.totalTiers}
+              </span>
+            )}
             {isExpanded ? (
               <ChevronDown className="h-3 w-3" />
             ) : (

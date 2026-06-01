@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { DashboardOverlay } from "@/components/dashboard/DashboardOverlay"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import { DEFAULT_WEIGHT_PROFILE } from "@/lib/constants"
 
 vi.mock("@/stores/architectureStore", () => ({
@@ -71,6 +72,9 @@ function makeMetrics(nodeId: string, numericValue: number): RecalculatedMetrics 
 describe("DashboardOverlay", () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    // Most tests verify the FULL overlay; advanced shows weights + constraints.
+    // Level-gating is covered by the dedicated describe below.
+    usePreferencesStore.setState({ experienceLevel: "advanced" })
   })
 
   it("shows empty state when no components on canvas", () => {
@@ -386,5 +390,46 @@ describe("DashboardOverlay", () => {
 
     // Aggregate score and component count should appear in the description
     expect(screen.getByText(/across 2 components/)).toBeInTheDocument()
+  })
+
+  describe("experience-level gating (P92/Phase D)", () => {
+    const renderAt = (level: "beginner" | "intermediate" | "advanced") => {
+      usePreferencesStore.setState({ experienceLevel: level })
+      mockUseArchitectureStore.mockImplementation((selector) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (selector as (s: any) => any)({
+          computedMetrics: new Map(),
+          nodes: [],
+          weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+          setWeightProfile: vi.fn(),
+          setWeightAndRecalculate: vi.fn(),
+          constraints: [],
+          constraintViolations: [],
+        }),
+      )
+      render(<DashboardOverlay open={true} onOpenChange={vi.fn()} />)
+    }
+
+    it("beginner hides weights + constraints, shows the hint, keeps pathway", () => {
+      renderAt("beginner")
+      expect(screen.queryByTestId("weight-sliders-toggle")).toBeNull()
+      expect(screen.queryByTestId("constraint-guardrails-toggle")).toBeNull()
+      expect(screen.getByTestId("optimize-level-hint")).toBeInTheDocument()
+      expect(screen.getByTestId("pathway-guidance-toggle")).toBeInTheDocument()
+    })
+
+    it("intermediate reveals weights but not constraints", () => {
+      renderAt("intermediate")
+      expect(screen.getByTestId("weight-sliders-toggle")).toBeInTheDocument()
+      expect(screen.queryByTestId("constraint-guardrails-toggle")).toBeNull()
+      expect(screen.getByTestId("optimize-level-hint")).toBeInTheDocument()
+    })
+
+    it("advanced reveals weights + constraints and drops the hint", () => {
+      renderAt("advanced")
+      expect(screen.getByTestId("weight-sliders-toggle")).toBeInTheDocument()
+      expect(screen.getByTestId("constraint-guardrails-toggle")).toBeInTheDocument()
+      expect(screen.queryByTestId("optimize-level-hint")).toBeNull()
+    })
   })
 })

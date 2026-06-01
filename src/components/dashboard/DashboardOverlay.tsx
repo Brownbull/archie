@@ -10,6 +10,8 @@ import { CATEGORY_LOOKUP } from "@/lib/categoryLookup"
 import { getCategoryIcon } from "@/lib/categoryIcons"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useDashboardWeights } from "@/hooks/useDashboardWeights"
+import { usePreferencesStore } from "@/stores/preferencesStore"
+import { levelRank } from "@/lib/componentTypes"
 import {
   Dialog,
   DialogContent,
@@ -48,6 +50,11 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
   const constraintViolations = useArchitectureStore((s) => s.constraintViolations)
   const constraintCount = useArchitectureStore((s) => s.constraints.length)
   const { suggestions } = usePathwaySuggestions()
+  // Progressive disclosure by experience level (P92/Phase D). Beginners get scores + "what to add
+  // next" (Pathway); Priority Weights surface at intermediate, Constraint Guardrails at advanced.
+  const experienceLevel = usePreferencesStore((s) => s.experienceLevel)
+  const showWeights = levelRank(experienceLevel) >= levelRank("intermediate")
+  const showConstraints = levelRank(experienceLevel) >= levelRank("advanced")
   const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [weightsOpen, setWeightsOpen] = useState(false)
   const [constraintsOpen, setConstraintsOpen] = useState(false)
@@ -112,6 +119,7 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
           </DialogDescription>
         </DialogHeader>
 
+        {showWeights && (
         <Collapsible open={weightsOpen} onOpenChange={setWeightsOpen}>
           <CollapsibleTrigger
             data-testid="weight-sliders-toggle"
@@ -136,7 +144,9 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
             <WeightSliders />
           </CollapsibleContent>
         </Collapsible>
+        )}
 
+        {showConstraints && (
         <Collapsible open={constraintsOpen} onOpenChange={setConstraintsOpen}>
           <CollapsibleTrigger
             data-testid="constraint-guardrails-toggle"
@@ -167,6 +177,15 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
             <ConstraintPanel onCloseOverlay={() => onOpenChange(false)} />
           </CollapsibleContent>
         </Collapsible>
+        )}
+
+        {!showConstraints && (
+          <p data-testid="optimize-level-hint" className="text-[11px] text-text-secondary/70">
+            {showWeights
+              ? "Constraint guardrails appear at the Advanced level."
+              : "Priority weights and constraint guardrails appear at higher experience levels — raise it in the top bar."}
+          </p>
+        )}
 
         <Collapsible open={pathwayOpen} onOpenChange={setPathwayOpen}>
           <div ref={pathwayRef}>

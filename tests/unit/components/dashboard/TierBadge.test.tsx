@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { TierBadge } from "@/components/dashboard/TierBadge"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import type { TierResult } from "@/lib/tierDefinitions"
 
 vi.mock("@/hooks/usePathwaySuggestions", () => ({
@@ -60,6 +61,8 @@ const MAX_TIER: TierResult = {
 describe("TierBadge", () => {
   beforeEach(() => {
     useArchitectureStore.setState({ currentTier: null })
+    // Advanced shows the tier fraction; beginner hides it (gating test covers that explicitly).
+    usePreferencesStore.setState({ experienceLevel: "advanced" })
   })
 
   describe("null state (no tier)", () => {
@@ -84,9 +87,17 @@ describe("TierBadge", () => {
       expect(screen.getByText("Foundation")).toBeInTheDocument()
     })
 
-    it("shows progress indicator (index+1/total)", () => {
+    it("shows progress indicator (index+1/total) at intermediate+", () => {
       render(<TierBadge />)
       expect(screen.getByText("1/3")).toBeInTheDocument()
+    })
+
+    it("hides the tier fraction for beginners (P92/Phase D)", () => {
+      usePreferencesStore.setState({ experienceLevel: "beginner" })
+      render(<TierBadge />)
+      expect(screen.queryByTestId("tier-fraction")).toBeNull()
+      // Tier name still shows — only the N/total jargon is hidden.
+      expect(screen.getByText("Foundation")).toBeInTheDocument()
     })
 
     it("has data-testid='tier-badge'", () => {
