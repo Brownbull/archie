@@ -74,6 +74,8 @@ vi.mock("@/stores/architectureStore", () => {
         topologyIssuesByNodeId: mockTopologyIssuesByNodeId,
         setNodeReplicaCount: mockSetNodeReplicaCount,
         edges: mockArchEdges,
+        computedMetrics: new Map(),
+        weightProfile: {},
       }),
     ),
     { getState: () => ({ nodes: mockArchNodes }) },

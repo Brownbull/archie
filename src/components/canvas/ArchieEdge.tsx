@@ -148,7 +148,11 @@ export function ArchieEdge({
   } else if (heatmapEnabled && edgeHeatmapStatus) {
     strokeColor = HEATMAP_COLORS[edgeHeatmapStatus]
     strokeWidth = 2
+    // Non-colour cue (colour-blind a11y): line style also encodes health —
+    // solid = healthy, dashed = warning, dotted = bottleneck.
     if (isIncompatible) strokeDasharray = "5 3"
+    else if (edgeHeatmapStatus === "warning") strokeDasharray = "6 4"
+    else if (edgeHeatmapStatus === "bottleneck") strokeDasharray = "2 4"
   } else if (isIncompatible) {
     strokeColor = "var(--color-heatmap-yellow)"
     strokeDasharray = "5 3"

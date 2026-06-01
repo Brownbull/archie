@@ -62,6 +62,8 @@ let mockArchEdges: Array<{ source: string; target: string }> = []
 let mockRippleActiveNodeIds = new Set<string>()
 let mockAnimationsEnabled = false
 let mockTopologyIssuesByNodeId = new Map<string, Array<{ issueType: string }>>()
+const mockComputedMetrics = new Map<string, unknown>()
+const mockWeightProfile = {}
 const mockSetNodeReplicaCount = vi.fn()
 
 vi.mock("@/stores/architectureStore", () => {
@@ -75,6 +77,8 @@ vi.mock("@/stores/architectureStore", () => {
         topologyIssuesByNodeId: mockTopologyIssuesByNodeId,
         setNodeReplicaCount: mockSetNodeReplicaCount,
         edges: mockArchEdges,
+        computedMetrics: mockComputedMetrics,
+        weightProfile: mockWeightProfile,
       }),
     ),
     { getState: () => ({ nodes: mockArchNodes }) },
@@ -351,7 +355,7 @@ describe("ArchieNode", () => {
       mockHeatmapColors.set("node-1", "warning")
       render(<ArchieNode {...defaultProps} />)
       const node = screen.getByTestId("archie-node")
-      expect(node).toHaveAttribute("aria-label", "PostgreSQL — warning")
+      expect(node).toHaveAttribute("aria-label", "PostgreSQL — Health: warning")
     })
 
     it("sets aria-label without heatmap status when heatmap disabled", () => {

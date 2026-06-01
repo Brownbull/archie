@@ -20,7 +20,8 @@ import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { useNodePorts } from "@/hooks/useNodePorts"
 import { useNodeSimTelemetry, simCapacityColorClass } from "@/hooks/useNodeSimTelemetry"
 import { PORT_TYPES } from "@/lib/constants"
-import { getNodeCost, getNodeComplexity, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
+import { getNodeCost, getNodeComplexity, getNodeCategoryAverages, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
+import { computeWeightedNodeScore } from "@/engine/heatmapCalculator"
 import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
 import { Gauge } from "lucide-react"
 
@@ -60,6 +61,16 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Heatmap state — targeted selectors (AC-ARCH-PATTERN-5, AC-ARCH-NO-6)
   const heatmapStatus = useArchitectureStore((s) => s.heatmapColors.get(id))
   const heatmapEnabled = useUiStore((s) => s.heatmapEnabled)
+
+  // Numeric weighted health score for the heatmap hover (the same value the status is derived
+  // from) — surfaces the actual number behind the colour. Computed locally from this node's
+  // metrics + the weight profile; null until the node has been recalculated.
+  const nodeMetrics = useArchitectureStore((s) => s.computedMetrics.get(id))
+  const weightProfile = useArchitectureStore((s) => s.weightProfile)
+  const heatmapScore = useMemo(
+    () => (nodeMetrics ? computeWeightedNodeScore(getNodeCategoryAverages(nodeMetrics), weightProfile) : null),
+    [nodeMetrics, weightProfile],
+  )
 
   // Constraint violations — O(1) per-node selector via derived Map (TD-6-3a AC-2)
   // violationsByNodeId.get(id) avoids O(n) filter on every node; constraints subscription
@@ -186,11 +197,15 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     return undefined
   })()
 
-  // Accessibility: include heatmap status in aria-label for screen readers (TD-2-2b)
-  const ariaLabel =
+  // Health readout (status + the numeric score behind the colour) shown on hover when heatmap is
+  // on; also folded into the aria-label so screen-reader users get the same non-colour information.
+  const healthText =
     heatmapEnabled && heatmapStatus
-      ? `${data.componentName} \u2014 ${heatmapStatus}`
-      : data.componentName
+      ? `Health: ${heatmapStatus}${heatmapScore != null ? ` \u00b7 score ${heatmapScore.toFixed(1)}/10` : ""}`
+      : undefined
+
+  // Accessibility: include heatmap status + score in aria-label for screen readers (TD-2-2b)
+  const ariaLabel = healthText ? `${data.componentName} \u2014 ${healthText}` : data.componentName
 
   return (
     <div
@@ -211,7 +226,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         "--ripple-color": heatmapStatus ? HEATMAP_COLORS[heatmapStatus] : undefined,
       } as React.CSSProperties}
       aria-label={ariaLabel}
-      title={isDimmed && compatStatus?.reason ? `⚠ ${compatStatus.reason}` : undefined}
+      title={isDimmed && compatStatus?.reason ? `⚠ ${compatStatus.reason}` : healthText}
     >
       <NodeActionToolbar nodeId={id} />
 

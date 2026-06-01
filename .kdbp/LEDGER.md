@@ -1974,3 +1974,19 @@ UX bundle 3 of 4. Undo/redo: snapshot-based canvasHistory service (watches store
 ## 2026-06-01 08:05 — commit: Bundle 4 — clarity quick wins (grade, jargon tooltips, AI-prompt framing)
 FINDINGS: 0 (full suite 4018 ✅ AggregateScore 16 ✅ tsc -b ✅ lint 0-err ✅ e2e: AI-prompt dialog clarity)
 UX bundle 4 of 4 (safe high-value subset). (1) AggregateScore: letter grade A/B/C/D/F beside the overall number + GRADE_HELP tooltip (makes '7.2' interpretable); 'Overall' label kept so existing tests pass. (2) Jargon tooltips: ConfigSelector 'Configuration' (tier = cost vs perf/scale trade-off), ArchieNode replica stepper (horizontal replicas need upstream LB), AI Prompt button title. (3) AI Prompt clarity: button tooltip + new DialogDescription stating it's a copy-paste prompt for Claude/ChatGPT, not in-app AI. DEFERRED (riskier/flow-specific, noted to user): scenario/failure 'test conditions' grouping label, edge heatmap-status a11y pattern, challenge results 'run again' + scoring-rule text, heatmap numeric hover. Pure client UI.
+- 2026-06-01 08:09 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ScenarioSelector.tsx
+- 2026-06-01 08:09 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieEdge.tsx
+- 2026-06-01 08:09 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 08:10 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 08:10 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 08:10 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 08:11 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-01 08:11 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-01 08:12 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-06-01 08:13 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-06-01 08:13 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-06-01 08:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode-ports.test.tsx
+
+## 2026-06-01 08:45 — commit: deferred clarity items (test-conditions label, edge a11y, heatmap score, challenge scoring rule)
+FINDINGS: 0 (full suite 4018 ✅ ArchieNode/ports/Edge/challenge ✅ tsc -b ✅ lint 0-err ✅ e2e: test-conditions label)
+Closed the 4 deferred UX-review clarity items. (1) Scenario+Failure grouped under a 'TEST CONDITIONS' caption (zero reflow — label sits left of the scenario selector). (2) Edge heatmap a11y: line-style now also encodes health (solid=healthy, dashed=warning, dotted=bottleneck) — non-colour cue for colour-blind users. (3) Node heatmap hover: numeric weighted score (computed locally from computedMetrics+weightProfile) added to the node title + aria-label alongside the status. (4) Challenge results: explicit scoring rule ('1★ per criterion met') + 'Retry'→'Adjust & retry' with a tooltip (a literal identical re-run is a no-op for a deterministic sim; clarified the edit-and-rerun path instead). Updated 2 ArchieNode test mocks (computedMetrics/weightProfile) + the aria-label assertion. Pure client UI.

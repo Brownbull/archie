@@ -104,6 +104,11 @@ export function ChallengeResultsModal() {
           />
         </div>
 
+        {/* How stars are earned — makes the 0–3 scoring rule explicit. */}
+        <p data-testid="scoring-rule" className="text-center text-[10px] text-text-secondary">
+          You earn 1★ for each criterion met above — all three for a perfect run.
+        </p>
+
         {/* Solo progress: how this attempt compares to your best prior run (P4). */}
         <div data-testid="vs-past-attempts" className="rounded-md border border-archie-border bg-surface px-3 py-2">
           {priorBest ? (
@@ -137,8 +142,13 @@ export function ChallengeResultsModal() {
           <Button data-testid="result-close" variant="ghost" size="sm" onClick={onClose}>
             Close
           </Button>
-          <Button data-testid="result-retry" size="sm" onClick={onRetry}>
-            Retry
+          <Button
+            data-testid="result-retry"
+            size="sm"
+            onClick={onRetry}
+            title="Back to editing — your design is kept. Tweak it, then run the simulation again."
+          >
+            Adjust &amp; retry
           </Button>
         </DialogFooter>
       </DialogContent>

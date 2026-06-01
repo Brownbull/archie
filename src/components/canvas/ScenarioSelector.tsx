@@ -53,6 +53,14 @@ export function ScenarioSelector() {
 
   return (
     <>
+      {/* Group label so the scenario + failure dropdowns read as one set ("pick one or both"). */}
+      <span
+        data-testid="test-conditions-label"
+        title="Set the demand scenario and/or a failure to inject, then Run Simulation."
+        className={`pointer-events-none absolute right-[13.75rem] top-[1.4rem] text-[9px] font-semibold uppercase tracking-wide text-text-secondary/80 ${Z_INDEX.DROPDOWN}`}
+      >
+        Test conditions
+      </span>
       <div
         data-testid={SCENARIO_SELECTOR_TESTID}
         className={`pointer-events-auto absolute right-4 top-4 ${Z_INDEX.DROPDOWN}`}
