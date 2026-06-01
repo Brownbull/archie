@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Trophy, Star } from "lucide-react"
 import {
   Dialog,
@@ -6,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { getAllChallenges } from "@/services/challengeLoader"
@@ -40,11 +42,12 @@ export function ChallengeSelector() {
   const challenges = getAllChallenges()
   const bestStars = useChallengeStore((s) => s.bestStars)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
+  // A challenge starts on a clean canvas — confirm first if the user has work that would be wiped.
+  const [pending, setPending] = useState<Challenge | null>(null)
 
-  const onPick = (c: Challenge) => {
-    // Start the challenge on a clean canvas seeded with a Traffic Source sized to its target load,
-    // so the request origin is already in place and the user just connects components to it.
-    // Best-effort: a seeding hiccup must never block entering the challenge.
+  const startChallenge = (c: Challenge) => {
+    // Clean canvas seeded with a Traffic Source sized to the challenge's target load, so the request
+    // origin is already in place. Best-effort: a seeding hiccup must never block entering.
     try {
       const peak = curvePeakRps(c.trafficCurve)
       const source = makeTrafficSourceNode(peak, { x: 64, y: 240 })
@@ -55,6 +58,17 @@ export function ChallengeSelector() {
     }
     selectChallenge(c)
     setOpen(false)
+    setPending(null)
+  }
+
+  const onPick = (c: Challenge) => {
+    // If there's existing work on the canvas, ask before clearing it.
+    if (useArchitectureStore.getState().nodes.length > 0) {
+      setOpen(false)
+      setPending(c)
+      return
+    }
+    startChallenge(c)
   }
 
   return (
@@ -100,6 +114,32 @@ export function ChallengeSelector() {
           </div>
         )}
       </DialogContent>
+
+      {/* Confirm clearing existing work before starting a challenge on a fresh canvas. */}
+      <Dialog open={pending !== null} onOpenChange={(o) => { if (!o) setPending(null) }}>
+        <DialogContent data-testid="challenge-clear-confirm" className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Start &ldquo;{pending?.title}&rdquo;?</DialogTitle>
+            <DialogDescription>
+              Starting a challenge clears your current canvas and sets up a fresh diagram with a
+              traffic source. Your in-progress work will be removed.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setPending(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              data-testid="challenge-clear-confirm-start"
+              onClick={() => pending && startChallenge(pending)}
+            >
+              Clear &amp; start
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   )
 }

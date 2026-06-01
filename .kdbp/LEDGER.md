@@ -2052,3 +2052,22 @@ User: no block for traffic generation (users/sensors/API/backend) — load came 
 ## 2026-06-01 11:25 — commit: canvas controls (reset + clearer exit) + traffic-source auto-injection
 FINDINGS: 0 (full suite 4066 ✅ trafficSourceInjection 5 ✅ tsc -b ✅ lint 0-err ✅ e2e: reset clears, challenge seeds source + exit, blueprint prepends source)
 User asks: (1) Reset-canvas button → ResetCanvasButton in Toolbar with confirm dialog; clears nodes/edges + sim + selection + autosave (destructive, resets undo history). (2) Exit-challenge button → the ChallengeHud X already existed; relabeled to a clear "✕ Exit" button. (3) Blueprints/stacks must originate load → new trafficSourceInjection service (pickTrafficSource sizes by target rps; withEntryTrafficSource prepends a default Web Users source wired to in-degree-0 entries, no-op if one exists). Wired into BlueprintTab.doLoad (always) + CanvasView stack-drop (only if canvas+stack have none). (4) Challenges pre-seed a source sized to the target → ChallengeSelector.onPick clears the canvas + places makeTrafficSourceNode(curvePeakRps(trafficCurve)) then selectChallenge (best-effort/try-catch so seeding never blocks entry). Load-time only — NO reseed. Test mocks updated (CanvasView getComponentsByCategory, RunSim earlier).
+- 2026-06-01 10:52 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ScenarioSelector.tsx
+- 2026-06-01 10:52 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ScenarioSelector.tsx
+- 2026-06-01 10:52 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/FailureSelector.tsx
+- 2026-06-01 10:53 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/FailureSelector.tsx
+- 2026-06-01 10:53 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/TestConditionsPanel.tsx
+- 2026-06-01 10:54 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-06-01 10:54 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-06-01 10:55 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-06-01 10:55 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-01 10:55 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-01 10:56 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-01 10:56 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-01 10:57 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-01 10:57 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-01 10:57 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+
+## 2026-06-01 12:05 — commit: confirm-before-clear on challenge start + fix scenario/failure overlap
+FINDINGS: 0 (full suite 4066 ✅ tsc -b ✅ lint 0-err ✅ e2e: no banner overlap, challenge confirm)
+User: (1) confirm before a challenge wipes free-build work; (2) selecting a scenario, its description banner overlapped the failure selector (z-order: failure dropdown over the canvas-overlay banner). Fix #2 (root cause): ScenarioSelector + FailureSelector refactored to render INLINE (no absolute positioning / magic top offsets) and stacked in a new TestConditionsPanel flex column — banners flow under their selector so they can't overlap regardless of description length. TestConditionsPanel hides during a sim (status≠idle) so it doesn't fight the live STATS panel, which now owns the rail (moved top-32→top-4) and shows the active scenario/failure as chips (context the banners used to give). Fix #1: ChallengeSelector.onPick now opens a 'Clear & start' confirm dialog when the canvas is non-empty (else starts immediately); startChallenge extracted. Pure UI; no data change.
