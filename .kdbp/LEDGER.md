@@ -2323,3 +2323,35 @@ PR: — (direct; carried bcce0cb [P100/P101 bookkeeping] + fcc2f65 [P102 UI poli
 CI: deploy-production ✅ green (run 26786273976, 54s)
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P102, P103
+- 2026-06-01 18:45 | Write | /home/khujta/projects/bmad/archie/src/lib/aggregateStats.ts
+- 2026-06-01 18:45 | Write | /home/khujta/projects/bmad/archie/src/components/toolbox/PatternStatsRow.tsx
+- 2026-06-01 18:46 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 18:46 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 18:46 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 18:46 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 18:46 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StackCard.tsx
+- 2026-06-01 18:46 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StackCard.tsx
+- 2026-06-01 18:46 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StackCard.tsx
+- 2026-06-01 18:47 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 18:47 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 18:47 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 18:47 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 18:48 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 18:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/StackCard.test.tsx
+- 2026-06-01 18:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/StackCard.test.tsx
+- 2026-06-01 18:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/StackCard.test.tsx
+- 2026-06-01 18:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/StackCard.test.tsx
+- 2026-06-01 18:50 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/PatternStatsRow.tsx
+- 2026-06-01 18:50 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/aggregateStats.test.ts
+- 2026-06-01 18:51 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+
+## 2026-06-01 18:53 — [718e859] feat(toolbox): cost · throughput · latency on stack & blueprint cards
+FINDINGS: 0 critical/high (tsc✓ eslint 0✓ unit 4177✓; Playwright visual-audit 6/6 — stack-card + blueprint-card crops confirm the stats row)
+ACTIONS: aggregateVariantStats (cost=Σ, rps=bottleneck-min, latency=Σ) + shared PatternStatsRow; wired into StacksTab/StackCard + BlueprintTab/BlueprintCard
+DEFERRED: none
+
+## 2026-06-01 22:54 — PUSH dev -> main
+PR: — (direct; carried db7cd7f [P102/P103 bookkeeping] + 718e859 [P104 stack/blueprint stats])
+CI: deploy-production ✅ green (run 26786983988, 58s)
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P104
