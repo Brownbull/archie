@@ -17,6 +17,7 @@ import { MetricFilter } from "@/components/inspector/MetricFilter"
 import { VariantRecommendation } from "@/components/inspector/VariantRecommendation"
 import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 import { DataContextPanel } from "@/components/inspector/DataContextPanel"
+import { DataSourceNote } from "@/components/common/DataSourceNote"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { InspectorDisclosure } from "@/components/inspector/InspectorDisclosure"
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
@@ -242,12 +243,23 @@ export function ComponentDetail({
         {/* Economics (Epic 13 Phase 4) */}
         <EconomicsSection current={currentEconomics} previous={previousEconomics} />
 
-        {/* Code Snippet */}
+        {/* Code Snippet — collapse-by-default (P3 density): the snippet is the heaviest
+            single block, so it lives behind a disclosure and the inspector leads with the
+            decision-relevant summary, scores, and economics. */}
         {activeVariant?.codeSnippet && (
           <div data-section="code">
-            <CodeSnippetViewer codeSnippet={activeVariant.codeSnippet} />
+            <InspectorDisclosure title="Code example" testId="disclosure-code">
+              <div className="pt-0.5">
+                <CodeSnippetViewer codeSnippet={activeVariant.codeSnippet} />
+              </div>
+            </InspectorDisclosure>
           </div>
         )}
+
+        {/* Provenance: the figures above are AI-compiled directional estimates, not benchmarks. */}
+        <div data-section="data-source">
+          <DataSourceNote kind="block" />
+        </div>
 
         <Separator />
 

@@ -515,7 +515,10 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
     await expect(inspectorPanel).toBeVisible()
 
-    // Seed data guarantees all 10 components have codeSnippet — section must be present
+    // Code lives behind a collapse-by-default "Code example" disclosure (P3 density) — open it.
+    await page.locator('[data-testid="disclosure-code"]').click()
+
+    // Seed data guarantees all components have codeSnippet — section must be present once expanded
     const codeSnippetSection = page.locator('[data-testid="code-snippet-section"]')
     await expect(codeSnippetSection).toBeVisible({ timeout: 5_000 })
 
@@ -545,6 +548,9 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const configSelector = page.locator('[data-testid="config-selector"]')
     await expect(configSelector).toBeVisible()
     const triggerButton = configSelector.locator("button").first()
+
+    // Expand the collapse-by-default "Code example" disclosure before reading the snippet.
+    await page.locator('[data-testid="disclosure-code"]').click()
 
     // Capture the code snippet text before switching variant
     const codeSnippetSection = page.locator('[data-testid="code-snippet-section"]')

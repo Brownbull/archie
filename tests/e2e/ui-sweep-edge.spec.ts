@@ -60,6 +60,8 @@ test.describe("UI sweep — edge cases & polish", () => {
     expect(overflow, "no horizontal page overflow from long component name").toBeLessThanOrEqual(1)
 
     // The code snippet must wrap inside the narrow inspector, not clip/overflow horizontally.
+    // Code is behind a collapse-by-default "Code example" disclosure — open it first.
+    await page.locator('[data-testid="disclosure-code"]').click().catch(() => {})
     const codeSection = page.locator('[data-testid="code-snippet-section"]')
     if (await codeSection.isVisible().catch(() => false)) {
       const codeOverflow = await codeSection.evaluate((el) => el.scrollWidth - el.clientWidth)

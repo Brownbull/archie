@@ -1864,3 +1864,18 @@ User wanted a complexity indicator to the right of replicas / below price. Added
 - 2026-05-31 23:26 | Write | /home/khujta/projects/bmad/archie/src/data/components/fivetran.yaml
 - 2026-05-31 23:26 | Edit | /home/khujta/projects/bmad/archie/src/data/components/newrelic.yaml
 - 2026-05-31 23:27 | Edit | /home/khujta/projects/bmad/archie/src/data/components/cloudfront.yaml
+- 2026-05-31 23:57 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 23:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 23:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-05-31 23:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-01 00:08 | Write | /home/khujta/projects/bmad/archie/src/components/common/DataSourceNote.tsx
+- 2026-06-01 00:08 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 00:08 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 00:08 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 00:08 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 00:08 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 00:08 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+
+## 2026-06-01 04:10 — commit: inspector code disclosure + Data source provenance note
+FINDINGS: 0 (ComponentDetail 33 ✅ toolbox+inspector 322 ✅ tsc -b ✅ lint 0-err ✅ e2e visual: code collapsed/expand + data-source on block/stacks/blueprints)
+User asked: (1) code in right panel is too much at first sight → hide behind a title; (2) want a section/indicator about information source / AI inference for block/blueprint/stack. (1) Wrapped CodeSnippetViewer in an InspectorDisclosure "Code example" (collapse-by-default); updated 3 e2e specs to open disclosure-code before asserting code-snippet-section visible. (2) Chose 'Data source section + methodology'. New reusable DataSourceNote (common/) = collapse-by-default "ⓘ Data source" disclosure with kind-specific copy (block/blueprint/stack) stating figures are AI-compiled directional estimates, not vendor benchmarks. Placed on ComponentDetail (block), top of StacksTab + BlueprintTab (once each). Pure UI — no schema/data/seed change.

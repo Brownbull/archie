@@ -2,6 +2,7 @@ import { Component, useMemo, type ErrorInfo, type ReactNode } from "react"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useLibrary } from "@/hooks/useLibrary"
 import { StackCard, type ResolvedStackComponent } from "@/components/toolbox/StackCard"
+import { DataSourceNote } from "@/components/common/DataSourceNote"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { StackDefinition } from "@/schemas/stackSchema"
@@ -93,6 +94,7 @@ function StacksTabInner() {
   return (
     <ScrollArea data-testid="stacks-tab" className="h-full">
       <div className="space-y-3 p-3">
+        <DataSourceNote kind="stack" />
         {stacks.map((stack) => (
           <StackCard
             key={stack.id}

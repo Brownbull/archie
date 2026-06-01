@@ -6,6 +6,7 @@ import { hydrateArchitectureSkeleton } from "@/services/yamlImporter"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DataSourceNote } from "@/components/common/DataSourceNote"
 import {
   Dialog,
   DialogContent,
@@ -164,6 +165,7 @@ function BlueprintTabInner() {
       )}
       <ScrollArea data-testid="blueprint-tab" className="h-full">
         <div className="space-y-3 p-3">
+          <DataSourceNote kind="blueprint" />
           {blueprints.map((bp) => (
             <BlueprintCard key={bp.id} blueprint={bp} onLoad={handleLoad} />
           ))}
