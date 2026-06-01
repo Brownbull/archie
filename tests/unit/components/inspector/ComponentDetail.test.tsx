@@ -115,6 +115,21 @@ describe("ComponentDetail", () => {
     )
   }
 
+  describe("type-first headline (Phase 3 — progressive disclosure)", () => {
+    it("shows the logical type as the heading, vendor in the summary, and a 'what it is' headline", () => {
+      renderDefault({ component: { ...mockComponent, typeId: "relational-db" } })
+      expect(screen.getByTestId("inspector-heading")).toHaveTextContent("Relational Database")
+      expect(screen.getByTestId("inspector-summary-provider")).toHaveTextContent("PostgreSQL")
+      expect(screen.getByTestId("inspector-headline")).toHaveTextContent(mockComponent.is)
+    })
+
+    it("falls back to the vendor name as the heading when there is no type", () => {
+      renderDefault() // mockComponent has no typeId
+      expect(screen.getByTestId("inspector-heading")).toHaveTextContent("PostgreSQL")
+      expect(screen.queryByTestId("inspector-summary-provider")).toBeNull()
+    })
+  })
+
   describe("inspector node actions (P3)", () => {
     it("Remove button deletes the bound node", () => {
       const removeSpy = vi

@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
-import { providersForComponent } from "@/lib/componentTypes"
+import { providersForComponent, COMPONENT_TYPES } from "@/lib/componentTypes"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeRecommendations } from "@/engine/recommendationEngine"
@@ -170,14 +170,19 @@ export function ComponentDetail({
     ? COMPONENT_CATEGORIES[component.category as ComponentCategoryId]
     : null
 
+  // Type-first heading (matches the canvas node): show the logical type as the title and the
+  // chosen vendor in the summary line. Falls back to the vendor name for pre-P5 components.
+  const typeLabel = component.typeId ? COMPONENT_TYPES.get(component.typeId)?.label : undefined
+  const headingLabel = typeLabel ?? component.name
+
   return (
     <ScrollArea className="h-full">
       <div className="min-w-0 space-y-3 p-3">
-        {/* Header: name + Remove + compact summary (variant · $/mo) — P3 density */}
+        {/* Header: type-first title + Remove. Summary line carries the chosen vendor · variant · $/mo. */}
         <div>
           <div className="flex items-start justify-between gap-2">
-            <h2 className="min-w-0 text-sm font-semibold text-text-primary">
-              {component.name}
+            <h2 data-testid="inspector-heading" className="min-w-0 text-sm font-semibold text-text-primary">
+              {headingLabel}
             </h2>
             {nodeId && (
               <button
@@ -202,6 +207,8 @@ export function ComponentDetail({
                 {categoryMeta.label}
               </Badge>
             )}
+            {/* Vendor lives here now that the heading is the logical type. */}
+            {typeLabel && <span data-testid="inspector-summary-provider" className="font-medium text-text-primary">{component.name}</span>}
             {activeVariant?.name && <span data-testid="inspector-summary-variant">{activeVariant.name}</span>}
             <span data-testid="inspector-summary-cost" className="font-medium text-emerald-400">
               {currentEconomics.monthlyCost === 0 ? "Free" : `$${currentEconomics.monthlyCost}/mo`}
@@ -209,10 +216,11 @@ export function ComponentDetail({
           </div>
         </div>
 
-        {/* Description */}
-        <p className="text-xs text-text-secondary">{component.description}</p>
+        {/* Orientation headline — the one-line "what it is", the first thing a junior reads.
+            The longer description is one click away in the "What it is" disclosure below. */}
+        <p data-testid="inspector-headline" className="text-xs leading-snug text-text-primary">{component.is}</p>
 
-        {/* Component Type Swapper */}
+        {/* Pick a vendor → then a configuration tier. Scores below update as you change these. */}
         <ComponentSwapper
           currentComponentId={component.id}
           alternatives={alternatives}
@@ -246,7 +254,7 @@ export function ComponentDetail({
         {/* IS section (collapse-by-default — P3 density) */}
         <div data-section="details">
           <InspectorDisclosure title="What it is" testId="disclosure-is">
-            <p className="pt-0.5 text-xs text-text-secondary">{component.is}</p>
+            <p className="pt-0.5 text-xs text-text-secondary">{component.description}</p>
           </InspectorDisclosure>
         </div>
 

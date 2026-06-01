@@ -1768,3 +1768,12 @@ Reworked the left panel from a vendor list to LOGICAL BLOCKS, matching the refer
 ## 2026-06-01 00:45 — commit: Phase 2 — port affordance (hover labels)
 FINDINGS: 0 (ArchieNode 71 ✅ tsc -b ✅ lint 0-err ✅)
 The diamond connector ports only had a weak native tooltip, so it wasn't clear what each accepts. Added a hover-revealed label beside every port (placed OUTSIDE the node edge so it never crowds the node content): "Database in", "Cache out", etc., color-matched to the port. Node root gains `group` for the group-hover reveal. +unit test.
+- 2026-05-31 20:43 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 20:44 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 20:44 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 20:44 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-05-31 20:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+
+## 2026-06-01 01:00 — commit: Phase 3 — inspector headline-first (progressive disclosure)
+FINDINGS: 0 (ComponentDetail 33 ✅ full suite 3477 ✅ tsc -b ✅ lint 0-err ✅)
+Restructured the inspector top for junior architects: heading is now the LOGICAL TYPE (matches the canvas node), the chosen vendor moves into the summary line (category · vendor · variant · $/mo), and a prominent one-line "what it is" headline (component.is) is the first read. The longer description moved into the on-demand "What it is" disclosure. Detail sections stay collapsed (existing P3 disclosures). +2 tests. (Phases 1+2 already shipped: type-level toolbox P64, port labels P65.)
