@@ -1,0 +1,147 @@
+id: aws-api-gateway
+name: AWS API Gateway
+category: delivery-network
+type_id: api-gateway
+description: Managed API gateway for REST/HTTP APIs with auth, throttling, and caching
+is: A fully managed AWS gateway that fronts Lambda or HTTP backends with request validation, authorizers, throttling, and response caching, scaling automatically with no servers to run
+gain:
+  - Fully managed — auto-scales, no servers
+  - Native Lambda, IAM, and Cognito integration
+  - Built-in throttling, caching, and request validation
+cost:
+  - AWS-only; priced per million requests
+  - REST APIs cost more than HTTP APIs
+  - Cold-ish first-byte for very spiky traffic
+tags:
+  - api-gateway
+  - networking
+  - managed
+  - aws
+  - serverless
+base_metrics:
+  - id: request-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: policy-enforcement
+    value: high
+    numeric_value: 8
+    category: security
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: apigw-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: http-api
+    name: HTTP API
+    monthly_cost: 15
+    max_rps: 10000
+    base_latency_ms: 12
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: apigw-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # AWS API Gateway (HTTP API) — proxy a route to a Lambda
+        aws apigatewayv2 create-api --name app --protocol-type HTTP \
+          --target arn:aws:lambda:us-east-1:111:function:handler
+    metric_explanations:
+      apigw-cost-efficiency:
+        reason: HTTP APIs price roughly a third of REST APIs per million requests, ideal for high-volume proxying.
+        contributing_factors:
+          - Lower per-million-request rate than REST
+          - No idle/server cost
+          - Pay strictly per request
+      request-latency:
+        reason: The leaner HTTP API path adds minimal overhead before invoking the backend.
+        contributing_factors:
+          - Streamlined proxy integration
+          - Managed edge/regional endpoints
+          - No per-request VM warm-up
+  - id: rest-api
+    name: REST API (+ Cache)
+    monthly_cost: 50
+    max_rps: 8000
+    base_latency_ms: 18
+    metrics:
+      - id: request-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: policy-enforcement
+        value: high
+        numeric_value: 9
+        category: security
+      - id: apigw-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # AWS API Gateway (REST) — enable a usage plan + caching on a stage
+        aws apigateway update-stage --rest-api-id $API --stage-name prod \
+          --patch-operations op=replace,path=/cacheClusterEnabled,value=true
+    metric_explanations:
+      policy-enforcement:
+        reason: REST APIs add request validation, API keys, usage plans, and fine-grained authorizers for stricter control.
+        contributing_factors:
+          - Request/response validation models
+          - API keys and usage-plan quotas
+          - Lambda/IAM/Cognito authorizers
+      apigw-cost-efficiency:
+        reason: REST APIs and the cache cluster cost more per request and per hour than the lean HTTP API.
+        contributing_factors:
+          - Higher per-million-request REST rate
+          - Hourly cache-cluster charge
+          - Justified by richer policy controls
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 8-60ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.8
+    extreme:
+      request-latency: 0.6
+      concurrent-connections: 0.7
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.8
+    unpredictable:
+      request-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: auth-out
+    type: auth
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

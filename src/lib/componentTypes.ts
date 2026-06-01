@@ -22,23 +22,40 @@ export interface ComponentType {
 }
 
 const TYPE_LIST: ComponentType[] = [
+  // --- Networking / delivery edge ---
+  { id: "dns", label: "DNS", category: "delivery-network", synonyms: ["dns", "domain", "route 53", "name resolution", "nameserver"], defaultProviderId: "cloudflare-dns" },
   { id: "cdn", label: "CDN", category: "delivery-network", synonyms: ["cdn", "edge", "content delivery", "static assets"], defaultProviderId: "cloudflare-cdn" },
-  { id: "load-balancer", label: "Load Balancer", category: "compute", synonyms: ["lb", "load balancer", "reverse proxy", "nginx", "ingress"], defaultProviderId: "nginx" },
+  // Load Balancer is networking infrastructure (AWS/GCP/Azure all file it under Networking) and
+  // `delivery-network` is the category whose scaling rule has actsAsLoadBalancer:true — so this
+  // also lets an LB satisfy the upstream-LB topology requirement for replicated downstream nodes.
+  { id: "load-balancer", label: "Load Balancer", category: "delivery-network", synonyms: ["lb", "load balancer", "reverse proxy", "nginx", "ingress"], defaultProviderId: "nginx" },
+  { id: "api-gateway", label: "API Gateway", category: "delivery-network", synonyms: ["api gateway", "gateway", "kong", "apigee", "ingress api"], defaultProviderId: "kong" },
+  // --- Compute ---
   { id: "compute", label: "Compute", category: "compute", synonyms: ["server", "service", "api", "backend", "app", "node", "compute"], defaultProviderId: "node-express" },
   { id: "serverless", label: "Serverless", category: "compute", synonyms: ["serverless", "lambda", "functions", "faas", "edge function"], defaultProviderId: "serverless" },
+  { id: "worker", label: "Worker", category: "compute", synonyms: ["worker", "background job", "job queue", "celery", "sidekiq", "bullmq", "task runner"], defaultProviderId: "celery" },
+  { id: "stream-processor", label: "Stream Processor", category: "compute", synonyms: ["stream processing", "flink", "spark streaming", "kafka streams", "real-time processing"], defaultProviderId: "flink" },
   { id: "llm-gateway", label: "LLM Gateway", category: "compute", synonyms: ["llm", "ai", "inference", "model", "gpt"], defaultProviderId: "llm-gateway" },
   { id: "payments", label: "Payments", category: "compute", synonyms: ["payment", "stripe", "billing", "checkout"], defaultProviderId: "payment-gateway" },
   { id: "etl", label: "ETL Pipeline", category: "compute", synonyms: ["etl", "pipeline", "batch", "ingest", "data"], defaultProviderId: "etl-pipeline" },
+  // --- Data storage ---
   { id: "relational-db", label: "SQL Database", category: "data-storage", synonyms: ["sql", "relational", "postgres", "mysql", "rdbms", "database"], defaultProviderId: "postgresql" },
+  { id: "nosql", label: "NoSQL DB", category: "data-storage", synonyms: ["nosql", "document", "mongodb", "dynamodb", "key-value", "wide-column", "cassandra"], defaultProviderId: "mongodb" },
   { id: "graph-db", label: "Graph DB", category: "data-storage", synonyms: ["graph", "neo4j", "relationships", "traversal", "graph database"], defaultProviderId: "graph-db" },
   { id: "vector-store", label: "Vector DB", category: "data-storage", synonyms: ["vector", "embeddings", "semantic", "rag", "similarity", "vector store"], defaultProviderId: "vector-db" },
+  { id: "time-series-db", label: "Time-Series DB", category: "data-storage", synonyms: ["time series", "timeseries", "influxdb", "timescale", "metrics db", "tsdb"], defaultProviderId: "influxdb" },
   { id: "object-storage", label: "Object Storage", category: "data-storage", synonyms: ["storage", "blob", "s3", "data lake", "bucket", "files"], defaultProviderId: "aws-s3" },
+  { id: "search-engine", label: "Search Engine", category: "search", synonyms: ["search", "elasticsearch", "opensearch", "algolia", "full-text", "index"], defaultProviderId: "elasticsearch" },
+  // --- Caching / messaging / real-time ---
   { id: "cache", label: "Cache", category: "caching", synonyms: ["cache", "redis", "memcached", "in-memory", "kv"], defaultProviderId: "redis" },
   { id: "message-queue", label: "Message Queue", category: "messaging", synonyms: ["queue", "rabbitmq", "mq", "jobs", "tasks"], defaultProviderId: "rabbitmq" },
   { id: "event-stream", label: "Event Stream", category: "messaging", synonyms: ["stream", "kafka", "events", "bus", "log", "event bus"], defaultProviderId: "kafka" },
   { id: "realtime", label: "Realtime", category: "real-time", synonyms: ["websocket", "realtime", "ws", "live", "push", "real-time"], defaultProviderId: "websocket-server" },
+  // --- Observability / auth-security ---
   { id: "observability", label: "Observability", category: "monitoring", synonyms: ["metrics", "monitoring", "prometheus", "logs", "tracing"], defaultProviderId: "prometheus" },
   { id: "security", label: "Security", category: "monitoring", synonyms: ["security", "siem", "waf", "threat", "audit"], defaultProviderId: "siem" },
+  { id: "auth", label: "Auth", category: "auth-security", synonyms: ["auth", "authentication", "identity", "oauth", "auth0", "cognito", "keycloak", "sso", "idp"], defaultProviderId: "auth0" },
+  { id: "rate-limiter", label: "Rate Limiter", category: "auth-security", synonyms: ["rate limit", "rate limiter", "throttle", "throttling", "quota"], defaultProviderId: "rate-limiter" },
 ]
 
 export const COMPONENT_TYPES: ReadonlyMap<string, ComponentType> = new Map(

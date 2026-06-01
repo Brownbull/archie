@@ -1,0 +1,148 @@
+id: influxdb
+name: InfluxDB
+category: data-storage
+type_id: time-series-db
+description: Purpose-built time-series database for metrics, events, and IoT data
+is: A time-series database optimized for high-ingest timestamped data with columnar compression, retention policies, and downsampling, plus a query language built for time-windowed aggregation
+gain:
+  - High write ingest for metrics and events
+  - Strong compression on timestamped data
+  - Retention + downsampling manage data lifecycle
+tags:
+  - time-series
+  - metrics
+  - influxdb
+  - iot
+  - database
+cost:
+  - Specialized — not a general-purpose store
+  - High-cardinality tags can blow up memory
+  - Clustering is an enterprise/cloud feature
+base_metrics:
+  - id: write-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: query-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: storage-compression
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: data-durability
+    value: medium
+    numeric_value: 6
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: influx-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: oss
+    name: Open Source (Single Node)
+    monthly_cost: 30
+    max_rps: 50000
+    base_latency_ms: 6
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: data-durability
+        value: medium
+        numeric_value: 5
+        category: reliability
+      - id: influx-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # InfluxDB — write a point, then a windowed mean (Flux)
+        influx write --bucket metrics 'cpu,host=web1 usage=42.0'
+        # from(bucket:"metrics") |> range(start:-1h)
+        #   |> filter(fn:(r)=> r._measurement=="cpu")
+        #   |> aggregateWindow(every:1m, fn:mean)
+    metric_explanations:
+      write-throughput:
+        reason: A write-optimized, append-only engine ingests very high rates of timestamped points with minimal per-point overhead.
+        contributing_factors:
+          - Append-only TSM storage engine
+          - Batched, time-ordered writes
+          - Columnar layout suits time-series
+      influx-cost-efficiency:
+        reason: A single open-source node with heavy compression stores huge volumes of metrics cheaply.
+        contributing_factors:
+          - High compression ratio on timestamps
+          - No license fee for OSS
+          - Retention policies drop old data
+  - id: cloud
+    name: Cloud (Clustered)
+    monthly_cost: 130
+    max_rps: 120000
+    base_latency_ms: 8
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 10
+        category: performance
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: influx-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # InfluxDB Cloud — write via the v2 API to a managed bucket
+        curl -X POST "$INFLUX_URL/api/v2/write?org=$ORG&bucket=metrics" \
+          -H "Authorization: Token $INFLUX_TOKEN" \
+          --data-raw 'cpu,host=web1 usage=42.0'
+    metric_explanations:
+      data-durability:
+        reason: The clustered cloud replicates data across nodes with managed backups, surviving node loss without data loss.
+        contributing_factors:
+          - Replicated storage across nodes
+          - Managed backups and recovery
+          - No single-node failure domain
+      write-throughput:
+        reason: Horizontal cloud nodes spread ingest, lifting aggregate write throughput beyond a single OSS instance.
+        contributing_factors:
+          - Ingest sharded across nodes
+          - Elastic capacity under load
+          - Managed scaling on spikes
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 4-40ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+      write-throughput: 0.8
+  traffic-volume:
+    high:
+      write-throughput: 0.8
+    extreme:
+      write-throughput: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

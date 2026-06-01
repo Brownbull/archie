@@ -1,0 +1,147 @@
+id: keycloak
+name: Keycloak
+category: auth-security
+type_id: auth
+description: Self-hosted open-source identity and access management (OIDC/SAML)
+is: An open-source identity and access management server you self-host, providing login, SSO, social/enterprise federation, and OAuth2/OIDC/SAML token issuance with full control of user data
+gain:
+  - Open source — no per-user fees, full control
+  - OIDC, OAuth2, and SAML with federation
+  - Self-hosted so user data stays in your own infra
+cost:
+  - You operate, scale, patch, and secure it
+  - Clustering + its database to run for HA
+  - Theming/extensions take real effort
+tags:
+  - auth
+  - identity
+  - keycloak
+  - self-hosted
+  - oidc
+base_metrics:
+  - id: auth-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: auth-availability
+    value: high
+    numeric_value: 7
+    category: reliability
+  - id: token-security
+    value: high
+    numeric_value: 8
+    category: security
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: keycloak-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: single
+    name: Single Instance
+    monthly_cost: 25
+    max_rps: 2000
+    base_latency_ms: 40
+    metrics:
+      - id: auth-availability
+        value: medium
+        numeric_value: 5
+        category: reliability
+      - id: token-security
+        value: high
+        numeric_value: 8
+        category: security
+      - id: keycloak-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Keycloak — fetch an OIDC token from a realm
+        curl -X POST "$KC/realms/app/protocol/openid-connect/token" \
+          -d "grant_type=password&client_id=web&username=$U&password=$P"
+    metric_explanations:
+      keycloak-cost-efficiency:
+        reason: Open-source with no per-user licensing — a single instance on your own hardware is very cheap for the users it serves.
+        contributing_factors:
+          - No per-MAU fees
+          - Runs on one commodity node
+          - Reuses an existing database
+      auth-availability:
+        reason: A single instance is a failure domain — an outage or restart takes login down until it recovers.
+        contributing_factors:
+          - No second node for failover
+          - Restarts interrupt active logins
+          - HA needs clustering (next tier)
+  - id: clustered
+    name: Clustered (HA)
+    monthly_cost: 90
+    max_rps: 6000
+    base_latency_ms: 35
+    metrics:
+      - id: auth-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: token-security
+        value: high
+        numeric_value: 8
+        category: security
+      - id: keycloak-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Keycloak — run a clustered instance (shared DB + cache stack)
+        bin/kc.sh start --cache=ispn --cache-stack=kubernetes \
+          --db=postgres --hostname=auth.example.com
+    metric_explanations:
+      auth-availability:
+        reason: Multiple nodes behind a load balancer with a shared session cache survive a node loss without dropping logins.
+        contributing_factors:
+          - Several nodes share session state
+          - Infinispan cache replicates sessions
+          - LB routes around a failed node
+      keycloak-cost-efficiency:
+        reason: Running multiple nodes plus a clustered cache and HA database costs more than a single instance, still no per-user fee.
+        contributing_factors:
+          - More nodes and a clustered cache
+          - HA database to fund
+          - No licensing, just infrastructure
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 20-200ms
+  co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      auth-latency: 0.8
+    extreme:
+      auth-latency: 0.6
+      auth-availability: 0.7
+  concurrent-users:
+    high:
+      auth-latency: 0.8
+    extreme:
+      auth-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: auth-out
+    type: auth
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

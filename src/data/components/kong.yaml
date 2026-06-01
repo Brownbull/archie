@@ -1,0 +1,154 @@
+id: kong
+name: Kong Gateway
+category: delivery-network
+type_id: api-gateway
+description: Plugin-driven API gateway for routing, auth, rate limiting, and observability
+is: A high-performance API gateway built on NGINX/OpenResty that fronts your services with routing, authentication, rate limiting, and transformations applied as composable plugins
+gain:
+  - Rich plugin ecosystem (auth, rate limit, transforms)
+  - Self-hostable, open-source core
+  - High throughput on the NGINX data path
+cost:
+  - Plugin sprawl can complicate config
+  - You operate the gateway and its datastore
+  - Enterprise features (RBAC, portal) are paid
+tags:
+  - api-gateway
+  - networking
+  - kong
+  - routing
+  - plugins
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: policy-enforcement
+    value: high
+    numeric_value: 8
+    category: security
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: kong-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: oss
+    name: Open Source (Self-Hosted)
+    monthly_cost: 30
+    max_rps: 20000
+    base_latency_ms: 4
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 6
+        category: operational-complexity
+      - id: kong-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Kong — declare a service + route, then enable a rate-limit plugin
+        curl -s $KONG_ADMIN/services -d name=api -d url=http://api:8080
+        curl -s $KONG_ADMIN/services/api/routes -d paths[]=/v1
+        curl -s $KONG_ADMIN/services/api/plugins -d name=rate-limiting -d config.minute=600
+    metric_explanations:
+      request-latency:
+        reason: The NGINX/OpenResty data path proxies requests with low per-hop overhead even with a few plugins enabled.
+        contributing_factors:
+          - Event-driven NGINX core
+          - Connection pooling to upstreams
+          - Lua plugins run in-process
+      kong-cost-efficiency:
+        reason: The open-source core runs on your own hardware with no per-request licensing.
+        contributing_factors:
+          - No license fee for OSS core
+          - One gateway fronts many services
+          - Scales horizontally on commodity nodes
+  - id: enterprise
+    name: Enterprise / Managed
+    monthly_cost: 120
+    max_rps: 28000
+    base_latency_ms: 5
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: kong-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # Kong (declarative) — service, route, and auth as config
+        services:
+          - name: api
+            url: http://api:8080
+            routes:
+              - name: v1
+                paths: ["/v1"]
+            plugins:
+              - name: key-auth
+    metric_explanations:
+      operational-complexity:
+        reason: The managed/enterprise tier handles upgrades, RBAC, and a control plane, reducing day-to-day operations.
+        contributing_factors:
+          - Managed control plane and upgrades
+          - RBAC and dev portal included
+          - Vendor support for incidents
+      kong-cost-efficiency:
+        reason: Enterprise licensing and managed hosting add cost over the self-run open-source core.
+        contributing_factors:
+          - Per-node enterprise licensing
+          - Managed hosting premium
+          - Pays for support and governance
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 2-25ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.8
+    extreme:
+      request-latency: 0.6
+      concurrent-connections: 0.7
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.8
+    unpredictable:
+      request-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: auth-out
+    type: auth
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

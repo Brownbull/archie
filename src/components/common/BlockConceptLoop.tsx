@@ -178,6 +178,91 @@ function loopContent(typeId: string): ReactNode {
           <circle cx="8" cy="18" r="2" className="bl-block" />
         </>
       )
+    case "dns":
+      // Query darts out to a resolver and the answer returns (round-trip lookup).
+      return (
+        <>
+          <circle cx="38" cy="14" r="1.8" className="bl-edge-node" />
+          <circle cx="10" cy="14" r="2" className="bl-dot bl-rt" />
+        </>
+      )
+    case "api-gateway":
+      // Requests pass a policy gate, then fan out to backend routes.
+      return (
+        <>
+          <line x1="19" y1="7.5" x2="19" y2="20.5" className="bl-gate" />
+          <circle cx="10" cy="14" r="2" className="bl-dot bl-fan-top" />
+          <circle cx="10" cy="14" r="2" className="bl-dot bl-fan-mid" style={delay(0.2)} />
+          <circle cx="10" cy="14" r="2" className="bl-dot bl-fan-bot" style={delay(0.4)} />
+        </>
+      )
+    case "nosql":
+      // Documents drop into flexible-schema document boxes (no fixed rows).
+      return (
+        <>
+          <rect x="13" y="16" width="6" height="7" rx="1" className="bl-doc" />
+          <rect x="21" y="16" width="6" height="7" rx="1" className="bl-doc" />
+          <rect x="29" y="16" width="6" height="7" rx="1" className="bl-doc" />
+          <circle cx="18" cy="12" r="2" className="bl-dot bl-drop" />
+          <circle cx="26" cy="12" r="2" className="bl-dot bl-drop" style={delay(0.7)} />
+        </>
+      )
+    case "search-engine":
+      // A query sweeps across; matching results light up.
+      return (
+        <>
+          <circle cx="16" cy="9" r="1.6" className="bl-neighbor" />
+          <circle cx="30" cy="18" r="1.6" className="bl-neighbor bl-pulse" />
+          <circle cx="34" cy="10" r="1.6" className="bl-neighbor bl-pulse" style={delay(0.4)} />
+          <circle cx="8" cy="14" r="2" className="bl-dot bl-flow" />
+        </>
+      )
+    case "time-series-db":
+      // Points plot upward along a timeline (a rising metric series).
+      return (
+        <>
+          <line x1="8" y1="21" x2="40" y2="21" className="bl-baseline" />
+          <circle cx="8" cy="21" r="1.8" className="bl-dot bl-fan-top" />
+          <circle cx="8" cy="21" r="1.8" className="bl-dot bl-fan-top" style={delay(0.5)} />
+          <circle cx="8" cy="21" r="1.8" className="bl-dot bl-fan-top" style={delay(1.0)} />
+        </>
+      )
+    case "worker":
+      // Jobs are pulled in and chewed through by a processing worker (pulse).
+      return (
+        <>
+          <circle cx="27" cy="14" r="4" className="bl-pulse-ring" />
+          <circle cx="8" cy="14" r="1.8" className="bl-dot bl-flow-in" />
+          <circle cx="8" cy="14" r="1.8" className="bl-dot bl-flow-in" style={delay(0.7)} />
+        </>
+      )
+    case "stream-processor":
+      // A continuous stream is transformed mid-flight (colour shifts at the stage).
+      return (
+        <>
+          <line x1="24" y1="9" x2="24" y2="19" className="bl-stage" />
+          <circle cx="8" cy="14" r="2" className="bl-etl" />
+          <circle cx="8" cy="14" r="2" className="bl-etl" style={delay(0.9)} />
+        </>
+      )
+    case "auth":
+      // A request hits an identity check (lock pulse) and is let through (green).
+      return (
+        <>
+          <circle cx="24" cy="14" r="3.5" className="bl-pulse-ring" />
+          <circle cx="8" cy="14" r="2" className="bl-pass" />
+        </>
+      )
+    case "rate-limiter":
+      // Requests metered through a gate one at a time; excess is throttled (bounces).
+      return (
+        <>
+          <line x1="26" y1="7.5" x2="26" y2="20.5" className="bl-gate" />
+          <circle cx="14" cy="11" r="1.8" className="bl-dot bl-queue" />
+          <circle cx="14" cy="11" r="1.8" className="bl-dot bl-queue" style={delay(0.6)} />
+          <circle cx="8" cy="18" r="2" className="bl-block" />
+        </>
+      )
     default:
       // Generic "data flowing through a block" for any type without a bespoke loop.
       return (

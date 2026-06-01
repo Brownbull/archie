@@ -1893,3 +1893,28 @@ User asked: (1) code in right panel is too much at first sight → hide behind a
 ## 2026-06-01 04:45 — commit: animated concept loops (SVG/CSS) for every block type
 FINDINGS: 0 (full suite 3837 ✅ BlockConceptLoop 6 ✅ canvas+inspector+toolbox 198 ✅ tsc -b ✅ lint 0-err ✅ e2e: 17 toolbox loops + node + inspector render)
 User wanted animated assets — a miniblock with dots moving inside emulating each block's concept, infinite loop like a gif. Chose code-driven SVG+CSS (recommended over gif/Lottie: crisp, themeable via currentColor, ~few hundred bytes, no deps). New BlockConceptLoop (common/) renders a per-type dot choreography for all 17 types (compute flow, load-balancer fan-out, cache bounce, cdn radiate, message-queue FIFO, event-stream, realtime full-duplex, relational scan, graph traverse, vector pulse, object-storage drop, serverless pop, llm pulse+tokens, payments roundtrip+check, etl color-shift, observability heartbeat, security pass/block) + generic fallback. ~30 bl-* keyframes in index.css. Honors app animationsEnabled pref + prefers-reduced-motion (static frame when off). Mounted in 3 surfaces: TypeBlockCard (toolbox, replaces type icon), ArchieNode header (canvas, sm), ComponentDetail hero band (inspector, lg). Pure UI — no data/seed change.
+- 2026-06-01 01:25 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-06-01 01:25 | Write | /home/khujta/projects/bmad/archie/src/data/components/cloudflare-dns.yaml
+- 2026-06-01 01:26 | Write | /home/khujta/projects/bmad/archie/src/data/components/route53.yaml
+- 2026-06-01 01:26 | Write | /home/khujta/projects/bmad/archie/src/data/components/kong.yaml
+- 2026-06-01 01:27 | Write | /home/khujta/projects/bmad/archie/src/data/components/aws-api-gateway.yaml
+- 2026-06-01 01:27 | Write | /home/khujta/projects/bmad/archie/src/data/components/mongodb.yaml
+- 2026-06-01 01:28 | Write | /home/khujta/projects/bmad/archie/src/data/components/dynamodb.yaml
+- 2026-06-01 01:28 | Write | /home/khujta/projects/bmad/archie/src/data/components/elasticsearch.yaml
+- 2026-06-01 01:28 | Write | /home/khujta/projects/bmad/archie/src/data/components/algolia.yaml
+- 2026-06-01 01:29 | Write | /home/khujta/projects/bmad/archie/src/data/components/influxdb.yaml
+- 2026-06-01 01:29 | Write | /home/khujta/projects/bmad/archie/src/data/components/timescaledb.yaml
+- 2026-06-01 01:30 | Write | /home/khujta/projects/bmad/archie/src/data/components/celery.yaml
+- 2026-06-01 01:30 | Write | /home/khujta/projects/bmad/archie/src/data/components/bullmq.yaml
+- 2026-06-01 01:31 | Write | /home/khujta/projects/bmad/archie/src/data/components/flink.yaml
+- 2026-06-01 01:31 | Write | /home/khujta/projects/bmad/archie/src/data/components/spark-streaming.yaml
+- 2026-06-01 01:32 | Write | /home/khujta/projects/bmad/archie/src/data/components/auth0.yaml
+- 2026-06-01 01:32 | Write | /home/khujta/projects/bmad/archie/src/data/components/keycloak.yaml
+- 2026-06-01 01:33 | Write | /home/khujta/projects/bmad/archie/src/data/components/rate-limiter.yaml
+- 2026-06-01 01:33 | Edit | /home/khujta/projects/bmad/archie/src/data/components/keycloak.yaml
+- 2026-06-01 01:34 | Edit | /home/khujta/projects/bmad/archie/src/components/common/BlockConceptLoop.tsx
+- 2026-06-01 01:34 | Edit | /home/khujta/projects/bmad/archie/src/index.css
+
+## 2026-06-01 05:50 — commit: +9 block types (DNS/API-GW/NoSQL/Search/TSDB/Worker/StreamProc/Auth/RateLimiter) + Load Balancer → Networking
+FINDINGS: 0 (full suite 4007 ✅ yaml-validation 871 ✅ icon-consistency 87=87 ✅ type-icon 26=26 ✅ tsc -b ✅ lint 0-err ✅ runtime: 26 toolbox blocks, LB relocated, 9 new present)
+User compared archie vs codingducks.xyz: Load Balancer was mis-categorized (Compute) and several blocks missing. (1) Moved load-balancer type + nginx/haproxy/aws-alb/envoy YAMLs Compute→delivery-network (correct convention + fixes scaling: delivery-network actsAsLoadBalancer:true so an LB now satisfies the upstream-LB topology requirement, which Compute did not). (2) Added 9 types (17 providers): dns (cloudflare-dns, route53), api-gateway (kong, aws-api-gateway), nosql (mongodb, dynamodb), search-engine→'search' cat (elasticsearch, algolia), time-series-db (influxdb, timescaledb), worker (celery, bullmq), stream-processor (flink, spark-streaming), auth→'auth-security' cat (auth0, keycloak), rate-limiter (1 provider, 2 variants). Used the previously-unused 'search' + 'auth-security' categories. Each: full data quality + component icon (87 total) + concept loop (reusing bl-* classes; +bl-doc) + type-icon fallback (copied from default provider, 26 total). Firestore re-seeded → 87 components. (Firewall/WAF already covered by Security type's cloudflare-waf provider.)

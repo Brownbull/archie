@@ -1,0 +1,148 @@
+id: flink
+name: Apache Flink
+category: compute
+type_id: stream-processor
+description: Stateful stream processing with exactly-once semantics and event-time windows
+is: A distributed stream processor that runs continuous, stateful computations over event streams with exactly-once guarantees, event-time windowing, and checkpointed state for low-latency analytics
+gain:
+  - True streaming with low, consistent latency
+  - Exactly-once state via checkpoints/savepoints
+  - Event-time windows handle late/out-of-order data
+cost:
+  - Operationally heavy (state backend, checkpoints)
+  - Steep learning curve for windowing/state
+  - Cluster + state storage to run and tune
+tags:
+  - stream-processing
+  - flink
+  - stateful
+  - exactly-once
+  - real-time
+base_metrics:
+  - id: processing-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: processing-throughput
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: state-consistency
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: high
+    numeric_value: 8
+    category: operational-complexity
+  - id: flink-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standalone
+    name: Standalone Cluster
+    monthly_cost: 120
+    max_rps: 120000
+    base_latency_ms: 15
+    metrics:
+      - id: processing-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: high
+        numeric_value: 9
+        category: operational-complexity
+      - id: flink-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: java
+      code: |
+        // Flink — keyed, windowed aggregation over an event stream
+        stream.keyBy(e -> e.userId)
+              .window(TumblingEventTimeWindows.of(Time.minutes(1)))
+              .aggregate(new CountAgg())
+              .addSink(sink);
+    metric_explanations:
+      processing-latency:
+        reason: True record-at-a-time streaming (not micro-batch) processes events as they arrive for low, steady latency.
+        contributing_factors:
+          - Pipelined record-at-a-time execution
+          - In-memory keyed state on the hot path
+          - No batch interval to wait out
+      operational-complexity:
+        reason: You operate JobManagers/TaskManagers, a state backend, and checkpoint storage, and tune parallelism and watermarks.
+        contributing_factors:
+          - State backend + checkpoint storage to run
+          - Watermark/window tuning for correctness
+          - Cluster scaling and savepoint management
+  - id: managed
+    name: Managed (Cloud)
+    monthly_cost: 300
+    max_rps: 200000
+    base_latency_ms: 12
+    metrics:
+      - id: processing-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: flink-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Flink — submit a job to a managed cluster (e.g. AWS Managed Flink)
+        flink run -m $JOBMANAGER -p 8 target/pipeline.jar
+    metric_explanations:
+      operational-complexity:
+        reason: A managed service runs the cluster, checkpointing, and scaling, removing most of Flink's operational burden.
+        contributing_factors:
+          - Managed JobManager/TaskManager fleet
+          - Automated checkpoints and recovery
+          - Autoscaling parallelism
+      flink-cost-efficiency:
+        reason: Managed streaming compute is billed continuously per processing unit, the priciest tier for always-on pipelines.
+        contributing_factors:
+          - Continuous per-unit processing charges
+          - Always-on cluster for live streams
+          - State storage and I/O metered
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - event-streaming
+  typical_latency: 5-60ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      processing-latency: 0.8
+    extreme:
+      processing-latency: 0.6
+      processing-throughput: 0.7
+  burst-pattern:
+    periodic-spikes:
+      processing-latency: 0.8
+    unpredictable:
+      processing-latency: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

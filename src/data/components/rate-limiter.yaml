@@ -1,0 +1,150 @@
+id: rate-limiter
+name: Rate Limiter
+category: auth-security
+type_id: rate-limiter
+description: Throttles request rate per client to protect services from abuse and overload
+is: A guard in front of services that caps how many requests a client may make in a window, shedding or queuing excess to protect backends from abuse, scrapers, and traffic spikes
+gain:
+  - Shields backends from spikes and abuse
+  - Fair-shares capacity across clients
+  - Cheap insurance against runaway cost/outage
+cost:
+  - Adds a small per-request check and a counter store
+  - Wrong limits frustrate legitimate users
+  - Distributed accuracy needs a shared store (Redis)
+tags:
+  - rate-limiting
+  - throttle
+  - security
+  - resilience
+  - quota
+base_metrics:
+  - id: overhead-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: limit-throughput
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: limit-accuracy
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: ratelimiter-cost-efficiency
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+config_variants:
+  - id: token-bucket
+    name: Token Bucket (Bursty)
+    monthly_cost: 10
+    max_rps: 50000
+    base_latency_ms: 1
+    metrics:
+      - id: overhead-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: limit-accuracy
+        value: medium
+        numeric_value: 6
+        category: reliability
+      - id: ratelimiter-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: lua
+      code: |
+        -- Token bucket in Redis (atomic) — allow if a token is available
+        -- KEYS[1]=bucket  ARGV: rate, capacity, now
+        local tokens = tonumber(redis.call('hget', KEYS[1], 'tokens') or ARGV[2])
+        if tokens < 1 then return 0 end
+        redis.call('hset', KEYS[1], 'tokens', tokens - 1)
+        return 1
+    metric_explanations:
+      overhead-latency:
+        reason: A single atomic counter check per request adds well under a millisecond on the hot path.
+        contributing_factors:
+          - One in-memory counter op per request
+          - Atomic Redis/Lua script avoids round-trips
+          - No heavy computation per check
+      limit-accuracy:
+        reason: Token buckets allow short bursts up to capacity, so the instantaneous rate can briefly exceed the average limit.
+        contributing_factors:
+          - Bursts permitted up to bucket capacity
+          - Smooths to the average over time
+          - Generous to legitimate spikes
+  - id: sliding-window
+    name: Sliding Window (Strict)
+    monthly_cost: 14
+    max_rps: 35000
+    base_latency_ms: 2
+    metrics:
+      - id: overhead-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: limit-accuracy
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: ratelimiter-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # NGINX — sliding-window-ish limit: 10 r/s per IP with a small burst
+        limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+        location /api/ { limit_req zone=api burst=5 nodelay; }
+    metric_explanations:
+      limit-accuracy:
+        reason: A sliding window counts requests across the trailing interval, enforcing the limit tightly with little burst leakage.
+        contributing_factors:
+          - Trailing-window request counting
+          - Minimal boundary burst error
+          - Predictable strict enforcement
+      overhead-latency:
+        reason: Maintaining windowed counts costs marginally more than a single token check, still low single-digit ms.
+        contributing_factors:
+          - Window bookkeeping per request
+          - Sorted-set/counter ops in the store
+          - Still sub-few-ms on warm caches
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 1-10ms
+  co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      overhead-latency: 0.9
+    extreme:
+      overhead-latency: 0.8
+      limit-throughput: 0.8
+  burst-pattern:
+    periodic-spikes:
+      overhead-latency: 0.9
+    unpredictable:
+      overhead-latency: 0.8
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,0 +1,145 @@
+id: dynamodb
+name: AWS DynamoDB
+category: data-storage
+type_id: nosql
+description: Serverless key-value and document store with single-digit-ms latency at scale
+is: A fully managed serverless NoSQL key-value/document database that delivers consistent single-digit-millisecond latency at any scale, with on-demand or provisioned capacity and no servers to run
+gain:
+  - Serverless — scales to massive throughput automatically
+  - Consistent single-digit-ms latency at scale
+  - No servers, patching, or capacity planning
+cost:
+  - AWS-only; access patterns must be designed up front
+  - Costs surprise with hot keys or scans
+  - Limited ad-hoc querying vs document/SQL stores
+tags:
+  - nosql
+  - key-value
+  - serverless
+  - aws
+  - dynamodb
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 10
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: dynamodb-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: on-demand
+    name: On-Demand
+    monthly_cost: 40
+    max_rps: 20000
+    base_latency_ms: 4
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: dynamodb-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // DynamoDB — put + get by primary key (on-demand capacity)
+        await ddb.put({ TableName: "Users", Item: { pk: id, email } });
+        const { Item } = await ddb.get({ TableName: "Users", Key: { pk: id } });
+    metric_explanations:
+      operational-complexity:
+        reason: On-demand capacity removes provisioning entirely — the table scales itself with traffic.
+        contributing_factors:
+          - No read/write capacity to size
+          - Auto-scales to spiky workloads
+          - Fully managed replication and backups
+      dynamodb-cost-efficiency:
+        reason: On-demand bills per request, ideal for unpredictable traffic but pricier per unit than provisioned at steady load.
+        contributing_factors:
+          - Pay-per-request pricing
+          - No idle capacity cost
+          - More expensive per unit at steady high load
+  - id: provisioned
+    name: Provisioned (+ Auto-Scaling)
+    monthly_cost: 90
+    max_rps: 40000
+    base_latency_ms: 3
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 10
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: dynamodb-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # DynamoDB — provisioned table with auto-scaling target
+        aws dynamodb create-table --table-name Users \
+          --billing-mode PROVISIONED \
+          --provisioned-throughput ReadCapacityUnits=100,WriteCapacityUnits=100
+    metric_explanations:
+      dynamodb-cost-efficiency:
+        reason: Provisioned capacity with auto-scaling is cheaper per unit for predictable, steady throughput.
+        contributing_factors:
+          - Lower per-unit cost than on-demand
+          - Auto-scaling tracks demand within bounds
+          - Reserved capacity discounts available
+      write-throughput:
+        reason: Provisioned write-capacity units guarantee headroom, sustaining very high steady write rates.
+        contributing_factors:
+          - Dedicated provisioned WCUs
+          - Partitions scale with capacity
+          - Even key distribution avoids throttling
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 2-20ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      read-latency: 0.9
+    extreme:
+      read-latency: 0.8
+  traffic-volume:
+    high:
+      write-throughput: 0.9
+    extreme:
+      write-throughput: 0.8
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

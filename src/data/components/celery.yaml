@@ -1,0 +1,151 @@
+id: celery
+name: Celery
+category: compute
+type_id: worker
+description: Distributed task queue for Python — background jobs pulled from a broker
+is: A distributed task queue for Python where worker processes pull jobs from a broker (Redis/RabbitMQ) and execute them asynchronously, with retries, scheduling, and result backends
+gain:
+  - Offloads slow work from the request path
+  - Retries, scheduling (beat), and rate limits built in
+  - Scales by adding worker processes/nodes
+cost:
+  - Needs a broker (Redis/RabbitMQ) and result backend
+  - Tuning prefetch/concurrency takes care
+  - Python-centric; GIL bounds per-process CPU work
+tags:
+  - worker
+  - background-jobs
+  - python
+  - celery
+  - task-queue
+base_metrics:
+  - id: job-throughput
+    value: high
+    numeric_value: 7
+    category: performance
+  - id: worker-concurrency
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: task-reliability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: celery-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: prefork
+    name: Prefork (Processes)
+    monthly_cost: 20
+    max_rps: 2000
+    base_latency_ms: 30
+    metrics:
+      - id: worker-concurrency
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: job-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: celery-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Celery — define a task, enqueue it from the app
+        from celery import Celery
+        app = Celery("jobs", broker="redis://localhost:6379/0")
+
+        @app.task(bind=True, max_retries=3)
+        def resize_image(self, image_id):
+            ...  # heavy work off the request path
+        resize_image.delay(image_id)
+    metric_explanations:
+      worker-concurrency:
+        reason: Prefork runs one OS process per worker slot, giving true multi-core CPU parallelism but a higher per-slot memory cost.
+        contributing_factors:
+          - One process per concurrency slot
+          - Real multi-core CPU parallelism
+          - Memory grows with worker count
+      celery-cost-efficiency:
+        reason: Workers run on commodity nodes you already have, processing jobs with no per-task vendor fees.
+        contributing_factors:
+          - No managed-service cost
+          - Scales on existing compute
+          - Reuses your broker (Redis/RabbitMQ)
+  - id: gevent
+    name: Gevent (I/O-Bound)
+    monthly_cost: 35
+    max_rps: 6000
+    base_latency_ms: 18
+    metrics:
+      - id: worker-concurrency
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: job-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: celery-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Celery — gevent pool for high-concurrency I/O-bound tasks
+        celery -A jobs worker --pool=gevent --concurrency=500
+    metric_explanations:
+      worker-concurrency:
+        reason: Greenlets multiplex hundreds of I/O-bound tasks per process, far above the one-per-process prefork model.
+        contributing_factors:
+          - Cooperative greenlets per worker
+          - Hundreds of in-flight I/O tasks
+          - Best when jobs wait on network/DB
+      job-throughput:
+        reason: Overlapping I/O waits keeps workers busy, raising completed-jobs-per-second for I/O-heavy workloads.
+        contributing_factors:
+          - I/O waits overlap instead of blocking
+          - High prefetch keeps the pipeline full
+          - CPU-bound tasks still need prefork
+connection_properties:
+  protocol: AMQP
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: 10-200ms
+  co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      job-throughput: 0.8
+    extreme:
+      job-throughput: 0.6
+      worker-concurrency: 0.7
+  burst-pattern:
+    periodic-spikes:
+      job-throughput: 0.8
+    unpredictable:
+      job-throughput: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

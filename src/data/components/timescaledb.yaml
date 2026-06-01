@@ -1,0 +1,145 @@
+id: timescaledb
+name: TimescaleDB
+category: data-storage
+type_id: time-series-db
+description: Time-series database built as a PostgreSQL extension — full SQL on hypertables
+is: A PostgreSQL extension that turns Postgres into a time-series database via auto-partitioned hypertables, keeping full SQL, joins, and the Postgres ecosystem while scaling time-series ingest and queries
+gain:
+  - Full SQL + joins on time-series (it is Postgres)
+  - Reuses the entire Postgres tooling ecosystem
+  - Hypertables auto-partition by time for scale
+cost:
+  - Single-writer Postgres limits extreme ingest
+  - Tuning chunks/compression takes care
+  - Not as specialized as a pure TSDB at huge scale
+tags:
+  - time-series
+  - postgres
+  - timescaledb
+  - sql
+  - database
+base_metrics:
+  - id: write-throughput
+    value: high
+    numeric_value: 7
+    category: performance
+  - id: query-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: storage-compression
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 4
+    category: operational-complexity
+  - id: timescale-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: single-node
+    name: Single Node
+    monthly_cost: 45
+    max_rps: 25000
+    base_latency_ms: 6
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: storage-compression
+        value: high
+        numeric_value: 7
+        category: scalability
+      - id: timescale-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- TimescaleDB — make a hypertable, then a time_bucket aggregate
+        SELECT create_hypertable('metrics', 'ts');
+        SELECT time_bucket('1 minute', ts) AS m, avg(value)
+        FROM metrics WHERE ts > now() - interval '1 hour' GROUP BY m ORDER BY m;
+    metric_explanations:
+      timescale-cost-efficiency:
+        reason: Native columnar compression on older chunks shrinks storage dramatically while keeping data queryable in SQL.
+        contributing_factors:
+          - Columnar compression on aged chunks
+          - One Postgres node, no extra licensing
+          - Continuous aggregates avoid recompute
+      storage-compression:
+        reason: Time-ordered chunks compress 90%+ on typical metric data once converted to the columnar format.
+        contributing_factors:
+          - Per-chunk compression policies
+          - Delta/run-length encoding on timestamps
+          - Old chunks compressed automatically
+  - id: multi-node
+    name: Multi-Node / Cloud
+    monthly_cost: 160
+    max_rps: 70000
+    base_latency_ms: 8
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: storage-compression
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: timescale-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- TimescaleDB — distributed hypertable across data nodes
+        SELECT create_distributed_hypertable('metrics', 'ts', 'device_id');
+    metric_explanations:
+      write-throughput:
+        reason: Distributing a hypertable across data nodes parallelizes ingest, lifting aggregate write throughput.
+        contributing_factors:
+          - Chunks spread across data nodes
+          - Parallel inserts by space partition
+          - Managed cloud scales nodes on demand
+      timescale-cost-efficiency:
+        reason: Multiple nodes and managed hosting cost more than a single self-run instance, traded for scale.
+        contributing_factors:
+          - Several data nodes to fund
+          - Managed cloud premium
+          - Worth it past single-node write limits
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 4-35ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+      write-throughput: 0.8
+  traffic-volume:
+    high:
+      write-throughput: 0.8
+    extreme:
+      write-throughput: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

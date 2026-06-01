@@ -1,0 +1,149 @@
+id: spark-streaming
+name: Spark Structured Streaming
+category: compute
+type_id: stream-processor
+description: Micro-batch stream processing on Spark with unified batch/stream SQL
+is: A stream processor built on Apache Spark that runs streaming as small micro-batches, reusing the Spark SQL/DataFrame API so the same code spans batch and streaming over large data volumes
+gain:
+  - One Spark/SQL API for batch and streaming
+  - Huge throughput on large-volume pipelines
+  - Reuses an existing Spark cluster + ecosystem
+cost:
+  - Micro-batch adds latency vs true streaming
+  - Heavy cluster (executors, shuffle) to run
+  - Tuning batch interval/shuffle is involved
+tags:
+  - stream-processing
+  - spark
+  - micro-batch
+  - sql
+  - big-data
+base_metrics:
+  - id: processing-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: processing-throughput
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: state-consistency
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: spark-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: micro-batch
+    name: Micro-Batch
+    monthly_cost: 150
+    max_rps: 200000
+    base_latency_ms: 800
+    metrics:
+      - id: processing-latency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: processing-throughput
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: spark-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Spark Structured Streaming — windowed count over a Kafka source
+        (spark.readStream.format("kafka").option("subscribe", "events").load()
+          .groupBy(window("timestamp", "1 minute"), "user_id").count()
+          .writeStream.format("delta").outputMode("update").start())
+    metric_explanations:
+      processing-throughput:
+        reason: Spark's executors process huge partitions in parallel, giving best-in-class throughput on large-volume streams.
+        contributing_factors:
+          - Wide parallelism across executors
+          - Columnar/Tungsten execution engine
+          - Scales by adding executor cores
+      processing-latency:
+        reason: Work is grouped into micro-batches, so end-to-end latency is bounded by the batch interval rather than per-record.
+        contributing_factors:
+          - Latency tied to batch trigger interval
+          - Shuffle stages add overhead
+          - Tunable down to a few hundred ms
+  - id: continuous
+    name: Continuous (Low-Latency)
+    monthly_cost: 220
+    max_rps: 140000
+    base_latency_ms: 80
+    metrics:
+      - id: processing-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: processing-throughput
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: spark-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Spark — continuous processing trigger for ~ms latency
+        query = (df.writeStream.format("kafka")
+                 .trigger(continuous="1 second")
+                 .option("topic", "out").start())
+    metric_explanations:
+      processing-latency:
+        reason: Continuous processing mode drops the micro-batch barrier, cutting latency toward the tens of milliseconds.
+        contributing_factors:
+          - No micro-batch interval wait
+          - Long-running tasks stream records
+          - Trades some throughput for latency
+      spark-cost-efficiency:
+        reason: Keeping executors continuously busy at low latency costs more compute than batched processing.
+        contributing_factors:
+          - Always-on long-running tasks
+          - Lower per-core efficiency than batch
+          - More executors held for headroom
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - event-streaming
+  typical_latency: 50-1000ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      processing-latency: 0.8
+    extreme:
+      processing-latency: 0.6
+      processing-throughput: 0.8
+  data-size:
+    high:
+      processing-latency: 0.8
+    extreme:
+      processing-latency: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

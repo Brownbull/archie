@@ -1,0 +1,148 @@
+id: bullmq
+name: BullMQ
+category: compute
+type_id: worker
+description: Redis-backed job queue for Node.js with retries, scheduling, and rate limits
+is: A robust Node.js job queue built on Redis where workers consume jobs with retries, delays, repeatable schedules, and rate limiting, giving background processing without a separate broker
+gain:
+  - Redis-backed — reuses a store you likely have
+  - Retries, delays, repeatable + rate-limited jobs
+  - First-class TypeScript API for Node apps
+cost:
+  - Throughput bounded by Redis and the event loop
+  - CPU-bound jobs block a worker's loop
+  - Redis durability config matters for job safety
+tags:
+  - worker
+  - background-jobs
+  - nodejs
+  - bullmq
+  - redis
+base_metrics:
+  - id: job-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: worker-concurrency
+    value: high
+    numeric_value: 7
+    category: scalability
+  - id: task-reliability
+    value: high
+    numeric_value: 7
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: bullmq-cost-efficiency
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+config_variants:
+  - id: single-worker
+    name: Single Worker
+    monthly_cost: 15
+    max_rps: 3000
+    base_latency_ms: 20
+    metrics:
+      - id: worker-concurrency
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: job-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: bullmq-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // BullMQ — add a job, process it in a worker
+        import { Queue, Worker } from "bullmq"
+        const queue = new Queue("emails", { connection })
+        await queue.add("welcome", { userId })
+        new Worker("emails", async (job) => { await send(job.data) }, { connection })
+    metric_explanations:
+      worker-concurrency:
+        reason: One worker processes jobs on a single event loop; concurrency is set per worker but bounded by Node's single thread.
+        contributing_factors:
+          - Configurable per-worker concurrency
+          - I/O-bound jobs overlap on the loop
+          - CPU-bound jobs serialize on one thread
+      bullmq-cost-efficiency:
+        reason: A single Node worker reusing your existing Redis incurs almost no extra infrastructure cost.
+        contributing_factors:
+          - Reuses existing Redis instance
+          - One small worker process
+          - No broker or managed-queue fees
+  - id: scaled
+    name: Scaled (Worker Pool)
+    monthly_cost: 45
+    max_rps: 12000
+    base_latency_ms: 14
+    metrics:
+      - id: worker-concurrency
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: job-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: bullmq-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # BullMQ — run several worker processes against the same queue
+        pm2 start worker.js -i 4   # 4 workers share the Redis-backed queue
+    metric_explanations:
+      worker-concurrency:
+        reason: Multiple worker processes pull from the same queue, scaling concurrency horizontally across cores and nodes.
+        contributing_factors:
+          - Many workers share one queue
+          - Adds cores for CPU-bound jobs
+          - Redis coordinates job locking
+      job-throughput:
+        reason: A pool of workers consumes jobs in parallel, multiplying completed-jobs-per-second over a single worker.
+        contributing_factors:
+          - Parallel consumption across workers
+          - Atomic Redis ops prevent double-processing
+          - Rate limiter smooths downstream load
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: 8-150ms
+  co_location_potential: true
+demand_responses:
+  traffic-volume:
+    high:
+      job-throughput: 0.8
+    extreme:
+      job-throughput: 0.6
+      worker-concurrency: 0.7
+  burst-pattern:
+    periodic-spikes:
+      job-throughput: 0.8
+    unpredictable:
+      job-throughput: 0.6
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

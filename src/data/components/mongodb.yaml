@@ -1,0 +1,149 @@
+id: mongodb
+name: MongoDB
+category: data-storage
+type_id: nosql
+description: Document database with a flexible schema and horizontal sharding
+is: A document-oriented NoSQL database storing flexible JSON-like documents, scaling horizontally via sharding with replica sets for high availability and a rich query and aggregation language
+gain:
+  - Flexible document schema — fast iteration
+  - Horizontal sharding for write and storage scale
+  - Rich queries, aggregation, and secondary indexes
+cost:
+  - Multi-document transactions are heavier than SQL
+  - Schema flexibility can hide data inconsistency
+  - Working set must fit RAM for best performance
+tags:
+  - nosql
+  - document
+  - database
+  - mongodb
+  - sharding
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: mongodb-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: replica-set
+    name: Replica Set
+    monthly_cost: 60
+    max_rps: 9000
+    base_latency_ms: 5
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: mongodb-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // MongoDB — upsert and a filtered query against a replica set
+        await db.collection("users").updateOne(
+          { _id: id },
+          { $set: { email, updatedAt: new Date() } },
+          { upsert: true },
+        );
+        const active = await db.collection("users").find({ active: true }).limit(20).toArray();
+    metric_explanations:
+      write-throughput:
+        reason: A primary handles writes while secondaries replicate asynchronously, giving solid write rates without sharding overhead.
+        contributing_factors:
+          - Single primary serializes writes cleanly
+          - In-memory working set keeps writes fast
+          - Secondaries absorb read load
+      horizontal-scalability:
+        reason: A replica set scales reads across secondaries but writes stay on one primary until you shard.
+        contributing_factors:
+          - Reads distribute to secondaries
+          - Writes bounded by a single primary
+          - Sharding needed for write scale-out
+  - id: sharded
+    name: Sharded Cluster
+    monthly_cost: 220
+    max_rps: 30000
+    base_latency_ms: 7
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: mongodb-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // MongoDB — shard a collection on a hashed key for write scale-out
+        sh.enableSharding("app");
+        sh.shardCollection("app.events", { _id: "hashed" });
+    metric_explanations:
+      horizontal-scalability:
+        reason: Sharding partitions data across shards so writes and storage scale roughly linearly with shard count.
+        contributing_factors:
+          - Each shard owns a key range
+          - Writes parallelize across shards
+          - Add shards to grow capacity
+      write-throughput:
+        reason: Parallel primaries (one per shard) multiply aggregate write throughput beyond a single replica set.
+        contributing_factors:
+          - One primary per shard accepts writes
+          - Balancer spreads hot ranges
+          - Good shard key avoids hotspots
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 3-30ms
+  co_location_potential: true
+demand_responses:
+  data-size:
+    high:
+      read-latency: 0.8
+    extreme:
+      read-latency: 0.6
+      write-throughput: 0.7
+  traffic-volume:
+    high:
+      write-throughput: 0.8
+    extreme:
+      write-throughput: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

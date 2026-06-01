@@ -1,0 +1,141 @@
+id: cloudflare-dns
+name: Cloudflare DNS
+category: delivery-network
+type_id: dns
+description: Fast anycast authoritative DNS with DNSSEC and traffic steering
+is: A globally anycast authoritative DNS service that resolves domain names to addresses from the edge with very low latency, optional DNSSEC, and health-based traffic steering
+gain:
+  - Anycast edge resolution keeps lookups very fast
+  - Free tier and flat pricing at most scales
+  - DNSSEC, proxying, and traffic steering built in
+cost:
+  - Advanced steering/load-balancing is a paid add-on
+  - Tied to Cloudflare for the full feature set
+  - Propagation still bounded by record TTLs
+tags:
+  - dns
+  - networking
+  - anycast
+  - cloudflare
+  - resolution
+base_metrics:
+  - id: resolution-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 10
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: cfdns-cost-efficiency
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard (Anycast)
+    monthly_cost: 0
+    max_rps: 100000
+    base_latency_ms: 12
+    metrics:
+      - id: resolution-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cfdns-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Cloudflare DNS — create an A record via the API
+        curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/dns_records" \
+          -H "Authorization: Bearer $TOKEN" \
+          -d '{"type":"A","name":"app.example.com","content":"203.0.113.10","ttl":300,"proxied":true}'
+    metric_explanations:
+      resolution-latency:
+        reason: Anycast routes each query to the nearest of many edge POPs, so resolution resolves in a few milliseconds worldwide.
+        contributing_factors:
+          - Anycast sends queries to the closest POP
+          - Records cached at the edge
+          - No origin round-trip for authoritative answers
+      cfdns-cost-efficiency:
+        reason: Core authoritative DNS is free with flat pricing, so even high query volumes cost little.
+        contributing_factors:
+          - Free authoritative DNS tier
+          - No per-query charges at base
+          - Proxying reuses the existing edge network
+  - id: steering
+    name: With Traffic Steering
+    monthly_cost: 25
+    max_rps: 80000
+    base_latency_ms: 15
+    metrics:
+      - id: resolution-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: cfdns-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Cloudflare — health-checked load-balanced DNS steering
+        curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/load_balancers" \
+          -H "Authorization: Bearer $TOKEN" \
+          -d '{"name":"app","default_pools":["us","eu"],"steering_policy":"geo"}'
+    metric_explanations:
+      global-availability:
+        reason: Health checks pull failing origins out of rotation and steer users to a healthy pool, raising effective availability.
+        contributing_factors:
+          - Active origin health checks
+          - Automatic failover between pools
+          - Geo/latency steering to the best pool
+      cfdns-cost-efficiency:
+        reason: Traffic steering and load balancing are billed per pool and check, adding cost over plain DNS.
+        contributing_factors:
+          - Per-pool load-balancing fees
+          - Health-check charges
+          - Worth it only when failover matters
+connection_properties:
+  protocol: DNS/UDP
+  communication_patterns:
+    - request-response
+  typical_latency: 5-40ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      resolution-latency: 0.9
+    extreme:
+      resolution-latency: 0.8
+  geographic-spread:
+    multi-region:
+      resolution-latency: 0.9
+    global:
+      resolution-latency: 0.8
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

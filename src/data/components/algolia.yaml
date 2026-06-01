@@ -1,0 +1,141 @@
+id: algolia
+name: Algolia
+category: search
+type_id: search-engine
+description: Hosted search-as-a-service tuned for instant, typo-tolerant UI search
+is: A hosted search API optimized for instant, typo-tolerant as-you-type search with built-in relevance tuning and front-end widgets, trading deep analytics for turnkey speed and simplicity
+gain:
+  - Millisecond, typo-tolerant as-you-type search
+  - Turnkey relevance + ready-made UI widgets
+  - No cluster to operate — fully hosted
+cost:
+  - Priced per search + per record — scales with usage
+  - Less suited to heavy analytics/aggregations
+  - Vendor lock-in for the search layer
+tags:
+  - search
+  - hosted
+  - algolia
+  - instant-search
+  - relevance
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: index-freshness
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: algolia-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 50
+    max_rps: 8000
+    base_latency_ms: 5
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 1
+        category: operational-complexity
+      - id: algolia-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Algolia — push a record, then an instant search
+        await index.saveObject({ objectID: "1", name: "wireless keyboard", price: 40 });
+        const { hits } = await index.search("keyborad"); // typo-tolerant
+    metric_explanations:
+      query-latency:
+        reason: Purpose-built in-memory indexes on distributed search clusters return as-you-type results in a few milliseconds.
+        contributing_factors:
+          - In-memory, search-optimized indexes
+          - Distributed Search Network near users
+          - Tuned for prefix/typo matching
+      operational-complexity:
+        reason: Fully hosted — you push records and query; there is no cluster, sharding, or scaling to manage.
+        contributing_factors:
+          - No infrastructure to run
+          - Managed scaling and replication
+          - Relevance tuned via dashboard/config
+  - id: pro
+    name: Pro (Replicas + Analytics)
+    monthly_cost: 180
+    max_rps: 12000
+    base_latency_ms: 4
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: index-freshness
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: algolia-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // Algolia — virtual replica for an alternate ranking (e.g. price asc)
+        await index.setSettings({
+          replicas: ["products_price_asc"],
+        });
+    metric_explanations:
+      index-freshness:
+        reason: Higher tiers propagate index updates and replicas faster, keeping search results current under heavy write rates.
+        contributing_factors:
+          - Faster indexing pipeline
+          - Replica indexes for alternate rankings
+          - Higher rate limits on updates
+      algolia-cost-efficiency:
+        reason: Replicas, analytics, and higher request volumes multiply per-search and per-record costs.
+        contributing_factors:
+          - Each replica multiplies record cost
+          - Analytics/personalization add-ons
+          - Search and record usage metered
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 3-25ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.9
+    extreme:
+      query-latency: 0.8
+  traffic-volume:
+    high:
+      query-latency: 0.9
+    extreme:
+      query-latency: 0.8
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

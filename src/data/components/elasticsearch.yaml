@@ -1,0 +1,144 @@
+id: elasticsearch
+name: Elasticsearch
+category: search
+type_id: search-engine
+description: Distributed full-text search and analytics engine built on Lucene
+is: A distributed search and analytics engine built on Lucene that indexes documents into shards for fast full-text search, filtering, aggregations, and relevance ranking at scale
+gain:
+  - Powerful full-text search with relevance scoring
+  - Distributed shards scale search horizontally
+  - Aggregations double it as an analytics engine
+cost:
+  - Cluster ops (shards, heap, rebalancing) are real work
+  - Memory-hungry; mis-sized shards hurt performance
+  - Near-real-time, not transactional, indexing
+tags:
+  - search
+  - full-text
+  - elasticsearch
+  - lucene
+  - analytics
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: index-freshness
+    value: high
+    numeric_value: 7
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: es-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: self-hosted
+    name: Self-Hosted Cluster
+    monthly_cost: 90
+    max_rps: 6000
+    base_latency_ms: 12
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: high
+        numeric_value: 8
+        category: operational-complexity
+      - id: es-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Elasticsearch — index a doc, then a full-text query
+        curl -X PUT "$ES/products/_doc/1" -H 'Content-Type: application/json' \
+          -d '{"name":"wireless keyboard","price":40}'
+        curl "$ES/products/_search" -H 'Content-Type: application/json' \
+          -d '{"query":{"match":{"name":"keyboard"}}}'
+    metric_explanations:
+      operational-complexity:
+        reason: You size shards and heap, manage rebalancing and snapshots, and tune mappings — a real operational burden.
+        contributing_factors:
+          - Shard/replica sizing per index
+          - JVM heap and GC tuning
+          - Snapshot, upgrade, and rebalance ops
+      es-cost-efficiency:
+        reason: Running on your own nodes avoids managed-service fees, so raw indexing/search is cost-effective at scale.
+        contributing_factors:
+          - No per-node managed premium
+          - Commodity hardware
+          - One cluster serves many indices
+  - id: managed
+    name: Managed (Elastic Cloud)
+    monthly_cost: 200
+    max_rps: 9000
+    base_latency_ms: 9
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: es-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Elastic Cloud — same API, managed endpoint + API key
+        curl "$ES_CLOUD/products/_search" \
+          -H "Authorization: ApiKey $ES_API_KEY" \
+          -H 'Content-Type: application/json' \
+          -d '{"query":{"match":{"name":"keyboard"}}}'
+    metric_explanations:
+      operational-complexity:
+        reason: The managed service handles provisioning, scaling, upgrades, and snapshots, so there is little to operate.
+        contributing_factors:
+          - Managed scaling and upgrades
+          - Automated snapshots and monitoring
+          - One-click cluster sizing
+      query-latency:
+        reason: Right-sized managed nodes with warm caches keep query latency low and predictable.
+        contributing_factors:
+          - Provisioned dedicated resources
+          - Hot shards on fast storage
+          - No noisy-neighbour contention at higher tiers
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 5-50ms
+  co_location_potential: false
+demand_responses:
+  data-size:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+  traffic-volume:
+    high:
+      query-latency: 0.8
+    extreme:
+      query-latency: 0.6
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out
