@@ -4,6 +4,7 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { useLibrary } from "@/hooks/useLibrary"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { maxTypeLevel, levelWithin } from "@/lib/componentTypes"
+import { aggregateVariantStats, type AggregatedStats } from "@/lib/aggregateStats"
 import { StackCard, type ResolvedStackComponent } from "@/components/toolbox/StackCard"
 import { DataSourceNote } from "@/components/common/DataSourceNote"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -65,6 +66,16 @@ function resolveStackComponents(stack: StackDefinition): ResolvedStackComponent[
   })
 }
 
+/** Default cost · bottleneck throughput · cumulative latency for a stack — for at-a-glance compare. */
+function resolveStackStats(stack: StackDefinition): AggregatedStats {
+  return aggregateVariantStats(
+    stack.components.map((sc) => {
+      const v = componentLibrary.getComponent(sc.componentId)?.configVariants.find((cv) => cv.id === sc.variantId)
+      return { monthlyCost: v?.monthlyCost, maxRPS: v?.maxRPS, baseLatencyMs: v?.baseLatencyMs }
+    }),
+  )
+}
+
 // --- StacksTabInner ---
 
 function StacksTabInner() {
@@ -72,12 +83,13 @@ function StacksTabInner() {
   const experienceLevel = usePreferencesStore((s) => s.experienceLevel)
   const [advancedOpen, setAdvancedOpen] = useState(false)
 
-  const { stacks, resolvedMap, levelMap } = useMemo(() => {
+  const { stacks, resolvedMap, levelMap, statsMap } = useMemo(() => {
     const s = isReady ? componentLibrary.getStacks() : []
     return {
       stacks: s,
       resolvedMap: new Map(s.map((st) => [st.id, resolveStackComponents(st)])),
       levelMap: new Map(s.map((st) => [st.id, stackLevel(st)])),
+      statsMap: new Map(s.map((st) => [st.id, resolveStackStats(st)])),
     }
   }, [isReady])
 
@@ -116,6 +128,7 @@ function StacksTabInner() {
             key={stack.id}
             stack={stack}
             resolvedComponents={resolvedMap.get(stack.id) ?? []}
+            stats={statsMap.get(stack.id) ?? {}}
           />
         ))}
 
@@ -144,6 +157,7 @@ function StacksTabInner() {
                     key={stack.id}
                     stack={stack}
                     resolvedComponents={resolvedMap.get(stack.id) ?? []}
+                    stats={statsMap.get(stack.id) ?? {}}
                   />
                 ))}
               </div>

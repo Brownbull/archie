@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { StackCard } from "@/components/toolbox/StackCard"
 import type { ResolvedStackComponent } from "@/components/toolbox/StackCard"
 import type { StackDefinition } from "@/schemas/stackSchema"
+import type { AggregatedStats } from "@/lib/aggregateStats"
 
 vi.mock("@/lib/firebase", () => ({
   auth: { currentUser: null },
@@ -39,34 +40,49 @@ const mockResolvedComponents: ResolvedStackComponent[] = [
   { componentId: "redis", variantId: "cluster", componentName: "Redis", variantName: "Cluster", categoryId: "caching" },
 ]
 
+const mockStats: AggregatedStats = { totalCost: 250, minRPS: 5000, totalLatencyMs: 12 }
+
 describe("StackCard", () => {
   beforeEach(() => {
     vi.resetAllMocks()
   })
 
   it("renders with correct data-testid", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     expect(screen.getByTestId("stack-card-event-driven-messaging")).toBeInTheDocument()
   })
 
   it("renders stack name", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     expect(screen.getByText("Event-Driven Messaging")).toBeInTheDocument()
   })
 
   it("renders stack description", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     expect(screen.getByText("Kafka-based event streaming with Redis caching")).toBeInTheDocument()
   })
 
+  it("renders the default cost · throughput · latency summary", () => {
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
+    const row = screen.getByTestId("stack-stats-event-driven-messaging")
+    expect(row).toHaveTextContent("$250/mo")
+    expect(row).toHaveTextContent("5k rps")
+    expect(row).toHaveTextContent("12ms")
+  })
+
+  it("omits the stats row when no stats are available", () => {
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={{}} />)
+    expect(screen.queryByTestId("stack-stats-event-driven-messaging")).not.toBeInTheDocument()
+  })
+
   it("renders component names (resolved, not raw IDs)", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     expect(screen.getByText("Apache Kafka")).toBeInTheDocument()
     expect(screen.getByText("Redis")).toBeInTheDocument()
   })
 
   it("renders connection count", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     expect(screen.getByText("1 connection")).toBeInTheDocument()
   })
 
@@ -78,12 +94,12 @@ describe("StackCard", () => {
         { sourceComponentIndex: 1, targetComponentIndex: 0, connectionType: "cache-read" },
       ],
     }
-    render(<StackCard stack={multiConnStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={multiConnStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     expect(screen.getByText("2 connections")).toBeInTheDocument()
   })
 
   it("renders trade-off profile bars for each category", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     expect(screen.getByTestId("category-bar-performance")).toBeInTheDocument()
     expect(screen.getByTestId("category-bar-reliability")).toBeInTheDocument()
     expect(screen.getByTestId("category-bar-scalability")).toBeInTheDocument()
@@ -94,13 +110,13 @@ describe("StackCard", () => {
   })
 
   it("has draggable attribute", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     const card = screen.getByTestId("stack-card-event-driven-messaging")
     expect(card).toHaveAttribute("draggable", "true")
   })
 
   it("sets correct drag data on dragStart", () => {
-    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+    render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
     const card = screen.getByTestId("stack-card-event-driven-messaging")
 
     const mockSetData = vi.fn()
@@ -120,26 +136,26 @@ describe("StackCard", () => {
 
   describe("detail expansion", () => {
     it("does not show detail content by default", () => {
-      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
       expect(screen.queryByTestId("stack-detail-event-driven-messaging")).not.toBeInTheDocument()
     })
 
     it("expands detail view on trigger click", async () => {
-      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
       const trigger = screen.getByTestId("stack-detail-trigger-event-driven-messaging")
       await userEvent.click(trigger)
       expect(screen.getByTestId("stack-detail-event-driven-messaging")).toBeInTheDocument()
     })
 
     it("detail view shows component variant names", async () => {
-      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
       await userEvent.click(screen.getByTestId("stack-detail-trigger-event-driven-messaging"))
       expect(screen.getByText(/Multi-Broker/)).toBeInTheDocument()
       expect(screen.getByText(/Cluster/)).toBeInTheDocument()
     })
 
     it("detail view shows connection descriptions", async () => {
-      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
       await userEvent.click(screen.getByTestId("stack-detail-trigger-event-driven-messaging"))
       // "Apache Kafka → Redis (pub-sub)"
       expect(screen.getByText(/Apache Kafka.*→.*Redis/)).toBeInTheDocument()
@@ -147,7 +163,7 @@ describe("StackCard", () => {
     })
 
     it("collapses detail on second click", async () => {
-      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} />)
+      render(<StackCard stack={mockStack} resolvedComponents={mockResolvedComponents} stats={mockStats} />)
       const trigger = screen.getByTestId("stack-detail-trigger-event-driven-messaging")
       await userEvent.click(trigger)
       expect(screen.getByTestId("stack-detail-event-driven-messaging")).toBeInTheDocument()

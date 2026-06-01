@@ -4,6 +4,8 @@ import type { StackDefinition } from "@/schemas/stackSchema"
 import { METRIC_CATEGORIES, COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { getCategoryIcon } from "@/lib/categoryIcons"
 import { sanitizeDisplayString } from "@/lib/sanitize"
+import type { AggregatedStats } from "@/lib/aggregateStats"
+import { PatternStatsRow } from "@/components/toolbox/PatternStatsRow"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 
@@ -18,9 +20,10 @@ export interface ResolvedStackComponent {
 interface StackCardProps {
   stack: StackDefinition
   resolvedComponents: ResolvedStackComponent[]
+  stats: AggregatedStats
 }
 
-export function StackCard({ stack, resolvedComponents }: StackCardProps) {
+export function StackCard({ stack, resolvedComponents, stats }: StackCardProps) {
   const connCount = stack.connections.length
 
   const handleDragStart = (event: DragEvent<HTMLDivElement>) => {
@@ -41,6 +44,9 @@ export function StackCard({ stack, resolvedComponents }: StackCardProps) {
         <p className="text-sm font-medium text-text-primary">{sanitizeDisplayString(stack.name, 200)}</p>
         <p className="text-xs text-text-secondary line-clamp-2 mt-0.5">{sanitizeDisplayString(stack.description, 500)}</p>
       </div>
+
+      {/* Default cost · throughput · latency — skim to compare patterns at a glance. */}
+      <PatternStatsRow stats={stats} testId={`stack-stats-${stack.id}`} />
 
       {/* Component list: icons + names */}
       <div className="flex flex-wrap gap-1.5">

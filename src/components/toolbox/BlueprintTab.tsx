@@ -5,6 +5,8 @@ import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { maxTypeLevel, levelWithin } from "@/lib/componentTypes"
+import { aggregateVariantStats, type AggregatedStats } from "@/lib/aggregateStats"
+import { PatternStatsRow } from "@/components/toolbox/PatternStatsRow"
 import { hydrateArchitectureSkeleton } from "@/services/yamlImporter"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -24,6 +26,17 @@ import type { BlueprintFull } from "@/schemas/blueprintSchema"
 /** A blueprint's experience level = the highest level among its skeleton's block types. */
 function blueprintLevel(bp: BlueprintFull) {
   return maxTypeLevel(bp.skeleton.nodes.map((n) => componentLibrary.getComponent(n.componentId)?.typeId))
+}
+
+/** Default cost · bottleneck throughput · cumulative latency for a blueprint's skeleton nodes. */
+function resolveBlueprintStats(bp: BlueprintFull): AggregatedStats {
+  return aggregateVariantStats(
+    bp.skeleton.nodes.map((n) => {
+      const comp = componentLibrary.getComponent(n.componentId)
+      const v = comp?.configVariants.find((cv) => cv.id === n.configVariantId) ?? comp?.configVariants[0]
+      return { monthlyCost: v?.monthlyCost, maxRPS: v?.maxRPS, baseLatencyMs: v?.baseLatencyMs }
+    }),
+  )
 }
 
 // --- ErrorBoundary ---
@@ -65,10 +78,11 @@ export class BlueprintErrorBoundary extends Component<{ children: ReactNode }, E
 
 interface BlueprintCardProps {
   blueprint: BlueprintFull
+  stats: AggregatedStats
   onLoad: (blueprint: BlueprintFull) => void
 }
 
-function BlueprintCard({ blueprint, onLoad }: BlueprintCardProps) {
+function BlueprintCard({ blueprint, stats, onLoad }: BlueprintCardProps) {
   const nodeCount = blueprint.skeleton.nodes.length
   return (
     <div
@@ -81,6 +95,10 @@ function BlueprintCard({ blueprint, onLoad }: BlueprintCardProps) {
           <p data-testid="blueprint-card-description" className="text-xs text-text-secondary line-clamp-2 mt-0.5">{blueprint.description}</p>
         </div>
       </div>
+
+      {/* Default cost · throughput · latency — skim to compare blueprints at a glance. */}
+      <PatternStatsRow stats={stats} testId={`blueprint-stats-${blueprint.id}`} />
+
       <div className="flex items-center justify-between">
         <span className="text-xs text-text-secondary">
           {nodeCount} {nodeCount === 1 ? "component" : "components"}
@@ -186,7 +204,7 @@ function BlueprintTabInner() {
         <div className="space-y-3 p-3">
           <DataSourceNote kind="blueprint" />
           {inLevel.map((bp) => (
-            <BlueprintCard key={bp.id} blueprint={bp} onLoad={handleLoad} />
+            <BlueprintCard key={bp.id} blueprint={bp} stats={resolveBlueprintStats(bp)} onLoad={handleLoad} />
           ))}
 
           {advanced.length > 0 && (
@@ -210,7 +228,7 @@ function BlueprintTabInner() {
               {advancedExpanded && (
                 <div className="space-y-3">
                   {advanced.map((bp) => (
-                    <BlueprintCard key={bp.id} blueprint={bp} onLoad={handleLoad} />
+                    <BlueprintCard key={bp.id} blueprint={bp} stats={resolveBlueprintStats(bp)} onLoad={handleLoad} />
                   ))}
                 </div>
               )}

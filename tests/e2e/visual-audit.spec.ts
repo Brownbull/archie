@@ -29,10 +29,24 @@ test.describe("Visual audit", () => {
       expect(tabBox.y + tabBox.height, "tab grid should not overlap palette").toBeLessThanOrEqual(catBox.y + 4)
     }
 
+    // Show all patterns (incl. advanced) so stacks/blueprints + their stats rows are captured.
+    await page.locator('[data-testid="settings-menu-trigger"]').click()
+    await page.locator('[data-testid="experience-option-advanced"]').click()
+    await page.keyboard.press("Escape")
+    await page.waitForTimeout(300)
+
     for (const tab of ["stacks", "blueprints", "history", "components"] as const) {
       await page.locator(`[data-testid="toolbox-tab-${tab}"]`).click()
       await page.waitForTimeout(400)
       await page.screenshot({ path: `${SCREENSHOT_DIR}/02-toolbox-${tab}.png`, fullPage: true })
+      if (tab === "stacks") {
+        const c = page.locator('[data-testid^="stack-card-"]').first()
+        if ((await c.count()) > 0) await c.screenshot({ path: `${SCREENSHOT_DIR}/13-stack-card.png` })
+      }
+      if (tab === "blueprints") {
+        const c = page.locator('[data-testid="blueprint-card"]').first()
+        if ((await c.count()) > 0) await c.screenshot({ path: `${SCREENSHOT_DIR}/14-blueprint-card.png` })
+      }
     }
 
     // Palette card crop — long type names ("Traffic Source", "Load Balancer", "Object Storage")
