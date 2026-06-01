@@ -66,7 +66,7 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
   return (
     <div
       data-testid={`type-block-${group.typeId ?? group.key}`}
-      className={`group relative cursor-grab rounded-md border border-archie-border bg-panel py-1.5 pl-4 pr-8 transition-opacity duration-200 active:cursor-grabbing ${
+      className={`group relative h-full cursor-grab rounded-md border border-archie-border bg-panel p-2 pl-3 transition-opacity duration-200 active:cursor-grabbing ${
         dimmed ? "opacity-40 grayscale" : "opacity-100"
       }`}
       draggable
@@ -74,12 +74,12 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
       onDragEnd={handleDragEnd}
       title={dimmed ? "Incompatible with the selected block" : undefined}
     >
-      <div className="absolute left-0 top-0 h-full w-1.5 rounded-l-md" style={{ backgroundColor: color }} />
+      <div className="absolute left-0 top-0 h-full w-1 rounded-l-md" style={{ backgroundColor: color }} />
 
       <button
         data-testid={`add-type-${group.typeId ?? group.key}`}
         type="button"
-        className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded text-text-secondary opacity-60 transition-opacity hover:bg-archie-border hover:opacity-100"
+        className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded text-text-secondary opacity-60 transition-opacity hover:bg-archie-border hover:opacity-100"
         draggable={false}
         onDragStart={(e) => e.stopPropagation()}
         onClick={handleAdd}
@@ -88,22 +88,23 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
         <Plus className="h-3.5 w-3.5" />
       </button>
 
-      <div className="flex items-center gap-2">
+      {/* Compact 2-column-grid cell: icon + (wrapping) label, then cost beneath. */}
+      <div className="flex items-start gap-1.5 pr-4">
         {iconUrl ? (
-          <img src={iconUrl} alt="" className="h-5 w-5 shrink-0" />
+          <img src={iconUrl} alt="" className="mt-0.5 h-5 w-5 shrink-0" />
         ) : (
-          CategoryIcon && <CategoryIcon className="h-4 w-4 shrink-0" style={{ color }} />
+          CategoryIcon && <CategoryIcon className="mt-0.5 h-4 w-4 shrink-0" style={{ color }} />
         )}
-        <h4 className="min-w-0 flex-1 truncate text-xs font-semibold text-text-primary">{group.label}</h4>
-        {costRange && (
-          <span data-testid={`type-cost-${group.typeId ?? group.key}`} className="shrink-0 text-[0.625rem] font-medium text-emerald-400">
-            {costRange}
-          </span>
-        )}
+        <h4 className="min-w-0 flex-1 text-xs font-semibold leading-tight text-text-primary line-clamp-2">{group.label}</h4>
       </div>
+      {costRange && (
+        <div data-testid={`type-cost-${group.typeId ?? group.key}`} className="mt-1 text-[0.625rem] font-medium text-emerald-400">
+          {costRange}
+        </div>
+      )}
 
-      {/* Hover detail: which vendors live inside this logical block (chosen later in the inspector). */}
-      <div className="hidden pt-1 group-hover:block">
+      {/* Vendor detail on hover — absolute overlay so it doesn't reflow the grid. */}
+      <div className="invisible absolute inset-x-0 top-full z-20 mt-0.5 rounded-md border border-archie-border bg-panel p-1.5 shadow-lg group-hover:visible">
         <p className="text-[0.625rem] leading-tight text-text-secondary">
           {group.providers.length} {group.providers.length === 1 ? "vendor" : "vendors"}: {vendorNames}
         </p>

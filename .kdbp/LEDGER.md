@@ -1777,3 +1777,9 @@ The diamond connector ports only had a weak native tooltip, so it wasn't clear w
 ## 2026-06-01 01:00 — commit: Phase 3 — inspector headline-first (progressive disclosure)
 FINDINGS: 0 (ComponentDetail 33 ✅ full suite 3477 ✅ tsc -b ✅ lint 0-err ✅)
 Restructured the inspector top for junior architects: heading is now the LOGICAL TYPE (matches the canvas node), the chosen vendor moves into the summary line (category · vendor · variant · $/mo), and a prominent one-line "what it is" headline (component.is) is the first read. The longer description moved into the on-demand "What it is" disclosure. Detail sections stay collapsed (existing P3 disclosures). +2 tests. (Phases 1+2 already shipped: type-level toolbox P64, port labels P65.)
+- 2026-05-31 21:28 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-05-31 21:28 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+
+## 2026-06-01 01:20 — commit: 2-column block grid for the toolbox
+FINDINGS: 0 (full suite ✅ tsc -b ✅ lint 0-err ✅)
+Laid the logical-block toolbox out as a 2-column grid (matching the reference app) instead of single-column rows. TypeBlockCard made compact for a grid cell: icon + 2-line wrapping label + cost beneath + add button; the vendor-list hover detail is now an absolute overlay so it doesn't reflow the grid. ComponentTab category sections use grid-cols-2.

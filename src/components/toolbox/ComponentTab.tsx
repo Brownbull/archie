@@ -191,7 +191,7 @@ export function ComponentTab() {
                 <span className="text-[0.625rem] text-text-secondary">({typeGroups.length})</span>
               </button>
               {!isCollapsed && (
-                <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   {typeGroups.map((g) => (
                     <TypeBlockCard
                       key={g.key}
