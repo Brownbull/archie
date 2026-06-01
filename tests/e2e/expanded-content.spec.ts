@@ -75,7 +75,7 @@ async function selectFromDropdown(page: Page, selectorTestId: string, optionText
  */
 async function getNodeHeatmapStatus(page: Page, componentName: string): Promise<string | null> {
   const node = page.locator('[data-testid="archie-node"]').filter({
-    has: page.locator(`text="${componentName}"`),
+    hasText: componentName,
   })
   await expect(node).toBeVisible({ timeout: 5_000 })
   const ariaLabel = await node.getAttribute("aria-label")

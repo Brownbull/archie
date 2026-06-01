@@ -46,7 +46,7 @@ describe("componentTypes (P5)", () => {
       ])
       const rel = groups.find((g) => g.key === "relational-db")
       expect(rel?.typeId).toBe("relational-db")
-      expect(rel?.label).toBe("Relational Database")
+      expect(rel?.label).toBe("SQL Database")
       expect(rel?.providers.map((p) => p.id)).toEqual(["postgresql", "mysql"])
       expect(groups.find((g) => g.key === "cache")?.providers).toHaveLength(1)
     })

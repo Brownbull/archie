@@ -136,7 +136,7 @@ test.describe("Data Context E2E (Story 7-4)", () => {
     await expect(page.locator('[data-testid="canvas-panel"]')).toBeVisible({ timeout: 15_000 })
 
     // Ensure Components tab is active before waiting for library
-    await page.getByRole("tab", { name: "Components" }).click()
+    await page.getByRole("tab", { name: "Blocks" }).click()
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Component library unavailable in this environment")
 

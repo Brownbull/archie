@@ -53,7 +53,7 @@ describe("ToolboxPanel", () => {
 
   it("renders three tabs", () => {
     render(<ToolboxPanel />)
-    expect(screen.getByText("Components")).toBeInTheDocument()
+    expect(screen.getByText("Blocks")).toBeInTheDocument()
     expect(screen.getByText("Stacks")).toBeInTheDocument()
     expect(screen.getByText("Blueprints")).toBeInTheDocument()
   })

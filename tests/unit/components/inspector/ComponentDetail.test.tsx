@@ -118,7 +118,7 @@ describe("ComponentDetail", () => {
   describe("type-first headline (Phase 3 — progressive disclosure)", () => {
     it("shows the logical type as the heading, vendor in the summary, and a 'what it is' headline", () => {
       renderDefault({ component: { ...mockComponent, typeId: "relational-db" } })
-      expect(screen.getByTestId("inspector-heading")).toHaveTextContent("Relational Database")
+      expect(screen.getByTestId("inspector-heading")).toHaveTextContent("SQL Database")
       expect(screen.getByTestId("inspector-summary-provider")).toHaveTextContent("PostgreSQL")
       expect(screen.getByTestId("inspector-headline")).toHaveTextContent(mockComponent.is)
     })

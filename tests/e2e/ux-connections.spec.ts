@@ -52,7 +52,7 @@ test.describe("Cross-surface UX connections", () => {
     await page.locator('[data-testid="challenge-card-first-service"]').click()
     await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible({ timeout: 5_000 })
 
-    await page.getByRole("tab", { name: "Components" }).click()
+    await page.getByRole("tab", { name: "Blocks" }).click()
     await expect(page.locator('[data-testid="challenge-component-guidance"]')).toBeVisible({ timeout: 5_000 })
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-challenge-guidance.png`, fullPage: true })
   })

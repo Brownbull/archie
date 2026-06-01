@@ -1783,3 +1783,16 @@ Restructured the inspector top for junior architects: heading is now the LOGICAL
 ## 2026-06-01 01:20 — commit: 2-column block grid for the toolbox
 FINDINGS: 0 (full suite ✅ tsc -b ✅ lint 0-err ✅)
 Laid the logical-block toolbox out as a 2-column grid (matching the reference app) instead of single-column rows. TypeBlockCard made compact for a grid cell: icon + 2-line wrapping label + cost beneath + add button; the vendor-list hover detail is now an absolute overlay so it doesn't reflow the grid. ComponentTab category sections use grid-cols-2.
+- 2026-05-31 21:48 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-05-31 21:48 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-05-31 21:48 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-05-31 21:48 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-05-31 21:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/componentTypes.test.ts
+- 2026-05-31 21:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 21:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-05-31 21:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ToolboxPanel.test.tsx
+- 2026-05-31 21:54 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+
+## 2026-06-01 01:45 — commit: shorten type labels + tab labels (declutter)
+FINDINGS: 0 (full suite 3477 ✅ tsc -b ✅ lint 0-err ✅)
+Shortened the compound type labels that truncated in the 2-col grid: Compute/Service→Compute, ETL/Data Pipeline→ETL Pipeline, Relational Database→SQL Database, Graph Database→Graph DB, Vector Store→Vector DB, Stream/Event Bus→Event Stream, Real-Time/WebSocket→Realtime, Security/SIEM→Security (old terms kept as search synonyms; node title + inspector heading follow the label). Renamed the "Components" tab → "Blocks" (the toolbox shows logical blocks) to declutter the 4-tab row. TypeBlockCard: smaller icon + break-words so labels show in full. Updated unit tests + e2e (tab name; getNodeHeatmapStatus now substring-matches since the vendor moved to the node subtitle).

@@ -22,9 +22,9 @@ export function ToolboxPanel() {
           <TabsTrigger
             value="components"
             className="text-xs"
-            title="Individual building blocks — drag one onto the canvas"
+            title="Logical building blocks — drag one onto the canvas, then pick a vendor"
           >
-            Components
+            Blocks
           </TabsTrigger>
           <TabsTrigger
             value="stacks"

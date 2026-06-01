@@ -25,12 +25,12 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
     await expect(toolboxPanel).toBeVisible({ timeout: 15_000 })
 
     // AC-1: Three tabs visible — Components, Stacks, Blueprints
-    await expect(page.getByRole("tab", { name: "Components" })).toBeVisible()
+    await expect(page.getByRole("tab", { name: "Blocks" })).toBeVisible()
     await expect(page.getByRole("tab", { name: "Stacks" })).toBeVisible()
     await expect(page.getByRole("tab", { name: "Blueprints" })).toBeVisible()
 
     // AC-1: Components tab is active by default
-    await expect(page.getByRole("tab", { name: "Components" })).toHaveAttribute(
+    await expect(page.getByRole("tab", { name: "Blocks" })).toHaveAttribute(
       "data-state",
       "active",
     )
@@ -219,7 +219,7 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
     })
 
     // Switch back to Components tab — renders something (either data or empty)
-    await page.getByRole("tab", { name: "Components" }).click()
+    await page.getByRole("tab", { name: "Blocks" }).click()
     const hasComponentTab = await page.locator('[data-testid="component-tab"]').isVisible()
     const hasEmptyTab = await page.locator('[data-testid="component-tab-empty"]').isVisible()
     expect(hasComponentTab || hasEmptyTab).toBe(true)

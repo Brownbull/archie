@@ -36,7 +36,7 @@ test.describe("Decision support", () => {
 
     // Build a little so the pathway engine has a tier + gaps to suggest against.
     for (let i = 0; i < 3; i++) await addComponentToCanvas(page, i)
-    await page.getByRole("tab", { name: "Components" }).click()
+    await page.getByRole("tab", { name: "Blocks" }).click()
     await page.waitForTimeout(500)
 
     const pathway = page.locator('[data-testid="component-tab-pathway"]')

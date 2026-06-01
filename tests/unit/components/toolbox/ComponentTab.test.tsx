@@ -140,7 +140,7 @@ describe("ComponentTab", () => {
     expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
     expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
     // Blocks show the logical type label, not the vendor name.
-    expect(screen.getByText("Relational Database")).toBeInTheDocument()
+    expect(screen.getByText("SQL Database")).toBeInTheDocument()
     expect(screen.getByText("Cache")).toBeInTheDocument()
     // Vendors are NOT listed in the toolbox anymore.
     expect(screen.queryByTestId("component-card-postgresql")).toBeNull()

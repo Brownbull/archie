@@ -89,13 +89,13 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
       </button>
 
       {/* Compact 2-column-grid cell: icon + (wrapping) label, then cost beneath. */}
-      <div className="flex items-start gap-1.5 pr-4">
+      <div className="flex items-start gap-1 pr-3">
         {iconUrl ? (
-          <img src={iconUrl} alt="" className="mt-0.5 h-5 w-5 shrink-0" />
+          <img src={iconUrl} alt="" className="h-4 w-4 shrink-0" />
         ) : (
-          CategoryIcon && <CategoryIcon className="mt-0.5 h-4 w-4 shrink-0" style={{ color }} />
+          CategoryIcon && <CategoryIcon className="h-4 w-4 shrink-0" style={{ color }} />
         )}
-        <h4 className="min-w-0 flex-1 text-xs font-semibold leading-tight text-text-primary line-clamp-2">{group.label}</h4>
+        <h4 className="min-w-0 flex-1 break-words text-xs font-semibold leading-tight text-text-primary line-clamp-2">{group.label}</h4>
       </div>
       {costRange && (
         <div data-testid={`type-cost-${group.typeId ?? group.key}`} className="mt-1 text-[0.625rem] font-medium text-emerald-400">
