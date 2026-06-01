@@ -7,7 +7,6 @@ import { useChallengeStore } from "@/stores/challengeStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
 import { TypeBlockCard } from "@/components/toolbox/TypeBlockCard"
-import { BlockLevelSelector } from "@/components/toolbox/BlockLevelSelector"
 import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePanel"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
@@ -59,7 +58,7 @@ export function ComponentTab() {
   const searchQuery = useUiStore((s) => s.searchQuery)
   const selectedNodeId = useUiStore((s) => s.selectedNodeId)
   const activeChallenge = useChallengeStore((s) => s.activeChallenge)
-  const blockLevel = usePreferencesStore((s) => s.blockLevel)
+  const experienceLevel = usePreferencesStore((s) => s.experienceLevel)
   const { suggestions: pathwaySuggestions } = usePathwaySuggestions()
 
   // Surface "what to add next" inline in the toolbox (where you add components) during free
@@ -139,12 +138,12 @@ export function ComponentTab() {
   // An active search bypasses gating entirely — searching means the user wants to see everything.
   const showAllLevels = searchQuery.length > 0
   const inLevelGroups = useMemo(
-    () => (showAllLevels ? groups : groups.filter((g) => typeWithinLevel(g.typeId, blockLevel))),
-    [groups, showAllLevels, blockLevel],
+    () => (showAllLevels ? groups : groups.filter((g) => typeWithinLevel(g.typeId, experienceLevel))),
+    [groups, showAllLevels, experienceLevel],
   )
   const advancedGroups = useMemo(
-    () => (showAllLevels ? [] : groups.filter((g) => !typeWithinLevel(g.typeId, blockLevel))),
-    [groups, showAllLevels, blockLevel],
+    () => (showAllLevels ? [] : groups.filter((g) => !typeWithinLevel(g.typeId, experienceLevel))),
+    [groups, showAllLevels, experienceLevel],
   )
 
   const categorySections = useMemo(() => {
@@ -193,7 +192,6 @@ export function ComponentTab() {
         {activeChallenge && (
           <ChallengeGuidanceBanner required={requiredCategories} allowed={allowedCategories} />
         )}
-        <BlockLevelSelector />
         {showPathway && (
           <div data-testid="component-tab-pathway" className="rounded-md border border-blue-500/30 bg-blue-500/5 p-2">
             <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">Suggested next</p>

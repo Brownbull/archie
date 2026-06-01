@@ -12,6 +12,7 @@ describe("SettingsMenu", () => {
       theme: "dark",
       fontSize: "medium",
       fontFamily: "inter",
+      experienceLevel: "beginner",
     })
   })
 
@@ -64,6 +65,23 @@ describe("SettingsMenu", () => {
     await user.click(screen.getByTestId("settings-menu-trigger"))
     await user.click(screen.getByTestId("theme-option-light"))
     expect(usePreferencesStore.getState().theme).toBe("light")
+  })
+
+  it("shows experience level options when dropdown is open", async () => {
+    const user = userEvent.setup()
+    render(<SettingsMenu />)
+    await user.click(screen.getByTestId("settings-menu-trigger"))
+    expect(screen.getByTestId("experience-option-beginner")).toBeInTheDocument()
+    expect(screen.getByTestId("experience-option-intermediate")).toBeInTheDocument()
+    expect(screen.getByTestId("experience-option-advanced")).toBeInTheDocument()
+  })
+
+  it("clicking an experience level option calls setExperienceLevel", async () => {
+    const user = userEvent.setup()
+    render(<SettingsMenu />)
+    await user.click(screen.getByTestId("settings-menu-trigger"))
+    await user.click(screen.getByTestId("experience-option-advanced"))
+    expect(usePreferencesStore.getState().experienceLevel).toBe("advanced")
   })
 
   it("clicking font size option calls setFontSize", async () => {

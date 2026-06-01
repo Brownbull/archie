@@ -2,6 +2,7 @@ import { useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
+import { ExperienceLevelControl } from "@/components/layout/ExperienceLevelControl"
 import { IssuesSummary } from "@/components/layout/IssuesSummary"
 import { useImportAction } from "@/components/import-export/ImportDialog"
 import { ExportButton } from "@/components/import-export/ExportButton"
@@ -56,6 +57,7 @@ export function Toolbar() {
       </div>
 
       <div className="flex items-center gap-3">
+        <ExperienceLevelControl />
         {user?.displayName && (
           <span className="text-sm text-text-secondary">
             {user.displayName}

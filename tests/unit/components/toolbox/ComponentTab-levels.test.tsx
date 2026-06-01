@@ -61,7 +61,7 @@ describe("ComponentTab — experience-level gating (P86)", () => {
   beforeEach(() => {
     useUiStore.setState({ searchQuery: "", selectedNodeId: null })
     useChallengeStore.setState({ activeChallenge: null })
-    usePreferencesStore.setState({ blockLevel: "beginner" })
+    usePreferencesStore.setState({ experienceLevel: "beginner" })
   })
 
   it("at beginner level, above-level blocks are hidden behind the advanced drawer", () => {
@@ -86,7 +86,7 @@ describe("ComponentTab — experience-level gating (P86)", () => {
   })
 
   it("at intermediate level, intermediate surfaces and only advanced stays in the drawer", () => {
-    usePreferencesStore.setState({ blockLevel: "intermediate" })
+    usePreferencesStore.setState({ experienceLevel: "intermediate" })
     render(<ComponentTab />)
     expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
     expect(screen.getByTestId("type-block-message-queue")).toBeInTheDocument()
@@ -96,7 +96,7 @@ describe("ComponentTab — experience-level gating (P86)", () => {
   })
 
   it("at advanced level, all blocks show and there is no advanced drawer", () => {
-    usePreferencesStore.setState({ blockLevel: "advanced" })
+    usePreferencesStore.setState({ experienceLevel: "advanced" })
     render(<ComponentTab />)
     expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
     expect(screen.getByTestId("type-block-message-queue")).toBeInTheDocument()

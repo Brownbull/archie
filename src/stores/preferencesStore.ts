@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { BlockLevel } from "@/lib/componentTypes"
+import type { ExperienceLevel } from "@/lib/componentTypes"
 
 export type Theme = "dark" | "light"
 export type FontSize = "small" | "medium" | "large"
@@ -16,18 +16,19 @@ interface PreferencesState {
   /** First-node contextual nudge shown? Persisted so the "configure & connect" hint fires only once. */
   firstNodeHintSeen: boolean
   /**
-   * Experience tier gating which block types the toolbox shows (P86 progressive disclosure).
-   * Defaults to `beginner` so new users see ~7 essentials, not all 27. Starting a challenge sets
-   * this to the challenge's difficulty; the user can still raise/lower it from the toolbox.
+   * Global experience level (P86 → P89). Gates how much detail the whole app reveals — block
+   * palette, inspector, the optimize panel — not just the toolbox. Defaults to `beginner` so new
+   * users see essentials, not everything. Starting a challenge sets it to the challenge's
+   * difficulty; the user can raise/lower it from the top bar or Settings.
    */
-  blockLevel: BlockLevel
+  experienceLevel: ExperienceLevel
   setTheme: (theme: Theme) => void
   setFontSize: (fontSize: FontSize) => void
   setFontFamily: (fontFamily: FontFamily) => void
   setAnimationsEnabled: (enabled: boolean) => void
   setTourSeen: (seen: boolean) => void
   setFirstNodeHintSeen: (seen: boolean) => void
-  setBlockLevel: (level: BlockLevel) => void
+  setExperienceLevel: (level: ExperienceLevel) => void
 }
 
 export const usePreferencesStore = create<PreferencesState>()(
@@ -39,14 +40,14 @@ export const usePreferencesStore = create<PreferencesState>()(
       animationsEnabled: true,
       tourSeen: false,
       firstNodeHintSeen: false,
-      blockLevel: "beginner",
+      experienceLevel: "beginner",
       setTheme: (theme) => set({ theme }),
       setFontSize: (fontSize) => set({ fontSize }),
       setFontFamily: (fontFamily) => set({ fontFamily }),
       setAnimationsEnabled: (enabled) => set({ animationsEnabled: enabled }),
       setTourSeen: (seen) => set({ tourSeen: seen }),
       setFirstNodeHintSeen: (seen) => set({ firstNodeHintSeen: seen }),
-      setBlockLevel: (level) => set({ blockLevel: level }),
+      setExperienceLevel: (level) => set({ experienceLevel: level }),
     }),
     { name: "archie-preferences" }
   )

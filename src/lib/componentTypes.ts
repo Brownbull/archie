@@ -72,6 +72,14 @@ export const COMPONENT_TYPES: ReadonlyMap<string, ComponentType> = new Map(
  */
 export type BlockLevel = "beginner" | "intermediate" | "advanced"
 
+/**
+ * The user's self-declared experience level (P89). Identical scale to BlockLevel — it's a global
+ * app setting that gates how much detail surfaces across the whole UI (blocks, inspector, the
+ * optimize panel, …), not just the toolbox. Aliased so the global concept reads clearly while
+ * block-tier helpers keep their `BlockLevel` name.
+ */
+export type ExperienceLevel = BlockLevel
+
 /** Numeric rank for "is type at or below the active level" comparisons. */
 export function levelRank(level: BlockLevel): number {
   switch (level) {

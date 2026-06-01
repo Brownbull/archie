@@ -11,15 +11,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { usePreferencesStore, type FontFamily } from "@/stores/preferencesStore"
+import type { ExperienceLevel } from "@/lib/componentTypes"
 import { useShortcutsDialog } from "@/components/help/shortcutsDialogStore"
 
 export function SettingsMenu() {
   const theme = usePreferencesStore((s) => s.theme)
   const fontSize = usePreferencesStore((s) => s.fontSize)
   const fontFamily = usePreferencesStore((s) => s.fontFamily)
+  const experienceLevel = usePreferencesStore((s) => s.experienceLevel)
   const setTheme = usePreferencesStore((s) => s.setTheme)
   const setFontSize = usePreferencesStore((s) => s.setFontSize)
   const setFontFamily = usePreferencesStore((s) => s.setFontFamily)
+  const setExperienceLevel = usePreferencesStore((s) => s.setExperienceLevel)
   const setTourSeen = usePreferencesStore((s) => s.setTourSeen)
 
   return (
@@ -45,6 +48,24 @@ export function SettingsMenu() {
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="light" data-testid="theme-option-light">
             Light
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuLabel>Experience Level</DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={experienceLevel}
+          onValueChange={(v) => setExperienceLevel(v as ExperienceLevel)}
+        >
+          <DropdownMenuRadioItem value="beginner" data-testid="experience-option-beginner">
+            Beginner
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="intermediate" data-testid="experience-option-intermediate">
+            Intermediate
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="advanced" data-testid="experience-option-advanced">
+            Advanced
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
 
