@@ -258,3 +258,93 @@
 [data-radix-scroll-area-viewport] > div {
   display: block !important;
 }
+
+/* ===========================================================================
+   BlockConceptLoop — animated "miniblock with dots moving inside" per component
+   type (src/components/common/BlockConceptLoop.tsx). Pure CSS keyframe loops,
+   themed via currentColor. Motion is gated by `.block-loop--static` (app
+   animations preference) and `prefers-reduced-motion` (OS setting); when off,
+   dots rest at their base positions as a calm static frame.
+   =========================================================================== */
+.block-loop { display: block; overflow: visible; }
+.bl-frame {
+  fill: color-mix(in srgb, currentColor 8%, transparent);
+  stroke: currentColor;
+  stroke-width: 1.4;
+  opacity: 0.85;
+}
+.block-loop .bl-dot { fill: currentColor; }
+.bl-edge-node { fill: currentColor; opacity: 0.6; }
+.bl-gate { stroke: currentColor; stroke-width: 1.4; opacity: 0.55; }
+.bl-partition { stroke: currentColor; stroke-width: 1; opacity: 0.3; stroke-dasharray: 2 2; }
+.bl-row { stroke: currentColor; stroke-width: 1; opacity: 0.3; }
+.bl-edge { stroke: currentColor; stroke-width: 1; opacity: 0.35; }
+.bl-vertex { fill: currentColor; opacity: 0.4; }
+.bl-stage { stroke: currentColor; stroke-width: 1.2; opacity: 0.3; }
+.bl-baseline { stroke: currentColor; stroke-width: 1; opacity: 0.3; }
+.bl-store { fill: currentColor; opacity: 0.4; }
+.bl-bucket { fill: color-mix(in srgb, currentColor 25%, transparent); stroke: currentColor; stroke-width: 1; }
+.bl-neighbor { fill: currentColor; opacity: 0.3; }
+.bl-query { fill: currentColor; transform-box: fill-box; transform-origin: center; }
+.bl-pulse-ring { fill: none; stroke: currentColor; stroke-width: 1.4; transform-box: fill-box; transform-origin: center; }
+.bl-check { fill: none; stroke: var(--color-heatmap-green, #10b981); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+
+/* --- animated dot motions --- */
+.bl-flow      { animation: bl-flow 1.8s linear infinite; }
+.bl-flow-rev  { animation: bl-flow-rev 1.8s linear infinite; }
+.bl-flow-in   { animation: bl-flow-in 1.8s ease-in infinite; }
+.bl-stream    { animation: bl-flow 1.2s linear infinite; }
+.bl-bounce    { animation: bl-bounce 1.3s ease-in-out infinite; }
+.bl-fan-top   { animation: bl-fan-top 1.6s ease-out infinite; }
+.bl-fan-mid   { animation: bl-fan-mid 1.6s ease-out infinite; }
+.bl-fan-bot   { animation: bl-fan-bot 1.6s ease-out infinite; }
+.bl-rad-ne    { animation: bl-rad-ne 1.8s ease-out infinite; }
+.bl-rad-nw    { animation: bl-rad-nw 1.8s ease-out infinite; }
+.bl-rad-se    { animation: bl-rad-se 1.8s ease-out infinite; }
+.bl-rad-sw    { animation: bl-rad-sw 1.8s ease-out infinite; }
+.bl-queue     { animation: bl-queue 1.8s linear infinite; }
+.bl-scan      { animation: bl-scan 2.4s ease-in-out infinite; }
+.bl-traverse  { animation: bl-traverse 2.4s ease-in-out infinite; }
+.bl-drop      { animation: bl-drop 1.8s ease-in infinite; }
+.bl-pop       { animation: bl-pop 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.bl-pulse     { animation: bl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.bl-pulse-ring { animation: bl-pulse 1.6s ease-in-out infinite; }
+.bl-query     { animation: bl-pulse 2.2s ease-in-out infinite; }
+.bl-token     { animation: bl-flow-token 1.6s ease-out infinite; }
+.bl-rt        { animation: bl-rt 2.4s ease-in-out infinite; }
+.bl-check     { animation: bl-check 2.4s ease-in-out infinite; }
+.bl-etl       { animation: bl-etl 2.2s ease-in-out infinite; }
+.bl-beat      { animation: bl-beat 2.2s linear infinite; }
+.bl-pass      { fill: var(--color-heatmap-green, #10b981); animation: bl-pass 2.2s ease-in-out infinite; }
+.bl-block     { fill: var(--color-heatmap-red, #ef4444); animation: bl-block 2.2s ease-in-out infinite; }
+
+@keyframes bl-flow { 0% { transform: translateX(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(30px); opacity: 0; } }
+@keyframes bl-flow-rev { 0% { transform: translateX(0); opacity: 0; } 12% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(-30px); opacity: 0; } }
+@keyframes bl-flow-in { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 70% { transform: translateX(12px); opacity: 1; } 100% { transform: translateX(14px); opacity: 0; } }
+@keyframes bl-flow-token { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translateX(12px); opacity: 0; } }
+@keyframes bl-bounce { 0% { transform: translateX(0); } 50% { transform: translateX(22px); } 100% { transform: translateX(0); } }
+@keyframes bl-fan-top { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(28px, -7px); opacity: 0; } }
+@keyframes bl-fan-mid { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(28px, 0); opacity: 0; } }
+@keyframes bl-fan-bot { 0% { transform: translate(0, 0); opacity: 0; } 20% { opacity: 1; } 100% { transform: translate(28px, 7px); opacity: 0; } }
+@keyframes bl-rad-ne { 0% { transform: translate(0, 0); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(15px, -8px); opacity: 0; } }
+@keyframes bl-rad-nw { 0% { transform: translate(0, 0); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(-15px, -8px); opacity: 0; } }
+@keyframes bl-rad-se { 0% { transform: translate(0, 0); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(15px, 8px); opacity: 0; } }
+@keyframes bl-rad-sw { 0% { transform: translate(0, 0); opacity: 0; } 25% { opacity: 1; } 100% { transform: translate(-15px, 8px); opacity: 0; } }
+@keyframes bl-queue { 0% { transform: translateX(8px); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(-8px); opacity: 0; } }
+@keyframes bl-scan { 0% { transform: translate(0, 0); } 30% { transform: translate(30px, 0); } 33% { transform: translate(30px, 5.5px); } 63% { transform: translate(0, 5.5px); } 66% { transform: translate(0, 11px); } 96% { transform: translate(30px, 11px); } 100% { transform: translate(30px, 11px); } }
+@keyframes bl-traverse { 0% { transform: translate(0, 0); } 30% { transform: translate(18px, 11px); } 60% { transform: translate(25px, 1px); } 90%, 100% { transform: translate(0, 0); } }
+@keyframes bl-drop { 0% { transform: translateY(-9px); opacity: 0; } 25% { opacity: 1; } 70% { transform: translateY(4px); opacity: 1; } 85% { transform: translateY(4px); opacity: 1; } 100% { transform: translateY(4px); opacity: 0; } }
+@keyframes bl-pop { 0% { transform: scale(0); opacity: 0; } 25% { transform: scale(1); opacity: 1; } 65% { transform: scale(1); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+@keyframes bl-pulse { 0%, 100% { transform: scale(0.8); opacity: 0.35; } 50% { transform: scale(1.15); opacity: 1; } }
+@keyframes bl-rt { 0% { transform: translateX(0); } 35% { transform: translateX(22px); } 55% { transform: translateX(22px); } 100% { transform: translateX(0); } }
+@keyframes bl-check { 0%, 45% { opacity: 0; } 60% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes bl-etl { 0% { transform: translateX(0); fill: #9ca3af; } 45% { fill: #f59e0b; } 100% { transform: translateX(30px); fill: var(--color-heatmap-green, #10b981); } }
+@keyframes bl-beat { 0% { transform: translate(0, 0); } 40% { transform: translate(13px, 0); } 47% { transform: translate(16px, -7px); } 54% { transform: translate(19px, 5px); } 61% { transform: translate(22px, 0); } 100% { transform: translate(32px, 0); } }
+@keyframes bl-pass { 0% { transform: translateX(0); opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { transform: translateX(30px); opacity: 0; } }
+@keyframes bl-block { 0% { transform: translateX(0); opacity: 0; } 20% { opacity: 1; } 50% { transform: translateX(15px); } 80% { transform: translateX(15px); opacity: 1; } 100% { transform: translateX(2px); opacity: 0; } }
+
+/* Motion off (app preference) or OS reduced-motion → freeze at base frame. */
+.block-loop--static * { animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .block-loop * { animation: none !important; }
+}

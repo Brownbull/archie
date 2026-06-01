@@ -18,6 +18,7 @@ import { VariantRecommendation } from "@/components/inspector/VariantRecommendat
 import { CodeSnippetViewer } from "@/components/inspector/CodeSnippetViewer"
 import { DataContextPanel } from "@/components/inspector/DataContextPanel"
 import { DataSourceNote } from "@/components/common/DataSourceNote"
+import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { InspectorDisclosure } from "@/components/inspector/InspectorDisclosure"
 import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
@@ -216,6 +217,19 @@ export function ComponentDetail({
             </span>
           </div>
         </div>
+
+        {/* Hero concept loop — a larger animated "what this block does" that reinforces the
+            type at a glance (matches the toolbox card / canvas node motion). */}
+        {component.typeId && (
+          <div className="flex justify-center rounded-md border border-archie-border bg-surface/40 py-2">
+            <BlockConceptLoop
+              typeId={component.typeId}
+              size="lg"
+              color={categoryMeta?.color ?? "currentColor"}
+              title={`${headingLabel} concept`}
+            />
+          </div>
+        )}
 
         {/* Orientation headline — the one-line "what it is", the first thing a junior reads.
             The longer description is one click away in the "What it is" disclosure below. */}

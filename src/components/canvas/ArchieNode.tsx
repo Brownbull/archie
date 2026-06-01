@@ -21,6 +21,7 @@ import { useNodePorts } from "@/hooks/useNodePorts"
 import { useNodeSimTelemetry, simCapacityColorClass } from "@/hooks/useNodeSimTelemetry"
 import { PORT_TYPES } from "@/lib/constants"
 import { getNodeCost, getNodeComplexity, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
+import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
 import { Gauge } from "lucide-react"
 
 const PORT_HEIGHT_PX = 20
@@ -95,7 +96,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     const comp = componentLibrary.getComponent(data.archieComponentId)
     const typeId = comp?.typeId
     const typeLabel = typeId ? COMPONENT_TYPES.get(typeId)?.label : undefined
-    return { typeLabel, iconUrl: typeId ? getTypeIconUrl(typeId) : null }
+    return { typeId, typeLabel, iconUrl: typeId ? getTypeIconUrl(typeId) : null }
   }, [data.archieComponentId])
 
   const nodeTitle = typeInfo.typeLabel ?? data.componentName
@@ -224,7 +225,9 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       />
 
       <div className="flex items-center gap-2 px-3 py-2">
-        {typeInfo.iconUrl ? (
+        {typeInfo.typeId ? (
+          <BlockConceptLoop typeId={typeInfo.typeId} size="sm" color={color} className="shrink-0" />
+        ) : typeInfo.iconUrl ? (
           <img src={typeInfo.iconUrl} alt="" className="h-4 w-4 shrink-0" />
         ) : (
           <ComponentIcon

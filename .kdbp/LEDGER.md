@@ -1879,3 +1879,17 @@ User wanted a complexity indicator to the right of replicas / below price. Added
 ## 2026-06-01 04:10 — commit: inspector code disclosure + Data source provenance note
 FINDINGS: 0 (ComponentDetail 33 ✅ toolbox+inspector 322 ✅ tsc -b ✅ lint 0-err ✅ e2e visual: code collapsed/expand + data-source on block/stacks/blueprints)
 User asked: (1) code in right panel is too much at first sight → hide behind a title; (2) want a section/indicator about information source / AI inference for block/blueprint/stack. (1) Wrapped CodeSnippetViewer in an InspectorDisclosure "Code example" (collapse-by-default); updated 3 e2e specs to open disclosure-code before asserting code-snippet-section visible. (2) Chose 'Data source section + methodology'. New reusable DataSourceNote (common/) = collapse-by-default "ⓘ Data source" disclosure with kind-specific copy (block/blueprint/stack) stating figures are AI-compiled directional estimates, not vendor benchmarks. Placed on ComponentDetail (block), top of StacksTab + BlueprintTab (once each). Pure UI — no schema/data/seed change.
+- 2026-06-01 00:55 | Write | /home/khujta/projects/bmad/archie/src/components/common/BlockConceptLoop.tsx
+- 2026-06-01 00:56 | Edit | /home/khujta/projects/bmad/archie/src/index.css
+- 2026-06-01 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-01 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-01 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-01 00:59 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/common/BlockConceptLoop.test.tsx
+
+## 2026-06-01 04:45 — commit: animated concept loops (SVG/CSS) for every block type
+FINDINGS: 0 (full suite 3837 ✅ BlockConceptLoop 6 ✅ canvas+inspector+toolbox 198 ✅ tsc -b ✅ lint 0-err ✅ e2e: 17 toolbox loops + node + inspector render)
+User wanted animated assets — a miniblock with dots moving inside emulating each block's concept, infinite loop like a gif. Chose code-driven SVG+CSS (recommended over gif/Lottie: crisp, themeable via currentColor, ~few hundred bytes, no deps). New BlockConceptLoop (common/) renders a per-type dot choreography for all 17 types (compute flow, load-balancer fan-out, cache bounce, cdn radiate, message-queue FIFO, event-stream, realtime full-duplex, relational scan, graph traverse, vector pulse, object-storage drop, serverless pop, llm pulse+tokens, payments roundtrip+check, etl color-shift, observability heartbeat, security pass/block) + generic fallback. ~30 bl-* keyframes in index.css. Honors app animationsEnabled pref + prefers-reduced-motion (static frame when off). Mounted in 3 surfaces: TypeBlockCard (toolbox, replaces type icon), ArchieNode header (canvas, sm), ComponentDetail hero band (inspector, lg). Pure UI — no data/seed change.

@@ -6,6 +6,7 @@ import { getTypeIconUrl } from "@/lib/typeIcons"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
 
 interface TypeBlockCardProps {
   group: ComponentTypeGroup
@@ -88,9 +89,12 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
         <Plus className="h-3.5 w-3.5" />
       </button>
 
-      {/* Compact 2-column-grid cell: icon + (wrapping) label, then cost beneath. */}
+      {/* Compact 2-column-grid cell: animated concept loop + (wrapping) label, then cost beneath.
+          The loop replaces the static type icon so the palette communicates what each block does. */}
       <div className="flex items-start gap-1 pr-3">
-        {iconUrl ? (
+        {group.typeId ? (
+          <BlockConceptLoop typeId={group.typeId} size="sm" color={color} className="shrink-0" title={`${group.label} concept`} />
+        ) : iconUrl ? (
           <img src={iconUrl} alt="" className="h-4 w-4 shrink-0" />
         ) : (
           CategoryIcon && <CategoryIcon className="h-4 w-4 shrink-0" style={{ color }} />
