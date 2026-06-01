@@ -2097,3 +2097,9 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 11:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab-levels.test.tsx
 - 2026-06-01 11:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab-levels.test.tsx
 - 2026-06-01 11:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab-levels.test.tsx
+- 2026-06-01 11:53 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-01 11:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
+- 2026-06-01 11:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
+- 2026-06-01 11:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
+- 2026-06-01 11:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-01 11:54 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/constants.test.ts

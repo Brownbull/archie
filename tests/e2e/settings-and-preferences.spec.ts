@@ -347,8 +347,8 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
       // Measure computed font-sizes on elements across all panels
       measurements[size] = await measureFontSizes(page)
 
-      // Canvas node width must remain 140px (AC-ARCH-NO-3)
-      await expect(page.locator('[data-testid="archie-node"]').first()).toHaveCSS("width", "140px")
+      // Canvas node width must remain fixed at 192px regardless of font size (AC-ARCH-NO-3)
+      await expect(page.locator('[data-testid="archie-node"]').first()).toHaveCSS("width", "192px")
 
       const num = size === "small" ? "21" : size === "medium" ? "22" : "23"
       await page.screenshot({

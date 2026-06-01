@@ -108,7 +108,7 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     })
   })
 
-  test("AC-1: dropped node has correct 140px width", async ({ page }) => {
+  test("AC-1: dropped node has correct 192px width", async ({ page }) => {
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -130,14 +130,14 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
       canvasBounds!.y + canvasBounds!.height / 2,
     )
 
-    // Verify node CSS width is 140px (UX16) — use CSS check, not boundingBox
+    // Verify node CSS width is 192px (P87 wider cards) — use CSS check, not boundingBox
     // (boundingBox includes React Flow transforms which may scale the element)
     const archieNode = page.locator('[data-testid="archie-node"]').first()
     await expect(archieNode).toBeVisible({ timeout: 5_000 })
-    await expect(archieNode).toHaveCSS("width", "140px")
+    await expect(archieNode).toHaveCSS("width", "192px")
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/04-node-140px-width.png`,
+      path: `${SCREENSHOT_DIR}/04-node-width.png`,
       fullPage: true,
     })
   })
@@ -287,7 +287,7 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.source").first()).toBeAttached()
 
     // Node has correct width
-    await expect(archieNode).toHaveCSS("width", "140px")
+    await expect(archieNode).toHaveCSS("width", "192px")
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/09-node-structure-via-button.png`,
