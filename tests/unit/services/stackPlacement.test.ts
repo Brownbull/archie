@@ -343,3 +343,74 @@ describe("resolveStackPlacement", () => {
     expect(result.edges[0].type).toBe("archie-connection")
   })
 })
+
+describe("resolveStackPlacement — port wiring (P98)", () => {
+  beforeEach(() => {
+    vi.resetAllMocks()
+    mockCheckCompatibility.mockReturnValue({ isCompatible: true, reason: "" })
+    mockGetComponent.mockImplementation((id: string) => {
+      if (id === "compute") {
+        return makeComponent({
+          id: "compute",
+          name: "Compute",
+          category: "compute",
+          ports: [
+            { id: "http-in", type: "http", direction: "in" },
+            { id: "http-out", type: "http", direction: "out" },
+            { id: "db-out", type: "database", direction: "out" },
+            { id: "cache-out", type: "cache", direction: "out" },
+          ],
+          configVariants: [makeConfigVariant({ id: "default", name: "Default" })],
+        })
+      }
+      if (id === "redis") {
+        return makeComponent({
+          id: "redis",
+          name: "Redis",
+          category: "caching",
+          ports: [{ id: "cache-in", type: "cache", direction: "in" }],
+          configVariants: [makeConfigVariant({ id: "default", name: "Default" })],
+        })
+      }
+      if (id === "postgresql") {
+        return makeComponent({
+          id: "postgresql",
+          name: "PostgreSQL",
+          category: "data-storage",
+          ports: [{ id: "db-in", type: "database", direction: "in" }],
+          configVariants: [makeConfigVariant({ id: "default", name: "Default" })],
+        })
+      }
+      return undefined
+    })
+  })
+
+  it("wires cache + database connections to their typed ports, not the http port", () => {
+    const stack = makeStack({
+      components: [
+        { componentId: "compute", variantId: "default", relativePosition: { x: 0, y: 0 } },
+        { componentId: "redis", variantId: "default", relativePosition: { x: 200, y: 0 } },
+        { componentId: "postgresql", variantId: "default", relativePosition: { x: 200, y: 120 } },
+      ],
+      connections: [
+        { sourceComponentIndex: 0, targetComponentIndex: 1, connectionType: "cache" },
+        { sourceComponentIndex: 0, targetComponentIndex: 2, connectionType: "database" },
+      ],
+    })
+
+    const { edges } = resolveStackPlacement(stack, { x: 0, y: 0 })
+    expect(edges).toHaveLength(2)
+
+    const [cacheEdge, dbEdge] = edges
+    expect(cacheEdge.sourceHandle).toBe("cache-out")
+    expect(cacheEdge.targetHandle).toBe("cache-in")
+    expect(cacheEdge.data?.sourceHandleId).toBe("cache-out")
+    expect(cacheEdge.data?.isPortMismatch).toBe(false)
+
+    expect(dbEdge.sourceHandle).toBe("db-out")
+    expect(dbEdge.targetHandle).toBe("db-in")
+
+    // The bug was both edges leaving compute's http-out — neither should now.
+    expect([cacheEdge.sourceHandle, dbEdge.sourceHandle]).not.toContain("http-out")
+  })
+})

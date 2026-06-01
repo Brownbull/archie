@@ -1,6 +1,7 @@
 import { z } from "zod"
-import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, MIN_REPLICAS, MAX_REPLICAS, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, PORT_SORT_ORDER, type MetricCategoryId, type ConstraintOperator, type PortDefinition, } from "@/lib/constants"
+import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, MIN_REPLICAS, MAX_REPLICAS, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, type MetricCategoryId, type ConstraintOperator, type PortDefinition, } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
+import { resolvePortPair } from "@/engine/portResolution"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
 // If the count changes, the schema shape silently diverges from expectations. (TD-5-1a)
@@ -108,8 +109,6 @@ function migrateV2ToV3(data: unknown): unknown {
     }
   }
 
-  const portPriority = new Map(PORT_SORT_ORDER.map((t, i) => [t, i]))
-
   const migratedEdges = edges.map((edge) => {
     const sourceNodeId = edge.sourceNodeId as string | undefined
     const targetNodeId = edge.targetNodeId as string | undefined
@@ -123,37 +122,14 @@ function migrateV2ToV3(data: unknown): unknown {
       return edge
     }
 
-    const sourcePorts = _portResolver(sourceComponentId)
-    const targetPorts = _portResolver(targetComponentId)
-    if (!sourcePorts || !targetPorts) {
-      return edge
-    }
-
-    const sourceOuts = sourcePorts.filter((p) => p.direction === "out")
-    const targetIns = targetPorts.filter((p) => p.direction === "in")
-
-    // Find matching port types between source outputs and target inputs
-    const matches: Array<{ sourcePort: PortDefinition; targetPort: PortDefinition; priority: number }> = []
-    for (const sp of sourceOuts) {
-      for (const tp of targetIns) {
-        if (sp.type === tp.type) {
-          matches.push({ sourcePort: sp, targetPort: tp, priority: portPriority.get(sp.type) ?? 999 })
-        }
-      }
-    }
-
-    if (matches.length === 0) {
-      return edge
-    }
-
-    // Pick highest-priority match (lowest priority number)
-    matches.sort((a, b) => a.priority - b.priority)
-    const best = matches[0]
-    return {
-      ...edge,
-      sourceHandleId: best.sourcePort.id,
-      targetHandleId: best.targetPort.id,
-    }
+    // Reuse the shared port matcher (same algorithm this block used to inline) so migration,
+    // stack loading and blueprint hydration all wire edges to the correct typed handles.
+    const { sourceHandleId, targetHandleId } = resolvePortPair(
+      _portResolver(sourceComponentId),
+      _portResolver(targetComponentId),
+    )
+    if (sourceHandleId === null) return edge
+    return { ...edge, sourceHandleId, targetHandleId }
   })
 
   return { ...d, schemaVersion: "3.0.0", edges: migratedEdges }

@@ -1,6 +1,8 @@
 import { componentLibrary } from "@/services/componentLibrary"
 import type { Component } from "@/schemas/componentSchema"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
+import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
+import { resolvePortPair } from "@/engine/portResolution"
 import { snapToGrid } from "@/lib/canvasUtils"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 import {
@@ -94,20 +96,33 @@ export function resolveStackPlacement(
 
     const result = checkCompatibility(sourceComponent, targetComponent)
 
+    // Wire the edge to the correct typed handles (the stack's connectionType steers the match,
+    // e.g. a "cache" connection lands on the cache-out → cache-in ports), instead of leaving the
+    // handles null and letting React Flow drop every edge onto the node's default (http) port.
+    const { sourceHandleId, targetHandleId } = resolvePortPair(
+      sourceComponent?.ports,
+      targetComponent?.ports,
+      conn.connectionType,
+    )
+    const portCompat = checkPortCompatibility(sourceHandleId, targetHandleId, sourceComponent, targetComponent)
+
     const edgeData: ArchieEdgeData = {
-      isIncompatible: !result.isCompatible,
-      isPortMismatch: false,
-      incompatibilityReason: result.reason || null,
+      isIncompatible: !result.isCompatible || !portCompat.isCompatible,
+      isPortMismatch: portCompat.isPortMismatch,
+      incompatibilityReason: result.reason || portCompat.reason || null,
       sourceArchieComponentId: sourceComponentId,
       targetArchieComponentId: targetComponentId,
-      sourceHandleId: null,
-      targetHandleId: null,
+      sourceHandleId,
+      targetHandleId,
     }
 
     const edge: ArchieEdge = {
       id: crypto.randomUUID(),
       source: sourceNodeId,
       target: targetNodeId,
+      // Top-level handles are what React Flow actually binds to (data.* is metadata only).
+      sourceHandle: sourceHandleId,
+      targetHandle: targetHandleId,
       type: EDGE_TYPE_CONNECTION,
       data: edgeData,
     }

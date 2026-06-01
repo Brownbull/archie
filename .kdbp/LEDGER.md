@@ -2223,3 +2223,14 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 16:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
 - 2026-06-01 16:07 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
 - 2026-06-01 16:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-06-01 16:28 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 16:33 | Write | /home/khujta/projects/bmad/archie/src/engine/portResolution.ts
+- 2026-06-01 16:34 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-01 16:34 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-01 16:35 | Edit | /home/khujta/projects/bmad/archie/src/services/stackPlacement.ts
+- 2026-06-01 16:35 | Edit | /home/khujta/projects/bmad/archie/src/services/stackPlacement.ts
+- 2026-06-01 16:35 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-01 16:36 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-01 16:38 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter-v3-migration.test.ts
+- 2026-06-01 16:39 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/portResolution.test.ts
+- 2026-06-01 16:40 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/stackPlacement.test.ts

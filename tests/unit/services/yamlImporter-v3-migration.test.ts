@@ -211,7 +211,7 @@ describe("v3 Direct Import", () => {
     expect(edge.targetHandle).toBe("db-in")
   })
 
-  it("imports v3 YAML without handle IDs (legacy edges)", () => {
+  it("auto-resolves handles for v3 edges that omit handle IDs (port wiring fix)", () => {
     const yaml = makeV3Yaml({
       edges: [
         { id: "e1", source_node_id: "n1", target_node_id: "n2" },
@@ -221,9 +221,13 @@ describe("v3 Direct Import", () => {
     expect(result.success).toBe(true)
     if (!result.success) return
 
+    // node-express → postgresql: the only matching port type is database, so the edge wires to
+    // db-out → db-in instead of dropping onto the node's default (http) handle.
     const edge = result.architecture.edges[0]
-    expect(edge.data?.sourceHandleId).toBeNull()
-    expect(edge.data?.targetHandleId).toBeNull()
+    expect(edge.data?.sourceHandleId).toBe("db-out")
+    expect(edge.data?.targetHandleId).toBe("db-in")
+    expect(edge.sourceHandle).toBe("db-out")
+    expect(edge.targetHandle).toBe("db-in")
   })
 })
 

@@ -10,6 +10,8 @@ import {
 import type { ArchitectureFile } from "@/schemas/architectureFileSchema"
 import { componentLibrary } from "@/services/componentLibrary"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
+import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
+import { resolvePortPair } from "@/engine/portResolution"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 import { snapToGrid } from "@/lib/canvasUtils"
 import { isKnownScenarioId } from "@/services/scenarioLoader"
@@ -393,8 +395,13 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
 
     const compatResult = checkCompatibility(sourceComponent, targetComponent)
 
-    const sourceHandleId = yamlEdge.sourceHandleId ?? null
-    const targetHandleId = yamlEdge.targetHandleId ?? null
+    // Authored blueprints usually omit handle ids — resolve them from the components' typed ports
+    // so the edge binds to the right handle (cache→cache, db→db) instead of React Flow's default
+    // (which made every edge appear to leave the node's http port). Explicit ids win when present.
+    const resolved = resolvePortPair(sourceComponent?.ports, targetComponent?.ports)
+    const sourceHandleId = yamlEdge.sourceHandleId ?? resolved.sourceHandleId
+    const targetHandleId = yamlEdge.targetHandleId ?? resolved.targetHandleId
+    const portCompat = checkPortCompatibility(sourceHandleId, targetHandleId, sourceComponent, targetComponent)
 
     hydratedEdges.push({
       id: yamlEdge.id,
@@ -404,9 +411,9 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
       targetHandle: targetHandleId,
       type: EDGE_TYPE_CONNECTION,
       data: {
-        isIncompatible: !compatResult.isCompatible,
-        isPortMismatch: false,
-        incompatibilityReason: compatResult.reason || null,
+        isIncompatible: !compatResult.isCompatible || !portCompat.isCompatible,
+        isPortMismatch: portCompat.isPortMismatch,
+        incompatibilityReason: compatResult.reason || portCompat.reason || null,
         sourceArchieComponentId: sourceComponentId,
         targetArchieComponentId: targetComponentId,
         sourceHandleId,
