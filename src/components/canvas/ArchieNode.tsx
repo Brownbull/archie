@@ -22,7 +22,7 @@ import { useNodeSimTelemetry, simCapacityColorClass } from "@/hooks/useNodeSimTe
 import { PORT_TYPES } from "@/lib/constants"
 import { getNodeCost, getNodeComplexity, getNodeCategoryAverages, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
 import { computeWeightedNodeScore } from "@/engine/heatmapCalculator"
-import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
+import { TypeIcon } from "@/components/common/TypeIcon"
 import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
 import { Gauge } from "lucide-react"
 
@@ -90,6 +90,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   }, [nodeViolations, constraints])
 
   const animationsEnabled = usePreferencesStore((s) => s.animationsEnabled)
+  const iconSet = usePreferencesStore((s) => s.iconSet)
   const isRippling = useArchitectureStore((s) => s.rippleActiveNodeIds.has(id))
   const overlayInfo = useNodeOverlay(id, data.archieComponentId)
 
@@ -252,8 +253,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
 
       <div className="flex items-center gap-2 px-3 py-2">
         {typeInfo.typeId ? (
-          <BlockConceptLoop typeId={typeInfo.typeId} size="sm" color={color} className="shrink-0" />
-        ) : typeInfo.iconUrl ? (
+          <TypeIcon typeId={typeInfo.typeId} size="sm" color={color} className="shrink-0" />
+        ) : iconSet === "pixel" && typeInfo.iconUrl ? (
           <img src={typeInfo.iconUrl} alt="" className="h-4 w-4 shrink-0" />
         ) : (
           <ComponentIcon

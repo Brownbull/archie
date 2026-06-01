@@ -13,6 +13,7 @@ describe("SettingsMenu", () => {
       fontSize: "medium",
       fontFamily: "inter",
       experienceLevel: "beginner",
+      iconSet: "pixel",
     })
   })
 
@@ -98,5 +99,21 @@ describe("SettingsMenu", () => {
     await user.click(screen.getByTestId("settings-menu-trigger"))
     await user.click(screen.getByTestId("font-family-jetbrains-mono"))
     expect(usePreferencesStore.getState().fontFamily).toBe("jetbrains-mono")
+  })
+
+  it("shows icon-set options when dropdown is open", async () => {
+    const user = userEvent.setup()
+    render(<SettingsMenu />)
+    await user.click(screen.getByTestId("settings-menu-trigger"))
+    expect(screen.getByTestId("icon-set-pixel")).toBeInTheDocument()
+    expect(screen.getByTestId("icon-set-official")).toBeInTheDocument()
+  })
+
+  it("clicking the official icon-set option calls setIconSet", async () => {
+    const user = userEvent.setup()
+    render(<SettingsMenu />)
+    await user.click(screen.getByTestId("settings-menu-trigger"))
+    await user.click(screen.getByTestId("icon-set-official"))
+    expect(usePreferencesStore.getState().iconSet).toBe("official")
   })
 })

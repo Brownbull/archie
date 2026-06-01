@@ -6,7 +6,8 @@ import { getTypeIconUrl } from "@/lib/typeIcons"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
-import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
+import { usePreferencesStore } from "@/stores/preferencesStore"
+import { TypeIcon } from "@/components/common/TypeIcon"
 
 interface TypeBlockCardProps {
   group: ComponentTypeGroup
@@ -22,11 +23,11 @@ interface TypeBlockCardProps {
 export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
   const addNodeSmartPosition = useArchitectureStore((s) => s.addNodeSmartPosition)
   const setActiveDrag = useUiStore((s) => s.setActiveDrag)
+  const iconSet = usePreferencesStore((s) => s.iconSet)
 
   const category = COMPONENT_CATEGORIES[group.categoryId]
   const color = category?.color ?? "var(--color-muted)"
   const iconUrl = group.typeId ? getTypeIconUrl(group.typeId) : null
-  // eslint-disable-next-line security/detect-object-injection -- iconName is a typed enum value
   const CategoryIcon = category ? CATEGORY_ICONS[category.iconName] : undefined
 
   // The vendor a dropped block instantiates: the type's configured default if it's actually
@@ -93,8 +94,8 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
           The loop replaces the static type icon so the palette communicates what each block does. */}
       <div className="flex items-start gap-1 pr-3">
         {group.typeId ? (
-          <BlockConceptLoop typeId={group.typeId} size="sm" color={color} className="shrink-0" title={`${group.label} concept`} />
-        ) : iconUrl ? (
+          <TypeIcon typeId={group.typeId} size="sm" color={color} className="shrink-0" title={`${group.label} concept`} />
+        ) : iconSet === "pixel" && iconUrl ? (
           <img src={iconUrl} alt="" className="h-4 w-4 shrink-0" />
         ) : (
           CategoryIcon && <CategoryIcon className="h-4 w-4 shrink-0" style={{ color }} />

@@ -11,6 +11,7 @@ describe("preferencesStore", () => {
       fontSize: "medium",
       fontFamily: "inter",
       animationsEnabled: true,
+      iconSet: "pixel",
     })
   })
 
@@ -91,6 +92,28 @@ describe("preferencesStore", () => {
       usePreferencesStore.getState().setAnimationsEnabled(false)
       usePreferencesStore.getState().setAnimationsEnabled(true)
       expect(usePreferencesStore.getState().animationsEnabled).toBe(true)
+    })
+  })
+
+  describe("iconSet", () => {
+    it("defaults to pixel (Archie's signature look is unchanged)", () => {
+      expect(usePreferencesStore.getState().iconSet).toBe("pixel")
+    })
+
+    it("updates to official via setIconSet", () => {
+      usePreferencesStore.getState().setIconSet("official")
+      expect(usePreferencesStore.getState().iconSet).toBe("official")
+    })
+
+    it("updates back to pixel", () => {
+      usePreferencesStore.getState().setIconSet("official")
+      usePreferencesStore.getState().setIconSet("pixel")
+      expect(usePreferencesStore.getState().iconSet).toBe("pixel")
+    })
+
+    it("persists to localStorage on change", () => {
+      usePreferencesStore.getState().setIconSet("official")
+      expect(localStorage.getItem("archie-preferences")).toContain('"iconSet":"official"')
     })
   })
 

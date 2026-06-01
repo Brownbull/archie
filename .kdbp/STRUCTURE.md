@@ -22,7 +22,7 @@
 | `.gitignore` | Git ignore | MVP |
 | `docs/**/*.md` | Project documentation | MVP |
 | `tests/**/*.{py,ts,tsx,js,jsx}` | Test files | MVP |
-| `scripts/**/*.{sh,py}` | Utility scripts | MVP |
+| `scripts/**/*.{sh,py,ts,mts,mjs}` | Utility scripts (incl. tsx-run generators + seeders) | MVP |
 
 ### Web App
 

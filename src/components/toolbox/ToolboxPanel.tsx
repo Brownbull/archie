@@ -1,11 +1,24 @@
+import { createElement } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUiStore, type ToolboxTab } from "@/stores/uiStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
+import { getTabLucideIcon } from "@/icons/officialTypeIcons"
 import { SearchFilter } from "@/components/toolbox/SearchFilter"
 import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
 import { StacksTab } from "@/components/toolbox/StacksTab"
 import { BlueprintTab } from "@/components/toolbox/BlueprintTab"
 import { HistoryTab } from "@/components/toolbox/HistoryTab"
+
+/** A toolbox tab's icon: pixel-art PNG in `pixel` mode, a Lucide line icon in `official` mode. */
+function TabIcon({ tab, src }: { tab: ToolboxTab; src: string }) {
+  const iconSet = usePreferencesStore((s) => s.iconSet)
+  if (iconSet === "official") {
+    // createElement (not <JSX>) — dynamically-resolved component ref; see react-hooks/static-components.
+    return createElement(getTabLucideIcon(tab), { className: "h-7 w-7", "aria-hidden": true })
+  }
+  return <img src={src} alt="" className="h-7 w-7 [image-rendering:pixelated]" />
+}
 
 export function ToolboxPanel() {
   const toolboxTab = useUiStore((s) => s.toolboxTab)
@@ -31,7 +44,7 @@ export function ToolboxPanel() {
             className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
             title="Logical building blocks — drag one onto the canvas, then pick a vendor"
           >
-            <img src="/icons/tabs/blocks.png" alt="" className="h-7 w-7 [image-rendering:pixelated]" />
+            <TabIcon tab="components" src="/icons/tabs/blocks.png" />
             Blocks
           </TabsTrigger>
           <TabsTrigger
@@ -40,7 +53,7 @@ export function ToolboxPanel() {
             className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
             title="Small reusable patterns — drag to ADD a few connected components to your canvas"
           >
-            <img src="/icons/tabs/stacks.png" alt="" className="h-7 w-7 [image-rendering:pixelated]" />
+            <TabIcon tab="stacks" src="/icons/tabs/stacks.png" />
             Stacks
           </TabsTrigger>
           <TabsTrigger
@@ -49,7 +62,7 @@ export function ToolboxPanel() {
             className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
             title="Complete starter architectures — Load one to REPLACE the canvas"
           >
-            <img src="/icons/tabs/blueprints.png" alt="" className="h-7 w-7 [image-rendering:pixelated]" />
+            <TabIcon tab="blueprints" src="/icons/tabs/blueprints.png" />
             Blueprints
           </TabsTrigger>
           <TabsTrigger
@@ -58,7 +71,7 @@ export function ToolboxPanel() {
             className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
             title="Your past challenge attempts and scores"
           >
-            <img src="/icons/tabs/history.png" alt="" className="h-7 w-7 [image-rendering:pixelated]" />
+            <TabIcon tab="history" src="/icons/tabs/history.png" />
             History
           </TabsTrigger>
         </TabsList>
