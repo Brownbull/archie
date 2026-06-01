@@ -2001,3 +2001,14 @@ Closed the 4 deferred UX-review clarity items. (1) Scenario+Failure grouped unde
 ## 2026-06-01 09:20 — commit: Part C — cost + latency + RPS shown for all blocks
 FINDINGS: 0 (full suite 4018 ✅ tsc -b ✅ lint 0-err ✅; data 100% present across all variants)
 User: when swapping backend (Django→FastAPI etc.) show latency + rps, not just cost — for all blocks. Inspector EconomicsSection already shows cost/throughput/latency WITH before→after deltas on swap; gaps were the canvas node (rps+cost, no latency) and the pickers/header (cost only). Added shared formatStats util (formatRps/formatLatencyMs/formatMonthlyCost/formatVariantStats). Node stats row now shows 'rps · latency' left, cost right. ConfigSelector dropdown shows '$/mo · rps · ms' per tier. Inspector header summary now carries throughput + latency beside cost. Pure UI; no data/schema change.
+- 2026-06-01 09:43 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-06-01 09:43 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-06-01 09:43 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-06-01 09:43 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-06-01 09:44 | Write | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-01 09:45 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-06-01 09:45 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+
+## 2026-06-01 09:55 — commit: Part A — right-side live simulation STATS panel
+FINDINGS: 0 (full suite 4018 ✅ tsc -b ✅ lint 0-err ✅ e2e: panel shows during sim, per-block list, metric toggle, t=Ns)
+User wanted the reference's right STATS bar (bottom RPS chart + playback already existed). Added SimulationStatsSidePanel — a right-edge floating panel shown while status≠idle: Uptime (color-graded), Avg latency (+p99), Current RPS (served/target +failed), Monthly cost vs challenge budget, and a Block Status list (per-node) with a switchable metric (RPS/Latency/Util). Reuses computeSimStats + computeTotalArchitectureCost + ticks[currentTick].nodes; node names from arch store. Added durationS to simulationStore for the t=NNs readout. Rendered in CanvasView (absolute right, below the scenario/failure selectors, scrollable). Pure UI; no engine/data change.

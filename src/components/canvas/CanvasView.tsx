@@ -33,6 +33,7 @@ import { OverlaySelector } from "@/components/canvas/OverlaySelector";
 import { PlaceholderNode } from "@/components/canvas/PlaceholderNode";
 import { RadialMenu } from "@/components/canvas/RadialMenu";
 import { ScenarioSelector } from "@/components/canvas/ScenarioSelector";
+import { SimulationStatsSidePanel } from "@/components/simulation/SimulationStatsSidePanel";
 import { RunSimulationButton } from "@/components/canvas/RunSimulationButton";
 import { ChallengeHud } from "@/components/challenges/ChallengeHud";
 import { ChallengeStartButton } from "@/components/challenges/ChallengeStartButton";
@@ -377,6 +378,7 @@ function CanvasViewInner() {
 			<CanvasLegend />
 			<ScenarioSelector />
 			<FailureSelector />
+			<SimulationStatsSidePanel />
 			<RunSimulationButton />
 			<ChallengeStartButton />
 			<ChallengeHud />

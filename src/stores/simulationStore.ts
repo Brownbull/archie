@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { runSimulation } from "@/engine/simulationEngine"
-import { SIM_BASE_TICK_MS } from "@/lib/constants"
+import { SIM_BASE_TICK_MS, SIM_DEFAULT_DURATION_S } from "@/lib/constants"
 import type { SimGraph, TrafficCurve, TickState, ScheduledEvent } from "@/lib/simulationTypes"
 
 export type SimulationStatus = "idle" | "running" | "paused" | "done"
@@ -13,6 +13,8 @@ interface SimulationState {
   isPlaying: boolean
   speed: PlaybackSpeed
   entryNodeIds: string[]
+  /** Simulated wall-clock duration the ticks map over (for the t=NNs readout). */
+  durationS: number
   /**
    * Start a simulation: runs the engine over the graph + curve, then plays back tick-by-tick.
    * Calling start() while a run is active discards it and restarts from tick 0 (intentional re-run).
@@ -63,6 +65,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     isPlaying: false,
     speed: 1,
     entryNodeIds: [],
+    durationS: SIM_DEFAULT_DURATION_S,
 
     start: (graph, curve, scheduledEvents, durationS) => {
       const result = runSimulation(graph, curve, undefined, durationS, scheduledEvents)
@@ -72,6 +75,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
         ticks: result.ticks,
         entryNodeIds: result.entryNodeIds,
         currentTick: 0,
+        durationS: durationS ?? SIM_DEFAULT_DURATION_S,
         status: hasPlayback ? "running" : "done",
         isPlaying: hasPlayback,
       })
@@ -111,7 +115,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
 
     reset: () => {
       stopTimer()
-      set({ status: "idle", ticks: [], currentTick: 0, isPlaying: false, speed: 1, entryNodeIds: [] })
+      set({ status: "idle", ticks: [], currentTick: 0, isPlaying: false, speed: 1, entryNodeIds: [], durationS: SIM_DEFAULT_DURATION_S })
     },
   }
 })
