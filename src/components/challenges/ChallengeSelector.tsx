@@ -14,6 +14,7 @@ import { getAllChallenges } from "@/services/challengeLoader"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import { makeTrafficSourceNode, curvePeakRps } from "@/services/trafficSourceInjection"
 import { useUiStore } from "@/stores/uiStore"
 import type { Challenge, ChallengeDifficulty } from "@/lib/challengeTypes"
@@ -56,6 +57,10 @@ export function ChallengeSelector() {
     } catch {
       // ignore — fall through and still start the challenge
     }
+    // Match the palette's experience level to the challenge difficulty so beginners aren't shown
+    // 27 blocks for a beginner brief (P86). ChallengeDifficulty and BlockLevel share the same
+    // values; the user can still raise/lower the level from the toolbox afterward.
+    usePreferencesStore.getState().setBlockLevel(c.difficulty)
     selectChallenge(c)
     setOpen(false)
     setPending(null)

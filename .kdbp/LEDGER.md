@@ -2078,3 +2078,22 @@ User: (1) confirm before a challenge wipes free-build work; (2) selecting a scen
 ## 2026-06-01 12:35 — commit: on-node vendor dropdown (switch provider in the diagram, with stats)
 FINDINGS: 0 (full suite 4066 ✅ ArchieNode/ports 75 ✅ tsc -b ✅ lint 0-err ✅ e2e: 9 compute backends, switch to FastAPI works)
 User wants codingducks-style on-node vendor switching. New NodeProviderSelect mounted in the node subtitle slot for typed blocks: a drag-safe (nodrag + stopPropagation) Radix Select listing same-type providers, each with its representative $/mo · rps · ms (default tier via formatVariantStats) + the current one checked; onChange → swapNodeComponent. Falls back to a static vendor label for single-provider types and pre-P5/untyped nodes. e.g. Compute lists all 9 backends (Node/Go/Python-Django/FastAPI/Flask/Spring/Rails/.NET/Laravel). Pure UI; no data change.
+- 2026-06-01 11:40 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-06-01 11:40 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 11:40 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 11:41 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 11:41 | Write | /home/khujta/projects/bmad/archie/src/components/toolbox/BlockLevelSelector.tsx
+- 2026-06-01 11:42 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-01 11:42 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-01 11:42 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-01 11:42 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-01 11:42 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-01 11:43 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-01 11:43 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-01 11:43 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-01 11:44 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/componentTypes-levels.test.ts
+- 2026-06-01 11:44 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/BlockLevelSelector.test.tsx
+- 2026-06-01 11:45 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab-levels.test.tsx
+- 2026-06-01 11:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab-levels.test.tsx
+- 2026-06-01 11:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab-levels.test.tsx
+- 2026-06-01 11:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab-levels.test.tsx

@@ -64,6 +64,71 @@ export const COMPONENT_TYPES: ReadonlyMap<string, ComponentType> = new Map(
   TYPE_LIST.map((t) => [t.id, t]),
 )
 
+/**
+ * Experience tier for progressive disclosure (P86). A new user shouldn't face all 27 block
+ * types at once — the toolbox starts at `beginner` (essentials only) and reveals more as the
+ * level rises. Levels are curated, not algorithmic: `beginner` is the minimum to build a basic
+ * 3-tier web app; `intermediate` adds the common production blocks; `advanced` is everything.
+ */
+export type BlockLevel = "beginner" | "intermediate" | "advanced"
+
+/** Numeric rank for "is type at or below the active level" comparisons. */
+export function levelRank(level: BlockLevel): number {
+  switch (level) {
+    case "beginner":
+      return 0
+    case "intermediate":
+      return 1
+    case "advanced":
+      return 2
+  }
+}
+
+// Map (not a plain object) so lookups stay clear of object-injection lint and unknown ids
+// fall through to the `beginner` default — legacy/typeId-less blocks always stay visible.
+const TYPE_LEVEL = new Map<string, BlockLevel>([
+  // Beginner essentials — enough to model users → load balancer → compute → cache/db + static assets.
+  ["traffic-source", "beginner"],
+  ["compute", "beginner"],
+  ["relational-db", "beginner"],
+  ["cache", "beginner"],
+  ["load-balancer", "beginner"],
+  ["cdn", "beginner"],
+  ["object-storage", "beginner"],
+  // Intermediate — common production building blocks.
+  ["dns", "intermediate"],
+  ["api-gateway", "intermediate"],
+  ["serverless", "intermediate"],
+  ["worker", "intermediate"],
+  ["nosql", "intermediate"],
+  ["search-engine", "intermediate"],
+  ["message-queue", "intermediate"],
+  ["realtime", "intermediate"],
+  ["observability", "intermediate"],
+  ["auth", "intermediate"],
+  // Advanced — specialized / large-scale concerns.
+  ["stream-processor", "advanced"],
+  ["llm-gateway", "advanced"],
+  ["payments", "advanced"],
+  ["etl", "advanced"],
+  ["graph-db", "advanced"],
+  ["vector-store", "advanced"],
+  ["time-series-db", "advanced"],
+  ["event-stream", "advanced"],
+  ["security", "advanced"],
+  ["rate-limiter", "advanced"],
+])
+
+/** A type's experience tier; unknown/legacy types default to `beginner` (always visible). */
+export function typeLevel(typeId: string | null | undefined): BlockLevel {
+  return (typeId && TYPE_LEVEL.get(typeId)) || "beginner"
+}
+
+/** Is a type's tier at or below the active level? (Search bypasses this — it shows everything.) */
+export function typeWithinLevel(typeId: string | null | undefined, level: BlockLevel): boolean {
+  return levelRank(typeLevel(typeId)) <= levelRank(level)
+}
+
 export interface ComponentTypeGroup {
   /** Grouping key: the typeId, or a `category:<cat>` fallback for pre-P5 components. */
   key: string
