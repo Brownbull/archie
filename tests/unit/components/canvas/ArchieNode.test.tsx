@@ -601,6 +601,19 @@ describe("ArchieNode", () => {
     })
   })
 
+  describe("port labels (hover affordance)", () => {
+    it("renders a label per port so the connector's purpose is legible", () => {
+      mockNodePorts = {
+        hasPorts: true,
+        inputs: [{ id: "db-in", type: "database", direction: "in", label: "Database", color: "#7C3AED", sortIndex: 0 }],
+        outputs: [{ id: "monitor-out", type: "monitor", direction: "out", label: "Monitor", color: "#059669", sortIndex: 0 }],
+      }
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("port-label-db-in")).toHaveTextContent("Database in")
+      expect(screen.getByTestId("port-label-monitor-out")).toHaveTextContent("Monitor out")
+    })
+  })
+
   describe("port-aware dimming (Phase 3 — Epic 12)", () => {
     const setupPortComponentMocks = () => {
       mockGetComponent.mockImplementation((id: string) => {

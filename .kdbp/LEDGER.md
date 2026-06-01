@@ -1760,3 +1760,11 @@ FINDINGS: 0 (full suite 3471 ✅ tsc -b ✅ lint 0-err ✅ decision-support E2E 
 ## 2026-06-01 00:30 — commit: Phase 1 — type-level toolbox (logical blocks) + type icons
 FINDINGS: 0 (full suite 3474 ✅ tsc -b ✅ lint 0-err ✅ ui-layout E2E 4/4 ✅)
 Reworked the left panel from a vendor list to LOGICAL BLOCKS, matching the reference app. The Components tab now lists one block per fundamental TYPE (17), grouped by category (collapsible), each with a PixelLab type icon + aggregate cost range. Dropping a block places the type's default vendor (TYPE_LIST.defaultProviderId); the architect refines vendor + tier in the inspector's existing Provider picker — vendors no longer appear in the toolbox. The canvas node now reads type-first: title = type label ("Cache"), subtitle = vendor · variant, type icon. New: 17 type icons (public/icons/types/), typeIcons.ts resolver + consistency test, TypeBlockCard. ComponentTab + tests rewritten (category sections + type-block dimming). e2e addComponentToCanvas helper now adds via type blocks. Chosen over the unconfigured-node model (architect blast-radius map flagged a silent sim-correctness risk + serialization bump) — same UX, far less risk.
+- 2026-05-31 20:38 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 20:38 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 20:39 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 20:40 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+
+## 2026-06-01 00:45 — commit: Phase 2 — port affordance (hover labels)
+FINDINGS: 0 (ArchieNode 71 ✅ tsc -b ✅ lint 0-err ✅)
+The diamond connector ports only had a weak native tooltip, so it wasn't clear what each accepts. Added a hover-revealed label beside every port (placed OUTSIDE the node edge so it never crowds the node content): "Database in", "Cache out", etc., color-matched to the port. Node root gains `group` for the group-hover reveal. +unit test.

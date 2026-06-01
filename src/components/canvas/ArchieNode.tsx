@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react"
+import { Fragment, memo, useMemo } from "react"
 import { Handle, Position } from "@xyflow/react"
 import type { NodeProps } from "@xyflow/react"
 import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
@@ -168,7 +168,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       data-testid="archie-node"
       data-compat-dimmed={isDimmed || undefined}
       data-compat-highlighted={isHighlighted || undefined}
-      className={`relative rounded-md border bg-panel shadow-sm transition-all duration-200 ${
+      className={`group relative rounded-md border bg-panel shadow-sm transition-all duration-200 ${
         isDimmed
           ? "border-archie-border/40 opacity-35 grayscale"
           : isHighlighted
@@ -344,38 +344,55 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
 
       {hasPorts ? (
         <>
-          {inputs.map((port, i) => (
-            <Handle
-              key={port.id}
-              id={port.id}
-              type="target"
-              position={Position.Left}
-              data-testid={`port-handle-${port.id}`}
-              data-port-type={port.type}
-              title={`${port.label} In`}
-              className="!h-3 !w-3 !border-2 !border-white/80"
-              style={{
-                backgroundColor: port.color,
-                top: `${getPortOffset(i, inputs.length)}%`,
-              }}
-            />
-          ))}
-          {outputs.map((port, i) => (
-            <Handle
-              key={port.id}
-              id={port.id}
-              type="source"
-              position={Position.Right}
-              data-testid={`port-handle-${port.id}`}
-              data-port-type={port.type}
-              title={`${port.label} Out`}
-              className="!h-3 !w-3 !border-2 !border-white/80"
-              style={{
-                backgroundColor: port.color,
-                top: `${getPortOffset(i, outputs.length)}%`,
-              }}
-            />
-          ))}
+          {inputs.map((port, i) => {
+            const offset = getPortOffset(i, inputs.length)
+            return (
+              <Fragment key={port.id}>
+                <Handle
+                  id={port.id}
+                  type="target"
+                  position={Position.Left}
+                  data-testid={`port-handle-${port.id}`}
+                  data-port-type={port.type}
+                  title={`${port.label} In`}
+                  className="!h-3 !w-3 !border-2 !border-white/80"
+                  style={{ backgroundColor: port.color, top: `${offset}%` }}
+                />
+                {/* Hover-revealed label so the architect knows what each connector accepts. */}
+                <span
+                  data-testid={`port-label-${port.id}`}
+                  className="pointer-events-none absolute right-full mr-2 -translate-y-1/2 whitespace-nowrap rounded border border-archie-border bg-panel/95 px-1 py-0.5 text-[9px] font-medium opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                  style={{ top: `${offset}%`, color: port.color }}
+                >
+                  {port.label} in
+                </span>
+              </Fragment>
+            )
+          })}
+          {outputs.map((port, i) => {
+            const offset = getPortOffset(i, outputs.length)
+            return (
+              <Fragment key={port.id}>
+                <Handle
+                  id={port.id}
+                  type="source"
+                  position={Position.Right}
+                  data-testid={`port-handle-${port.id}`}
+                  data-port-type={port.type}
+                  title={`${port.label} Out`}
+                  className="!h-3 !w-3 !border-2 !border-white/80"
+                  style={{ backgroundColor: port.color, top: `${offset}%` }}
+                />
+                <span
+                  data-testid={`port-label-${port.id}`}
+                  className="pointer-events-none absolute left-full ml-2 -translate-y-1/2 whitespace-nowrap rounded border border-archie-border bg-panel/95 px-1 py-0.5 text-[9px] font-medium opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                  style={{ top: `${offset}%`, color: port.color }}
+                >
+                  {port.label} out
+                </span>
+              </Fragment>
+            )
+          })}
         </>
       ) : (
         <>
