@@ -6,6 +6,7 @@ import { CommandPalette } from "@/components/toolbox/CommandPalette"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { GuidedTour } from "@/components/onboarding/GuidedTour"
 import { useCanvasAutosave } from "@/hooks/useCanvasAutosave"
+import { useFirstNodeNudge } from "@/hooks/useFirstNodeNudge"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 import { InspectorResizeHandle } from "@/components/inspector/InspectorResizeHandle"
@@ -59,6 +60,8 @@ export function AppLayout() {
 
   // Restore the last autosaved canvas + debounce-save on change (no work lost on refresh).
   useCanvasAutosave()
+  // One-time "configure & connect" momentum nudge on the user's first placed node.
+  useFirstNodeNudge()
 
   return (
     <ImportProvider>

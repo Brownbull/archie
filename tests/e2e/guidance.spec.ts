@@ -17,7 +17,7 @@ test.describe("Live guidance: tour + build health (P6)", () => {
 
     // Step forward, then skip the rest.
     await page.locator('[data-testid="tour-next"]').click()
-    await expect(page.locator('[data-testid="tour-title"]')).toContainText("Pick a component type")
+    await expect(page.locator('[data-testid="tour-title"]')).toContainText("Three ways to start")
     await page.locator('[data-testid="tour-skip"]').click()
     await expect(tour).toBeHidden()
   })

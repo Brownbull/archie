@@ -1928,3 +1928,16 @@ User compared archie vs codingducks.xyz: Load Balancer was mis-categorized (Comp
 ## 2026-06-01 06:20 — commit: Bundle 1 — canvas autosave + restore (UX safety net)
 FINDINGS: 0 (full suite 4013 ✅ canvasAutosave 6 ✅ tsc -b ✅ lint 0-err ✅ e2e: node survives reload, restore toast, Start-fresh clears)
 UX review bundle 1 of 4 (user picked all four). architectureStore was NOT persisted → a refresh/tab-close silently wiped the diagram. Added canvasAutosave service (serialize graph subset: nodes/edges/weightProfile/scenario/failure to localStorage; version-gated + corrupt-safe read) + useCanvasAutosave hook (restore-once-per-load into empty canvas via loadArchitecture + dismissible 'Start fresh' toast; debounced 700ms subscribe-save). Mounted in AppLayout. StrictMode gotcha: module-level restoredThisLoad flag (not a ref) + always re-subscribe so the live listener survives dev mount→cleanup→mount. Skipped beforeunload nag (autosave makes it redundant). Constraints/data-context not yet snapshotted (advanced; graph is what a refresh must not lose). Pure client UI — no schema/seed change.
+- 2026-06-01 07:31 | Write | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-06-01 07:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 07:32 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-01 07:32 | Write | /home/khujta/projects/bmad/archie/src/hooks/useFirstNodeNudge.ts
+- 2026-06-01 07:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-01 07:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-01 07:34 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-06-01 07:35 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-06-01 07:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/guidance.spec.ts
+
+## 2026-06-01 06:55 — commit: Bundle 2 — anchored spotlight tour + first-node nudge
+FINDINGS: 0 (full suite 4013 ✅ GuidedTour 5 ✅ tsc -b ✅ lint 0-err ✅ e2e: spotlight anchors to toolbox/start-card distinct regions; first node auto-selects + nudge toast)
+UX bundle 2 of 4 (user's flagged issue). Rewrote GuidedTour from a centered text-only modal into a non-blocking SPOTLIGHT: each step (after Welcome) dims the screen except the real region it teaches (canvas-empty-state, toolbox, canvas, overlay-selector, scenario-selector, dashboard) via a box-shadow ring + a hint card floated beside it (clamped, below/above). Graceful centered fallback when a target isn't on screen; same testids/titles preserved (Welcome / Three ways to start) so unit test stays green. measure() runs only via rAF/resize (no synchronous in-effect setState — react-compiler lint). First-node momentum: useFirstNodeNudge auto-selects the very first placed node (opens inspector) + one-time toast, gated on new persisted firstNodeHintSeen flag (never repeats / never on autosave restore). Fixed stale guidance.spec step-1 title. Pure client UI.
