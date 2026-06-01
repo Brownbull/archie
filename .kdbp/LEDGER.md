@@ -2034,3 +2034,21 @@ User wanted the reference's right STATS bar (bottom RPS chart + playback already
 ## 2026-06-01 10:35 — commit: Part B — Traffic Source block (explicit load origin)
 FINDINGS: 0 (full suite 4061 ✅ yaml-validation 911 ✅ icon 91=91 / type 27=27 ✅ trafficSourceRps 3 ✅ tsc -b ✅ lint 0-err ✅ e2e: block places, drives sim)
 User: no block for traffic generation (users/sensors/API/backend) — load came 'from thin air'. Added a new 'traffic' category (pink, Users icon, non-scalable) + 'Traffic Source' type with 4 providers: web-users (default), mobile-users, api-client, iot-sensors — each out-only (http-out), $0 cost, tiered config variants whose maxRps SETS the generated rate (chosen: tiered presets). Engine integration (chosen: source=volume, scenario=shape): totalTrafficSourceRps(nodes) sums source rates; RunSimulationButton scales the scenario/default curve to that peak via scaleTrafficCurveToPeak when sources exist (else unchanged) — so RPS now originates from the source block. +4 PixelLab icons + traffic-source type icon (copied) + concept loop (emitting dots). Firestore re-seeded → 91. Regions = noted fast-follow.
+- 2026-06-01 10:22 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-01 10:23 | Write | /home/khujta/projects/bmad/archie/src/components/layout/ResetCanvasButton.tsx
+- 2026-06-01 10:23 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-01 10:24 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-01 10:30 | Write | /home/khujta/projects/bmad/archie/src/services/trafficSourceInjection.ts
+- 2026-06-01 10:30 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 10:30 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/BlueprintTab.tsx
+- 2026-06-01 10:30 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-06-01 10:31 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasView.tsx
+- 2026-06-01 10:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-01 10:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-01 10:32 | Write | /home/khujta/projects/bmad/archie/tests/unit/services/trafficSourceInjection.test.ts
+- 2026-06-01 10:39 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-01 10:41 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+
+## 2026-06-01 11:25 — commit: canvas controls (reset + clearer exit) + traffic-source auto-injection
+FINDINGS: 0 (full suite 4066 ✅ trafficSourceInjection 5 ✅ tsc -b ✅ lint 0-err ✅ e2e: reset clears, challenge seeds source + exit, blueprint prepends source)
+User asks: (1) Reset-canvas button → ResetCanvasButton in Toolbar with confirm dialog; clears nodes/edges + sim + selection + autosave (destructive, resets undo history). (2) Exit-challenge button → the ChallengeHud X already existed; relabeled to a clear "✕ Exit" button. (3) Blueprints/stacks must originate load → new trafficSourceInjection service (pickTrafficSource sizes by target rps; withEntryTrafficSource prepends a default Web Users source wired to in-degree-0 entries, no-op if one exists). Wired into BlueprintTab.doLoad (always) + CanvasView stack-drop (only if canvas+stack have none). (4) Challenges pre-seed a source sized to the target → ChallengeSelector.onPick clears the canvas + places makeTrafficSourceNode(curvePeakRps(trafficCurve)) then selectChallenge (best-effort/try-catch so seeding never blocks entry). Load-time only — NO reseed. Test mocks updated (CanvasView getComponentsByCategory, RunSim earlier).

@@ -55,6 +55,7 @@ import {
 } from "@/lib/constants";
 import { componentLibrary } from "@/services/componentLibrary";
 import { resolveStackPlacement } from "@/services/stackPlacement";
+import { withEntryTrafficSource, hasTrafficSource } from "@/services/trafficSourceInjection";
 import {
 	type ArchieEdge as ArchieEdgeType,
 	type ArchieNode as ArchieNodeType,
@@ -224,7 +225,14 @@ function CanvasViewInner() {
 					return;
 				}
 
-				placeStack(result.nodes, result.edges);
+				// Give the canvas a load origin: if neither the existing canvas nor this stack has a
+				// Traffic Source, wire a default one to the stack's entry as we place it.
+				const canvasHasSource = hasTrafficSource(useArchitectureStore.getState().nodes);
+				const placed =
+					canvasHasSource || hasTrafficSource(result.nodes)
+						? result
+						: withEntryTrafficSource(result.nodes, result.edges);
+				placeStack(placed.nodes, placed.edges);
 				return;
 			}
 

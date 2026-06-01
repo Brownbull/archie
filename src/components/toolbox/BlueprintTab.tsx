@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DataSourceNote } from "@/components/common/DataSourceNote"
+import { withEntryTrafficSource } from "@/services/trafficSourceInjection"
 import {
   Dialog,
   DialogContent,
@@ -125,7 +126,10 @@ function BlueprintTabInner() {
     const result = hydrateArchitectureSkeleton(blueprint.skeleton)
     if (result.success) {
       setHydrateError(null)
-      loadArchitecture(result.architecture.nodes, result.architecture.edges)
+      // Every blueprint should have an explicit load origin — prepend a default Traffic Source
+      // wired to its entry if it doesn't already include one.
+      const { nodes, edges } = withEntryTrafficSource(result.architecture.nodes, result.architecture.edges)
+      loadArchitecture(nodes, edges)
     } else {
       setHydrateError("Could not load blueprint — some components may not be available.")
       if (import.meta.env.DEV) {

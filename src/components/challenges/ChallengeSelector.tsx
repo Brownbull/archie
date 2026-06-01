@@ -10,6 +10,9 @@ import {
 import { Button } from "@/components/ui/button"
 import { getAllChallenges } from "@/services/challengeLoader"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { useArchitectureStore } from "@/stores/architectureStore"
+import { useSimulationStore } from "@/stores/simulationStore"
+import { makeTrafficSourceNode, curvePeakRps } from "@/services/trafficSourceInjection"
 import { useUiStore } from "@/stores/uiStore"
 import type { Challenge, ChallengeDifficulty } from "@/lib/challengeTypes"
 
@@ -39,6 +42,17 @@ export function ChallengeSelector() {
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
 
   const onPick = (c: Challenge) => {
+    // Start the challenge on a clean canvas seeded with a Traffic Source sized to its target load,
+    // so the request origin is already in place and the user just connects components to it.
+    // Best-effort: a seeding hiccup must never block entering the challenge.
+    try {
+      const peak = curvePeakRps(c.trafficCurve)
+      const source = makeTrafficSourceNode(peak, { x: 64, y: 240 })
+      useSimulationStore.getState().reset()
+      useArchitectureStore.getState().loadArchitecture(source ? [source] : [], [])
+    } catch {
+      // ignore — fall through and still start the challenge
+    }
     selectChallenge(c)
     setOpen(false)
   }

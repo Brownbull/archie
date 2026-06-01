@@ -93,6 +93,7 @@ vi.mock("@/services/componentLibrary", () => ({
       return undefined
     }),
     getStackById: vi.fn(),
+    getComponentsByCategory: vi.fn(() => []),
     isInitialized: () => true,
     reset: vi.fn(),
   },
