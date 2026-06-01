@@ -94,6 +94,13 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     [data.archieComponentId, data.activeConfigVariantId, data.replicaCount],
   )
 
+  // Throughput label (requests/sec) shown on the left of the stats row; cost goes on the right.
+  const rpsLabel = useMemo(() => {
+    const r = nodeCost.maxRPS
+    if (r === undefined) return null
+    return r >= 1000 ? `${+(r / 1000).toFixed(1)}k rps` : `${r} rps`
+  }, [nodeCost.maxRPS])
+
   // --- Replica scaling (Epic 14) ---
   const replicaCount = data.replicaCount ?? 1
   const scalingRule = getScalingRule(data.componentCategory)
@@ -211,14 +218,29 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       </div>
 
       {nodeSubtitle && (
-        <div data-testid="archie-node-variant" className="px-3 pb-0.5 text-[10px] text-text-secondary truncate">
-          {nodeSubtitle}
+        <div data-testid="archie-node-variant" className="flex items-center gap-1 px-3 pb-0.5">
+          {/* Vendor icon left of the subtitle (the chosen provider, e.g. Node.js). */}
+          <ComponentIcon
+            componentId={data.archieComponentId}
+            category={data.componentCategory as ComponentCategoryId}
+            className="h-3 w-3 shrink-0"
+          />
+          <span className="truncate text-[10px] text-text-secondary">{nodeSubtitle}</span>
         </div>
       )}
 
-      {nodeCost.monthlyCost !== undefined && (
-        <div data-testid="archie-node-cost" className="px-3 pb-1 text-[10px] font-medium text-emerald-400 truncate">
-          {nodeCost.monthlyCost === 0 ? "Free" : `$${nodeCost.monthlyCost}/mo`}
+      {(rpsLabel || nodeCost.monthlyCost !== undefined) && (
+        <div className="flex items-center justify-between gap-2 px-3 pb-1 text-[10px] font-medium">
+          {/* Throughput on the left … */}
+          <span data-testid="archie-node-rps" className="truncate text-text-secondary">
+            {rpsLabel ?? ""}
+          </span>
+          {/* … monthly cost on the right. */}
+          {nodeCost.monthlyCost !== undefined && (
+            <span data-testid="archie-node-cost" className="shrink-0 text-emerald-400">
+              {nodeCost.monthlyCost === 0 ? "Free" : `$${nodeCost.monthlyCost}/mo`}
+            </span>
+          )}
         </div>
       )}
 

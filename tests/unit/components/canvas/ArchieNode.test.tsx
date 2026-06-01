@@ -480,6 +480,16 @@ describe("ArchieNode", () => {
       expect(screen.getByTestId("archie-node-cost")).toHaveTextContent("$45/mo")
     })
 
+    it("shows throughput (rps) on the left of the stats row", () => {
+      mockGetComponent.mockReturnValue({
+        id: "node-express",
+        configVariants: [{ id: "default", name: "Standard", monthlyCost: 20, maxRPS: 20000, baseLatencyMs: 5 }],
+      })
+      render(<ArchieNode {...defaultProps} />)
+      expect(screen.getByTestId("archie-node-rps")).toHaveTextContent("20k rps")
+      expect(screen.getByTestId("archie-node-cost")).toHaveTextContent("$20/mo")
+    })
+
     it("renders 'Free' for zero monthlyCost", () => {
       mockGetComponent.mockReturnValue({
         id: "cdn",
