@@ -25,7 +25,7 @@ export function CanvasLegend() {
         className="pointer-events-auto rounded-lg border border-archie-border bg-panel/90 p-3 shadow-lg backdrop-blur-sm"
       >
         <div className="mb-2 flex items-center justify-between">
-          <span className="text-xs font-semibold text-text-primary">
+          <span className="text-[0.8125rem] font-semibold text-text-primary">
             Heatmap Legend
           </span>
           <button
@@ -40,7 +40,7 @@ export function CanvasLegend() {
         </div>
         <div className="space-y-1.5">
           {LEGEND_ITEMS.map((item) => (
-            <div key={item.label} className="flex items-center gap-2 text-[0.625rem]">
+            <div key={item.label} className="flex items-center gap-2 text-[0.6875rem]">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-sm"
                 style={{ backgroundColor: item.cssVar }}
@@ -50,7 +50,7 @@ export function CanvasLegend() {
             </div>
           ))}
         </div>
-        <div className="mt-2 border-t border-archie-border pt-1.5 text-[0.625rem] text-text-secondary">
+        <div className="mt-2 border-t border-archie-border pt-1.5 text-[0.6875rem] text-text-secondary">
           Particle speed: Fast = Healthy, Slow = Bottleneck
         </div>
       </div>

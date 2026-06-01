@@ -36,8 +36,10 @@ export function ToolboxPanel() {
         onValueChange={(v) => setToolboxTab(v as ToolboxTab)}
         className="flex flex-1 flex-col overflow-hidden"
       >
-        {/* 2×2 grid of square tab cells (icon over label) rather than one cramped row of 4. */}
-        <TabsList className="mx-3 grid h-auto w-auto grid-cols-2 gap-1 p-1">
+        {/* 2×2 grid of square tab cells (icon over label) rather than one cramped row of 4.
+            The h-auto override neutralizes tabsListVariants' fixed `h-9` (which otherwise clamps
+            the grid to 36px and spills row 2 over the palette below). */}
+        <TabsList className="mx-3 grid h-auto w-auto grid-cols-2 gap-1 p-1 group-data-[orientation=horizontal]/tabs:h-auto">
           <TabsTrigger
             value="components"
             data-testid="toolbox-tab-components"

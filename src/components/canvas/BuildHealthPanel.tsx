@@ -22,7 +22,7 @@ export function BuildHealthPanel() {
   return (
     <div
       data-testid="build-health-panel"
-      className="absolute left-3 top-3 z-10 w-60 rounded-md border border-archie-border bg-panel/95 p-2 shadow-md"
+      className="absolute left-3 top-14 z-10 w-60 rounded-md border border-archie-border bg-panel/95 p-2 shadow-md"
     >
       <button
         type="button"
@@ -35,8 +35,8 @@ export function BuildHealthPanel() {
         {allMet
           ? <Check className="h-3.5 w-3.5 text-emerald-400" />
           : <AlertCircle className="h-3.5 w-3.5 text-amber-400" />}
-        <span className="text-[0.6875rem] font-medium text-text-primary">Build health</span>
-        <span data-testid="build-health-score" className="ml-auto text-[0.625rem] text-text-secondary">
+        <span className="text-[0.8125rem] font-medium text-text-primary">Build health</span>
+        <span data-testid="build-health-score" className="ml-auto text-[0.6875rem] text-text-secondary">
           {metCount}/{checks.length}
         </span>
       </button>
@@ -44,14 +44,14 @@ export function BuildHealthPanel() {
       {open && (
         <ul className="mt-1.5 space-y-1">
           {checks.map((c) => (
-            <li key={c.id} data-testid={`guidance-${c.id}`} data-met={c.met || undefined} className="text-[0.625rem] leading-snug">
-              <div className="flex items-start gap-1">
+            <li key={c.id} data-testid={`guidance-${c.id}`} data-met={c.met || undefined} className="text-xs leading-snug">
+              <div className="flex items-start gap-1.5">
                 {c.met
-                  ? <Check className="mt-0.5 h-3 w-3 shrink-0 text-emerald-400" />
-                  : <AlertCircle className="mt-0.5 h-3 w-3 shrink-0 text-amber-400" />}
+                  ? <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-400" />
+                  : <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400" />}
                 <span className={c.met ? "text-text-secondary" : "text-text-primary"}>{c.label}</span>
               </div>
-              {!c.met && <p className="ml-4 text-text-secondary">{c.nudge}</p>}
+              {!c.met && <p className="ml-5 text-[0.6875rem] text-text-secondary">{c.nudge}</p>}
             </li>
           ))}
         </ul>

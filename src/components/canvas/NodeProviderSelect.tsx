@@ -77,13 +77,13 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
           {providers.map((p) => {
             const stats = providerStats(p)
             return (
-              <SelectItem key={p.id} value={p.id} className="text-[0.8125rem]">
+              <SelectItem key={p.id} value={p.id} className="py-1 text-[0.75rem]">
                 <span className="flex w-full items-center justify-between gap-3">
                   <span className="flex items-center gap-2">
-                    <ComponentIcon componentId={p.id} category={category} className="h-5 w-5 shrink-0" />
+                    <ComponentIcon componentId={p.id} category={category} className="h-4 w-4 shrink-0" />
                     {p.name}
                   </span>
-                  {stats && <span className="shrink-0 text-[0.6875rem] text-text-secondary">{stats}</span>}
+                  {stats && <span className="shrink-0 text-[0.625rem] text-text-secondary">{stats}</span>}
                 </span>
               </SelectItem>
             )
