@@ -1796,3 +1796,26 @@ Laid the logical-block toolbox out as a 2-column grid (matching the reference ap
 ## 2026-06-01 01:45 — commit: shorten type labels + tab labels (declutter)
 FINDINGS: 0 (full suite 3477 ✅ tsc -b ✅ lint 0-err ✅)
 Shortened the compound type labels that truncated in the 2-col grid: Compute/Service→Compute, ETL/Data Pipeline→ETL Pipeline, Relational Database→SQL Database, Graph Database→Graph DB, Vector Store→Vector DB, Stream/Event Bus→Event Stream, Real-Time/WebSocket→Realtime, Security/SIEM→Security (old terms kept as search synonyms; node title + inspector heading follow the label). Renamed the "Components" tab → "Blocks" (the toolbox shows logical blocks) to declutter the 4-tab row. TypeBlockCard: smaller icon + break-words so labels show in full. Updated unit tests + e2e (tab name; getNodeHeatmapStatus now substring-matches since the vendor moved to the node subtitle).
+- 2026-05-31 22:21 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 22:22 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 22:23 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+
+## 2026-06-01 02:10 — commit: node display — vendor icon in subtitle + RPS/cost stats row
+FINDINGS: 0 (ArchieNode 72 ✅ tsc -b ✅ lint 0-err ✅)
+Per screenshot feedback: the canvas node now shows the chosen VENDOR's icon left of the subtitle ("Node.js + Express"), and the cost line became a stats row with throughput (requests/sec, e.g. "20k rps") on the LEFT and monthly cost on the RIGHT (was cost-only on the left). +rps test.
+- 2026-05-31 22:25 | Write | /home/khujta/projects/bmad/archie/src/data/components/python-django.yaml
+- 2026-05-31 22:25 | Write | /home/khujta/projects/bmad/archie/src/data/components/spring-boot.yaml
+- 2026-05-31 22:26 | Write | /home/khujta/projects/bmad/archie/src/data/components/rails.yaml
+- 2026-05-31 22:26 | Write | /home/khujta/projects/bmad/archie/src/data/components/dotnet.yaml
+- 2026-05-31 22:27 | Write | /home/khujta/projects/bmad/archie/src/data/components/laravel.yaml
+- 2026-05-31 22:28 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/CodeSnippetViewer.tsx
+- 2026-05-31 22:28 | Edit | /home/khujta/projects/bmad/archie/src/declarations.d.ts
+- 2026-05-31 22:28 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/CodeSnippetViewer.test.tsx
+- 2026-05-31 22:29 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/CodeSnippetViewer.test.tsx
+- 2026-05-31 22:32 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 22:32 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+- 2026-05-31 22:33 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentIcons.ts
+
+## 2026-06-01 02:40 — commit: +5 compute providers (Python/Java/Ruby/.NET/PHP) + PHP highlighting
+FINDINGS: 0 (full suite 3528 ✅ yaml-validation 509 ✅ icon-consistency ✅ tsc -b ✅ lint 0-err ✅)
+Compute had only Node + Go. Added 5 mainstream backends so the 'Compute' block has real choice: python-django (Python+Django, WSGI vs ASGI), spring-boot (Java+Spring Boot, JVM vs GraalVM native), rails (Ruby on Rails, Puma vs scaled), dotnet (C#+ASP.NET, standard vs Native AOT), laravel (PHP+Laravel, FPM vs Octane). Each mirrors the compute metric ids + full data quality + a PixelLab vendor icon (40 total). Added PHP to the inspector code-highlighter allowlist (Laravel snippets). Firestore re-seeded → 40 components. Compute now offers 7 providers. (C/C++ left out as default app servers — niche high-perf only.)

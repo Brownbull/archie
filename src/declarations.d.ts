@@ -50,3 +50,8 @@ declare module "react-syntax-highlighter/dist/esm/languages/prism/python" {
   const language: unknown
   export default language
 }
+
+declare module "react-syntax-highlighter/dist/esm/languages/prism/php" {
+  const language: unknown
+  export default language
+}

@@ -37,6 +37,7 @@ vi.mock("react-syntax-highlighter/dist/esm/languages/prism/yaml", () => ({ defau
 vi.mock("react-syntax-highlighter/dist/esm/languages/prism/sql", () => ({ default: {} }))
 vi.mock("react-syntax-highlighter/dist/esm/languages/prism/bash", () => ({ default: {} }))
 vi.mock("react-syntax-highlighter/dist/esm/languages/prism/python", () => ({ default: {} }))
+vi.mock("react-syntax-highlighter/dist/esm/languages/prism/php", () => ({ default: {} }))
 
 const typescriptSnippet: CodeSnippet = {
   language: "typescript",
@@ -56,8 +57,8 @@ describe("CodeSnippetViewer", () => {
   it("registers all LANGUAGE_MAP languages with the highlighter", async () => {
     const mod = await import("react-syntax-highlighter/dist/esm/prism-light")
     const MockHighlighter = mod.default as unknown as { registerLanguage: ReturnType<typeof vi.fn> }
-    expect(MockHighlighter.registerLanguage).toHaveBeenCalledTimes(6)
-    for (const lang of ["typescript", "javascript", "yaml", "sql", "bash", "python"]) {
+    expect(MockHighlighter.registerLanguage).toHaveBeenCalledTimes(7)
+    for (const lang of ["typescript", "javascript", "yaml", "sql", "bash", "python", "php"]) {
       expect(MockHighlighter.registerLanguage).toHaveBeenCalledWith(lang, expect.anything())
     }
   })

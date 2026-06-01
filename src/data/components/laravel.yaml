@@ -1,0 +1,169 @@
+id: laravel
+name: PHP + Laravel
+category: compute
+type_id: compute
+description: Expressive PHP framework for web apps, with cheap ubiquitous hosting
+is: A productive, well-documented PHP framework on a share-nothing per-request model that is trivial to host and scale horizontally, with persistent-worker modes (Octane) for high throughput
+gain:
+  - Fast to build; elegant, well-documented APIs (Eloquent, queues)
+  - Share-nothing per-request model is simple and crash-isolated
+  - Ubiquitous, cheap hosting and easy horizontal scaling
+cost:
+  - Classic per-request bootstrap adds overhead without Octane
+  - Lower raw throughput than compiled runtimes in FPM mode
+  - Long-lived workers (Octane) need careful state hygiene
+tags:
+  - server
+  - php
+  - laravel
+  - api
+  - framework
+base_metrics:
+  - id: request-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: concurrent-connections
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: cpu-efficiency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: php-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: fpm
+    name: PHP-FPM (Per-Request)
+    monthly_cost: 20
+    max_rps: 2500
+    base_latency_ms: 20
+    metrics:
+      - id: concurrent-connections
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: cpu-efficiency
+        value: medium
+        numeric_value: 4
+        category: performance
+      - id: php-cost-efficiency
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: php
+      code: |
+        // PHP + Laravel — controller (classic PHP-FPM per-request)
+        class UserController extends Controller
+        {
+            public function show(string $id)
+            {
+                $user = User::find($id);
+                return $user
+                    ? response()->json($user)
+                    : response()->json(['error' => 'Not found'], 404);
+            }
+        }
+    metric_explanations:
+      concurrent-connections:
+        reason: PHP-FPM serves each request in a fresh worker process; concurrency is bounded by the worker pool size, with no shared state between requests.
+        contributing_factors:
+          - One request per FPM worker at a time
+          - Pool size (pm.max_children) caps concurrency
+          - Share-nothing model isolates crashes per request
+      cpu-efficiency:
+        reason: Bootstrapping the framework on every request adds CPU overhead that persistent runtimes avoid; OPcache mitigates but does not eliminate it.
+        contributing_factors:
+          - Per-request framework bootstrap costs CPU
+          - OPcache caches compiled bytecode to soften the cost
+          - No warm in-memory state carried between requests
+  - id: octane
+    name: Octane (Persistent)
+    monthly_cost: 45
+    max_rps: 12000
+    base_latency_ms: 8
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: php-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # PHP + Laravel — Octane keeps the app booted in long-lived workers (Swoole/RoadRunner)
+        composer require laravel/octane
+        php artisan octane:install --server=swoole
+        php artisan octane:start --workers=8 --max-requests=500
+    metric_explanations:
+      request-latency:
+        reason: Octane boots the framework once and reuses it across requests in persistent workers, eliminating the per-request bootstrap and cutting latency sharply.
+        contributing_factors:
+          - App container stays warm between requests
+          - No re-bootstrap of framework/services per request
+          - Coroutine workers overlap I/O waits
+      concurrent-connections:
+        reason: Persistent Swoole/RoadRunner workers handle many concurrent requests per process via coroutines, well above the per-request FPM model.
+        contributing_factors:
+          - Coroutine scheduling overlaps I/O within a worker
+          - Long-lived workers avoid process-churn overhead
+          - Requires disciplined state reset to avoid leaks between requests
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 8-80ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.7
+      cpu-efficiency: 0.7
+    extreme:
+      request-latency: 0.5
+      concurrent-connections: 0.6
+  concurrent-users:
+    high:
+      concurrent-connections: 0.7
+    extreme:
+      concurrent-connections: 0.5
+      request-latency: 0.6
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.7
+    unpredictable:
+      request-latency: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: auth-in
+    type: auth
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

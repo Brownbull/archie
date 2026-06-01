@@ -1,0 +1,168 @@
+id: dotnet
+name: C# + ASP.NET Core
+category: compute
+type_id: compute
+description: High-performance, strongly-typed .NET web framework with async-first I/O
+is: A modern, compiled, strongly-typed runtime with a fast HTTP server (Kestrel) and async/await throughout — high throughput and CPU efficiency, strongest in the Microsoft/Azure ecosystem
+gain:
+  - Very fast HTTP server (Kestrel) with async/await concurrency
+  - Strong typing and excellent tooling (Visual Studio, dotnet CLI)
+  - First-class Azure and Windows ecosystem integration
+cost:
+  - Smaller open-source web ecosystem than Node or Python in some niches
+  - Historically Windows-centric (now cross-platform on .NET Core)
+  - JIT warm-up unless using Native AOT
+tags:
+  - server
+  - csharp
+  - dotnet
+  - aspnet
+  - enterprise
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 2
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: cpu-efficiency
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: operational-complexity
+    value: medium
+    numeric_value: 4
+    category: operational-complexity
+  - id: dotnet-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 45
+    max_rps: 30000
+    base_latency_ms: 5
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: cpu-efficiency
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: dotnet-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |
+        // C# + ASP.NET Core — minimal API (Kestrel, async)
+        var builder = WebApplication.CreateBuilder(args);
+        var app = builder.Build();
+
+        app.MapGet("/users/{id}", async (string id, IUserRepo repo) =>
+        {
+            var user = await repo.FindAsync(id);
+            return user is null ? Results.NotFound() : Results.Ok(user);
+        });
+
+        app.Run();
+    metric_explanations:
+      concurrent-connections:
+        reason: Kestrel with async/await multiplexes many in-flight requests per thread and scales across all cores, sustaining very high concurrency.
+        contributing_factors:
+          - async I/O frees threads during awaits
+          - Thread pool scales across cores (no GIL)
+          - Efficient socket/HTTP stack purpose-built for throughput
+      cpu-efficiency:
+        reason: Compiled IL plus a tiered JIT and a modern GC deliver high CPU throughput per core for typical web workloads.
+        contributing_factors:
+          - Tiered JIT optimizes hot paths after warm-up
+          - Span/struct types reduce allocations on hot paths
+          - GC tuned for server throughput
+  - id: native-aot
+    name: Native AOT
+    monthly_cost: 35
+    max_rps: 32000
+    base_latency_ms: 4
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: dotnet-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # C# + ASP.NET Core — publish a Native AOT binary (instant start, low memory)
+        dotnet publish -c Release -r linux-x64 -p:PublishAot=true
+        # produces a self-contained native binary — no JIT warm-up
+        ./bin/Release/net8.0/linux-x64/publish/app
+    metric_explanations:
+      request-latency:
+        reason: Native AOT compiles ahead of time, so the app starts instantly with no JIT warm-up — first-request and tail latency stay low.
+        contributing_factors:
+          - No warm-up ramp; hot from the first request
+          - Lower memory enables more replicas per node
+          - Ideal for serverless/scale-to-zero
+      dotnet-cost-efficiency:
+        reason: Lower memory and instant start pack more instances per node and enable scale-to-zero, improving cost per request.
+        contributing_factors:
+          - Smaller footprint than the JIT runtime
+          - Fast start suits aggressive autoscaling
+          - AOT restricts some runtime reflection/codegen
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 3-30ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.8
+    extreme:
+      request-latency: 0.6
+      cpu-efficiency: 0.7
+  concurrent-users:
+    high:
+      concurrent-connections: 0.8
+    extreme:
+      concurrent-connections: 0.6
+      request-latency: 0.7
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.8
+    unpredictable:
+      request-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: auth-in
+    type: auth
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

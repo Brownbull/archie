@@ -1,0 +1,175 @@
+id: python-django
+name: Python + Django
+category: compute
+type_id: compute
+description: Batteries-included Python web framework for APIs and full web applications
+is: A high-level Python framework with ORM, admin, auth, and migrations built in — fast to build with a broad ecosystem, bounded by the GIL for CPU-parallel work
+gain:
+  - Batteries included — ORM, admin, auth, migrations out of the box
+  - Huge ecosystem and mature, well-documented patterns
+  - Readable Python keeps teams productive
+cost:
+  - The GIL limits CPU-bound parallelism within a process
+  - Lower raw throughput than compiled runtimes
+  - Sync by default; async needs ASGI and careful code
+tags:
+  - server
+  - python
+  - django
+  - api
+  - framework
+base_metrics:
+  - id: request-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: concurrent-connections
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: cpu-efficiency
+    value: medium
+    numeric_value: 4
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: python-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: wsgi-gunicorn
+    name: WSGI (Gunicorn)
+    monthly_cost: 25
+    max_rps: 1500
+    base_latency_ms: 25
+    metrics:
+      - id: concurrent-connections
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: cpu-efficiency
+        value: medium
+        numeric_value: 4
+        category: performance
+      - id: python-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Python + Django — sync views behind Gunicorn (WSGI)
+        # views.py
+        from django.http import JsonResponse
+        from .models import User
+
+        def get_user(request, user_id):
+            user = User.objects.filter(id=user_id).first()
+            if user is None:
+                return JsonResponse({"error": "Not found"}, status=404)
+            return JsonResponse({"id": user.id, "name": user.name})
+        # run: gunicorn project.wsgi --workers 4
+    metric_explanations:
+      concurrent-connections:
+        reason: Gunicorn runs a fixed pool of sync worker processes; each handles one request at a time, so concurrency is capped by worker count.
+        contributing_factors:
+          - One in-flight request per sync worker
+          - Worker count sized to CPU cores (≈2·cores + 1)
+          - Slow downstream calls tie up a worker for the whole request
+      cpu-efficiency:
+        reason: Multiple worker processes sidestep the GIL across cores, but per-request interpreted execution is heavier than compiled runtimes.
+        contributing_factors:
+          - Separate processes give true multi-core parallelism
+          - Interpreted bytecode costs more CPU per request
+          - ORM query construction adds overhead on hot paths
+  - id: asgi-async
+    name: ASGI (Async)
+    monthly_cost: 50
+    max_rps: 6000
+    base_latency_ms: 18
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 7
+        category: scalability
+      - id: request-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: python-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Python + Django — async views behind Uvicorn (ASGI)
+        from django.http import JsonResponse
+        from .models import User
+
+        async def get_user(request, user_id):
+            user = await User.objects.filter(id=user_id).afirst()
+            if user is None:
+                return JsonResponse({"error": "Not found"}, status=404)
+            return JsonResponse({"id": user.id, "name": user.name})
+        # run: uvicorn project.asgi:application --workers 4
+    metric_explanations:
+      concurrent-connections:
+        reason: Async views on an ASGI server multiplex many I/O-bound requests on each worker's event loop, lifting concurrency well above the sync model.
+        contributing_factors:
+          - awaited I/O yields the loop to other requests
+          - Far more in-flight requests per worker for I/O-heavy work
+          - Best when downstream calls dominate (DB, HTTP, cache)
+      request-latency:
+        reason: Non-blocking I/O avoids worker queueing under load, so tail latency stays lower than a saturated sync worker pool.
+        contributing_factors:
+          - No head-of-line blocking behind a busy sync worker
+          - Concurrency absorbs bursts without queue build-up
+          - CPU-bound handlers still block the loop — keep them thin
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 10-80ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.7
+      cpu-efficiency: 0.7
+    extreme:
+      request-latency: 0.5
+      concurrent-connections: 0.6
+  concurrent-users:
+    high:
+      concurrent-connections: 0.6
+    extreme:
+      concurrent-connections: 0.4
+      request-latency: 0.6
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.7
+    unpredictable:
+      request-latency: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: auth-in
+    type: auth
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -6,6 +6,7 @@ import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml"
 import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql"
 import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash"
 import python from "react-syntax-highlighter/dist/esm/languages/prism/python"
+import php from "react-syntax-highlighter/dist/esm/languages/prism/php"
 import type { CodeSnippet } from "@/types"
 
 const LANGUAGE_MAP: Record<string, typeof typescript> = {
@@ -15,6 +16,7 @@ const LANGUAGE_MAP: Record<string, typeof typescript> = {
   sql,
   bash,
   python,
+  php,
 }
 
 Object.entries(LANGUAGE_MAP).forEach(([name, grammar]) => {

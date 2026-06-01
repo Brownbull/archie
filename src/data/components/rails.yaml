@@ -1,0 +1,173 @@
+id: rails
+name: Ruby on Rails
+category: compute
+type_id: compute
+description: Convention-over-configuration Ruby framework for fast full-stack development
+is: A batteries-included Ruby framework optimized for developer happiness and speed of delivery, with moderate throughput and a global VM lock that bounds in-process CPU parallelism
+gain:
+  - Convention over configuration — very fast to build CRUD apps
+  - Mature, cohesive ecosystem (ActiveRecord, Hotwire, jobs)
+  - Excellent developer ergonomics and readability
+cost:
+  - Global VM Lock limits CPU-bound parallelism per process
+  - Lower raw throughput than compiled runtimes
+  - Memory grows with the number of Puma workers
+tags:
+  - server
+  - ruby
+  - rails
+  - api
+  - framework
+base_metrics:
+  - id: request-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: concurrent-connections
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: cpu-efficiency
+    value: medium
+    numeric_value: 4
+    category: performance
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: ruby-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: puma-threaded
+    name: Puma (Threaded)
+    monthly_cost: 30
+    max_rps: 2000
+    base_latency_ms: 22
+    metrics:
+      - id: concurrent-connections
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: cpu-efficiency
+        value: medium
+        numeric_value: 4
+        category: performance
+      - id: ruby-cost-efficiency
+        value: medium
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Ruby on Rails — Puma with workers + threads
+        # config/puma.rb
+        workers Integer(ENV.fetch("WEB_CONCURRENCY", 4))
+        threads_count = Integer(ENV.fetch("RAILS_MAX_THREADS", 5))
+        threads threads_count, threads_count
+        preload_app!
+        # boot: bundle exec puma -C config/puma.rb
+    metric_explanations:
+      concurrent-connections:
+        reason: Puma combines forked worker processes with per-worker threads; threads overlap I/O waits while workers add true parallelism across cores.
+        contributing_factors:
+          - Workers give multi-core parallelism (separate GVLs)
+          - Threads overlap database/HTTP waits within a worker
+          - CPU-bound code still serializes on the GVL per process
+      cpu-efficiency:
+        reason: Interpreted Ruby spends more CPU per request than compiled runtimes, and the GVL serializes CPU-bound work inside a process.
+        contributing_factors:
+          - Interpreted execution costs more per request
+          - GVL serializes CPU work within one worker
+          - YJIT narrows the gap on hot code paths
+  - id: horizontal-pods
+    name: Horizontally Scaled
+    monthly_cost: 80
+    max_rps: 10000
+    base_latency_ms: 20
+    metrics:
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: ruby-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: yaml
+      code: |
+        # Ruby on Rails — horizontally scaled behind a load balancer (k8s)
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata: { name: rails-web }
+        spec:
+          replicas: 6
+          template:
+            spec:
+              containers:
+                - name: web
+                  image: registry/rails-app:latest
+                  env: [{ name: WEB_CONCURRENCY, value: "2" }]
+    metric_explanations:
+      concurrent-connections:
+        reason: Stateless Rails pods scale out behind a load balancer, multiplying the moderate per-pod concurrency for near-linear horizontal scale.
+        contributing_factors:
+          - Stateless replicas add capacity independently
+          - Sessions/cache externalized (Redis) so any pod serves any user
+          - Load balancer spreads connections across pods
+      ruby-cost-efficiency:
+        reason: Running many always-on pods raises baseline cost, trading some efficiency for headroom and availability.
+        contributing_factors:
+          - Replicas billed continuously, not per request
+          - Provisioned for peak, idle at trough
+          - Autoscaling recovers some efficiency under variable load
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 15-90ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-latency: 0.7
+      cpu-efficiency: 0.7
+    extreme:
+      request-latency: 0.5
+      concurrent-connections: 0.6
+  concurrent-users:
+    high:
+      concurrent-connections: 0.6
+    extreme:
+      concurrent-connections: 0.4
+      request-latency: 0.6
+  burst-pattern:
+    periodic-spikes:
+      request-latency: 0.7
+    unpredictable:
+      request-latency: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: auth-in
+    type: auth
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out
