@@ -34,6 +34,11 @@ test.describe("Visual audit", () => {
       await page.waitForTimeout(400)
       await page.screenshot({ path: `${SCREENSHOT_DIR}/02-toolbox-${tab}.png`, fullPage: true })
     }
+
+    // Palette card crop — long type names ("Traffic Source", "Load Balancer", "Object Storage")
+    // should wrap at word boundaries, not break mid-word.
+    const palette = page.locator('[data-testid="component-tab"]')
+    if ((await palette.count()) > 0) await palette.screenshot({ path: `${SCREENSHOT_DIR}/12-palette-cards.png` })
   })
 
   test("on-node provider dropdown + build-health overlay", async ({ page }) => {

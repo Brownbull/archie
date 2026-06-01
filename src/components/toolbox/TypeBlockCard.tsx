@@ -90,9 +90,10 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
         <Plus className="h-3.5 w-3.5" />
       </button>
 
-      {/* Compact 2-column-grid cell: animated concept loop + (wrapping) label, then cost beneath.
-          The loop replaces the static type icon so the palette communicates what each block does. */}
-      <div className="flex items-start gap-1 pr-3">
+      {/* Icon on its own line (left) so the label gets the FULL card width below it and wraps at
+          word boundaries ("Traffic Source", not "Traffi c…") instead of mid-word. The 2-col cell is
+          too narrow (~110px) to fit the 31px concept loop AND a readable label side-by-side. */}
+      <div className="flex flex-col gap-1 pr-4">
         {group.typeId ? (
           <TypeIcon typeId={group.typeId} size="sm" color={color} className="shrink-0" title={`${group.label} concept`} />
         ) : iconSet === "pixel" && iconUrl ? (
@@ -100,7 +101,7 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
         ) : (
           CategoryIcon && <CategoryIcon className="h-4 w-4 shrink-0" style={{ color }} />
         )}
-        <h4 className="min-w-0 flex-1 break-words text-xs font-semibold leading-tight text-text-primary line-clamp-2">{group.label}</h4>
+        <h4 className="break-words text-xs font-semibold leading-tight text-text-primary line-clamp-2">{group.label}</h4>
       </div>
       {costRange && (
         <div data-testid={`type-cost-${group.typeId ?? group.key}`} className="mt-1 text-[0.625rem] font-medium text-emerald-400">
