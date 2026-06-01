@@ -1,6 +1,6 @@
 import { componentLibrary } from "@/services/componentLibrary"
 import { detectTopologyIssues, detectReplicasWithoutLB, type TopologyIssue } from "@/engine/topologyChecker"
-import type { SimGraph, SimNode, SimEdge } from "@/lib/simulationTypes"
+import type { SimGraph, SimNode, SimEdge, TrafficCurve } from "@/lib/simulationTypes"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { getFailurePreset } from "@/services/failureLoader"
@@ -304,6 +304,33 @@ export function getNodeComplexity(
   const fromVariant = variant?.metrics?.find((m) => m.category === "operational-complexity")
   const fromBase = component.baseMetrics?.find((m) => m.category === "operational-complexity")
   return (fromVariant ?? fromBase)?.value ?? null
+}
+
+/**
+ * Total requests/second originated by Traffic Source blocks on the canvas (category "traffic").
+ * Each source's chosen tier sets its rate (the variant's maxRPS). 0 when there are no sources, in
+ * which case the simulation falls back to its default/scenario curve.
+ */
+export function totalTrafficSourceRps(
+  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number } }>,
+): number {
+  let total = 0
+  for (const node of nodes) {
+    const d = node.data
+    if (!d || d.componentCategory !== "traffic") continue
+    const { maxRPS } = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1)
+    if (maxRPS !== undefined) total += maxRPS
+  }
+  return total
+}
+
+/**
+ * Rescales a traffic curve so its peak equals `peak`, preserving the curve's SHAPE (ramp/spike).
+ * Used so Traffic Source blocks set the volume while the demand Scenario keeps shaping it over time.
+ */
+export function scaleTrafficCurveToPeak(curve: TrafficCurve, peak: number): TrafficCurve {
+  const max = Math.max(1, ...curve.map((p) => p.rps))
+  return curve.map((p) => ({ t: p.t, rps: Math.round((p.rps / max) * peak) }))
 }
 
 export function computeTotalArchitectureCost(

@@ -22,6 +22,8 @@ export interface ComponentType {
 }
 
 const TYPE_LIST: ComponentType[] = [
+  // --- Traffic sources (the explicit ORIGIN of request load) ---
+  { id: "traffic-source", label: "Traffic Source", category: "traffic", synonyms: ["users", "traffic", "client", "api client", "sensors", "iot", "load", "requests", "rps", "visitors"], defaultProviderId: "web-users" },
   // --- Networking / delivery edge ---
   { id: "dns", label: "DNS", category: "delivery-network", synonyms: ["dns", "domain", "route 53", "name resolution", "nameserver"], defaultProviderId: "cloudflare-dns" },
   { id: "cdn", label: "CDN", category: "delivery-network", synonyms: ["cdn", "edge", "content delivery", "static assets"], defaultProviderId: "cloudflare-cdn" },

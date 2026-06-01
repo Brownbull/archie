@@ -3,6 +3,7 @@ import {
   Cpu, Database, Flame, MessageSquare, Globe,
   Radio, Shield, Activity, Search, Settings,
   Gauge, ShieldCheck, TrendingUp, Lock, Wrench, DollarSign, Code,
+  Users,
 } from "lucide-react"
 import { COMPONENT_CATEGORIES, METRIC_CATEGORIES } from "@/lib/constants"
 
@@ -17,6 +18,7 @@ export const CATEGORY_ICONS: Record<
   Cpu, Database, Flame, MessageSquare, Globe,
   Radio, Shield, Activity, Search, Settings,
   Gauge, ShieldCheck, TrendingUp, Lock, Wrench, DollarSign, Code,
+  Users,
 }
 
 /** Type-safe icon lookup replacing inline `as keyof typeof CATEGORY_ICONS` casts (TD-5-3a AC-3). */

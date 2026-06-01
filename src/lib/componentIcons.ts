@@ -16,6 +16,7 @@ export const COMPONENT_ICON_IDS: ReadonlySet<string> = new Set([
   "algolia",
   "amazon-mq",
   "anthropic",
+  "api-client",
   "arangodb",
   "auth0",
   "aws-alb",
@@ -52,6 +53,7 @@ export const COMPONENT_ICON_IDS: ReadonlySet<string> = new Set([
   "graph-db",
   "haproxy",
   "influxdb",
+  "iot-sensors",
   "kafka",
   "keycloak",
   "kong",
@@ -59,6 +61,7 @@ export const COMPONENT_ICON_IDS: ReadonlySet<string> = new Set([
   "llm-gateway",
   "memcached",
   "minio",
+  "mobile-users",
   "mongodb",
   "mysql",
   "nats",
@@ -96,6 +99,7 @@ export const COMPONENT_ICON_IDS: ReadonlySet<string> = new Set([
   "vault",
   "vector-db",
   "weaviate",
+  "web-users",
   "websocket-server",
 ])
 

@@ -2,7 +2,7 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, totalTrafficSourceRps, scaleTrafficCurveToPeak } from "@/stores/architectureStoreHelpers"
 import { defaultTrafficCurve } from "@/engine/simulationEngine"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 
@@ -24,7 +24,11 @@ export function RunSimulationButton() {
     const { nodes, edges, activeScenarioId } = useArchitectureStore.getState()
     const graph = buildSimGraph(nodes, edges)
     const scenarioCurve = activeScenarioId ? getScenarioPreset(activeScenarioId)?.trafficCurve : undefined
-    start(graph, scenarioCurve ?? defaultTrafficCurve())
+    const baseCurve = scenarioCurve ?? defaultTrafficCurve()
+    // Traffic Source blocks set the VOLUME (peak RPS); the scenario/default curve keeps the SHAPE.
+    const sourceTotal = totalTrafficSourceRps(nodes)
+    const curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(baseCurve, sourceTotal) : baseCurve
+    start(graph, curve)
   }
 
   return (

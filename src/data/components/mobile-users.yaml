@@ -1,0 +1,136 @@
+id: mobile-users
+name: Mobile Users
+category: traffic
+type_id: traffic-source
+description: Mobile-app clients generating API traffic — chatty, latency-sensitive load
+is: A source of request load from native mobile apps; traffic is API-centric (no page loads), chattier on sync, and sensitive to latency — pick a tier to set its requests/second
+gain:
+  - Models app traffic distinct from browser users
+  - API/JSON calls, background sync, push acks
+  - Tier sets the requests/second the sim drives
+cost:
+  - Not infrastructure — generates load, costs nothing
+  - Offline/retry behaviour not modelled
+  - Real device variance simplified to a rate
+tags:
+  - users
+  - mobile
+  - traffic
+  - source
+  - api
+base_metrics:
+  - id: request-rate
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: peak-capacity
+    value: high
+    numeric_value: 7
+    category: scalability
+  - id: traffic-realism
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+  - id: mobileusers-cost-efficiency
+    value: high
+    numeric_value: 10
+    category: cost-efficiency
+config_variants:
+  - id: steady
+    name: Steady (~2k rps)
+    monthly_cost: 0
+    max_rps: 2000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: medium
+        numeric_value: 4
+        category: performance
+      - id: peak-capacity
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: mobileusers-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — steady mobile API load (~2k rps), JSON over HTTPS
+        export const options = { scenarios: { mobile: { executor: "constant-arrival-rate", rate: 2000, timeUnit: "1s", duration: "5m", preAllocatedVUs: 400 } } };
+    metric_explanations:
+      request-rate:
+        reason: A steady mobile cohort makes frequent small API calls (sync, fetch) at a modest aggregate rate.
+        contributing_factors:
+          - Chatty background sync
+          - Small JSON payloads
+          - Even arrival across active users
+      peak-capacity:
+        reason: Mobile traffic peaks when many devices sync on the same trigger (push, app open).
+        contributing_factors:
+          - Push-notification fan-in
+          - Morning/commute usage spikes
+          - Retry storms after connectivity blips
+  - id: peak
+    name: Peak (~20k rps)
+    monthly_cost: 0
+    max_rps: 20000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: peak-capacity
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: mobileusers-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — peak mobile load (~20k rps) with a synchronised push spike
+        export const options = { scenarios: { mobile: { executor: "ramping-arrival-rate", startRate: 2000, timeUnit: "1s", stages: [{ target: 20000, duration: "2m" }, { target: 20000, duration: "5m" }], preAllocatedVUs: 4000 } } };
+    metric_explanations:
+      request-rate:
+        reason: A large mobile base under a sync/push event drives a high sustained API request rate.
+        contributing_factors:
+          - Many devices active at once
+          - High call fan-out per interaction
+          - Sustained sync traffic
+      peak-capacity:
+        reason: Push-triggered fan-in creates sharp synchronised spikes well above the baseline.
+        contributing_factors:
+          - All devices reacting to one push
+          - Thundering-herd reconnects
+          - Background-refresh alignment
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 0ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-rate: 0.9
+    extreme:
+      request-rate: 0.8
+      peak-capacity: 0.8
+  burst-pattern:
+    periodic-spikes:
+      peak-capacity: 0.7
+    unpredictable:
+      peak-capacity: 0.6
+ports:
+  - id: http-out
+    type: http
+    direction: out

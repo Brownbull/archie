@@ -32,6 +32,7 @@ export const TYPE_ICON_IDS: ReadonlySet<string> = new Set([
   "serverless",
   "stream-processor",
   "time-series-db",
+  "traffic-source",
   "vector-store",
   "worker",
 ])

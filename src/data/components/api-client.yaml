@@ -1,0 +1,136 @@
+id: api-client
+name: API Client
+category: traffic
+type_id: traffic-source
+description: Programmatic/third-party callers or another backend hitting your API
+is: A source of request load from machine clients — partner integrations, internal services, or another backend calling your API; steadier and more uniform than human traffic. Pick a tier for its rate
+gain:
+  - Models machine/B2B traffic, not humans
+  - Steady, uniform arrival (good for capacity math)
+  - Tier sets the requests/second the sim drives
+cost:
+  - Not infrastructure — generates load, costs nothing
+  - Auth/rate-limit handshakes simplified
+  - Retry/backoff policies not modelled
+tags:
+  - api
+  - client
+  - traffic
+  - source
+  - backend
+base_metrics:
+  - id: request-rate
+    value: high
+    numeric_value: 7
+    category: performance
+  - id: peak-capacity
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: traffic-realism
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+  - id: apiclient-cost-efficiency
+    value: high
+    numeric_value: 10
+    category: cost-efficiency
+config_variants:
+  - id: steady
+    name: Steady (~1k rps)
+    monthly_cost: 0
+    max_rps: 1000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: peak-capacity
+        value: low
+        numeric_value: 3
+        category: scalability
+      - id: apiclient-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — steady programmatic API load (~1k rps), uniform arrival
+        export const options = { scenarios: { api: { executor: "constant-arrival-rate", rate: 1000, timeUnit: "1s", duration: "5m", preAllocatedVUs: 200 } } };
+    metric_explanations:
+      request-rate:
+        reason: Machine clients call at a configured, uniform rate — easy to reason about for capacity planning.
+        contributing_factors:
+          - Scheduled/polling calls
+          - Uniform inter-arrival times
+          - No human think-time variance
+      peak-capacity:
+        reason: A steady integration has little burstiness — the rate is essentially flat.
+        contributing_factors:
+          - Fixed poll intervals
+          - Rate-limited by the client
+          - Predictable batch windows
+  - id: burst
+    name: Burst (~12k rps)
+    monthly_cost: 0
+    max_rps: 12000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: peak-capacity
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: apiclient-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — bursty batch/webhook load (~12k rps) in waves
+        export const options = { scenarios: { api: { executor: "ramping-arrival-rate", startRate: 500, timeUnit: "1s", stages: [{ target: 12000, duration: "30s" }, { target: 500, duration: "30s" }], preAllocatedVUs: 2000 } } };
+    metric_explanations:
+      request-rate:
+        reason: Batch jobs or webhook fan-outs push a high request rate in concentrated waves.
+        contributing_factors:
+          - Scheduled batch kick-offs
+          - Webhook fan-out to your API
+          - Parallel worker fleets
+      peak-capacity:
+        reason: Batch/webhook traffic is spiky — large bursts separated by quiet periods.
+        contributing_factors:
+          - Cron-aligned job starts
+          - Event-driven fan-out
+          - Catch-up after upstream delays
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 0ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-rate: 0.9
+    extreme:
+      request-rate: 0.8
+      peak-capacity: 0.8
+  burst-pattern:
+    periodic-spikes:
+      peak-capacity: 0.7
+    unpredictable:
+      peak-capacity: 0.6
+ports:
+  - id: http-out
+    type: http
+    direction: out

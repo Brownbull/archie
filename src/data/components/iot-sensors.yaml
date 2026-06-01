@@ -1,0 +1,138 @@
+id: iot-sensors
+name: IoT Sensors
+category: traffic
+type_id: traffic-source
+description: Fleets of devices emitting telemetry — high-volume, small, write-heavy load
+is: A source of request load from device fleets emitting telemetry; traffic is high-volume, tiny payloads, write-heavy and very steady. Pick a tier to set the ingest requests/second the sim drives
+gain:
+  - Models device/telemetry ingest, not human traffic
+  - High-volume, uniform, write-heavy pattern
+  - Tier sets the requests/second the sim drives
+cost:
+  - Not infrastructure — generates load, costs nothing
+  - Batching/edge-aggregation not modelled
+  - Device fleet variance simplified to a rate
+tags:
+  - iot
+  - sensors
+  - telemetry
+  - traffic
+  - source
+base_metrics:
+  - id: request-rate
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: peak-capacity
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: traffic-realism
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+  - id: iot-cost-efficiency
+    value: high
+    numeric_value: 10
+    category: cost-efficiency
+config_variants:
+  - id: fleet
+    name: Fleet (~5k rps)
+    monthly_cost: 0
+    max_rps: 5000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: peak-capacity
+        value: low
+        numeric_value: 3
+        category: scalability
+      - id: iot-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — steady telemetry ingest (~5k rps), tiny JSON writes
+        export const options = { scenarios: { iot: { executor: "constant-arrival-rate", rate: 5000, timeUnit: "1s", duration: "10m", preAllocatedVUs: 1000 } } };
+        import http from "k6/http";
+        export default function () { http.post("https://ingest.example.com/telemetry", JSON.stringify({ t: Date.now(), v: 21.4 })); }
+    metric_explanations:
+      request-rate:
+        reason: Many devices each reporting on an interval sum to a high, steady ingest rate of small writes.
+        contributing_factors:
+          - Fixed per-device report intervals
+          - Large device count
+          - Tiny write payloads
+      peak-capacity:
+        reason: Telemetry is famously flat — devices report on timers, so there's little burstiness.
+        contributing_factors:
+          - Timer-driven, staggered reporting
+          - No human-triggered spikes
+          - Steady aggregate by design
+  - id: large-fleet
+    name: Large Fleet (~50k rps)
+    monthly_cost: 0
+    max_rps: 50000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: high
+        numeric_value: 10
+        category: performance
+      - id: peak-capacity
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: iot-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — large device fleet (~50k rps) telemetry ingest
+        export const options = { scenarios: { iot: { executor: "constant-arrival-rate", rate: 50000, timeUnit: "1s", duration: "10m", preAllocatedVUs: 8000 } } };
+    metric_explanations:
+      request-rate:
+        reason: A large fleet drives very high sustained write throughput — a stress test for ingest and storage.
+        contributing_factors:
+          - Tens of thousands of devices
+          - Short report intervals
+          - Continuous write stream
+      peak-capacity:
+        reason: Even large fleets stay fairly flat, with mild reconnection spikes after outages.
+        contributing_factors:
+          - Staggered timers smooth the curve
+          - Reconnect bursts after network blips
+          - Firmware-update report storms
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 0ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-rate: 0.9
+    extreme:
+      request-rate: 0.8
+      peak-capacity: 0.8
+  burst-pattern:
+    periodic-spikes:
+      peak-capacity: 0.8
+    unpredictable:
+      peak-capacity: 0.7
+ports:
+  - id: http-out
+    type: http
+    direction: out

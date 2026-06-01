@@ -2012,3 +2012,25 @@ User: when swapping backend (Django→FastAPI etc.) show latency + rps, not just
 ## 2026-06-01 09:55 — commit: Part A — right-side live simulation STATS panel
 FINDINGS: 0 (full suite 4018 ✅ tsc -b ✅ lint 0-err ✅ e2e: panel shows during sim, per-block list, metric toggle, t=Ns)
 User wanted the reference's right STATS bar (bottom RPS chart + playback already existed). Added SimulationStatsSidePanel — a right-edge floating panel shown while status≠idle: Uptime (color-graded), Avg latency (+p99), Current RPS (served/target +failed), Monthly cost vs challenge budget, and a Block Status list (per-node) with a switchable metric (RPS/Latency/Util). Reuses computeSimStats + computeTotalArchitectureCost + ticks[currentTick].nodes; node names from arch store. Added durationS to simulationStore for the t=NNs readout. Rendered in CanvasView (absolute right, below the scenario/failure selectors, scrollable). Pure UI; no engine/data change.
+- 2026-06-01 09:55 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-01 09:55 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-01 09:55 | Edit | /home/khujta/projects/bmad/archie/src/index.css
+- 2026-06-01 09:56 | Edit | /home/khujta/projects/bmad/archie/src/lib/categoryIcons.ts
+- 2026-06-01 09:56 | Edit | /home/khujta/projects/bmad/archie/src/lib/categoryIcons.ts
+- 2026-06-01 09:56 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-06-01 09:57 | Write | /home/khujta/projects/bmad/archie/src/data/components/web-users.yaml
+- 2026-06-01 09:58 | Write | /home/khujta/projects/bmad/archie/src/data/components/mobile-users.yaml
+- 2026-06-01 09:58 | Write | /home/khujta/projects/bmad/archie/src/data/components/api-client.yaml
+- 2026-06-01 09:59 | Write | /home/khujta/projects/bmad/archie/src/data/components/iot-sensors.yaml
+- 2026-06-01 10:02 | Edit | /home/khujta/projects/bmad/archie/src/components/common/BlockConceptLoop.tsx
+- 2026-06-01 10:03 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 10:03 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 10:03 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-06-01 10:04 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-06-01 10:04 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-01 10:08 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 10:08 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/RunSimulationButton.test.tsx
+
+## 2026-06-01 10:35 — commit: Part B — Traffic Source block (explicit load origin)
+FINDINGS: 0 (full suite 4061 ✅ yaml-validation 911 ✅ icon 91=91 / type 27=27 ✅ trafficSourceRps 3 ✅ tsc -b ✅ lint 0-err ✅ e2e: block places, drives sim)
+User: no block for traffic generation (users/sensors/API/backend) — load came 'from thin air'. Added a new 'traffic' category (pink, Users icon, non-scalable) + 'Traffic Source' type with 4 providers: web-users (default), mobile-users, api-client, iot-sensors — each out-only (http-out), $0 cost, tiered config variants whose maxRps SETS the generated rate (chosen: tiered presets). Engine integration (chosen: source=volume, scenario=shape): totalTrafficSourceRps(nodes) sums source rates; RunSimulationButton scales the scenario/default curve to that peak via scaleTrafficCurveToPeak when sources exist (else unchanged) — so RPS now originates from the source block. +4 PixelLab icons + traffic-source type icon (copied) + concept loop (emitting dots). Firestore re-seeded → 91. Regions = noted fast-follow.

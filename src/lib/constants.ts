@@ -38,6 +38,8 @@ export const COMPONENT_CATEGORIES = {
   monitoring: { label: "Monitoring", color: "var(--color-cat-monitoring)", iconName: "Activity" },
   search: { label: "Search", color: "var(--color-cat-search)", iconName: "Search" },
   devops: { label: "DevOps", color: "var(--color-cat-devops)", iconName: "Settings" },
+  // Traffic sources (Users / API clients / sensors) — the explicit ORIGIN of request load.
+  traffic: { label: "Traffic", color: "var(--color-cat-traffic)", iconName: "Users" },
 } as const
 
 export type ComponentCategoryId = keyof typeof COMPONENT_CATEGORIES
@@ -67,6 +69,8 @@ export const CATEGORY_SCALING_RULES: Readonly<Record<ComponentCategoryId, Scalin
   monitoring: { scalable: false, replicaType: "none", requiresUpstreamLB: false, actsAsLoadBalancer: false },
   search: { scalable: true, replicaType: "read-only", requiresUpstreamLB: false, actsAsLoadBalancer: false },
   devops: { scalable: false, replicaType: "none", requiresUpstreamLB: false, actsAsLoadBalancer: false },
+  // A traffic source originates load; it isn't infrastructure you replicate for capacity.
+  traffic: { scalable: false, replicaType: "none", requiresUpstreamLB: false, actsAsLoadBalancer: false },
 })
 
 /** Returns the scaling rule for a category, defaulting to non-scalable for unknown categories. */

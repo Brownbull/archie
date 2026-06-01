@@ -21,7 +21,11 @@ const simGraph: SimGraph = {
   nodes: [{ id: "n1", category: "compute", effectiveMaxRps: 80, baseLatencyMs: 10, failureMode: "shed" }],
   edges: [],
 }
-vi.mock("@/stores/architectureStoreHelpers", () => ({ buildSimGraph: vi.fn(() => simGraph) }))
+vi.mock("@/stores/architectureStoreHelpers", () => ({
+  buildSimGraph: vi.fn(() => simGraph),
+  totalTrafficSourceRps: vi.fn(() => 0),
+  scaleTrafficCurveToPeak: (curve: unknown) => curve,
+}))
 vi.mock("@/services/scenarioLoader", () => ({
   getScenarioPreset: vi.fn(() => (mockScenarioCurve ? { trafficCurve: mockScenarioCurve } : undefined)),
 }))

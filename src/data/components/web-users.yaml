@@ -1,0 +1,138 @@
+id: web-users
+name: Web Users
+category: traffic
+type_id: traffic-source
+description: Browser visitors generating page and API requests — the load origin
+is: A source of request load representing real end users hitting your app from browsers; pick a tier to set how many requests per second they generate as the simulation's traffic origin
+gain:
+  - Makes the load origin explicit on the canvas
+  - Tier picks the requests/second the sim drives
+  - Read-heavy, bursty browser traffic pattern
+cost:
+  - Not infrastructure — generates load, costs nothing
+  - Real users are unpredictable; tiers are estimates
+  - Conversion/think-time not modelled
+tags:
+  - users
+  - traffic
+  - source
+  - browser
+  - load
+base_metrics:
+  - id: request-rate
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: peak-capacity
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: traffic-realism
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 1
+    category: operational-complexity
+  - id: webusers-cost-efficiency
+    value: high
+    numeric_value: 10
+    category: cost-efficiency
+config_variants:
+  - id: moderate
+    name: Moderate (~3k rps)
+    monthly_cost: 0
+    max_rps: 3000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: peak-capacity
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: webusers-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — moderate browser load (~3k rps) hitting the entry endpoint
+        import http from "k6/http";
+        export const options = { scenarios: { web: { executor: "constant-arrival-rate", rate: 3000, timeUnit: "1s", duration: "5m", preAllocatedVUs: 500 } } };
+        export default function () { http.get("https://app.example.com/"); }
+    metric_explanations:
+      request-rate:
+        reason: A moderate cohort of browser users produces a steady few-thousand requests per second against the entry of the system.
+        contributing_factors:
+          - Page loads plus their XHR/fetch calls
+          - Steady arrival rate across the session
+          - Read-heavy, cacheable traffic mix
+      peak-capacity:
+        reason: Browser traffic has mild peaks (page bursts) but stays near the moderate baseline most of the time.
+        contributing_factors:
+          - Bursts on navigation/refresh
+          - Think-time gaps between actions
+          - No extreme spikes at this tier
+  - id: heavy
+    name: Heavy (~30k rps)
+    monthly_cost: 0
+    max_rps: 30000
+    base_latency_ms: 0
+    metrics:
+      - id: request-rate
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: peak-capacity
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: webusers-cost-efficiency
+        value: high
+        numeric_value: 10
+        category: cost-efficiency
+    code_snippet:
+      language: javascript
+      code: |
+        // k6 — heavy browser load (~30k rps), e.g. launch-day traffic
+        export const options = { scenarios: { web: { executor: "constant-arrival-rate", rate: 30000, timeUnit: "1s", duration: "10m", preAllocatedVUs: 5000 } } };
+    metric_explanations:
+      request-rate:
+        reason: A large user base drives tens of thousands of requests per second, stress-testing the whole downstream path.
+        contributing_factors:
+          - Many concurrent sessions
+          - High fan-out of API calls per page
+          - Sustained high arrival rate
+      peak-capacity:
+        reason: Heavy browser traffic carries sharp peaks (campaigns, virality) well above the baseline.
+        contributing_factors:
+          - Marketing/launch spikes
+          - Synchronised user activity
+          - Little caching on personalised paths
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 0ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      request-rate: 0.9
+    extreme:
+      request-rate: 0.8
+      peak-capacity: 0.8
+  burst-pattern:
+    periodic-spikes:
+      peak-capacity: 0.8
+    unpredictable:
+      peak-capacity: 0.6
+ports:
+  - id: http-out
+    type: http
+    direction: out

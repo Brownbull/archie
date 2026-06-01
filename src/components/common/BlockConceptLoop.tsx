@@ -178,6 +178,16 @@ function loopContent(typeId: string): ReactNode {
           <circle cx="8" cy="18" r="2" className="bl-block" />
         </>
       )
+    case "traffic-source":
+      // A source emitting a stream of requests outward (the origin of load).
+      return (
+        <>
+          <circle cx="9" cy="14" r="2.4" className="bl-edge-node" />
+          <circle cx="9" cy="14" r="2" className="bl-dot bl-flow" />
+          <circle cx="9" cy="14" r="2" className="bl-dot bl-flow" style={delay(0.4)} />
+          <circle cx="9" cy="14" r="2" className="bl-dot bl-flow" style={delay(0.8)} />
+        </>
+      )
     case "dns":
       // Query darts out to a resolver and the answer returns (round-trip lookup).
       return (
