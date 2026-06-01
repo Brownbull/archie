@@ -23,6 +23,7 @@ import { PORT_TYPES } from "@/lib/constants"
 import { getNodeCost, getNodeComplexity, getNodeCategoryAverages, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
 import { computeWeightedNodeScore } from "@/engine/heatmapCalculator"
 import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
+import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
 import { Gauge } from "lucide-react"
 
 const PORT_HEIGHT_PX = 20
@@ -257,16 +258,26 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         </span>
       </div>
 
-      {nodeSubtitle && (
-        <div data-testid="archie-node-variant" className="flex items-center gap-1 px-3 pb-0.5">
-          {/* Vendor icon left of the subtitle (the chosen provider, e.g. Node.js). */}
-          <ComponentIcon
-            componentId={data.archieComponentId}
-            category={data.componentCategory as ComponentCategoryId}
-            className="h-3 w-3 shrink-0"
-          />
-          <span className="truncate text-[10px] text-text-secondary">{nodeSubtitle}</span>
-        </div>
+      {/* Vendor switcher in the diagram — swap provider + compare cost/rps/latency inline.
+          Falls back to a static vendor label for single-provider types. */}
+      {typeInfo.typeId ? (
+        <NodeProviderSelect
+          nodeId={id}
+          componentId={data.archieComponentId}
+          category={data.componentCategory as ComponentCategoryId}
+          variantName={variantName}
+        />
+      ) : (
+        nodeSubtitle && (
+          <div data-testid="archie-node-variant" className="flex items-center gap-1 px-3 pb-0.5">
+            <ComponentIcon
+              componentId={data.archieComponentId}
+              category={data.componentCategory as ComponentCategoryId}
+              className="h-3 w-3 shrink-0"
+            />
+            <span className="truncate text-[10px] text-text-secondary">{nodeSubtitle}</span>
+          </div>
+        )
       )}
 
       {(rpsLabel || latencyLabel || nodeCost.monthlyCost !== undefined) && (
