@@ -63,7 +63,7 @@ export function FitIndicator({ itemId, fitResult }: FitIndicatorProps) {
       <div className="flex items-center gap-1">
         <span
           data-testid={`fit-badge-${itemId}`}
-          className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${FIT_LEVEL_COLORS[level]} ${FIT_LEVEL_BG[level]}`}
+          className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[0.625rem] font-medium ${FIT_LEVEL_COLORS[level]} ${FIT_LEVEL_BG[level]}`}
         >
           {FIT_LEVEL_LABELS[level]}
         </span>

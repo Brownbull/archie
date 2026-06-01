@@ -144,7 +144,7 @@ export function InspectorPanel() {
             <button
               key={section}
               type="button"
-              className="rounded px-1.5 py-0.5 text-[10px] text-text-secondary hover:bg-surface hover:text-text-primary"
+              className="rounded px-1.5 py-0.5 text-[0.625rem] text-text-secondary hover:bg-surface hover:text-text-primary"
               onClick={() => {
                 contentRef.current
                   ?.querySelector(`[data-section="${section}"]`)

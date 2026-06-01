@@ -40,7 +40,7 @@ export function CanvasLegend() {
         </div>
         <div className="space-y-1.5">
           {LEGEND_ITEMS.map((item) => (
-            <div key={item.label} className="flex items-center gap-2 text-[10px]">
+            <div key={item.label} className="flex items-center gap-2 text-[0.625rem]">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-sm"
                 style={{ backgroundColor: item.cssVar }}
@@ -50,7 +50,7 @@ export function CanvasLegend() {
             </div>
           ))}
         </div>
-        <div className="mt-2 border-t border-archie-border pt-1.5 text-[10px] text-text-secondary">
+        <div className="mt-2 border-t border-archie-border pt-1.5 text-[0.625rem] text-text-secondary">
           Particle speed: Fast = Healthy, Slow = Bottleneck
         </div>
       </div>

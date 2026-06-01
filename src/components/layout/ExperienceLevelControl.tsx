@@ -34,7 +34,7 @@ export function ExperienceLevelControl() {
           data-testid="experience-level-control"
           aria-label={`Experience level: ${current.label}`}
           title="Experience level — controls how much detail the app shows. Raise it to reveal more blocks, metrics and tools."
-          className="flex items-center gap-1 rounded-md border border-archie-border bg-surface/60 px-2 py-1 text-[11px] font-medium text-text-secondary hover:text-text-primary"
+          className="flex items-center gap-1 rounded-md border border-archie-border bg-surface/60 px-2 py-1 text-[0.6875rem] font-medium text-text-secondary hover:text-text-primary"
         >
           <GraduationCap className="h-3.5 w-3.5" />
           <span className="text-text-primary">{current.label}</span>

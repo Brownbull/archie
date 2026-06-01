@@ -14,7 +14,7 @@ function HeatmapBadge({ status }: { status: HeatmapStatus | undefined }) {
   if (!status) return <span className="text-xs text-text-secondary">—</span>
   return (
     <span
-      className="inline-block rounded px-1.5 py-0.5 text-[10px] font-medium"
+      className="inline-block rounded px-1.5 py-0.5 text-[0.625rem] font-medium"
       style={{ backgroundColor: HEATMAP_COLORS[status], color: "#fff" }}
     >
       {status}
@@ -91,7 +91,7 @@ export function ConnectionDetail({ edgeId }: ConnectionDetailProps) {
                   {connectionProps.communicationPatterns.map((pattern) => (
                     <span
                       key={pattern}
-                      className="rounded bg-surface px-1.5 py-0.5 text-[10px] text-text-secondary"
+                      className="rounded bg-surface px-1.5 py-0.5 text-[0.625rem] text-text-secondary"
                     >
                       {pattern}
                     </span>

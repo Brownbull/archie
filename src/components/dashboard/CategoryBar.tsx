@@ -53,7 +53,7 @@ export function CategoryBar({
         {weight !== undefined && weight !== 1.0 && (
           <span
             data-testid={`weight-badge-${categoryId}`}
-            className="shrink-0 rounded bg-primary/15 px-1 text-[10px] font-medium text-primary"
+            className="shrink-0 rounded bg-primary/15 px-1 text-[0.625rem] font-medium text-primary"
           >
             {weight.toFixed(1)}x
           </span>

@@ -38,7 +38,7 @@ export function KeyboardShortcutsDialog() {
           {SHORTCUTS.map((s) => (
             <li key={s.label} className="flex items-center justify-between gap-3 text-xs">
               <span className="text-text-secondary">{s.label}</span>
-              <kbd className="shrink-0 rounded border border-archie-border bg-surface px-1.5 py-0.5 font-mono text-[11px] text-text-primary">
+              <kbd className="shrink-0 rounded border border-archie-border bg-surface px-1.5 py-0.5 font-mono text-[0.6875rem] text-text-primary">
                 {s.keys}
               </kbd>
             </li>

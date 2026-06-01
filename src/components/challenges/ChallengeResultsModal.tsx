@@ -105,7 +105,7 @@ export function ChallengeResultsModal() {
         </div>
 
         {/* How stars are earned — makes the 0–3 scoring rule explicit. */}
-        <p data-testid="scoring-rule" className="text-center text-[10px] text-text-secondary">
+        <p data-testid="scoring-rule" className="text-center text-[0.625rem] text-text-secondary">
           You earn 1★ for each criterion met above — all three for a perfect run.
         </p>
 
@@ -113,11 +113,11 @@ export function ChallengeResultsModal() {
         <div data-testid="vs-past-attempts" className="rounded-md border border-archie-border bg-surface px-3 py-2">
           {priorBest ? (
             <>
-              <p className="mb-1.5 text-[11px] font-medium text-text-secondary">
+              <p className="mb-1.5 text-[0.6875rem] font-medium text-text-secondary">
                 vs your best ({priorBest.stars}★)
               </p>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span data-testid="vs-stars" className="text-[11px] text-text-secondary">
+                <span data-testid="vs-stars" className="text-[0.6875rem] text-text-secondary">
                   {result.stars > priorBest.stars
                     ? `★ ${priorBest.stars} → ${result.stars} (new best!)`
                     : result.stars === priorBest.stars
@@ -130,7 +130,7 @@ export function ChallengeResultsModal() {
               </div>
             </>
           ) : (
-            <p data-testid="vs-first-attempt" className="text-[11px] text-text-secondary">
+            <p data-testid="vs-first-attempt" className="text-[0.6875rem] text-text-secondary">
               First attempt at this challenge — sets your baseline.
             </p>
           )}

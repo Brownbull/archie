@@ -108,12 +108,12 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
               >
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-text-primary">{c.title}</span>
-                  <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${DIFFICULTY_STYLE[c.difficulty]}`}>
+                  <span className={`rounded-full px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase ${DIFFICULTY_STYLE[c.difficulty]}`}>
                     {c.difficulty}
                   </span>
                 </div>
-                <p className="line-clamp-2 text-[11px] text-text-secondary">{c.brief}</p>
-                <div className="flex items-center justify-between text-[10px] text-text-secondary">
+                <p className="line-clamp-2 text-[0.6875rem] text-text-secondary">{c.brief}</p>
+                <div className="flex items-center justify-between text-[0.625rem] text-text-secondary">
                   <span>${c.budgetCap}/mo · {c.durationSeconds}s</span>
                   <StarRow earned={bestStars[c.id] ?? 0} />
                 </div>

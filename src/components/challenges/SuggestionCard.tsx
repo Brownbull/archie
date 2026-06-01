@@ -23,7 +23,7 @@ export function SuggestionCard({ result }: { result: SuggestionResult }) {
       <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-300">
         <Lightbulb className="h-3.5 w-3.5" /> Try this next
       </div>
-      <p data-testid="suggestion-description" className="mt-1 text-[11px] text-text-primary">{s.description}</p>
+      <p data-testid="suggestion-description" className="mt-1 text-[0.6875rem] text-text-primary">{s.description}</p>
       <div className="mt-1.5 flex flex-wrap gap-x-3 gap-y-0.5">
         <DeltaChip testid="suggestion-delta-uptime" label="uptime" value={s.uptimeDelta} decimals={1} unit="pp" goodWhenNegative={false} />
         <DeltaChip testid="suggestion-delta-latency" label="p99" value={s.latencyDelta} decimals={0} unit="ms" goodWhenNegative />

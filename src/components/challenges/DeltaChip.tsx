@@ -24,7 +24,7 @@ export function DeltaChip({ testid, label, value, decimals, unit, goodWhenNegati
   const Icon = neutral ? Minus : rounded > 0 ? ArrowUp : ArrowDown
   const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : ""
   return (
-    <div data-testid={testid} data-tone={neutral ? "neutral" : improved ? "good" : "bad"} className={`flex items-center gap-1 text-[11px] ${tone}`}>
+    <div data-testid={testid} data-tone={neutral ? "neutral" : improved ? "good" : "bad"} className={`flex items-center gap-1 text-[0.6875rem] ${tone}`}>
       <Icon className="h-3 w-3" />
       <span className="text-text-secondary">{label}</span>
       <span className="font-medium">{`${sign}${Math.abs(rounded).toFixed(decimals)} ${unit}`}</span>

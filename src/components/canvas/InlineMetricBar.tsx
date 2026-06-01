@@ -16,7 +16,7 @@ export function InlineMetricBar({ abbreviation, value, maxValue = METRIC_MAX_VAL
   const displayValue = safeValue.toFixed(1)
 
   return (
-    <div data-testid="inline-metric-bar" className="flex items-center gap-1.5 px-3 text-[10px] leading-4">
+    <div data-testid="inline-metric-bar" className="flex items-center gap-1.5 px-3 text-[0.625rem] leading-4">
       <span className="w-8 shrink-0 text-text-secondary font-medium">{abbreviation}</span>
       <div
         role="meter"

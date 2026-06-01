@@ -221,12 +221,15 @@ export interface StackCategoryScore {
 }
 
 // Font presets (Story 2-5)
-// These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally
-// Browser default root is 16px; medium preserves that, small/large shift by ±2px
+// These set the root (<html>) font-size — all rem-based Tailwind classes scale proportionally.
+// Rescaled (P96): the old 14px "small" read too small, so the whole scale shifted up — `small`
+// is the former medium (16px), `medium` (the default) is the former large (18px), and `large` is
+// a new, larger size (20px). Pair this with rem-based text classes (text-[…rem], not text-[…px])
+// so EVERY element scales, including the top-bar controls.
 export const FONT_SIZE_PRESETS = {
-  small: "14px",
-  medium: "16px",
-  large: "18px",
+  small: "16px",
+  medium: "18px",
+  large: "20px",
 } as const
 
 export const FONT_FAMILY_PRESETS = {

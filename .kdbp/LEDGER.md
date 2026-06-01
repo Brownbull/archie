@@ -2211,3 +2211,6 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 15:38 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/layout/ExperienceLevelControl.test.tsx
 - 2026-06-01 15:39 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/layout/AppMenuBar.test.tsx
 - 2026-06-01 15:39 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/layout/AccountMenu.test.tsx
+- 2026-06-01 15:57 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-01 16:01 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/preferencesStore.test.ts
+- 2026-06-01 16:01 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/preferencesStore.test.ts

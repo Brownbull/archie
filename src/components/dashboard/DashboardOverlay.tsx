@@ -180,7 +180,7 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
         )}
 
         {!showConstraints && (
-          <p data-testid="optimize-level-hint" className="text-[11px] text-text-secondary/70">
+          <p data-testid="optimize-level-hint" className="text-[0.6875rem] text-text-secondary/70">
             {showWeights
               ? "Constraint guardrails appear at the Advanced level."
               : "Priority weights and constraint guardrails appear at higher experience levels — raise it in the top bar."}

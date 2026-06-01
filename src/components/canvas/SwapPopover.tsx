@@ -43,7 +43,7 @@ function SwapPopoverComponent() {
 		>
 			<div className="flex items-center gap-1.5 border-b border-archie-border px-3 py-2">
 				<ArrowRightLeft className="h-3.5 w-3.5 text-text-secondary" />
-				<span className="text-[11px] font-medium text-text-primary">Quick Replace</span>
+				<span className="text-[0.6875rem] font-medium text-text-primary">Quick Replace</span>
 			</div>
 			<div className="overflow-y-auto p-1" style={{ maxHeight: 196 }}>
 				{alternatives.map((comp) => (
@@ -64,7 +64,7 @@ function SwapPopoverComponent() {
 			<div className="border-t border-archie-border px-3 py-1.5">
 				<button
 					type="button"
-					className="text-[10px] text-text-tertiary hover:text-text-secondary"
+					className="text-[0.625rem] text-text-tertiary hover:text-text-secondary"
 					onClick={clearSwapTarget}
 				>
 					Cancel

@@ -32,7 +32,7 @@ export function DataSourceNote({ kind }: { kind: DataSourceKind }) {
         </span>
       }
     >
-      <p className="pt-0.5 text-[11px] leading-snug text-text-secondary">{noteFor(kind)}</p>
+      <p className="pt-0.5 text-[0.6875rem] leading-snug text-text-secondary">{noteFor(kind)}</p>
     </InspectorDisclosure>
   )
 }

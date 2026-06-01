@@ -35,8 +35,8 @@ export function BuildHealthPanel() {
         {allMet
           ? <Check className="h-3.5 w-3.5 text-emerald-400" />
           : <AlertCircle className="h-3.5 w-3.5 text-amber-400" />}
-        <span className="text-[11px] font-medium text-text-primary">Build health</span>
-        <span data-testid="build-health-score" className="ml-auto text-[10px] text-text-secondary">
+        <span className="text-[0.6875rem] font-medium text-text-primary">Build health</span>
+        <span data-testid="build-health-score" className="ml-auto text-[0.625rem] text-text-secondary">
           {metCount}/{checks.length}
         </span>
       </button>
@@ -44,7 +44,7 @@ export function BuildHealthPanel() {
       {open && (
         <ul className="mt-1.5 space-y-1">
           {checks.map((c) => (
-            <li key={c.id} data-testid={`guidance-${c.id}`} data-met={c.met || undefined} className="text-[10px] leading-snug">
+            <li key={c.id} data-testid={`guidance-${c.id}`} data-met={c.met || undefined} className="text-[0.625rem] leading-snug">
               <div className="flex items-start gap-1">
                 {c.met
                   ? <Check className="mt-0.5 h-3 w-3 shrink-0 text-emerald-400" />

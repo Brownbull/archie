@@ -37,14 +37,14 @@ export function ChallengeCoach() {
       className={`mt-2 rounded-md border ${meta.ring} bg-surface/60 p-2`}
     >
       <div className="flex items-center gap-1.5">
-        <span className={`flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${meta.chip}`}>
+        <span className={`flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase tracking-wide ${meta.chip}`}>
           <Icon className="h-3 w-3" /> {coach.modeLabel}
         </span>
-        <span data-testid="challenge-coach-headline" className="text-[11px] font-semibold leading-tight text-text-primary">
+        <span data-testid="challenge-coach-headline" className="text-[0.6875rem] font-semibold leading-tight text-text-primary">
           {coach.headline}
         </span>
       </div>
-      <p className="mt-1 text-[10px] leading-snug text-text-secondary">{coach.detail}</p>
+      <p className="mt-1 text-[0.625rem] leading-snug text-text-secondary">{coach.detail}</p>
     </div>
   )
 }

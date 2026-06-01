@@ -94,7 +94,7 @@ function GhostNodeComponent({ data }: NodeProps<GhostNodeType>) {
 				<Plus className="ml-auto h-3.5 w-3.5 shrink-0 text-text-tertiary opacity-0 transition-opacity group-hover:opacity-100" />
 			</div>
 
-			<div className="px-3 pb-1.5 text-[9px] leading-tight text-text-tertiary line-clamp-2">
+			<div className="px-3 pb-1.5 text-[0.5625rem] leading-tight text-text-tertiary line-clamp-2">
 				{data.reason}
 			</div>
 

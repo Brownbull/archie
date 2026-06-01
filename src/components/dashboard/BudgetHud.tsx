@@ -31,7 +31,7 @@ export function BudgetHud({ totalCost, nodeCount }: BudgetHudProps) {
       <span data-testid="budget-hud-cost" className={`text-sm font-semibold ${color}`}>
         {displayCost}
       </span>
-      <span className="text-[10px] text-text-secondary">~approx</span>
+      <span className="text-[0.625rem] text-text-secondary">~approx</span>
     </div>
   )
 }

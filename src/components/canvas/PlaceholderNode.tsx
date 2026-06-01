@@ -20,7 +20,7 @@ function PlaceholderNodeComponent({ data }: NodeProps<PlaceholderNodeType>) {
           <span className="block truncate text-xs font-medium text-text-secondary">
             {data.archieComponentId}
           </span>
-          <span className="text-[10px] text-text-secondary/70">
+          <span className="text-[0.625rem] text-text-secondary/70">
             Component not found
           </span>
         </div>

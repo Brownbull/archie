@@ -92,7 +92,7 @@ export function ScenarioSelector() {
           className="mt-1.5 rounded-md border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-yellow-200 backdrop-blur-sm"
         >
           <div className="text-xs font-medium">Simulating: {activePreset.name}</div>
-          <p className="mt-0.5 text-[10px] font-normal leading-snug text-yellow-200/80">{activePreset.description}</p>
+          <p className="mt-0.5 text-[0.625rem] font-normal leading-snug text-yellow-200/80">{activePreset.description}</p>
         </div>
       )}
     </div>

@@ -23,9 +23,9 @@ function uptimeColor(pct: number): string {
 function Metric({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div className="border-b border-archie-border/60 px-3 py-2.5">
-      <div className="text-[10px] uppercase tracking-wide text-text-secondary">{label}</div>
+      <div className="text-[0.625rem] uppercase tracking-wide text-text-secondary">{label}</div>
       <div className={`text-xl font-bold tabular-nums ${color ?? "text-text-primary"}`}>{value}</div>
-      {sub && <div className="text-[10px] text-text-secondary">{sub}</div>}
+      {sub && <div className="text-[0.625rem] text-text-secondary">{sub}</div>}
     </div>
   )
 }
@@ -84,11 +84,11 @@ export function SimulationStatsSidePanel() {
     >
       <div className="flex items-center justify-between border-b border-archie-border px-3 py-2">
         <span className="text-xs font-semibold uppercase tracking-wide text-text-secondary">Stats</span>
-        <span data-testid="sim-elapsed" className="text-[10px] tabular-nums text-text-secondary">t={elapsedS}s</span>
+        <span data-testid="sim-elapsed" className="text-[0.625rem] tabular-nums text-text-secondary">t={elapsedS}s</span>
       </div>
 
       {(scenarioName || failureName) && (
-        <div data-testid="sim-conditions" className="flex flex-wrap gap-1 border-b border-archie-border/60 px-3 py-1.5 text-[9px]">
+        <div data-testid="sim-conditions" className="flex flex-wrap gap-1 border-b border-archie-border/60 px-3 py-1.5 text-[0.5625rem]">
           {scenarioName && <span className="rounded bg-yellow-500/15 px-1.5 py-0.5 text-yellow-300">{scenarioName}</span>}
           {failureName && <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-red-300">{failureName}</span>}
         </div>
@@ -117,7 +117,7 @@ export function SimulationStatsSidePanel() {
         {/* Per-block status with a switchable metric. */}
         <div className="px-3 py-2.5">
           <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-wide text-text-secondary">Block status</span>
+            <span className="text-[0.625rem] uppercase tracking-wide text-text-secondary">Block status</span>
             <div className="flex gap-0.5" role="group" aria-label="Block metric">
               {METRICS.map((m) => (
                 <button
@@ -126,7 +126,7 @@ export function SimulationStatsSidePanel() {
                   data-testid={`block-metric-${m.id}`}
                   aria-pressed={metric === m.id}
                   onClick={() => setMetric(m.id)}
-                  className={`rounded px-1.5 py-0.5 text-[9px] font-medium ${
+                  className={`rounded px-1.5 py-0.5 text-[0.5625rem] font-medium ${
                     metric === m.id ? "bg-archie-accent/20 text-archie-accent" : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
@@ -137,7 +137,7 @@ export function SimulationStatsSidePanel() {
           </div>
           <ul data-testid="block-status-list" className="space-y-1">
             {blocks.map((b) => (
-              <li key={b.nodeId} className="flex items-center justify-between gap-2 text-[11px]">
+              <li key={b.nodeId} className="flex items-center justify-between gap-2 text-[0.6875rem]">
                 <span className="flex items-center gap-1.5 truncate">
                   <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${b.overloaded ? "bg-red-400" : "bg-emerald-400"}`} />
                   <span className="truncate text-text-primary">{nameById.get(b.nodeId) ?? b.nodeId}</span>

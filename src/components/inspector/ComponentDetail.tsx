@@ -428,7 +428,7 @@ export function ComponentDetail({
 
         {/* Progressive-disclosure hint: tell lower levels where the rest went (P89/Phase C). */}
         {!showTechnical && (
-          <p data-testid="inspector-level-hint" className="px-1 pt-1 text-[10px] leading-snug text-text-secondary/70">
+          <p data-testid="inspector-level-hint" className="px-1 pt-1 text-[0.625rem] leading-snug text-text-secondary/70">
             {showTradeoffs
               ? "Code and full metrics appear at the Advanced level."
               : "Trade-offs, metrics and code appear at higher experience levels — raise it in the top bar."}

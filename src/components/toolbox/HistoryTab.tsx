@@ -58,7 +58,7 @@ export function HistoryTab() {
   return (
     <div data-testid="history-tab" className="flex h-full flex-col">
       <div className="flex items-center gap-1 px-3 pb-2 pt-1">
-        <span className="mr-1 text-[10px] uppercase tracking-wide text-text-secondary">Sort</span>
+        <span className="mr-1 text-[0.625rem] uppercase tracking-wide text-text-secondary">Sort</span>
         {SORTS.map((s) => (
           <button
             key={s.key}
@@ -66,7 +66,7 @@ export function HistoryTab() {
             data-testid={`history-sort-${s.key}`}
             aria-pressed={sortKey === s.key}
             onClick={() => setSortKey(s.key)}
-            className={`rounded px-1.5 py-0.5 text-[10px] ${sortKey === s.key ? "bg-blue-500/20 text-blue-300" : "text-text-secondary hover:text-text-primary"}`}
+            className={`rounded px-1.5 py-0.5 text-[0.625rem] ${sortKey === s.key ? "bg-blue-500/20 text-blue-300" : "text-text-secondary hover:text-text-primary"}`}
           >
             {s.label}
           </button>
@@ -103,7 +103,7 @@ export function HistoryTab() {
                     </div>
                     <MiniStars stars={a.stars} />
                   </div>
-                  <div className="mt-1 flex items-center justify-between text-[10px] text-text-secondary">
+                  <div className="mt-1 flex items-center justify-between text-[0.625rem] text-text-secondary">
                     <span>{a.uptimePercent.toFixed(1)}% · {Math.round(a.p99LatencyMs)}ms · ${a.totalCost}/mo</span>
                     <span data-testid={`attempt-date-${a.id}`}>{a.createdAt > 0 ? new Date(a.createdAt).toLocaleDateString() : "—"}</span>
                   </div>

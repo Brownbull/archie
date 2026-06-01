@@ -54,7 +54,7 @@ export function PlaybackControls() {
         onChange={(e) => seek(Number(e.target.value))}
         className="h-1 flex-1 cursor-pointer accent-blue-500"
       />
-      <span data-testid="playback-tick" className="w-12 text-right text-[10px] tabular-nums text-text-secondary">
+      <span data-testid="playback-tick" className="w-12 text-right text-[0.625rem] tabular-nums text-text-secondary">
         {currentTick + 1}/{totalTicks}
       </span>
 
@@ -66,7 +66,7 @@ export function PlaybackControls() {
             data-testid={`playback-speed-${sp}`}
             aria-pressed={speed === sp}
             onClick={() => setSpeed(sp)}
-            className={`rounded px-1 text-[10px] font-semibold ${speed === sp ? "bg-blue-500 text-white" : "text-text-secondary hover:bg-surface"}`}
+            className={`rounded px-1 text-[0.625rem] font-semibold ${speed === sp ? "bg-blue-500 text-white" : "text-text-secondary hover:bg-surface"}`}
           >
             {sp}×
           </button>

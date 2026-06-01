@@ -51,12 +51,12 @@ function EconRow({ icon, label, value, delta, deltaColor }: EconRowProps) {
     <div className="flex items-center justify-between py-0.5">
       <div className="flex items-center gap-1.5">
         {icon}
-        <span className="text-[10px] text-text-secondary">{label}</span>
+        <span className="text-[0.625rem] text-text-secondary">{label}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <span className="text-xs font-medium text-text-primary">{value}</span>
         {delta && (
-          <span data-testid={`econ-delta-${label.toLowerCase().replace(/\s/g, "-")}`} className={`text-[10px] font-semibold ${deltaColor}`}>
+          <span data-testid={`econ-delta-${label.toLowerCase().replace(/\s/g, "-")}`} className={`text-[0.625rem] font-semibold ${deltaColor}`}>
             {delta}
           </span>
         )}
@@ -108,7 +108,7 @@ export function EconomicsSection({ current, previous }: EconomicsSectionProps) {
           />
         )}
       </div>
-      <p className="mt-0.5 text-[9px] text-text-secondary">~approximate values</p>
+      <p className="mt-0.5 text-[0.5625rem] text-text-secondary">~approximate values</p>
     </div>
   )
 }

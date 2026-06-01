@@ -275,13 +275,13 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
               category={data.componentCategory as ComponentCategoryId}
               className="h-3 w-3 shrink-0"
             />
-            <span className="truncate text-[10px] text-text-secondary">{nodeSubtitle}</span>
+            <span className="truncate text-[0.625rem] text-text-secondary">{nodeSubtitle}</span>
           </div>
         )
       )}
 
       {(rpsLabel || latencyLabel || nodeCost.monthlyCost !== undefined) && (
-        <div className="flex items-center justify-between gap-2 px-3 pb-1 text-[10px] font-medium">
+        <div className="flex items-center justify-between gap-2 px-3 pb-1 text-[0.625rem] font-medium">
           {/* Throughput · latency on the left … */}
           <span data-testid="archie-node-rps" className="truncate text-text-secondary">
             {[rpsLabel, latencyLabel].filter(Boolean).join(" · ")}
@@ -315,11 +315,11 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
                   e.stopPropagation()
                   setNodeReplicaCount(id, replicaCount - 1)
                 }}
-                className="px-1.5 text-[11px] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+                className="px-1.5 text-[0.6875rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
               >
                 −
               </button>
-              <span data-testid="replica-count" className="min-w-[22px] text-center text-[10px] font-semibold text-text-primary">
+              <span data-testid="replica-count" className="min-w-[22px] text-center text-[0.625rem] font-semibold text-text-primary">
                 {replicaCount}×
               </span>
               <button
@@ -331,20 +331,20 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
                   e.stopPropagation()
                   setNodeReplicaCount(id, replicaCount + 1)
                 }}
-                className="px-1.5 text-[11px] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+                className="px-1.5 text-[0.6875rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
               >
                 +
               </button>
             </div>
           ) : (
             replicaCount > 1 && (
-              <span data-testid="replica-badge" className="rounded-full bg-archie-border px-1.5 py-0.5 text-[9px] font-bold text-text-primary">
+              <span data-testid="replica-badge" className="rounded-full bg-archie-border px-1.5 py-0.5 text-[0.5625rem] font-bold text-text-primary">
                 {replicaCount}×
               </span>
             )
           )}
           {scalingRule.replicaType === "read-only" && replicaCount > 1 && (
-            <span data-testid="replica-readonly" className="rounded-full bg-violet-500/20 px-1.5 py-0.5 text-[9px] font-medium text-violet-300">
+            <span data-testid="replica-readonly" className="rounded-full bg-violet-500/20 px-1.5 py-0.5 text-[0.5625rem] font-medium text-violet-300">
               reads only
             </span>
           )}
@@ -352,13 +352,13 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
             <span
               data-testid="replica-needs-lb"
               title="Replicas need an upstream load balancer"
-              className="rounded-full bg-amber-500/90 px-1.5 py-0.5 text-[9px] font-bold text-white"
+              className="rounded-full bg-amber-500/90 px-1.5 py-0.5 text-[0.5625rem] font-bold text-white"
             >
               needs LB
             </span>
           )}
           {backendCount > 0 && (
-            <span data-testid="replica-backends" className="rounded-full bg-teal-500/20 px-1.5 py-0.5 text-[9px] font-medium text-teal-300">
+            <span data-testid="replica-backends" className="rounded-full bg-teal-500/20 px-1.5 py-0.5 text-[0.5625rem] font-medium text-teal-300">
               {backendCount} backend{backendCount === 1 ? "" : "s"}
             </span>
           )}
@@ -368,7 +368,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
               data-testid="archie-node-complexity"
               data-complexity={complexity}
               title={`Operational complexity: ${complexityMeta(complexity).label}`}
-              className={`ml-auto flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-medium ${complexityMeta(complexity).cls}`}
+              className={`ml-auto flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[0.5625rem] font-medium ${complexityMeta(complexity).cls}`}
             >
               <Gauge className="h-2.5 w-2.5" aria-hidden />
               {complexityMeta(complexity).label}
@@ -379,7 +379,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
 
       {simTelemetry && (
         <div data-testid="sim-telemetry" className="px-3 pb-1.5">
-          <div className="flex items-center justify-between text-[9px] text-text-secondary">
+          <div className="flex items-center justify-between text-[0.5625rem] text-text-secondary">
             <span data-testid="sim-rps">{Math.round(simTelemetry.incomingRps)} rps</span>
             <span
               data-testid="sim-utilization"
@@ -417,7 +417,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       {overlayInfo && (
         <div
           data-testid="overlay-badge"
-          className="absolute -top-2.5 -right-2.5 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold shadow-sm"
+          className="absolute -top-2.5 -right-2.5 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[0.5625rem] font-bold shadow-sm"
           style={{ backgroundColor: overlayInfo.color, color: "#fff" }}
         >
           <span>{overlayInfo.value}</span>
@@ -447,7 +447,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
                 {/* Hover-revealed label so the architect knows what each connector accepts. */}
                 <span
                   data-testid={`port-label-${port.id}`}
-                  className="pointer-events-none absolute right-full mr-2 -translate-y-1/2 whitespace-nowrap rounded border border-archie-border bg-panel/95 px-1 py-0.5 text-[9px] font-medium opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                  className="pointer-events-none absolute right-full mr-2 -translate-y-1/2 whitespace-nowrap rounded border border-archie-border bg-panel/95 px-1 py-0.5 text-[0.5625rem] font-medium opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
                   style={{ top: `${offset}%`, color: port.color }}
                 >
                   {port.label} in
@@ -471,7 +471,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
                 />
                 <span
                   data-testid={`port-label-${port.id}`}
-                  className="pointer-events-none absolute left-full ml-2 -translate-y-1/2 whitespace-nowrap rounded border border-archie-border bg-panel/95 px-1 py-0.5 text-[9px] font-medium opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                  className="pointer-events-none absolute left-full ml-2 -translate-y-1/2 whitespace-nowrap rounded border border-archie-border bg-panel/95 px-1 py-0.5 text-[0.5625rem] font-medium opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
                   style={{ top: `${offset}%`, color: port.color }}
                 >
                   {port.label} out

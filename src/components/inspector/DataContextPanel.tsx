@@ -117,7 +117,7 @@ export function DataContextPanel({ nodeId, dataFitProfile }: DataContextPanelPro
           <div className="flex items-start justify-between gap-1">
             <div className="min-w-0 flex-1">
               <span className="text-xs font-medium text-text-primary">{item.name}</span>
-              <div className="mt-0.5 flex flex-wrap gap-1 text-[10px] text-text-secondary">
+              <div className="mt-0.5 flex flex-wrap gap-1 text-[0.625rem] text-text-secondary">
                 <span>{item.accessPattern}</span>
                 <span>·</span>
                 <span>{item.averageSize}</span>
@@ -168,7 +168,7 @@ export function DataContextPanel({ nodeId, dataFitProfile }: DataContextPanelPro
             <select
               value={form.accessPattern}
               onChange={(e) => setForm((prev) => ({ ...prev, accessPattern: e.target.value as AccessPattern }))}
-              className="rounded border border-archie-border bg-transparent px-1 py-1 text-[10px] text-text-primary"
+              className="rounded border border-archie-border bg-transparent px-1 py-1 text-[0.625rem] text-text-primary"
               data-testid="data-context-select-access"
               aria-label="Access pattern"
             >
@@ -179,7 +179,7 @@ export function DataContextPanel({ nodeId, dataFitProfile }: DataContextPanelPro
             <select
               value={form.averageSize}
               onChange={(e) => setForm((prev) => ({ ...prev, averageSize: e.target.value as DataSize }))}
-              className="rounded border border-archie-border bg-transparent px-1 py-1 text-[10px] text-text-primary"
+              className="rounded border border-archie-border bg-transparent px-1 py-1 text-[0.625rem] text-text-primary"
               data-testid="data-context-select-size"
               aria-label="Average size"
             >
@@ -190,7 +190,7 @@ export function DataContextPanel({ nodeId, dataFitProfile }: DataContextPanelPro
             <select
               value={form.structureType}
               onChange={(e) => setForm((prev) => ({ ...prev, structureType: e.target.value as StructureType }))}
-              className="rounded border border-archie-border bg-transparent px-1 py-1 text-[10px] text-text-primary"
+              className="rounded border border-archie-border bg-transparent px-1 py-1 text-[0.625rem] text-text-primary"
               data-testid="data-context-select-structure"
               aria-label="Structure type"
             >
@@ -205,7 +205,7 @@ export function DataContextPanel({ nodeId, dataFitProfile }: DataContextPanelPro
               data-testid="data-context-form-submit"
               onClick={handleSubmit}
               disabled={!form.name.trim()}
-              className="h-6 px-2 text-[10px]"
+              className="h-6 px-2 text-[0.625rem]"
             >
               {formMode === "add" ? "Add" : "Save"}
             </Button>
@@ -214,7 +214,7 @@ export function DataContextPanel({ nodeId, dataFitProfile }: DataContextPanelPro
               size="sm"
               data-testid="data-context-form-cancel"
               onClick={handleCancel}
-              className="h-6 px-2 text-[10px]"
+              className="h-6 px-2 text-[0.625rem]"
             >
               Cancel
             </Button>
@@ -229,13 +229,13 @@ export function DataContextPanel({ nodeId, dataFitProfile }: DataContextPanelPro
           data-testid="data-context-add-button"
           onClick={handleAdd}
           disabled={atLimit || formMode !== "idle"}
-          className="h-6 gap-1 px-2 text-[10px]"
+          className="h-6 gap-1 px-2 text-[0.625rem]"
         >
           <Plus className="h-3 w-3" />
           Add Data Item
         </Button>
         {atLimit && (
-          <span className="text-[10px] text-amber-500">{items.length}/{MAX_DATA_CONTEXT_ITEMS_PER_NODE} max</span>
+          <span className="text-[0.625rem] text-amber-500">{items.length}/{MAX_DATA_CONTEXT_ITEMS_PER_NODE} max</span>
         )}
       </div>
     </div>

@@ -5,8 +5,8 @@ import { computeSimStats } from "@/lib/simulationStats"
 function Stat({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="flex flex-col leading-tight">
-      <span className="text-[8px] uppercase tracking-wide text-text-secondary">{label}</span>
-      <span className={`text-[11px] font-semibold tabular-nums ${color ?? "text-text-primary"}`}>{value}</span>
+      <span className="text-[0.5rem] uppercase tracking-wide text-text-secondary">{label}</span>
+      <span className={`text-[0.6875rem] font-semibold tabular-nums ${color ?? "text-text-primary"}`}>{value}</span>
     </div>
   )
 }

@@ -21,7 +21,7 @@ export function TestConditionsPanel() {
       <span
         data-testid="test-conditions-label"
         title="Set the demand scenario and/or a failure to inject, then Run Simulation."
-        className="text-[9px] font-semibold uppercase tracking-wide text-text-secondary/80"
+        className="text-[0.5625rem] font-semibold uppercase tracking-wide text-text-secondary/80"
       >
         Test conditions
       </span>

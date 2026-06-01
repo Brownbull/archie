@@ -40,7 +40,7 @@ function OverlaySelectorComponent() {
 			className={`pointer-events-none absolute top-3 left-1/2 -translate-x-1/2 ${Z_INDEX.CANVAS_OVERLAY}`}
 		>
 			<div className="pointer-events-auto flex items-center gap-1 rounded-lg border border-archie-border bg-panel/90 px-1.5 py-1 shadow-lg backdrop-blur-sm">
-				<span className="mr-1 text-[10px] font-medium text-text-secondary select-none">
+				<span className="mr-1 text-[0.625rem] font-medium text-text-secondary select-none">
 					ALT
 				</span>
 				{OVERLAY_MODES.map((mode) => {
@@ -51,7 +51,7 @@ function OverlaySelectorComponent() {
 							key={mode.id}
 							type="button"
 							data-testid={`overlay-mode-${mode.id}`}
-							className={`flex items-center gap-1 rounded px-1.5 py-1 text-[10px] transition-colors ${
+							className={`flex items-center gap-1 rounded px-1.5 py-1 text-[0.625rem] transition-colors ${
 								isActive
 									? "bg-accent text-text-primary"
 									: "text-text-secondary hover:bg-surface hover:text-text-primary"
@@ -78,7 +78,7 @@ function OverlaySelectorComponent() {
 			{overlayMode !== "none" && (
 				<div
 					data-testid="overlay-legend"
-					className="pointer-events-auto mx-auto mt-1 w-fit max-w-[260px] rounded-md border border-archie-border bg-panel/90 px-2 py-1 text-center text-[10px] leading-snug text-text-secondary shadow-sm backdrop-blur-sm"
+					className="pointer-events-auto mx-auto mt-1 w-fit max-w-[260px] rounded-md border border-archie-border bg-panel/90 px-2 py-1 text-center text-[0.625rem] leading-snug text-text-secondary shadow-sm backdrop-blur-sm"
 				>
 					{OVERLAY_DESCRIPTIONS[overlayMode]}
 				</div>

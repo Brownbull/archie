@@ -14,7 +14,7 @@ export function ToolboxPanel() {
   return (
     <div data-testid="toolbox-panel" className="flex h-full flex-col">
       <div className="flex items-center justify-between px-3 pb-1 pt-2">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-text-secondary">Toolbox</span>
+        <span className="text-[0.625rem] font-semibold uppercase tracking-wide text-text-secondary">Toolbox</span>
         <PanelInfoButton guideId="toolbox" side="bottom" />
       </div>
       <SearchFilter />

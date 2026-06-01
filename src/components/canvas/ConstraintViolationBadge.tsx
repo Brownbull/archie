@@ -19,7 +19,7 @@ export function ConstraintViolationBadge({
       role="status"
       aria-label={label}
       title={tooltipText}
-      className="absolute -top-2 -right-2 flex items-center gap-0.5 rounded-full bg-red-500/90 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+      className="absolute -top-2 -right-2 flex items-center gap-0.5 rounded-full bg-red-500/90 px-1.5 py-0.5 text-[0.625rem] font-bold text-white shadow-sm"
     >
       <AlertTriangle className="h-3 w-3" />
       {violationCount}

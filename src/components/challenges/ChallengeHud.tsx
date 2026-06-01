@@ -35,18 +35,18 @@ export function ChallengeHud() {
           aria-label="Exit challenge"
           title="Leave this challenge (your canvas is kept)"
           onClick={() => reset()}
-          className="flex shrink-0 items-center gap-1 rounded border border-archie-border px-1.5 py-0.5 text-[10px] font-medium text-text-secondary hover:bg-surface hover:text-text-primary"
+          className="flex shrink-0 items-center gap-1 rounded border border-archie-border px-1.5 py-0.5 text-[0.625rem] font-medium text-text-secondary hover:bg-surface hover:text-text-primary"
         >
           <XIcon className="h-3 w-3" />
           Exit
         </button>
       </div>
-      <p className="mt-0.5 text-[10px] leading-snug text-text-secondary">{challenge.brief}</p>
+      <p className="mt-0.5 text-[0.625rem] leading-snug text-text-secondary">{challenge.brief}</p>
 
       <ChallengeCoach />
 
       <div className="mt-2">
-        <div className="flex justify-between text-[10px]">
+        <div className="flex justify-between text-[0.625rem]">
           <span className="text-text-secondary">Budget</span>
           <span data-testid="challenge-budget-label" className={overBudget ? "font-semibold text-red-400" : "text-text-secondary"}>
             ${totalCost} of ${challenge.budgetCap}/mo
@@ -58,12 +58,12 @@ export function ChallengeHud() {
       </div>
 
       <div className="mt-2" data-testid="challenge-checklist">
-        <span className="text-[9px] uppercase tracking-wide text-text-secondary">Required</span>
+        <span className="text-[0.5625rem] uppercase tracking-wide text-text-secondary">Required</span>
         {challenge.requiredComponents.map((cat) => {
           const present = placed.has(cat as ComponentCategoryId)
           const label = COMPONENT_CATEGORIES[cat as ComponentCategoryId]?.label ?? cat
           return (
-            <div key={cat} data-testid={`req-${cat}`} data-present={present || undefined} className="flex items-center gap-1 text-[11px]">
+            <div key={cat} data-testid={`req-${cat}`} data-present={present || undefined} className="flex items-center gap-1 text-[0.6875rem]">
               {present ? <Check className="h-3 w-3 text-emerald-400" /> : <XIcon className="h-3 w-3 text-text-secondary" />}
               <span className={present ? "text-text-primary" : "text-text-secondary"}>{label}</span>
             </div>
@@ -79,12 +79,12 @@ export function ChallengeHud() {
             onClick={() => setShowHints((v) => !v)}
             aria-expanded={showHints}
             aria-controls="challenge-hints-list"
-            className="flex items-center gap-1 text-[10px] text-text-secondary hover:text-text-primary"
+            className="flex items-center gap-1 text-[0.625rem] text-text-secondary hover:text-text-primary"
           >
             <Lightbulb className="h-3 w-3" /> Hints ({challenge.hints.length})
           </button>
           {showHints && (
-            <ul id="challenge-hints-list" data-testid="challenge-hints" className="mt-1 list-disc pl-4 text-[10px] text-text-secondary">
+            <ul id="challenge-hints-list" data-testid="challenge-hints" className="mt-1 list-disc pl-4 text-[0.625rem] text-text-secondary">
               {challenge.hints.map((h, i) => (
                 <li key={i}>{h}</li>
               ))}

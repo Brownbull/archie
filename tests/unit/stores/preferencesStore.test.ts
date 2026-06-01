@@ -109,10 +109,10 @@ describe("preferencesStore", () => {
   })
 
   describe("font presets", () => {
-    it("FONT_SIZE_PRESETS has correct values", () => {
-      expect(FONT_SIZE_PRESETS.small).toBe("14px")
-      expect(FONT_SIZE_PRESETS.medium).toBe("16px")
-      expect(FONT_SIZE_PRESETS.large).toBe("18px")
+    it("FONT_SIZE_PRESETS has correct values (rescaled up in P96)", () => {
+      expect(FONT_SIZE_PRESETS.small).toBe("16px")
+      expect(FONT_SIZE_PRESETS.medium).toBe("18px")
+      expect(FONT_SIZE_PRESETS.large).toBe("20px")
     })
 
     it("FONT_FAMILY_PRESETS has correct values", () => {
@@ -162,7 +162,7 @@ describe("preferencesStore", () => {
     it("root font-size can be set on html element", () => {
       const html = document.documentElement
       html.style.fontSize = FONT_SIZE_PRESETS.large
-      expect(html.style.fontSize).toBe("18px")
+      expect(html.style.fontSize).toBe("20px")
     })
 
     it("font family CSS property can be set on html element", () => {

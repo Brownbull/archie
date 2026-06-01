@@ -36,7 +36,7 @@ function ChallengeGuidanceBanner({
   return (
     <div
       data-testid="challenge-component-guidance"
-      className="mb-3 rounded-md border border-blue-500/40 bg-blue-500/10 p-2 text-[11px] text-text-secondary"
+      className="mb-3 rounded-md border border-blue-500/40 bg-blue-500/10 p-2 text-[0.6875rem] text-text-secondary"
     >
       <div className="flex items-center gap-1.5 font-medium text-text-primary">
         <Target className="h-3 w-3 text-blue-400" />
@@ -44,7 +44,7 @@ function ChallengeGuidanceBanner({
       </div>
       <div className="mt-1 flex flex-wrap gap-1">
         {(allowed ?? required).map((cat) => (
-          <span key={cat} className="rounded-full bg-surface px-1.5 py-0.5 text-[10px] text-text-primary">
+          <span key={cat} className="rounded-full bg-surface px-1.5 py-0.5 text-[0.625rem] text-text-primary">
             {categoryLabel(cat)}
           </span>
         ))}
@@ -194,7 +194,7 @@ export function ComponentTab() {
         )}
         {showPathway && (
           <div data-testid="component-tab-pathway" className="rounded-md border border-blue-500/30 bg-blue-500/5 p-2">
-            <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">Suggested next</p>
+            <p className="mb-1.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-text-secondary">Suggested next</p>
             <PathwayGuidancePanel hideWhenEmpty maxItems={2} />
           </div>
         )}

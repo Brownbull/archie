@@ -61,7 +61,7 @@ export function ComponentSwapper({
                 <span className="flex w-full items-center justify-between gap-4">
                   <span>{comp.name}</span>
                   {cost && (
-                    <span data-testid={`swap-cost-${comp.id}`} className="text-[10px] text-text-secondary">
+                    <span data-testid={`swap-cost-${comp.id}`} className="text-[0.625rem] text-text-secondary">
                       {cost}
                     </span>
                   )}

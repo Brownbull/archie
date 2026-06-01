@@ -207,7 +207,7 @@ export function ArchieEdge({
         <EdgeLabelRenderer>
           <div
             data-testid={`edge-label-${id}`}
-            className="pointer-events-auto nodrag nopan absolute cursor-grab select-none rounded bg-panel px-1.5 py-0.5 text-[10px] text-text-secondary shadow-sm border border-archie-border"
+            className="pointer-events-auto nodrag nopan absolute cursor-grab select-none rounded bg-panel px-1.5 py-0.5 text-[0.625rem] text-text-secondary shadow-sm border border-archie-border"
             style={{
               transform: `translate(-50%, -50%) translate(${labelX + displayOffset.x}px, ${protocolLabelBaseY + displayOffset.y}px)`,
             }}

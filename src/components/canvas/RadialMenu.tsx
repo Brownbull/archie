@@ -173,7 +173,7 @@ export function RadialMenu() {
           height: 56,
         }}
       >
-        <span className="text-[10px] font-medium text-text-secondary truncate max-w-[48px] text-center leading-tight">
+        <span className="text-[0.625rem] font-medium text-text-secondary truncate max-w-[48px] text-center leading-tight">
           {component?.name ?? "Node"}
         </span>
       </div>
@@ -223,7 +223,7 @@ export function RadialMenu() {
             }}
           >
             {item.icon}
-            <span className="text-[8px] leading-none mt-0.5 font-medium">{item.label}</span>
+            <span className="text-[0.5rem] leading-none mt-0.5 font-medium">{item.label}</span>
           </button>
         )
       })}

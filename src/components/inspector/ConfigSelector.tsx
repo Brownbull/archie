@@ -39,7 +39,7 @@ export function ConfigSelector({
               <SelectItem key={variant.id} value={variant.id}>
                 <span className="flex w-full items-center justify-between gap-3">
                   <span>{variant.name}</span>
-                  {stats && <span className="text-[10px] text-text-secondary">{stats}</span>}
+                  {stats && <span className="text-[0.625rem] text-text-secondary">{stats}</span>}
                 </span>
               </SelectItem>
             )

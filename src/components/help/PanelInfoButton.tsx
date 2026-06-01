@@ -42,10 +42,10 @@ export function PanelInfoButton({
       </PopoverTrigger>
       <PopoverContent side={side} align="start" className="w-72" data-testid={`panel-info-content-${guideId}`}>
         <h4 className="text-sm font-semibold text-text-primary">{guide.title}</h4>
-        <p className="mt-1 text-[11px] leading-snug text-text-secondary">{guide.summary}</p>
+        <p className="mt-1 text-[0.6875rem] leading-snug text-text-secondary">{guide.summary}</p>
         <ul className="mt-2 space-y-1.5">
           {points.map((p, i) => (
-            <li key={i} className="flex gap-1.5 text-[11px] leading-snug text-text-secondary">
+            <li key={i} className="flex gap-1.5 text-[0.6875rem] leading-snug text-text-secondary">
               <span aria-hidden className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-blue-400" />
               <span>{p.text}</span>
             </li>
@@ -64,7 +64,7 @@ export function PanelInfoButton({
               const present = all.filter((s) => !s.selector || document.querySelector(s.selector) != null)
               startTour(present.length > 0 ? present : all)
             }}
-            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-md border border-blue-500/40 bg-blue-500/10 px-2 py-1 text-[11px] font-medium text-blue-300 hover:bg-blue-500/20"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-md border border-blue-500/40 bg-blue-500/10 px-2 py-1 text-[0.6875rem] font-medium text-blue-300 hover:bg-blue-500/20"
           >
             <Compass className="h-3.5 w-3.5" />
             Walk me through it
