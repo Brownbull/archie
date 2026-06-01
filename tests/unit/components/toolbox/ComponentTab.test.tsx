@@ -135,46 +135,48 @@ describe("ComponentTab", () => {
     })
   })
 
-  it("renders component cards for all components", () => {
+  it("renders one logical-block card per fundamental type", () => {
     render(<ComponentTab />)
-    expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
-    expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
-  })
-
-  it("renders fundamental-type headings (P5)", () => {
-    render(<ComponentTab />)
-    expect(screen.getByTestId("type-group-relational-db")).toBeInTheDocument()
-    expect(screen.getByTestId("type-group-cache")).toBeInTheDocument()
+    expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
+    expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
+    // Blocks show the logical type label, not the vendor name.
     expect(screen.getByText("Relational Database")).toBeInTheDocument()
     expect(screen.getByText("Cache")).toBeInTheDocument()
+    // Vendors are NOT listed in the toolbox anymore.
+    expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
   })
 
-  describe("collapsible type sections (P3 + P5)", () => {
-    it("renders types expanded by default", () => {
+  it("groups the logical blocks under their visual category", () => {
+    render(<ComponentTab />)
+    expect(screen.getByTestId("category-group-data-storage")).toBeInTheDocument()
+    expect(screen.getByTestId("category-group-caching")).toBeInTheDocument()
+  })
+
+  describe("collapsible category sections", () => {
+    it("renders categories expanded by default", () => {
       render(<ComponentTab />)
-      expect(screen.getByTestId("type-toggle-relational-db")).toHaveAttribute("aria-expanded", "true")
-      expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
+      expect(screen.getByTestId("category-toggle-data-storage")).toHaveAttribute("aria-expanded", "true")
+      expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
     })
 
-    it("collapsing a type hides its providers but keeps others", () => {
+    it("collapsing a category hides its blocks but keeps others", () => {
       render(<ComponentTab />)
-      fireEvent.click(screen.getByTestId("type-toggle-relational-db"))
-      expect(screen.getByTestId("type-toggle-relational-db")).toHaveAttribute("aria-expanded", "false")
-      expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
-      // Other types remain expanded.
-      expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
+      fireEvent.click(screen.getByTestId("category-toggle-data-storage"))
+      expect(screen.getByTestId("category-toggle-data-storage")).toHaveAttribute("aria-expanded", "false")
+      expect(screen.queryByTestId("type-block-relational-db")).toBeNull()
+      expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
     })
 
-    it("an active search force-expands all types and matches by concept synonym", () => {
+    it("an active search force-expands all categories and matches by concept synonym", () => {
       useUiStore.setState({ searchQuery: "" })
       render(<ComponentTab />)
-      fireEvent.click(screen.getByTestId("type-toggle-relational-db"))
-      expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
-      // "sql" is a synonym of the relational-db type → surfaces Postgres even with no name match.
+      fireEvent.click(screen.getByTestId("category-toggle-data-storage"))
+      expect(screen.queryByTestId("type-block-relational-db")).toBeNull()
+      // "sql" is a synonym of the relational-db type → surfaces the block even with no name match.
       act(() => {
         useUiStore.setState({ searchQuery: "sql" })
       })
-      expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
+      expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
     })
   })
 
@@ -223,9 +225,9 @@ describe("ComponentTab", () => {
       useChallengeStore.setState({ activeChallenge: makeChallenge({ requiredComponents: ["data-storage", "caching"] }) })
       render(<ComponentTab />)
       expect(screen.getByTestId("challenge-component-guidance")).toBeInTheDocument()
-      // Both providers still visible — required is guidance, not a restriction.
-      expect(screen.getByTestId("component-card-postgresql")).toBeInTheDocument()
-      expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
+      // Both blocks still visible — required is guidance, not a restriction.
+      expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
+      expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
     })
 
     it("allowedCategories restricts the palette to those categories", () => {
@@ -234,77 +236,59 @@ describe("ComponentTab", () => {
       })
       render(<ComponentTab />)
       expect(screen.getByTestId("challenge-component-guidance")).toBeInTheDocument()
-      // Only caching (redis) shows; data-storage (postgresql) is filtered out.
-      expect(screen.getByTestId("component-card-redis")).toBeInTheDocument()
-      expect(screen.queryByTestId("component-card-postgresql")).toBeNull()
+      // Only caching shows; data-storage is filtered out.
+      expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
+      expect(screen.queryByTestId("type-block-relational-db")).toBeNull()
     })
   })
 
   describe("compatibility filtering", () => {
-    it("no cards are dimmed when no node is selected", () => {
+    const pgNode = {
+      id: "node-1",
+      type: "archie-component",
+      position: { x: 0, y: 0 },
+      data: {
+        archieComponentId: "postgresql",
+        componentName: "PostgreSQL",
+        componentCategory: "data-storage",
+        activeConfigVariantId: "default",
+      },
+    }
+
+    it("no blocks are dimmed when no node is selected", () => {
       useUiStore.setState({ selectedNodeId: null })
       render(<ComponentTab />)
-      const pgCard = screen.getByTestId("component-card-postgresql")
-      const redisCard = screen.getByTestId("component-card-redis")
-      expect(pgCard.className).toContain("opacity-100")
-      expect(redisCard.className).toContain("opacity-100")
+      expect(screen.getByTestId("type-block-relational-db").className).toContain("opacity-100")
+      expect(screen.getByTestId("type-block-cache").className).toContain("opacity-100")
     })
 
-    it("dims incompatible cards when a node is selected", () => {
+    it("dims a logical block when all its vendors are incompatible with the selection", () => {
       useUiStore.setState({ selectedNodeId: "node-1" })
-      useArchitectureStore.setState({
-        nodes: [{
-          id: "node-1",
-          type: "archie-component",
-          position: { x: 0, y: 0 },
-          data: {
-            archieComponentId: "postgresql",
-            componentName: "PostgreSQL",
-            componentCategory: "data-storage",
-            activeConfigVariantId: "default",
-          },
-        }],
-      } as Partial<ReturnType<typeof useArchitectureStore.getState>> as never)
-      vi.mocked(componentLibrary.getComponent).mockImplementation((id: string) => {
-        if (id === "postgresql") return { id: "postgresql", category: "data-storage", compatibility: { caching: "Not recommended" } } as never
-        return undefined
-      })
-      vi.mocked(checkCompatibility).mockImplementation((_source, target) => {
-        if ((target as { category: string } | undefined)?.category === "caching") return { isCompatible: false, reason: "Not recommended" }
-        return { isCompatible: true, reason: "" }
-      })
+      useArchitectureStore.setState({ nodes: [pgNode] } as Partial<ReturnType<typeof useArchitectureStore.getState>> as never)
+      vi.mocked(componentLibrary.getComponent).mockImplementation((id: string) =>
+        id === "postgresql" ? ({ id: "postgresql", category: "data-storage", compatibility: { caching: "Not recommended" } } as never) : undefined,
+      )
+      vi.mocked(checkCompatibility).mockImplementation((_source, target) =>
+        (target as { category: string } | undefined)?.category === "caching"
+          ? { isCompatible: false, reason: "Not recommended" }
+          : { isCompatible: true, reason: "" },
+      )
 
       render(<ComponentTab />)
-      const redisCard = screen.getByTestId("component-card-redis")
-      expect(redisCard.className).toContain("opacity-40")
-
-      const pgCard = screen.getByTestId("component-card-postgresql")
-      expect(pgCard.className).toContain("opacity-100")
+      // cache's only vendor (redis) is incompatible → the whole Cache block dims.
+      expect(screen.getByTestId("type-block-cache").className).toContain("opacity-40")
+      expect(screen.getByTestId("type-block-relational-db").className).toContain("opacity-100")
     })
 
-    it("all cards are full opacity when selected node has no compatibility restrictions", () => {
+    it("all blocks full opacity when the selection has no restrictions", () => {
       useUiStore.setState({ selectedNodeId: "node-1" })
-      useArchitectureStore.setState({
-        nodes: [{
-          id: "node-1",
-          type: "archie-component",
-          position: { x: 0, y: 0 },
-          data: {
-            archieComponentId: "postgresql",
-            componentName: "PostgreSQL",
-            componentCategory: "data-storage",
-            activeConfigVariantId: "default",
-          },
-        }],
-      } as Partial<ReturnType<typeof useArchitectureStore.getState>> as never)
+      useArchitectureStore.setState({ nodes: [pgNode] } as Partial<ReturnType<typeof useArchitectureStore.getState>> as never)
       vi.mocked(componentLibrary.getComponent).mockReturnValue({ id: "postgresql", category: "data-storage", compatibility: {} } as never)
       vi.mocked(checkCompatibility).mockReturnValue({ isCompatible: true, reason: "" })
 
       render(<ComponentTab />)
-      const pgCard = screen.getByTestId("component-card-postgresql")
-      const redisCard = screen.getByTestId("component-card-redis")
-      expect(pgCard.className).toContain("opacity-100")
-      expect(redisCard.className).toContain("opacity-100")
+      expect(screen.getByTestId("type-block-relational-db").className).toContain("opacity-100")
+      expect(screen.getByTestId("type-block-cache").className).toContain("opacity-100")
     })
   })
 })

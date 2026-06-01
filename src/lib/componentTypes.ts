@@ -13,26 +13,32 @@ export interface ComponentType {
   category: ComponentCategoryId
   /** Search terms beyond the label so concept search finds the type ("lb" → Load Balancer). */
   synonyms: string[]
+  /**
+   * The provider a logical block instantiates when dropped on the canvas. The architect refines
+   * the vendor + tier afterward via the inspector's Provider picker. Prefers the generic
+   * reference provider when one exists, else a common representative of the type.
+   */
+  defaultProviderId: string
 }
 
 const TYPE_LIST: ComponentType[] = [
-  { id: "cdn", label: "CDN", category: "delivery-network", synonyms: ["cdn", "edge", "content delivery", "static assets"] },
-  { id: "load-balancer", label: "Load Balancer", category: "compute", synonyms: ["lb", "load balancer", "reverse proxy", "nginx", "ingress"] },
-  { id: "compute", label: "Compute / Service", category: "compute", synonyms: ["server", "service", "api", "backend", "app", "node"] },
-  { id: "serverless", label: "Serverless", category: "compute", synonyms: ["serverless", "lambda", "functions", "faas", "edge function"] },
-  { id: "llm-gateway", label: "LLM Gateway", category: "compute", synonyms: ["llm", "ai", "inference", "model", "gpt"] },
-  { id: "payments", label: "Payments", category: "compute", synonyms: ["payment", "stripe", "billing", "checkout"] },
-  { id: "etl", label: "ETL / Data Pipeline", category: "compute", synonyms: ["etl", "pipeline", "batch", "ingest", "data"] },
-  { id: "relational-db", label: "Relational Database", category: "data-storage", synonyms: ["sql", "relational", "postgres", "mysql", "rdbms", "database"] },
-  { id: "graph-db", label: "Graph Database", category: "data-storage", synonyms: ["graph", "neo4j", "relationships", "traversal"] },
-  { id: "vector-store", label: "Vector Store", category: "data-storage", synonyms: ["vector", "embeddings", "semantic", "rag", "similarity"] },
-  { id: "object-storage", label: "Object Storage", category: "data-storage", synonyms: ["storage", "blob", "s3", "data lake", "bucket", "files"] },
-  { id: "cache", label: "Cache", category: "caching", synonyms: ["cache", "redis", "memcached", "in-memory", "kv"] },
-  { id: "message-queue", label: "Message Queue", category: "messaging", synonyms: ["queue", "rabbitmq", "mq", "jobs", "tasks"] },
-  { id: "event-stream", label: "Stream / Event Bus", category: "messaging", synonyms: ["stream", "kafka", "events", "bus", "log"] },
-  { id: "realtime", label: "Real-Time / WebSocket", category: "real-time", synonyms: ["websocket", "realtime", "ws", "live", "push"] },
-  { id: "observability", label: "Observability", category: "monitoring", synonyms: ["metrics", "monitoring", "prometheus", "logs", "tracing"] },
-  { id: "security", label: "Security / SIEM", category: "monitoring", synonyms: ["security", "siem", "waf", "threat", "audit"] },
+  { id: "cdn", label: "CDN", category: "delivery-network", synonyms: ["cdn", "edge", "content delivery", "static assets"], defaultProviderId: "cloudflare-cdn" },
+  { id: "load-balancer", label: "Load Balancer", category: "compute", synonyms: ["lb", "load balancer", "reverse proxy", "nginx", "ingress"], defaultProviderId: "nginx" },
+  { id: "compute", label: "Compute / Service", category: "compute", synonyms: ["server", "service", "api", "backend", "app", "node"], defaultProviderId: "node-express" },
+  { id: "serverless", label: "Serverless", category: "compute", synonyms: ["serverless", "lambda", "functions", "faas", "edge function"], defaultProviderId: "serverless" },
+  { id: "llm-gateway", label: "LLM Gateway", category: "compute", synonyms: ["llm", "ai", "inference", "model", "gpt"], defaultProviderId: "llm-gateway" },
+  { id: "payments", label: "Payments", category: "compute", synonyms: ["payment", "stripe", "billing", "checkout"], defaultProviderId: "payment-gateway" },
+  { id: "etl", label: "ETL / Data Pipeline", category: "compute", synonyms: ["etl", "pipeline", "batch", "ingest", "data"], defaultProviderId: "etl-pipeline" },
+  { id: "relational-db", label: "Relational Database", category: "data-storage", synonyms: ["sql", "relational", "postgres", "mysql", "rdbms", "database"], defaultProviderId: "postgresql" },
+  { id: "graph-db", label: "Graph Database", category: "data-storage", synonyms: ["graph", "neo4j", "relationships", "traversal"], defaultProviderId: "graph-db" },
+  { id: "vector-store", label: "Vector Store", category: "data-storage", synonyms: ["vector", "embeddings", "semantic", "rag", "similarity"], defaultProviderId: "vector-db" },
+  { id: "object-storage", label: "Object Storage", category: "data-storage", synonyms: ["storage", "blob", "s3", "data lake", "bucket", "files"], defaultProviderId: "aws-s3" },
+  { id: "cache", label: "Cache", category: "caching", synonyms: ["cache", "redis", "memcached", "in-memory", "kv"], defaultProviderId: "redis" },
+  { id: "message-queue", label: "Message Queue", category: "messaging", synonyms: ["queue", "rabbitmq", "mq", "jobs", "tasks"], defaultProviderId: "rabbitmq" },
+  { id: "event-stream", label: "Stream / Event Bus", category: "messaging", synonyms: ["stream", "kafka", "events", "bus", "log"], defaultProviderId: "kafka" },
+  { id: "realtime", label: "Real-Time / WebSocket", category: "real-time", synonyms: ["websocket", "realtime", "ws", "live", "push"], defaultProviderId: "websocket-server" },
+  { id: "observability", label: "Observability", category: "monitoring", synonyms: ["metrics", "monitoring", "prometheus", "logs", "tracing"], defaultProviderId: "prometheus" },
+  { id: "security", label: "Security / SIEM", category: "monitoring", synonyms: ["security", "siem", "waf", "threat", "audit"], defaultProviderId: "siem" },
 ]
 
 export const COMPONENT_TYPES: ReadonlyMap<string, ComponentType> = new Map(

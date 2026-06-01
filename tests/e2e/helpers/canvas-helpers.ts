@@ -97,7 +97,9 @@ export async function addComponentToCanvas(
   page: Page,
   buttonIndex = 0,
 ): Promise<void> {
-  const addBtn = page.locator('[data-testid^="add-to-canvas-"]').nth(buttonIndex)
+  // The toolbox lists logical-block TYPES; each block's "+" adds its default vendor (refined
+  // later in the inspector). The nth block adds the (n+1)th node when called in sequence.
+  const addBtn = page.locator('[data-testid^="add-type-"]').nth(buttonIndex)
   await expect(addBtn).toBeVisible()
   await addBtn.click()
   const expectedCount = buttonIndex + 1

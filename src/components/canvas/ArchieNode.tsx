@@ -14,6 +14,8 @@ import { useNodeOverlay } from "@/hooks/useNodeOverlay"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { useTopMetrics } from "@/hooks/useTopMetrics"
 import { componentLibrary } from "@/services/componentLibrary"
+import { COMPONENT_TYPES } from "@/lib/componentTypes"
+import { getTypeIconUrl } from "@/lib/typeIcons"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { useNodePorts } from "@/hooks/useNodePorts"
 import { useNodeSimTelemetry, simCapacityColorClass } from "@/hooks/useNodeSimTelemetry"
@@ -71,6 +73,21 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     const comp = componentLibrary.getComponent(data.archieComponentId)
     return comp?.configVariants.find((v) => v.id === data.activeConfigVariantId)?.name ?? null
   }, [data.archieComponentId, data.activeConfigVariantId])
+
+  // Type-first presentation: the node reads as a logical block. Title = the type label
+  // ("Cache"), subtitle = the chosen vendor (+ variant), e.g. "Redis · Standard". Falls back to
+  // the vendor name as the title for pre-P5 components that carry no typeId.
+  const typeInfo = useMemo(() => {
+    const comp = componentLibrary.getComponent(data.archieComponentId)
+    const typeId = comp?.typeId
+    const typeLabel = typeId ? COMPONENT_TYPES.get(typeId)?.label : undefined
+    return { typeLabel, iconUrl: typeId ? getTypeIconUrl(typeId) : null }
+  }, [data.archieComponentId])
+
+  const nodeTitle = typeInfo.typeLabel ?? data.componentName
+  const nodeSubtitle = typeInfo.typeLabel
+    ? `${data.componentName}${variantName ? ` · ${variantName}` : ""}`
+    : variantName
 
   const nodeCost = useMemo(
     () => getNodeCost(data.archieComponentId, data.activeConfigVariantId, data.replicaCount),
@@ -179,19 +196,23 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       />
 
       <div className="flex items-center gap-2 px-3 py-2">
-        <ComponentIcon
-          componentId={data.archieComponentId}
-          category={data.componentCategory as ComponentCategoryId}
-          className="h-4 w-4 shrink-0"
-        />
+        {typeInfo.iconUrl ? (
+          <img src={typeInfo.iconUrl} alt="" className="h-4 w-4 shrink-0" />
+        ) : (
+          <ComponentIcon
+            componentId={data.archieComponentId}
+            category={data.componentCategory as ComponentCategoryId}
+            className="h-4 w-4 shrink-0"
+          />
+        )}
         <span className="truncate text-xs font-medium text-text-primary">
-          {data.componentName}
+          {nodeTitle}
         </span>
       </div>
 
-      {variantName && (
+      {nodeSubtitle && (
         <div data-testid="archie-node-variant" className="px-3 pb-0.5 text-[10px] text-text-secondary truncate">
-          {variantName}
+          {nodeSubtitle}
         </div>
       )}
 

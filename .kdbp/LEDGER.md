@@ -1739,3 +1739,24 @@ Decision-support: the in-node Provider picker now shows each provider's monthly-
 FINDINGS: 0 (full suite 3471 ✅ tsc -b ✅ lint 0-err ✅ decision-support E2E swap-delta ✅)
 1b — provider-swap before/after delta: the economics delta was variant-only (recomputed new component + old variant on swap = wrong). Replaced with a unified 'snapshot the displayed economics' tracker in ComponentDetail that shows a before→after on BOTH provider swap AND variant change, refreshes on replica-only change, and resets on node switch. (Metric delta already worked — previousMetrics is captured by triggerRecalculation on swap.) Verified end-to-end: swap PostgreSQL→MySQL shows a delta.
 1c — inline actionable pathway: PathwayGuidancePanel gained a one-click 'Add' button per suggestion (→ addNodeSmartPosition) + hideWhenEmpty/maxItems props; surfaced inline as a 'Suggested next' panel at the top of the Components tab during free build (hidden while searching or in a challenge) — no longer buried 2 clicks deep in the dashboard overlay. +unit tests (Add/hideWhenEmpty/maxItems, inline gating) + decision-support.spec.ts E2E.
+- 2026-05-31 20:18 | Write | /home/khujta/projects/bmad/archie/src/lib/typeIcons.ts
+- 2026-05-31 20:18 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-05-31 20:20 | Write | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-05-31 20:21 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 20:21 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 20:22 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 20:22 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-05-31 20:22 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-05-31 20:24 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 20:24 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 20:24 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-05-31 20:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 20:28 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/toolbox/ComponentTab.test.tsx
+- 2026-05-31 20:29 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/typeIcons.test.ts
+- 2026-05-31 20:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-05-31 20:31 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-05-31 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+
+## 2026-06-01 00:30 — commit: Phase 1 — type-level toolbox (logical blocks) + type icons
+FINDINGS: 0 (full suite 3474 ✅ tsc -b ✅ lint 0-err ✅ ui-layout E2E 4/4 ✅)
+Reworked the left panel from a vendor list to LOGICAL BLOCKS, matching the reference app. The Components tab now lists one block per fundamental TYPE (17), grouped by category (collapsible), each with a PixelLab type icon + aggregate cost range. Dropping a block places the type's default vendor (TYPE_LIST.defaultProviderId); the architect refines vendor + tier in the inspector's existing Provider picker — vendors no longer appear in the toolbox. The canvas node now reads type-first: title = type label ("Cache"), subtitle = vendor · variant, type icon. New: 17 type icons (public/icons/types/), typeIcons.ts resolver + consistency test, TypeBlockCard. ComponentTab + tests rewritten (category sections + type-block dimming). e2e addComponentToCanvas helper now adds via type blocks. Chosen over the unconfigured-node model (architect blast-radius map flagged a silent sim-correctness risk + serialization bump) — same UX, far less risk.

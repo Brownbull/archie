@@ -5,12 +5,12 @@ import { useUiStore } from "@/stores/uiStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
-import { ComponentCard } from "@/components/toolbox/ComponentCard"
+import { TypeBlockCard } from "@/components/toolbox/TypeBlockCard"
 import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePanel"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
-import { groupComponentsByType, typeMatchesQuery } from "@/lib/componentTypes"
+import { groupComponentsByType, typeMatchesQuery, type ComponentTypeGroup } from "@/lib/componentTypes"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 
@@ -98,11 +98,12 @@ export function ComponentTab() {
     return ids
   }, [selectedComponent, components])
 
-  // Collapsible TYPE sections (P3 density + P5 type grouping). Default expanded; an active search
-  // force-expands all so matches are never hidden behind a collapsed header.
-  const [collapsedTypes, setCollapsedTypes] = useState<Set<string>>(new Set())
-  const toggleType = useCallback((key: string) => {
-    setCollapsedTypes((prev) => {
+  // Collapsible CATEGORY sections. The palette now lists logical-block TYPES (the architect
+  // builds with concepts, then picks a vendor in the inspector); types are grouped under their
+  // visual category. Default expanded; an active search force-expands so matches aren't hidden.
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
+  const toggleCategory = useCallback((key: string) => {
+    setCollapsedCategories((prev) => {
       const next = new Set(prev)
       if (next.has(key)) next.delete(key)
       else next.add(key)
@@ -123,9 +124,18 @@ export function ComponentTab() {
     return scoped.filter((c) => nameMatches.has(c.id) || typeMatchesQuery(c, q))
   }, [searchQuery, components, searchComponents, allowedCategories])
 
-  // P5: organize the palette by fundamental TYPE (Cache, Relational DB, …); each type lists its
-  // provider components. Pre-P5 components without a typeId fall back to a per-category group.
+  // Organize the palette by fundamental TYPE (one logical-block per type), then group those
+  // type-blocks under their visual category for the collapsible sections.
   const groups = useMemo(() => groupComponentsByType(filtered), [filtered])
+  const categorySections = useMemo(() => {
+    const byCategory = new Map<ComponentCategoryId, ComponentTypeGroup[]>()
+    for (const g of groups) {
+      const arr = byCategory.get(g.categoryId) ?? []
+      arr.push(g)
+      byCategory.set(g.categoryId, arr)
+    }
+    return [...byCategory.entries()].map(([categoryId, typeGroups]) => ({ categoryId, typeGroups }))
+  }, [groups])
 
   if (filtered.length === 0) {
     return (
@@ -152,44 +162,41 @@ export function ComponentTab() {
             <PathwayGuidancePanel hideWhenEmpty maxItems={2} />
           </div>
         )}
-        {groups.map((group) => {
-          const category = COMPONENT_CATEGORIES[group.categoryId]
+        {categorySections.map(({ categoryId, typeGroups }) => {
+          const category = COMPONENT_CATEGORIES[categoryId]
           const IconComponent = category ? CATEGORY_ICONS[category.iconName] : undefined
-          const isCollapsed = !searchQuery && collapsedTypes.has(group.key)
+          const isCollapsed = !searchQuery && collapsedCategories.has(categoryId)
 
           return (
-            <div key={group.key} data-testid={`type-group-${group.key}`}>
+            <div key={categoryId} data-testid={`category-group-${categoryId}`}>
               <button
                 type="button"
-                data-testid={`type-toggle-${group.key}`}
+                data-testid={`category-toggle-${categoryId}`}
                 aria-expanded={!isCollapsed}
-                onClick={() => toggleType(group.key)}
+                onClick={() => toggleCategory(categoryId)}
                 className="mb-2 flex w-full items-center gap-1.5 rounded px-0.5 py-0.5 hover:bg-surface"
               >
                 {isCollapsed
                   ? <ChevronRight className="h-3 w-3 shrink-0 text-text-secondary" />
                   : <ChevronDown className="h-3 w-3 shrink-0 text-text-secondary" />}
                 {IconComponent && (
-                  <IconComponent
-                    className="h-3.5 w-3.5"
-                    style={{ color: category?.color }}
-                  />
+                  <IconComponent className="h-3.5 w-3.5" style={{ color: category?.color }} />
                 )}
                 <h3
                   className="text-[0.6875rem] font-semibold uppercase tracking-wider"
                   style={{ color: category?.color }}
                 >
-                  {group.label}
+                  {category?.label ?? categoryId}
                 </h3>
-                <span className="text-[0.625rem] text-text-secondary">({group.providers.length})</span>
+                <span className="text-[0.625rem] text-text-secondary">({typeGroups.length})</span>
               </button>
               {!isCollapsed && (
                 <div className="space-y-2">
-                  {group.providers.map((comp) => (
-                    <ComponentCard
-                      key={comp.id}
-                      component={comp}
-                      dimmed={incompatibleIds.has(comp.id)}
+                  {typeGroups.map((g) => (
+                    <TypeBlockCard
+                      key={g.key}
+                      group={g}
+                      dimmed={g.providers.length > 0 && g.providers.every((p) => incompatibleIds.has(p.id))}
                     />
                   ))}
                 </div>
