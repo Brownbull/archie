@@ -2188,3 +2188,11 @@ User wants codingducks-style on-node vendor switching. New NodeProviderSelect mo
 - 2026-06-01 14:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/componentTypes-levels.test.ts
 - 2026-06-01 14:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/componentTypes-levels.test.ts
 - 2026-06-01 14:57 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/StacksTab.tsx
+- 2026-06-01 15:16 | Edit | /home/khujta/projects/bmad/archie/src/components/help/PanelInfoButton.tsx
+- 2026-06-01 15:16 | Edit | /home/khujta/projects/bmad/archie/src/lib/panelGuides.ts
+- 2026-06-01 15:16 | Edit | /home/khujta/projects/bmad/archie/src/lib/panelGuides.ts
+- 2026-06-01 15:16 | Edit | /home/khujta/projects/bmad/archie/src/lib/panelGuides.ts
+- 2026-06-01 15:16 | Edit | /home/khujta/projects/bmad/archie/src/lib/panelGuides.ts
+- 2026-06-01 15:17 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ToolboxPanel.tsx
+- 2026-06-01 15:17 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/panelGuides.test.ts
+- 2026-06-01 15:17 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/help/PanelInfoButton.test.tsx

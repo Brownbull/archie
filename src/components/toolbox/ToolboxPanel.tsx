@@ -26,6 +26,7 @@ export function ToolboxPanel() {
         <TabsList className="mx-3 grid w-auto grid-cols-4">
           <TabsTrigger
             value="components"
+            data-testid="toolbox-tab-components"
             className="text-xs"
             title="Logical building blocks — drag one onto the canvas, then pick a vendor"
           >
@@ -33,6 +34,7 @@ export function ToolboxPanel() {
           </TabsTrigger>
           <TabsTrigger
             value="stacks"
+            data-testid="toolbox-tab-stacks"
             className="text-xs"
             title="Small reusable patterns — drag to ADD a few connected components to your canvas"
           >
@@ -40,6 +42,7 @@ export function ToolboxPanel() {
           </TabsTrigger>
           <TabsTrigger
             value="blueprints"
+            data-testid="toolbox-tab-blueprints"
             className="text-xs"
             title="Complete starter architectures — Load one to REPLACE the canvas"
           >
@@ -47,6 +50,7 @@ export function ToolboxPanel() {
           </TabsTrigger>
           <TabsTrigger
             value="history"
+            data-testid="toolbox-tab-history"
             className="text-xs"
             title="Your past challenge attempts and scores"
           >

@@ -29,6 +29,39 @@ describe("panelGuides (P89/Phase B)", () => {
     }
   })
 
+  it("the inspector tour is comprehensive — walks every major section", () => {
+    const g = getPanelGuide("inspector") as PanelGuide
+    const selectors = (g.tour ?? []).map((s) => s.selector ?? "").join(" ")
+    // Not just the headline two — it should cover swap, tier, economics, code, gains, costs,
+    // recommendations, metrics, data context and remove.
+    expect((g.tour ?? []).length).toBeGreaterThanOrEqual(10)
+    for (const anchor of [
+      "component-swapper",
+      "config-selector",
+      "economics-section",
+      "disclosure-code",
+      "disclosure-gains",
+      "disclosure-costs",
+      "disclosure-metrics",
+      "data-context-section-trigger",
+    ]) {
+      expect(selectors).toContain(anchor)
+    }
+  })
+
+  it("the toolbox + optimize tours cover their tabs/sections", () => {
+    const tb = getPanelGuide("toolbox") as PanelGuide
+    const tbSel = (tb.tour ?? []).map((s) => s.selector ?? "").join(" ")
+    for (const a of ["search-filter", "toolbox-tab-stacks", "toolbox-tab-blueprints", "advanced-blocks-toggle"]) {
+      expect(tbSel).toContain(a)
+    }
+    const opt = getPanelGuide("optimize") as PanelGuide
+    const optSel = (opt.tour ?? []).map((s) => s.selector ?? "").join(" ")
+    for (const a of ["weight-sliders-toggle", "constraint-guardrails-toggle", "pathway-guidance-toggle"]) {
+      expect(optSel).toContain(a)
+    }
+  })
+
   it("visiblePoints discloses progressively: beginner ≤ intermediate ≤ advanced", () => {
     const g = getPanelGuide("toolbox") as PanelGuide
     const b = visiblePoints(g, "beginner").length

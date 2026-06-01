@@ -47,4 +47,23 @@ describe("PanelInfoButton (P89/Phase B)", () => {
     expect(useTourStore.getState().steps).not.toBeNull()
     expect(useTourStore.getState().steps?.length).toBeGreaterThan(0)
   })
+
+  it("filters the tour to steps whose target is on screen", async () => {
+    const user = userEvent.setup()
+    // Mount only ONE of the inspector tour's anchors — the rest should be filtered out.
+    render(
+      <>
+        <div data-testid="inspector-heading" />
+        <PanelInfoButton guideId="inspector" />
+      </>,
+    )
+    await user.click(screen.getByTestId("panel-info-inspector"))
+    await user.click(await screen.findByTestId("panel-info-tour-inspector"))
+    const steps = useTourStore.getState().steps ?? []
+    expect(steps.length).toBeGreaterThan(0)
+    // Every surviving step targets the present anchor (or has no selector).
+    expect(steps.every((s) => !s.selector || s.selector.includes("inspector-heading"))).toBe(true)
+    // And it did NOT include an absent anchor like the metrics disclosure.
+    expect(steps.some((s) => s.selector?.includes("disclosure-metrics"))).toBe(false)
+  })
 })
