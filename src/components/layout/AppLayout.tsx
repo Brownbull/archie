@@ -5,6 +5,7 @@ import { ToolboxPanel } from "@/components/toolbox/ToolboxPanel"
 import { CommandPalette } from "@/components/toolbox/CommandPalette"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { GuidedTour } from "@/components/onboarding/GuidedTour"
+import { useCanvasAutosave } from "@/hooks/useCanvasAutosave"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
 import { InspectorResizeHandle } from "@/components/inspector/InspectorResizeHandle"
@@ -55,6 +56,9 @@ export function AppLayout() {
         toast.error("Failed to load component library")
       })
   }, [])
+
+  // Restore the last autosaved canvas + debounce-save on change (no work lost on refresh).
+  useCanvasAutosave()
 
   return (
     <ImportProvider>
