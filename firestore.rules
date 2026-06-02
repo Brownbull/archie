@@ -74,6 +74,27 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    // Mastery Tracks user progress (Phase 2, D45) — owner-only, keyed by uid.
+    // Document id IS the user's uid, so the path itself enforces ownership.
+    match /userProgress/{uid} {
+      allow read: if isAuthenticated() && request.auth.uid == uid;
+      allow create: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'updatedAt'])
+        && request.resource.data.trackXp is map
+        && request.resource.data.completedChallenges is list
+        && request.resource.data.completedChallenges.size() <= 200
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'updatedAt'])
+        && request.resource.data.trackXp is map
+        && request.resource.data.completedChallenges is list
+        && request.resource.data.completedChallenges.size() <= 200
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     // Deny all by default
     match /{document=**} {
       allow read, write: if false;

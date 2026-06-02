@@ -2487,3 +2487,34 @@ DEPLOYMENTS: P108
 ## 2026-06-02 08:29 — PLAN UPDATED: Challenge Forge (Phase 5) + D45/D46
 DECISIONS: D45 (Challenge Forge: zero-progression + origin + id-namespace + scoped editor + cloud persistence), D46 (Phase 5 tier: ent)
 PLAN: Phase 5 added (Challenge Forge); Phase 2 ACs D45-AC1/AC2 (zero-progression, palette intersection); Current Phase advanced to Phase 2; deps + risks + evidence updated
+
+## 2026-06-02 08:32 — [b4e2044] docs(mastery-tracks): formalize Challenge Forge design — D45/D46 + Phase 5 + Phase 2 acceptance criteria
+FINDINGS: 0
+ACTIONS: none
+DEFERRED: none
+- 2026-06-02 08:35 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-02 08:35 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-02 08:36 | Edit | /home/khujta/projects/bmad/archie/src/services/challengeLoader.ts
+- 2026-06-02 08:36 | Edit | /home/khujta/projects/bmad/archie/src/services/challengeLoader.ts
+- 2026-06-02 08:37 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTracks.ts
+- 2026-06-02 08:37 | Write | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-02 08:37 | Write | /home/khujta/projects/bmad/archie/src/hooks/useProgressPersistence.ts
+- 2026-06-02 08:38 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-02 08:38 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-02 08:38 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-02 08:38 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-02 08:39 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-02 08:39 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-02 08:40 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-02 08:40 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-02 08:41 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-02 08:41 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/challengeTracks.test.ts
+- 2026-06-02 08:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/challengeLoader.test.ts
+- 2026-06-02 08:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/techTree.test.ts
+- 2026-06-02 08:47 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-06-02 08:47 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-02 08:47 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-02 08:49 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-06-02 08:50 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeSelector.test.tsx
+- 2026-06-02 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-06-02 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx

@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Trophy, Star } from "lucide-react"
+import { useMemo, useState } from "react"
+import { Trophy, Star, Lock, LogIn } from "lucide-react"
 import {
   Dialog,
   DialogTrigger,
@@ -15,14 +15,21 @@ import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
+import { useUserProgressStore } from "@/stores/userProgressStore"
+import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { makeTrafficSourceNode, curvePeakRps } from "@/services/trafficSourceInjection"
 import { useUiStore } from "@/stores/uiStore"
-import type { Challenge, ChallengeDifficulty } from "@/lib/challengeTypes"
+import { resolveTechTree } from "@/engine/techTree"
+import { rankForXp, relativeLevelForTier, RELATIVE_LEVEL_COLORS, CHALLENGE_TRACKS, type RelativeLevel } from "@/lib/challengeTracks"
+import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
-const DIFFICULTY_STYLE: Record<ChallengeDifficulty, string> = {
-  beginner: "bg-emerald-500/20 text-emerald-300",
-  intermediate: "bg-amber-500/20 text-amber-300",
-  advanced: "bg-red-500/20 text-red-300",
+const LEVEL_LABEL: Record<RelativeLevel, string> = {
+  trivial: "Trivial",
+  easy: "Easy",
+  "on-level": "On Level",
+  tough: "Tough",
+  hard: "Hard",
+  locked: "Locked",
 }
 
 function StarRow({ earned }: { earned: number }) {
@@ -35,40 +42,54 @@ function StarRow({ earned }: { earned: number }) {
   )
 }
 
+function LevelBadge({ level }: { level: RelativeLevel }) {
+  const color = RELATIVE_LEVEL_COLORS[level]
+  return (
+    <span
+      data-testid="challenge-level-badge"
+      className="rounded-full px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase"
+      style={{ backgroundColor: `${color}20`, color }}
+    >
+      {LEVEL_LABEL[level]}
+    </span>
+  )
+}
+
 export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boolean } = {}) {
-  // Open state lives in uiStore so other surfaces (the Build menu, empty-canvas card, History tab)
-  // can open the challenge picker, not just the inline trigger button. `hideTrigger` renders the
-  // dialog without its own button — used by the menu bar, which opens it via setChallengesOpen.
   const open = useUiStore((s) => s.challengesOpen)
   const setOpen = useUiStore((s) => s.setChallengesOpen)
   const challenges = getAllChallenges()
   const bestStars = useChallengeStore((s) => s.bestStars)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
-  // A challenge starts on a clean canvas — confirm first if the user has work that would be wiped.
   const [pending, setPending] = useState<Challenge | null>(null)
 
+  const userId = useCurrentUserId()
+  const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
+  const trackXp = useUserProgressStore((s) => s.trackXp)
+
+  const tree = useMemo(
+    () => resolveTechTree(challenges, completedChallenges),
+    [challenges, completedChallenges],
+  )
+
   const startChallenge = (c: Challenge) => {
-    // Clean canvas seeded with a Traffic Source sized to the challenge's target load, so the request
-    // origin is already in place. Best-effort: a seeding hiccup must never block entering.
     try {
       const peak = curvePeakRps(c.trafficCurve)
       const source = makeTrafficSourceNode(peak, { x: 64, y: 240 })
       useSimulationStore.getState().reset()
       useArchitectureStore.getState().loadArchitecture(source ? [source] : [], [])
     } catch {
-      // ignore — fall through and still start the challenge
+      // ignore
     }
-    // Match the global experience level to the challenge difficulty so beginners aren't shown
-    // everything for a beginner brief (P86 → P89). ChallengeDifficulty and ExperienceLevel share
-    // the same values; the user can still raise/lower the level from the top bar afterward.
     usePreferencesStore.getState().setExperienceLevel(c.difficulty)
     selectChallenge(c)
     setOpen(false)
     setPending(null)
   }
 
-  const onPick = (c: Challenge) => {
-    // If there's existing work on the canvas, ask before clearing it.
+  const onPick = (c: Challenge, node: TechTreeNode | undefined) => {
+    if (!userId) return
+    if (node?.status === "locked") return
     if (useArchitectureStore.getState().nodes.length > 0) {
       setOpen(false)
       setPending(c)
@@ -92,38 +113,76 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
           <DialogTitle>Architecture Challenges</DialogTitle>
           <DialogDescription>Build to the brief, run the simulation, and earn up to 3 stars.</DialogDescription>
         </DialogHeader>
-        {challenges.length === 0 ? (
+
+        {!userId ? (
+          <div data-testid="challenge-login-required" className="flex flex-col items-center gap-3 py-8 text-center">
+            <LogIn className="h-8 w-8 text-text-secondary" />
+            <p className="text-sm text-text-secondary">Sign in to access Challenge Mode.</p>
+            <p className="text-xs text-text-secondary">Your progress is saved to your account.</p>
+          </div>
+        ) : challenges.length === 0 ? (
           <p data-testid="challenge-empty" className="py-6 text-center text-sm text-text-secondary">
             No challenges available yet.
           </p>
         ) : (
           <div className="grid max-h-[60vh] grid-cols-1 gap-2 overflow-y-auto sm:grid-cols-2">
-            {challenges.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                data-testid={`challenge-card-${c.id}`}
-                onClick={() => onPick(c)}
-                className="flex flex-col gap-1.5 rounded-md border border-archie-border bg-surface p-3 text-left transition-colors hover:border-blue-500/60"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-text-primary">{c.title}</span>
-                  <span className={`rounded-full px-1.5 py-0.5 text-[0.5625rem] font-bold uppercase ${DIFFICULTY_STYLE[c.difficulty]}`}>
-                    {c.difficulty}
-                  </span>
-                </div>
-                <p className="line-clamp-2 text-[0.6875rem] text-text-secondary">{c.brief}</p>
-                <div className="flex items-center justify-between text-[0.625rem] text-text-secondary">
-                  <span>${c.budgetCap}/mo · {c.durationSeconds}s</span>
-                  <StarRow earned={bestStars[c.id] ?? 0} />
-                </div>
-              </button>
-            ))}
+            {tree.ordered.map((node) => {
+              const c = node.challenge
+              const isLocked = node.status === "locked"
+              const playerRank = c.track ? rankForXp(trackXp[c.track] ?? 0).rank : 0
+              const level = c.tier ? relativeLevelForTier(playerRank, c.tier) : "on-level"
+              const trackMeta = c.track ? CHALLENGE_TRACKS.get(c.track) : undefined
+
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  data-testid={`challenge-card-${c.id}`}
+                  data-status={node.status}
+                  onClick={() => onPick(c, node)}
+                  disabled={isLocked}
+                  className={`flex flex-col gap-1.5 rounded-md border p-3 text-left transition-colors ${
+                    isLocked
+                      ? "cursor-not-allowed border-archie-border/50 bg-surface/50 opacity-60"
+                      : "border-archie-border bg-surface hover:border-blue-500/60"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="truncate text-sm font-semibold text-text-primary">
+                      {isLocked && <Lock className="mr-1 inline h-3 w-3 text-text-secondary" />}
+                      {c.title}
+                    </span>
+                    <LevelBadge level={level} />
+                  </div>
+
+                  {trackMeta && (
+                    <span className="text-[0.5625rem] text-text-secondary">
+                      {trackMeta.name} · Tier {c.tier}
+                    </span>
+                  )}
+
+                  <p className="line-clamp-2 text-[0.6875rem] text-text-secondary">{c.brief}</p>
+
+                  {isLocked && node.missingRequirements.length > 0 && (
+                    <p className="text-[0.5625rem] text-amber-400">
+                      Requires: {node.missingRequirements.join(", ")}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-between text-[0.625rem] text-text-secondary">
+                    <span>
+                      ${c.budgetCap}/mo · {c.durationSeconds}s
+                      {c.rewards?.xp ? ` · ${c.rewards.xp} XP` : ""}
+                    </span>
+                    <StarRow earned={bestStars[c.id] ?? 0} />
+                  </div>
+                </button>
+              )
+            })}
           </div>
         )}
       </DialogContent>
 
-      {/* Confirm clearing existing work before starting a challenge on a fresh canvas. */}
       <Dialog open={pending !== null} onOpenChange={(o) => { if (!o) setPending(null) }}>
         <DialogContent data-testid="challenge-clear-confirm" className="max-w-sm">
           <DialogHeader>

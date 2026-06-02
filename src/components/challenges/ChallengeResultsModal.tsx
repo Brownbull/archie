@@ -13,6 +13,7 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeAutoScore } from "@/hooks/useChallengeAutoScore"
 import { useChallengeSuggestion } from "@/hooks/useChallengeSuggestion"
 import { useAttemptPersistence } from "@/hooks/useAttemptPersistence"
+import { useProgressPersistence } from "@/hooks/useProgressPersistence"
 import { useAttemptComparison } from "@/hooks/useAttemptComparison"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 import { DeltaChip } from "@/components/challenges/DeltaChip"
@@ -38,6 +39,7 @@ function Criterion({ met, label, detail }: { met: boolean; label: string; detail
 export function ChallengeResultsModal() {
   useChallengeAutoScore()
   useAttemptPersistence()
+  useProgressPersistence()
 
   const suggestion = useChallengeSuggestion()
 

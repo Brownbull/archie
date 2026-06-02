@@ -100,3 +100,34 @@ describe("loadChallengeFromYaml (runtime import)", () => {
     expect(r.error).toMatch(/track/i)
   })
 })
+
+describe("challenge origin stamping (D45)", () => {
+  it("stamps all build-time challenges as origin=builtin", () => {
+    for (const c of getAllChallenges()) {
+      expect(c.origin).toBe("builtin")
+    }
+  })
+
+  it("stamps runtime-imported challenges as origin=user", () => {
+    const yaml = [
+      "schema_version: 2",
+      "id: user-test",
+      "title: User Test",
+      "brief: Test challenge.",
+      "difficulty: beginner",
+      "budget_cap: 50",
+      "duration_seconds: 60",
+      "traffic_curve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }]",
+      "required_components: [compute]",
+      "target_metrics: { uptime_percent: 95, p99_latency_ms: 400 }",
+      "track: foundations",
+      "tier: 1",
+      "available_blocks: [traffic-source, compute]",
+      "rewards: { xp: 100 }",
+    ].join("\n")
+    const r = loadChallengeFromYaml(yaml)
+    expect(r.ok).toBe(true)
+    if (!r.ok) return
+    expect(r.challenge.origin).toBe("user")
+  })
+})

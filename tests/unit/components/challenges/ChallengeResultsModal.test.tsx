@@ -18,6 +18,7 @@ let mockSuggestion: import("@/engine/suggestionEngine").SuggestionResult | null 
 vi.mock("@/hooks/useChallengeSuggestion", () => ({ useChallengeSuggestion: () => mockSuggestion }))
 // Persistence needs auth context + Firestore; it has its own unit test + E2E coverage.
 vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
+vi.mock("@/hooks/useProgressPersistence", () => ({ useProgressPersistence: () => undefined }))
 // Attempt comparison reads auth + the attempts store; control it directly (own unit test covers logic).
 let mockPriorBest: import("@/schemas/attemptSchema").AttemptRecord | null = null
 vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => mockPriorBest }))
@@ -32,6 +33,7 @@ const challenge: Challenge = {
   trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }],
   requiredComponents: ["compute"], targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 },
   scheduledEvents: [], hints: [],
+  schemaVersion: 2, requires: [], unlocks: [], availableBlocks: [], grants: [], origin: "builtin",
 }
 const cs = () => useChallengeStore.getState()
 const frame = (tick: number): TickState => ({ tick, targetRps: 100, nodes: [], totalServedRps: 100, totalFailedRps: 0 })

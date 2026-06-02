@@ -17,8 +17,9 @@ for (const [, raw] of Object.entries(challengeModules)) {
   const parsed = load(raw)
   const result = ChallengeYamlSchema.safeParse(parsed)
   if (result.success) {
-    challengeMap.set(result.data.id, result.data)
-    challengeList.push(result.data)
+    const challenge: Challenge = { ...result.data, origin: "builtin" }
+    challengeMap.set(challenge.id, challenge)
+    challengeList.push(challenge)
   } else if (import.meta.env.DEV) {
     console.warn("Invalid challenge preset:", result.error.issues)
   }
@@ -74,5 +75,5 @@ export function loadChallengeFromYaml(raw: string): ChallengeImportResult {
     return { ok: false, error: `Invalid challenge: ${where}${first?.message ?? "schema validation failed"}` }
   }
 
-  return { ok: true, challenge: result.data }
+  return { ok: true, challenge: { ...result.data, origin: "user" } }
 }

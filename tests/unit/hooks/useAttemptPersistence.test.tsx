@@ -14,6 +14,7 @@ const challenge: Challenge = {
   trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }],
   requiredComponents: ["compute"], targetMetrics: { uptimePercent: 95, p99LatencyMs: 200 },
   scheduledEvents: [], hints: [],
+  schemaVersion: 2, requires: [], unlocks: [], availableBlocks: [], grants: [], origin: "builtin",
 }
 const scoredState = {
   activeChallenge: challenge, attemptState: "scored" as const,

@@ -20,6 +20,7 @@ function ch(partial: Partial<Challenge> & Pick<Challenge, "id">): Challenge {
     unlocks: [],
     availableBlocks: [],
     grants: [],
+    origin: "builtin",
     ...partial,
   }
 }

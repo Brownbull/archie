@@ -8,8 +8,10 @@ vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: { getComponent: (...a: unknown[]) => mockGetComponent(...a) },
 }))
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: { uid: "test-user" }, loading: false, error: null, signIn: vi.fn(), signInWithTest: vi.fn(), signOut: vi.fn() }) }))
 // Persistence requires auth context; it's covered by its own unit test + E2E. Keep the journey focused.
 vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
+vi.mock("@/hooks/useProgressPersistence", () => ({ useProgressPersistence: () => undefined }))
 vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => null }))
 
 import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
@@ -50,12 +52,14 @@ function ChallengeSurface() {
 }
 
 describe("challenge journey (integration): select → build → start → score (Epic 16 P6)", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
     vi.useFakeTimers()
     mockGetComponent.mockImplementation((id: string) => (LIB[id] ? comp(id) : undefined))
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, attemptSnapshot: null, bestStars: {} })
     useSimulationStore.getState().reset()
     useArchitectureStore.setState({ nodes: [], edges: [], topologyIssues: [], topologyIssuesByNodeId: new Map() })
+    useUserProgressStore.setState({ trackXp: {}, completedChallenges: [], loading: false, error: null })
   })
   afterEach(() => {
     useSimulationStore.getState().reset()
@@ -110,7 +114,9 @@ describe("challenge journey (integration): select → build → start → score 
     expect(useSimulationStore.getState().status).toBe("idle")
   })
 
-  it("honors the level's traffic curve, scheduled outage, and authored duration end-to-end", () => {
+  it("honors the level's traffic curve, scheduled outage, and authored duration end-to-end", async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ completedChallenges: ["first-service", "scale-out", "edge-delivery"] })
     const zone = getChallenge("zone-failure")
     expect(zone).toBeDefined()
     if (!zone) return

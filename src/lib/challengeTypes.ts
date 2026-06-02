@@ -2,6 +2,9 @@ import type { TrafficCurve, ScheduledEvent } from "@/lib/simulationTypes"
 
 export type ChallengeDifficulty = "beginner" | "intermediate" | "advanced"
 
+/** Provenance of a challenge — determines whether it grants Mastery Tracks progression (D45). */
+export type ChallengeOrigin = "builtin" | "user"
+
 export interface ChallengeTargetMetrics {
   uptimePercent: number
   p99LatencyMs: number
@@ -55,6 +58,12 @@ export interface Challenge {
   grants: string[]
   /** Progression rewards (XP). Absent on v1 files. */
   rewards?: ChallengeRewards
+  /**
+   * Runtime-only provenance (D45, NOT in the YAML schema). `builtin` is stamped at the build-time
+   * glob (the only path that can produce it); `user` is stamped at loadChallengeFromYaml (runtime
+   * import). Only `builtin` challenges grant XP/block grants toward Mastery Tracks progression.
+   */
+  origin: ChallengeOrigin
 }
 
 /** Status of a challenge node relative to a player's completed set (pure tech-tree resolver). */

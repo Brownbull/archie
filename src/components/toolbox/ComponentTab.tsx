@@ -14,6 +14,9 @@ import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { groupComponentsByType, typeMatchesQuery, typeWithinLevel, type ComponentTypeGroup } from "@/lib/componentTypes"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { componentLibrary } from "@/services/componentLibrary"
+import { useUserProgressStore } from "@/stores/userProgressStore"
+import { getAllChallenges } from "@/services/challengeLoader"
+import { resolveTechTree } from "@/engine/techTree"
 
 /** Maps a component-category id to its display label, falling back to the raw id. */
 function categoryLabel(id: string): string {
@@ -118,16 +121,34 @@ export function ComponentTab() {
 
   // P5: search matches provider name/tags (existing) OR the fundamental type's label/synonyms,
   // so concept queries ("cache", "lb") surface the right type even if no provider name matches.
+  // Phase 2 hard-gate: compute the effective block palette for challenge mode (D45-AC2).
+  // For origin=user challenges, available_blocks is intersected with the player's unlocked
+  // blocks so a self-authored wide-palette challenge can't bypass the progression gate.
+  const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
+  const challengeBlockSet = useMemo(() => {
+    if (!activeChallenge?.availableBlocks?.length) return null
+    const allowed = new Set(activeChallenge.availableBlocks)
+    if (activeChallenge.origin === "user") {
+      const { unlockedBlocks } = resolveTechTree(getAllChallenges(), completedChallenges)
+      return new Set([...allowed].filter((b) => unlockedBlocks.has(b)))
+    }
+    return allowed
+  }, [activeChallenge, completedChallenges])
+
   const filtered = useMemo(() => {
     // Restrict to challenge-allowed categories first (no-op when the challenge sets none).
-    const scoped = allowedCategories
+    let scoped = allowedCategories
       ? components.filter((c) => allowedCategories.includes(c.category))
       : components
+    // Phase 2: hard-gate by available block types (tight type-level gate on top of category).
+    if (challengeBlockSet) {
+      scoped = scoped.filter((c) => c.typeId && challengeBlockSet.has(c.typeId))
+    }
     if (!searchQuery) return scoped
     const q = searchQuery.toLowerCase()
     const nameMatches = new Set(searchComponents(searchQuery).map((c) => c.id))
     return scoped.filter((c) => nameMatches.has(c.id) || typeMatchesQuery(c, q))
-  }, [searchQuery, components, searchComponents, allowedCategories])
+  }, [searchQuery, components, searchComponents, allowedCategories, challengeBlockSet])
 
   // Organize the palette by fundamental TYPE (one logical-block per type), then group those
   // type-blocks under their visual category for the collapsible sections.

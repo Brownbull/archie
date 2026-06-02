@@ -10,6 +10,7 @@ vi.mock("@/services/componentLibrary", () => ({
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
 // Persistence needs auth context; covered by its own unit test + E2E. Keep this flow focused.
 vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
+vi.mock("@/hooks/useProgressPersistence", () => ({ useProgressPersistence: () => undefined }))
 vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => null }))
 
 import { ChallengeStartButton } from "@/components/challenges/ChallengeStartButton"
@@ -39,6 +40,7 @@ const challenge: Challenge = {
   trafficCurve: [{ t: 0, rps: 0 }, { t: 90, rps: 200 }],
   requiredComponents: ["compute"], targetMetrics: { uptimePercent: 90, p99LatencyMs: 500 },
   scheduledEvents: [], hints: [],
+  schemaVersion: 2, requires: [], unlocks: [], availableBlocks: [], grants: [], origin: "builtin",
 }
 const cs = () => useChallengeStore.getState()
 
