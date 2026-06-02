@@ -2407,3 +2407,29 @@ PR: — (direct; carried f8a2f16 [P105 bookkeeping] + 50e2ef6 [P106 burst patter
 CI: deploy-production ✅ green (run 26795776992, 48s)
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P106
+- 2026-06-01 23:17 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-01 23:17 | Edit | /home/khujta/projects/bmad/archie/src/lib/formatStats.ts
+- 2026-06-01 23:18 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 23:18 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 23:19 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 23:19 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 23:19 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 23:19 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficPatternSelect.tsx
+- 2026-06-01 23:19 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-01 23:20 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-01 23:20 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-01 23:20 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-01 23:20 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-01 23:21 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/formatStats.test.ts
+- 2026-06-01 23:22 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+
+## 2026-06-01 23:24 — [391805b] feat(canvas): traffic-source rps scale to 10M + matched lower-row layout
+FINDINGS: 0 critical/high (tsc✓ eslint 0✓ unit 4193✓; Playwright 7/7 — stepper+picker matched height, surge selectable)
+ACTIONS: TRAFFIC_RPS_STEPS 20-step scale 3k→10M (replicaCount=1-based index, fits MAX_REPLICAS 1:1); getNodeCost(traffic) reads scale; formatRps/formatRpsCompact handle millions; node lower row = rps stepper (left, flex-1, taller) + pattern picker (right, narrower, same height); pattern labels shortened
+DEFERRED: optional — fully custom spike windows (still open from Phase 2)
+
+## 2026-06-01 23:25 — PUSH dev -> main
+PR: — (direct; carried 79ab5a4 [P106 bookkeeping] + 391805b [P107 rps scale + layout])
+CI: deploy-production ✅ green (run 26796415251, 45s)
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P107
