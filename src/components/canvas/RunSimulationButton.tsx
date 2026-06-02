@@ -2,9 +2,10 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph, totalTrafficSourceRps, scaleTrafficCurveToPeak } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficPattern } from "@/stores/architectureStoreHelpers"
 import { defaultTrafficCurve } from "@/engine/simulationEngine"
 import { getScenarioPreset } from "@/services/scenarioLoader"
+import { SIM_DEFAULT_DURATION_S } from "@/lib/constants"
 
 /**
  * "Run Simulation" trigger (Epic 15 Phase 5). Builds the SimGraph from the current canvas,
@@ -23,11 +24,18 @@ export function RunSimulationButton() {
   const onRun = () => {
     const { nodes, edges, activeScenarioId } = useArchitectureStore.getState()
     const graph = buildSimGraph(nodes, edges)
-    const scenarioCurve = activeScenarioId ? getScenarioPreset(activeScenarioId)?.trafficCurve : undefined
-    const baseCurve = scenarioCurve ?? defaultTrafficCurve()
-    // Traffic Source blocks set the VOLUME (peak RPS); the scenario/default curve keeps the SHAPE.
     const sourceTotal = totalTrafficSourceRps(nodes)
-    const curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(baseCurve, sourceTotal) : baseCurve
+    // Curve precedence: an active demand Scenario shapes it (scaled to the source volume); else a
+    // Traffic Source's own pattern (wobble/periodic/surge) drives the shape; else the default ramp.
+    const scenarioCurve = activeScenarioId ? getScenarioPreset(activeScenarioId)?.trafficCurve : undefined
+    let curve
+    if (scenarioCurve) {
+      curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(scenarioCurve, sourceTotal) : scenarioCurve
+    } else if (hasTrafficPattern(nodes)) {
+      curve = buildTrafficCurveFromSources(nodes, SIM_DEFAULT_DURATION_S)
+    } else {
+      curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(defaultTrafficCurve(), sourceTotal) : defaultTrafficCurve()
+    }
     start(graph, curve)
   }
 

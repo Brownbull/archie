@@ -193,6 +193,8 @@ export const ArchitectureFileNodeSchema = z.object({
   position: PositionSchema,
   // Epic 14: per-node replica count. Optional + bounded; absent defaults to 1 at hydration.
   replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
+  // Traffic Source burst pattern — shapes its load over the sim timeline. Optional; absent = steady.
+  trafficPattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
   dataContext: z.array(DataContextItemSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict()
 
@@ -228,6 +230,7 @@ const ArchitectureFileNodeYamlSchema = z.object({
   position: PositionSchema,
   // Epic 14: `replicas` is a single word — same key in YAML and camelCase output.
   replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
+  traffic_pattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
   data_context: z.array(DataContextItemYamlSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict().transform((data) => ({
   id: data.id,
@@ -235,6 +238,7 @@ const ArchitectureFileNodeYamlSchema = z.object({
   configVariantId: data.config_variant_id,
   position: data.position,
   replicas: data.replicas,
+  trafficPattern: data.traffic_pattern,
   dataContext: data.data_context,
 }))
 

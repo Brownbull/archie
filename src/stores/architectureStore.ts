@@ -8,6 +8,7 @@ import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
 import { computeWeightedNodeScore, computeHeatmapStatus } from "@/engine/heatmapCalculator"
+import type { TrafficPattern } from "@/engine/trafficPatterns"
 import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
 import {
   CANVAS_GRID_SIZE,
@@ -52,6 +53,8 @@ export interface ArchieNodeData extends Record<string, unknown> {
   componentCategory: ComponentCategoryId
   // Epic 14: horizontal replica count for this node (default 1, range MIN_REPLICAS..MAX_REPLICAS)
   replicaCount: number
+  // Traffic Source only: how its emitted load varies over the simulation timeline (default steady).
+  trafficPattern?: TrafficPattern
 }
 
 export interface ArchieEdgeData extends Record<string, unknown> {
@@ -97,6 +100,7 @@ export interface ArchitectureState {
   ) => void
   updateNodeConfigVariant: (nodeId: string, variantId: string) => void
   setNodeReplicaCount: (nodeId: string, count: number) => void
+  setNodeTrafficPattern: (nodeId: string, pattern: TrafficPattern) => void
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
   duplicateNode: (nodeId: string) => string | null
   removeNode: (nodeId: string) => void
@@ -426,6 +430,17 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     get().triggerRecalculation(nodeId)
     // Replica count feeds the 'replicas-without-lb' topology check (Epic 14)
     _evaluateTopology(get, set)
+  },
+
+  setNodeTrafficPattern: (nodeId, pattern) => {
+    const node = get().nodes.find((n) => n.id === nodeId)
+    // Pattern only shapes the sim's traffic curve at run time — no metric/topology recompute needed.
+    if (!node || node.data.componentCategory !== "traffic" || node.data.trafficPattern === pattern) return
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === nodeId ? { ...n, data: { ...n.data, trafficPattern: pattern } } : n,
+      ),
+    })
   },
 
   updateNodePosition: (nodeId, position) => {

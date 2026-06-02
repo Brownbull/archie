@@ -107,6 +107,18 @@ test.describe("Visual audit", () => {
     // Decluttered: a load origin shows no infra cost / complexity / metric bars.
     await expect(node.locator('[data-testid="archie-node-cost"]')).toHaveCount(0)
     await expect(node.locator('[data-testid="archie-node-complexity"]')).toHaveCount(0)
+
+    // Burst-pattern picker present + selectable; pick "Big surge".
+    const patternSelect = node.locator('[data-testid="traffic-pattern-select"]')
+    await expect(patternSelect).toBeVisible()
+    await patternSelect.click()
+    await page.getByRole("option", { name: "Big surge" }).click()
+    await page.waitForTimeout(250)
+    await node.screenshot({ path: `${SCREENSHOT_DIR}/17-traffic-pattern-surge.png` })
+
+    // The simulation accepts the pattern and starts (Run hands off to the sim bar — no crash).
+    await page.locator('[data-testid="run-simulation"]').click()
+    await expect(page.locator('[data-testid="run-simulation"]')).toHaveCount(0, { timeout: 5_000 })
   })
 
   test("inspector panel", async ({ page }) => {

@@ -23,6 +23,8 @@ import { PORT_TYPES } from "@/lib/constants"
 import { getNodeCost, getNodeComplexity, getNodeCategoryAverages, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
 import { computeWeightedNodeScore } from "@/engine/heatmapCalculator"
 import { TypeIcon } from "@/components/common/TypeIcon"
+import { TrafficPatternSelect } from "@/components/canvas/TrafficPatternSelect"
+import type { TrafficPattern } from "@/engine/trafficPatterns"
 import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
 import { Gauge } from "lucide-react"
 
@@ -149,6 +151,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Traffic sources aren't "scaled" with replicas — instead the stepper drives how many
   // requests/sec they emit (replicaCount multiplies the variant's max_rps via getNodeCost).
   const isTraffic = data.componentCategory === "traffic"
+  const trafficPattern = (data.trafficPattern as TrafficPattern | undefined) ?? "steady"
   const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)
   const needsLB = useArchitectureStore((s) =>
     (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
@@ -313,6 +316,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
           className="nodrag flex flex-wrap items-center gap-1 px-3 pb-1.5"
         >
           {isTraffic ? (
+            <>
             <div
               className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
               onClick={(e) => e.stopPropagation()}
@@ -348,6 +352,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
                 +
               </button>
             </div>
+            <TrafficPatternSelect nodeId={id} pattern={trafficPattern} />
+            </>
           ) : scalingRule.scalable ? (
             <div
               className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"

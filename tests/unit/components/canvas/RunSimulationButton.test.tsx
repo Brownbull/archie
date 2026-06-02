@@ -25,6 +25,8 @@ vi.mock("@/stores/architectureStoreHelpers", () => ({
   buildSimGraph: vi.fn(() => simGraph),
   totalTrafficSourceRps: vi.fn(() => 0),
   scaleTrafficCurveToPeak: (curve: unknown) => curve,
+  buildTrafficCurveFromSources: vi.fn(() => []),
+  hasTrafficPattern: vi.fn(() => false),
 }))
 vi.mock("@/services/scenarioLoader", () => ({
   getScenarioPreset: vi.fn(() => (mockScenarioCurve ? { trafficCurve: mockScenarioCurve } : undefined)),

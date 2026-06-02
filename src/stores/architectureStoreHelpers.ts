@@ -1,6 +1,7 @@
 import { componentLibrary } from "@/services/componentLibrary"
 import { detectTopologyIssues, detectReplicasWithoutLB, type TopologyIssue } from "@/engine/topologyChecker"
 import type { SimGraph, SimNode, SimEdge, TrafficCurve } from "@/lib/simulationTypes"
+import { buildPatternCurve, type TrafficPattern } from "@/engine/trafficPatterns"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { getFailurePreset } from "@/services/failureLoader"
@@ -334,6 +335,40 @@ export function totalTrafficSourceRps(
 export function scaleTrafficCurveToPeak(curve: TrafficCurve, peak: number): TrafficCurve {
   const max = Math.max(1, ...curve.map((p) => p.rps))
   return curve.map((p) => ({ t: p.t, rps: Math.round((p.rps / max) * peak) }))
+}
+
+/** True if any traffic source carries a non-steady pattern (so the sim should shape its own curve). */
+export function hasTrafficPattern(
+  nodes: ReadonlyArray<{ data?: { componentCategory?: string; trafficPattern?: string } }>,
+): boolean {
+  return nodes.some((n) => n.data?.componentCategory === "traffic" && !!n.data.trafficPattern && n.data.trafficPattern !== "steady")
+}
+
+/**
+ * Builds the simulation traffic curve from each Traffic Source's own rate + pattern, summed
+ * tick-aligned across all sources (so multiple sources combine). Each source's average = its
+ * tier × stepper (getNodeCost.maxRPS); its pattern (wobble/periodic/surge) shapes the curve around
+ * that average. Returns [] when there are no rate-bearing sources (caller falls back to the ramp).
+ */
+export function buildTrafficCurveFromSources(
+  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number; trafficPattern?: string } }>,
+  durationS: number,
+  points = 48,
+): TrafficCurve {
+  let combined: TrafficCurve | null = null
+  let seed = 1
+  for (const node of nodes) {
+    const d = node.data
+    if (!d || d.componentCategory !== "traffic") continue
+    const base = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1).maxRPS
+    if (base === undefined || base <= 0) continue
+    const pattern = (d.trafficPattern as TrafficPattern) ?? "steady"
+    const curve = buildPatternCurve(pattern, base, durationS, points, seed++)
+    combined = combined === null
+      ? curve.map((p) => ({ ...p }))
+      : combined.map((p, i) => ({ t: p.t, rps: p.rps + (curve[i]?.rps ?? 0) }))
+  }
+  return combined ?? []
 }
 
 export function computeTotalArchitectureCost(

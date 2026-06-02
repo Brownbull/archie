@@ -27,7 +27,7 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-import { totalTrafficSourceRps, scaleTrafficCurveToPeak } from "@/stores/architectureStoreHelpers"
+import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficPattern } from "@/stores/architectureStoreHelpers"
 
 const node = (archieComponentId: string, activeConfigVariantId: string, componentCategory: string) => ({
   data: { archieComponentId, activeConfigVariantId, componentCategory, replicaCount: 1 },
@@ -54,6 +54,34 @@ describe("traffic source RPS", () => {
     // maxRPS (regression: getNodeCost previously froze it at ×1 because traffic is replicaType 'none').
     const nodes = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 3 } }]
     expect(totalTrafficSourceRps(nodes)).toBe(9000) // 3000 × 3
+  })
+
+  it("hasTrafficPattern detects a non-steady traffic source only", () => {
+    expect(hasTrafficPattern([{ data: { componentCategory: "traffic", trafficPattern: "surge" } }])).toBe(true)
+    expect(hasTrafficPattern([{ data: { componentCategory: "traffic", trafficPattern: "steady" } }])).toBe(false)
+    expect(hasTrafficPattern([{ data: { componentCategory: "traffic" } }])).toBe(false)
+    expect(hasTrafficPattern([{ data: { componentCategory: "compute", trafficPattern: "surge" } }])).toBe(false)
+  })
+
+  it("buildTrafficCurveFromSources shapes a single source by its pattern (surge peaks ~5×)", () => {
+    const nodes = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficPattern: "surge" } }]
+    const curve = buildTrafficCurveFromSources(nodes, 90)
+    expect(curve.length).toBeGreaterThan(2)
+    expect(Math.max(...curve.map((p) => p.rps))).toBeGreaterThan(3000 * 4) // base 3000 × ~5
+    expect(curve[0].rps).toBe(3000) // baseline at the edges
+  })
+
+  it("buildTrafficCurveFromSources sums multiple sources tick-aligned", () => {
+    const nodes = [
+      { data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficPattern: "steady" } },
+      { data: { archieComponentId: "api-client", activeConfigVariantId: "burst", componentCategory: "traffic", replicaCount: 1, trafficPattern: "steady" } },
+    ]
+    const curve = buildTrafficCurveFromSources(nodes, 90)
+    expect(curve.every((p) => p.rps === 15000)).toBe(true) // 3000 + 12000, both steady → flat
+  })
+
+  it("buildTrafficCurveFromSources returns [] with no traffic sources", () => {
+    expect(buildTrafficCurveFromSources([{ data: { archieComponentId: "postgresql", activeConfigVariantId: "default", componentCategory: "data-storage", replicaCount: 1 } }], 90)).toEqual([])
   })
 
   it("rescales a curve to the given peak while preserving its shape", () => {
