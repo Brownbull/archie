@@ -1,21 +1,21 @@
 # aislop Quality Report
 
-**Date:** 20260602-085448
-**Score:** 8/100 (Critical)
+**Date:** 20260602-090233
+**Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
 ## Engine Summary
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 34 | 448ms |
-| code-quality | 119 | 3962ms |
-| ai-slop | 0 | 38ms |
-| security | 8 | 2464ms |
+| lint | 34 | 256ms |
+| code-quality | 115 | 3342ms |
+| ai-slop | 0 | 9ms |
+| security | 8 | 1725ms |
 
 ## Findings
 
-### code-quality (119)
+### code-quality (115)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:43` — knip/dependencies: Unused dependency: tailwindcss
@@ -30,9 +30,6 @@
 - [!] `src/lib/constants.ts:302` — knip/types: Unused type: TailwindZIndex
 - [!] `src/lib/constants.ts:432` — knip/types: Unused type: FailurePresetId
 - [!] `src/lib/constants.ts:0` — knip/duplicates: Duplicate export: unknown
-- [!] `src/lib/challengeTracks.ts:35` — knip/exports: Unused export: CHALLENGE_TRACK_IDS
-- [!] `src/lib/challengeTracks.ts:10` — knip/types: Unused type: ChallengeTrack
-- [!] `src/lib/challengeTracks.ts:60` — knip/types: Unused type: MasteryRank
 - [!] `src/schemas/demandSchema.ts:115` — knip/exports: Unused export: TrafficCurvePointSchema
 - [!] `src/schemas/metricCategorySchema.ts:39` — knip/types: Unused type: ScoreInterpretation
 - [!] `src/schemas/componentSchema.ts:168` — knip/types: Unused type: ConnectionProperties
@@ -130,12 +127,11 @@
 - [!] `src/stores/preferencesStore.ts:6` — knip/types: Unused type: FontSize
 - [!] `src/lib/componentTypes.ts:10` — knip/types: Unused type: ComponentType
 - [!] `src/lib/aggregateStats.ts:4` — knip/types: Unused type: VariantStats
+- [!] `src/lib/challengeTracks.ts:10` — knip/types: Unused type: ChallengeTrack
+- [!] `src/lib/challengeTracks.ts:60` — knip/types: Unused type: MasteryRank
 - [!] `src/services/canvasAutosave.ts:17` — knip/types: Unused type: SavedCanvas
 - [!] `src/stores/dataContextActions.ts:16` — knip/types: Unused type: DataContextActions
 - [!] `src/components/common/DataSourceNote.tsx:4` — knip/types: Unused type: DataSourceKind
-- [!] `src/components/challenges/ChallengeResultsModal.tsx:39` — complexity/function-too-long: Function 'ChallengeResultsModal' has 121 lines (max: 80)
-- [!] `src/components/challenges/ChallengeSelector.tsx:58` — complexity/function-too-long: Function 'ChallengeSelector' has 155 lines (max: 80)
-- [!] `src/components/toolbox/ComponentTab.tsx:59` — complexity/function-too-long: Function 'ComponentTab' has 233 lines (max: 80)
 
 ### lint (34)
 
