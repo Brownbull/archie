@@ -2561,3 +2561,24 @@ PHASE: 4 — Branch challenges (Exec ✅, Commit ✅)
 PR: — (direct fast-forward 9d87224..0db5a1a)
 CI: deploy-production ✅ green (run 26822060783)
 DEPLOYMENTS: P111
+- 2026-06-02 09:16 | Write | /home/khujta/projects/bmad/archie/src/services/challengeExporter.ts
+- 2026-06-02 09:16 | Write | /home/khujta/projects/bmad/archie/src/stores/userChallengeStore.ts
+- 2026-06-02 09:17 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-02 09:17 | Write | /home/khujta/projects/bmad/archie/src/services/challengeFileImport.ts
+- 2026-06-02 09:17 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-02 09:18 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-02 09:18 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-02 09:18 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-02 09:18 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-02 09:18 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-02 09:19 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-02 09:19 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-02 09:19 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-02 09:19 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-02 09:20 | Write | /home/khujta/projects/bmad/archie/tests/unit/services/challengeExporter.test.ts
+- 2026-06-02 09:20 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/userChallengeStore.test.ts
+
+## 2026-06-02 09:22 — [138d5ed] feat(challenges): Phase 5 — Challenge Forge (create/import/export/save)
+FINDINGS: 0
+CHECKS: lint ✅ types ✅ tests ✅ (4272) shape ✅ structure ✅
+PHASE: 5 — Challenge Forge (Exec ✅, Commit ✅)
