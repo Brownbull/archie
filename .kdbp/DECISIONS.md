@@ -853,3 +853,32 @@ dim_overrides: []
 ## D44 — Phase 4 tier: mvp (2026-06-02)
 **Phase:** Branch challenges (content) · **Types:** content, data · **Prototype:** no
 **Reason:** Authoring challenge YAMLs against the v2 schema — iterate on content; no infra rigor needed beyond schema validation. **dim_overrides:** none. **Status:** accepted.
+
+## D45 — Challenge Forge: user challenges play+share but grant ZERO progression (2026-06-02)
+
+**Decision:** Users can create, export, import, and save challenges. User-authored/imported challenges are **playable** and **sharable** (via export-file only — no backend sharing) but grant **zero Mastery Tracks progression** (no XP, no block grants, no track advancement). Only curated built-in challenges (authored as YAML in src/data/challenges/ and loaded at build time) drive the tech tree.
+
+**Key rules:**
+1. **Runtime `origin` field** (not in the .strict() YAML schema): `builtin` stamped at the build-time glob (challengeLoader.ts), `user` stamped at loadChallengeFromYaml runtime import. Non-forgeable — only the glob path produces `builtin`.
+2. **Zero-progression for user-origin:** Phase 2's reward path (scoreAttempt XP + grants) skips any challenge where `origin !== 'builtin'`. This is a **Phase 2 acceptance criterion** (D45-AC1).
+3. **ID-namespace isolation:** User-authored challenge ids are prefixed (`user/`) on import so they CANNOT collide with built-in ids. `isKnownChallengeId` rejects collisions. The completed-set / resolveTechTree is keyed by id and would credit a built-in's grants if a user challenge had the same id.
+4. **Palette hard-gate for user-origin:** For `origin: 'user'` challenges, `available_blocks` is intersected with the player's actually-unlocked blocks (resolveTechTree.unlockedBlocks), so a self-authored wide-palette challenge cannot bypass the Phase 2 hard-gate. This is a **Phase 2 acceptance criterion** (D45-AC2).
+5. **Separate registry:** User-imported challenges live in a separate store (never merged into getAllChallenges / the built-in spine). The techTree resolver runs on the built-in set only.
+6. **Visual editor (v1):** Fully scoped — no free-form string fields. All fields use constrained pickers (track, tier, difficulty, required blocks, available blocks, scheduled-event types from allowlists). Only budget, RPS, and latency accept numeric values (bounded). This is a security win (no XSS surface in-app), but imported YAML files remain fully untrusted and run through the complete Phase-1 validation chain.
+7. **Persistence:** localStorage drafts + owner-only Firestore `userChallenges/{uid}` collection (mirrors attempts/userProgress, D9 rules pattern). Requires manual `firebase deploy --only firestore:rules` (CI deploys hosting only — D9 memory). Exported YAML file is the canonical share format.
+8. **Export = reverse serializer:** `challengeExporter.ts` assembles camelCase → snake_case → re-validates against `ChallengeYamlSchema` (same schema, no hand-rolled inverse) → `js-yaml` dump. Mirrors `exportArchitecture` pattern.
+
+**Sequencing:** Zero-progression invariant (rules 1-4) is a **Phase 2 acceptance criterion**. The authoring UX (visual editor, export/import UI, persistence) ships as **Phase 5 — Challenge Forge** after Phase 4 (which proves the schema is hand-authorable by content).
+
+**Alternatives considered:**
+- Cap rewards for user challenges at some fraction → rejected, still farmable.
+- Signed/trusted challenges (server-verified authorship) → deferred to future community features (MVP 4+).
+- File-based loop only (export template → edit YAML → import, no visual editor) → rejected by user — wants fully scoped in-app editor.
+
+**Status:** active
+
+**Review trigger:** revisit if community challenge sharing (MVP 4) is added — would need a trust/curation layer.
+
+## D46 — Phase 5 tier: enterprise (2026-06-02)
+**Phase:** Challenge Forge (authoring) · **Types:** user-facing, data, file-io, auth · **Prototype:** no
+**Reason:** The visual editor surface touches the progression-integrity boundary (origin, separate registry, id namespacing, palette intersection). Imported YAML is untrusted. Cloud persistence needs Firestore rules (D9 pattern). Enterprise rigor justified. **dim_overrides:** none. **Status:** accepted.

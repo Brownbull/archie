@@ -24,6 +24,7 @@ Mastery Tracks — pivot the Challenge system into a game-like progression/level
 | 2 | Progress model + challenge-mode gating | Cloud-only owner-only Firestore `userProgress/{uid}` (D9 rules); progressStore + persistence; award XP at `scoreAttempt` (delta-above-best, no farming); per-track tiers derived from XP; hard-gate the challenge-mode palette to unlocked/available blocks; login-required challenge mode; WoW relative-level coloring + 2-tier lock in the challenge selector. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Leveling UX — profile, tiers & avatars | Profile panel anchored on AccountMenu: per-track XP bars + tiers + unlockable titles; PixelLab tier avatars (local PNGs + resolver + lockstep test); unlock/tier-up toasts; a tech-tree progression view. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Branch challenges (content) | Author greenfield-track + archetype challenges with the v2 schema: Static Site+CDN, E-Commerce flash-sale (uses the surge traffic pattern), IoT telemetry, Social feed; Security & AI/ML ladders; deeper Data/Realtime/Reliability tiers. | mvp | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Challenge Forge (authoring) | In-app visual editor (fully scoped — no free-form strings, all pickers from allowlists; only budget/RPS/latency numeric); export (challengeExporter reverse serializer → YAML); import (file-gate + loadChallengeFromYaml); separate user-challenge registry (origin-tagged, id-namespaced); localStorage drafts + owner-only Firestore `userChallenges/{uid}` cloud persistence; share = export file only. D45 zero-progression rules enforced by Phase 2. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec ⬜/🔄/✅. Review/Commit/Push auto-ticked. User-facing phases require runtime journey evidence. -->
 
@@ -54,6 +55,8 @@ suppressed_dims_count: 0
 decisions_entry: D42
 ```
 - **Tier:** ent — per-user cloud data + owner-only Firestore rules (D9); XP integrity + login-gated correctness. Runtime journey evidence required (gating). See D42.
+- **D45-AC1:** scoreAttempt reward path skips `origin !== 'builtin'` — user-authored challenges grant ZERO XP/grants.
+- **D45-AC2:** For `origin: 'user'` challenges, `available_blocks` intersected with player's `unlockedBlocks` — no self-authored palette bypass.
 
 ### Phase 3 — Leveling UX — profile, tiers & avatars
 ```yaml
@@ -83,13 +86,14 @@ decisions_entry: D44
 
 ## Current Phase
 
-Phase 1: Challenge schema v2 + tech-tree foundation
+Phase 2: Progress model + challenge-mode gating
 
 ## Dependencies
 
 - P2 depends on P1 (the techTree resolver + schema v2 define unlock/XP edges P2 persists + gates on).
 - P3 depends on P2 (renders the per-user progress + tiers P2 produces).
 - P4 depends on P1 (authors against schema v2); benefits from P2/P3 to play-test the tree.
+- P5 depends on P1 (schema + loadChallengeFromYaml + techTree) and P2 (the zero-progression + palette-intersection acceptance criteria D45-AC1/AC2). Content-wise benefits from P4 (proves schema is hand-authorable).
 
 ## Risks
 
@@ -100,6 +104,8 @@ Phase 1: Challenge schema v2 + tech-tree foundation
 | Hard-gating must NOT leak into free-build mode | medium | Gate keyed strictly on challenge-mode (attemptState); free-build ignores unlockedBlocks (today's behavior) |
 | XP farming via re-attempts | medium | Award delta-above-best per challenge (deterministic) |
 | PixelLab tier avatars are manual MCP generation, no pipeline | low | Generate incrementally (PixFlux 64×64, "Config C"); Lucide fallback via id-Set + lockstep test (D38 pattern) |
+| Self-authored challenges must not grant progression (XP, block grants, palette widening) | critical | D45: runtime origin field (builtin vs user); id-namespace prefix; palette intersection with unlockedBlocks; separate registry. Phase 2 ACs D45-AC1/AC2 |
+| Firestore `userChallenges/{uid}` rules need manual deploy (D9 pattern) | high | Mirror attempts rules; manual `firebase deploy --only firestore:rules`; localStorage drafts as fallback until rules deployed |
 
 ## Notes
 
@@ -117,3 +123,17 @@ Phase 1: Challenge schema v2 + tech-tree foundation
 
 - Phase 2 (challenge-mode gating): Playwright journey — enter challenge mode logged-in, confirm palette hard-gated to unlocked blocks + WoW lock on too-high challenges; screenshots.
 - Phase 3 (leveling UX): Playwright journey — complete a challenge → XP/tier-up → unlocked title/avatar visible in profile; screenshots.
+
+### Phase 5 — Challenge Forge (authoring)
+```yaml
+phase: 5
+types: [user-facing, data, file-io, auth]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Data, Integration, UX, Security]
+suppressed_dims_count: 0
+decisions_entry: D46
+```
+- **Tier:** ent — visual editor touches the progression-integrity boundary (origin, separate registry, id namespacing, palette intersection). Imported YAML is untrusted. Cloud persistence needs Firestore rules (D9 pattern). See D45 (model) + D46.
+- Phase 5 (Challenge Forge): Playwright journey — create a challenge in the visual editor (all-picker, no free-form), export as YAML, import on a fresh session, play the imported challenge, confirm zero XP awarded; screenshots.

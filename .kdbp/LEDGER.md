@@ -2483,3 +2483,7 @@ PR: — (direct fast-forward 391805b..df1fcf5)
 CI: deploy-production ✅ green (run 26799991640, 50s)
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P108
+
+## 2026-06-02 08:29 — PLAN UPDATED: Challenge Forge (Phase 5) + D45/D46
+DECISIONS: D45 (Challenge Forge: zero-progression + origin + id-namespace + scoped editor + cloud persistence), D46 (Phase 5 tier: ent)
+PLAN: Phase 5 added (Challenge Forge); Phase 2 ACs D45-AC1/AC2 (zero-progression, palette intersection); Current Phase advanced to Phase 2; deps + risks + evidence updated
