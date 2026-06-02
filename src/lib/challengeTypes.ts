@@ -52,6 +52,8 @@ export interface Challenge {
   requires: string[]
   /** Challenge ids this challenge opens once completed (display/graph edges; resolver uses requires). */
   unlocks: string[]
+  /** Component TYPE ids that MUST be on the canvas to pass (validated at scoring). */
+  requiredTypes: string[]
   /** Component TYPE ids usable inside this challenge (Phase 2 hard-gate input). Empty = no gate. */
   availableBlocks: string[]
   /** Component TYPE ids permanently unlocked for the player on completion. */

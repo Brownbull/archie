@@ -36,6 +36,7 @@ track: reliability
 tier: 5
 requires: [always-on]
 unlocks: []
+required_types: [observability, load-balancer, cache]
 available_blocks: [compute, relational-db, observability, load-balancer, cache, cdn, message-queue]
 grants: []
 rewards:

@@ -23,6 +23,7 @@ track: edge
 tier: 1
 requires: [first-service]
 unlocks: [edge-balance]
+required_types: [dns]
 available_blocks: [compute, traffic-source, dns]
 grants: [dns]
 rewards:

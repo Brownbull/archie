@@ -25,6 +25,7 @@ track: data
 tier: 1
 requires: [first-service]
 unlocks: [cache-the-hot-path, data-pipeline]
+required_types: [relational-db]
 available_blocks: [compute, relational-db, traffic-source]
 grants: [relational-db]
 rewards:

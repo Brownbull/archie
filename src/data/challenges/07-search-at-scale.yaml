@@ -28,6 +28,7 @@ track: data
 tier: 4
 requires: [polyglot-persistence]
 unlocks: [analytics-backbone]
+required_types: [search-engine, cache]
 available_blocks: [compute, relational-db, cache, search-engine, cdn, traffic-source]
 grants: [search-engine]
 rewards:

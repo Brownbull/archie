@@ -32,6 +32,7 @@ track: realtime
 tier: 5
 requires: [realtime-live]
 unlocks: []
+required_types: [message-queue, event-stream, stream-processor, realtime]
 available_blocks: [compute, message-queue, event-stream, stream-processor, realtime, load-balancer, relational-db, cache, traffic-source]
 grants: []
 rewards:

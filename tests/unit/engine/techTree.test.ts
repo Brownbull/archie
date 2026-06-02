@@ -18,7 +18,7 @@ function ch(partial: Partial<Challenge> & Pick<Challenge, "id">): Challenge {
     schemaVersion: 2,
     requires: [],
     unlocks: [],
-    availableBlocks: [],
+    requiredTypes: [], availableBlocks: [],
     grants: [],
     origin: "builtin",
     ...partial,

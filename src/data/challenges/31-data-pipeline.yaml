@@ -29,6 +29,7 @@ track: aiml
 tier: 2
 requires: [llm-service, add-a-database, async-pipeline]
 unlocks: [rag-retrieval]
+required_types: [llm-gateway, etl, message-queue]
 available_blocks: [compute, llm-gateway, etl, relational-db, object-storage, message-queue, traffic-source]
 grants: [etl]
 rewards:

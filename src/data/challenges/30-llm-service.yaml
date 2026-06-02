@@ -25,6 +25,7 @@ track: aiml
 tier: 1
 requires: [first-service]
 unlocks: [data-pipeline]
+required_types: [llm-gateway]
 available_blocks: [traffic-source, compute, llm-gateway, cache, relational-db]
 grants: [llm-gateway]
 rewards:

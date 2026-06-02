@@ -25,6 +25,7 @@ track: reliability
 tier: 1
 requires: [first-service]
 unlocks: [zone-replica]
+required_types: [observability]
 available_blocks: [compute, relational-db, observability]
 grants: [observability]
 rewards:

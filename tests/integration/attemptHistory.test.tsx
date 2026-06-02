@@ -48,7 +48,7 @@ const challenge: Challenge = {
   trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }],
   requiredComponents: ["compute"], targetMetrics: { uptimePercent: 95, p99LatencyMs: 200 },
   scheduledEvents: [], hints: [],
-  schemaVersion: 2, requires: [], unlocks: [], availableBlocks: [], grants: [], origin: "builtin",
+  schemaVersion: 2, requires: [], unlocks: [], requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
 }
 function Persist() {
   useAttemptPersistence()

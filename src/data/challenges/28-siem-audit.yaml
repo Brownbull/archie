@@ -28,6 +28,7 @@ track: security
 tier: 3
 requires: [rate-limit]
 unlocks: [fortress]
+required_types: [auth, rate-limiter, security]
 available_blocks: [compute, auth, rate-limiter, security, observability, traffic-source]
 grants: [security]
 rewards:

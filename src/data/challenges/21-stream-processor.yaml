@@ -29,6 +29,7 @@ track: realtime
 tier: 3
 requires: [event-stream]
 unlocks: [realtime-live]
+required_types: [stream-processor, event-stream]
 available_blocks: [compute, event-stream, stream-processor, relational-db, cache, traffic-source]
 grants: [stream-processor]
 rewards:

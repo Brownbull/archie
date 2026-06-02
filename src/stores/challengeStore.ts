@@ -31,7 +31,7 @@ interface ChallengeState {
   /** Mark the attempt as running; records the start-time cost/topology snapshot used for scoring. */
   startAttempt: (snapshot?: AttemptSnapshot) => void
   /** Score the finished attempt against the rubric and record best stars. */
-  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number) => StarBreakdown | null
+  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number, canvasTypeIds?: ReadonlySet<string>) => StarBreakdown | null
   /** Leave challenge mode (keeps bestStars history). */
   reset: () => void
 }
@@ -56,10 +56,10 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     set({ attemptState: "running", lastResult: null, attemptSnapshot: snapshot ?? null })
   },
 
-  scoreAttempt: (stats, topologyIssueCount, totalCost) => {
+  scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds) => {
     const challenge = get().activeChallenge
     if (!challenge) return null
-    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost)
+    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds)
     const prevBest = get().bestStars[challenge.id] ?? 0
     set({
       lastResult: result,

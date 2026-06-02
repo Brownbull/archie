@@ -53,6 +53,13 @@ export function useChallengeAutoScore(): void {
       solvableIssueCount = Math.max(0, rawIssueCount - unsolvable.length)
     }
 
-    scoreAttempt(stats, solvableIssueCount, totalCost)
+    // Collect type ids on the canvas for required_types validation.
+    const canvasTypeIds = new Set<string>()
+    for (const node of archState.nodes) {
+      const typeId = node.data?.typeId as string | undefined
+      if (typeId) canvasTypeIds.add(typeId)
+    }
+
+    scoreAttempt(stats, solvableIssueCount, totalCost, canvasTypeIds)
   }, [simStatus, attemptState])
 }

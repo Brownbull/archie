@@ -30,6 +30,7 @@ track: data
 tier: 5
 requires: [search-at-scale]
 unlocks: []
+required_types: [time-series-db, graph-db, vector-store]
 available_blocks: [compute, relational-db, time-series-db, graph-db, vector-store, cache, traffic-source]
 grants: [graph-db, time-series-db, vector-store]
 rewards:

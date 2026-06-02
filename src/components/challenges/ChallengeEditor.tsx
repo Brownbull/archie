@@ -44,6 +44,7 @@ function emptyDraft(): Omit<Challenge, "origin"> {
     durationSeconds: 60,
     trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 500 }],
     requiredComponents: [],
+    requiredTypes: [],
     targetMetrics: { uptimePercent: 95, p99LatencyMs: 400 },
     scheduledEvents: [],
     hints: [],

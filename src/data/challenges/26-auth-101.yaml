@@ -24,6 +24,7 @@ track: security
 tier: 1
 requires: [first-service]
 unlocks: [rate-limit]
+required_types: [auth]
 available_blocks: [compute, auth, traffic-source]
 grants: [auth]
 rewards:

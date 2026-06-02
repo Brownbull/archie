@@ -27,6 +27,7 @@ track: realtime
 tier: 2
 requires: [async-pipeline]
 unlocks: [stream-processor]
+required_types: [event-stream, message-queue]
 available_blocks: [compute, message-queue, event-stream, relational-db, nosql, cache, traffic-source]
 grants: [event-stream]
 rewards:

@@ -27,6 +27,7 @@ track: foundations
 tier: 2
 requires: [first-service]
 unlocks: [serverless-burst, edge-balance, zone-replica]
+required_types: [load-balancer]
 available_blocks: [traffic-source, compute, load-balancer]
 grants: [load-balancer]
 rewards:

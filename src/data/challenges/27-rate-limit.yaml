@@ -27,6 +27,7 @@ track: security
 tier: 2
 requires: [auth-101]
 unlocks: [siem-audit]
+required_types: [auth, rate-limiter]
 available_blocks: [compute, auth, rate-limiter, traffic-source]
 grants: [rate-limiter]
 rewards:

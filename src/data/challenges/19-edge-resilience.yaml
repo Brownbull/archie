@@ -32,6 +32,7 @@ track: edge
 tier: 5
 requires: [api-gateway, zone-failure]
 unlocks: []
+required_types: [cdn, api-gateway, cache]
 available_blocks: [compute, traffic-source, dns, load-balancer, cdn, api-gateway, cache]
 grants: []
 rewards:

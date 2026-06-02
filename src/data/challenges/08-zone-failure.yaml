@@ -30,6 +30,7 @@ track: reliability
 tier: 3
 requires: [zone-replica, edge-delivery]
 unlocks: [always-on]
+required_types: [observability, load-balancer]
 available_blocks: [compute, relational-db, observability, load-balancer, cache]
 grants: []
 rewards:

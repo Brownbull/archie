@@ -27,6 +27,7 @@ track: realtime
 tier: 1
 requires: [first-service, add-a-database]
 unlocks: [event-stream]
+required_types: [message-queue, relational-db]
 available_blocks: [compute, message-queue, relational-db, cache, load-balancer, traffic-source]
 grants: [message-queue]
 rewards:

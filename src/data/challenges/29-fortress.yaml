@@ -34,6 +34,7 @@ track: security
 tier: 5
 requires: [siem-audit, always-on]
 unlocks: []
+required_types: [auth, rate-limiter, security, observability]
 available_blocks: [compute, auth, rate-limiter, security, cdn, observability, cache, relational-db, traffic-source]
 grants: []
 rewards:

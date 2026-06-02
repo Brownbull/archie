@@ -14,6 +14,7 @@ export function evaluateAttempt(
   challenge: Challenge,
   topologyIssueCount: number,
   totalCost: number,
+  canvasTypeIds?: ReadonlySet<string>,
 ): StarBreakdown {
   const passedMetrics =
     stats.uptimePercent >= challenge.targetMetrics.uptimePercent &&
@@ -21,11 +22,17 @@ export function evaluateAttempt(
   const underBudget = totalCost <= challenge.budgetCap
   const cleanTopology = topologyIssueCount === 0
 
-  const stars = passedMetrics ? 1 + (underBudget ? 1 : 0) + (cleanTopology ? 1 : 0) : 0
+  // required_types: the key blocks the challenge is designed to teach MUST be on the canvas.
+  // Missing a required type blocks all stars — you can't pass without the right architecture.
+  const hasAllRequiredTypes = challenge.requiredTypes.length === 0
+    || (canvasTypeIds ? challenge.requiredTypes.every((t) => canvasTypeIds.has(t)) : true)
+
+  const basePass = passedMetrics && hasAllRequiredTypes
+  const stars = basePass ? 1 + (underBudget ? 1 : 0) + (cleanTopology ? 1 : 0) : 0
 
   return {
     stars: stars as StarBreakdown["stars"],
-    passedMetrics,
+    passedMetrics: passedMetrics && hasAllRequiredTypes,
     underBudget,
     cleanTopology,
   }

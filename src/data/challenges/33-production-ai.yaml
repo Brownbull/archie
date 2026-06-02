@@ -32,6 +32,7 @@ track: aiml
 tier: 4
 requires: [rag-retrieval, zone-failure, always-on]
 unlocks: []
+required_types: [llm-gateway, observability, cache]
 available_blocks: [traffic-source, load-balancer, cdn, compute, llm-gateway, etl, vector-store, relational-db, cache, observability, message-queue]
 grants: []
 rewards:

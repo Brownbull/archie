@@ -27,6 +27,7 @@ track: foundations
 tier: 4
 requires: [serverless-burst]
 unlocks: [foundations-mastery]
+required_types: [worker, message-queue]
 available_blocks: [traffic-source, compute, load-balancer, serverless, worker, message-queue]
 grants: [worker]
 rewards:
