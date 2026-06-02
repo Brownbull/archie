@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260602-092143
+**Date:** 20260602-093801
 **Score:** 8/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,14 +8,14 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 45 | 244ms |
-| code-quality | 116 | 3058ms |
-| ai-slop | 0 | 12ms |
-| security | 8 | 2679ms |
+| lint | 45 | 224ms |
+| code-quality | 115 | 2908ms |
+| ai-slop | 0 | 10ms |
+| security | 8 | 1999ms |
 
 ## Findings
 
-### code-quality (116)
+### code-quality (115)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:43` — knip/dependencies: Unused dependency: tailwindcss
@@ -131,13 +131,13 @@
 - [!] `src/services/canvasAutosave.ts:17` — knip/types: Unused type: SavedCanvas
 - [!] `src/stores/dataContextActions.ts:16` — knip/types: Unused type: DataContextActions
 - [!] `src/components/common/DataSourceNote.tsx:4` — knip/types: Unused type: DataSourceKind
-- [!] `src/components/challenges/ChallengeEditor.tsx:91` — complexity/function-too-long: Function 'ChallengeEditor' has 156 lines (max: 80)
-- [!] `src/components/challenges/ChallengeSelector.tsx:62` — complexity/function-too-long: Function 'ChallengeSelector' has 219 lines (max: 80)
+- [!] `src/components/challenges/ChallengeTreeView.tsx:175` — complexity/function-too-long: Function 'ChallengeTreeView' has 99 lines (max: 80)
 
 ### lint (45)
 
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/dashboard/DashboardOverlay.tsx:255` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/challenges/ChallengeEditor.tsx:152` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:156` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:162` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
@@ -149,11 +149,6 @@
 - [!] `src/components/challenges/ChallengeEditor.tsx:215` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:222` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:226` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/dashboard/DashboardOverlay.tsx:255` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/services/yamlImporter.ts:139` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
-- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/canvas/TrafficPatternSelect.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/TrafficPatternSelect.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/NodeProviderSelect.tsx:59` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
@@ -163,21 +158,25 @@
 - [!] `src/components/canvas/ArchieNode.tsx:353` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/ArchieNode.tsx:314` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/ArchieNode.tsx:353` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/dashboard/CategoryBar.tsx:30` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/services/yamlImporter.ts:139` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
+- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/layout/AppMenuBar.tsx:47` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/layout/AppMenuBar.tsx:47` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/layout/AppMenuBar.tsx:49` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/layout/AppMenuBar.tsx:49` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'scheduled_events' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'hints' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:95` — eslint/no-unused-vars: Variable 'track' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:95` — eslint/no-unused-vars: Variable 'tier' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:95` — eslint/no-unused-vars: Variable 'rewards' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
-- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
+- [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 - [!] `tests/e2e/global-setup.ts:20` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
