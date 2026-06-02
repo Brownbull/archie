@@ -2469,3 +2469,11 @@ NOTE: plan-formalization commit (pre-Phase-1); PLAN Commit column intentionally 
 - 2026-06-02 01:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/challengeLoader.test.ts
 - 2026-06-02 01:08 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
 - 2026-06-02 01:08 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+
+## 2026-06-02 01:13 — [9e3d4f8] feat(challenges): Mastery Tracks schema v2 + tech-tree resolver
+FINDINGS: 4 (0 critical, 0 high, 0 medium, 4 low) — all CHECK 7 Layer-3 well doc-drift (G2/G3/G5/G6)
+ACTIONS: accept ×4 (empty scaffold wells 0/0/0; /gabe-teach is the durable doc path)
+CHECKS: lint ✅ types ✅ tests ✅ (4217) shape ✅ structure ✅ coverage ✅
+DEFERRED: none
+PHASE: 1 — Challenge schema v2 + tech-tree foundation (Exec ✅, Commit ✅)
+NOTE: aislop 9/100 advisory (repo-wide knip baseline; eslint gate clean; not in CI)
