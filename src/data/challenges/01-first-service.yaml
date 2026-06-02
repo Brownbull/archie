@@ -19,3 +19,12 @@ target_metrics:
 hints:
   - One compute node is enough at this traffic — pick the cheapest variant that keeps up.
   - Watch the budget bar; a bigger instance than you need just burns money.
+schema_version: 2
+track: foundations
+tier: 1
+requires: []
+unlocks: [scale-out, add-a-database, async-pipeline]
+available_blocks: [traffic-source, compute]
+grants: []
+rewards:
+  xp: 100

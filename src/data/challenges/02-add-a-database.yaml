@@ -20,3 +20,12 @@ target_metrics:
 hints:
   - Connect compute to the database — traffic flows from the entry node downstream.
   - The database adds latency; a single managed instance is plenty at this load.
+schema_version: 2
+track: data
+tier: 1
+requires: [first-service]
+unlocks: [cache-the-hot-path, async-pipeline]
+available_blocks: [compute, relational-db, traffic-source]
+grants: [relational-db]
+rewards:
+  xp: 100

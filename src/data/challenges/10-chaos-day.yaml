@@ -31,3 +31,12 @@ hints:
   - Two outages hit different tiers — the requests dropped during each window are unavoidable.
   - Nothing in the model recovers an offline tier early, so the win is in the non-outage windows — keep every serving node under 100% load there so latency and shed stay flat.
   - Outages take the whole category offline; the score rewards how clean (topology) and cheap (budget) the surviving design is.
+schema_version: 2
+track: reliability
+tier: 5
+requires: [always-on]
+unlocks: []
+available_blocks: [compute, relational-db, observability, load-balancer, cache, cdn, message-queue]
+grants: []
+rewards:
+  xp: 300

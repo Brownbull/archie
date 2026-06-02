@@ -25,3 +25,12 @@ hints:
   - Every tier on the request path carries the load routed to it — size edge, compute, cache, and data-storage so none exceeds 100% at peak.
   - Scale compute with replicas behind the edge/LB until peak traffic fits under capacity.
   - Keep monitoring off the request path — wired as a leaf it adds budget cost but no load or latency, which is the point.
+schema_version: 2
+track: reliability
+tier: 4
+requires: [zone-failure]
+unlocks: [chaos-day]
+available_blocks: [compute, relational-db, observability, load-balancer, cache, cdn, message-queue]
+grants: []
+rewards:
+  xp: 200

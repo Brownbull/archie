@@ -23,3 +23,12 @@ hints:
   - Your design must include the caching and search tiers; give each enough capacity that neither saturates at peak.
   - Scale compute with replicas behind the edge/LB; a single node won't hold p99 here.
   - Tight latency targets punish any overloaded tier — keep every node under 100% load.
+schema_version: 2
+track: data
+tier: 4
+requires: [cache-the-hot-path]
+unlocks: []
+available_blocks: [compute, relational-db, cache, search-engine, cdn, traffic-source]
+grants: [search-engine]
+rewards:
+  xp: 250

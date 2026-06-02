@@ -2452,3 +2452,20 @@ HTML_ARTIFACT: docs/gabe/plans/2026-06-02-mastery-tracks/index.html (custom inte
 - 2026-06-02 00:36 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
 - 2026-06-02 00:52 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
 - 2026-06-02 00:52 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+
+## 2026-06-02 00:59 — [28cc405] docs(mastery-tracks): formalize challenge-tree leveling plan + artifact
+FINDINGS: 4 (0 critical, 0 high, 4 medium, 0 low)
+ACTIONS: update-structure ×4 (added docs/gabe/** + docs/**/*.{csv,json} allowed patterns) — HTML artifact + 3 avatar PNGs now matched
+DEFERRED: none
+NOTE: plan-formalization commit (pre-Phase-1); PLAN Commit column intentionally not ticked — Phase 1 Exec still ⬜
+- 2026-06-02 01:03 | Write | /home/khujta/projects/bmad/archie/src/lib/challengeTracks.ts
+- 2026-06-02 01:03 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-02 01:04 | Write | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-02 01:04 | Write | /home/khujta/projects/bmad/archie/src/engine/techTree.ts
+- 2026-06-02 01:04 | Edit | /home/khujta/projects/bmad/archie/src/services/challengeLoader.ts
+- 2026-06-02 01:05 | Edit | /home/khujta/projects/bmad/archie/src/services/challengeLoader.ts
+- 2026-06-02 01:07 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/techTree.test.ts
+- 2026-06-02 01:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+- 2026-06-02 01:07 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/challengeLoader.test.ts
+- 2026-06-02 01:08 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-02 01:08 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts

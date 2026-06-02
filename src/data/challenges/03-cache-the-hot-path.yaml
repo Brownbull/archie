@@ -21,3 +21,12 @@ target_metrics:
 hints:
   - p99 latency rises sharply once any node runs past 100% load — the target is met by keeping every tier under capacity, not by overloading one.
   - Give the caching and data-storage tiers enough capacity (variant size or replicas) that the read path never saturates at peak.
+schema_version: 2
+track: data
+tier: 2
+requires: [add-a-database]
+unlocks: [search-at-scale]
+available_blocks: [compute, relational-db, cache, traffic-source]
+grants: [cache, object-storage]
+rewards:
+  xp: 150

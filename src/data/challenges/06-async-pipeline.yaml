@@ -22,3 +22,12 @@ target_metrics:
 hints:
   - The traffic curve peaks, dips, then peaks higher — provision for the highest peak, since the model has no cross-time queue to smooth it.
   - Route compute → messaging → data-storage; give each tier capacity (or replicas) to carry the served load it receives without shedding.
+schema_version: 2
+track: realtime
+tier: 1
+requires: [first-service, add-a-database]
+unlocks: []
+available_blocks: [compute, message-queue, relational-db, cache, load-balancer, traffic-source]
+grants: [message-queue]
+rewards:
+  xp: 150

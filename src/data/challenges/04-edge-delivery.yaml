@@ -20,3 +20,12 @@ target_metrics:
 hints:
   - The delivery/network tier is your entry point — route edge → compute so traffic enters there.
   - Whatever a node serves flows on to what it points at, so the compute tier still sees the served load — give it (or its replicas) enough capacity to stay under 100% at peak.
+schema_version: 2
+track: edge
+tier: 3
+requires: [scale-out]
+unlocks: [zone-failure]
+available_blocks: [compute, traffic-source, dns, load-balancer, cdn]
+grants: [cdn]
+rewards:
+  xp: 175

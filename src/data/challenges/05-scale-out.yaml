@@ -23,3 +23,12 @@ hints:
   - Raise the replica count on compute until it keeps up with peak traffic.
   - Replicas without a load balancer upstream raise a topology warning — add the LB tier.
   - Capacity scales with replicas; latency climbs once a node is past 100% load.
+schema_version: 2
+track: foundations
+tier: 2
+requires: [first-service]
+unlocks: [edge-delivery]
+available_blocks: [traffic-source, compute, load-balancer]
+grants: [load-balancer]
+rewards:
+  xp: 150

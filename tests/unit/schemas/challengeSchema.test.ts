@@ -52,3 +52,60 @@ describe("ChallengeYamlSchema (Epic 16)", () => {
     expect(ScheduledEventSchema.safeParse({ t: 10, type: "meteor", target: "n1" }).success).toBe(false)
   })
 })
+
+describe("ChallengeYamlSchema v2 tech-tree fields (Mastery Tracks)", () => {
+  const v2 = {
+    ...valid,
+    schema_version: 2,
+    track: "foundations",
+    tier: 1,
+    requires: [],
+    unlocks: ["scale-out"],
+    available_blocks: ["traffic-source", "compute"],
+    grants: ["load-balancer"],
+    rewards: { xp: 100 },
+  }
+
+  it("defaults schema_version to 1 and the tree fields to empty for a legacy file", () => {
+    const r = ChallengeYamlSchema.safeParse(valid)
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect(r.data.schemaVersion).toBe(1)
+    expect(r.data.requires).toEqual([])
+    expect(r.data.unlocks).toEqual([])
+    expect(r.data.availableBlocks).toEqual([])
+    expect(r.data.grants).toEqual([])
+    expect(r.data.track).toBeUndefined()
+    expect(r.data.rewards).toBeUndefined()
+  })
+
+  it("parses a full v2 challenge and transforms the tree fields", () => {
+    const r = ChallengeYamlSchema.safeParse(v2)
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect(r.data.schemaVersion).toBe(2)
+    expect(r.data.track).toBe("foundations")
+    expect(r.data.tier).toBe(1)
+    expect(r.data.availableBlocks).toEqual(["traffic-source", "compute"])
+    expect(r.data.grants).toEqual(["load-balancer"])
+    expect(r.data.rewards).toEqual({ xp: 100 })
+  })
+
+  it("requires track, tier, and rewards when schema_version is 2", () => {
+    const { track, tier, rewards, ...missing } = v2
+    expect(ChallengeYamlSchema.safeParse(missing).success).toBe(false)
+  })
+
+  it("rejects an unknown track id", () => {
+    expect(ChallengeYamlSchema.safeParse({ ...v2, track: "wizardry" }).success).toBe(false)
+  })
+
+  it("rejects a tier outside 1–5", () => {
+    expect(ChallengeYamlSchema.safeParse({ ...v2, tier: 6 }).success).toBe(false)
+  })
+
+  it("rejects an unknown component type id in available_blocks / grants", () => {
+    expect(ChallengeYamlSchema.safeParse({ ...v2, available_blocks: ["not-a-real-block"] }).success).toBe(false)
+    expect(ChallengeYamlSchema.safeParse({ ...v2, grants: ["not-a-real-block"] }).success).toBe(false)
+  })
+})

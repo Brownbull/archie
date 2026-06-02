@@ -25,3 +25,12 @@ hints:
   - The outage hits early while traffic is still low — that's the cheapest window to lose, but you can't prevent the drop.
   - An az_outage takes every node of the targeted category down; adding more compute replicas won't dodge it (they're all the same category).
   - Keep compute under 100% load outside the outage so p99 stays inside the target — that's where the pass is won.
+schema_version: 2
+track: reliability
+tier: 3
+requires: [edge-delivery]
+unlocks: [always-on]
+available_blocks: [compute, relational-db, observability, load-balancer, cache]
+grants: []
+rewards:
+  xp: 150
