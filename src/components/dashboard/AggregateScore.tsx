@@ -1,4 +1,5 @@
-import { getScoreColor } from "@/engine/dashboardCalculator"
+import { Star } from "lucide-react"
+import { scoreToStars, starColor } from "@/lib/metricStars"
 import { METRIC_MAX_VALUE } from "@/lib/constants"
 
 interface AggregateScoreProps {
@@ -6,18 +7,6 @@ interface AggregateScoreProps {
   balancedScore?: number
 }
 
-// Must stay in sync with getScoreColor() in dashboardCalculator.ts
-const SCORE_TEXT_COLORS: Record<string, string> = {
-  "bg-[#3fcf6a]": "text-[#3fcf6a]",
-  "bg-[#3b9dff]": "text-[#3b9dff]",
-  "bg-[#ff8a3d]": "text-[#ff8a3d]",
-}
-
-function bgToTextColor(bgClass: string): string {
-  return SCORE_TEXT_COLORS[bgClass] ?? "text-text-primary"
-}
-
-/** Turns the 0–10 score into a familiar letter grade so a number like "7.2" reads as good/bad. */
 function letterGrade(score: number): string {
   const pct = score / METRIC_MAX_VALUE
   if (pct >= 0.85) return "A"
@@ -27,14 +16,25 @@ function letterGrade(score: number): string {
   return "F"
 }
 
-const GRADE_HELP = "Letter grade from the overall score — A ≥8.5, B ≥7, C ≥5.5, D ≥4, else F (out of 10)."
+function StarDisplay({ count, size = "h-3 w-3" }: { count: number; size?: string }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          className={`${size} ${n <= count ? "fill-current" : ""}`}
+          style={{ color: n <= count ? starColor(count) : "#374151" }}
+        />
+      ))}
+    </div>
+  )
+}
 
 export function AggregateScore({ score, balancedScore }: AggregateScoreProps) {
-  const textColor = bgToTextColor(getScoreColor(score))
+  const stars = scoreToStars(score)
+  const color = starColor(stars)
   const grade = letterGrade(score)
-  const showDual =
-    balancedScore !== undefined &&
-    balancedScore.toFixed(1) !== score.toFixed(1)
+  const showDual = balancedScore !== undefined && balancedScore.toFixed(1) !== score.toFixed(1)
 
   return (
     <div
@@ -45,44 +45,17 @@ export function AggregateScore({ score, balancedScore }: AggregateScoreProps) {
       aria-valuemax={METRIC_MAX_VALUE}
       className="flex flex-col items-center justify-center px-4"
     >
-      {showDual ? (
-        <>
-          <div className="flex items-baseline gap-2">
-            <span
-              data-testid="aggregate-score-weighted"
-              className={`text-2xl font-bold ${textColor}`}
-            >
-              {score.toFixed(1)}
-            </span>
-            <span className="text-xs text-text-secondary">|</span>
-            <span
-              data-testid="aggregate-score-balanced"
-              className="text-lg font-medium text-text-secondary"
-            >
-              {balancedScore.toFixed(1)}
-            </span>
-          </div>
-          <span className="text-xs text-text-secondary">
-            Weighted | Balanced
-          </span>
-        </>
-      ) : (
-        <>
-          <div className="flex items-baseline gap-1.5">
-            <span className={`text-3xl font-bold ${textColor}`}>
-              {score.toFixed(1)}
-            </span>
-            <span
-              data-testid="aggregate-score-grade"
-              title={GRADE_HELP}
-              className={`text-lg font-bold ${textColor}`}
-            >
-              {grade}
-            </span>
-          </div>
-          <span className="text-xs text-text-secondary" title={GRADE_HELP}>Overall</span>
-        </>
+      <div className="flex items-baseline gap-1.5">
+        <span className="text-3xl font-bold" style={{ color }}>{score.toFixed(1)}</span>
+        <span data-testid="aggregate-score-grade" className="text-lg font-bold" style={{ color }}>{grade}</span>
+      </div>
+      <StarDisplay count={stars} />
+      {showDual && (
+        <span data-testid="aggregate-score-balanced" className="mt-0.5 text-[0.5625rem] text-text-secondary">
+          balanced: {balancedScore.toFixed(1)}
+        </span>
       )}
+      <span className="text-xs text-text-secondary">Overall</span>
     </div>
   )
 }

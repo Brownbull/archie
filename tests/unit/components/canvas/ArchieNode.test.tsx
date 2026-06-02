@@ -482,8 +482,6 @@ describe("ArchieNode", () => {
       expect(bars).toHaveLength(2)
       expect(screen.getByText("Perf")).toBeInTheDocument()
       expect(screen.getByText("Scale")).toBeInTheDocument()
-      expect(screen.getByText("8.0")).toBeInTheDocument()
-      expect(screen.getByText("4.0")).toBeInTheDocument()
     })
 
     it("does not render metric bars when no metrics", () => {

@@ -1,6 +1,13 @@
-import { getScoreColor } from "@/engine/dashboardCalculator"
-import { METRIC_MAX_VALUE, type MetricCategoryId } from "@/lib/constants"
+import { useState } from "react"
+import { Star } from "lucide-react"
+import { type MetricCategoryId } from "@/lib/constants"
 import { getCategoryIcon } from "@/lib/categoryIcons"
+import { scoreToStars, scoreToStarPercent, starColor, METRIC_INFO } from "@/lib/metricStars"
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover"
 
 interface CategoryBarProps {
   categoryId: MetricCategoryId
@@ -8,9 +15,22 @@ interface CategoryBarProps {
   iconName: string
   categoryColor: string
   score: number
-  /** Weight multiplier in [WEIGHT_MIN, WEIGHT_MAX] range (0-1). */
   weight?: number
   onClick?: () => void
+}
+
+function StarDisplay({ count }: { count: number }) {
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Star
+          key={n}
+          className={`h-2.5 w-2.5 ${n <= count ? "fill-current" : ""}`}
+          style={{ color: n <= count ? starColor(count) : "#374151" }}
+        />
+      ))}
+    </div>
+  )
 }
 
 export function CategoryBar({
@@ -20,55 +40,76 @@ export function CategoryBar({
   categoryColor,
   score,
   weight,
-  onClick,
 }: CategoryBarProps) {
-  const widthPercent = Math.max(0, Math.min(100, (score / METRIC_MAX_VALUE) * 100))
-  const fillColor = getScoreColor(score)
+  const stars = scoreToStars(score)
+  const widthPercent = scoreToStarPercent(score)
+  const color = starColor(stars)
   const IconComponent = getCategoryIcon(iconName)
+  const info = METRIC_INFO[categoryId]
+  const [popoverOpen, setPopoverOpen] = useState(false)
 
   return (
-    <div
-      data-testid={`category-bar-${categoryId}`}
-      role="meter"
-      aria-valuenow={score}
-      aria-valuemin={0}
-      aria-valuemax={METRIC_MAX_VALUE}
-      aria-label={shortName}
-      className={`flex min-w-[120px] flex-1 flex-col justify-center gap-1 px-2${onClick ? " cursor-pointer rounded hover:bg-muted/50" : ""}`}
-      onClick={onClick}
-      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick() } } : undefined}
-      tabIndex={onClick ? 0 : undefined}
-    >
-      <div className="flex items-center gap-1.5">
-        {IconComponent && (
-          <IconComponent
-            className="h-3.5 w-3.5 shrink-0"
-            style={{ color: categoryColor }}
-          />
-        )}
-        <span className="truncate text-xs text-text-secondary">{shortName}</span>
-        <span className="ml-auto shrink-0 text-xs font-medium text-text-primary">
-          {score.toFixed(1)}
-        </span>
-        {weight !== undefined && weight !== 1.0 && (
-          <span
-            data-testid={`weight-badge-${categoryId}`}
-            className="shrink-0 rounded bg-primary/15 px-1 text-[0.625rem] font-medium text-primary"
-          >
-            {weight.toFixed(1)}x
-          </span>
-        )}
-      </div>
-      <div className="h-2 w-full rounded-full bg-muted">
+    <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+      <PopoverTrigger asChild>
         <div
-          data-testid={`category-bar-fill-${categoryId}`}
-          className={`h-full rounded-full ${fillColor}`}
-          style={{
-            width: `${widthPercent}%`,
-            transition: "width 300ms ease, background-color 300ms ease",
-          }}
-        />
-      </div>
-    </div>
+          data-testid={`category-bar-${categoryId}`}
+          role="meter"
+          aria-valuenow={score}
+          aria-valuemin={0}
+          aria-valuemax={10}
+          aria-label={shortName}
+          className="flex min-w-[120px] flex-1 cursor-pointer flex-col justify-center gap-1 rounded px-2 hover:bg-muted/50"
+          tabIndex={0}
+        >
+          <div className="flex items-center gap-1.5">
+            {IconComponent && (
+              <IconComponent className="h-3.5 w-3.5 shrink-0" style={{ color: categoryColor }} />
+            )}
+            <span className="truncate text-xs text-text-secondary">{shortName}</span>
+            <span className="ml-auto shrink-0">
+              <StarDisplay count={stars} />
+            </span>
+            {weight !== undefined && weight !== 1.0 && (
+              <span
+                data-testid={`weight-badge-${categoryId}`}
+                className="shrink-0 rounded bg-primary/15 px-1 text-[0.625rem] font-medium text-primary"
+              >
+                {weight.toFixed(1)}x
+              </span>
+            )}
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-muted">
+            <div
+              data-testid={`category-bar-fill-${categoryId}`}
+              className="h-full rounded-full"
+              style={{
+                width: `${widthPercent}%`,
+                backgroundColor: color,
+                transition: "width 300ms ease, background-color 300ms ease",
+              }}
+            />
+          </div>
+        </div>
+      </PopoverTrigger>
+      {info && (
+        <PopoverContent side="top" className="w-64 p-3" data-testid={`metric-popover-${categoryId}`}>
+          <h4 className="text-sm font-bold text-text-primary">{info.name}</h4>
+          <p className="mt-1 text-[0.6875rem] text-text-secondary">{info.description}</p>
+          <div className="mt-2 flex items-center gap-1.5">
+            <StarDisplay count={stars} />
+            <span className="text-xs font-medium" style={{ color }}>{stars}/5</span>
+            <span className="text-[0.5625rem] text-text-secondary">({score.toFixed(1)}/10)</span>
+          </div>
+          <div className="mt-2">
+            <span className="text-[0.625rem] font-medium text-text-secondary">What affects this:</span>
+            <ul className="mt-0.5 flex flex-col gap-0.5">
+              {info.factors.map((f) => (
+                <li key={f} className="text-[0.5625rem] text-text-secondary">• {f}</li>
+              ))}
+            </ul>
+          </div>
+        </PopoverContent>
+      )}
+    </Popover>
   )
 }
