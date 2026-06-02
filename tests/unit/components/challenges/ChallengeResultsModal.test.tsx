@@ -161,7 +161,7 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     })
   })
 
-  it("Close leaves challenge mode and clears the simulation", () => {
+  it("Close returns to building mode (stays in challenge) and clears the simulation", () => {
     useChallengeStore.setState({
       activeChallenge: challenge, attemptState: "scored",
       lastResult: { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true },
@@ -170,8 +170,8 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     useSimulationStore.setState({ status: "done", ticks: [frame(0)], currentTick: 0 })
     render(<ChallengeResultsModal />)
     fireEvent.click(screen.getByTestId("result-close"))
-    expect(cs().activeChallenge).toBeNull()
-    expect(cs().attemptState).toBe("idle")
+    expect(cs().activeChallenge?.id).toBe("c1")
+    expect(cs().attemptState).toBe("building")
     expect(useSimulationStore.getState().status).toBe("idle")
   })
 })

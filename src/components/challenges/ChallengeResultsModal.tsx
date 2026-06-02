@@ -106,7 +106,6 @@ export function ChallengeResultsModal() {
   const result = useChallengeStore((s) => s.lastResult)
   const measured = useChallengeStore((s) => s.lastMeasured)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
-  const reset = useChallengeStore((s) => s.reset)
   const resetSim = useSimulationStore((s) => s.reset)
 
   const priorBest = useAttemptComparison(challenge?.id ?? "", {
@@ -130,7 +129,7 @@ export function ChallengeResultsModal() {
   }
   const onClose = () => {
     resetSim()
-    reset()
+    selectChallenge(challenge)
   }
 
   const xpPerStar = challenge.rewards?.xp ? Math.ceil(challenge.rewards.xp / 3) : 0
