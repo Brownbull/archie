@@ -2477,3 +2477,9 @@ CHECKS: lint ✅ types ✅ tests ✅ (4217) shape ✅ structure ✅ coverage ✅
 DEFERRED: none
 PHASE: 1 — Challenge schema v2 + tech-tree foundation (Exec ✅, Commit ✅)
 NOTE: aislop 9/100 advisory (repo-wide knip baseline; eslint gate clean; not in CI)
+
+## 2026-06-02 01:18 — PUSH dev -> main
+PR: — (direct fast-forward 391805b..df1fcf5)
+CI: deploy-production ✅ green (run 26799991640, 50s)
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P108
