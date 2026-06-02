@@ -8,6 +8,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
 import { getAllChallenges } from "@/services/challengeLoader"
 import { resolveTechTree } from "@/engine/techTree"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -30,48 +31,79 @@ import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
 const TIER_LABELS = ["", "I", "II", "III", "IV", "V"]
 
-const NODE_W = 140
-const NODE_H = 56
-const GAP_X = 24
-const GAP_Y = 20
-const TIER_HEADER_H = 28
+const NODE_W = 152
+const NODE_H = 52
+const GAP_X = 32
+const TRACK_GAP_Y = 12
+const TRACK_HEADER_H = 22
+const TRACK_ROW_H = NODE_H + TRACK_GAP_Y + TRACK_HEADER_H
+const PAD_LEFT = 8
 
 interface NodePos {
   node: TechTreeNode
   x: number
   y: number
-  tier: number
-  trackIdx: number
 }
 
 function layoutTree(ordered: TechTreeNode[]): { positions: NodePos[]; width: number; height: number } {
   const byTrackTier = new Map<string, TechTreeNode[]>()
   for (const n of ordered) {
-    const key = `${n.challenge.track ?? "unknown"}-${n.challenge.tier ?? 0}`
-    const list = byTrackTier.get(key) ?? []
-    list.push(n)
-    byTrackTier.set(key, list)
+    const key = `${n.challenge.track ?? "?"}-${n.challenge.tier ?? 0}`
+    const arr = byTrackTier.get(key) ?? []
+    arr.push(n)
+    byTrackTier.set(key, arr)
   }
 
   const positions: NodePos[] = []
   let maxX = 0
 
-  for (let trackIdx = 0; trackIdx < CHALLENGE_TRACK_IDS.length; trackIdx++) {
-    const trackId = CHALLENGE_TRACK_IDS[trackIdx]
-    const baseY = trackIdx * (NODE_H + GAP_Y + TIER_HEADER_H) + TIER_HEADER_H
-
+  for (let ti = 0; ti < CHALLENGE_TRACK_IDS.length; ti++) {
+    const trackId = CHALLENGE_TRACK_IDS[ti]
+    const rowTop = ti * TRACK_ROW_H + TRACK_HEADER_H
     for (let tier = 1; tier <= MAX_CHALLENGE_TIER; tier++) {
       const nodes = byTrackTier.get(`${trackId}-${tier}`) ?? []
       for (let i = 0; i < nodes.length; i++) {
-        const x = (tier - 1) * (NODE_W + GAP_X) + i * (NODE_W + GAP_X / 2)
-        positions.push({ node: nodes[i], x, y: baseY, tier, trackIdx })
+        const x = PAD_LEFT + (tier - 1) * (NODE_W + GAP_X)
+        const y = rowTop + i * (NODE_H + 4)
+        positions.push({ node: nodes[i], x, y })
         maxX = Math.max(maxX, x + NODE_W)
       }
     }
   }
 
-  const height = CHALLENGE_TRACK_IDS.length * (NODE_H + GAP_Y + TIER_HEADER_H) + GAP_Y
-  return { positions, width: maxX + GAP_X, height }
+  return { positions, width: maxX + GAP_X, height: CHALLENGE_TRACK_IDS.length * TRACK_ROW_H + TRACK_GAP_Y }
+}
+
+function TreeEdges({ positions }: { positions: NodePos[] }) {
+  const posMap = new Map(positions.map((p) => [p.node.challenge.id, p]))
+
+  return (
+    <>
+      {positions.flatMap((to) =>
+        to.node.challenge.requires.map((reqId) => {
+          const from = posMap.get(reqId)
+          if (!from) return null
+          const x1 = from.x + NODE_W
+          const y1 = from.y + NODE_H / 2
+          const x2 = to.x
+          const y2 = to.y + NODE_H / 2
+          const mx = (x1 + x2) / 2
+          const isLocked = to.node.status === "locked"
+          return (
+            <path
+              key={`${reqId}->${to.node.challenge.id}`}
+              d={`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`}
+              fill="none"
+              stroke={isLocked ? "#444" : "#6b7280"}
+              strokeWidth={1.5}
+              opacity={isLocked ? 0.3 : 0.6}
+              strokeDasharray={isLocked ? "4 3" : undefined}
+            />
+          )
+        }),
+      )}
+    </>
+  )
 }
 
 function TreeNode({
@@ -92,6 +124,7 @@ function TreeNode({
   const isCompleted = pos.node.status === "completed"
   const level: RelativeLevel = c.tier ? relativeLevelForTier(playerRank, c.tier) : "on-level"
   const color = RELATIVE_LEVEL_COLORS[level]
+  const borderColor = selected ? "#3b82f6" : isCompleted ? color : isLocked ? "#374151" : "#4b5563"
 
   return (
     <g
@@ -104,71 +137,39 @@ function TreeNode({
       <rect
         width={NODE_W}
         height={NODE_H}
-        rx={6}
-        fill={isLocked ? "#1a1d23" : isCompleted ? `${color}15` : "#1e2128"}
-        stroke={selected ? "#3b82f6" : isCompleted ? color : isLocked ? "#333" : "#444"}
+        rx={8}
+        fill={isCompleted ? `${color}10` : "#1e2128"}
+        stroke={borderColor}
         strokeWidth={selected ? 2 : 1}
-        opacity={isLocked ? 0.5 : 1}
+        opacity={isLocked ? 0.45 : 1}
       />
-      <text x={8} y={16} fontSize={10} fontWeight={600} fill={isLocked ? "#666" : "#e8edf5"}>
-        {c.title.length > 16 ? c.title.slice(0, 15) + "…" : c.title}
+      <text x={10} y={18} fontSize={11} fontWeight={600} fill={isLocked ? "#6b7280" : "#e5e7eb"}>
+        {c.title.length > 17 ? c.title.slice(0, 16) + "…" : c.title}
       </text>
-      <text x={8} y={30} fontSize={8} fill="#9aa3b0">
-        {c.rewards?.xp ? `${c.rewards.xp} XP` : ""} · Tier {TIER_LABELS[c.tier ?? 0]}
+      <text x={10} y={34} fontSize={9} fill="#9ca3af">
+        {c.rewards?.xp ?? 0} XP · Tier {TIER_LABELS[c.tier ?? 0]}
       </text>
-      {isLocked && <Lock x={NODE_W - 18} y={6} width={12} height={12} color="#666" />}
+      {isLocked && <Lock x={NODE_W - 20} y={8} width={12} height={12} color="#6b7280" />}
       {isCompleted && (
-        <g transform={`translate(${NODE_W - 42}, ${NODE_H - 16})`}>
+        <g transform={`translate(${NODE_W - 44}, ${NODE_H - 18})`}>
           {[0, 1, 2].map((i) => (
             <Star
               key={i}
-              x={i * 12}
+              x={i * 13}
               y={0}
-              width={10}
-              height={10}
+              width={11}
+              height={11}
               fill={i < bestStars ? "#facc15" : "none"}
-              stroke={i < bestStars ? "#facc15" : "#555"}
+              stroke={i < bestStars ? "#facc15" : "#4b5563"}
               strokeWidth={1}
             />
           ))}
         </g>
       )}
-      {!isLocked && !isCompleted && <Play x={NODE_W - 18} y={NODE_H - 18} width={12} height={12} color={color} />}
+      {!isLocked && !isCompleted && (
+        <Play x={NODE_W - 20} y={NODE_H - 20} width={12} height={12} color={color} fill={`${color}40`} />
+      )}
     </g>
-  )
-}
-
-function TreeEdges({ positions }: { positions: NodePos[] }) {
-  const posMap = new Map(positions.map((p) => [p.node.challenge.id, p]))
-
-  const edges: Array<{ from: NodePos; to: NodePos }> = []
-  for (const pos of positions) {
-    for (const reqId of pos.node.challenge.requires) {
-      const from = posMap.get(reqId)
-      if (from) edges.push({ from, to: pos })
-    }
-  }
-
-  return (
-    <>
-      {edges.map(({ from, to }, i) => {
-        const x1 = from.x + NODE_W
-        const y1 = from.y + NODE_H / 2
-        const x2 = to.x
-        const y2 = to.y + NODE_H / 2
-        const mx = (x1 + x2) / 2
-        return (
-          <path
-            key={i}
-            d={`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`}
-            fill="none"
-            stroke={to.node.status === "locked" ? "#333" : "#555"}
-            strokeWidth={1}
-            opacity={to.node.status === "locked" ? 0.4 : 0.7}
-          />
-        )
-      })}
-    </>
   )
 }
 
@@ -201,68 +202,99 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="challenge-tree-view" className="max-w-5xl max-h-[85vh]">
+      <DialogContent data-testid="challenge-tree-view" className="max-w-[90vw] max-h-[90vh] w-full">
         <DialogHeader>
           <DialogTitle>Challenge Journey</DialogTitle>
-          <DialogDescription>Your progression through the Mastery Tracks tech tree. Click a challenge to select it, then start.</DialogDescription>
+          <DialogDescription>Your progression through the Mastery Tracks tech tree.</DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-4">
-          <ScrollArea className="flex-1" style={{ height: "65vh" }}>
-            <div style={{ minWidth: layout.width, minHeight: layout.height, position: "relative" }}>
-              <svg width={layout.width} height={layout.height} className="absolute inset-0">
-                <TreeEdges positions={layout.positions} />
-                {layout.positions.map((pos) => {
-                  const trackRank = pos.node.challenge.track ? rankForXp(trackXp[pos.node.challenge.track] ?? 0).rank : 0
-                  return (
-                    <TreeNode
-                      key={pos.node.challenge.id}
-                      pos={pos}
-                      selected={selectedId === pos.node.challenge.id}
-                      playerRank={trackRank}
-                      bestStars={bestStars[pos.node.challenge.id] ?? 0}
-                      onClick={() => setSelectedId(pos.node.challenge.id)}
-                    />
-                  )
-                })}
+        <div className="flex gap-4 overflow-hidden" style={{ height: "calc(85vh - 80px)" }}>
+          <ScrollArea className="flex-1">
+            <svg
+              width={layout.width}
+              height={layout.height}
+              viewBox={`0 0 ${layout.width} ${layout.height}`}
+              className="select-none"
+            >
+              <TreeEdges positions={layout.positions} />
 
-                {CHALLENGE_TRACK_IDS.map((id, i) => {
-                  const track = CHALLENGE_TRACKS.get(id)
-                  const y = i * (NODE_H + GAP_Y + TIER_HEADER_H) + 4
-                  return (
-                    <text key={id} x={0} y={y} fontSize={9} fontWeight={700} fill="#9aa3b0" textAnchor="start">
-                      {track?.name ?? id}
-                    </text>
-                  )
-                })}
-              </svg>
-            </div>
+              {CHALLENGE_TRACK_IDS.map((id, i) => {
+                const track = CHALLENGE_TRACKS.get(id)
+                const y = i * TRACK_ROW_H + 12
+                return (
+                  <text key={id} x={PAD_LEFT} y={y} fontSize={11} fontWeight={700} fill="#9ca3af">
+                    {track?.name ?? id}
+                  </text>
+                )
+              })}
+
+              {layout.positions.map((pos) => {
+                const trackRank = pos.node.challenge.track
+                  ? rankForXp(trackXp[pos.node.challenge.track] ?? 0).rank
+                  : 0
+                return (
+                  <TreeNode
+                    key={pos.node.challenge.id}
+                    pos={pos}
+                    selected={selectedId === pos.node.challenge.id}
+                    playerRank={trackRank}
+                    bestStars={bestStars[pos.node.challenge.id] ?? 0}
+                    onClick={() => setSelectedId(pos.node.challenge.id)}
+                  />
+                )
+              })}
+            </svg>
           </ScrollArea>
 
           {selectedNode && (
-            <div data-testid="tree-detail-panel" className="w-56 shrink-0 rounded-md border border-archie-border bg-surface p-3">
+            <div data-testid="tree-detail-panel" className="w-60 shrink-0 overflow-y-auto rounded-md border border-archie-border bg-surface p-3">
               <h3 className="text-sm font-bold text-text-primary">{selectedNode.challenge.title}</h3>
-              <p className="mt-1 text-[0.625rem] text-text-secondary">{selectedNode.challenge.brief}</p>
-              <div className="mt-2 flex flex-col gap-1 text-[0.5625rem] text-text-secondary">
-                <span>Track: {CHALLENGE_TRACKS.get(selectedNode.challenge.track ?? "")?.name}</span>
-                <span>Tier: {TIER_LABELS[selectedNode.challenge.tier ?? 0]}</span>
+              {selectedNode.challenge.track && (
+                <span className="text-[0.625rem] text-text-secondary">
+                  {CHALLENGE_TRACKS.get(selectedNode.challenge.track)?.name} · Tier {TIER_LABELS[selectedNode.challenge.tier ?? 0]}
+                </span>
+              )}
+              <p className="mt-2 text-[0.6875rem] leading-relaxed text-text-secondary">{selectedNode.challenge.brief}</p>
+              <div className="mt-3 flex flex-col gap-1 text-[0.625rem] text-text-secondary">
                 <span>Budget: ${selectedNode.challenge.budgetCap}/mo</span>
                 <span>Duration: {selectedNode.challenge.durationSeconds}s</span>
+                <span>Uptime target: {selectedNode.challenge.targetMetrics.uptimePercent}%</span>
+                <span>p99 target: {selectedNode.challenge.targetMetrics.p99LatencyMs}ms</span>
                 {selectedNode.challenge.rewards?.xp && <span>Reward: {selectedNode.challenge.rewards.xp} XP</span>}
-                <span>Status: {selectedNode.status}</span>
-                {selectedNode.missingRequirements.length > 0 && (
-                  <span className="text-amber-400">Requires: {selectedNode.missingRequirements.join(", ")}</span>
-                )}
+              </div>
+              {selectedNode.challenge.availableBlocks.length > 0 && (
+                <div className="mt-2">
+                  <span className="text-[0.5625rem] font-medium text-text-secondary">Available blocks:</span>
+                  <div className="mt-0.5 flex flex-wrap gap-0.5">
+                    {selectedNode.challenge.availableBlocks.map((b) => (
+                      <span key={b} className="rounded-full bg-blue-500/10 px-1.5 py-0.5 text-[0.5rem] text-blue-300">{b}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedNode.missingRequirements.length > 0 && (
+                <p className="mt-2 text-[0.625rem] text-amber-400">
+                  Requires: {selectedNode.missingRequirements.join(", ")}
+                </p>
+              )}
+              <div className="mt-3">
+                <span className={`inline-block rounded-full px-2 py-0.5 text-[0.5625rem] font-medium ${
+                  selectedNode.status === "completed" ? "bg-emerald-500/20 text-emerald-300"
+                  : selectedNode.status === "available" ? "bg-blue-500/20 text-blue-300"
+                  : "bg-gray-500/20 text-gray-400"
+                }`}>
+                  {selectedNode.status}
+                </span>
               </div>
               {selectedNode.status !== "locked" && (
-                <button
-                  type="button"
+                <Button
+                  size="sm"
                   data-testid="tree-start-challenge"
                   onClick={() => startChallenge(selectedNode.challenge)}
-                  className="mt-3 w-full rounded-md bg-blue-600 px-2 py-1.5 text-xs font-medium text-white hover:bg-blue-500"
+                  className="mt-3 w-full"
                 >
                   Start Challenge
-                </button>
+                </Button>
               )}
             </div>
           )}
