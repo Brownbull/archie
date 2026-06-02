@@ -265,6 +265,9 @@ export interface NodeCostInfo {
   readonly baseMaxRPS: number | undefined
   readonly baseLatencyMs: number | undefined
   readonly cacheHitRatio: number | undefined
+  readonly missLatencyPenaltyMs: number | undefined
+  readonly coldStartLatencyMs: number | undefined
+  readonly coldStartRatio: number | undefined
   readonly writeRatio: number | undefined
   readonly writeDistribution: "primary" | "sharded" | undefined
 }
@@ -296,6 +299,9 @@ export function getNodeCost(
       baseMaxRPS: variant?.maxRPS,
       baseLatencyMs: variant?.baseLatencyMs,
       cacheHitRatio: variant?.cacheHitRatio,
+      missLatencyPenaltyMs: variant?.missLatencyPenaltyMs,
+      coldStartLatencyMs: variant?.coldStartLatencyMs,
+      coldStartRatio: variant?.coldStartRatio,
       writeRatio: variant?.writeRatio,
       writeDistribution: variant?.writeDistribution,
     }
@@ -307,6 +313,9 @@ export function getNodeCost(
     baseMaxRPS: variant?.maxRPS,
     baseLatencyMs: variant?.baseLatencyMs,
     cacheHitRatio: variant?.cacheHitRatio,
+    missLatencyPenaltyMs: variant?.missLatencyPenaltyMs,
+    coldStartLatencyMs: variant?.coldStartLatencyMs,
+    coldStartRatio: variant?.coldStartRatio,
     writeRatio: variant?.writeRatio,
     writeDistribution: variant?.writeDistribution,
   }
@@ -429,6 +438,9 @@ export function buildSimGraph(
       baseLatencyMs: cost.baseLatencyMs ?? 0,
       failureMode: "shed",
       ...(cost.cacheHitRatio !== undefined ? { cacheHitRatio: cost.cacheHitRatio } : {}),
+      ...(cost.missLatencyPenaltyMs !== undefined ? { missLatencyPenaltyMs: cost.missLatencyPenaltyMs } : {}),
+      ...(cost.coldStartLatencyMs !== undefined ? { coldStartLatencyMs: cost.coldStartLatencyMs } : {}),
+      ...(cost.coldStartRatio !== undefined ? { coldStartRatio: cost.coldStartRatio } : {}),
       ...(cost.writeRatio !== undefined ? { writeRatio: cost.writeRatio } : {}),
       ...(cost.writeDistribution !== undefined ? { writeDistribution: cost.writeDistribution } : {}),
     }

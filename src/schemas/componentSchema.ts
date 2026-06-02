@@ -47,6 +47,9 @@ export const ConfigVariantSchema = z.object({
   maxRPS: z.number().min(0).max(MAX_RPS).optional(),
   baseLatencyMs: z.number().min(0).max(MAX_LATENCY_MS).optional(),
   cacheHitRatio: z.number().min(0).max(1).optional(),
+  missLatencyPenaltyMs: z.number().min(0).max(1000).optional(),
+  coldStartLatencyMs: z.number().min(0).max(2000).optional(),
+  coldStartRatio: z.number().min(0).max(1).optional(),
   writeRatio: z.number().min(0).max(1).optional(),
   writeDistribution: z.enum(["primary", "sharded"]).optional(),
 }).strict()
@@ -105,6 +108,9 @@ const ConfigVariantYamlSchema = z.object({
   max_rps: z.number().min(0).max(MAX_RPS).optional(),
   base_latency_ms: z.number().min(0).max(MAX_LATENCY_MS).optional(),
   cache_hit_ratio: z.number().min(0).max(1).optional(),
+  miss_latency_penalty_ms: z.number().min(0).max(1000).optional(),
+  cold_start_latency_ms: z.number().min(0).max(2000).optional(),
+  cold_start_ratio: z.number().min(0).max(1).optional(),
   write_ratio: z.number().min(0).max(1).optional(),
   write_distribution: z.enum(["primary", "sharded"]).optional(),
 }).strict().transform((data) => ({
@@ -118,6 +124,9 @@ const ConfigVariantYamlSchema = z.object({
   maxRPS: data.max_rps,
   baseLatencyMs: data.base_latency_ms,
   cacheHitRatio: data.cache_hit_ratio,
+  missLatencyPenaltyMs: data.miss_latency_penalty_ms,
+  coldStartLatencyMs: data.cold_start_latency_ms,
+  coldStartRatio: data.cold_start_ratio,
   writeRatio: data.write_ratio,
   writeDistribution: data.write_distribution,
 }))

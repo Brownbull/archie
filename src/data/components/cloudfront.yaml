@@ -42,6 +42,7 @@ config_variants:
     max_rps: 50000
     base_latency_ms: 15
     cache_hit_ratio: 0.85
+    miss_latency_penalty_ms: 75
     metrics:
       - id: edge-latency
         value: low

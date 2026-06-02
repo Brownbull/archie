@@ -178,12 +178,24 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
 
     // Offline (scheduled failure / AZ outage): zero capacity → sheds all incoming traffic.
     const capacityPercent = offline ? (incoming > 0 ? 1 : 0) : capped ? incoming / node.effectiveMaxRps : 0
+    let baseLatency = offline ? node.baseLatencyMs : latencyUnderLoad(node.baseLatencyMs, capacityPercent)
+
+    // CDN/cache miss latency penalty (E3): add weighted miss latency on top of base.
+    if (node.missLatencyPenaltyMs && node.cacheHitRatio !== undefined && node.cacheHitRatio < 1) {
+      baseLatency += node.missLatencyPenaltyMs * (1 - node.cacheHitRatio)
+    }
+
+    // Serverless cold start penalty (E4): add weighted cold start latency.
+    if (node.coldStartLatencyMs && node.coldStartRatio) {
+      baseLatency += node.coldStartLatencyMs * node.coldStartRatio
+    }
+
     telemetry.set(id, {
       nodeId: id,
       incomingRps: incoming,
       servedRps: served,
       failedRps: failed,
-      latencyMs: (offline ? node.baseLatencyMs : latencyUnderLoad(node.baseLatencyMs, capacityPercent)) * latMult,
+      latencyMs: baseLatency * latMult,
       capacityPercent,
       overloaded: offline ? incoming > 0 : capped && incoming > node.effectiveMaxRps,
     })

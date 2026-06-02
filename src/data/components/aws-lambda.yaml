@@ -45,6 +45,8 @@ config_variants:
     monthly_cost: 5
     max_rps: 10000
     base_latency_ms: 50
+    cold_start_latency_ms: 200
+    cold_start_ratio: 0.10
     metrics:
       - id: auto-scaling
         value: high

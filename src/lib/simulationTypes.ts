@@ -42,6 +42,12 @@ export interface SimNode {
    * (sharded NoSQL model). Default: undefined (no split, all traffic uniform).
    */
   writeDistribution?: "primary" | "sharded"
+  /** Additional latency (ms) added for cache/CDN misses, weighted by miss ratio (E3). */
+  missLatencyPenaltyMs?: number
+  /** Cold start latency penalty (ms) for serverless on-demand invocations (E4). */
+  coldStartLatencyMs?: number
+  /** Fraction of requests that hit a cold start (0–1). Default 0 = no cold starts (E4). */
+  coldStartRatio?: number
 }
 
 /** A directed edge: traffic flows source → target. */
