@@ -26,10 +26,26 @@ export function useChallengeAutoScore(): void {
     const { ticks } = useSimulationStore.getState()
     const { attemptSnapshot, scoreAttempt } = useChallengeStore.getState()
     const stats = computeSimStats(ticks, ticks.length - 1)
-    const snapshot = attemptSnapshot ?? {
-      totalCost: computeTotalArchitectureCost(useArchitectureStore.getState().nodes),
-      topologyIssueCount: useArchitectureStore.getState().topologyIssues.length,
+    const archState = useArchitectureStore.getState()
+    const { activeChallenge } = useChallengeStore.getState()
+    const rawIssueCount = attemptSnapshot?.topologyIssueCount ?? archState.topologyIssues.length
+    const totalCost = attemptSnapshot?.totalCost ?? computeTotalArchitectureCost(archState.nodes)
+
+    // In challenge mode, suppress topology issues the player can't fix with the available blocks.
+    // - replicas-without-lb: requires load-balancer in availableBlocks
+    // - missing-hop (single point of failure): requires redundant paths, often impossible with
+    //   limited block palettes — suppress when availableBlocks is constrained
+    let solvableIssueCount = rawIssueCount
+    if (activeChallenge?.availableBlocks?.length) {
+      const available = new Set(activeChallenge.availableBlocks)
+      const unsolvable = archState.topologyIssues.filter((i) => {
+        if (i.issueType === "replicas-without-lb" && !available.has("load-balancer")) return true
+        if (i.issueType === "missing-hop") return true
+        return false
+      })
+      solvableIssueCount = Math.max(0, rawIssueCount - unsolvable.length)
     }
-    scoreAttempt(stats, snapshot.topologyIssueCount, snapshot.totalCost)
+
+    scoreAttempt(stats, solvableIssueCount, totalCost)
   }, [simStatus, attemptState])
 }
