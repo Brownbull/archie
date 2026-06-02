@@ -7,14 +7,11 @@ import { rankForXp, CHALLENGE_TRACKS } from "@/lib/challengeTracks"
 import type { StarBreakdown } from "@/lib/challengeTypes"
 
 /**
- * Awards Mastery Tracks XP on a scored challenge attempt (Phase 2, D45-AC1).
+ * Awards Mastery Tracks XP on a scored challenge attempt (D45-AC1).
  *
- * Rules:
- * - Only `origin === "builtin"` challenges grant progression — user-authored challenges are
- *   playable but produce ZERO XP/block grants (the tech-tree resolver already ignores non-built-in
- *   completed ids since they're in a separate registry).
- * - XP is awarded once per challenge (first clear only). The store deduplicates by challengeId.
- * - The award fires after scoring; it is best-effort (Firestore write may fail; UX is not gated).
+ * XP is split across the 3 stars: each star earns ceil(totalXp / 3). Only the delta above the
+ * player's previous best stars for this challenge is awarded. A 1-star first clear gets 1/3;
+ * coming back for 3 stars gets the remaining 2/3. This makes re-attempts meaningful.
  */
 export function useProgressPersistence(): void {
   const attemptState = useChallengeStore((s) => s.attemptState)
@@ -34,13 +31,18 @@ export function useProgressPersistence(): void {
     awardedRef.current = lastResult
 
     const track = activeChallenge.track
-    const xp = activeChallenge.rewards.xp
-    const prevXp = useUserProgressStore.getState().trackXp[track] ?? 0
-    const prevRank = rankForXp(prevXp).rank
+    const prevTrackXp = useUserProgressStore.getState().trackXp[track] ?? 0
+    const prevRank = rankForXp(prevTrackXp).rank
 
-    void useUserProgressStore.getState().awardXp(userId, track, xp, activeChallenge.id).then(() => {
-      const newXp = useUserProgressStore.getState().trackXp[track] ?? 0
-      const newRank = rankForXp(newXp)
+    void useUserProgressStore.getState().awardXp(
+      userId,
+      track,
+      activeChallenge.rewards.xp,
+      activeChallenge.id,
+      lastResult.stars,
+    ).then(() => {
+      const newTrackXp = useUserProgressStore.getState().trackXp[track] ?? 0
+      const newRank = rankForXp(newTrackXp)
       if (newRank.rank > prevRank) {
         const trackName = CHALLENGE_TRACKS.get(track)?.name ?? track
         toast.success(`Rank up! ${trackName}: ${newRank.name}`, { duration: 5000 })

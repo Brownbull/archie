@@ -131,7 +131,7 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
   })
 
   describe("vs your past attempts (P4)", () => {
-    it("shows 'first attempt' when there is no prior attempt", () => {
+    it("hides the comparison section when there is no prior attempt", () => {
       mockPriorBest = null
       useChallengeStore.setState({
         activeChallenge: challenge, attemptState: "scored",
@@ -139,10 +139,10 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
         lastMeasured: { uptimePercent: 99, p99LatencyMs: 120, totalCost: 80, topologyIssueCount: 1 },
       })
       render(<ChallengeResultsModal />)
-      expect(screen.getByTestId("vs-first-attempt")).toBeInTheDocument()
+      expect(screen.queryByTestId("vs-past-attempts")).not.toBeInTheDocument()
     })
 
-    it("renders deltas + a 'new best' note vs the prior best attempt", () => {
+    it("renders deltas vs the prior best attempt", () => {
       mockPriorBest = {
         id: "prev", userId: "u1", challengeId: challenge.id, stars: 1,
         uptimePercent: 95, p99LatencyMs: 200, totalCost: 120, topologyIssueCount: 2, createdAt: 1000,
@@ -154,13 +154,9 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
       })
       render(<ChallengeResultsModal />)
       expect(screen.getByTestId("vs-past-attempts")).toBeInTheDocument()
-      expect(screen.getByTestId("vs-stars")).toHaveTextContent("new best")
-      // cost dropped 120 → 80 = −40, which is an improvement (good when negative).
       expect(screen.getByTestId("vs-delta-cost")).toHaveAttribute("data-tone", "good")
       expect(screen.getByTestId("vs-delta-cost")).toHaveTextContent("40 $/mo")
-      // latency dropped 200 → 120 = improvement.
       expect(screen.getByTestId("vs-delta-latency")).toHaveAttribute("data-tone", "good")
-      // uptime rose 95 → 99 = improvement (good when positive).
       expect(screen.getByTestId("vs-delta-uptime")).toHaveAttribute("data-tone", "good")
     })
   })
