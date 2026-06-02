@@ -13,8 +13,8 @@ export type TrafficPattern = "steady" | "wobble" | "periodic" | "surge"
 export const TRAFFIC_PATTERNS: readonly { id: TrafficPattern; label: string; hint: string }[] = [
   { id: "steady", label: "Steady", hint: "Constant load at the set rate" },
   { id: "wobble", label: "Realistic", hint: "Organic ±15% variation around the average" },
-  { id: "periodic", label: "Periodic spikes", hint: "Repeating peaks up to ~3× the average (rush hours)" },
-  { id: "surge", label: "Big surge", hint: "One sustained ~5× rush over a window (e.g. Black Friday)" },
+  { id: "periodic", label: "Periodic", hint: "Repeating peaks up to ~3× the average (rush hours)" },
+  { id: "surge", label: "Surge", hint: "One sustained ~5× rush over a window (e.g. Black Friday)" },
 ]
 
 // Preset shape parameters (the "presets" scope — no per-spike custom config yet).

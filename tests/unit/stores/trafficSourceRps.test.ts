@@ -42,7 +42,7 @@ describe("traffic source RPS", () => {
       node("api-client", "burst", "traffic"),
       node("postgresql", "default", "data-storage"),
     ]
-    expect(totalTrafficSourceRps(nodes)).toBe(15000) // 3000 + 12000, DB excluded
+    expect(totalTrafficSourceRps(nodes)).toBe(6000) // scale[0]+scale[0] = 3000+3000 (both at step 1); DB excluded
   })
 
   it("returns 0 when there are no traffic sources", () => {
@@ -53,7 +53,14 @@ describe("traffic source RPS", () => {
     // The on-node −/＋ stepper drives replicaCount; for traffic that multiplies the variant's
     // maxRPS (regression: getNodeCost previously froze it at ×1 because traffic is replicaType 'none').
     const nodes = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 3 } }]
-    expect(totalTrafficSourceRps(nodes)).toBe(9000) // 3000 × 3
+    expect(totalTrafficSourceRps(nodes)).toBe(9000) // step 3 → TRAFFIC_RPS_STEPS[2] = 9000
+  })
+
+  it("maps the stepper index onto the discrete rps scale (step 7 → 60k, step 20 → 10M)", () => {
+    const at = (rc: number) => totalTrafficSourceRps([{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: rc } }])
+    expect(at(1)).toBe(3000)
+    expect(at(7)).toBe(60_000)
+    expect(at(20)).toBe(10_000_000)
   })
 
   it("hasTrafficPattern detects a non-steady traffic source only", () => {
@@ -77,7 +84,7 @@ describe("traffic source RPS", () => {
       { data: { archieComponentId: "api-client", activeConfigVariantId: "burst", componentCategory: "traffic", replicaCount: 1, trafficPattern: "steady" } },
     ]
     const curve = buildTrafficCurveFromSources(nodes, 90)
-    expect(curve.every((p) => p.rps === 15000)).toBe(true) // 3000 + 12000, both steady → flat
+    expect(curve.every((p) => p.rps === 6000)).toBe(true) // 3000 + 3000 (both at step 1, steady) → flat
   })
 
   it("buildTrafficCurveFromSources returns [] with no traffic sources", () => {

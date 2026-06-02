@@ -105,6 +105,18 @@ export const MAX_CANVAS_NODES = 50
 export const MIN_REPLICAS = 1
 export const MAX_REPLICAS = 20
 
+/**
+ * Discrete requests/sec scale for the Traffic Source stepper — the source's AVERAGE load. Non-linear
+ * so a handful of clicks spans a small demo (3k) to hyperscale (10M). A traffic node's `replicaCount`
+ * doubles as the 1-based index into this scale (see getNodeCost), so it persists via the existing
+ * `replicas` field. Length is exactly MAX_REPLICAS, so the stepper's [MIN_REPLICAS, MAX_REPLICAS]
+ * bounds already map 1:1 onto the scale — no separate clamp needed.
+ */
+export const TRAFFIC_RPS_STEPS = [
+  3_000, 6_000, 9_000, 12_000, 15_000, 30_000, 60_000, 120_000, 300_000, 500_000,
+  1_000_000, 1_500_000, 2_000_000, 2_500_000, 3_500_000, 4_000_000, 5_000_000, 6_000_000, 8_000_000, 10_000_000,
+] as const
+
 // Simulation engine (Epic 15). Fixed tick count keeps telemetry buffers bounded and playback smooth.
 export const SIM_TICKS = 50
 export const SIM_DEFAULT_DURATION_S = 90

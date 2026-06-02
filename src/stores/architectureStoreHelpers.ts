@@ -15,6 +15,7 @@ import type { RecalculatedMetrics } from "@/engine/recalculator"
 import {
   METRIC_CATEGORIES,
   getScalingRule,
+  TRAFFIC_RPS_STEPS,
   type Constraint,
   type WeightProfile,
   type ComponentCategoryId,
@@ -279,10 +280,17 @@ export function getNodeCost(
   const variant = component?.configVariants.find((v) => v.id === activeConfigVariantId)
   const replicas = Number.isFinite(replicaCount) ? Math.max(1, Math.floor(replicaCount)) : 1
   const rule = component ? getScalingRule(component.category as ComponentCategoryId) : undefined
-  // A traffic source isn't replicated infrastructure, but its on-node stepper reuses replicaCount as
-  // a load multiplier — so its emitted maxRPS DOES scale with the count (drives the sim's traffic).
-  const isTrafficCategory = component?.category === "traffic"
-  const capacityFactor = (rule && rule.replicaType !== "none") || isTrafficCategory ? replicas : 1
+  // Traffic source: the stepper's count is the 1-based index into the discrete rps scale (3k → 10M),
+  // NOT a tier multiplier — so its emitted rate comes straight from TRAFFIC_RPS_STEPS.
+  if (component?.category === "traffic") {
+    const idx = Math.min(replicas, TRAFFIC_RPS_STEPS.length) - 1
+    return {
+      monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
+      maxRPS: TRAFFIC_RPS_STEPS[idx],
+      baseLatencyMs: variant?.baseLatencyMs,
+    }
+  }
+  const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
   return {
     monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
     maxRPS: variant?.maxRPS === undefined ? undefined : variant.maxRPS * capacityFactor,

@@ -25,6 +25,7 @@ import { computeWeightedNodeScore } from "@/engine/heatmapCalculator"
 import { TypeIcon } from "@/components/common/TypeIcon"
 import { TrafficPatternSelect } from "@/components/canvas/TrafficPatternSelect"
 import type { TrafficPattern } from "@/engine/trafficPatterns"
+import { formatRps, formatRpsCompact } from "@/lib/formatStats"
 import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
 import { Gauge } from "lucide-react"
 
@@ -125,17 +126,9 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   )
 
   // Throughput (requests/sec) + base latency shown on the left of the stats row; cost on the right.
-  const rpsLabel = useMemo(() => {
-    const r = nodeCost.maxRPS
-    if (r === undefined) return null
-    return r >= 1000 ? `${+(r / 1000).toFixed(1)}k rps` : `${r} rps`
-  }, [nodeCost.maxRPS])
-  // Compact RPS figure (no "rps" suffix) for the traffic-source stepper readout.
-  const rpsStepValue = useMemo(() => {
-    const r = nodeCost.maxRPS
-    if (r === undefined) return "—"
-    return r >= 1000 ? `${+(r / 1000).toFixed(1)}k` : `${r}`
-  }, [nodeCost.maxRPS])
+  const rpsLabel = useMemo(() => formatRps(nodeCost.maxRPS), [nodeCost.maxRPS])
+  // Compact RPS figure (no "rps" suffix) for the traffic-source stepper readout — handles k and M.
+  const rpsStepValue = useMemo(() => formatRpsCompact(nodeCost.maxRPS), [nodeCost.maxRPS])
   const latencyLabel = nodeCost.baseLatencyMs !== undefined ? `${nodeCost.baseLatencyMs}ms` : null
 
   // Operational-complexity level for the active variant — drives the badge on the right of the
@@ -316,44 +309,46 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
           className="nodrag flex flex-wrap items-center gap-1 px-3 pb-1.5"
         >
           {isTraffic ? (
-            <>
-            <div
-              className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
-              onClick={(e) => e.stopPropagation()}
-              title="Requests per second this source sends. Add more to drive higher load (or pick a bigger tier above)."
-            >
-              <button
-                type="button"
-                data-testid="rps-decrement"
-                aria-label="Fewer requests per second"
-                disabled={replicaCount <= MIN_REPLICAS}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setNodeReplicaCount(id, replicaCount - 1)
-                }}
-                className="px-1.5 text-[0.6875rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+            <div className="flex w-full items-stretch gap-1.5">
+              {/* RPS stepper — left, the taller/wider control (the source's average load, 3k → 10M) */}
+              <div
+                className="flex h-7 flex-1 items-center justify-between overflow-hidden rounded border border-archie-border bg-surface"
+                onClick={(e) => e.stopPropagation()}
+                title="Average requests/sec this source sends (3k → 10M). Pick the burst shape on the right."
               >
-                −
-              </button>
-              <span data-testid="rps-stepper-value" className="min-w-[42px] text-center text-[0.625rem] font-semibold text-text-primary">
-                {rpsStepValue} rps
-              </span>
-              <button
-                type="button"
-                data-testid="rps-increment"
-                aria-label="More requests per second"
-                disabled={replicaCount >= MAX_REPLICAS}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setNodeReplicaCount(id, replicaCount + 1)
-                }}
-                className="px-1.5 text-[0.6875rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
-              >
-                +
-              </button>
+                <button
+                  type="button"
+                  data-testid="rps-decrement"
+                  aria-label="Fewer requests per second"
+                  disabled={replicaCount <= MIN_REPLICAS}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setNodeReplicaCount(id, replicaCount - 1)
+                  }}
+                  className="flex h-full items-center px-2 text-[0.8125rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+                >
+                  −
+                </button>
+                <span data-testid="rps-stepper-value" className="flex-1 whitespace-nowrap text-center text-[0.6875rem] font-semibold text-text-primary">
+                  {rpsStepValue} rps
+                </span>
+                <button
+                  type="button"
+                  data-testid="rps-increment"
+                  aria-label="More requests per second"
+                  disabled={replicaCount >= MAX_REPLICAS}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setNodeReplicaCount(id, replicaCount + 1)
+                  }}
+                  className="flex h-full items-center px-2 text-[0.8125rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
+                >
+                  +
+                </button>
+              </div>
+              {/* Burst pattern — right, the narrower control (matches the stepper height) */}
+              <TrafficPatternSelect nodeId={id} pattern={trafficPattern} />
             </div>
-            <TrafficPatternSelect nodeId={id} pattern={trafficPattern} />
-            </>
           ) : scalingRule.scalable ? (
             <div
               className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"

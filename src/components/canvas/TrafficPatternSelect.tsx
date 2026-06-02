@@ -31,7 +31,7 @@ function TrafficPatternSelectBase({ nodeId, pattern }: TrafficPatternSelectProps
         <SelectTrigger
           data-testid="traffic-pattern-select"
           title="How this source's load varies over the simulation — steady, realistic wobble, periodic spikes, or one big surge (Black Friday)"
-          className="h-6 gap-1 border-archie-border bg-surface px-1.5 py-0 text-[0.625rem] text-text-secondary"
+          className="h-7 gap-1 border-archie-border bg-surface px-2 py-0 text-[0.6875rem] text-text-secondary"
         >
           <SelectValue />
         </SelectTrigger>

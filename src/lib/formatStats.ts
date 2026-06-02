@@ -4,7 +4,15 @@
  */
 export function formatRps(rps: number | undefined): string | null {
   if (rps === undefined) return null
+  if (rps >= 1_000_000) return `${+(rps / 1_000_000).toFixed(1)}M rps`
   return rps >= 1000 ? `${+(rps / 1000).toFixed(1)}k rps` : `${rps} rps`
+}
+
+/** Compact rps figure WITHOUT the " rps" suffix (e.g. "60k", "1.5M") — for tight stepper readouts. */
+export function formatRpsCompact(rps: number | undefined): string {
+  if (rps === undefined) return "—"
+  if (rps >= 1_000_000) return `${+(rps / 1_000_000).toFixed(1)}M`
+  return rps >= 1000 ? `${+(rps / 1000).toFixed(1)}k` : `${rps}`
 }
 
 export function formatLatencyMs(ms: number | undefined): string | null {

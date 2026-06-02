@@ -112,7 +112,7 @@ test.describe("Visual audit", () => {
     const patternSelect = node.locator('[data-testid="traffic-pattern-select"]')
     await expect(patternSelect).toBeVisible()
     await patternSelect.click()
-    await page.getByRole("option", { name: "Big surge" }).click()
+    await page.getByRole("option", { name: "Surge" }).click()
     await page.waitForTimeout(250)
     await node.screenshot({ path: `${SCREENSHOT_DIR}/17-traffic-pattern-surge.png` })
 
