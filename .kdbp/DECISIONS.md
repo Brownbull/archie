@@ -882,3 +882,35 @@ dim_overrides: []
 ## D46 — Phase 5 tier: enterprise (2026-06-02)
 **Phase:** Challenge Forge (authoring) · **Types:** user-facing, data, file-io, auth · **Prototype:** no
 **Reason:** The visual editor surface touches the progression-integrity boundary (origin, separate registry, id namespacing, palette intersection). Imported YAML is untrusted. Cloud persistence needs Firestore rules (D9 pattern). Enterprise rigor justified. **dim_overrides:** none. **Status:** accepted.
+
+## D47 — Phase 1 tier: enterprise — Cache hit ratio (2026-06-02)
+**Phase:** Cache hit ratio (E1) · **Types:** engine, simulation, data · **Prototype:** no
+**Reason:** The cache hit ratio changes the simulation engine's core traffic propagation logic. Cache nodes bifurcate traffic: hits served locally, misses forwarded downstream. This is load-bearing and affects every challenge with a cache node. Enterprise rigor for deterministic round-trip tests. **Status:** accepted.
+
+## D48 — Phase 2 tier: enterprise — Write/read path split (2026-06-02)
+**Phase:** Write/read path split (E2) · **Types:** engine, simulation, data · **Prototype:** no
+**Reason:** Differentiates SQL and NoSQL at the simulation level. Write bottleneck on primary is a fundamental architectural concept that every architecture student needs to see in the simulation. Enterprise rigor for the capacity model change. **Status:** accepted.
+
+## D49 — Phase 3 tier: mvp — CDN edge bifurcation (2026-06-02)
+**Phase:** CDN edge bifurcation (E3) · **Types:** engine, simulation · **Prototype:** no
+**Reason:** Reuses cache_hit_ratio logic from P1 with a miss_latency_penalty. Minimal new code. **Status:** accepted.
+
+## D50 — Phase 4 tier: mvp — Serverless cold start (2026-06-02)
+**Phase:** Serverless cold start (E4) · **Types:** engine, simulation · **Prototype:** no
+**Reason:** ~15 lines. Simple latency addition on a subset of requests. **Status:** accepted.
+
+## D51 — Phase 5 tier: enterprise — Queue backpressure (2026-06-02)
+**Phase:** Queue backpressure (E5) · **Types:** engine, simulation, data · **Prototype:** no
+**Reason:** Adds a buffer/queue-depth model. Significant refactor of the per-tick loop. Differentiates Kafka vs RabbitMQ. **Status:** accepted.
+
+## D52 — Phase 6 tier: enterprise — Interaction rules affect capacity (2026-06-02)
+**Phase:** Interaction rules affect capacity (E6) · **Types:** engine, simulation, integration · **Prototype:** no
+**Reason:** Bridges the metric system and traffic simulation. Category-pair rules change effective capacity. **Status:** accepted.
+
+## D53 — Phase 7 tier: mvp — Protocol overhead (2026-06-02)
+**Phase:** Protocol overhead (E7) · **Types:** engine, simulation · **Prototype:** no
+**Reason:** Read connection protocol from edge nodes, apply multiplier. **Status:** accepted.
+
+## D54 — Phase 8 tier: mvp — Monitoring feedback (2026-06-02)
+**Phase:** Monitoring feedback (E8) · **Types:** engine, simulation · **Prototype:** no
+**Reason:** Monitoring presence shortens failure recovery duration. Makes monitoring non-decorative. **Status:** accepted.

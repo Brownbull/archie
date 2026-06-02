@@ -2613,3 +2613,108 @@ NOTE: resolves D9 gap — cloud writes for all three collections now enforced
 PR: — (direct fast-forward df64466..8185db4)
 CI: deploy-production ✅ green (run 26823488012)
 DEPLOYMENTS: P113
+- 2026-06-02 09:49 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 09:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 09:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 09:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 09:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 10:14 | Write | /home/khujta/projects/bmad/archie/src/lib/masteryAvatars.ts
+- 2026-06-02 10:14 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/masteryAvatars.test.ts
+- 2026-06-02 10:21 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 10:21 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 13:29 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-02 13:29 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-02 13:29 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-02 13:29 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-02 13:30 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-02 13:30 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-02 13:30 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-02 13:30 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-02 13:31 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-02 13:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 13:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 13:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 13:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 13:32 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 13:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-02 13:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-02 13:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-02 13:46 | Write | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-02 13:46 | Write | /home/khujta/projects/bmad/archie/src/hooks/useProgressPersistence.ts
+- 2026-06-02 13:47 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-02 13:50 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-02 13:51 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-02 13:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-02 14:00 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useCanvasAutosave.ts
+- 2026-06-02 14:00 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useCanvasAutosave.ts
+- 2026-06-02 14:00 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-02 14:06 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 14:13 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-02 14:14 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-02 14:14 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-06-02 14:14 | Edit | /home/khujta/projects/bmad/archie/src/index.css
+- 2026-06-02 14:15 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-02 14:15 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-06-02 14:15 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-06-02 14:21 | Edit | /home/khujta/projects/bmad/archie/src/engine/dashboardCalculator.ts
+- 2026-06-02 14:21 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-02 14:22 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficPatternSelect.tsx
+- 2026-06-02 14:38 | Write | /home/khujta/projects/bmad/archie/src/lib/metricStars.ts
+- 2026-06-02 14:38 | Write | /home/khujta/projects/bmad/archie/src/components/dashboard/CategoryBar.tsx
+- 2026-06-02 14:38 | Write | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-02 14:39 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/InlineMetricBar.tsx
+- 2026-06-02 14:42 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/InlineMetricBar.test.tsx
+- 2026-06-02 14:43 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/AggregateScore.test.tsx
+- 2026-06-02 14:44 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/CategoryBar.test.tsx
+- 2026-06-02 14:47 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/AggregateScore.test.tsx
+- 2026-06-02 14:53 | Edit | /home/khujta/projects/bmad/archie/src/lib/metricStars.ts
+- 2026-06-02 14:53 | Edit | /home/khujta/projects/bmad/archie/src/index.css
+- 2026-06-02 14:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/dashboardCalculator.ts
+- 2026-06-02 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-02 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-06-02 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/IssuesSummary.tsx
+- 2026-06-02 14:55 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/InlineMetricBar.test.tsx
+- 2026-06-02 15:33 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-02 15:34 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-02 15:41 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficPatternSelect.tsx
+- 2026-06-02 15:42 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-02 16:07 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-02 16:07 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-02 16:07 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-02 16:08 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-02 16:08 | Write | /home/khujta/projects/bmad/archie/src/services/challengeAutosave.ts
+- 2026-06-02 16:08 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-02 16:08 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-02 16:08 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-02 16:09 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useCanvasAutosave.ts
+- 2026-06-02 16:09 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useCanvasAutosave.ts
+- 2026-06-02 16:16 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-02 16:17 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-02 16:17 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-02 16:18 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-02 16:18 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-02 16:18 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-02 16:18 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-02 16:24 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+- 2026-06-02 16:45 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-02 16:48 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-02 16:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-02 18:22 | Write | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-02 18:25 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-02 18:25 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-02 18:25 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-02 18:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-02 18:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-02 18:39 | Write | /home/khujta/projects/bmad/archie/docs/architecture/simulation-engine.html
+- 2026-06-02 18:40 | Write | /home/khujta/projects/bmad/archie/docs/architecture/simulation-engine.puml
+- 2026-06-02 18:53 | Write | /home/khujta/projects/bmad/archie/docs/architecture/simulation-enhancements.html
+
+## 2026-06-02 19:01 — PLAN COMPLETED: Mastery Tracks
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-06-02_mastery-tracks.md
+PHASES COMPLETED: 5 of 5 (P108–P112) + post-epic polish (P113+)
+
+## 2026-06-02 19:02 — PLAN CREATED: Simulation Realism
+PHASES: 8 | COMPLEXITY: mixed (4 low/med + 4 high) | MATURITY: enterprise
+TIERS: mvp × 4, ent × 4, scale × 0 | PROTOTYPES: 0
+DECISIONS: D47 (cache hit ratio) → D54 (monitoring feedback)
+DESIGN_ARTIFACT: docs/architecture/simulation-enhancements.html
