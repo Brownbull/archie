@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import { evaluateAttempt } from "@/engine/rubricScorer"
+import { writeSavedChallenge } from "@/services/challengeAutosave"
 import type { Challenge, StarBreakdown, MeasuredAttempt } from "@/lib/challengeTypes"
 import type { SimulationStats } from "@/lib/simulationStats"
 
@@ -41,10 +42,11 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   lastResult: null,
   lastMeasured: null,
   attemptSnapshot: null,
-  bestStars: {},
+  bestStars: {} as Record<string, number>,
 
   selectChallenge: (challenge) => {
     set({ activeChallenge: challenge, attemptState: "building", lastResult: null, lastMeasured: null, attemptSnapshot: null })
+    writeSavedChallenge(challenge.id, "building")
   },
 
   startAttempt: (snapshot) => {
@@ -75,6 +77,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
 
   reset: () => {
     set({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, attemptSnapshot: null })
+    writeSavedChallenge("", "idle")
   },
 }))
 

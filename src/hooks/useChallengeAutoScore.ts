@@ -22,6 +22,13 @@ export function useChallengeAutoScore(): void {
   const attemptState = useChallengeStore((s) => s.attemptState)
 
   useEffect(() => {
+    // If the sim was stopped/reset while the challenge was running, return to building so the
+    // user can retry — otherwise the challenge is stuck in "running" with no way to restart.
+    if (simStatus === "idle" && attemptState === "running") {
+      const { activeChallenge } = useChallengeStore.getState()
+      if (activeChallenge) useChallengeStore.getState().selectChallenge(activeChallenge)
+      return
+    }
     if (simStatus !== "done" || attemptState !== "running") return
     const { ticks } = useSimulationStore.getState()
     const { attemptSnapshot, scoreAttempt } = useChallengeStore.getState()

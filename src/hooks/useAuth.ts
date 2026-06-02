@@ -12,6 +12,7 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { useAttemptsStore } from "@/stores/attemptsStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useUserChallengeStore } from "@/stores/userChallengeStore"
+import { useChallengeStore } from "@/stores/challengeStore"
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -56,7 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(firebaseUser)
         setLoading(false)
         if (firebaseUser) {
-          void useUserProgressStore.getState().loadProgress(firebaseUser.uid)
+          void useUserProgressStore.getState().loadProgress(firebaseUser.uid).then(() => {
+            const { bestStarsCloud } = useUserProgressStore.getState()
+            if (Object.keys(bestStarsCloud).length > 0) {
+              useChallengeStore.setState({ bestStars: { ...bestStarsCloud } })
+            }
+          })
           void useUserChallengeStore.getState().loadFromCloud(firebaseUser.uid)
         }
       },

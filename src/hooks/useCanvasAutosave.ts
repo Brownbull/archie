@@ -1,7 +1,10 @@
 import { useEffect } from "react"
 import { toast } from "sonner"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useChallengeStore } from "@/stores/challengeStore"
+import { getChallenge } from "@/services/challengeLoader"
 import { readSavedCanvas, writeSavedCanvas, clearSavedCanvas } from "@/services/canvasAutosave"
+import { readSavedChallenge, clearSavedChallenge } from "@/services/challengeAutosave"
 
 const AUTOSAVE_DEBOUNCE_MS = 700
 
@@ -44,6 +47,18 @@ export function useCanvasAutosave(libraryReady: boolean): void {
             },
           },
         })
+      }
+
+      // Restore active challenge if one was saved (user refreshed mid-challenge).
+      const savedChallenge = readSavedChallenge()
+      if (savedChallenge && useChallengeStore.getState().attemptState === "idle") {
+        const challenge = getChallenge(savedChallenge.challengeId)
+        if (challenge) {
+          useChallengeStore.getState().selectChallenge(challenge)
+          toast("Restored challenge: " + challenge.title, { description: "Continue where you left off." })
+        } else {
+          clearSavedChallenge()
+        }
       }
     }
 
