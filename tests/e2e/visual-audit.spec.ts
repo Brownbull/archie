@@ -85,6 +85,30 @@ test.describe("Visual audit", () => {
     }
   })
 
+  test("traffic source — decluttered node + working rps stepper", async ({ page }) => {
+    await ready(page)
+    await addComponentToCanvas(page, 0) // first palette block = Traffic Source (multi-provider)
+    const node = page.locator('[data-testid="archie-node"]').first()
+    await page.waitForTimeout(400)
+    await node.screenshot({ path: `${SCREENSHOT_DIR}/15-traffic-node.png` })
+
+    // The −/＋ stepper must actually move the rps readout (regression: it was frozen).
+    const value = page.locator('[data-testid="rps-stepper-value"]')
+    const before = await value.textContent()
+    await page.locator('[data-testid="rps-increment"]').click()
+    await page.waitForTimeout(200)
+    const afterInc = await value.textContent()
+    expect(afterInc, "rps readout should rise on +").not.toBe(before)
+    await page.locator('[data-testid="rps-decrement"]').click()
+    await page.waitForTimeout(200)
+    expect(await value.textContent(), "rps readout should fall back on −").toBe(before)
+    await node.screenshot({ path: `${SCREENSHOT_DIR}/16-traffic-node-stepped.png` })
+
+    // Decluttered: a load origin shows no infra cost / complexity / metric bars.
+    await expect(node.locator('[data-testid="archie-node-cost"]')).toHaveCount(0)
+    await expect(node.locator('[data-testid="archie-node-complexity"]')).toHaveCount(0)
+  })
+
   test("inspector panel", async ({ page }) => {
     await ready(page)
     await addComponentToCanvas(page, 0)

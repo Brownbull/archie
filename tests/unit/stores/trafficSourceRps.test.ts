@@ -49,6 +49,13 @@ describe("traffic source RPS", () => {
     expect(totalTrafficSourceRps([node("postgresql", "default", "data-storage")])).toBe(0)
   })
 
+  it("scales a traffic source's emitted rps by its stepper count (replicaCount)", () => {
+    // The on-node −/＋ stepper drives replicaCount; for traffic that multiplies the variant's
+    // maxRPS (regression: getNodeCost previously froze it at ×1 because traffic is replicaType 'none').
+    const nodes = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 3 } }]
+    expect(totalTrafficSourceRps(nodes)).toBe(9000) // 3000 × 3
+  })
+
   it("rescales a curve to the given peak while preserving its shape", () => {
     const curve = [
       { t: 0, rps: 0 },

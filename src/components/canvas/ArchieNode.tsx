@@ -290,7 +290,9 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         )
       )}
 
-      {(rpsLabel || latencyLabel || nodeCost.monthlyCost !== undefined) && (
+      {/* A traffic source is a load origin, not infrastructure — its cost/latency/throughput stats
+          are noise. RPS lives in the stepper below; everything else is hidden for traffic. */}
+      {!isTraffic && (rpsLabel || latencyLabel || nodeCost.monthlyCost !== undefined) && (
         <div className="flex items-center justify-between gap-2 px-3 pb-1 text-[0.625rem] font-medium">
           {/* Throughput · latency on the left … */}
           <span data-testid="archie-node-rps" className="truncate text-text-secondary">
@@ -408,8 +410,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
               {backendCount} backend{backendCount === 1 ? "" : "s"}
             </span>
           )}
-          {/* Operational-complexity badge — pushed to the right (below the price). */}
-          {complexity && (
+          {/* Operational-complexity badge — pushed to the right (below the price). Not for traffic. */}
+          {!isTraffic && complexity && (
             <span
               data-testid="archie-node-complexity"
               data-complexity={complexity}
@@ -447,7 +449,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         </div>
       )}
 
-      {topMetrics.length > 0 && (
+      {!isTraffic && topMetrics.length > 0 && (
         <div className="pb-1.5">
           {topMetrics.map((m) => (
             <InlineMetricBar

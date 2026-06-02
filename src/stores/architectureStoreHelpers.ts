@@ -278,7 +278,10 @@ export function getNodeCost(
   const variant = component?.configVariants.find((v) => v.id === activeConfigVariantId)
   const replicas = Number.isFinite(replicaCount) ? Math.max(1, Math.floor(replicaCount)) : 1
   const rule = component ? getScalingRule(component.category as ComponentCategoryId) : undefined
-  const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
+  // A traffic source isn't replicated infrastructure, but its on-node stepper reuses replicaCount as
+  // a load multiplier — so its emitted maxRPS DOES scale with the count (drives the sim's traffic).
+  const isTrafficCategory = component?.category === "traffic"
+  const capacityFactor = (rule && rule.replicaType !== "none") || isTrafficCategory ? replicas : 1
   return {
     monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
     maxRPS: variant?.maxRPS === undefined ? undefined : variant.maxRPS * capacityFactor,
