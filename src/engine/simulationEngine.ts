@@ -70,11 +70,26 @@ function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): numbe
  * Active window is half-open `[t, t + durationS)`; omitting durationS means "until the end".
  * Concurrent latency_spike events on the same node multiply together (×3 × ×2 = ×6).
  */
-export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], timeS: number): TickOverrides {
+export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], timeS: number, edges?: Array<{ source: string; target: string }>): TickOverrides {
+  // E8: build a set of nodes monitored by a monitoring-category neighbor.
+  const monitoredNodes = new Set<string>()
+  if (edges) {
+    const monitorIds = new Set(nodes.filter((n) => n.category === "monitoring").map((n) => n.id))
+    for (const e of edges) {
+      if (monitorIds.has(e.target)) monitoredNodes.add(e.source)
+      if (monitorIds.has(e.source)) monitoredNodes.add(e.target)
+    }
+  }
+  const MONITORING_RECOVERY_FACTOR = 0.67
+
   const offlineNodeIds = new Set<string>()
   const latencyMultipliers = new Map<string, number>()
   for (const e of events) {
-    const active = timeS >= e.t && (e.durationS == null || timeS < e.t + e.durationS)
+    // E8: if the target node is monitored, failure recovers 33% faster.
+    const effectiveDuration = e.durationS != null && monitoredNodes.has(e.target)
+      ? e.durationS * MONITORING_RECOVERY_FACTOR
+      : e.durationS
+    const active = timeS >= e.t && (effectiveDuration == null || timeS < e.t + effectiveDuration)
     if (!active) continue
     if (e.type === "component_failure") {
       offlineNodeIds.add(e.target)
@@ -168,6 +183,17 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       const readServed = Math.min(readRps, readCap)
       served = writeServed + readServed
       failed = Math.max(0, incoming - served)
+    } else if (node.queueBufferSize !== undefined && node.queueBufferSize > 0 && capped) {
+      // Queue backpressure (E5): excess is buffered, not shed. Overflow sheds.
+      const drainRate = node.effectiveMaxRps
+      served = Math.min(incoming, drainRate)
+      const excess = Math.max(0, incoming - drainRate)
+      const currentDepth = node.queueDepth ?? 0
+      const room = Math.max(0, node.queueBufferSize - currentDepth)
+      const buffered = Math.min(excess, room)
+      const overflow = excess - buffered
+      node.queueDepth = currentDepth + buffered
+      failed = overflow
     } else if (capped) {
       served = Math.min(incoming, node.effectiveMaxRps)
       failed = Math.max(0, incoming - served)
@@ -179,6 +205,16 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     // Offline (scheduled failure / AZ outage): zero capacity → sheds all incoming traffic.
     const capacityPercent = offline ? (incoming > 0 ? 1 : 0) : capped ? incoming / node.effectiveMaxRps : 0
     let baseLatency = offline ? node.baseLatencyMs : latencyUnderLoad(node.baseLatencyMs, capacityPercent)
+
+    // Protocol overhead (E7): different connection protocols add latency.
+    if (node.protocolOverheadMs) {
+      baseLatency += node.protocolOverheadMs
+    }
+
+    // Queue depth latency (E5): deeper queue = higher latency (0.01ms per buffered item).
+    if (node.queueDepth && node.queueDepth > 0) {
+      baseLatency += node.queueDepth * 0.01
+    }
 
     // CDN/cache miss latency penalty (E3): add weighted miss latency on top of base.
     if (node.missLatencyPenaltyMs && node.cacheHitRatio !== undefined && node.cacheHitRatio < 1) {
@@ -237,7 +273,7 @@ export function runSimulation(
     const t = safeTicks === 1 ? 0 : (i / (safeTicks - 1)) * durationS
     const targetRps = interpolateRps(curve, t)
     // Empty events → undefined overrides → simulateTick behaves exactly as pre-Epic-16 (no regression).
-    const overrides = scheduledEvents.length > 0 ? computeOverrides(graph.nodes, scheduledEvents, t) : undefined
+    const overrides = scheduledEvents.length > 0 ? computeOverrides(graph.nodes, scheduledEvents, t, graph.edges) : undefined
     frames.push(simulateTick(graph, i, targetRps, overrides))
   }
   return { ticks: frames, entryNodeIds: findEntryNodes(graph) }

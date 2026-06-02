@@ -24,7 +24,7 @@ schema_version: 2
 track: reliability
 tier: 1
 requires: [first-service]
-unlocks: [zone-replica]
+unlocks: [zone-replica, observe-to-recover]
 required_types: [observability]
 available_blocks: [compute, relational-db, observability]
 grants: [observability]

@@ -1,0 +1,35 @@
+id: observe-to-recover
+title: Observe to Recover
+brief: >-
+  Your compute node will suffer a 30-second outage mid-run. With observability
+  connected, the failure recovers 33% faster (~20s instead of 30s). Without
+  monitoring, you lose too much uptime to pass. Monitoring is not decorative —
+  it actively shortens your downtime.
+difficulty: intermediate
+budget_cap: 200
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 500 }
+  - { t: 90, rps: 500 }
+required_components:
+  - compute
+  - monitoring
+target_metrics:
+  uptime_percent: 80
+  p99_latency_ms: 400
+scheduled_events:
+  - { t: 30, type: component_failure, target: compute, durationS: 30 }
+hints:
+  - Connect observability to your compute node — it shortens failure recovery by 33%.
+  - Without monitoring, the 30s outage drops too much uptime to pass.
+  - Monitoring actively helps recovery, not just visualization.
+schema_version: 2
+track: reliability
+tier: 2
+requires: [observe-baseline]
+unlocks: []
+required_types: [observability]
+available_blocks: [traffic-source, compute, observability, load-balancer]
+grants: []
+rewards:
+  xp: 150

@@ -1,0 +1,37 @@
+id: burst-absorber
+title: Burst Absorber
+brief: >-
+  A flash sale sends 5000 rps in a sudden spike. Your worker can only process
+  500 rps. Place a message queue between the traffic source and the worker —
+  the queue buffers the burst and drains steadily to the worker. Without the
+  queue, 4500 of 5000 requests are dropped instantly.
+difficulty: intermediate
+budget_cap: 300
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 200 }
+  - { t: 20, rps: 200 }
+  - { t: 30, rps: 5000 }
+  - { t: 60, rps: 5000 }
+  - { t: 75, rps: 500 }
+  - { t: 90, rps: 200 }
+required_components:
+  - compute
+  - messaging
+target_metrics:
+  uptime_percent: 90
+  p99_latency_ms: 500
+hints:
+  - A message queue buffers the burst — it absorbs what the worker can't process immediately.
+  - The worker drains the queue at its own pace (500 rps), smoothing out the spike.
+  - Without a queue, the worker sheds 90% of the burst traffic instantly.
+schema_version: 2
+track: realtime
+tier: 2
+requires: [async-pipeline]
+unlocks: []
+required_types: [message-queue, worker]
+available_blocks: [traffic-source, compute, message-queue, worker, load-balancer]
+grants: []
+rewards:
+  xp: 200

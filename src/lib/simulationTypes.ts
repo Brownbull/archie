@@ -42,8 +42,14 @@ export interface SimNode {
    * (sharded NoSQL model). Default: undefined (no split, all traffic uniform).
    */
   writeDistribution?: "primary" | "sharded"
+  /** Queue buffer size. When set, excess traffic is buffered instead of shed. Overflow sheds (E5). */
+  queueBufferSize?: number
+  /** Current queue depth (mutable across ticks in a multi-tick run; 0 at start). */
+  queueDepth?: number
   /** Additional latency (ms) added for cache/CDN misses, weighted by miss ratio (E3). */
   missLatencyPenaltyMs?: number
+  /** Protocol overhead latency (ms) added to base latency — HTTP > gRPC > TCP (E7). */
+  protocolOverheadMs?: number
   /** Cold start latency penalty (ms) for serverless on-demand invocations (E4). */
   coldStartLatencyMs?: number
   /** Fraction of requests that hit a cold start (0–1). Default 0 = no cold starts (E4). */
