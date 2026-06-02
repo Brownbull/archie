@@ -30,11 +30,11 @@ import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
 const TIER_LABELS = ["", "I", "II", "III", "IV", "V"]
 
-const NODE_W = 152
-const NODE_H = 52
-const GAP_X = 32
-const TRACK_GAP_Y = 12
-const TRACK_HEADER_H = 22
+const NODE_W = 176
+const NODE_H = 64
+const GAP_X = 36
+const TRACK_GAP_Y = 16
+const TRACK_HEADER_H = 26
 const TRACK_ROW_H = NODE_H + TRACK_GAP_Y + TRACK_HEADER_H
 const PAD_LEFT = 8
 
@@ -142,22 +142,22 @@ function TreeNode({
         strokeWidth={selected ? 2 : 1}
         opacity={isLocked ? 0.45 : 1}
       />
-      <text x={10} y={18} fontSize={11} fontWeight={600} fill={isLocked ? "#6b7280" : "#e5e7eb"}>
-        {c.title.length > 17 ? c.title.slice(0, 16) + "…" : c.title}
+      <text x={10} y={22} fontSize={13} fontWeight={600} fill={isLocked ? "#6b7280" : "#e5e7eb"}>
+        {c.title.length > 18 ? c.title.slice(0, 17) + "…" : c.title}
       </text>
-      <text x={10} y={34} fontSize={9} fill="#9ca3af">
+      <text x={10} y={40} fontSize={11} fill="#9ca3af">
         {c.rewards?.xp ?? 0} XP · Tier {TIER_LABELS[c.tier ?? 0]}
       </text>
-      {isLocked && <Lock x={NODE_W - 20} y={8} width={12} height={12} color="#6b7280" />}
+      {isLocked && <Lock x={NODE_W - 22} y={8} width={14} height={14} color="#6b7280" />}
       {isCompleted && (
-        <g transform={`translate(${NODE_W - 44}, ${NODE_H - 18})`}>
+        <g transform={`translate(${NODE_W - 50}, ${NODE_H - 20})`}>
           {[0, 1, 2].map((i) => (
             <Star
               key={i}
-              x={i * 13}
+              x={i * 15}
               y={0}
-              width={11}
-              height={11}
+              width={13}
+              height={13}
               fill={i < bestStars ? "#facc15" : "none"}
               stroke={i < bestStars ? "#facc15" : "#4b5563"}
               strokeWidth={1}
@@ -166,7 +166,7 @@ function TreeNode({
         </g>
       )}
       {!isLocked && !isCompleted && (
-        <Play x={NODE_W - 20} y={NODE_H - 20} width={12} height={12} color={color} fill={`${color}40`} />
+        <Play x={NODE_W - 22} y={NODE_H - 22} width={14} height={14} color={color} fill={`${color}40`} />
       )}
     </g>
   )
@@ -221,7 +221,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
                 const track = CHALLENGE_TRACKS.get(id)
                 const y = i * TRACK_ROW_H + 12
                 return (
-                  <text key={id} x={PAD_LEFT} y={y} fontSize={11} fontWeight={700} fill="#9ca3af">
+                  <text key={id} x={PAD_LEFT} y={y} fontSize={13} fontWeight={700} fill="#9ca3af">
                     {track?.name ?? id}
                   </text>
                 )

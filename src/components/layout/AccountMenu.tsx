@@ -1,9 +1,9 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { CircleUser, LogOut, Trophy } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { rankForXp } from "@/lib/challengeTracks"
-import { getMasteryAvatar } from "@/lib/masteryAvatars"
+import { getMasteryAvatar, getTrackAvatar } from "@/lib/masteryAvatars"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -19,8 +19,13 @@ export function AccountMenu() {
   const name = user?.displayName ?? null
   const [profileOpen, setProfileOpen] = useState(false)
   const trackXp = useUserProgressStore((s) => s.trackXp)
+  const equippedAvatar = useUserProgressStore((s) => s.equippedAvatar)
   const totalXp = Object.values(trackXp).reduce((sum, v) => sum + v, 0)
-  const avatar = getMasteryAvatar(rankForXp(totalXp).rank)
+  const avatar = useMemo(() => {
+    if (equippedAvatar?.startsWith("rank:")) return getMasteryAvatar(parseInt(equippedAvatar.slice(5), 10))
+    if (equippedAvatar?.startsWith("track:")) return getTrackAvatar(equippedAvatar.slice(6))
+    return getMasteryAvatar(rankForXp(totalXp).rank)
+  }, [equippedAvatar, totalXp])
 
   return (
     <>

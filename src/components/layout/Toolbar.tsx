@@ -6,6 +6,7 @@ import { IssuesSummary } from "@/components/layout/IssuesSummary"
 import { ResetCanvasDialog } from "@/components/layout/ResetCanvasDialog"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
 import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
+import { useChallengeStore } from "@/stores/challengeStore"
 import { useUiStore } from "@/stores/uiStore"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 
@@ -17,17 +18,30 @@ import { TOOLBAR_HEIGHT } from "@/lib/constants"
 export function Toolbar() {
   const promptOpen = useUiStore((s) => s.promptOpen)
   const setPromptOpen = useUiStore((s) => s.setPromptOpen)
+  const activeChallenge = useChallengeStore((s) => s.activeChallenge)
+  const attemptState = useChallengeStore((s) => s.attemptState)
 
   return (
     <header
       data-testid="toolbar"
-      className="flex items-center justify-between border-b border-archie-border bg-panel px-4"
+      className="relative flex items-center justify-between border-b border-archie-border bg-panel px-4"
       style={{ height: `${TOOLBAR_HEIGHT}px` }}
     >
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-text-primary">Archie</span>
         <AppMenuBar />
       </div>
+
+      {activeChallenge && attemptState !== "idle" && (
+        <div data-testid="challenge-active-indicator" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+          <span className="rounded-full bg-blue-500/20 px-3 py-0.5 text-xs font-semibold text-blue-300">
+            {activeChallenge.title}
+          </span>
+          <span className="text-[0.625rem] text-text-secondary">
+            {attemptState === "building" ? "Building…" : attemptState === "running" ? "Running…" : attemptState === "scored" ? "Scored" : ""}
+          </span>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <ExperienceLevelControl />

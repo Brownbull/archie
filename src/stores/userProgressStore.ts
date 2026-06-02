@@ -9,15 +9,17 @@ let loadSeq = 0
 export interface UserProgress {
   trackXp: Readonly<Record<string, number>>
   completedChallenges: readonly string[]
+  equippedAvatar: string | null
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [] }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], equippedAvatar: null }
 
 interface UserProgressState extends UserProgress {
   loading: boolean
   error: string | null
   loadProgress: (userId: string) => Promise<void>
   awardXp: (userId: string, track: string, xp: number, challengeId: string) => Promise<void>
+  equipAvatar: (userId: string, avatarKey: string) => Promise<void>
   reset: () => void
 }
 
@@ -41,6 +43,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
         set({
           trackXp: (data.trackXp as Record<string, number>) ?? {},
           completedChallenges: (data.completedChallenges as string[]) ?? [],
+          equippedAvatar: (data.equippedAvatar as string) ?? null,
           loading: false,
         })
       } else {
@@ -73,6 +76,16 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     } catch (err) {
       if (import.meta.env.DEV) console.error("Failed to save progress:", err)
       set({ error: "Could not save your progress." })
+    }
+  },
+
+  equipAvatar: async (userId, avatarKey) => {
+    if (!userId) return
+    set({ equippedAvatar: avatarKey })
+    try {
+      await setDoc(doc(db, COLLECTION, userId), { equippedAvatar: avatarKey, updatedAt: serverTimestamp() }, { merge: true })
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save equipped avatar:", err)
     }
   },
 
