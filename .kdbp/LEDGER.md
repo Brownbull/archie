@@ -2372,3 +2372,38 @@ PR: — (direct; carried a9054c5 [P104 bookkeeping] + 8ad03a3 [P105 traffic step
 CI: deploy-production ✅ green (run 26795172024, 45s)
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P105
+- 2026-06-01 22:51 | Write | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-01 22:52 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 22:52 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 22:52 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-06-01 22:53 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-06-01 22:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-06-01 22:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-06-01 22:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-06-01 22:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-06-01 22:54 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficPatternSelect.tsx
+- 2026-06-01 22:54 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 22:55 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 22:55 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 22:55 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 22:56 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-01 22:56 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-01 22:56 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlExporter.ts
+- 2026-06-01 22:56 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-01 22:56 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-01 22:57 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/trafficPatterns.test.ts
+- 2026-06-01 22:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-01 22:58 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-01 22:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-01 23:03 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/RunSimulationButton.test.tsx
+
+## 2026-06-01 23:04 — [50e2ef6] feat(canvas): traffic-source burst patterns (steady/wobble/periodic/surge)
+FINDINGS: 0 critical/high (tsc✓ eslint 0✓ unit 4188✓; Playwright 7/7 incl. pattern picker + live sim run)
+ACTIONS: per-source traffic profile — engine/trafficPatterns deterministic buildPatternCurve (seeded PRNG); buildTrafficCurveFromSources summed; RunSimulationButton uses pattern curve when non-steady (scenario still wins); trafficPattern persists via node data + schema/yaml + autosave; TrafficPatternSelect picker on node
+DEFERRED: optional future — fully custom spike windows (start/duration/magnitude); per-source curve UI preview
+
+## 2026-06-01 23:05 — PUSH dev -> main
+PR: — (direct; carried f8a2f16 [P105 bookkeeping] + 50e2ef6 [P106 burst patterns])
+CI: deploy-production ✅ green (run 26795776992, 48s)
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P106
