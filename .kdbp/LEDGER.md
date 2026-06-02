@@ -2608,3 +2608,8 @@ COLLECTIONS: attempts, userProgress, userChallenges
 COMMAND: firebase deploy --only firestore:rules
 STATUS: ✅ compiled + released
 NOTE: resolves D9 gap — cloud writes for all three collections now enforced
+
+## 2026-06-02 09:39 — PUSH dev -> main
+PR: — (direct fast-forward df64466..8185db4)
+CI: deploy-production ✅ green (run 26823488012)
+DEPLOYMENTS: P113
