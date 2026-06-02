@@ -1,0 +1,33 @@
+id: event-stream
+title: Stream the Data
+brief: >-
+  Switch from fire-and-forget queues to a durable event log. Consumers replay
+  from any offset, and ordering is guaranteed per partition. Keep throughput
+  high while the event stream absorbs the write load.
+difficulty: intermediate
+budget_cap: 1200
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 500 }
+  - { t: 60, rps: 1500 }
+  - { t: 90, rps: 1500 }
+  - { t: 120, rps: 500 }
+required_components:
+  - compute
+  - messaging
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 250
+hints:
+  - An event stream (Kafka-style) is durable and ordered — unlike a simple queue.
+  - The cache absorbs repeated reads so the stream isn't re-read for every consumer.
+schema_version: 2
+track: realtime
+tier: 2
+requires: [async-pipeline]
+unlocks: [stream-processor]
+available_blocks: [compute, message-queue, event-stream, relational-db, nosql, cache, traffic-source]
+grants: [event-stream]
+rewards:
+  xp: 200

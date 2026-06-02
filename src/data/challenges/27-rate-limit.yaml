@@ -1,0 +1,33 @@
+id: rate-limit
+title: Quota Keeper
+brief: >-
+  Place a rate limiter on the auth tier. A flood of junk-auth requests arrives
+  mid-challenge — the limiter should absorb the abuse while legitimate traffic
+  stays within its p99 budget.
+difficulty: intermediate
+budget_cap: 400
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 100 }
+  - { t: 30, rps: 500 }
+  - { t: 45, rps: 2000 }
+  - { t: 60, rps: 2000 }
+  - { t: 75, rps: 500 }
+  - { t: 90, rps: 200 }
+required_components:
+  - compute
+  - auth-security
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 300
+hints:
+  - The rate limiter sheds excess requests before they reach auth + compute.
+schema_version: 2
+track: security
+tier: 2
+requires: [auth-101]
+unlocks: [siem-audit]
+available_blocks: [compute, auth, rate-limiter, traffic-source]
+grants: [rate-limiter]
+rewards:
+  xp: 150

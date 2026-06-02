@@ -1,0 +1,33 @@
+id: zone-replica
+title: Zone Replica
+brief: >-
+  Spread replicas across availability zones. Observability tracks each zone
+  independently so you see which zone is hot. Keep latency flat even as traffic
+  doubles — the load balancer should spread requests evenly.
+difficulty: intermediate
+budget_cap: 700
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 600 }
+  - { t: 60, rps: 1200 }
+  - { t: 90, rps: 1200 }
+required_components:
+  - compute
+  - monitoring
+  - delivery-network
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 250
+hints:
+  - Replicas across zones means a single-zone outage doesn't take everything down.
+  - The load balancer distributes traffic; observability confirms it's balanced.
+schema_version: 2
+track: reliability
+tier: 2
+requires: [observe-baseline, scale-out]
+unlocks: [zone-failure]
+available_blocks: [compute, relational-db, observability, load-balancer]
+grants: []
+rewards:
+  xp: 120

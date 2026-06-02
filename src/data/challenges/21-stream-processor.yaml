@@ -1,0 +1,35 @@
+id: stream-processor
+title: Process & Aggregate
+brief: >-
+  Window and aggregate events in flight. The stream processor reads from the
+  event log, groups by time windows, and writes summaries downstream. A latency
+  spike on compute tests your pipeline's resilience.
+difficulty: advanced
+budget_cap: 1500
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 800 }
+  - { t: 60, rps: 2000 }
+  - { t: 90, rps: 2000 }
+  - { t: 120, rps: 800 }
+required_components:
+  - compute
+  - messaging
+target_metrics:
+  uptime_percent: 97.5
+  p99_latency_ms: 300
+scheduled_events:
+  - { t: 60, type: latency_spike, target: compute, multiplier: 4, durationS: 30 }
+hints:
+  - The stream processor (Flink-style) handles windowed aggregation natively.
+  - Cache the aggregated output so downstream reads don't re-compute.
+schema_version: 2
+track: realtime
+tier: 3
+requires: [event-stream]
+unlocks: [realtime-live]
+available_blocks: [compute, event-stream, stream-processor, relational-db, cache, traffic-source]
+grants: [stream-processor]
+rewards:
+  xp: 250

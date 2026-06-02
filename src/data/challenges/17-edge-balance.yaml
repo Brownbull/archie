@@ -1,0 +1,31 @@
+id: edge-balance
+title: Load-Balanced Edge
+brief: >-
+  With DNS and replicas in place, add a load balancer at the edge to distribute
+  traffic evenly. Keep latency low as the request count climbs — the balancer
+  should absorb the growth before any single instance saturates.
+difficulty: intermediate
+budget_cap: 500
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 500 }
+  - { t: 60, rps: 1200 }
+  - { t: 90, rps: 1200 }
+required_components:
+  - delivery-network
+  - compute
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 200
+hints:
+  - The load balancer in front of compute prevents any single replica from overloading.
+schema_version: 2
+track: edge
+tier: 2
+requires: [dns-routing, scale-out]
+unlocks: [edge-delivery]
+available_blocks: [compute, traffic-source, dns, load-balancer]
+grants: []
+rewards:
+  xp: 120

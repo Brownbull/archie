@@ -28,7 +28,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 3
-requires: [edge-delivery]
+requires: [zone-replica, edge-delivery]
 unlocks: [always-on]
 available_blocks: [compute, relational-db, observability, load-balancer, cache]
 grants: []

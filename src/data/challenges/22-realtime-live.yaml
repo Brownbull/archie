@@ -1,0 +1,33 @@
+id: realtime-live
+title: Live Updates
+brief: >-
+  Push processed events to websocket clients in real time. The fan-out must
+  deliver updates under 150 ms to 500+ simulated connections while the stream
+  processor feeds fresh data continuously.
+difficulty: advanced
+budget_cap: 2000
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 200 }
+  - { t: 30, rps: 1000 }
+  - { t: 60, rps: 2500 }
+  - { t: 90, rps: 2500 }
+  - { t: 120, rps: 1000 }
+required_components:
+  - compute
+  - real-time
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 150
+hints:
+  - The realtime tier (websocket server) fans events out to connected clients.
+  - Cache helps here — pre-compute the latest state so new connections bootstrap fast.
+schema_version: 2
+track: realtime
+tier: 4
+requires: [stream-processor]
+unlocks: [async-backbone]
+available_blocks: [compute, realtime, event-stream, stream-processor, cache, traffic-source]
+grants: [realtime]
+rewards:
+  xp: 250

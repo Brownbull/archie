@@ -1,0 +1,38 @@
+id: edge-resilience
+title: Edge Under Chaos
+brief: >-
+  Capstone: your multi-layer edge must survive an AZ failure and a latency spike
+  hitting simultaneously. The CDN, gateway, load balancer, and cache all need to
+  absorb the impact without dropping below the uptime target at 3000+ rps.
+difficulty: advanced
+budget_cap: 2500
+duration_seconds: 180
+traffic_curve:
+  - { t: 0, rps: 500 }
+  - { t: 30, rps: 1500 }
+  - { t: 60, rps: 3000 }
+  - { t: 90, rps: 3500 }
+  - { t: 120, rps: 3500 }
+  - { t: 150, rps: 2000 }
+  - { t: 180, rps: 1000 }
+required_components:
+  - delivery-network
+  - compute
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 300
+scheduled_events:
+  - { t: 60, type: az_outage, target: compute, durationS: 60 }
+  - { t: 90, type: latency_spike, target: compute, multiplier: 5, durationS: 30 }
+hints:
+  - The CDN absorbs static-asset load even during the outage.
+  - Cache in front of compute can serve stale reads while the backend recovers.
+schema_version: 2
+track: edge
+tier: 5
+requires: [api-gateway, zone-failure]
+unlocks: []
+available_blocks: [compute, traffic-source, dns, load-balancer, cdn, api-gateway, cache]
+grants: []
+rewards:
+  xp: 280

@@ -1,0 +1,38 @@
+id: production-ai
+title: Production AI
+brief: >-
+  Capstone: a multi-region AI service with failover, circuit-breaking, and full
+  observability. An AZ outage hits the LLM gateway mid-run — your architecture
+  must route around it and keep serving inference requests under latency.
+difficulty: advanced
+budget_cap: 4000
+duration_seconds: 180
+traffic_curve:
+  - { t: 0, rps: 200 }
+  - { t: 30, rps: 1000 }
+  - { t: 60, rps: 2500 }
+  - { t: 90, rps: 3500 }
+  - { t: 120, rps: 3500 }
+  - { t: 150, rps: 2000 }
+  - { t: 180, rps: 500 }
+required_components:
+  - compute
+  - monitoring
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 400
+scheduled_events:
+  - { t: 60, type: az_outage, target: compute, durationS: 50 }
+hints:
+  - Observability is your eyes during the outage — without it, you're flying blind.
+  - The CDN + cache serve cached AI responses while the LLM gateway recovers.
+  - This capstone draws from everything you've learned across all tracks.
+schema_version: 2
+track: aiml
+tier: 4
+requires: [rag-retrieval, zone-failure, always-on]
+unlocks: []
+available_blocks: [traffic-source, load-balancer, cdn, compute, llm-gateway, etl, vector-store, relational-db, cache, observability, message-queue]
+grants: []
+rewards:
+  xp: 300

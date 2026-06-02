@@ -1,0 +1,33 @@
+id: serverless-burst
+title: Serverless Burst
+brief: >-
+  A spike hits your scaled-out service. Serverless functions absorb the overflow
+  without pre-provisioning — keep latency flat while the burst passes, and stay
+  under budget by not over-scaling the base compute tier.
+difficulty: intermediate
+budget_cap: 800
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 200 }
+  - { t: 30, rps: 200 }
+  - { t: 45, rps: 3000 }
+  - { t: 60, rps: 3000 }
+  - { t: 75, rps: 400 }
+  - { t: 90, rps: 400 }
+required_components:
+  - compute
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 300
+hints:
+  - Serverless functions can absorb the burst without permanent provisioning cost.
+  - Keep the load balancer in front so traffic splits between compute and serverless.
+schema_version: 2
+track: foundations
+tier: 3
+requires: [scale-out]
+unlocks: [worker-fleet]
+available_blocks: [traffic-source, compute, load-balancer, serverless]
+grants: [serverless]
+rewards:
+  xp: 200

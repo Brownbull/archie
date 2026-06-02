@@ -1,0 +1,30 @@
+id: auth-101
+title: Identify Yourself
+brief: >-
+  Add an auth tier upstream of compute. Every request must be authenticated
+  before it reaches the backend. Handle login load under budget — auth adds
+  latency, so keep the total p99 in check.
+difficulty: beginner
+budget_cap: 200
+duration_seconds: 60
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 300 }
+  - { t: 60, rps: 600 }
+required_components:
+  - compute
+  - auth-security
+target_metrics:
+  uptime_percent: 96
+  p99_latency_ms: 400
+hints:
+  - Auth sits in front of compute — it's the gatekeeper, not the service itself.
+schema_version: 2
+track: security
+tier: 1
+requires: [first-service]
+unlocks: [rate-limit]
+available_blocks: [compute, auth, traffic-source]
+grants: [auth]
+rewards:
+  xp: 100

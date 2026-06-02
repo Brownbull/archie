@@ -1,0 +1,34 @@
+id: api-gateway
+title: API Gateway
+brief: >-
+  Front your compute with an API gateway for request validation, routing, and
+  auth enforcement. The gateway sits between the CDN and compute — keep the
+  total p99 under 250 ms while handling authenticated traffic at scale.
+difficulty: advanced
+budget_cap: 1500
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 600 }
+  - { t: 60, rps: 2000 }
+  - { t: 90, rps: 2000 }
+  - { t: 120, rps: 800 }
+required_components:
+  - delivery-network
+  - compute
+  - auth-security
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 250
+hints:
+  - The API gateway handles validation + routing before traffic reaches compute.
+  - Auth sits alongside the gateway to enforce identity on every request.
+schema_version: 2
+track: edge
+tier: 4
+requires: [edge-delivery]
+unlocks: [edge-resilience]
+available_blocks: [compute, traffic-source, dns, load-balancer, cdn, api-gateway, auth]
+grants: [api-gateway]
+rewards:
+  xp: 200

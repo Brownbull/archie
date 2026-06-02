@@ -26,8 +26,8 @@ hints:
 schema_version: 2
 track: data
 tier: 4
-requires: [cache-the-hot-path]
-unlocks: []
+requires: [polyglot-persistence]
+unlocks: [analytics-backbone]
 available_blocks: [compute, relational-db, cache, search-engine, cdn, traffic-source]
 grants: [search-engine]
 rewards:

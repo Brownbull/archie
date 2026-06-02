@@ -27,7 +27,7 @@ schema_version: 2
 track: foundations
 tier: 2
 requires: [first-service]
-unlocks: [edge-delivery]
+unlocks: [serverless-burst, edge-balance, zone-replica]
 available_blocks: [traffic-source, compute, load-balancer]
 grants: [load-balancer]
 rewards:

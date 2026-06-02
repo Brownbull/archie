@@ -23,7 +23,7 @@ schema_version: 2
 track: foundations
 tier: 1
 requires: []
-unlocks: [scale-out, add-a-database, async-pipeline]
+unlocks: [scale-out, add-a-database, async-pipeline, dns-routing, observe-baseline, auth-101, llm-service]
 available_blocks: [traffic-source, compute]
 grants: []
 rewards:

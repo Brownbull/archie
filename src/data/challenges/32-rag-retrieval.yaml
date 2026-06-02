@@ -1,0 +1,37 @@
+id: rag-retrieval
+title: RAG at Scale
+brief: >-
+  Query a vector DB for semantic context, merge it with the user prompt, and
+  route to the LLM. Under read-heavy load, the cache and search engine absorb
+  repeat queries. A vector-store failure mid-run forces your fallback path.
+difficulty: advanced
+budget_cap: 2500
+duration_seconds: 150
+traffic_curve:
+  - { t: 0, rps: 100 }
+  - { t: 30, rps: 500 }
+  - { t: 60, rps: 1500 }
+  - { t: 90, rps: 2000 }
+  - { t: 120, rps: 1500 }
+  - { t: 150, rps: 500 }
+required_components:
+  - compute
+  - data-storage
+  - search
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 350
+scheduled_events:
+  - { t: 75, type: component_failure, target: data-storage, durationS: 30 }
+hints:
+  - The vector store handles semantic search; the cache reduces repeated lookups.
+  - When the vector store fails, the search engine can serve as a fallback for keyword-based retrieval.
+schema_version: 2
+track: aiml
+tier: 3
+requires: [data-pipeline, search-at-scale, cache-the-hot-path]
+unlocks: [production-ai]
+available_blocks: [traffic-source, load-balancer, compute, llm-gateway, vector-store, relational-db, cache, search-engine]
+grants: [vector-store]
+rewards:
+  xp: 250

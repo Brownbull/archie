@@ -1,0 +1,33 @@
+id: polyglot-persistence
+title: Polyglot Persistence
+brief: >-
+  Not every workload fits SQL. Route structured data to the relational DB,
+  documents to a NoSQL store, and blobs to object storage — all behind a cache
+  tier. Keep reads fast and writes durable.
+difficulty: intermediate
+budget_cap: 1000
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 600 }
+  - { t: 60, rps: 1200 }
+  - { t: 90, rps: 1200 }
+  - { t: 120, rps: 600 }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 250
+hints:
+  - Use the cache for hot reads so the DBs aren't hammered directly.
+  - NoSQL handles schema-free documents better than relational for this workload.
+schema_version: 2
+track: data
+tier: 3
+requires: [cache-the-hot-path]
+unlocks: [search-at-scale]
+available_blocks: [compute, relational-db, nosql, cache, object-storage, traffic-source]
+grants: [nosql]
+rewards:
+  xp: 200

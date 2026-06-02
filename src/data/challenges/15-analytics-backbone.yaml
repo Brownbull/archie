@@ -1,0 +1,36 @@
+id: analytics-backbone
+title: Analytics Backbone
+brief: >-
+  Capstone: build a multi-modal data layer — relational for transactions,
+  time-series for metrics, graph for relationships, and vectors for semantic
+  search. Serve analytics queries under latency while the ingest stream
+  continues.
+difficulty: advanced
+budget_cap: 3000
+duration_seconds: 180
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 500 }
+  - { t: 60, rps: 1500 }
+  - { t: 90, rps: 2000 }
+  - { t: 120, rps: 2000 }
+  - { t: 150, rps: 1500 }
+  - { t: 180, rps: 500 }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 98.5
+  p99_latency_ms: 300
+hints:
+  - Each data model (time-series, graph, vector) excels at different query shapes.
+  - Cache the analytics read path; the ingest write path goes direct to storage.
+schema_version: 2
+track: data
+tier: 5
+requires: [search-at-scale]
+unlocks: []
+available_blocks: [compute, relational-db, time-series-db, graph-db, vector-store, cache, traffic-source]
+grants: [graph-db, time-series-db, vector-store]
+rewards:
+  xp: 300

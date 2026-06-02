@@ -25,7 +25,7 @@ schema_version: 2
 track: data
 tier: 2
 requires: [add-a-database]
-unlocks: [search-at-scale]
+unlocks: [polyglot-persistence, rag-retrieval, foundations-mastery]
 available_blocks: [compute, relational-db, cache, traffic-source]
 grants: [cache, object-storage]
 rewards:

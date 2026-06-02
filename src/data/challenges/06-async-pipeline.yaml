@@ -26,7 +26,7 @@ schema_version: 2
 track: realtime
 tier: 1
 requires: [first-service, add-a-database]
-unlocks: []
+unlocks: [event-stream]
 available_blocks: [compute, message-queue, relational-db, cache, load-balancer, traffic-source]
 grants: [message-queue]
 rewards:

@@ -1,0 +1,38 @@
+id: async-backbone
+title: Event Backbone
+brief: >-
+  Capstone: queue → stream → process → realtime fan-out, end-to-end. An AZ
+  outage on the event stream mid-run tests your full pipeline's redundancy.
+  Maintain uptime and latency across every tier under sustained load.
+difficulty: advanced
+budget_cap: 3500
+duration_seconds: 180
+traffic_curve:
+  - { t: 0, rps: 200 }
+  - { t: 30, rps: 1000 }
+  - { t: 60, rps: 3000 }
+  - { t: 90, rps: 4000 }
+  - { t: 120, rps: 4000 }
+  - { t: 150, rps: 2000 }
+  - { t: 180, rps: 500 }
+required_components:
+  - compute
+  - messaging
+  - real-time
+target_metrics:
+  uptime_percent: 98.5
+  p99_latency_ms: 250
+scheduled_events:
+  - { t: 75, type: az_outage, target: messaging, durationS: 45 }
+hints:
+  - Redundancy across the event stream is the key — a single-AZ stream is a single point of failure.
+  - This capstone draws from everything you've learned in Realtime.
+schema_version: 2
+track: realtime
+tier: 5
+requires: [realtime-live]
+unlocks: []
+available_blocks: [compute, message-queue, event-stream, stream-processor, realtime, load-balancer, relational-db, cache, traffic-source]
+grants: []
+rewards:
+  xp: 400

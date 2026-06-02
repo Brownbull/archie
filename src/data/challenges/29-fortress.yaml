@@ -1,0 +1,40 @@
+id: fortress
+title: Production Lockdown
+brief: >-
+  Capstone: detect and mitigate a credential-stuffing campaign against a full
+  production stack. Two attack outages hit during the run — rate limiting, SIEM
+  alerting, caching, and observability must work together to keep the service
+  alive under fire.
+difficulty: advanced
+budget_cap: 3000
+duration_seconds: 180
+traffic_curve:
+  - { t: 0, rps: 500 }
+  - { t: 30, rps: 1500 }
+  - { t: 60, rps: 3000 }
+  - { t: 90, rps: 4000 }
+  - { t: 120, rps: 3000 }
+  - { t: 150, rps: 1500 }
+  - { t: 180, rps: 500 }
+required_components:
+  - compute
+  - auth-security
+  - monitoring
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 300
+scheduled_events:
+  - { t: 45, type: latency_spike, target: auth-security, multiplier: 8, durationS: 30 }
+  - { t: 105, type: az_outage, target: compute, durationS: 40 }
+hints:
+  - Rate limiting is your first line of defence against the credential flood.
+  - The CDN + cache absorb read traffic while compute recovers from the outage.
+schema_version: 2
+track: security
+tier: 5
+requires: [siem-audit, always-on]
+unlocks: []
+available_blocks: [compute, auth, rate-limiter, security, cdn, observability, cache, relational-db, traffic-source]
+grants: []
+rewards:
+  xp: 300

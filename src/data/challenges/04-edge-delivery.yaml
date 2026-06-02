@@ -23,8 +23,8 @@ hints:
 schema_version: 2
 track: edge
 tier: 3
-requires: [scale-out]
-unlocks: [zone-failure]
+requires: [edge-balance]
+unlocks: [api-gateway, zone-failure]
 available_blocks: [compute, traffic-source, dns, load-balancer, cdn]
 grants: [cdn]
 rewards:

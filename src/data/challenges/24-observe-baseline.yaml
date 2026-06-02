@@ -1,0 +1,31 @@
+id: observe-baseline
+title: Observe Baseline
+brief: >-
+  A service with no observability is a black box. Add monitoring to a running
+  compute + DB stack so you can watch request rates, error rates, and latency
+  in real time. The challenge: keep the added observability tier from pushing
+  you over budget.
+difficulty: beginner
+budget_cap: 150
+duration_seconds: 60
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 200 }
+  - { t: 60, rps: 400 }
+required_components:
+  - compute
+  - monitoring
+target_metrics:
+  uptime_percent: 95
+  p99_latency_ms: 400
+hints:
+  - Observability is cheap if you pick the right tier — it watches, it doesn't serve.
+schema_version: 2
+track: reliability
+tier: 1
+requires: [first-service]
+unlocks: [zone-replica]
+available_blocks: [compute, relational-db, observability]
+grants: [observability]
+rewards:
+  xp: 80

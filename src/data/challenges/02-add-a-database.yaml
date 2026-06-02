@@ -24,7 +24,7 @@ schema_version: 2
 track: data
 tier: 1
 requires: [first-service]
-unlocks: [cache-the-hot-path, async-pipeline]
+unlocks: [cache-the-hot-path, data-pipeline]
 available_blocks: [compute, relational-db, traffic-source]
 grants: [relational-db]
 rewards:

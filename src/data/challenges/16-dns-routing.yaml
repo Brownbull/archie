@@ -1,0 +1,29 @@
+id: dns-routing
+title: DNS Routing
+brief: >-
+  Traffic enters your system through DNS. Route it properly to a compute
+  endpoint — the first step in controlling how the world reaches your service.
+  Keep resolution fast and the service responsive.
+difficulty: beginner
+budget_cap: 100
+duration_seconds: 60
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 300 }
+  - { t: 60, rps: 500 }
+required_components:
+  - compute
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 350
+hints:
+  - DNS sits at the very front of the network path — everything downstream depends on it.
+schema_version: 2
+track: edge
+tier: 1
+requires: [first-service]
+unlocks: [edge-balance]
+available_blocks: [compute, traffic-source, dns]
+grants: [dns]
+rewards:
+  xp: 80

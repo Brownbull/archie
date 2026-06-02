@@ -1,0 +1,36 @@
+id: foundations-mastery
+title: Foundations Mastery
+brief: >-
+  Capstone: compose compute, scale, cache, and async into a single architecture
+  that handles a sustained mixed workload — reads from cache, writes through a
+  queue, burst overflow to serverless — all under budget and under latency.
+difficulty: advanced
+budget_cap: 2000
+duration_seconds: 180
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 1000 }
+  - { t: 60, rps: 2500 }
+  - { t: 90, rps: 4000 }
+  - { t: 120, rps: 4000 }
+  - { t: 150, rps: 2000 }
+  - { t: 180, rps: 1000 }
+required_components:
+  - compute
+  - caching
+  - messaging
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 200
+hints:
+  - Cache the read path, queue the write path, and burst to serverless under peaks.
+  - This capstone draws from everything you've learned in Foundations.
+schema_version: 2
+track: foundations
+tier: 5
+requires: [worker-fleet, cache-the-hot-path]
+unlocks: []
+available_blocks: [traffic-source, compute, load-balancer, serverless, worker, cache, relational-db]
+grants: []
+rewards:
+  xp: 300

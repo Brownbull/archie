@@ -1,0 +1,31 @@
+id: llm-service
+title: LLM Service
+brief: >-
+  Wire compute to an LLM gateway and serve inference requests. The gateway
+  handles model routing; you keep latency low by caching repeated queries
+  and the DB persists conversation state.
+difficulty: intermediate
+budget_cap: 800
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 200 }
+  - { t: 60, rps: 600 }
+  - { t: 90, rps: 600 }
+required_components:
+  - compute
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 500
+hints:
+  - The LLM gateway is the expensive tier — cache identical prompts to save cost.
+  - A relational DB holds conversation history so context persists across requests.
+schema_version: 2
+track: aiml
+tier: 1
+requires: [first-service]
+unlocks: [data-pipeline]
+available_blocks: [traffic-source, compute, llm-gateway, cache, relational-db]
+grants: [llm-gateway]
+rewards:
+  xp: 150

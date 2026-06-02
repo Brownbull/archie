@@ -1,0 +1,35 @@
+id: data-pipeline
+title: Data Pipeline
+brief: >-
+  Build an ETL pipeline that ingests text, routes it through the LLM for
+  embeddings, and stores the output. A latency spike on the ETL tier mid-run
+  tests your pipeline's resilience. Keep the ingest queue from backing up.
+difficulty: intermediate
+budget_cap: 1500
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 30, rps: 300 }
+  - { t: 60, rps: 1000 }
+  - { t: 90, rps: 1000 }
+  - { t: 120, rps: 300 }
+required_components:
+  - compute
+  - messaging
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 400
+scheduled_events:
+  - { t: 60, type: latency_spike, target: compute, multiplier: 4, durationS: 20 }
+hints:
+  - The message queue decouples ingest from processing — the ETL tier drains it async.
+  - Object storage is the landing zone for raw data before ETL transforms it.
+schema_version: 2
+track: aiml
+tier: 2
+requires: [llm-service, add-a-database, async-pipeline]
+unlocks: [rag-retrieval]
+available_blocks: [compute, llm-gateway, etl, relational-db, object-storage, message-queue, traffic-source]
+grants: [etl]
+rewards:
+  xp: 200
