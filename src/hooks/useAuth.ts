@@ -11,6 +11,7 @@ import { auth } from "@/lib/firebase"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useAttemptsStore } from "@/stores/attemptsStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
+import { useUserChallengeStore } from "@/stores/userChallengeStore"
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -93,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       componentLibrary.reset()
       useAttemptsStore.getState().reset()
       useUserProgressStore.getState().reset()
+      useUserChallengeStore.getState().reset()
       await firebaseSignOut(auth)
     } catch (err) {
       setError(getErrorMessage(err))

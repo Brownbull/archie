@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react"
-import { Trophy, Star, Lock, LogIn } from "lucide-react"
+import { useMemo, useState, useRef } from "react"
+import { Trophy, Star, Lock, LogIn, Plus, Upload, Pencil, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogTrigger,
@@ -21,6 +22,9 @@ import { makeTrafficSourceNode, curvePeakRps } from "@/services/trafficSourceInj
 import { useUiStore } from "@/stores/uiStore"
 import { resolveTechTree } from "@/engine/techTree"
 import { rankForXp, relativeLevelForTier, RELATIVE_LEVEL_COLORS, CHALLENGE_TRACKS, type RelativeLevel } from "@/lib/challengeTracks"
+import { useUserChallengeStore } from "@/stores/userChallengeStore"
+import { importChallengeFile } from "@/services/challengeFileImport"
+import { ChallengeEditor } from "@/components/challenges/ChallengeEditor"
 import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
 const LEVEL_LABEL: Record<RelativeLevel, string> = {
@@ -62,8 +66,14 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
   const bestStars = useChallengeStore((s) => s.bestStars)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
   const [pending, setPending] = useState<Challenge | null>(null)
+  const [editorOpen, setEditorOpen] = useState(false)
+  const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const userId = useCurrentUserId()
+  const userChallenges = useUserChallengeStore((s) => s.challenges)
+  const addUserChallenge = useUserChallengeStore((s) => s.addChallenge)
+  const removeUserChallenge = useUserChallengeStore((s) => s.removeChallenge)
   const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
   const trackXp = useUserProgressStore((s) => s.trackXp)
 
@@ -85,6 +95,24 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
     selectChallenge(c)
     setOpen(false)
     setPending(null)
+  }
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (fileInputRef.current) fileInputRef.current.value = ""
+    if (!file) return
+    const result = await importChallengeFile(file)
+    if (!result.ok) {
+      toast.error("Import failed", { description: result.error })
+      return
+    }
+    addUserChallenge(result.challenge)
+    toast.success(`Imported "${result.challenge.title}"`)
+  }
+
+  const openEditor = (challenge?: Challenge) => {
+    setEditingChallenge(challenge ?? null)
+    setEditorOpen(true)
   }
 
   const onPick = (c: Challenge, node: TechTreeNode | undefined) => {
@@ -181,7 +209,47 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
             })}
           </div>
         )}
+
+        {userId && (
+          <div className="mt-3 border-t border-archie-border pt-3">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-xs font-semibold text-text-primary">Challenge Forge</span>
+              <div className="flex gap-1">
+                <Button variant="outline" size="sm" className="h-6 gap-1 text-[0.625rem]" onClick={() => openEditor()} data-testid="forge-create">
+                  <Plus className="h-3 w-3" /> Create
+                </Button>
+                <Button variant="outline" size="sm" className="h-6 gap-1 text-[0.625rem]" onClick={() => fileInputRef.current?.click()} data-testid="forge-import">
+                  <Upload className="h-3 w-3" /> Import
+                </Button>
+                <input ref={fileInputRef} type="file" accept=".yaml,.yml" className="hidden" onChange={handleImport} />
+              </div>
+            </div>
+            <p className="mb-2 text-[0.5625rem] text-text-secondary">Your challenges — playable and sharable, but do not grant XP or block unlocks.</p>
+            {userChallenges.length > 0 && (
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {userChallenges.map((c) => (
+                  <div key={c.id} data-testid={`user-challenge-${c.id}`} className="flex items-center justify-between rounded-md border border-archie-border/50 bg-surface/50 p-2">
+                    <button type="button" className="flex-1 text-left" onClick={() => startChallenge(c)}>
+                      <span className="text-xs font-medium text-text-primary">{c.title}</span>
+                      <span className="ml-1.5 text-[0.5rem] text-amber-400">user</span>
+                    </button>
+                    <div className="flex gap-0.5">
+                      <button type="button" className="rounded p-0.5 text-text-secondary hover:text-text-primary" onClick={() => openEditor(c)} aria-label="Edit">
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                      <button type="button" className="rounded p-0.5 text-text-secondary hover:text-red-400" onClick={() => removeUserChallenge(c.id)} aria-label="Delete">
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </DialogContent>
+
+      <ChallengeEditor open={editorOpen} onOpenChange={setEditorOpen} editingChallenge={editingChallenge} />
 
       <Dialog open={pending !== null} onOpenChange={(o) => { if (!o) setPending(null) }}>
         <DialogContent data-testid="challenge-clear-confirm" className="max-w-sm">

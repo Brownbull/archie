@@ -95,6 +95,24 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // User-created challenges (Phase 5, D45) — owner-only, keyed by uid.
+    match /userChallenges/{uid} {
+      allow read: if isAuthenticated() && request.auth.uid == uid;
+      allow create: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['challenges', 'updatedAt'])
+        && request.resource.data.challenges is list
+        && request.resource.data.challenges.size() <= 100
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['challenges', 'updatedAt'])
+        && request.resource.data.challenges is list
+        && request.resource.data.challenges.size() <= 100
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     // Deny all by default
     match /{document=**} {
       allow read, write: if false;
