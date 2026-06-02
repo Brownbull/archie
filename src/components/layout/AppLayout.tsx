@@ -62,7 +62,8 @@ export function AppLayout() {
   }, [])
 
   // Restore the last autosaved canvas + debounce-save on change (no work lost on refresh).
-  useCanvasAutosave()
+  // Deferred until libraryReady so nodes hydrate with full provider data (name, RPS, stats).
+  useCanvasAutosave(libraryReady)
   // One-time "configure & connect" momentum nudge on the user's first placed node.
   useFirstNodeNudge()
   // Undo/redo recorder + keyboard shortcuts (undo/redo, copy/paste, ? help).

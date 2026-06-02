@@ -14,10 +14,11 @@ let restoredThisLoad = false
  * the graph on every store change so a refresh or tab-close never silently loses work. Offers a
  * dismissible "Start fresh" action on the restore toast. Mounted once from AppLayout.
  */
-export function useCanvasAutosave(): void {
+export function useCanvasAutosave(libraryReady: boolean): void {
   useEffect(() => {
-    // Restore once per page load. (The subscription below is set up on every effect run so the
-    // live listener survives StrictMode's mount→cleanup→mount cycle in dev.)
+    if (!libraryReady) return
+    // Restore once per page load, but only AFTER the component library has loaded so
+    // nodes can hydrate with their provider data (name, RPS, stats, icons).
     if (!restoredThisLoad) {
       restoredThisLoad = true
       const store = useArchitectureStore.getState()
@@ -65,5 +66,5 @@ export function useCanvasAutosave(): void {
       if (timer) clearTimeout(timer)
       unsub()
     }
-  }, [])
+  }, [libraryReady])
 }
