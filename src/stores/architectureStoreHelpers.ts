@@ -263,6 +263,7 @@ export interface NodeCostInfo {
   readonly monthlyCost: number | undefined
   readonly maxRPS: number | undefined
   readonly baseLatencyMs: number | undefined
+  readonly cacheHitRatio: number | undefined
 }
 
 /**
@@ -290,6 +291,7 @@ export function getNodeCost(
       monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
       maxRPS: TRAFFIC_RPS_STEPS[idx],
       baseLatencyMs: variant?.baseLatencyMs,
+      cacheHitRatio: variant?.cacheHitRatio,
     }
   }
   const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
@@ -297,6 +299,7 @@ export function getNodeCost(
     monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
     maxRPS: variant?.maxRPS === undefined ? undefined : variant.maxRPS * capacityFactor,
     baseLatencyMs: variant?.baseLatencyMs,
+    cacheHitRatio: variant?.cacheHitRatio,
   }
 }
 
@@ -415,6 +418,7 @@ export function buildSimGraph(
       effectiveMaxRps: cost.maxRPS ?? 0,
       baseLatencyMs: cost.baseLatencyMs ?? 0,
       failureMode: "shed",
+      ...(cost.cacheHitRatio !== undefined ? { cacheHitRatio: cost.cacheHitRatio } : {}),
     }
   })
   const simEdges: SimEdge[] = edges.map((e) => ({ source: e.source, target: e.target }))

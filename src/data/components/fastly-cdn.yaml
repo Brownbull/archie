@@ -40,6 +40,7 @@ config_variants:
     monthly_cost: 20
     max_rps: 150000
     base_latency_ms: 15
+    cache_hit_ratio: 0.85
     metrics:
       - id: edge-latency
         value: low

@@ -2718,3 +2718,12 @@ PHASES: 8 | COMPLEXITY: mixed (4 low/med + 4 high) | MATURITY: enterprise
 TIERS: mvp × 4, ent × 4, scale × 0 | PROTOTYPES: 0
 DECISIONS: D47 (cache hit ratio) → D54 (monitoring feedback)
 DESIGN_ARTIFACT: docs/architecture/simulation-enhancements.html
+- 2026-06-02 19:07 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/cacheHitRatio.test.ts
+- 2026-06-02 19:08 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-02 19:08 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-02 19:11 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-02 19:12 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-02 19:13 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-02 19:13 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-02 19:13 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-02 19:16 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts

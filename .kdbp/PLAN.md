@@ -20,7 +20,7 @@ Simulation Realism — make component types matter in the simulation engine. Tod
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Cache hit ratio (E1) | Add `cache_hit_ratio` to cache variants (Redis, Memcached). Split incoming traffic: hits served at cache latency (0.5ms), misses forwarded downstream. Cache actually reduces DB load instead of being an independent pipe. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 1 | Cache hit ratio (E1) | Add `cache_hit_ratio` to cache variants (Redis, Memcached). Split incoming traffic: hits served at cache latency (0.5ms), misses forwarded downstream. Cache actually reduces DB load instead of being an independent pipe. | ent | med | ✅ | ⬜ | ⬜ | ⬜ |
 | 2 | Write/read path split (E2) | Add `write_ratio` to data-storage variants. Writes bottleneck at primary (SQL) or distribute across shards (NoSQL). Makes SQL vs NoSQL fundamentally different under write-heavy load. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | CDN edge bifurcation (E3) | Reuse cache_hit_ratio on CDN variants. Hits served from edge (10ms), misses add origin penalty (80ms). CDN is no longer just a high-capacity LB. | mvp | low | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Serverless cold start (E4) | Add `cold_start_latency_ms` + `cold_start_ratio` to Lambda on-demand variants. Cold starts spike p99 under burst traffic. Provisioned concurrency eliminates them. | mvp | low | ⬜ | ⬜ | ⬜ | ⬜ |

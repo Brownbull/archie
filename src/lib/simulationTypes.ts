@@ -24,6 +24,11 @@ export interface SimNode {
   effectiveMaxRps: number
   baseLatencyMs: number
   failureMode: FailureMode
+  /**
+   * Cache hit ratio (0–1). When set, only `(1 - cacheHitRatio)` of served traffic is forwarded
+   * downstream (cache misses). Hits are absorbed locally. Applies to cache and CDN nodes (E1/E3).
+   */
+  cacheHitRatio?: number
 }
 
 /** A directed edge: traffic flows source → target. */

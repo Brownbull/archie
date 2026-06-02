@@ -48,6 +48,7 @@ config_variants:
     monthly_cost: 15
     max_rps: 50000
     base_latency_ms: 0.5
+    cache_hit_ratio: 0.80
     metrics:
       - id: read-latency
         value: low
@@ -95,6 +96,7 @@ config_variants:
     monthly_cost: 60
     max_rps: 50000
     base_latency_ms: 0.5
+    cache_hit_ratio: 0.80
     metrics:
       - id: read-latency
         value: low

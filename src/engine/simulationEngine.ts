@@ -160,7 +160,11 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     if (forward) {
       const outs = outAdj.get(id) ?? []
       if (outs.length > 0) {
-        const perOut = served / outs.length
+        // Cache/CDN hit ratio (E1/E3): only miss traffic is forwarded downstream.
+        // Hits are absorbed locally. Default: forward all served traffic (ratio undefined or 0).
+        const hitRatio = node.cacheHitRatio ?? 0
+        const forwarded = hitRatio > 0 ? served * (1 - hitRatio) : served
+        const perOut = forwarded / outs.length
         for (const target of outs) inflow.set(target, (inflow.get(target) ?? 0) + perOut)
       }
     }

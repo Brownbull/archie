@@ -46,6 +46,7 @@ export const ConfigVariantSchema = z.object({
   monthlyCost: z.number().min(0).max(MAX_MONTHLY_COST).optional(),
   maxRPS: z.number().min(0).max(MAX_RPS).optional(),
   baseLatencyMs: z.number().min(0).max(MAX_LATENCY_MS).optional(),
+  cacheHitRatio: z.number().min(0).max(1).optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
@@ -101,6 +102,7 @@ const ConfigVariantYamlSchema = z.object({
   monthly_cost: z.number().min(0).max(MAX_MONTHLY_COST).optional(),
   max_rps: z.number().min(0).max(MAX_RPS).optional(),
   base_latency_ms: z.number().min(0).max(MAX_LATENCY_MS).optional(),
+  cache_hit_ratio: z.number().min(0).max(1).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -111,6 +113,7 @@ const ConfigVariantYamlSchema = z.object({
   monthlyCost: data.monthly_cost,
   maxRPS: data.max_rps,
   baseLatencyMs: data.base_latency_ms,
+  cacheHitRatio: data.cache_hit_ratio,
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({
