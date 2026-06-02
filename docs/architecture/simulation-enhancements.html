@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulation Enhancements — Classified Proposals</title>
+<style>
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --green: #3fb950; --orange: #d29922; --red: #f85149; --purple: #bc8cff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 2rem; margin-bottom: 0.25rem; color: var(--accent); }
+  h2 { font-size: 1.4rem; margin: 2rem 0 0.75rem; color: var(--green); border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; color: var(--purple); }
+  p, li { margin-bottom: 0.5rem; }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  code { background: var(--surface); padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; color: var(--orange); }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-size: 0.85rem; }
+  pre code { background: none; padding: 0; color: var(--text); }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--surface); color: var(--accent); font-weight: 600; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 0.75rem 0; }
+  .card h4 { margin-bottom: 0.5rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; }
+  .tag { display: inline-block; padding: 0.15em 0.6em; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 0.25rem; }
+  .tag-critical { background: #ff8a3d20; color: #ff8a3d; border: 1px solid #ff8a3d40; }
+  .tag-high { background: #b06bff20; color: #b06bff; border: 1px solid #b06bff40; }
+  .tag-medium { background: #3b9dff20; color: #3b9dff; border: 1px solid #3b9dff40; }
+  .tag-low { background: #3fcf6a20; color: #3fcf6a; border: 1px solid #3fcf6a40; }
+  .tag-easy { background: #3fcf6a20; color: #3fcf6a; border: 1px solid #3fcf6a40; }
+  .tag-medium-effort { background: #d2992220; color: #d29922; border: 1px solid #d2992240; }
+  .tag-hard { background: #f8514920; color: #f85149; border: 1px solid #f8514940; }
+  .formula { background: var(--surface); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 6px 6px 0; font-family: monospace; font-size: 0.85rem; }
+  .impact-bar { height: 8px; border-radius: 4px; margin-top: 0.25rem; }
+  .callout { background: #1f6feb15; border: 1px solid #1f6feb40; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+  .callout-title { color: var(--accent); font-weight: 700; margin-bottom: 0.5rem; }
+  details { margin: 0.5rem 0; }
+  summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>Simulation Enhancement Proposals</h1>
+<p class="subtitle">Making component types matter — classified by complexity, importance, and impact on challenges.</p>
+
+<div class="callout">
+<div class="callout-title">The Core Problem</div>
+<p>Today, the simulation treats <strong>all components as generic pipes</strong> — a Redis cache and a PostgreSQL database with the same maxRPS and latency are functionally identical in the engine. The rich component schema (ports, connection properties, data fit profiles) exists but has <strong>zero simulation impact</strong>. This means challenges can't test whether a player understands <em>why</em> they chose a specific component — only that they placed one.</p>
+</div>
+
+<h2>1. Current State: What's Real vs. Pipe</h2>
+
+<table>
+<tr><th>Behavior</th><th>Status</th><th>Impact on Challenges</th></tr>
+<tr><td>Per-node capacity (maxRPS)</td><td style="color:var(--green)">Real</td><td>Overloaded nodes shed traffic → uptime drops</td></tr>
+<tr><td>Latency under load</td><td style="color:var(--green)">Real</td><td>Bottleneck node drives p99 up</td></tr>
+<tr><td>Traffic shedding</td><td style="color:var(--green)">Real</td><td>Excess traffic = failed requests</td></tr>
+<tr><td>Replica scaling (×N capacity)</td><td style="color:var(--green)">Real</td><td>Horizontal scaling works mechanically</td></tr>
+<tr><td>Scheduled failures (chaos)</td><td style="color:var(--green)">Real</td><td>AZ outages, latency spikes test resilience</td></tr>
+<tr><td>SQL vs NoSQL behavior</td><td style="color:var(--red)">Identical</td><td>Can't test write-scaling or sharding decisions</td></tr>
+<tr><td>Cache hit/miss ratio</td><td style="color:var(--red)">Not modeled</td><td>Cache is just another throughput node</td></tr>
+<tr><td>Queue backpressure</td><td style="color:var(--red)">Not modeled</td><td>Queue is just another throughput node</td></tr>
+<tr><td>CDN edge caching</td><td style="color:var(--red)">Not modeled</td><td>CDN is just a high-capacity LB</td></tr>
+<tr><td>Serverless cold start</td><td style="color:var(--red)">Not modeled</td><td>Lambda behaves like normal compute</td></tr>
+<tr><td>Port/protocol overhead</td><td style="color:var(--red)">Not modeled</td><td>HTTP and TCP connections are identical</td></tr>
+<tr><td>Monitoring feedback</td><td style="color:var(--red)">Decorative</td><td>Monitoring doesn't affect simulation at all</td></tr>
+</table>
+
+<h2>2. Enhancement Proposals — Ranked</h2>
+
+<p>Each proposal is rated on three axes:</p>
+<ul>
+<li><strong>Complexity</strong> — how much code to change (Easy / Medium / Hard)</li>
+<li><strong>Importance</strong> — how much it matters for realistic simulation</li>
+<li><strong>Challenge Impact</strong> — how many new challenge types it enables</li>
+</ul>
+
+<h3>Tier 1: High Impact, Low Complexity (ship first)</h3>
+
+<div class="grid">
+
+<div class="card">
+<h4>E1: Cache Hit Ratio <span class="tag tag-critical">CRITICAL</span> <span class="tag tag-easy">EASY</span></h4>
+<p>Add <code>cache_hit_ratio: 0.8</code> to cache variants. Split incoming traffic: hits served at cache latency (0.5ms), misses forwarded downstream at full DB latency.</p>
+<div class="formula">
+hit_traffic = incoming × cache_hit_ratio → served at 0.5ms<br>
+miss_traffic = incoming × (1 - ratio) → forwarded to downstream DB<br>
+Result: DB receives only 20% of traffic instead of 100%
+</div>
+<p><strong>Challenge enables:</strong> "Add a cache to reduce DB load" — player must tune the cache, not just place it. Without this, cache and DB are interchangeable pipes.</p>
+<p><strong>Components affected:</strong> Redis, Memcached (cache typeId)</p>
+<p><strong>Effort:</strong> ~50 lines in simulationEngine.ts + 2 YAML fields per cache variant</p>
+</div>
+
+<div class="card">
+<h4>E2: Write vs Read Path Split <span class="tag tag-critical">CRITICAL</span> <span class="tag tag-easy">EASY</span></h4>
+<p>Add <code>write_ratio: 0.3</code> to data-storage variants. Split traffic into reads (scale with replicas) and writes (bottleneck at primary).</p>
+<div class="formula">
+write_rps = incoming × write_ratio → capped at primary maxRPS (no replica help)<br>
+read_rps = incoming × (1 - write_ratio) → capped at maxRPS × replicaCount<br>
+Result: SQL single-primary bottlenecks on writes at scale
+</div>
+<p><strong>Challenge enables:</strong> "Why sharding matters" — player sees write bottleneck on SQL, learns when NoSQL sharding helps.</p>
+<p><strong>SQL vs NoSQL differentiation:</strong></p>
+<ul>
+<li>SQL (PostgreSQL): <code>write_ratio: 0.3</code>, writes go to primary only</li>
+<li>NoSQL (MongoDB sharded): <code>write_ratio: 0.3</code>, writes distributed across shards (writes also scale)</li>
+</ul>
+<p><strong>Effort:</strong> ~40 lines in simulationEngine.ts + 1 YAML field per DB variant + 1 scaling rule flag</p>
+</div>
+
+<div class="card">
+<h4>E3: CDN Edge Cache Bifurcation <span class="tag tag-high">HIGH</span> <span class="tag tag-easy">EASY</span></h4>
+<p>Add <code>cache_hit_ratio: 0.85</code> + <code>miss_latency_penalty_ms: 80</code> to CDN variants. Hits served from edge (10ms), misses add 80ms origin round-trip.</p>
+<div class="formula">
+hit_traffic = incoming × 0.85 → latency = 10ms (edge)<br>
+miss_traffic = incoming × 0.15 → latency = 10ms + 80ms (origin fetch)<br>
+Result: CDN absorbs most static traffic but misses are expensive
+</div>
+<p><strong>Challenge enables:</strong> "Static vs dynamic content" — player learns CDN is great for static but misses hurt.</p>
+<p><strong>Effort:</strong> ~30 lines (reuse cache hit ratio logic) + 2 YAML fields per CDN variant</p>
+</div>
+
+<div class="card">
+<h4>E4: Serverless Cold Start <span class="tag tag-high">HIGH</span> <span class="tag tag-easy">EASY</span></h4>
+<p>Add <code>cold_start_latency_ms: 200</code> + <code>cold_start_ratio: 0.1</code> to Lambda on-demand variants. 10% of requests pay cold start penalty.</p>
+<div class="formula">
+effective_latency = baseLatency + cold_start_latency × cold_start_ratio<br>
+On-demand: 15ms + 200ms × 0.1 = 35ms average<br>
+Provisioned: 15ms + 0 = 15ms (no cold starts)
+</div>
+<p><strong>Challenge enables:</strong> "Provisioned vs on-demand" — player sees p99 spike from cold starts under burst traffic.</p>
+<p><strong>Effort:</strong> ~15 lines in simulationEngine.ts + 2 YAML fields</p>
+</div>
+
+</div>
+
+<h3>Tier 2: Medium Impact, Medium Complexity</h3>
+
+<div class="grid">
+
+<div class="card">
+<h4>E5: Queue Depth / Backpressure <span class="tag tag-high">HIGH</span> <span class="tag tag-medium-effort">MEDIUM</span></h4>
+<p>Message queues absorb burst traffic into a buffer instead of shedding. Queue fills when consumers lag → latency increases with depth → eventually overflows and sheds.</p>
+<div class="formula">
+queue_depth += (incoming - consumer_drain_rate) per tick<br>
+queue_latency = base + queue_depth × per_message_overhead<br>
+If queue_depth > max_queue_size: shed overflow<br>
+Result: Queues decouple producers from slow consumers (the actual point of a queue)
+</div>
+<p><strong>Differentiates:</strong> Kafka (durable, ordered, high buffer) vs RabbitMQ (fast drain, smaller buffer) vs SQS (auto-scaling buffer)</p>
+<p><strong>Challenge enables:</strong> "Decouple with a queue" — player sees why queues matter under burst (queue absorbs spike, workers drain steadily)</p>
+<p><strong>Effort:</strong> ~100 lines, new SimNode field <code>queueModel</code>, tick state tracks queue depth</p>
+</div>
+
+<div class="card">
+<h4>E6: Interaction Rules Affect Capacity <span class="tag tag-high">HIGH</span> <span class="tag tag-medium-effort">MEDIUM</span></h4>
+<p>Currently, category-pair rules (caching→data-storage) only adjust metric scores. Extend to adjust effective capacity too.</p>
+<div class="formula">
+Current: cache→db only changes "read-latency" metric score by -2<br>
+Proposed: cache→db also reduces DB incoming traffic by cache_hit_ratio<br>
+AND: monitoring→compute adds 10% failure recovery bonus
+</div>
+<p><strong>Challenge enables:</strong> Every challenge where component placement affects downstream performance, not just topology presence.</p>
+<p><strong>Effort:</strong> ~80 lines, extend recalculator to feed back into SimNode properties</p>
+</div>
+
+<div class="card">
+<h4>E7: Port Protocol Overhead <span class="tag tag-medium">MEDIUM</span> <span class="tag tag-medium-effort">MEDIUM</span></h4>
+<p>Different connection protocols add different latency overhead. HTTP adds serialization cost vs raw TCP.</p>
+<div class="formula">
+Protocol overhead multipliers:<br>
+  HTTP: 1.2× latency (JSON/REST serialization)<br>
+  gRPC: 1.05× (binary, efficient)<br>
+  TCP: 1.0× (baseline)<br>
+  Memcached protocol: 0.9× (minimal framing)<br>
+Result: Choosing Redis (TCP) vs HTTP cache adds measurable latency difference
+</div>
+<p><strong>Challenge enables:</strong> "Protocol-aware architecture" — player learns that HTTP everywhere adds overhead.</p>
+<p><strong>Effort:</strong> ~60 lines, read connection_properties.protocol from each edge's nodes</p>
+</div>
+
+<div class="card">
+<h4>E8: Monitoring Feedback Loop <span class="tag tag-medium">MEDIUM</span> <span class="tag tag-medium-effort">MEDIUM</span></h4>
+<p>If monitoring is connected to a node AND that node fails (scheduled failure), recovery is faster. Without monitoring, failures last longer.</p>
+<div class="formula">
+With monitoring: failure duration = scheduled_duration<br>
+Without monitoring: failure duration = scheduled_duration × 1.5<br>
+Result: Monitoring isn't decorative — it actually reduces downtime
+</div>
+<p><strong>Challenge enables:</strong> "Observe Baseline" becomes meaningful — player sees that monitoring reduces the blast radius of failures.</p>
+<p><strong>Effort:</strong> ~40 lines in simulationEngine.ts failure handling</p>
+</div>
+
+</div>
+
+<h3>Tier 3: High Impact, High Complexity (future)</h3>
+
+<div class="grid">
+
+<div class="card">
+<h4>E9: Replication Lag Model <span class="tag tag-medium">MEDIUM</span> <span class="tag tag-hard">HARD</span></h4>
+<p>Read replicas serve stale data during write bursts. Track replication lag; reads from replicas may return inconsistent results.</p>
+<p><strong>Differentiates:</strong> Strong consistency (SQL primary) vs eventual consistency (NoSQL replicas)</p>
+<p><strong>Effort:</strong> Major — needs consistency model in SimNode, per-replica state tracking</p>
+</div>
+
+<div class="card">
+<h4>E10: Geographic Routing <span class="tag tag-medium">MEDIUM</span> <span class="tag tag-hard">HARD</span></h4>
+<p>CDN and multi-region compute serve from the nearest PoP. Traffic source location affects latency to each node.</p>
+<p><strong>Differentiates:</strong> Global CDN (10ms everywhere) vs single-region compute (10ms local, 150ms cross-region)</p>
+<p><strong>Effort:</strong> Major — needs location model on nodes and traffic sources</p>
+</div>
+
+<div class="card">
+<h4>E11: Auto-Scaling Elastic Behavior <span class="tag tag-low">LOW</span> <span class="tag tag-hard">HARD</span></h4>
+<p>Replicas scale up/down during simulation based on load. Scale-up has a ramp delay (30s to provision).</p>
+<p><strong>Differentiates:</strong> Pre-provisioned (instant) vs auto-scaling (delayed) vs serverless (per-request)</p>
+<p><strong>Effort:</strong> Major — per-tick replica count changes, ramp curves, cost tracking over time</p>
+</div>
+
+</div>
+
+<h2>3. Challenge Types Each Enhancement Unlocks</h2>
+
+<table>
+<tr><th>Enhancement</th><th>New Challenge Archetypes</th><th>Example</th></tr>
+<tr><td>E1: Cache Hit Ratio</td><td>Cache tuning, cache invalidation, read-through vs write-through</td><td>"Hot Path" — reduce DB load by 80% using a cache</td></tr>
+<tr><td>E2: Write/Read Split</td><td>Write scaling, sharding decisions, CQRS pattern</td><td>"Write Storm" — handle 10k writes/s (SQL fails, NoSQL sharded works)</td></tr>
+<tr><td>E3: CDN Bifurcation</td><td>Static vs dynamic content, cache warming, origin shield</td><td>"Global Delivery" — serve 1M static + 50k dynamic requests</td></tr>
+<tr><td>E4: Cold Start</td><td>Provisioned vs on-demand, burst absorption</td><td>"Spike Handler" — absorb 10× burst without p99 spike</td></tr>
+<tr><td>E5: Queue Depth</td><td>Async decoupling, consumer scaling, burst absorption</td><td>"Decouple or Die" — survive 5× burst with a queue buffer</td></tr>
+<tr><td>E6: Capacity Rules</td><td>All challenges where placement order matters</td><td>"Cache Before DB" — cache reduces DB load, not just adds a node</td></tr>
+<tr><td>E7: Protocol Overhead</td><td>Protocol optimization, gRPC migration</td><td>"Tight Loop" — reduce internal latency by switching to gRPC</td></tr>
+<tr><td>E8: Monitoring Feedback</td><td>Observability-first, MTTR reduction</td><td>"Blind vs Observed" — survive a failure with/without monitoring</td></tr>
+</table>
+
+<h2>4. Implementation Priority Matrix</h2>
+
+<table>
+<tr><th>#</th><th>Enhancement</th><th>Complexity</th><th>Importance</th><th>Challenge Impact</th><th>Recommended Phase</th></tr>
+<tr><td>E1</td><td>Cache Hit Ratio</td><td style="color:var(--green)">Easy (~50 LOC)</td><td style="color:#ff8a3d">Critical</td><td>3+ new challenge types</td><td><strong>Next sprint</strong></td></tr>
+<tr><td>E2</td><td>Write/Read Split</td><td style="color:var(--green)">Easy (~40 LOC)</td><td style="color:#ff8a3d">Critical</td><td>SQL vs NoSQL differentiation</td><td><strong>Next sprint</strong></td></tr>
+<tr><td>E3</td><td>CDN Edge Bifurcation</td><td style="color:var(--green)">Easy (~30 LOC)</td><td style="color:#b06bff">High</td><td>2+ new challenge types</td><td><strong>Next sprint</strong></td></tr>
+<tr><td>E4</td><td>Serverless Cold Start</td><td style="color:var(--green)">Easy (~15 LOC)</td><td style="color:#b06bff">High</td><td>1-2 new challenge types</td><td><strong>Next sprint</strong></td></tr>
+<tr><td>E5</td><td>Queue Backpressure</td><td style="color:var(--orange)">Medium (~100 LOC)</td><td style="color:#b06bff">High</td><td>Kafka vs RabbitMQ differentiation</td><td>Sprint +1</td></tr>
+<tr><td>E6</td><td>Capacity Rules</td><td style="color:var(--orange)">Medium (~80 LOC)</td><td style="color:#b06bff">High</td><td>All challenges improved</td><td>Sprint +1</td></tr>
+<tr><td>E7</td><td>Protocol Overhead</td><td style="color:var(--orange)">Medium (~60 LOC)</td><td style="color:#3b9dff">Medium</td><td>1-2 new challenge types</td><td>Sprint +2</td></tr>
+<tr><td>E8</td><td>Monitoring Feedback</td><td style="color:var(--orange)">Medium (~40 LOC)</td><td style="color:#3b9dff">Medium</td><td>Observability challenges</td><td>Sprint +2</td></tr>
+<tr><td>E9</td><td>Replication Lag</td><td style="color:var(--red)">Hard</td><td style="color:#3b9dff">Medium</td><td>Consistency challenges</td><td>Future</td></tr>
+<tr><td>E10</td><td>Geographic Routing</td><td style="color:var(--red)">Hard</td><td style="color:#3b9dff">Medium</td><td>Global architecture</td><td>Future</td></tr>
+<tr><td>E11</td><td>Auto-Scaling</td><td style="color:var(--red)">Hard</td><td style="color:var(--green)">Low</td><td>Elastic scaling</td><td>Future</td></tr>
+</table>
+
+<h2>5. The "Why It Matters for Challenges" Argument</h2>
+
+<div class="callout">
+<div class="callout-title">Today's limitation</div>
+<p>A challenge that says "Add a cache to improve performance" can only check that a cache <em>exists</em> on the canvas (via <code>required_types</code>). It cannot verify that the cache actually <em>reduces database load</em> because the simulation treats cache and DB as independent pipes. The player learns "put a cache here" but not <em>why</em> it helps.</p>
+</div>
+
+<div class="callout">
+<div class="callout-title">With E1 + E2 + E6 implemented</div>
+<p>A "Cache the Hot Path" challenge would actually show: database RPS drops from 3000 to 600 when a cache is placed upstream (80% hit ratio). A "Write Storm" challenge would show SQL bottlenecking on writes while MongoDB sharded handles the same load. The player learns the <em>mechanism</em>, not just the topology.</p>
+</div>
+
+<p style="margin-top:2rem; color:var(--muted); font-size:0.85rem;">
+  Analysis based on: <code>src/engine/simulationEngine.ts</code>, <code>src/lib/constants.ts</code>,
+  <code>src/data/components/*.yaml</code> (91 variants), <code>src/engine/recalculator.ts</code>.
+  Generated from Archie codebase recon.
+</p>
+
+</body>
+</html>
