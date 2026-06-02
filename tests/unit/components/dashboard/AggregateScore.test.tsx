@@ -17,34 +17,34 @@ const mockGetScoreColor = vi.mocked(getScoreColor)
 describe("AggregateScore", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    mockGetScoreColor.mockReturnValue("bg-green-500")
+    mockGetScoreColor.mockReturnValue("bg-[#3fcf6a]")
   })
 
   // --- AC-2: bgToTextColor mapping (tested indirectly via rendered className) ---
 
   describe("text color mapping", () => {
-    it("applies text-green-500 when getScoreColor returns bg-green-500", () => {
-      mockGetScoreColor.mockReturnValue("bg-green-500")
+    it("applies text-[#3fcf6a] when getScoreColor returns bg-[#3fcf6a]", () => {
+      mockGetScoreColor.mockReturnValue("bg-[#3fcf6a]")
       render(<AggregateScore score={8} />)
 
       const scoreSpan = screen.getByText("8.0")
-      expect(scoreSpan.className).toContain("text-green-500")
+      expect(scoreSpan.className).toContain("text-[#3fcf6a]")
     })
 
-    it("applies text-yellow-500 when getScoreColor returns bg-yellow-500", () => {
-      mockGetScoreColor.mockReturnValue("bg-yellow-500")
+    it("applies text-[#3b9dff] when getScoreColor returns bg-[#3b9dff]", () => {
+      mockGetScoreColor.mockReturnValue("bg-[#3b9dff]")
       render(<AggregateScore score={5} />)
 
       const scoreSpan = screen.getByText("5.0")
-      expect(scoreSpan.className).toContain("text-yellow-500")
+      expect(scoreSpan.className).toContain("text-[#3b9dff]")
     })
 
-    it("applies text-red-500 when getScoreColor returns bg-red-500", () => {
-      mockGetScoreColor.mockReturnValue("bg-red-500")
+    it("applies text-[#ff8a3d] when getScoreColor returns bg-[#ff8a3d]", () => {
+      mockGetScoreColor.mockReturnValue("bg-[#ff8a3d]")
       render(<AggregateScore score={2} />)
 
       const scoreSpan = screen.getByText("2.0")
-      expect(scoreSpan.className).toContain("text-red-500")
+      expect(scoreSpan.className).toContain("text-[#ff8a3d]")
     })
 
     it("applies text-text-primary as fallback for unknown color", () => {

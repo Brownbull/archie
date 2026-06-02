@@ -8,9 +8,9 @@ interface AggregateScoreProps {
 
 // Must stay in sync with getScoreColor() in dashboardCalculator.ts
 const SCORE_TEXT_COLORS: Record<string, string> = {
-  "bg-green-500": "text-green-500",
-  "bg-yellow-500": "text-yellow-500",
-  "bg-red-500": "text-red-500",
+  "bg-[#3fcf6a]": "text-[#3fcf6a]",
+  "bg-[#3b9dff]": "text-[#3b9dff]",
+  "bg-[#ff8a3d]": "text-[#ff8a3d]",
 }
 
 function bgToTextColor(bgClass: string): string {

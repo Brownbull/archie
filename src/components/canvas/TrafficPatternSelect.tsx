@@ -23,7 +23,7 @@ function TrafficPatternSelectBase({ nodeId, pattern }: TrafficPatternSelectProps
   const setNodeTrafficPattern = useArchitectureStore((s) => s.setNodeTrafficPattern)
   return (
     <div
-      className="nodrag"
+      className="nodrag flex-1"
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
@@ -31,7 +31,7 @@ function TrafficPatternSelectBase({ nodeId, pattern }: TrafficPatternSelectProps
         <SelectTrigger
           data-testid="traffic-pattern-select"
           title="How this source's load varies over the simulation — steady, realistic wobble, periodic spikes, or one big surge (Black Friday)"
-          className="h-7 gap-1 border-archie-border bg-surface px-2 py-0 text-[0.6875rem] text-text-secondary"
+          className="h-7 w-full gap-1 rounded-md border-archie-border bg-surface px-2 py-0 text-[0.6875rem] text-text-secondary"
         >
           <SelectValue />
         </SelectTrigger>

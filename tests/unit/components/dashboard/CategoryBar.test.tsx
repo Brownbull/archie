@@ -63,35 +63,35 @@ describe("CategoryBar", () => {
     render(<CategoryBar {...defaultProps} score={7} />)
 
     const fill = screen.getByTestId("category-bar-fill-performance")
-    expect(fill.className).toContain("bg-green-500")
+    expect(fill.className).toContain("bg-[#3fcf6a]")
   })
 
   it("applies yellow color class when score >= 4 and < 7", () => {
     render(<CategoryBar {...defaultProps} score={5} />)
 
     const fill = screen.getByTestId("category-bar-fill-performance")
-    expect(fill.className).toContain("bg-yellow-500")
+    expect(fill.className).toContain("bg-[#3b9dff]")
   })
 
   it("applies red color class when score < 4", () => {
     render(<CategoryBar {...defaultProps} score={2} />)
 
     const fill = screen.getByTestId("category-bar-fill-performance")
-    expect(fill.className).toContain("bg-red-500")
+    expect(fill.className).toContain("bg-[#ff8a3d]")
   })
 
   it("applies yellow at exact threshold score=4", () => {
     render(<CategoryBar {...defaultProps} score={4} />)
 
     const fill = screen.getByTestId("category-bar-fill-performance")
-    expect(fill.className).toContain("bg-yellow-500")
+    expect(fill.className).toContain("bg-[#3b9dff]")
   })
 
   it("applies red at score=3.99 (just below yellow threshold)", () => {
     render(<CategoryBar {...defaultProps} score={3.99} />)
 
     const fill = screen.getByTestId("category-bar-fill-performance")
-    expect(fill.className).toContain("bg-red-500")
+    expect(fill.className).toContain("bg-[#ff8a3d]")
   })
 
   it("has role=meter with correct ARIA attributes", () => {
