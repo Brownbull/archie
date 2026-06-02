@@ -7,6 +7,9 @@ const mockSignOut = vi.fn()
 const mockUseAuth = vi.fn()
 
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => mockUseAuth() }))
+vi.mock("@/components/challenges/MasteryProfilePanel", () => ({
+  MasteryProfilePanel: () => null,
+}))
 
 describe("AccountMenu (P95)", () => {
   beforeEach(() => {

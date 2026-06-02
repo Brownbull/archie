@@ -1,7 +1,9 @@
 import { useEffect, useRef } from "react"
+import { toast } from "sonner"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
+import { rankForXp, CHALLENGE_TRACKS } from "@/lib/challengeTracks"
 import type { StarBreakdown } from "@/lib/challengeTypes"
 
 /**
@@ -30,11 +32,19 @@ export function useProgressPersistence(): void {
     if (lastResult.stars === 0) return
 
     awardedRef.current = lastResult
-    void useUserProgressStore.getState().awardXp(
-      userId,
-      activeChallenge.track,
-      activeChallenge.rewards.xp,
-      activeChallenge.id,
-    )
+
+    const track = activeChallenge.track
+    const xp = activeChallenge.rewards.xp
+    const prevXp = useUserProgressStore.getState().trackXp[track] ?? 0
+    const prevRank = rankForXp(prevXp).rank
+
+    void useUserProgressStore.getState().awardXp(userId, track, xp, activeChallenge.id).then(() => {
+      const newXp = useUserProgressStore.getState().trackXp[track] ?? 0
+      const newRank = rankForXp(newXp)
+      if (newRank.rank > prevRank) {
+        const trackName = CHALLENGE_TRACKS.get(track)?.name ?? track
+        toast.success(`Rank up! ${trackName}: ${newRank.name}`, { duration: 5000 })
+      }
+    })
   }, [attemptState, lastResult, userId])
 }
