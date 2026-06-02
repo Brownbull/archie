@@ -2518,3 +2518,10 @@ DEFERRED: none
 - 2026-06-02 08:50 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeSelector.test.tsx
 - 2026-06-02 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
 - 2026-06-02 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+
+## 2026-06-02 08:55 — [e6b075a] feat(challenges): Phase 2 — progress model + challenge-mode gating (D45-AC1/AC2)
+FINDINGS: 4 low (CHECK 7 Layer-3 well doc-drift G2/G3/G5/G6 — empty scaffold wells, /gabe-teach path)
+ACTIONS: accept ×4
+CHECKS: lint ✅ types ✅ tests ✅ (4235) shape ✅ structure ✅
+DEFERRED: none
+PHASE: 2 — Progress model + challenge-mode gating (Exec ✅, Commit ✅)
