@@ -49,6 +49,8 @@ config_variants:
     monthly_cost: 200
     max_rps: 12000
     base_latency_ms: 5
+    write_ratio: 0.3
+    write_distribution: primary
     metrics:
       - id: write-throughput
         value: high
@@ -87,6 +89,8 @@ config_variants:
     monthly_cost: 90
     max_rps: 9000
     base_latency_ms: 8
+    write_ratio: 0.3
+    write_distribution: primary
     metrics:
       - id: write-throughput
         value: medium

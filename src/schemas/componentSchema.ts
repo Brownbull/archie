@@ -47,6 +47,8 @@ export const ConfigVariantSchema = z.object({
   maxRPS: z.number().min(0).max(MAX_RPS).optional(),
   baseLatencyMs: z.number().min(0).max(MAX_LATENCY_MS).optional(),
   cacheHitRatio: z.number().min(0).max(1).optional(),
+  writeRatio: z.number().min(0).max(1).optional(),
+  writeDistribution: z.enum(["primary", "sharded"]).optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
@@ -103,6 +105,8 @@ const ConfigVariantYamlSchema = z.object({
   max_rps: z.number().min(0).max(MAX_RPS).optional(),
   base_latency_ms: z.number().min(0).max(MAX_LATENCY_MS).optional(),
   cache_hit_ratio: z.number().min(0).max(1).optional(),
+  write_ratio: z.number().min(0).max(1).optional(),
+  write_distribution: z.enum(["primary", "sharded"]).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -114,6 +118,8 @@ const ConfigVariantYamlSchema = z.object({
   maxRPS: data.max_rps,
   baseLatencyMs: data.base_latency_ms,
   cacheHitRatio: data.cache_hit_ratio,
+  writeRatio: data.write_ratio,
+  writeDistribution: data.write_distribution,
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({

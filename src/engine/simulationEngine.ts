@@ -144,9 +144,39 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     const offline = overrides?.offlineNodeIds.has(id) ?? false
     const latMult = overrides?.latencyMultipliers.get(id) ?? 1
     const capped = node.effectiveMaxRps > 0
+
+    // Write/read split (E2): data-storage nodes can split traffic into writes (bottleneck at
+    // primary) and reads (scale with replicas). SQL primary: writes capped at base capacity
+    // (effectiveMaxRps / replicaCount, but we only have the pre-scaled value — for "primary"
+    // distribution, write capacity is the base variant maxRPS, approximated as effectiveMaxRps
+    // divided by the implicit replica factor). "sharded": writes use the full scaled capacity.
+    let served: number
+    let failed: number
+    if (offline) {
+      served = 0
+      failed = incoming
+    } else if (node.writeRatio !== undefined && node.writeRatio > 0 && capped) {
+      const writeRps = incoming * node.writeRatio
+      const readRps = incoming * (1 - node.writeRatio)
+      // Primary distribution: writes capped at baseMaxRps (single primary node).
+      // Sharded: writes use full scaled capacity (distributed across shards).
+      const writeCap = node.writeDistribution === "primary"
+        ? (node.baseMaxRps ?? node.effectiveMaxRps)
+        : node.effectiveMaxRps
+      const readCap = node.effectiveMaxRps
+      const writeServed = Math.min(writeRps, writeCap)
+      const readServed = Math.min(readRps, readCap)
+      served = writeServed + readServed
+      failed = Math.max(0, incoming - served)
+    } else if (capped) {
+      served = Math.min(incoming, node.effectiveMaxRps)
+      failed = Math.max(0, incoming - served)
+    } else {
+      served = incoming
+      failed = 0
+    }
+
     // Offline (scheduled failure / AZ outage): zero capacity → sheds all incoming traffic.
-    const served = offline ? 0 : capped ? Math.min(incoming, node.effectiveMaxRps) : incoming
-    const failed = Math.max(0, incoming - served)
     const capacityPercent = offline ? (incoming > 0 ? 1 : 0) : capped ? incoming / node.effectiveMaxRps : 0
     telemetry.set(id, {
       nodeId: id,

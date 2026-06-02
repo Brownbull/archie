@@ -262,8 +262,11 @@ export function getFailureModifiersForScenario(failureScenarioId: string | null)
 export interface NodeCostInfo {
   readonly monthlyCost: number | undefined
   readonly maxRPS: number | undefined
+  readonly baseMaxRPS: number | undefined
   readonly baseLatencyMs: number | undefined
   readonly cacheHitRatio: number | undefined
+  readonly writeRatio: number | undefined
+  readonly writeDistribution: "primary" | "sharded" | undefined
 }
 
 /**
@@ -290,16 +293,22 @@ export function getNodeCost(
     return {
       monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
       maxRPS: TRAFFIC_RPS_STEPS[idx],
+      baseMaxRPS: variant?.maxRPS,
       baseLatencyMs: variant?.baseLatencyMs,
       cacheHitRatio: variant?.cacheHitRatio,
+      writeRatio: variant?.writeRatio,
+      writeDistribution: variant?.writeDistribution,
     }
   }
   const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
   return {
     monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
     maxRPS: variant?.maxRPS === undefined ? undefined : variant.maxRPS * capacityFactor,
+    baseMaxRPS: variant?.maxRPS,
     baseLatencyMs: variant?.baseLatencyMs,
     cacheHitRatio: variant?.cacheHitRatio,
+    writeRatio: variant?.writeRatio,
+    writeDistribution: variant?.writeDistribution,
   }
 }
 
@@ -416,9 +425,12 @@ export function buildSimGraph(
       id: n.id,
       category: n.data.componentCategory,
       effectiveMaxRps: cost.maxRPS ?? 0,
+      baseMaxRps: cost.baseMaxRPS,
       baseLatencyMs: cost.baseLatencyMs ?? 0,
       failureMode: "shed",
       ...(cost.cacheHitRatio !== undefined ? { cacheHitRatio: cost.cacheHitRatio } : {}),
+      ...(cost.writeRatio !== undefined ? { writeRatio: cost.writeRatio } : {}),
+      ...(cost.writeDistribution !== undefined ? { writeDistribution: cost.writeDistribution } : {}),
     }
   })
   const simEdges: SimEdge[] = edges.map((e) => ({ source: e.source, target: e.target }))

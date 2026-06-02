@@ -48,6 +48,8 @@ config_variants:
     monthly_cost: 40
     max_rps: 600
     base_latency_ms: 4
+    write_ratio: 0.3
+    write_distribution: primary
     metrics:
       - id: read-latency
         value: low
@@ -88,6 +90,8 @@ config_variants:
     monthly_cost: 120
     max_rps: 2000
     base_latency_ms: 5
+    write_ratio: 0.3
+    write_distribution: primary
     metrics:
       - id: read-latency
         value: low

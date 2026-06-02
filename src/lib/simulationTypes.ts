@@ -22,6 +22,8 @@ export interface SimNode {
   category: ComponentCategoryId
   /** Effective max requests/sec (0 = unknown/uncapped → treated as no limit). */
   effectiveMaxRps: number
+  /** Unscaled variant maxRPS (before replica multiplication). Used for write-primary bottleneck (E2). */
+  baseMaxRps?: number
   baseLatencyMs: number
   failureMode: FailureMode
   /**
@@ -29,6 +31,17 @@ export interface SimNode {
    * downstream (cache misses). Hits are absorbed locally. Applies to cache and CDN nodes (E1/E3).
    */
   cacheHitRatio?: number
+  /**
+   * Write ratio (0–1). When set, incoming traffic is split: writes = incoming × writeRatio,
+   * reads = incoming × (1 - writeRatio). Write capacity depends on writeDistribution (E2).
+   */
+  writeRatio?: number
+  /**
+   * How writes are distributed. "primary": writes capped at base capacity (single primary,
+   * replicas help reads only — SQL model). "sharded": writes scale with replicas like reads
+   * (sharded NoSQL model). Default: undefined (no split, all traffic uniform).
+   */
+  writeDistribution?: "primary" | "sharded"
 }
 
 /** A directed edge: traffic flows source → target. */
