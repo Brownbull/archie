@@ -7,7 +7,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { getAllChallenges } from "@/services/challengeLoader"
 import { resolveTechTree } from "@/engine/techTree"
@@ -208,8 +207,8 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
           <DialogDescription>Your progression through the Mastery Tracks tech tree.</DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-4 overflow-hidden" style={{ height: "calc(85vh - 80px)" }}>
-          <ScrollArea className="flex-1">
+        <div className="flex gap-4" style={{ height: "calc(85vh - 80px)" }}>
+          <div className="flex-1 overflow-auto">
             <svg
               width={layout.width}
               height={layout.height}
@@ -244,7 +243,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
                 )
               })}
             </svg>
-          </ScrollArea>
+          </div>
 
           {selectedNode && (
             <div data-testid="tree-detail-panel" className="w-60 shrink-0 overflow-y-auto rounded-md border border-archie-border bg-surface p-3">
