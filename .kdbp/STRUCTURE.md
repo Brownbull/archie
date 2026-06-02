@@ -21,6 +21,8 @@
 | `LICENSE*` | License file | MVP |
 | `.gitignore` | Git ignore | MVP |
 | `docs/**/*.md` | Project documentation | MVP |
+| `docs/gabe/**` | Gabe-Lens plan/review HTML artifacts + supporting assets (images, avatars) | MVP |
+| `docs/**/*.{csv,json}` | Tracking/report data (cost tracking, quality reports) | MVP |
 | `tests/**/*.{py,ts,tsx,js,jsx}` | Test files | MVP |
 | `scripts/**/*.{sh,py,ts,mts,mjs}` | Utility scripts (incl. tsx-run generators + seeders) | MVP |
 

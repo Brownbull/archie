@@ -814,3 +814,42 @@ dim_overrides: []
 - **Exclude community/benchmarking** (per user directive "before sharing features"): the analysis's "anonymized percentile / beats X% of builds" needs cross-user data → deferred. Only solo "vs your past attempts" is in scope (P4).
 - **History error (P4)** flagged in the analysis ("Could not load…") — diagnose vs the deployed Firestore rules / auth before assuming a code bug (D9-adjacent).
 **Status:** accepted — supersedes the community-first framing of the roadmap's "Phase 4 (Future)" for now; single-player track runs first.
+
+## D40 — Mastery Tracks progression model (2026-06-02)
+
+**Decision:** Pivot the Challenge system into a game-like progression/leveling system built on two intertwined layers:
+1. **Tech tree (gating).** Challenges form a deterministic DAG. Each challenge declares `requires` (challenges + blocks) and `unlocks` (blocks + downstream challenges) → a Factorio-style "discover technologies from what you have." `first-service` is the single root.
+2. **Mastery Tracks (identity).** 7 tracks — Foundations, Data, Edge & Delivery, Realtime, Reliability & Ops, Security & Identity, AI/ML. A challenge grants `rewards.xp` to its `track`; XP → per-track tier (Novice→Apprentice→Practitioner→Specialist→Architect) → unlockable title + PixelLab avatar.
+
+**Key rules:**
+- **Block availability is per-challenge** (`available_blocks` palette), hard-gated in challenge mode; the tree gates which challenges are reachable.
+- **Challenge mode is login-only + hard-gated**; **free-build mode is unchanged** (all blocks, gated only by the experienceLevel density knob).
+- **`experienceLevel` stays a separate UI-density layer** — NOT overloaded as a game tier (project rule: "player profile is a separate layer").
+- **Progress is cloud-only** (owner-only Firestore `userProgress/{uid}`, D9 rules; no localStorage fallback — matches login-only challenge mode + the attempts precedent).
+- **XP = delta-above-best per challenge** (re-attempts can't farm; deterministic).
+- **WoW item-rarity coloring** by challenge tier relative to the player: grey→white→green→blue→purple→orange; ≥3 tiers above is **locked** (can't enter); **red** reserved for exaggerated/unresolved/theoretical challenges.
+- **Challenge schema v2** extends the existing `ChallengeYamlSchema` additively (`schema_version`, `track`, `tier`, `requires`, `unlocks`, `available_blocks`, `rewards`) + a runtime "Load Challenge…" import mirroring the architecture YAML import. The 10 authored challenges become the tree spine (each assigned one primary track + reused as cross-track prereqs).
+- **Content seeds:** Coding-Ducks archetypes (use as base, build deeper) — REST-API+caching, async jobs, search, chat, global API gateway already map to existing nodes; Static Site+CDN, E-Commerce flash-sale, IoT telemetry, Social feed are new.
+- **Avatars:** PixelLab (PixFlux 64×64, "Config C", local PNGs + id-Set + lockstep test), per D38 — local same-origin only (no external URLs, D37 rationale).
+
+**Alternatives considered:** flat 7-discipline XP tags with a single tier per discipline (rejected — user wanted multi-level Factorio-style branching); local-first progress with cloud sync (rejected — cloud-only is simpler + challenge mode is login-only anyway); soft block-gating with a free-build toggle (rejected — hard-gate only inside challenge mode, free-build untouched).
+
+**Status:** active
+
+**Review trigger:** revisit branch taxonomy + tier curve after Phase 4 content authoring reveals real difficulty pacing; revisit cloud-only if anonymous progression is later desired.
+
+## D41 — Phase 1 tier: enterprise (2026-06-02)
+**Phase:** Challenge schema v2 + tech-tree foundation · **Types:** data, schema, file-io · **Prototype:** no
+**Reason:** The schema is load-bearing and user-loadable; deterministic round-trip + a tested techTree resolver justify enterprise rigor over an MVP sketch. **dim_overrides:** none. **Status:** accepted.
+
+## D42 — Phase 2 tier: enterprise (2026-06-02)
+**Phase:** Progress model + challenge-mode gating · **Types:** data, auth, user-facing · **Prototype:** no
+**Reason:** Per-user cloud data + owner-only Firestore rules (D9) + XP integrity + login-gated correctness are security/correctness-critical. Runtime journey evidence required. **dim_overrides:** none. **Status:** accepted.
+
+## D43 — Phase 3 tier: enterprise (2026-06-02)
+**Phase:** Leveling UX — profile, tiers & avatars · **Types:** user-facing · **Prototype:** no
+**Reason:** Core player identity/UX; needs polish + runtime journey evidence (tier-up/unlock flow). **dim_overrides:** none. **Status:** accepted.
+
+## D44 — Phase 4 tier: mvp (2026-06-02)
+**Phase:** Branch challenges (content) · **Types:** content, data · **Prototype:** no
+**Reason:** Authoring challenge YAMLs against the v2 schema — iterate on content; no infra rigor needed beyond schema validation. **dim_overrides:** none. **Status:** accepted.

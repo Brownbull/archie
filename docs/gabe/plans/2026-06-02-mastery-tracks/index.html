@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mastery Tracks — Learning Tree (design preview)</title>
+<style>
+  :root{
+    --bg:#0c0f16; --panel:#141925; --panel2:#1b2230; --border:#2a3242;
+    --text:#e6ebf2; --muted:#8b97a8; --accent:#6aa3ff;
+    --found:#4f9cff; --data:#e0883a; --edge:#35c08a; --realtime:#b070e0;
+    --reliability:#e0556a; --security:#d8c24a; --aiml:#56c9dd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:18px 24px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,#11151f,#0c0f16)}
+  header h1{margin:0 0 4px;font-size:20px;letter-spacing:.2px}
+  header h1 .brand{color:var(--accent)}
+  header p{margin:0;color:var(--muted);font-size:13px;max-width:980px}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--muted);align-items:center}
+  .legend .sw{display:inline-flex;align-items:center;gap:6px}
+  .legend .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .legend .ln{width:22px;height:0;border-top:2px solid var(--muted);display:inline-block}
+  .legend .ln.dash{border-top:2px dashed var(--muted)}
+  .layout{display:flex;align-items:stretch;min-height:calc(100vh - 96px)}
+  .treewrap{flex:1;overflow:auto;padding:24px}
+  .tree{position:relative;display:grid;grid-template-columns:90px repeat(7,minmax(168px,1fr));grid-auto-rows:minmax(96px,auto);gap:14px 16px;min-width:1320px}
+  svg.edges{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:visible}
+  .cell{position:relative;z-index:1}
+  .thead{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:8px 6px;border-radius:10px;background:var(--panel);border:1px solid var(--border);font-weight:600;font-size:12.5px;gap:2px}
+  .thead small{font-weight:500;color:var(--muted);font-size:10.5px}
+  .thead .bar{height:3px;width:38px;border-radius:3px;margin-top:4px}
+  .tierlabel{display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;color:var(--muted);padding-right:4px}
+  .tierlabel b{color:var(--text);font-size:12.5px}
+  .tierlabel small{font-size:10.5px}
+  .node{cursor:pointer;border:1px solid var(--border);border-left-width:4px;background:var(--panel);border-radius:10px;padding:8px 10px;transition:transform .08s ease,box-shadow .15s ease,border-color .15s;display:flex;flex-direction:column;gap:4px;height:100%}
+  .node:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .node .ntitle{font-weight:650;font-size:12.5px;line-height:1.2}
+  .node .nmeta{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--muted)}
+  .node .xp{margin-left:auto;color:#7fe0a8;font-weight:600}
+  .node .star{color:#ffd35c}
+  .node .grants{font-size:10px;color:var(--muted);display:flex;flex-wrap:wrap;gap:3px}
+  .node .gchip{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:0 4px;color:var(--text)}
+  .node.root{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .node.sel{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.5),0 6px 22px rgba(0,0,0,.5)}
+  .node.dim{opacity:.28}
+  .node.req{outline:2px solid #ffd35c;outline-offset:1px}
+  .node.unl{outline:2px solid #7fe0a8;outline-offset:1px}
+  .node .diff{font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;color:#0c0f16;text-transform:uppercase;letter-spacing:.3px}
+  .node.locked{opacity:.5;filter:grayscale(.4)}
+  .node.locked::after{content:'🔒';position:absolute;top:6px;right:8px;font-size:11px}
+  .levelctl{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+  .levelctl input[type=range]{width:170px;accent-color:var(--accent)}
+  .levelctl b{color:var(--text)}
+  .wowleg{display:flex;gap:12px;flex-wrap:wrap;margin-left:6px}
+  .wowleg span{display:inline-flex;align-items:center;gap:5px}
+  .wowleg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .avatars{padding:0 24px 34px}
+  .avatars .ahint{color:var(--muted);font-size:13px;margin:6px 0 14px;max-width:980px}
+  .arow{display:flex;gap:24px;flex-wrap:wrap}
+  .acol{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;flex:1;min-width:330px}
+  .acol h3{margin:0 0 12px;font-size:13.5px}
+  .acards{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .acards figure{margin:0;text-align:center}
+  .acards img{width:88px;height:88px;image-rendering:pixelated;background:#0c0f16;border:1px solid var(--border);border-radius:10px;padding:4px}
+  .acards figcaption{font-size:11px;color:var(--text);margin-top:5px;font-weight:600}
+  .arrow{color:var(--muted);font-size:18px}
+  .abk{color:var(--muted);font-size:11.5px;margin:12px 0 0;line-height:1.6}
+  aside{width:340px;flex:none;border-left:1px solid var(--border);background:var(--panel);padding:20px;overflow:auto}
+  aside h2{margin:0 0 6px;font-size:15px}
+  aside .hint{color:var(--muted);font-size:12.5px}
+  .d-track{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;margin-bottom:8px}
+  .d-row{margin:10px 0}
+  .d-row .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:3px}
+  .chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:2px 7px;font-size:11.5px}
+  .chip.grant{border-color:#2e5a44;color:#7fe0a8}
+  .chip.req{border-color:#5a4e2e;color:#ffd35c}
+  .chip.unl{border-color:#2e4a5a;color:#8fd0ff}
+  .obj{font-size:13px;color:var(--text)}
+  .chaos{font-size:12px;color:#ff9a7a;margin-top:4px}
+  .ladder{padding:0 24px 28px}
+  .ladder h2{font-size:15px;margin:18px 0 10px}
+  table.lad{border-collapse:collapse;width:100%;min-width:1280px;font-size:12px}
+  table.lad th,table.lad td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+  table.lad th{background:var(--panel2);color:var(--muted);font-weight:600;position:sticky;top:0}
+  table.lad td .ti{font-weight:650}
+  table.lad td .bk{color:var(--muted);font-size:11px}
+  .rankcol{color:var(--muted);font-weight:600;white-space:nowrap}
+  details>summary{cursor:pointer;color:var(--accent);margin:8px 24px;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="brand">Mastery Tracks</span> — Learning Tree <span style="color:var(--muted);font-weight:400;font-size:14px">· design preview</span></h1>
+  <p>A Factorio-style tech tree for Archie. <b>first-service</b> is the single root; completing a challenge unlocks <b>blocks</b> (usable in challenge mode) + <b>downstream challenges</b>, and grants <b>XP</b> toward its track. Climb each track Novice → Architect to unlock titles &amp; avatars. Click any node to inspect it.</p>
+  <div class="legend" id="legend"></div>
+  <div class="levelctl">
+    <label for="lvl">Simulate your tier (WoW-style gating):</label>
+    <input type="range" id="lvl" min="1" max="5" value="2" step="1" />
+    <b id="lvlval">2 · Apprentice</b>
+    <span class="wowleg" id="wowleg"></span>
+    <span style="margin-left:6px">— colors are WoW rarity (grey→white→green→blue→purple→orange); ≥ 3 tiers above you is <b style="color:#ff8a3d">locked</b> (can't enter); <b style="color:#ef4444">red</b> = theoretical/open-ended.</span>
+  </div>
+</header>
+<div class="layout">
+  <div class="treewrap">
+    <div class="tree" id="tree"><svg class="edges" id="edges"></svg></div>
+  </div>
+  <aside id="aside">
+    <h2>Inspect a node</h2>
+    <p class="hint">Click a challenge in the tree to see its track, tier &amp; title, the blocks it makes available, what it unlocks, its prerequisites, XP, and objective. Hover highlights its <span style="color:#ffd35c">prerequisites</span> and <span style="color:#7fe0a8">unlocks</span>.</p>
+  </aside>
+</div>
+<details open><summary>Tier ladders &amp; unlockable titles (per track)</summary></details>
+<div class="ladder" id="ladder"></div>
+
+<details open><summary>Profile avatars — unlock by leveling (PixelLab · generated samples)</summary></details>
+<div class="avatars">
+  <p class="ahint">Two avatar layers, both earned by progression — the secondary "keep leveling" stimulus. You equip one as your profile avatar (top-bar account menu + profile panel); unlocking a new one fires a celebratory toast.</p>
+  <div class="arow">
+    <div class="acol">
+      <h3>① Rank avatar — your hero visibly evolves (account-wide)</h3>
+      <div class="acards">
+        <figure><img src="avatars/rank-01-apprentice.png" alt="Apprentice" /><figcaption>T1 · Apprentice</figcaption></figure>
+        <span class="arrow">→ … →</span>
+        <figure><img src="avatars/rank-05-grand-architect.png" alt="Grand Architect" /><figcaption>T5 · Grand Architect</figcaption></figure>
+      </div>
+      <p class="abk">5 stages driven by total mastery across all tracks: <b>Novice → Builder → Engineer → Architect → Grand Architect</b>. The primary "level up my guy" motivator — it's your top-bar face.</p>
+    </div>
+    <div class="acol">
+      <h3>② Track-master classes — prestige unlocks (1 per track)</h3>
+      <div class="acards">
+        <figure><img src="avatars/track-data-archivist.png" alt="The Archivist" /><figcaption>Data · The Archivist</figcaption></figure>
+        <p class="abk" style="margin:0;max-width:230px">Unlocked at high tier in a track. + 6 more: <b>The Scaler</b> (Foundations), <b>The Courier</b> (Edge), <b>The Conductor</b> (Realtime), <b>The Sentinel</b> (Reliability), <b>The Warden</b> (Security), <b>The Oracle</b> (AI/ML).</p>
+      </div>
+    </div>
+  </div>
+  <p class="abk">Generated with PixelLab (PixFlux 64×64, black outline + detailed shading, transparent bg) — same recipe + local-asset security posture as the component icons (D38). Full set ≈ <b>12 avatars</b> (5 rank stages + 7 track masters). PixelLab balance is currently $1 → batch-generate the set in Phase C.</p>
+</div>
+
+<script>
+const RANKS = ['Novice','Apprentice','Practitioner','Specialist','Architect'];
+const TRACKS = [
+  {id:'foundations',name:'Foundations',short:'Compute & Scale',color:'var(--found)'},
+  {id:'data',name:'Data',short:'Persistence',color:'var(--data)'},
+  {id:'edge',name:'Edge & Delivery',short:'Get traffic in',color:'var(--edge)'},
+  {id:'realtime',name:'Realtime',short:'Async & live',color:'var(--realtime)'},
+  {id:'reliability',name:'Reliability & Ops',short:'Survive failure',color:'var(--reliability)'},
+  {id:'security',name:'Security & Identity',short:'Defend',color:'var(--security)'},
+  {id:'aiml',name:'AI / ML',short:'Intelligence',color:'var(--aiml)'},
+];
+const TI = i => TRACKS.findIndex(t=>t.id===i);
+const TITLES = {
+  foundations:['Traffic Tamer','Bottleneck Breaker','Load Master','Provisioning Wizard','Scaling Architect'],
+  data:['Persistence Keeper','Cache Tactician','Schema Pluralist','Search Specialist','Data Architect'],
+  edge:['Entry-Point Opener','Balance Keeper','Delivery Master','API Guardian','Delivery Virtuoso'],
+  realtime:['Message Courier','Event Architect','Stream Curator','Live Operator','Event-Backbone Master'],
+  reliability:['Availability Watcher','Failover Guardian','Zone Architect','Chaos Engineer','System Sentinel'],
+  security:['Token Whisperer','Gate Keeper','Threat Spotter','Fortress Architect','Defender of the Realm'],
+  aiml:['LLM Apprentice','Data Pipeliner','Vector Architect','Inference Optimizer','Intelligence Orchestrator'],
+};
+const INTRO = { // blocks introduced at each tier (display in ladder)
+  foundations:['compute','load-balancer','serverless','worker','—'],
+  data:['relational-db','cache · object-storage','nosql','search-engine','graph · ts · vector'],
+  edge:['dns','(load-balancer)','cdn','api-gateway','—'],
+  realtime:['message-queue','event-stream','stream-processor','realtime','—'],
+  reliability:['observability','multi-AZ replicas','failover','chaos events','—'],
+  security:['auth','rate-limiter','SIEM/WAF','(layered)','—'],
+  aiml:['llm-gateway','etl','vector-store','(composition)','—'],
+};
+const NODES = [
+  {id:'first-service',track:'foundations',tier:1,label:'First Service',xp:100,existing:true,reqs:[],blocks:['traffic-source','compute'],grants:[],unlocks:['add-a-database','dns-routing','async-pipeline','observe-baseline','auth-101','llm-service'],obj:'A single compute node serves a low traffic stream. Hit 95% uptime, p99 ≤ 400ms.'},
+  {id:'scale-out',track:'foundations',tier:2,label:'Scale Out',xp:150,existing:true,reqs:['first-service'],blocks:['traffic-source','compute','load-balancer'],grants:['load-balancer'],unlocks:['serverless-burst','edge-balance','zone-replica'],obj:'Replicate compute behind a load balancer. 98.5% uptime, p99 ≤ 250ms @ 1.5k rps.'},
+  {id:'serverless-burst',track:'foundations',tier:3,label:'Serverless Burst',xp:200,existing:false,reqs:['scale-out'],blocks:['traffic-source','compute','load-balancer','serverless'],grants:['serverless'],unlocks:['worker-fleet'],obj:'Absorb a sudden burst with serverless; keep cost down while meeting latency.'},
+  {id:'worker-fleet',track:'foundations',tier:4,label:'Worker Fleet',xp:250,existing:false,reqs:['serverless-burst'],blocks:['traffic-source','compute','load-balancer','serverless','worker','message-queue'],grants:['worker'],unlocks:['foundations-mastery'],obj:'Offload heavy async work to a worker pool so the request path stays fast.'},
+  {id:'foundations-mastery',track:'foundations',tier:5,label:'Foundations Mastery',xp:300,existing:false,reqs:['worker-fleet','cache-the-hot-path'],blocks:['traffic-source','compute','load-balancer','serverless','worker','cache','relational-db'],grants:[],unlocks:[],obj:'Capstone: compose compute, scale, cache and async under sustained load.'},
+
+  {id:'add-a-database',track:'data',tier:1,label:'Add a Database',xp:100,existing:true,reqs:['first-service'],blocks:['compute','relational-db','traffic-source'],grants:['relational-db'],unlocks:['cache-the-hot-path','data-pipeline'],obj:'Add persistent storage behind compute; state survives restarts.'},
+  {id:'cache-the-hot-path',track:'data',tier:2,label:'Cache the Hot Path',xp:150,existing:true,reqs:['add-a-database'],blocks:['compute','relational-db','cache','traffic-source'],grants:['cache','object-storage'],unlocks:['polyglot-persistence','rag-retrieval','foundations-mastery'],obj:'Layer a cache in front of the DB; cut read latency under load.'},
+  {id:'polyglot-persistence',track:'data',tier:3,label:'Polyglot Persistence',xp:200,existing:false,reqs:['cache-the-hot-path'],blocks:['compute','relational-db','nosql','cache','object-storage','traffic-source'],grants:['nosql'],unlocks:['search-at-scale'],obj:'Mix relational + document stores; route each workload to the right schema.'},
+  {id:'search-at-scale',track:'data',tier:4,label:'Search at Scale',xp:250,existing:true,reqs:['polyglot-persistence'],blocks:['compute','relational-db','cache','search-engine','cdn','traffic-source'],grants:['search-engine'],unlocks:['analytics-backbone'],obj:'Index & search heavy traffic; sub-200ms p99 with edge + cache + search.'},
+  {id:'analytics-backbone',track:'data',tier:5,label:'Analytics Backbone',xp:300,existing:false,reqs:['search-at-scale'],blocks:['compute','relational-db','time-series-db','graph-db','vector-store','cache','traffic-source'],grants:['graph-db','time-series-db','vector-store'],unlocks:[],obj:'Capstone: a multi-modal data layer — time-series, graph and vectors.'},
+
+  {id:'dns-routing',track:'edge',tier:1,label:'DNS Routing',xp:80,existing:false,reqs:['first-service'],blocks:['compute','traffic-source','dns'],grants:['dns'],unlocks:['edge-balance'],obj:'Route traffic via DNS with proper domain resolution.'},
+  {id:'edge-balance',track:'edge',tier:2,label:'Load-Balanced Edge',xp:120,existing:false,reqs:['dns-routing','scale-out'],blocks:['compute','traffic-source','dns','load-balancer'],grants:[],unlocks:['edge-delivery'],obj:'Distribute replicas behind an edge load balancer.'},
+  {id:'edge-delivery',track:'edge',tier:3,label:'Edge Delivery',xp:175,existing:true,reqs:['edge-balance'],blocks:['compute','traffic-source','dns','load-balancer','cdn'],grants:['cdn'],unlocks:['api-gateway','zone-failure'],obj:'Bring a CDN into the path; hold p99 ≤ 200ms at 800 rps, 98% uptime.'},
+  {id:'api-gateway',track:'edge',tier:4,label:'API Gateway',xp:200,existing:false,reqs:['edge-delivery'],blocks:['compute','traffic-source','dns','load-balancer','cdn','api-gateway','auth'],grants:['api-gateway'],unlocks:['edge-resilience'],obj:'Front compute with an API gateway for validation + routing.'},
+  {id:'edge-resilience',track:'edge',tier:5,label:'Edge Under Chaos',xp:280,existing:false,reqs:['api-gateway','zone-failure'],blocks:['compute','traffic-source','dns','load-balancer','cdn','api-gateway','cache'],grants:[],unlocks:[],obj:'Capstone: multi-layer edge survives an AZ failure + traffic spike.',chaos:'az_outage + latency_spike'},
+
+  {id:'async-pipeline',track:'realtime',tier:1,label:'Async Pipeline',xp:150,existing:true,reqs:['first-service','add-a-database'],blocks:['compute','message-queue','relational-db','cache','load-balancer','traffic-source'],grants:['message-queue'],unlocks:['event-stream'],obj:'Decouple spiky writes with a queue tier; hold the surge.',chaos:'+1000 rps burst'},
+  {id:'event-stream',track:'realtime',tier:2,label:'Stream the Data',xp:200,existing:false,reqs:['async-pipeline'],blocks:['compute','message-queue','event-stream','relational-db','nosql','cache','traffic-source'],grants:['event-stream'],unlocks:['stream-processor'],obj:'Switch to a durable event log for ordered, replayable, multi-consumer delivery.'},
+  {id:'stream-processor',track:'realtime',tier:3,label:'Process & Aggregate',xp:250,existing:false,reqs:['event-stream'],blocks:['compute','event-stream','stream-processor','relational-db','cache','traffic-source'],grants:['stream-processor'],unlocks:['realtime-live'],obj:'Window & aggregate events in flight (Flink-style).',chaos:'latency_spike on compute'},
+  {id:'realtime-live',track:'realtime',tier:4,label:'Live Updates',xp:250,existing:false,reqs:['stream-processor'],blocks:['compute','realtime','event-stream','stream-processor','cache','traffic-source'],grants:['realtime'],unlocks:['async-backbone'],obj:'Push processed events to websocket clients; fan-out < 150ms, 500+ connections.'},
+  {id:'async-backbone',track:'realtime',tier:5,label:'Event Backbone',xp:400,existing:false,reqs:['realtime-live'],blocks:['compute','message-queue','event-stream','stream-processor','realtime','load-balancer','relational-db','cache','traffic-source'],grants:[],unlocks:[],obj:'Capstone: queue → stream → process → realtime fan-out, end-to-end.',chaos:'az_outage on event-stream'},
+
+  {id:'observe-baseline',track:'reliability',tier:1,label:'Observe Baseline',xp:80,existing:false,reqs:['first-service'],blocks:['compute','relational-db','observability'],grants:['observability'],unlocks:['zone-replica'],obj:'Add observability to a running service; watch requests + errors live.'},
+  {id:'zone-replica',track:'reliability',tier:2,label:'Zone Replica',xp:120,existing:false,reqs:['observe-baseline','scale-out'],blocks:['compute','relational-db','observability','load-balancer'],grants:[],unlocks:['zone-failure'],obj:'Spread replicas across zones; observability tracks each zone independently.'},
+  {id:'zone-failure',track:'reliability',tier:3,label:'Zone Failure',xp:150,existing:true,reqs:['zone-replica','edge-delivery'],blocks:['compute','relational-db','observability','load-balancer','cache'],grants:[],unlocks:['always-on'],obj:'Survive a compute AZ outage; topology stays clean, p99 recovers fast.',chaos:'az_outage on compute'},
+  {id:'always-on',track:'reliability',tier:4,label:'Always On',xp:200,existing:true,reqs:['zone-failure'],blocks:['compute','relational-db','observability','load-balancer','cache','cdn','message-queue'],grants:[],unlocks:['chaos-day','fortress','production-ai'],obj:'Production-grade: 3000 rps, 99.5% uptime, p99 ≤ 200ms, clean topology.'},
+  {id:'chaos-day',track:'reliability',tier:5,label:'Chaos Day',xp:300,existing:true,reqs:['always-on'],blocks:['compute','relational-db','observability','load-balancer','cache','cdn','message-queue'],grants:[],unlocks:[],obj:'Capstone: survive two rolling zone outages at 4000 rps, under budget.',chaos:'2× rolling az_outage'},
+
+  {id:'auth-101',track:'security',tier:1,label:'Identify Yourself',xp:100,existing:false,reqs:['first-service'],blocks:['compute','auth','traffic-source'],grants:['auth'],unlocks:['rate-limit'],obj:'Add an auth tier upstream of compute; handle login load under budget.'},
+  {id:'rate-limit',track:'security',tier:2,label:'Quota Keeper',xp:150,existing:false,reqs:['auth-101'],blocks:['compute','auth','rate-limiter','traffic-source'],grants:['rate-limiter'],unlocks:['siem-audit'],obj:'Place a rate limiter on the auth tier; cap abuse, keep p99 flat.',chaos:'junk-auth spike'},
+  {id:'siem-audit',track:'security',tier:3,label:'Audit Trail',xp:200,existing:false,reqs:['rate-limit'],blocks:['compute','auth','rate-limiter','security','observability','traffic-source'],grants:['security'],unlocks:['fortress'],obj:'Wire a SIEM to flag login anomalies in real time; latency stays flat.'},
+  {id:'fortress',track:'security',tier:5,label:'Production Lockdown',xp:300,existing:false,reqs:['siem-audit','always-on'],blocks:['compute','auth','rate-limiter','security','cdn','observability','cache','relational-db','traffic-source'],grants:[],unlocks:[],obj:'Capstone: detect + mitigate a credential-stuffing campaign on a full stack.',chaos:'2× attack outages'},
+
+  {id:'llm-service',track:'aiml',tier:1,label:'LLM Service',xp:150,existing:false,reqs:['first-service'],blocks:['traffic-source','compute','llm-gateway','cache','relational-db'],grants:['llm-gateway'],unlocks:['data-pipeline'],obj:'Wire compute → LLM gateway; answer inference requests at low latency.'},
+  {id:'data-pipeline',track:'aiml',tier:2,label:'Data Pipeline',xp:200,existing:false,reqs:['llm-service','add-a-database','async-pipeline'],blocks:['compute','llm-gateway','etl','relational-db','object-storage','message-queue','traffic-source'],grants:['etl'],unlocks:['rag-retrieval'],obj:'Build an ETL that ingests text and routes it to the LLM for embeddings.',chaos:'latency_spike on etl'},
+  {id:'rag-retrieval',track:'aiml',tier:3,label:'RAG at Scale',xp:250,existing:false,reqs:['data-pipeline','search-at-scale','cache-the-hot-path'],blocks:['traffic-source','load-balancer','compute','llm-gateway','vector-store','relational-db','cache','search-engine'],grants:['vector-store'],unlocks:['production-ai'],obj:'Query a vector DB for semantic context; hold p99 under read-heavy load.',chaos:'component_failure on vector-store'},
+  {id:'production-ai',track:'aiml',tier:4,label:'Production AI',xp:300,existing:false,reqs:['rag-retrieval','zone-failure','always-on'],blocks:['traffic-source','load-balancer','cdn','compute','llm-gateway','etl','vector-store','relational-db','cache','observability','message-queue'],grants:[],unlocks:[],obj:'Capstone: multi-region AI with failover, timeouts + observability.',chaos:'az_outage on llm-gateway'},
+];
+const BY_ID = Object.fromEntries(NODES.map(n=>[n.id,n]));
+const colorOf = id => getComputedStyle(document.documentElement).getPropertyValue(TRACKS.find(t=>t.id===id).color.replace('var(','').replace(')','')).trim();
+
+// ---- render legend ----
+const legend = document.getElementById('legend');
+legend.innerHTML = TRACKS.map(t=>`<span class="sw"><span class="dot" style="background:${t.color}"></span>${t.name}</span>`).join('')
+  + `<span class="sw"><span class="ln"></span> same-track</span><span class="sw"><span class="ln dash"></span> cross-track prereq</span><span class="sw"><span class="star" style="color:#ffd35c">★</span> already authored</span>`;
+
+// ---- render grid ----
+const tree = document.getElementById('tree');
+const edges = document.getElementById('edges');
+// header row (row 1): corner + track headers
+const corner = document.createElement('div'); corner.style.gridColumn='1'; corner.style.gridRow='1'; tree.appendChild(corner);
+TRACKS.forEach((t,i)=>{
+  const h=document.createElement('div'); h.className='thead'; h.style.gridColumn=(i+2); h.style.gridRow=1;
+  h.innerHTML=`<span style="color:${t.color}">${t.name}</span><small>${t.short}</small><span class="bar" style="background:${t.color}"></span>`;
+  tree.appendChild(h);
+});
+// tier labels (col 1)
+RANKS.forEach((r,ti)=>{
+  const l=document.createElement('div'); l.className='tierlabel'; l.style.gridColumn=1; l.style.gridRow=(ti+2);
+  l.innerHTML=`<b>T${ti+1}</b><small>${r}</small>`; tree.appendChild(l);
+});
+// nodes
+NODES.forEach(n=>{
+  const el=document.createElement('div');
+  el.className='node cell'+(n.id==='first-service'?' root':'');
+  el.style.gridColumn=(TI(n.track)+2); el.style.gridRow=(n.tier+1);
+  el.style.borderLeftColor=TRACKS.find(t=>t.id===n.track).color;
+  el.dataset.id=n.id;
+  el.innerHTML=`<div class="ntitle">${n.label}</div>
+    <div class="nmeta">${n.existing?'<span class="star">★</span>':''}<span class="diff"></span><span class="xp">+${n.xp}xp</span></div>
+    ${n.grants.length?`<div class="grants">${n.grants.map(b=>`<span class="gchip">${b}</span>`).join('')}</div>`:''}`;
+  el.addEventListener('click',()=>select(n.id));
+  el.addEventListener('mouseenter',()=>highlight(n.id));
+  el.addEventListener('mouseleave',()=>{if(!selected)clearHi()});
+  tree.appendChild(el);
+});
+
+// ---- WoW-style relative-level coloring + hard lock ----
+// WoW item-rarity ramp (grey→white→green→blue→purple→orange), by challenge tier relative to you.
+const WOW=[
+  {lo:-99,hi:-2,name:'Trivial',c:'#9aa3b0'},   // poor (grey)
+  {lo:-1,hi:-1,name:'Easy',c:'#e8edf5'},        // common (white)
+  {lo:0,hi:0,name:'On-level',c:'#3fcf6a'},       // uncommon (green)
+  {lo:1,hi:1,name:'Tough',c:'#3b9dff'},          // rare (blue)
+  {lo:2,hi:2,name:'Hard',c:'#b06bff'},           // epic (purple)
+  {lo:3,hi:99,name:'Locked',c:'#ff8a3d',locked:true}, // legendary / too far above → can't enter
+];
+const THEORETICAL_C='#ef4444'; // red — reserved for exaggerated / unresolved / theoretical challenges
+const wowFor=d=>WOW.find(w=>d>=w.lo&&d<=w.hi);
+document.getElementById('wowleg').innerHTML=WOW.map(w=>`<span><i style="background:${w.c}"></i>${w.name}</span>`).join('')
+  + `<span><i style="background:${THEORETICAL_C}"></i>Theoretical</span>`;
+function applyLevel(sim){
+  document.getElementById('lvlval').textContent=`${sim} · ${RANKS[sim-1]}`;
+  NODES.forEach(n=>{
+    const el=tree.querySelector(`[data-id="${n.id}"]`); if(!el)return;
+    const d=el.querySelector('.diff');
+    if(n.theoretical){ if(d){d.textContent='Theoretical'; d.style.background=THEORETICAL_C;} el.classList.remove('locked'); return; }
+    const w=wowFor(n.tier-sim);
+    if(d){d.textContent=w.name; d.style.background=w.c; d.style.color = (w.c==='#e8edf5')?'#0c0f16':'#0c0f16';}
+    el.classList.toggle('locked',!!w.locked);
+  });
+}
+const lvl=document.getElementById('lvl');
+lvl.addEventListener('input',()=>applyLevel(+lvl.value));
+applyLevel(+lvl.value);
+
+// ---- edges ----
+function center(id){
+  const el=tree.querySelector(`[data-id="${id}"]`); if(!el)return null;
+  return {x:el.offsetLeft+el.offsetWidth/2, top:el.offsetTop, bot:el.offsetTop+el.offsetHeight, el};
+}
+function drawEdges(){
+  edges.setAttribute('width',tree.scrollWidth); edges.setAttribute('height',tree.scrollHeight);
+  edges.innerHTML='';
+  NODES.forEach(n=>{
+    n.reqs.forEach(r=>{
+      const s=center(r), t=center(n.id); if(!s||!t)return;
+      const cross = BY_ID[r] && BY_ID[r].track!==n.track;
+      const sx=s.x, sy=s.bot, tx=t.x, ty=t.top;
+      const dy=(ty-sy);
+      const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d',`M ${sx} ${sy} C ${sx} ${sy+dy*0.45}, ${tx} ${ty-dy*0.45}, ${tx} ${ty}`);
+      p.setAttribute('fill','none');
+      p.setAttribute('stroke', cross?'#5a6577':colorOf(n.track));
+      p.setAttribute('stroke-width', cross?1.2:1.8);
+      p.setAttribute('opacity', cross?0.32:0.5);
+      if(cross)p.setAttribute('stroke-dasharray','5 4');
+      p.dataset.from=r; p.dataset.to=n.id;
+      edges.appendChild(p);
+    });
+  });
+}
+
+let selected=null;
+function setEdgeHi(id){
+  edges.querySelectorAll('path').forEach(p=>{
+    const on = id && (p.dataset.to===id || p.dataset.from===id);
+    p.setAttribute('opacity', !id? (p.getAttribute('stroke-dasharray')?0.32:0.5) : (on?0.95:0.06));
+    if(on){p.setAttribute('stroke', p.dataset.to===id?'#ffd35c':'#7fe0a8'); p.setAttribute('stroke-width',2.4);}
+    else if(id){/* leave color */}
+    else {const cross=p.getAttribute('stroke-dasharray'); p.setAttribute('stroke',cross?'#5a6577':colorOf(BY_ID[p.dataset.to].track)); p.setAttribute('stroke-width',cross?1.2:1.8);}
+  });
+}
+function clearHi(){
+  tree.querySelectorAll('.node').forEach(e=>e.classList.remove('dim','req','unl'));
+  setEdgeHi(null);
+}
+function highlight(id){
+  const n=BY_ID[id];
+  tree.querySelectorAll('.node').forEach(e=>{
+    const eid=e.dataset.id;
+    e.classList.remove('req','unl');
+    if(eid===id){e.classList.remove('dim');}
+    else if(n.reqs.includes(eid)){e.classList.add('req');e.classList.remove('dim');}
+    else if(n.unlocks.includes(eid)){e.classList.add('unl');e.classList.remove('dim');}
+    else e.classList.add('dim');
+  });
+  setEdgeHi(id);
+}
+function select(id){
+  selected=id;
+  tree.querySelectorAll('.node').forEach(e=>e.classList.toggle('sel',e.dataset.id===id));
+  highlight(id);
+  const n=BY_ID[id]; const t=TRACKS.find(x=>x.id===n.track);
+  const reqNames = n.reqs.length? n.reqs.map(r=>BY_ID[r]?BY_ID[r].label:r) : ['— none (root-reachable)'];
+  const unlNames = n.unlocks.length? n.unlocks.map(u=>BY_ID[u]?BY_ID[u].label:u) : ['— capstone (nothing further)'];
+  document.getElementById('aside').innerHTML=`
+    <span class="d-track" style="background:${t.color}22;color:${t.color};border:1px solid ${t.color}55">${t.name}</span>
+    <h2>${n.label} ${n.existing?'<span class="star">★</span>':''}</h2>
+    <div class="hint">${n.id} · Tier ${n.tier} (${RANKS[n.tier-1]}) → unlocks title <b style="color:${t.color}">${TITLES[n.track][n.tier-1]}</b> · <span style="color:#7fe0a8">+${n.xp} XP</span></div>
+    <div class="d-row"><div class="lbl">Objective</div><div class="obj">${n.obj}</div>${n.chaos?`<div class="chaos">⚡ chaos: ${n.chaos}</div>`:''}</div>
+    <div class="d-row"><div class="lbl">Available blocks (palette)</div><div class="chips">${n.blocks.map(b=>`<span class="chip">${b}</span>`).join('')}</div></div>
+    ${n.grants.length?`<div class="d-row"><div class="lbl">Unlocks blocks</div><div class="chips">${n.grants.map(b=>`<span class="chip grant">+ ${b}</span>`).join('')}</div></div>`:''}
+    <div class="d-row"><div class="lbl">Requires</div><div class="chips">${reqNames.map(x=>`<span class="chip req">${x}</span>`).join('')}</div></div>
+    <div class="d-row"><div class="lbl">Unlocks challenges</div><div class="chips">${unlNames.map(x=>`<span class="chip unl">${x}</span>`).join('')}</div></div>`;
+}
+
+// ---- ladder table ----
+const lad=document.getElementById('ladder');
+let html='<table class="lad"><thead><tr><th>Rank</th>'+TRACKS.map(t=>`<th style="color:${t.color}">${t.name}</th>`).join('')+'</tr></thead><tbody>';
+for(let ti=0;ti<5;ti++){
+  html+=`<tr><td class="rankcol">T${ti+1} · ${RANKS[ti]}</td>`+TRACKS.map(t=>`<td><span class="ti">${TITLES[t.id][ti]}</span><br><span class="bk">${INTRO[t.id][ti]}</span></td>`).join('')+'</tr>';
+}
+html+='</tbody></table>';
+lad.innerHTML=html;
+
+// ---- layout edges after render + on resize ----
+requestAnimationFrame(()=>{drawEdges();});
+window.addEventListener('resize',()=>{drawEdges(); if(selected)setEdgeHi(selected);});
+</script>
+</body>
+</html>

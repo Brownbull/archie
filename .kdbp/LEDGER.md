@@ -2433,3 +2433,22 @@ PR: — (direct; carried 79ab5a4 [P106 bookkeeping] + 391805b [P107 rps scale + 
 CI: deploy-production ✅ green (run 26796415251, 45s)
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P107
+- 2026-06-02 00:06 | Write | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+- 2026-06-02 00:19 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+- 2026-06-02 00:19 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+- 2026-06-02 00:20 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+- 2026-06-02 00:20 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+
+## 2026-06-02 00:20 — PLAN COMPLETED: Single-Player UX & Component Model
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-06-02_single-player-ux-component-model.md
+PHASES COMPLETED: 6 of 6 (P41–P46) + post-epic polish P47–P107
+
+## 2026-06-02 00:20 — PLAN CREATED: Mastery Tracks — challenge-tree progression/leveling system
+PHASES: 4 | COMPLEXITY: high | MATURITY: enterprise
+TIERS: mvp × 1, ent × 3, scale × 0 | PROTOTYPES: 0
+DECISIONS: D40 (model) + D41 → D44 (4 phase tier decisions)
+HTML_ARTIFACT: docs/gabe/plans/2026-06-02-mastery-tracks/index.html (custom interactive learning-tree; --no-html-artifact for gabe template)
+- 2026-06-02 00:36 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+- 2026-06-02 00:36 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+- 2026-06-02 00:52 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html
+- 2026-06-02 00:52 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-02-mastery-tracks/index.html

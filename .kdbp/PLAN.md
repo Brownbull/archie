@@ -5,43 +5,115 @@
 
 ## Goal
 
-Single-Player UX & Component Model — improve Archie as a solo tool, driven by the Coding Ducks competitive gap analysis (docs/research/20260530). Fix the editing-correctness + information-density gaps, repair the solo progress loop, and re-model the component palette to **fundamental type → provider → tier**. Strictly single-player — community/sharing/benchmarking features are out of scope (deferred until after this epic).
+Mastery Tracks — pivot the Challenge system into a game-like progression/leveling system. Challenges become a deterministic, loadable tech tree (Factorio-style DAG): completing a challenge unlocks blocks + downstream challenges and grants XP toward a specialization track. Players climb 7 tracks (Foundations, Data, Edge & Delivery, Realtime, Reliability & Ops, Security & Identity, AI/ML) Novice → Architect, unlocking titles + PixelLab avatars. Challenge mode is login-only and hard-gates the block palette to what's unlocked/available; free-build mode is unchanged. The interface experience-level (beginner/intermediate/advanced) stays a separate density layer.
 
 ## Context
 
 - **Maturity:** enterprise
 - **Domain:** Software architecture visualization and design tool
-- **Created:** 2026-05-30
-- **Last Updated:** 2026-05-30
-- **Source:** docs/research/20260530/response1-3 (gap analysis vs Coding Ducks). Single-player only; precedes any Phase-4 community features.
-- **Excluded (deferred — needs cross-user data / sharing):** anonymized percentile / "beats X% of builds" benchmarking. Only solo "vs your past attempts" is in scope (P4).
+- **Created:** 2026-06-02
+- **Last Updated:** 2026-06-02
+- **Design artifact:** docs/gabe/plans/2026-06-02-mastery-tracks/index.html (interactive learning-tree: 7 tracks × 5 tiers, branching DAG, WoW-style level gating, per-node detail)
+- **Source:** recon of the existing challenge/attempts/taxonomy systems + Coding-Ducks archetypes (use as base, build deeper). Strictly an extension of the existing challengeSchema/challengeStore/rubricScorer.
 
 ## Phases
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | On-object Remove/Duplicate toolbars (node + edge) | Floating toolbar on node AND edge selection with Remove + Duplicate. Fixes the functional gap: connectors can't be deleted from the UI today, and node delete is hidden keyboard-only. Keep the Delete-key accelerator. | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 2 | Canvas authoring fixes | Auto-fit/frame on load + import (Fit View leaves an empty viewport with nodes only in the minimap); forgiving wiring (larger port hit-targets, hover-highlight ports, click-source→click-target fallback); fix the budget label glitch ("$260/$80/mo"). | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 3 | Information density: palette + inspector | Compact palette rows (icon + name + price range; collapsible categories; IS/GAIN/COST detail moved to hover/inspector). Inspector collapse-by-default into a hierarchy (header: name, provider/variant, $·throughput·latency, Remove; YAML/Gains/Costs/Recommendations/Metrics behind disclosures). Per-node utilization % overlay. | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 4 | Solo progress loop reliability | Diagnose + fix the History "Could not load your attempt history" error (verify vs deployed Firestore rules + auth state); clean empty state; confirm lossless YAML round-trip; add "vs your past attempts" deltas on the results modal (solo only — no cross-user percentile). | ent | medium | ✅ | ✅ | ✅ | ✅ |
-| 5 | Component model: type → provider → tier | Schema gains a provider layer (type_id / provider_id / variant_id). Migrate the 18 provider-components to fundamental types + seed 1–3 providers each (migration map in response1 §3). Toolbox organized by TYPE; in-node provider + tier picker showing $·RPS·ms with deltas. Lossless YAML migration map (cloudflare-cdn → cdn/cloudflare, …). The strategic bet — enables lighter UI + type-keyed validation. | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 6 | Live guidance: topology validation + tour | Live graph nudges ("X placed but not connected to traffic", "missing required type"); a live Required checklist beyond challenge mode; a restartable first-run guided tour replacing static hint bullets. Builds on P5's type-first model. | ent | high | ✅ | ✅ | ✅ | ✅ |
+| 1 | Challenge schema v2 + tech-tree foundation | Deterministic, loadable challenge file (`schema_version`, `track`, `tier`, `requires`, `unlocks`, `available_blocks`, `rewards.xp`) mirroring the architecture schema; runtime "Load Challenge…" import; recast the 10 authored challenges into the tree spine; a pure `techTree` resolver (locked/available/completed + unlocked blocks) with tests. No UI/gating behavior change. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Progress model + challenge-mode gating | Cloud-only owner-only Firestore `userProgress/{uid}` (D9 rules); progressStore + persistence; award XP at `scoreAttempt` (delta-above-best, no farming); per-track tiers derived from XP; hard-gate the challenge-mode palette to unlocked/available blocks; login-required challenge mode; WoW relative-level coloring + 2-tier lock in the challenge selector. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Leveling UX — profile, tiers & avatars | Profile panel anchored on AccountMenu: per-track XP bars + tiers + unlockable titles; PixelLab tier avatars (local PNGs + resolver + lockstep test); unlock/tier-up toasts; a tech-tree progression view. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Branch challenges (content) | Author greenfield-track + archetype challenges with the v2 schema: Static Site+CDN, E-Commerce flash-sale (uses the surge traffic pattern), IoT telemetry, Social feed; Security & AI/ML ladders; deeper Data/Realtime/Reliability tiers. | mvp | med | ⬜ | ⬜ | ⬜ | ⬜ |
 
-<!-- Exec: ⬜/🔄/✅. Review/Commit/Push auto-ticked. User-facing/web phases require runtime journey evidence. -->
+<!-- Exec ⬜/🔄/✅. Review/Commit/Push auto-ticked. User-facing phases require runtime journey evidence. -->
+
+## Phase Details
+
+### Phase 1 — Challenge schema v2 + tech-tree foundation
+```yaml
+phase: 1
+types: [data, schema, file-io]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Data]
+suppressed_dims_count: 0
+decisions_entry: D41
+```
+- **Tier:** ent — the schema is load-bearing + user-loadable; deterministic round-trip + a tested resolver matter. See D40 (model) + D41.
+
+### Phase 2 — Progress model + challenge-mode gating
+```yaml
+phase: 2
+types: [data, auth, user-facing]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Data, Integration]
+suppressed_dims_count: 0
+decisions_entry: D42
+```
+- **Tier:** ent — per-user cloud data + owner-only Firestore rules (D9); XP integrity + login-gated correctness. Runtime journey evidence required (gating). See D42.
+
+### Phase 3 — Leveling UX — profile, tiers & avatars
+```yaml
+phase: 3
+types: [user-facing]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, UX]
+suppressed_dims_count: 0
+decisions_entry: D43
+```
+- **Tier:** ent — core player identity/UX; needs polish + runtime journey evidence. See D43.
+
+### Phase 4 — Branch challenges (content)
+```yaml
+phase: 4
+types: [content, data]
+phase_tier: mvp
+prototype: false
+dim_overrides: []
+sections_considered: [Core]
+suppressed_dims_count: 0
+decisions_entry: D44
+```
+- **Tier:** mvp — authoring challenge YAMLs against the v2 schema; iterate on content. See D44.
 
 ## Current Phase
 
-✅ All 6 phases complete — Single-Player UX & Component Model epic shipped (P41–P46).
+Phase 1: Challenge schema v2 + tech-tree foundation
 
 ## Dependencies
 
-- P1, P2, P4 are independent (correctness + reliability). P3 (density) ships on the current model; P5 deepens it (deferring tradeoffs to the provider dropdown). P6 depends on P5 (type-keyed validation). Recommended order is P1→P6 (correctness + density quick wins first, then the strategic component-model refactor, then guidance) — P5 can be pulled earlier if the component model is the priority. Every phase is user-facing → requires a browser runtime-journey check (E2E + screenshots).
+- P2 depends on P1 (the techTree resolver + schema v2 define unlock/XP edges P2 persists + gates on).
+- P3 depends on P2 (renders the per-user progress + tiers P2 produces).
+- P4 depends on P1 (authors against schema v2); benefits from P2/P3 to play-test the tree.
 
 ## Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| P5 component-model refactor is large + touches Firestore-seeded component data + YAML import/export | high | Schema-additive (insert provider_id; keep variant tiers); static migration map keeps YAML round-trip lossless; full suite + import/export round-trip tests are the net; land behind the existing variant machinery |
-| Density redesign (P3) regresses the rich data Archie already has | medium | Move detail to hover/disclosures, don't delete it; keep the scoring/economics data intact |
-| History error (P4) may be the un-deployed/contended Firestore rules rather than code | medium | Diagnose first (rules deployed? auth resolved? owner-scoped query) before changing code; D9-adjacent |
-| On-object edge toolbar positioning over SVG edges (P1) is finicky | low | Anchor to edge midpoint; reuse the node-toolbar pattern |
+| Schema v2 must not break the 10 existing challenges or their build-time glob loader | high | All new fields optional + `schema_version`; recast the 10 as the spine; round-trip + lockstep tests (mirror architectureFileSchema) |
+| `userProgress` Firestore rules (owner-only, schema-mirrored, server-timestamp) per D9 | high | Mirror the attempts rules; rules need a manual `firebase deploy --only firestore:rules` (CI deploys hosting only — D9 memory) |
+| Hard-gating must NOT leak into free-build mode | medium | Gate keyed strictly on challenge-mode (attemptState); free-build ignores unlockedBlocks (today's behavior) |
+| XP farming via re-attempts | medium | Award delta-above-best per challenge (deterministic) |
+| PixelLab tier avatars are manual MCP generation, no pipeline | low | Generate incrementally (PixFlux 64×64, "Config C"); Lucide fallback via id-Set + lockstep test (D38 pattern) |
+
+## Notes
+
+- Two intertwined layers: the **tech tree** (gating — challenge availability + block unlocks) and **Mastery Tracks** (identity — XP→tier→title/avatar). `experienceLevel` stays a separate UI-density knob.
+- Block availability is **per-challenge config** (`available_blocks` palette), hard-gated in challenge mode; the tree gates which challenges are reachable.
+- WoW item-rarity coloring (grey→white→green→blue→purple→orange) by challenge tier relative to the player; ≥3 tiers above is locked; red reserved for theoretical/open-ended challenges.
+- Coding-Ducks archetypes are content seeds (REST API+caching, async jobs, search, chat, global API gateway already map to existing nodes; Static Site, E-Commerce flash-sale, IoT, Social feed are new) — build deeper variants for higher tiers.
+
+## Review Artifacts
+
+- HTML review artifact: docs/gabe/plans/2026-06-02-mastery-tracks/index.html (custom interactive learning-tree — richer than the gabe template; `--no-html-artifact` set so gabe-plan did not generate its own)
+- Canonical source: `.kdbp/PLAN.md`, `.kdbp/DECISIONS.md`, `.kdbp/LEDGER.md`
+
+## Runtime Evidence Checkpoints
+
+- Phase 2 (challenge-mode gating): Playwright journey — enter challenge mode logged-in, confirm palette hard-gated to unlocked blocks + WoW lock on too-high challenges; screenshots.
+- Phase 3 (leveling UX): Playwright journey — complete a challenge → XP/tier-up → unlocked title/avatar visible in profile; screenshots.
