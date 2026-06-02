@@ -1,0 +1,115 @@
+@startuml Archie_Simulation_Engine
+
+skinparam backgroundColor #0d1117
+skinparam defaultFontColor #e6edf3
+skinparam arrowColor #58a6ff
+skinparam activityBackgroundColor #161b22
+skinparam activityBorderColor #30363d
+skinparam noteBackgroundColor #1c2128
+skinparam noteBorderColor #30363d
+
+title Archie Simulation Engine — Per-Tick Flow
+
+start
+
+:Interpolate **target RPS** from traffic curve at time t;
+note right
+  Traffic curve: array of {t, rps} points
+  Patterns: steady / wobble / periodic / surge
+  Deterministic (seeded PRNG)
+end note
+
+:Inject RPS into **entry nodes**
+(nodes with in-degree 0)
+Split evenly across entries;
+
+:Process nodes in **topological order**
+(Kahn's DAG algorithm);
+note right
+  Cycles are processed once
+  without forwarding (v1 limitation)
+end note
+
+repeat :For each node in topological order;
+
+  if (Scheduled failure active at tick t?) then (OFFLINE)
+    #f85149:served = 0
+    failed = **all incoming** (shed)
+    node is fully offline;
+  elseif (capacity > 0?) then (CAPPED)
+    if (incoming > capacity?) then (OVERLOADED)
+      #d29922:served = capacity
+      failed = incoming - capacity
+      **traffic shed**;
+      :latency = base × (1 + (load-1) × 2)
+      (grows linearly with overload);
+    else (WITHIN CAPACITY)
+      #3fb950:served = incoming
+      failed = 0
+      **all traffic handled**;
+      :latency = baseLatencyMs
+      (no load penalty);
+    endif
+  else (UNCAPPED — capacity=0)
+    :served = incoming
+    failed = 0
+    latency = baseLatencyMs;
+    note right: Uncapped nodes never shed
+  endif
+
+  if (Has latency_spike override?) then (yes)
+    :latency × multiplier
+    (stacks: ×3 × ×2 = ×6);
+  endif
+
+  :Forward **served** RPS to downstream nodes
+  (even split at fan-out points);
+
+  :Record per-node telemetry:
+  incoming, served, failed,
+  latency, utilization%, overloaded;
+
+repeat while (more nodes?) is (yes)
+
+:Aggregate tick totals:
+totalServed = Σ served across all nodes
+totalFailed = targetRps - totalServed
+systemLatency = **max**(node.latencyMs);
+
+:Record TickState in ticks[];
+
+if (tick < 50?) then (next tick)
+else (simulation complete)
+
+  partition "Stats Aggregation" {
+    :uptime% = totalServed / (served + failed) × 100;
+    :avgLatency = mean(systemLatency per tick);
+    :p99Latency = 99th percentile of systemLatencies;
+    note right
+      System latency per tick = the
+      **slowest node** (bottleneck dominates).
+      p99 = worst 1% of ticks.
+    end note
+  }
+
+  partition "Challenge Scoring" {
+    :Check **required_types**:
+    all required block types on canvas?;
+    if (uptime ≥ target AND p99 ≤ target\nAND required_types present?) then (BASE PASS)
+      :1 star;
+      if (totalCost ≤ budgetCap?) then (yes)
+        :+1 star (under budget);
+      endif
+      if (topologyIssueCount = 0?) then (yes)
+        :+1 star (clean topology);
+      endif
+    else (FAIL)
+      :0 stars;
+    endif
+  }
+
+endif
+
+stop
+
+@enduml

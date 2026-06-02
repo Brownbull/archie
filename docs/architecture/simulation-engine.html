@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archie Simulation Engine — How It Works</title>
+<style>
+  :root { --bg: #0d1117; --surface: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #58a6ff; --green: #3fb950; --orange: #d29922; --red: #f85149; --purple: #bc8cff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 2rem; margin-bottom: 0.5rem; color: var(--accent); }
+  h2 { font-size: 1.4rem; margin: 2rem 0 0.75rem; color: var(--green); border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+  h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; color: var(--purple); }
+  p, li { color: var(--text); margin-bottom: 0.5rem; }
+  .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+  code { background: var(--surface); padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.9em; color: var(--orange); }
+  pre { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; overflow-x: auto; margin: 1rem 0; font-size: 0.85rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: var(--text); }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.85rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--surface); color: var(--accent); font-weight: 600; }
+  td { background: var(--bg); }
+  .real { color: var(--green); font-weight: 600; }
+  .partial { color: var(--orange); font-weight: 600; }
+  .placeholder { color: var(--muted); font-weight: 600; }
+  .formula { background: var(--surface); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 1rem 0; border-radius: 0 6px 6px 0; font-family: monospace; font-size: 0.9rem; }
+  .diagram { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; text-align: center; }
+  .diagram svg { max-width: 100%; }
+  .legend { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin: 0.75rem 0; }
+  .card h4 { color: var(--accent); margin-bottom: 0.5rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1rem; }
+  .tag { display: inline-block; padding: 0.1em 0.5em; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .tag-real { background: #3fb95020; color: var(--green); border: 1px solid #3fb95040; }
+  .tag-partial { background: #d2992220; color: var(--orange); border: 1px solid #d2992240; }
+  .tag-decorative { background: #8b949e20; color: var(--muted); border: 1px solid #8b949e40; }
+  details { margin: 0.5rem 0; }
+  summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+  details[open] summary { margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+
+<h1>Archie Simulation Engine</h1>
+<p class="subtitle">How the architecture simulation works — what's real calculation, what's a placeholder, and what each component actually does in the equation.</p>
+
+<h2>1. The Simulation Loop</h2>
+
+<p>Every simulation runs <strong>50 ticks</strong> over the challenge's duration (default 90s). At each tick:</p>
+
+<div class="formula">
+<strong>For each tick t:</strong><br>
+1. Interpolate target RPS from the traffic curve at time t<br>
+2. Inject traffic into entry nodes (nodes with no incoming edges)<br>
+3. Process nodes in topological order (DAG via Kahn's algorithm)<br>
+4. At each node: compare incoming traffic vs capacity → serve or shed<br>
+5. Forward served traffic to downstream nodes (even split at fan-out)<br>
+6. Record per-node telemetry (served, failed, latency, utilization)
+</div>
+
+<div class="diagram">
+<pre style="text-align:left; display:inline-block;">
+┌─────────────┐    inject RPS     ┌──────────────┐   forward    ┌──────────────┐
+│Traffic Curve │───────────────────▶│  Entry Node  │─────────────▶│ Downstream   │
+│ [t,rps]      │   (split evenly   │  (compute)   │  served RPS  │  (database)  │
+│  points      │    across entries) │              │  only        │              │
+└─────────────┘                    │ serve/shed   │              │ serve/shed   │
+                                   └──────────────┘              └──────────────┘
+                                   incoming > capacity?          incoming > capacity?
+                                     YES → shed excess             YES → shed excess
+                                     NO  → serve all              NO  → serve all
+</pre>
+</div>
+
+<h2>2. Per-Node Capacity Model</h2>
+
+<p>Every node in the simulation has three core properties from its component variant:</p>
+
+<table>
+<tr><th>Property</th><th>Source</th><th>Effect</th></tr>
+<tr><td><code>effectiveMaxRps</code></td><td>variant.maxRPS × replicaCount</td><td>Throughput cap — incoming above this is shed (dropped)</td></tr>
+<tr><td><code>baseLatencyMs</code></td><td>variant.baseLatencyMs</td><td>Baseline response time, grows under load</td></tr>
+<tr><td><code>monthlyCost</code></td><td>variant.monthlyCost × replicaCount</td><td>Budget scoring (not simulation mechanics)</td></tr>
+</table>
+
+<h3>Overload Behavior</h3>
+
+<div class="formula">
+<strong>If node is ONLINE and capacity &gt; 0:</strong><br>
+&nbsp;&nbsp;served = min(incoming, capacity)<br>
+&nbsp;&nbsp;failed = max(0, incoming - capacity)<br>
+&nbsp;&nbsp;load = incoming / capacity<br>
+&nbsp;&nbsp;latency = baseLatency × (1 + max(0, load - 1) × 2)<br>
+<br>
+<strong>If node is OFFLINE (scheduled failure):</strong><br>
+&nbsp;&nbsp;served = 0, failed = incoming (all traffic shed)<br>
+<br>
+<strong>If capacity = 0 (uncapped / unknown):</strong><br>
+&nbsp;&nbsp;served = incoming, failed = 0, latency = baseLatency
+</div>
+
+<p><strong>Latency under load:</strong> At 100% capacity, latency = base. At 200% capacity, latency = base × 3. Linear growth with overload factor <code>LATENCY_LOAD_K = 2</code>.</p>
+
+<h2>3. What Each Component Category Actually Does</h2>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span> Real simulation participant</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--orange)"></span> Participates with limitations</div>
+  <div class="legend-item"><span class="legend-dot" style="background:var(--muted)"></span> Decorative / no flow</div>
+</div>
+
+<div class="grid">
+
+<div class="card">
+  <h4>Compute <span class="tag tag-real">REAL</span></h4>
+  <p>Node.js, Python, Go, etc. Core request handler.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 1k–4k RPS per variant</li>
+    <li><strong>Latency:</strong> 8–25ms base; grows linearly under load</li>
+    <li><strong>Scaling:</strong> Full replicas (×N capacity)</li>
+    <li><strong>Requires:</strong> Upstream load balancer if replicated</li>
+    <li><strong>Overload:</strong> Sheds excess traffic; latency spikes</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Load Balancer / CDN <span class="tag tag-real">REAL</span></h4>
+  <p>Nginx, AWS ALB, Cloudflare CDN. Traffic distribution layer.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 30k–500k RPS (CDNs have massive capacity)</li>
+    <li><strong>Latency:</strong> 1–20ms base</li>
+    <li><strong>Scaling:</strong> Full replicas</li>
+    <li><strong>Special:</strong> <code>actsAsLoadBalancer = true</code> — satisfies the "upstream LB" topology requirement</li>
+    <li><strong>Overload:</strong> Sheds excess (rare due to high capacity)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Database (SQL/NoSQL) <span class="tag tag-real">REAL</span></h4>
+  <p>PostgreSQL, MongoDB, DynamoDB, etc.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 5k–50k RPS depending on variant</li>
+    <li><strong>Latency:</strong> 2–15ms base</li>
+    <li><strong>Scaling:</strong> <em>Read-only</em> replicas — reads scale, writes bottleneck at the writer</li>
+    <li><strong>Overload:</strong> Sheds excess traffic; common bottleneck point</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Cache (Redis, Memcached) <span class="tag tag-real">REAL</span></h4>
+  <p>In-memory data store for hot-path reads.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 50k–200k RPS (very high, in-memory)</li>
+    <li><strong>Latency:</strong> 0.5ms base (sub-millisecond)</li>
+    <li><strong>Scaling:</strong> Full replicas (cluster mode)</li>
+    <li><strong>Effect:</strong> Absorbs read traffic before it hits the database → reduces DB load</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Message Queue <span class="tag tag-real">REAL</span></h4>
+  <p>RabbitMQ, Kafka, SQS. Async traffic decoupling.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 5k–30k RPS</li>
+    <li><strong>Latency:</strong> 2–5ms base</li>
+    <li><strong>Scaling:</strong> Full replicas (distributed queues)</li>
+    <li><strong>Effect:</strong> Absorbs burst traffic; downstream workers drain at their own pace</li>
+    <li><strong>Limitation:</strong> No actual queueing model (v1) — just capacity + latency</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Search Engine <span class="tag tag-real">REAL</span></h4>
+  <p>Elasticsearch, Algolia, Weaviate.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 5k–30k RPS</li>
+    <li><strong>Latency:</strong> 5–15ms base</li>
+    <li><strong>Scaling:</strong> Read-only replicas</li>
+    <li><strong>Effect:</strong> Offloads full-text search from the primary DB</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Auth / Rate Limiter <span class="tag tag-real">REAL</span></h4>
+  <p>Auth0, rate-limiter, WAF. Security gate.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 35k–100k RPS (high-throughput by design)</li>
+    <li><strong>Latency:</strong> 1–10ms base</li>
+    <li><strong>Scaling:</strong> Full replicas; requires upstream LB</li>
+    <li><strong>Effect:</strong> Sits in the request path; adds latency; sheds when overloaded</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Realtime (WebSocket) <span class="tag tag-real">REAL</span></h4>
+  <p>WebSocket server, Ably, Pusher.</p>
+  <ul>
+    <li><strong>Capacity:</strong> 5k–30k RPS</li>
+    <li><strong>Latency:</strong> 2–5ms base</li>
+    <li><strong>Scaling:</strong> Full replicas; requires upstream LB</li>
+    <li><strong>Effect:</strong> Fan-out endpoint; participates in flow</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Observability / Monitoring <span class="tag tag-decorative">DECORATIVE</span></h4>
+  <p>Prometheus, Grafana, Datadog.</p>
+  <ul>
+    <li><strong>Capacity:</strong> Has maxRPS (10k) but <em>not in the critical path</em></li>
+    <li><strong>Scaling:</strong> <code>replicaType: "none"</code> — singleton, no scaling</li>
+    <li><strong>Effect:</strong> Does NOT carry request traffic. Exists for topology scoring and metric purposes. Adds cost but no flow impact.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h4>Traffic Source <span class="tag tag-partial">SOURCE ONLY</span></h4>
+  <p>Web Users, API Client, IoT Sensors.</p>
+  <ul>
+    <li><strong>Role:</strong> Originates all traffic — the entry point of the DAG</li>
+    <li><strong>RPS:</strong> Discrete scale (3k → 10M via stepper)</li>
+    <li><strong>Latency:</strong> 0ms (it's not a processing node)</li>
+    <li><strong>Cost:</strong> Free</li>
+    <li><strong>Effect:</strong> Determines the total load injected into the architecture</li>
+  </ul>
+</div>
+
+</div>
+
+<h2>4. Scheduled Failure Events (Chaos)</h2>
+
+<p>Challenges can inject failures mid-simulation:</p>
+
+<table>
+<tr><th>Event Type</th><th>Target</th><th>Effect</th><th>Duration</th></tr>
+<tr><td><code>component_failure</code></td><td>Specific node</td><td>Node goes <strong>offline</strong> — all traffic shed (0 served)</td><td>Specified in seconds</td></tr>
+<tr><td><code>az_outage</code></td><td>Category (e.g. "compute")</td><td>All nodes of that category go offline simultaneously</td><td>Specified in seconds</td></tr>
+<tr><td><code>latency_spike</code></td><td>Specific node</td><td>Latency <strong>multiplied</strong> (default ×3, stacks: ×3 × ×2 = ×6)</td><td>Specified in seconds</td></tr>
+</table>
+
+<p>Failure windows are half-open <code>[t, t + duration)</code>. Multiple events can stack on the same node.</p>
+
+<h2>5. How Scoring Works</h2>
+
+<div class="formula">
+<strong>Uptime %</strong> = (totalServedRps / (totalServed + totalFailed)) × 100<br>
+<br>
+<strong>System Latency (per tick)</strong> = max(node.latencyMs) across all nodes<br>
+<strong>p99 Latency</strong> = 99th percentile of per-tick system latencies<br>
+<br>
+<strong>Star Rubric:</strong><br>
+&nbsp;&nbsp;Base pass (1★): uptime ≥ target AND p99 ≤ target AND all required_types present<br>
+&nbsp;&nbsp;+1★: total cost ≤ budget cap<br>
+&nbsp;&nbsp;+1★: zero topology issues (orphans, unreachable nodes)
+</div>
+
+<h2>6. Scaling Rules by Category</h2>
+
+<table>
+<tr><th>Category</th><th>Scalable?</th><th>Replica Type</th><th>Needs Upstream LB?</th><th>Acts as LB?</th></tr>
+<tr><td>Compute</td><td class="real">Yes</td><td>full (stateless)</td><td>Yes</td><td>No</td></tr>
+<tr><td>Data Storage</td><td class="real">Yes</td><td>read-only</td><td>No</td><td>No</td></tr>
+<tr><td>Caching</td><td class="real">Yes</td><td>full</td><td>No</td><td>No</td></tr>
+<tr><td>Messaging</td><td class="real">Yes</td><td>full</td><td>No</td><td>No</td></tr>
+<tr><td>Delivery (CDN/LB)</td><td class="real">Yes</td><td>full</td><td>No</td><td><strong>Yes</strong></td></tr>
+<tr><td>Realtime</td><td class="real">Yes</td><td>full</td><td>Yes</td><td>No</td></tr>
+<tr><td>Auth / Security</td><td class="real">Yes</td><td>full</td><td>Yes</td><td>No</td></tr>
+<tr><td>Monitoring</td><td class="placeholder">No</td><td>none (singleton)</td><td>No</td><td>No</td></tr>
+<tr><td>Search</td><td class="real">Yes</td><td>read-only</td><td>No</td><td>No</td></tr>
+<tr><td>Traffic</td><td class="placeholder">No</td><td>none (source)</td><td>No</td><td>No</td></tr>
+</table>
+
+<h2>7. What's Real vs. Placeholder</h2>
+
+<table>
+<tr><th>Aspect</th><th>Status</th><th>Notes</th></tr>
+<tr><td>Per-node capacity (maxRPS)</td><td class="real">Real</td><td>Limits throughput; excess is shed</td></tr>
+<tr><td>Traffic shedding on overload</td><td class="real">Real</td><td>Shed = failed RPS counted against uptime</td></tr>
+<tr><td>Latency under load</td><td class="real">Real (simplified)</td><td>Linear: base × (1 + overload × 2)</td></tr>
+<tr><td>DAG topology propagation</td><td class="real">Real</td><td>Kahn's topological sort; even fan-out</td></tr>
+<tr><td>System latency = worst hop</td><td class="real">Real</td><td>Bottleneck node dominates per tick</td></tr>
+<tr><td>Replica capacity scaling</td><td class="real">Real</td><td>maxRPS × replicaCount per category rules</td></tr>
+<tr><td>Scheduled failures / chaos</td><td class="real">Real</td><td>Offline, AZ outage, latency spike</td></tr>
+<tr><td>Traffic patterns (wobble/surge)</td><td class="real">Real</td><td>Deterministic seeded PRNG</td></tr>
+<tr><td>Queueing / backpressure</td><td class="placeholder">Placeholder</td><td>Only "shed" mode; "queue"/"crash" are stubs</td></tr>
+<tr><td>Monitoring/DevOps in flow</td><td class="placeholder">Decorative</td><td>Not in the critical path; cost + topology only</td></tr>
+<tr><td>Port type compatibility</td><td class="partial">Nascent</td><td>Defined in schema; not enforced in simulation</td></tr>
+<tr><td>Cache hit ratio modeling</td><td class="placeholder">Not modeled</td><td>Cache participates as a throughput node but doesn't model hit/miss ratio</td></tr>
+<tr><td>Write vs read path split</td><td class="placeholder">Not modeled</td><td>All traffic is treated uniformly through the DAG</td></tr>
+</table>
+
+<h2>8. Traffic Patterns</h2>
+
+<table>
+<tr><th>Pattern</th><th>Shape</th><th>Use Case</th></tr>
+<tr><td><strong>Steady</strong></td><td>Flat line at base RPS</td><td>Baseline constant load</td></tr>
+<tr><td><strong>Wobble</strong></td><td>Gaussian noise ±15% around base</td><td>Realistic organic traffic</td></tr>
+<tr><td><strong>Periodic</strong></td><td>Repeating ~3× spikes (4 cycles)</td><td>Rush hours / daily patterns</td></tr>
+<tr><td><strong>Surge</strong></td><td>One sustained ~5× peak (35-70% window)</td><td>Black Friday / viral event</td></tr>
+</table>
+
+<p>All patterns are <strong>deterministic</strong> (seeded PRNG) so the same configuration always produces the same simulation result.</p>
+
+<h2>9. PlantUML: Simulation Flow</h2>
+
+<details>
+<summary>Click to see PlantUML source (copy to plantuml.com)</summary>
+<pre><code>@startuml Archie Simulation Engine
+
+skinparam backgroundColor #0d1117
+skinparam defaultFontColor #e6edf3
+skinparam arrowColor #58a6ff
+skinparam activityBackgroundColor #161b22
+skinparam activityBorderColor #30363d
+skinparam noteBackgroundColor #1c2128
+skinparam noteBorderColor #30363d
+
+title Archie Simulation Engine — Per-Tick Flow
+
+start
+
+:Interpolate target RPS from traffic curve at time t;
+
+:Inject RPS into entry nodes\n(nodes with in-degree 0)\nSplit evenly across entries;
+
+:Process nodes in **topological order**\n(Kahn's DAG algorithm);
+
+repeat :For each node in topological order;
+
+  if (Scheduled failure active?) then (offline)
+    :served = 0\nfailed = incoming\n(all traffic shed);
+  elseif (capacity > 0?) then (capped)
+    :served = min(incoming, capacity)\nfailed = max(0, incoming - capacity);
+    :load = incoming / capacity;
+    :latency = base × (1 + max(0, load-1) × 2)\n× latencyMultiplier;
+  else (uncapped)
+    :served = incoming\nfailed = 0\nlatency = base;
+  endif
+
+  :Forward **served** RPS to downstream nodes\n(even split at fan-out);
+
+  :Record telemetry:\nincoming, served, failed,\nlatency, utilization, overloaded;
+
+repeat while (more nodes?) is (yes)
+
+:Aggregate tick:\ntotalServed = Σ served\ntotalFailed = Σ failed\nsystemLatency = max(node.latency);
+
+:Record TickState;
+
+if (tick < 50?) then (continue)
+else (done)
+  :Compute final stats:\nuptime% = served/(served+failed)\np99 = 99th percentile of systemLatencies;
+
+  :Score rubric:\n1★ uptime ≥ target AND p99 ≤ target\n+1★ cost ≤ budget\n+1★ clean topology;
+endif
+
+stop
+
+@enduml</code></pre>
+</details>
+
+<details>
+<summary>Click to see PlantUML: Component Category Participation</summary>
+<pre><code>@startuml Component Categories
+
+skinparam backgroundColor #0d1117
+skinparam defaultFontColor #e6edf3
+skinparam classBackgroundColor #161b22
+skinparam classBorderColor #30363d
+skinparam stereotypeCBackgroundColor #1f6feb
+skinparam noteBackgroundColor #1c2128
+
+title Component Categories — Simulation Participation
+
+package "Traffic Flow (Real Simulation)" #1c2128 {
+  class "Traffic Source" as TS << (S,#d29922) Source >> {
+    role: injects RPS
+    capacity: discrete scale 3k→10M
+    latency: 0ms
+    scaling: none
+  }
+
+  class "Delivery Network" as DN << (F,#3fb950) Full >> {
+    CDN, LB, API Gateway
+    capacity: 30k-500k RPS
+    latency: 1-20ms
+    scaling: full replicas
+    **actsAsLoadBalancer: true**
+  }
+
+  class "Compute" as C << (F,#3fb950) Full >> {
+    Node.js, Python, Go
+    capacity: 1k-4k RPS
+    latency: 8-25ms
+    scaling: full replicas
+    **requiresUpstreamLB: true**
+  }
+
+  class "Data Storage" as DS << (R,#58a6ff) ReadOnly >> {
+    PostgreSQL, MongoDB, DynamoDB
+    capacity: 5k-50k RPS
+    latency: 2-15ms
+    scaling: read-only replicas
+  }
+
+  class "Caching" as CA << (F,#3fb950) Full >> {
+    Redis, Memcached
+    capacity: 50k-200k RPS
+    latency: 0.5ms
+    scaling: full replicas
+  }
+
+  class "Messaging" as MQ << (F,#3fb950) Full >> {
+    RabbitMQ, Kafka, SQS
+    capacity: 5k-30k RPS
+    latency: 2-5ms
+    scaling: full replicas
+  }
+
+  class "Auth / Security" as AU << (F,#3fb950) Full >> {
+    Auth0, Rate Limiter, WAF
+    capacity: 35k-100k RPS
+    latency: 1-10ms
+    scaling: full replicas
+    **requiresUpstreamLB: true**
+  }
+
+  class "Search" as SE << (R,#58a6ff) ReadOnly >> {
+    Elasticsearch, Algolia
+    capacity: 5k-30k RPS
+    latency: 5-15ms
+    scaling: read-only replicas
+  }
+
+  class "Realtime" as RT << (F,#3fb950) Full >> {
+    WebSocket, Ably
+    capacity: 5k-30k RPS
+    latency: 2-5ms
+    scaling: full replicas
+    **requiresUpstreamLB: true**
+  }
+}
+
+package "Decorative (No Traffic Flow)" #2d1b1b {
+  class "Monitoring" as MO << (N,#8b949e) None >> {
+    Prometheus, Grafana
+    singleton (no scaling)
+    not in critical path
+    adds cost only
+  }
+}
+
+TS -right-> DN : traffic
+DN -right-> C : traffic
+C -down-> DS : traffic
+C -right-> CA : traffic
+C --> MQ : traffic
+C --> AU : traffic
+MQ --> C : traffic (async)
+AU --> C : traffic
+C --> SE : traffic
+C --> RT : traffic
+MO .. C : observes (no flow)
+
+note right of TS
+  All traffic originates here.
+  The stepper controls how much
+  RPS is injected into the graph.
+end note
+
+note bottom of MO
+  Monitoring does NOT participate
+  in traffic flow. It exists for
+  topology scoring and cost.
+  Adding it helps the "clean topology"
+  star but doesn't affect uptime/latency.
+end note
+
+@enduml</code></pre>
+</details>
+
+<h2>10. Key Takeaways for Challenge Design</h2>
+
+<div class="card">
+<h4>What the simulation actually tests:</h4>
+<ul>
+<li><strong>Throughput bottlenecks:</strong> If any node in the path can't handle the traffic, RPS is shed → uptime drops</li>
+<li><strong>Latency chain:</strong> System latency = slowest node per tick. Overloaded nodes spike latency.</li>
+<li><strong>Cost efficiency:</strong> Total monthly cost of all nodes × replicas vs the budget cap</li>
+<li><strong>Topology correctness:</strong> No orphan nodes, no unreachable subgraphs, replicated nodes have LBs</li>
+<li><strong>Required blocks:</strong> The <code>required_types</code> field ensures the player uses the blocks the challenge teaches</li>
+</ul>
+</div>
+
+<div class="card">
+<h4>What the simulation does NOT test:</h4>
+<ul>
+<li>Cache hit/miss ratios — a cache is just another capacity node</li>
+<li>Write vs read traffic separation — all traffic is uniform</li>
+<li>Message queue backpressure / retry semantics — queues are just capacity nodes</li>
+<li>Database transaction isolation or consistency guarantees</li>
+<li>Network partition modeling (only AZ outage which takes nodes fully offline)</li>
+<li>Auto-scaling / elastic behavior (replicas are static during a run)</li>
+</ul>
+</div>
+
+<p style="margin-top:2rem; color:var(--muted); font-size:0.85rem;">
+  Generated from the Archie codebase analysis. Source files: <code>src/engine/simulationEngine.ts</code>,
+  <code>src/engine/rubricScorer.ts</code>, <code>src/lib/simulationStats.ts</code>,
+  <code>src/stores/architectureStoreHelpers.ts</code>, <code>src/lib/constants.ts</code>.
+</p>
+
+</body>
+</html>
