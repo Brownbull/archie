@@ -201,7 +201,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="challenge-tree-view" className="max-w-[90vw] max-h-[90vh] w-full">
+      <DialogContent data-testid="challenge-tree-view" className="max-w-[95vw]! max-h-[90vh] w-full">
         <DialogHeader>
           <DialogTitle>Challenge Journey</DialogTitle>
           <DialogDescription>Your progression through the Mastery Tracks tech tree.</DialogDescription>
