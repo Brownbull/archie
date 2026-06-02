@@ -180,7 +180,7 @@ export function computeWeightedAggregateScore(
  * - score < HEATMAP_THRESHOLD_BOTTLENECK -> red
  */
 export function getScoreColor(score: number): string {
-  if (score >= SCORE_COLOR_GOOD_THRESHOLD) return "bg-[#3fcf6a]"
+  if (score >= SCORE_COLOR_GOOD_THRESHOLD) return "bg-[#ff8a3d]"
   if (score >= HEATMAP_THRESHOLD_BOTTLENECK) return "bg-[#3b9dff]"
-  return "bg-[#ff8a3d]"
+  return "bg-[#9aa3b0]"
 }

@@ -283,10 +283,10 @@ describe("getScoreColor", () => {
   })
 
   it("returns green for score >= SCORE_COLOR_GOOD_THRESHOLD", () => {
-    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD)).toBe("bg-[#3fcf6a]")
-    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD + 0.0)).toBe("bg-[#3fcf6a]")
-    expect(getScoreColor(8)).toBe("bg-[#3fcf6a]")
-    expect(getScoreColor(10)).toBe("bg-[#3fcf6a]")
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD)).toBe("bg-[#ff8a3d]")
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD + 0.0)).toBe("bg-[#ff8a3d]")
+    expect(getScoreColor(8)).toBe("bg-[#ff8a3d]")
+    expect(getScoreColor(10)).toBe("bg-[#ff8a3d]")
   })
 
   it("returns yellow for score >= HEATMAP_THRESHOLD_BOTTLENECK and < SCORE_COLOR_GOOD_THRESHOLD", () => {
@@ -297,16 +297,16 @@ describe("getScoreColor", () => {
   })
 
   it("returns red for score < HEATMAP_THRESHOLD_BOTTLENECK", () => {
-    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK - 0.1)).toBe("bg-[#ff8a3d]")
-    expect(getScoreColor(3)).toBe("bg-[#ff8a3d]")
-    expect(getScoreColor(1)).toBe("bg-[#ff8a3d]")
-    expect(getScoreColor(0)).toBe("bg-[#ff8a3d]")
+    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK - 0.1)).toBe("bg-[#9aa3b0]")
+    expect(getScoreColor(3)).toBe("bg-[#9aa3b0]")
+    expect(getScoreColor(1)).toBe("bg-[#9aa3b0]")
+    expect(getScoreColor(0)).toBe("bg-[#9aa3b0]")
   })
 
   it("handles exact boundary values", () => {
-    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD)).toBe("bg-[#3fcf6a]")
+    expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD)).toBe("bg-[#ff8a3d]")
     expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK)).toBe("bg-[#3b9dff]")
-    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK - 0.01)).toBe("bg-[#ff8a3d]")
+    expect(getScoreColor(HEATMAP_THRESHOLD_BOTTLENECK - 0.01)).toBe("bg-[#9aa3b0]")
     expect(getScoreColor(SCORE_COLOR_GOOD_THRESHOLD - 0.01)).toBe("bg-[#3b9dff]")
   })
 })

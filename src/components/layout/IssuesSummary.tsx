@@ -23,7 +23,7 @@ interface IssueItem {
 }
 
 const ISSUE_COLORS: Record<IssueKind, string> = {
-  bottleneck: "bg-[#ff8a3d]",
+  bottleneck: "bg-[#9aa3b0]",
   warning: "bg-[#3b9dff]",
   orphan: "bg-[#b06bff]",
   unreachable: "bg-[#b06bff]",
@@ -99,7 +99,7 @@ export function IssuesSummary() {
         >
           <AlertTriangle className="h-3.5 w-3.5 text-[#3b9dff]" />
           {bottleneckCount > 0 && (
-            <span className="text-xs font-medium text-[#ff8a3d]">
+            <span className="text-xs font-medium text-[#9aa3b0]">
               {bottleneckCount}
             </span>
           )}

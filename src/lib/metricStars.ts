@@ -11,12 +11,17 @@ export function scoreToStarPercent(score: number): number {
   return Math.max(0, Math.min(100, (score / METRIC_MAX_VALUE) * 100))
 }
 
-/** Star color based on the WoW rarity ramp. */
+/**
+ * Star color following the WoW item-rarity ramp (Grey→White→Green→Blue→Purple→Orange).
+ * More stars = better = rarer color. 5★ = Orange (Legendary), 1★ = White (Common), 0 = Grey.
+ */
 export function starColor(stars: number): string {
-  if (stars >= 4) return "#3fcf6a"
-  if (stars >= 3) return "#3b9dff"
-  if (stars >= 2) return "#b06bff"
-  return "#ff8a3d"
+  if (stars >= 5) return "#ff8a3d"   // Orange — Legendary (best)
+  if (stars >= 4) return "#b06bff"   // Purple — Epic
+  if (stars >= 3) return "#3b9dff"   // Blue — Rare
+  if (stars >= 2) return "#3fcf6a"   // Green — Uncommon
+  if (stars >= 1) return "#e8edf5"   // White — Common
+  return "#9aa3b0"                   // Grey — Poor (no stars)
 }
 
 /** Descriptions + factors for each metric category — shown in the popover. */

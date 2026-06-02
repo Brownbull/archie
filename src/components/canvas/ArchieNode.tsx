@@ -38,11 +38,11 @@ const DYNAMIC_HEIGHT_THRESHOLD = 5
 function complexityMeta(level: ComplexityLevel): { label: string; cls: string } {
   switch (level) {
     case "low":
-      return { label: "Low", cls: "bg-[#3fcf6a]/20 text-[#3fcf6a]" }
+      return { label: "Low", cls: "bg-[#ff8a3d]/20 text-[#ff8a3d]" }
     case "medium":
       return { label: "Med", cls: "bg-[#3b9dff]/20 text-[#3b9dff]" }
     case "high":
-      return { label: "High", cls: "bg-[#ff8a3d]/20 text-[#ff8a3d]" }
+      return { label: "High", cls: "bg-[#9aa3b0]/20 text-[#9aa3b0]" }
   }
 }
 

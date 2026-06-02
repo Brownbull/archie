@@ -51,7 +51,7 @@ describe("InlineMetricBar", () => {
       <InlineMetricBar abbreviation="Ops" value={8} color="var(--color-metric-ops)" />,
     )
     const bar = container.querySelector("[data-testid='inline-metric-bar-fill']")
-    expect(bar).toHaveStyle({ backgroundColor: "#3fcf6a" })
+    expect(bar).toHaveStyle({ backgroundColor: "#b06bff" })
   })
 
   it("has correct data-testid on root element", () => {
