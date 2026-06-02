@@ -38,11 +38,11 @@ const DYNAMIC_HEIGHT_THRESHOLD = 5
 function complexityMeta(level: ComplexityLevel): { label: string; cls: string } {
   switch (level) {
     case "low":
-      return { label: "Low", cls: "bg-emerald-500/20 text-emerald-300" }
+      return { label: "Low", cls: "bg-[#3fcf6a]/20 text-[#3fcf6a]" }
     case "medium":
-      return { label: "Med", cls: "bg-amber-500/20 text-amber-300" }
+      return { label: "Med", cls: "bg-[#3b9dff]/20 text-[#3b9dff]" }
     case "high":
-      return { label: "High", cls: "bg-red-500/20 text-red-300" }
+      return { label: "High", cls: "bg-[#ff8a3d]/20 text-[#ff8a3d]" }
   }
 }
 
@@ -312,7 +312,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
             <div className="flex w-full items-stretch gap-1.5">
               {/* RPS stepper — left, the taller/wider control (the source's average load, 3k → 10M) */}
               <div
-                className="flex h-7 flex-1 items-center justify-between overflow-hidden rounded border border-archie-border bg-surface"
+                className="flex h-7 flex-1 items-center justify-between overflow-hidden rounded-md border border-archie-border bg-surface"
                 onClick={(e) => e.stopPropagation()}
                 title="Average requests/sec this source sends (3k → 10M). Pick the burst shape on the right."
               >

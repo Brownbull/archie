@@ -23,12 +23,12 @@ interface IssueItem {
 }
 
 const ISSUE_COLORS: Record<IssueKind, string> = {
-  bottleneck: "bg-red-500",
-  warning: "bg-yellow-500",
-  orphan: "bg-orange-400",
-  unreachable: "bg-orange-400",
-  "missing-hop": "bg-orange-400",
-  "replicas-without-lb": "bg-amber-500",
+  bottleneck: "bg-[#ff8a3d]",
+  warning: "bg-[#3b9dff]",
+  orphan: "bg-[#b06bff]",
+  unreachable: "bg-[#b06bff]",
+  "missing-hop": "bg-[#b06bff]",
+  "replicas-without-lb": "bg-[#3b9dff]",
 }
 
 export function IssuesSummary() {
@@ -49,6 +49,9 @@ export function IssuesSummary() {
           nodeId,
           componentName: node?.data.componentName ?? nodeId,
           kind: status,
+          description: status === "bottleneck"
+            ? "Overloaded — reduce traffic or scale up"
+            : "Nearing capacity — monitor or add replicas",
         })
       }
     }
@@ -94,19 +97,19 @@ export function IssuesSummary() {
           size="sm"
           className="gap-1.5"
         >
-          <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />
+          <AlertTriangle className="h-3.5 w-3.5 text-[#3b9dff]" />
           {bottleneckCount > 0 && (
-            <span className="text-xs font-medium text-red-500">
+            <span className="text-xs font-medium text-[#ff8a3d]">
               {bottleneckCount}
             </span>
           )}
           {warningCount > 0 && (
-            <span className="text-xs font-medium text-yellow-500">
+            <span className="text-xs font-medium text-[#3b9dff]">
               {warningCount}
             </span>
           )}
           {topologyCount > 0 && (
-            <span data-testid="topology-count" className="text-xs font-medium text-orange-500">
+            <span data-testid="topology-count" className="text-xs font-medium text-[#b06bff]">
               {topologyCount}
             </span>
           )}

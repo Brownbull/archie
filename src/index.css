@@ -56,10 +56,10 @@
   --color-archie-accent: var(--archie-accent);
   --color-archie-accent-hover: var(--archie-accent-hover);
 
-  /* Heatmap colors */
-  --color-heatmap-green: #22c55e;
-  --color-heatmap-yellow: #eab308;
-  --color-heatmap-red: #ef4444;
+  /* Heatmap colors (WoW rarity ramp: green=healthy, blue=warning, orange=bottleneck) */
+  --color-heatmap-green: #3fcf6a;
+  --color-heatmap-yellow: #3b9dff;
+  --color-heatmap-red: #ff8a3d;
 
   /* Category colors */
   --color-cat-compute: #3b82f6;

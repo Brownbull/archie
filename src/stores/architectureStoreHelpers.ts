@@ -205,7 +205,9 @@ export function evaluateTopology(
   // flagged as an orphan (the actionable signal); a redundant "needs LB" warning adds noise (Epic 14 review).
   const orphanIds = new Set(graphIssues.filter((i) => i.issueType === "orphan").map((i) => i.nodeId))
   const replicaIssues = replicaIssuesRaw.filter((i) => !orphanIds.has(i.nodeId))
-  const issues = [...graphIssues, ...replicaIssues]
+  // Traffic sources are request origins, not optimisation targets — suppress all warnings on them.
+  const trafficNodeIds = new Set(nodes.filter((n) => n.data.componentCategory === "traffic").map((n) => n.id))
+  const issues = [...graphIssues, ...replicaIssues].filter((i) => !trafficNodeIds.has(i.nodeId))
   const byNode = new Map<string, TopologyIssue[]>()
   for (const issue of issues) {
     const arr = byNode.get(issue.nodeId)
