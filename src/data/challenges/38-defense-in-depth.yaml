@@ -1,0 +1,40 @@
+id: defense-in-depth
+title: Defense in Depth
+brief: >-
+  Layer auth, rate limiting, and security monitoring into a production API.
+  A credential-stuffing attack spikes traffic mid-run — the rate limiter must
+  absorb the abuse while auth validates legitimate requests. Observability tracks
+  the attack pattern in real time.
+difficulty: advanced
+budget_cap: 1200
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 500 }
+  - { t: 30, rps: 1000 }
+  - { t: 45, rps: 4000 }
+  - { t: 75, rps: 4000 }
+  - { t: 90, rps: 1000 }
+  - { t: 120, rps: 500 }
+required_components:
+  - compute
+  - auth-security
+  - monitoring
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 300
+scheduled_events:
+  - { t: 45, type: latency_spike, target: auth-security, multiplier: 3, durationS: 30 }
+hints:
+  - The rate limiter sheds abuse traffic before it reaches auth + compute.
+  - Observability doesn't carry traffic but helps the topology star.
+  - Auth adds latency — keep the chain efficient under burst.
+schema_version: 2
+track: security
+tier: 4
+requires: [siem-audit]
+unlocks: [fortress]
+required_types: [auth, rate-limiter, security, observability]
+available_blocks: [traffic-source, compute, auth, rate-limiter, security, observability, load-balancer, cache]
+grants: []
+rewards:
+  xp: 250

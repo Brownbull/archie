@@ -1,0 +1,35 @@
+id: edge-cache-ratio
+title: Edge Cache Ratio
+brief: >-
+  Serve 10,000 rps globally. A CDN absorbs most static requests from the edge
+  (~85% hit ratio) but misses pay an 80ms origin round-trip. Your origin compute
+  only handles 2000 rps — without the CDN absorbing the majority, it overloads.
+  The CDN is not just a load balancer — it's a cache.
+difficulty: intermediate
+budget_cap: 300
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 2000 }
+  - { t: 30, rps: 6000 }
+  - { t: 60, rps: 10000 }
+  - { t: 90, rps: 10000 }
+required_components:
+  - delivery-network
+  - compute
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 200
+hints:
+  - The CDN absorbs ~85% of requests at edge latency (10-20ms).
+  - Only ~15% (1500 rps) reaches your origin — well within its 2000 rps capacity.
+  - Without the CDN, 10,000 rps hits compute directly and overloads it.
+schema_version: 2
+track: edge
+tier: 3
+requires: [edge-balance]
+unlocks: []
+required_types: [cdn, load-balancer]
+available_blocks: [traffic-source, compute, load-balancer, cdn, dns]
+grants: []
+rewards:
+  xp: 175

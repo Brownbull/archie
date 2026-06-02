@@ -27,7 +27,7 @@ schema_version: 2
 track: security
 tier: 3
 requires: [rate-limit]
-unlocks: [fortress]
+unlocks: [fortress, defense-in-depth]
 required_types: [auth, rate-limiter, security]
 available_blocks: [compute, auth, rate-limiter, security, observability, traffic-source]
 grants: [security]

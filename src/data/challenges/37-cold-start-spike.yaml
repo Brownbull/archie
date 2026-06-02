@@ -1,0 +1,36 @@
+id: cold-start-spike
+title: Cold Start Spike
+brief: >-
+  A traffic burst hits your serverless function. On-demand instances have cold
+  starts (200ms penalty on 10% of requests) that spike your p99 latency above
+  the target. Switch to provisioned concurrency — it eliminates cold starts but
+  costs more. Find the balance between cost and latency.
+difficulty: intermediate
+budget_cap: 400
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 100 }
+  - { t: 20, rps: 100 }
+  - { t: 30, rps: 3000 }
+  - { t: 60, rps: 3000 }
+  - { t: 75, rps: 500 }
+  - { t: 90, rps: 500 }
+required_components:
+  - compute
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 100
+hints:
+  - On-demand serverless has cold starts — 10% of requests pay a 200ms penalty.
+  - Under burst traffic, cold starts dominate p99 latency.
+  - Provisioned concurrency eliminates cold starts but costs more per month.
+schema_version: 2
+track: foundations
+tier: 3
+requires: [scale-out]
+unlocks: []
+required_types: [serverless]
+available_blocks: [traffic-source, compute, serverless, load-balancer]
+grants: []
+rewards:
+  xp: 175

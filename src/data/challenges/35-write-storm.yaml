@@ -1,0 +1,36 @@
+id: write-storm
+title: Write Storm
+brief: >-
+  A batch import sends 3000 write-heavy requests per second. Your SQL database's
+  single primary can only handle 500 writes — read replicas don't help with
+  writes. You need a NoSQL sharded database where writes distribute across
+  shards, or a message queue to buffer the write burst.
+difficulty: advanced
+budget_cap: 500
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 500 }
+  - { t: 30, rps: 1500 }
+  - { t: 60, rps: 3000 }
+  - { t: 90, rps: 3000 }
+  - { t: 120, rps: 1000 }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 96
+  p99_latency_ms: 400
+hints:
+  - SQL databases bottleneck on writes at the primary — replicas only help reads.
+  - A NoSQL sharded database distributes writes across multiple nodes.
+  - Alternatively, a message queue can absorb the write burst and drain steadily.
+schema_version: 2
+track: data
+tier: 4
+requires: [polyglot-persistence]
+unlocks: []
+required_types: [nosql]
+available_blocks: [traffic-source, compute, relational-db, nosql, cache, message-queue, load-balancer]
+grants: []
+rewards:
+  xp: 250

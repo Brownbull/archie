@@ -24,7 +24,7 @@ schema_version: 2
 track: edge
 tier: 2
 requires: [dns-routing, scale-out]
-unlocks: [edge-delivery]
+unlocks: [edge-delivery, edge-cache-ratio]
 required_types: [dns, load-balancer]
 available_blocks: [compute, traffic-source, dns, load-balancer]
 grants: []

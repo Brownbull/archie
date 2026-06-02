@@ -1,0 +1,36 @@
+id: cache-or-crash
+title: Cache or Crash
+brief: >-
+  Your database can handle 500 rps but the traffic source sends 2000. Without
+  a cache absorbing the read load, the DB will overload and shed traffic. Place
+  a cache upstream of the DB — the cache's hit ratio absorbs most reads so the
+  DB only sees the misses.
+difficulty: intermediate
+budget_cap: 200
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 500 }
+  - { t: 30, rps: 1500 }
+  - { t: 60, rps: 2000 }
+  - { t: 90, rps: 2000 }
+required_components:
+  - compute
+  - data-storage
+  - caching
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 300
+hints:
+  - The DB can only handle 500 rps — without a cache, most traffic is shed.
+  - A cache with ~80% hit ratio means the DB only sees ~400 of the 2000 rps.
+  - Place the cache BETWEEN compute and the database so it absorbs reads.
+schema_version: 2
+track: data
+tier: 3
+requires: [cache-the-hot-path]
+unlocks: []
+required_types: [relational-db, cache]
+available_blocks: [traffic-source, compute, relational-db, cache]
+grants: []
+rewards:
+  xp: 200
