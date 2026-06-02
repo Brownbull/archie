@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { getMasteryAvatar } from "@/lib/masteryAvatars"
+import { getMasteryAvatar, getTrackAvatar } from "@/lib/masteryAvatars"
 
 describe("getMasteryAvatar", () => {
   it("returns null for rank 0 (Novice — no avatar generated yet)", () => {
@@ -22,5 +22,16 @@ describe("getMasteryAvatar", () => {
     const rank2 = getMasteryAvatar(2)
     const rank1 = getMasteryAvatar(1)
     expect(rank2).toBe(rank1)
+  })
+})
+
+describe("getTrackAvatar", () => {
+  it("returns a URL for the data track (generated)", () => {
+    expect(typeof getTrackAvatar("data")).toBe("string")
+  })
+
+  it("returns null for tracks without a generated avatar yet", () => {
+    expect(getTrackAvatar("foundations")).toBeNull()
+    expect(getTrackAvatar("unknown")).toBeNull()
   })
 })

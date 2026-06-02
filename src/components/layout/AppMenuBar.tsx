@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { FileUp, RotateCcw, Undo2, Redo2, BrainCircuit, Trophy } from "lucide-react"
+import { FileUp, RotateCcw, Undo2, Redo2, BrainCircuit, Trophy, Map } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -13,6 +13,7 @@ import { ExportReportButton } from "@/components/toolbar/ExportReportButton"
 import { useHistoryStore, undo, redo } from "@/services/canvasHistory"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { ChallengeTreeView } from "@/components/challenges/ChallengeTreeView"
 
 const TRIGGER_CLASS =
   "rounded px-2 py-1 text-sm text-text-secondary hover:bg-surface hover:text-text-primary data-[state=open]:bg-surface data-[state=open]:text-text-primary"
@@ -32,6 +33,7 @@ export function AppMenuBar() {
   const setChallengesOpen = useUiStore((s) => s.setChallengesOpen)
   const setResetCanvasOpen = useUiStore((s) => s.setResetCanvasOpen)
   const [fileOpen, setFileOpen] = useState(false)
+  const [journeyOpen, setJourneyOpen] = useState(false)
 
   return (
     <div className="flex items-center gap-0.5" data-testid="app-menu-bar">
@@ -86,6 +88,16 @@ export function AppMenuBar() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <button
+        type="button"
+        data-testid="menu-journey"
+        className={TRIGGER_CLASS + " flex items-center gap-1"}
+        onClick={() => setJourneyOpen(true)}
+      >
+        <Map className="h-3.5 w-3.5" /> Journey
+      </button>
+      <ChallengeTreeView open={journeyOpen} onOpenChange={setJourneyOpen} />
     </div>
   )
 }

@@ -2587,3 +2587,24 @@ PHASE: 5 — Challenge Forge (Exec ✅, Commit ✅)
 PR: — (direct fast-forward 0db5a1a..df64466)
 CI: deploy-production ✅ green (run 26822562893)
 DEPLOYMENTS: P112
+- 2026-06-02 09:31 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 09:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-02 09:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-02 09:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-02 09:32 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-02 09:32 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-02 09:33 | Write | /home/khujta/projects/bmad/archie/src/lib/masteryAvatars.ts
+- 2026-06-02 09:33 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-02 09:33 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-02 09:33 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-02 09:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 09:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-02 09:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/masteryAvatars.test.ts
+- 2026-06-02 09:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/masteryAvatars.test.ts
+- 2026-06-02 09:36 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/AppMenuBar.test.tsx
+
+## 2026-06-02 09:38 — FIRESTORE RULES DEPLOYED
+COLLECTIONS: attempts, userProgress, userChallenges
+COMMAND: firebase deploy --only firestore:rules
+STATUS: ✅ compiled + released
+NOTE: resolves D9 gap — cloud writes for all three collections now enforced

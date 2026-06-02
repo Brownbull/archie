@@ -7,6 +7,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useHistoryStore } from "@/services/canvasHistory"
 
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
+vi.mock("@/components/challenges/ChallengeTreeView", () => ({ ChallengeTreeView: () => null }))
 
 describe("AppMenuBar (P95)", () => {
   beforeEach(() => {

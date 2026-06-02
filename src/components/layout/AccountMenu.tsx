@@ -1,6 +1,9 @@
 import { useState } from "react"
 import { CircleUser, LogOut, Trophy } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
+import { useUserProgressStore } from "@/stores/userProgressStore"
+import { rankForXp } from "@/lib/challengeTracks"
+import { getMasteryAvatar } from "@/lib/masteryAvatars"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -15,6 +18,9 @@ export function AccountMenu() {
   const { user, signOut } = useAuth()
   const name = user?.displayName ?? null
   const [profileOpen, setProfileOpen] = useState(false)
+  const trackXp = useUserProgressStore((s) => s.trackXp)
+  const totalXp = Object.values(trackXp).reduce((sum, v) => sum + v, 0)
+  const avatar = getMasteryAvatar(rankForXp(totalXp).rank)
 
   return (
     <>
@@ -27,7 +33,11 @@ export function AccountMenu() {
             title={name ?? "Account"}
             className="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-text-secondary hover:text-text-primary"
           >
-            <CircleUser className="h-4 w-4" />
+            {avatar ? (
+              <img src={avatar} alt="Profile" className="h-5 w-5 rounded-full" style={{ imageRendering: "pixelated" }} />
+            ) : (
+              <CircleUser className="h-4 w-4" />
+            )}
             {name && <span className="max-w-[140px] truncate">{name}</span>}
           </button>
         </DropdownMenuTrigger>
