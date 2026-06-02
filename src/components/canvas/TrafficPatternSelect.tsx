@@ -30,8 +30,9 @@ function TrafficPatternSelectBase({ nodeId, pattern }: TrafficPatternSelectProps
       <Select value={pattern} onValueChange={(v) => setNodeTrafficPattern(nodeId, v as TrafficPattern)}>
         <SelectTrigger
           data-testid="traffic-pattern-select"
+          size="sm"
           title="How this source's load varies over the simulation — steady, realistic wobble, periodic spikes, or one big surge (Black Friday)"
-          className="h-7 w-full gap-1 rounded-md border-archie-border bg-surface px-2 py-0 text-[0.6875rem] text-text-secondary"
+          className="h-7! w-full gap-1 rounded-md border-archie-border bg-surface px-2 py-0 text-[0.6875rem] text-text-secondary"
         >
           <SelectValue />
         </SelectTrigger>

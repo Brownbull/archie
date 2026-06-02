@@ -55,6 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (firebaseUser) => {
         setUser(firebaseUser)
         setLoading(false)
+        if (firebaseUser) {
+          void useUserProgressStore.getState().loadProgress(firebaseUser.uid)
+          void useUserChallengeStore.getState().loadFromCloud(firebaseUser.uid)
+        }
       },
       (err) => {
         setError(getErrorMessage(err))

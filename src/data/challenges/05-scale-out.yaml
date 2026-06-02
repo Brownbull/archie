@@ -15,7 +15,6 @@ traffic_curve:
 required_components:
   - delivery-network
   - compute
-  - data-storage
 target_metrics:
   uptime_percent: 98.5
   p99_latency_ms: 250
