@@ -2355,3 +2355,20 @@ PR: — (direct; carried db7cd7f [P102/P103 bookkeeping] + 718e859 [P104 stack/b
 CI: deploy-production ✅ green (run 26786983988, 58s)
 PROMOTION: N/A (production is the final env)
 DEPLOYMENTS: P104
+- 2026-06-01 22:38 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-01 22:38 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 22:38 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 22:38 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-01 22:39 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-01 22:40 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+
+## 2026-06-01 22:43 — [8ad03a3] fix(canvas): traffic-source RPS stepper works + declutter the node
+FINDINGS: 0 critical/high (tsc✓ eslint 0✓ unit 4178✓; Playwright visual-audit 7/7 incl. stepper +/− moves rps, no cost/complexity on traffic)
+ACTIONS: getNodeCost scales traffic maxRPS by replicaCount (was frozen at ×1 via replicaType 'none'); ArchieNode hides stat row/cost/complexity/metric-bars for isTraffic
+DEFERRED: Phase 2 — per-source traffic profile (avg rps + Gaussian wobble + burst presets/Black-Friday surge), user approved "average + pattern presets" scope
+
+## 2026-06-01 22:44 — PUSH dev -> main
+PR: — (direct; carried a9054c5 [P104 bookkeeping] + 8ad03a3 [P105 traffic stepper fix + declutter])
+CI: deploy-production ✅ green (run 26795172024, 45s)
+PROMOTION: N/A (production is the final env)
+DEPLOYMENTS: P105
