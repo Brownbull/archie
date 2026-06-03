@@ -3046,3 +3046,27 @@ NOTES: Root cause of the 4 long-red tests = stale expectations vs post-rebalance
 FINDINGS: 0 critical; 1194 yaml/schema tests green; 0 residual generic-fallback boilerplate
 ACTIONS: committed
 NOTES: 23 new vendor YAMLs, ~150 metric_explanations rewritten vendor-specific (5-agent parallel workflow). Note: aislop 7/100 is knip/lint/security debt — the ai-slop prose engine scores 0; prose fix improves data quality but does not move the aislop score.
+- 2026-06-03 18:02 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_aislop-is-knip-not-prose.md
+- 2026-06-03 18:03 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/MEMORY.md
+- 2026-06-03 18:42 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-03 18:42 | Edit | /home/khujta/projects/bmad/archie/src/lib/equipmentSlots.ts
+- 2026-06-03 18:42 | Edit | /home/khujta/projects/bmad/archie/src/lib/equipmentSlots.ts
+- 2026-06-03 18:43 | Edit | /home/khujta/projects/bmad/archie/src/lib/masteryAvatars.ts
+- 2026-06-03 18:43 | Edit | /home/khujta/projects/bmad/archie/src/lib/masteryAvatars.ts
+- 2026-06-03 18:43 | Edit | /home/khujta/projects/bmad/archie/src/schemas/demandSchema.ts
+- 2026-06-03 18:43 | Write | /home/khujta/projects/bmad/archie/src/types/index.ts
+- 2026-06-03 18:43 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-03 18:44 | Edit | /home/khujta/projects/bmad/archie/src/schemas/metricCategorySchema.ts
+- 2026-06-03 18:44 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-03 18:44 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-03 18:44 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-06-03 18:45 | Edit | /home/khujta/projects/bmad/archie/src/stores/dataContextActions.ts
+- 2026-06-03 18:45 | Edit | /home/khujta/projects/bmad/archie/src/lib/equipmentSlots.ts
+- 2026-06-03 18:45 | Edit | /home/khujta/projects/bmad/archie/src/lib/masteryAvatars.ts
+- 2026-06-03 18:45 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-03 18:45 | Edit | /home/khujta/projects/bmad/archie/src/schemas/metricCategorySchema.ts
+
+## 2026-06-03 18:50 — [ebc01f6] refactor(types): remove dead export surface flagged by knip
+FINDINGS: 0 critical; build green; 4525 tests pass
+ACTIONS: committed
+NOTES: knip cleanup — unused exports 6→0, unused types 108→41, dup exports 2→1. aislop score 7→14/100 (183→114 issues). Kept 41 module-internal types + test-only-used + false-positive deps/declarations.d.ts/E2E dynamic imports.
