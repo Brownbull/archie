@@ -1,0 +1,35 @@
+id: checkout-flow
+title: Checkout Flow
+brief: >-
+  Build a checkout pipeline: traffic enters through a load balancer, hits
+  compute for cart logic, processes payment through the payment gateway, and
+  persists the order in a database. The payment gateway adds latency — keep
+  the total p99 under the target while handling peak checkout traffic.
+difficulty: intermediate
+budget_cap: 600
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 200 }
+  - { t: 30, rps: 1000 }
+  - { t: 60, rps: 2000 }
+  - { t: 90, rps: 1000 }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 400
+hints:
+  - The payment gateway adds latency to every transaction — keep the chain efficient.
+  - A load balancer in front of compute helps distribute the checkout load.
+  - Cache the product catalog reads so the DB only handles order writes.
+schema_version: 2
+track: foundations
+tier: 4
+requires: [serverless-burst]
+unlocks: []
+required_types: [payments, relational-db]
+available_blocks: [traffic-source, compute, load-balancer, payments, relational-db, cache]
+grants: [payments]
+rewards:
+  xp: 225

@@ -26,7 +26,7 @@ schema_version: 2
 track: foundations
 tier: 3
 requires: [scale-out]
-unlocks: [worker-fleet]
+unlocks: [worker-fleet, checkout-flow]
 required_types: [serverless, load-balancer]
 available_blocks: [traffic-source, compute, load-balancer, serverless]
 grants: [serverless]
