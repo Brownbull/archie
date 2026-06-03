@@ -1,5 +1,5 @@
-import { useMemo } from "react"
-import { Check, X as XIcon } from "lucide-react"
+import { useMemo, useState, useEffect } from "react"
+import { Check, X as XIcon, Map } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useSimulationStore } from "@/stores/simulationStore"
+import { useUiStore } from "@/stores/uiStore"
 import { useUserProgressStore, type XpAwardResult } from "@/stores/userProgressStore"
 import { useChallengeAutoScore } from "@/hooks/useChallengeAutoScore"
 import { useChallengeSuggestion } from "@/hooks/useChallengeSuggestion"
@@ -25,9 +26,72 @@ import starFilled from "@/assets/star-filled.png"
 import starEmpty from "@/assets/star-empty.png"
 import starNew from "@/assets/star-new.png"
 
-function PixelStar({ earned, isNew }: { earned: boolean; isNew: boolean }) {
+function Particle({ delay }: { delay: number }) {
+  const angle = Math.random() * 360
+  const dist = 20 + Math.random() * 30
+  const size = 2 + Math.random() * 3
+  const dx = Math.cos(angle * Math.PI / 180) * dist
+  const dy = Math.sin(angle * Math.PI / 180) * dist
+  return (
+    <span
+      className="absolute rounded-full"
+      style={{
+        width: size, height: size,
+        backgroundColor: Math.random() > 0.5 ? "#facc15" : "#ff8a3d",
+        top: "50%", left: "50%",
+        opacity: 0,
+        animation: `particle-burst 0.6s ease-out ${delay}s forwards`,
+        ["--dx" as string]: `${dx}px`,
+        ["--dy" as string]: `${dy}px`,
+      }}
+    />
+  )
+}
+
+function AnimatedStar({ earned, isNew, index }: { earned: boolean; isNew: boolean; index: number }) {
   const src = earned ? (isNew ? starNew : starFilled) : starEmpty
-  return <img src={src} alt={earned ? "★" : "☆"} className="h-10 w-10" style={{ imageRendering: "pixelated" }} />
+  const [showParticles, setShowParticles] = useState(false)
+  const delay = earned ? index * 0.35 : 0
+
+  useEffect(() => {
+    if (isNew) {
+      const t = setTimeout(() => setShowParticles(true), delay * 1000)
+      return () => clearTimeout(t)
+    }
+  }, [isNew, delay])
+
+  return (
+    <div className="relative">
+      <img
+        src={src} alt={earned ? "★" : "☆"}
+        className="h-12 w-12"
+        style={{
+          imageRendering: "pixelated",
+          opacity: earned ? 1 : 0.3,
+          transform: earned ? "scale(1)" : "scale(0.8)",
+          animation: earned ? `star-slam 0.4s ease-out ${delay}s both` : undefined,
+        }}
+      />
+      {showParticles && isNew && (
+        <>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Particle key={i} delay={0} />
+          ))}
+        </>
+      )}
+      <style>{`
+        @keyframes star-slam {
+          0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+          60% { transform: scale(1.3) rotate(5deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        @keyframes particle-burst {
+          0% { transform: translate(-50%, -50%) translate(0, 0); opacity: 1; }
+          100% { transform: translate(-50%, -50%) translate(var(--dx), var(--dy)); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  )
 }
 
 function Criterion({ met, label, detail }: { met: boolean; label: string; detail: string }) {
@@ -145,12 +209,15 @@ export function ChallengeResultsModal() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-center gap-2 py-2" data-testid="result-stars" aria-label={`${result.stars} of 3 stars`}>
+        <div className="flex justify-center gap-3 py-3" data-testid="result-stars" aria-label={`${result.stars} of 3 stars`}>
           {[1, 2, 3].map((n) => (
-            <div key={n} className="flex flex-col items-center gap-0.5">
-              <PixelStar earned={n <= result.stars} isNew={n <= result.stars && n > prevBestStars} />
+            <div key={n} className="flex flex-col items-center gap-1">
+              <AnimatedStar earned={n <= result.stars} isNew={n <= result.stars && n > prevBestStars} index={n - 1} />
               {xpPerStar > 0 && (
-                <span className={`text-[0.5rem] font-medium ${n <= result.stars ? "text-yellow-400" : "text-text-secondary"}`}>
+                <span
+                  className={`text-[0.625rem] font-bold ${n <= result.stars ? "text-yellow-400" : "text-text-secondary"}`}
+                  style={{ animation: n <= result.stars ? `star-slam 0.3s ease-out ${(n - 1) * 0.35 + 0.2}s both` : undefined }}
+                >
                   {n <= result.stars && n > prevBestStars ? `+${xpPerStar}` : n <= prevBestStars ? `${xpPerStar}` : "—"}
                 </span>
               )}
@@ -191,13 +258,29 @@ export function ChallengeResultsModal() {
 
         {suggestion && <SuggestionCard result={suggestion} />}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
           <Button data-testid="result-close" variant="ghost" size="sm" onClick={onClose}>
             Close
           </Button>
-          <Button data-testid="result-retry" size="sm" onClick={onRetry}>
+          <Button data-testid="result-retry" variant="outline" size="sm" onClick={onRetry}>
             Adjust &amp; retry
           </Button>
+          {result.stars > 0 && (
+            <Button
+              data-testid="result-next-quest"
+              size="sm"
+              className="gap-1.5 bg-[#c9a961] text-[#1a1410] hover:bg-[#d4b872] font-bold"
+              onClick={() => {
+                selectChallenge(challenge)
+                useUiStore.getState().setChallengesOpen(false)
+                // Open the quest log
+                const btn = document.querySelector('[data-testid="menu-quests"]') as HTMLElement
+                btn?.click()
+              }}
+            >
+              <Map className="h-3.5 w-3.5" /> Next Quest
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
