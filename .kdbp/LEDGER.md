@@ -2975,3 +2975,9 @@ NOTES: vendor_url added to YAML+runtime schema; 23 new vendors (91→114); Fires
 FINDINGS: 1 lint error (fixed: ChallengeSelector tree useMemo missing trackXp dep), 2 low shape (ArchieNode 555, constants 473 — accepted, pre-existing sizes)
 ACTIONS: lint=fix; shape=accept; committed
 NOTES: F1 scrollbars+collapse, F2 ModeToggle, F3 clone/play (+key-remount prefill bug fix found via E2E), F4 variable-width+zoom. build green; 4525 unit/integration pass; ui-batch-features E2E 2/2 + challenge-mode lifecycle green. 4 pre-existing progression/profile E2E failures (overall-rank testid removed in prior Quests rework) flagged for separate triage.
+
+## 2026-06-03 17:21 — PUSH dev -> main
+PR: — (direct fast-forward, repo's established dev→main flow; main unprotected)
+CI: deploy-production ✅ (run 26913700604, ~40s)
+PROMOTION: N/A (production is final env)
+DEPLOYMENTS: P114
