@@ -235,35 +235,6 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
               </div>
             </div>
 
-            {/* Rank avatars */}
-            <div>
-              <span className="text-[0.625rem] font-semibold text-[#6b7280]">Rank Avatars</span>
-              <div className="mt-1 flex gap-1">
-                {MASTERY_RANKS.slice(0, 5).map((name, i) => {
-                  const unlocked = overallRank.rank >= i * 2
-                  const key = `rank:${i * 2}`
-                  const isEquipped = equippedAvatar === key
-                  const src = getMasteryAvatar(i * 2)
-                  return (
-                    <button key={i} type="button" disabled={!unlocked}
-                      onClick={() => unlocked && handleEquip(key)}
-                      className={`relative rounded border-2 p-0.5 ${isEquipped ? "border-[#c9a961]" : unlocked ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent"}`}>
-                      {src ? (
-                        <img src={src} alt={name} className={`h-8 w-8 rounded ${unlocked ? "" : "grayscale brightness-[0.3]"}`} style={{ imageRendering: "pixelated" }} />
-                      ) : (
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-4 w-4 text-[#4b5563]" /></div>
-                      )}
-                      {!unlocked && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <Lock className="h-3.5 w-3.5 text-[#6b7280]" />
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
             {/* Track progression — colored bars with clickable discipline avatars */}
             <div className="flex flex-col gap-2">
               <span className="text-[0.625rem] font-semibold text-[#6b7280]">Disciplines</span>
