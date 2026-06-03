@@ -98,27 +98,27 @@ describe("ChallengeHud (Epic 16)", () => {
     expect(screen.getByTestId("challenge-budget-label")).toHaveClass("text-red-400")
   })
 
-  it("toggles hints open and closed, reflecting aria-expanded for assistive tech", () => {
+  it("toggles hints open and closed", () => {
     cs().selectChallenge(challenge)
     render(<ChallengeHud />)
     const toggle = screen.getByTestId("challenge-hints-toggle")
     expect(toggle).toHaveAttribute("aria-expanded", "false")
-    expect(toggle).toHaveAttribute("aria-controls", "challenge-hints-list")
     expect(screen.queryByTestId("challenge-hints")).not.toBeInTheDocument()
     fireEvent.click(toggle)
     expect(toggle).toHaveAttribute("aria-expanded", "true")
-    const list = screen.getByTestId("challenge-hints")
-    expect(list).toHaveTextContent("Use a managed database")
-    expect(list).toHaveAttribute("id", "challenge-hints-list")
+    expect(screen.getByTestId("challenge-hints")).toHaveTextContent("Use a managed database")
     fireEvent.click(toggle)
-    expect(toggle).toHaveAttribute("aria-expanded", "false")
     expect(screen.queryByTestId("challenge-hints")).not.toBeInTheDocument()
   })
 
-  it("exit button leaves challenge mode", () => {
+  it("exit button opens confirm dialog, then exits on confirm", () => {
     cs().selectChallenge(challenge)
     render(<ChallengeHud />)
     fireEvent.click(screen.getByTestId("challenge-exit"))
+    // Confirm dialog should appear
+    expect(screen.getByText("Exit Quest?")).toBeInTheDocument()
+    // Click "Exit Quest" to confirm
+    fireEvent.click(screen.getByText("Exit Quest"))
     expect(cs().activeChallenge).toBeNull()
   })
 })

@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useUiStore, type ToolboxTab } from "@/stores/uiStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { getTabLucideIcon } from "@/icons/officialTypeIcons"
+import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { SearchFilter } from "@/components/toolbox/SearchFilter"
 import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { ComponentTab } from "@/components/toolbox/ComponentTab"
@@ -23,6 +24,7 @@ function TabIcon({ tab, src }: { tab: ToolboxTab; src: string }) {
 export function ToolboxPanel() {
   const toolboxTab = useUiStore((s) => s.toolboxTab)
   const setToolboxTab = useUiStore((s) => s.setToolboxTab)
+  const inQuest = useChallengeStore(isChallengeMode)
 
   return (
     <div data-testid="toolbox-panel" className="flex h-full flex-col">
@@ -39,7 +41,7 @@ export function ToolboxPanel() {
         {/* 2×2 grid of square tab cells (icon over label) rather than one cramped row of 4.
             The h-auto override neutralizes tabsListVariants' fixed `h-9` (which otherwise clamps
             the grid to 36px and spills row 2 over the palette below). */}
-        <TabsList className="mx-3 grid h-auto w-auto grid-cols-2 gap-1 p-1 group-data-[orientation=horizontal]/tabs:h-auto">
+        <TabsList className={`mx-3 grid h-auto w-auto gap-1 p-1 group-data-[orientation=horizontal]/tabs:h-auto ${inQuest ? "grid-cols-2" : "grid-cols-2"}`}>
           <TabsTrigger
             value="components"
             data-testid="toolbox-tab-components"
@@ -49,24 +51,28 @@ export function ToolboxPanel() {
             <TabIcon tab="components" src="/icons/tabs/blocks.png" />
             Blocks
           </TabsTrigger>
-          <TabsTrigger
-            value="stacks"
-            data-testid="toolbox-tab-stacks"
-            className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
-            title="Small reusable patterns — drag to ADD a few connected components to your canvas"
-          >
-            <TabIcon tab="stacks" src="/icons/tabs/stacks.png" />
-            Stacks
-          </TabsTrigger>
-          <TabsTrigger
-            value="blueprints"
-            data-testid="toolbox-tab-blueprints"
-            className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
-            title="Complete starter architectures — Load one to REPLACE the canvas"
-          >
-            <TabIcon tab="blueprints" src="/icons/tabs/blueprints.png" />
-            Blueprints
-          </TabsTrigger>
+          {!inQuest && (
+            <TabsTrigger
+              value="stacks"
+              data-testid="toolbox-tab-stacks"
+              className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
+              title="Small reusable patterns — drag to ADD a few connected components to your canvas"
+            >
+              <TabIcon tab="stacks" src="/icons/tabs/stacks.png" />
+              Stacks
+            </TabsTrigger>
+          )}
+          {!inQuest && (
+            <TabsTrigger
+              value="blueprints"
+              data-testid="toolbox-tab-blueprints"
+              className="h-auto flex-col gap-1 py-2 text-[0.6875rem]"
+              title="Complete starter architectures — Load one to REPLACE the canvas"
+            >
+              <TabIcon tab="blueprints" src="/icons/tabs/blueprints.png" />
+              Blueprints
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="history"
             data-testid="toolbox-tab-history"

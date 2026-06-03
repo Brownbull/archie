@@ -7,10 +7,9 @@ export const INSPECTOR_MIN_WIDTH = 200
 export const INSPECTOR_MAX_WIDTH = 700
 export const INSPECTOR_COLLAPSED_WIDTH = 40
 export const DASHBOARD_HEIGHT = 100
-// Canvas node width. Widened again (P97 → 208 = 13× the 16px grid) to give the on-node vendor
-// dropdown room for bigger icons + readable option text. Still grid-aligned, so placement math
-// (duplicate offset, traffic-source/stack spacing) stays consistent.
-export const NODE_WIDTH = 208
+// Canvas node width. Reduced from 208 to 176 (11× the 16px grid) for a more compact canvas.
+// Still grid-aligned, so placement math stays consistent.
+export const NODE_WIDTH = 176
 export const BORDER_RADIUS = 6
 
 // Spacing scale (UX16 — 4px base)
