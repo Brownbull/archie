@@ -124,18 +124,20 @@ function RankAvatarPicker({ currentRank, equippedAvatar, onEquip }: {
   const currentSrc = getMasteryAvatar(currentRank)
 
   return (
-    <div className="relative shrink-0">
-      <button type="button" onClick={() => setPickerOpen((v) => !v)}
-        className="rounded border-2 border-transparent p-0.5 transition-all hover:border-[#c9a961]/40"
-        title="Click to change rank avatar">
-        {currentSrc ? (
-          <img src={currentSrc} alt="Rank" className="h-10 w-10 rounded" style={{ imageRendering: "pixelated" }} />
-        ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-5 w-5 text-[#4b5563]" /></div>
-        )}
-      </button>
+    <div>
+      <div className="flex items-center gap-2">
+        <button type="button" onClick={() => setPickerOpen((v) => !v)}
+          className="shrink-0 rounded border-2 border-transparent p-0.5 transition-all hover:border-[#c9a961]/40"
+          title="Click to change rank avatar">
+          {currentSrc ? (
+            <img src={currentSrc} alt="Rank" className="h-10 w-10 rounded" style={{ imageRendering: "pixelated" }} />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-5 w-5 text-[#4b5563]" /></div>
+          )}
+        </button>
+      </div>
       {pickerOpen && (
-        <div className="absolute left-0 top-full z-10 mt-1 flex gap-1 rounded-md border border-[#1e2530] bg-[#0a0c10] p-1.5">
+        <div className="mt-2 flex gap-1 rounded-md border border-[#1e2530] bg-[#0a0c10] p-1.5">
           {MASTERY_RANKS.slice(0, 6).map((name, i) => {
             const rankLevel = i * 2
             const unlocked = currentRank >= rankLevel
@@ -148,13 +150,13 @@ function RankAvatarPicker({ currentRank, equippedAvatar, onEquip }: {
                 className={`relative rounded border-2 p-0.5 ${isThis ? "border-[#c9a961]" : unlocked ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent"}`}
                 title={unlocked ? `${name} (rank ${rankLevel})` : `Unlocks at rank ${rankLevel}`}>
                 {src ? (
-                  <img src={src} alt={name} className={`h-8 w-8 rounded ${unlocked ? "" : "grayscale brightness-[0.3]"}`} style={{ imageRendering: "pixelated" }} />
+                  <img src={src} alt={name} className={`h-7 w-7 rounded ${unlocked ? "" : "grayscale brightness-[0.3]"}`} style={{ imageRendering: "pixelated" }} />
                 ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-4 w-4 text-[#4b5563]" /></div>
+                  <div className="flex h-7 w-7 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-4 w-4 text-[#4b5563]" /></div>
                 )}
                 {!unlocked && (
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <Lock className="h-3.5 w-3.5 text-[#6b7280]" />
+                    <Lock className="h-3 w-3 text-[#6b7280]" />
                   </div>
                 )}
               </button>
@@ -257,21 +259,23 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
           {/* Right: stats + tracks */}
           <div className="flex flex-1 flex-col gap-3 overflow-y-auto quest-scroll" style={{ maxHeight: "70vh" }}>
             {/* XP bar with rank avatar picker */}
-            <div className="flex items-start gap-2">
-              <RankAvatarPicker currentRank={overallRank.rank} equippedAvatar={equippedAvatar} onEquip={handleEquip} />
-              <div className="flex-1">
-                <div className="flex items-center justify-between text-[0.75rem]">
-                  <span className="font-semibold text-[#f5deb3]">{totalXp} XP</span>
-                  <span className="text-[#6b7280]">
-                    {toNext > 0 ? `${toNext} to ${MASTERY_RANKS[overallRank.rank + 1]}` : "Max Level"}
-                  </span>
-                </div>
-                <div className="mt-1 h-3 overflow-hidden rounded-full bg-[#1a1a2e]">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#c9a961] to-[#ffd700] transition-all"
-                    style={{ width: `${xpPct}%` }} />
-                </div>
-                <div className="mt-0.5 text-[0.5625rem] text-[#6b7280]">
-                  {completedChallenges.length} quests completed · {tree.unlockedBlocks.size} blocks unlocked
+            <div className="rounded-md border border-[#1e2530] p-2" style={{ backgroundColor: "#c9a96106" }}>
+              <div className="flex items-center gap-2">
+                <RankAvatarPicker currentRank={overallRank.rank} equippedAvatar={equippedAvatar} onEquip={handleEquip} />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between text-[0.75rem]">
+                    <span className="font-semibold text-[#f5deb3]">{totalXp} XP</span>
+                    <span className="text-[#6b7280]">
+                      {toNext > 0 ? `${toNext} to ${MASTERY_RANKS[overallRank.rank + 1]}` : "Max Level"}
+                    </span>
+                  </div>
+                  <div className="mt-1 h-3 overflow-hidden rounded-full bg-[#1a1a2e]">
+                    <div className="h-full rounded-full bg-gradient-to-r from-[#c9a961] to-[#ffd700] transition-all"
+                      style={{ width: `${xpPct}%` }} />
+                  </div>
+                  <div className="mt-0.5 text-[0.5625rem] text-[#6b7280]">
+                    {completedChallenges.length} quests completed · {tree.unlockedBlocks.size} blocks unlocked
+                  </div>
                 </div>
               </div>
             </div>
