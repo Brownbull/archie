@@ -80,14 +80,14 @@ service cloud.firestore {
       allow read: if isAuthenticated() && request.auth.uid == uid;
       allow create: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200
         && request.resource.data.updatedAt == request.time;
       allow update: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200

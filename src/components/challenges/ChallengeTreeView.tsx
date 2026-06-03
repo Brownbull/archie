@@ -18,10 +18,11 @@ import { CHALLENGE_TRACKS } from "@/lib/challengeTracks"
 import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
 const TIER_LABELS = ["", "I", "II", "III", "IV", "V"]
-const NODE_R = 28
-const ROW_GAP = 50
-const HEADER_H = 20
-const PAD_X = 40
+const FONT_SCALE: Record<string, number> = { small: 1, medium: 1.15, large: 1.3 }
+const NODE_R = 32
+const ROW_GAP = 56
+const HEADER_H = 24
+const PAD_X = 50
 
 const TRACK_COLORS: Record<string, string> = {
   foundations: "#3b82f6", data: "#22c55e", edge: "#06b6d4", realtime: "#ec4899",
@@ -178,11 +179,11 @@ function TreeNode({ pos, selected, bestStars, onClick }: {
       {isLocked && <Lock x={pos.x - 6} y={pos.y - 6} width={12} height={12} color="#2a3040" />}
 
       {/* Title + XP */}
-      <text x={pos.x} y={pos.y + NODE_R + 14} fontSize={9} fontWeight={600}
+      <text x={pos.x} y={pos.y + NODE_R + 14} fontSize={11} fontWeight={600}
         fill={isLocked ? "#2a3040" : "#c8cdd5"} textAnchor="middle">
         {c.title.length > 14 ? c.title.slice(0, 13) + "…" : c.title}
       </text>
-      <text x={pos.x} y={pos.y + NODE_R + 25} fontSize={7} fill="#4b5563" textAnchor="middle">
+      <text x={pos.x} y={pos.y + NODE_R + 25} fontSize={9} fill="#6b7280" textAnchor="middle">
         {c.rewards?.xp ?? 0} XP
       </text>
 
@@ -191,7 +192,7 @@ function TreeNode({ pos, selected, bestStars, onClick }: {
         <g transform={`translate(${pos.x - NODE_R - 6}, ${pos.y + NODE_R * 0.3})`}>
           <circle cx={9} cy={9} r={10} fill="#080c12" stroke={isCompleted ? grantColor : `${grantColor}40`} strokeWidth={1.5} />
           <circle cx={9} cy={9} r={7} fill={isCompleted ? `${grantColor}25` : "#0e1118"} />
-          <text x={9} y={12} fontSize={6} fontWeight={800}
+          <text x={9} y={12} fontSize={7} fontWeight={800}
             fill={isCompleted ? grantColor : "#3a4050"} textAnchor="middle">
             {(grantLabel?.label ?? firstGrant).slice(0, 3).toUpperCase()}
           </text>
@@ -323,6 +324,8 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
   const bestStars = useChallengeStore((s) => s.bestStars)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
   const userId = useCurrentUserId()
+  const fontSize = usePreferencesStore((s) => s.fontSize)
+  const scale = FONT_SCALE[fontSize] ?? 1
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const tree = useMemo(() => resolveTechTree(challenges, completedChallenges), [challenges, completedChallenges])
   const layout = useMemo(() => layoutTree(tree.ordered), [tree.ordered])
@@ -353,8 +356,8 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
           </DialogDescription>
         </DialogHeader>
         <div className="flex gap-4" style={{ height: "calc(85vh - 80px)" }}>
-          <div className="flex-1 overflow-auto">
-            <svg width={layout.width} height={layout.height}
+          <div className="flex flex-1 items-start justify-center overflow-auto">
+            <svg width={layout.width * scale} height={layout.height * scale}
               viewBox={`0 0 ${layout.width} ${layout.height}`} className="select-none">
               <TreeDefs />
               <TreeEdges positions={layout.positions} />
