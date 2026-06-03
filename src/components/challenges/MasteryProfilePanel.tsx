@@ -265,7 +265,7 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
                 Lv. {overallRank.rank}
               </div>
             </div>
-            <span className="text-sm font-bold text-[#f5deb3]">{overallRank.name}</span>
+            <span data-testid="overall-rank" className="text-sm font-bold text-[#f5deb3]">{overallRank.name}</span>
 
             {/* Equipment grid: left column | character | right column */}
             <div className="flex items-start gap-2">
