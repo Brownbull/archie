@@ -224,14 +224,14 @@ function QuestDetailPanel({ node, bestStars, onStart }: { node: TechTreeNode; be
           </span>
         )}
       </div>
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-3 overflow-y-auto p-4 quest-scroll" style={{ maxHeight: "calc(85vh - 160px)" }}>
         <div>
           <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-[#c9a961]">
             <Scroll className="h-3 w-3" /> Quest
           </div>
-          <p className="mt-1 text-[0.75rem] leading-relaxed text-[#d0c8b8]">{c.brief}</p>
+          <p className={`mt-1 text-[0.75rem] leading-relaxed ${node.status === "locked" ? "text-[#6b7280]" : "text-[#d0c8b8]"}`}>{c.brief}</p>
         </div>
-        <div>
+        {node.status !== "locked" && (<div>
           <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-yellow-400">
             <AlertCircle className="h-3 w-3" /> Objectives
           </div>
@@ -248,7 +248,7 @@ function QuestDetailPanel({ node, bestStars, onStart }: { node: TechTreeNode; be
               </div>
             ))}
           </div>
-        </div>
+        </div>)}
         {node.missingRequirements.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-amber-400">
@@ -261,7 +261,7 @@ function QuestDetailPanel({ node, bestStars, onStart }: { node: TechTreeNode; be
             </div>
           </div>
         )}
-        {c.availableBlocks.length > 0 && (
+        {node.status !== "locked" && c.availableBlocks.length > 0 && (
           <div>
             <div className="text-[0.6rem] font-bold uppercase tracking-wider text-[#c9a961]">Components</div>
             <div className="mt-1 flex flex-wrap gap-1">
@@ -356,10 +356,12 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
             {challenges.length} quests · {completedChallenges.length} completed
           </DialogDescription>
         </DialogHeader>
-        <div className="flex gap-4" style={{ height: "calc(85vh - 80px)" }}>
-          <div className="flex flex-1 items-start justify-center overflow-auto">
-            <svg width={layout.width * scale} height={layout.height * scale}
-              viewBox={`0 0 ${layout.width} ${layout.height}`} className="select-none">
+        <div className="flex gap-0" style={{ height: "calc(85vh - 80px)" }}>
+          {/* Left: quest tree — always visible, fixed position */}
+          <div className="flex-1 overflow-auto quest-scroll" style={{ minWidth: 0 }}>
+            <div className="flex justify-center py-2">
+              <svg width={layout.width * scale} height={layout.height * scale}
+                viewBox={`0 0 ${layout.width} ${layout.height}`} className="select-none">
               <TreeDefs />
               <TreeEdges positions={layout.positions} />
               {layout.positions.map((pos) => (
@@ -369,12 +371,22 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
                   onClick={() => setSelectedId(pos.node.challenge.id)} />
               ))}
             </svg>
+            </div>
           </div>
-          {selectedNode && (
-            <QuestDetailPanel node={selectedNode}
-              bestStars={bestStars[selectedNode.challenge.id] ?? 0}
-              onStart={() => startChallenge(selectedNode.challenge)} />
-          )}
+          {/* Right: quest detail — always visible, shows placeholder when nothing selected */}
+          <div className="w-80 shrink-0 border-l border-[#1e2530]">
+            {selectedNode ? (
+              <QuestDetailPanel node={selectedNode}
+                bestStars={bestStars[selectedNode.challenge.id] ?? 0}
+                onStart={() => startChallenge(selectedNode.challenge)} />
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+                <span className="text-3xl">!</span>
+                <p className="text-sm text-[#6b7280]">Select a quest from the tree to see its details</p>
+                <p className="text-[0.625rem] text-[#4b5563]">{challenges.length} quests · {completedChallenges.length} completed</p>
+              </div>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

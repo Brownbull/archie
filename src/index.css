@@ -350,3 +350,10 @@
 @media (prefers-reduced-motion: reduce) {
   .block-loop * { animation: none !important; }
 }
+
+/* Quest log dark scrollbar */
+.quest-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.quest-scroll::-webkit-scrollbar-track { background: #0a0e14; border-radius: 3px; }
+.quest-scroll::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 3px; }
+.quest-scroll::-webkit-scrollbar-thumb:hover { background: #3a4858; }
+.quest-scroll { scrollbar-width: thin; scrollbar-color: #2a3040 #0a0e14; }
