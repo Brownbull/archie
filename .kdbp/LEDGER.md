@@ -3070,3 +3070,9 @@ NOTES: 23 new vendor YAMLs, ~150 metric_explanations rewritten vendor-specific (
 FINDINGS: 0 critical; build green; 4525 tests pass
 ACTIONS: committed
 NOTES: knip cleanup — unused exports 6→0, unused types 108→41, dup exports 2→1. aislop score 7→14/100 (183→114 issues). Kept 41 module-internal types + test-only-used + false-positive deps/declarations.d.ts/E2E dynamic imports.
+
+## 2026-06-03 18:52 — PUSH dev -> main
+PR: — (direct fast-forward, established dev→main flow; main unprotected)
+CI: deploy-production ✅ (run 26918031650, ~40s)
+PROMOTION: N/A (production is final env)
+DEPLOYMENTS: P115
