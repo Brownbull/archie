@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260603-171135
+**Date:** 20260603-180153
 **Score:** 7/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,22 +8,22 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 48 | 245ms |
-| code-quality | 127 | 3138ms |
-| ai-slop | 0 | 23ms |
-| security | 8 | 1016ms |
+| lint | 47 | 236ms |
+| code-quality | 124 | 3244ms |
+| ai-slop | 0 | 6ms |
+| security | 10 | 2974ms |
 
 ## Findings
 
-### code-quality (127)
+### code-quality (124)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:43` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:71` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:73` — knip/devDependencies: Unused devDependency: tw-animate-css
-- [!!!] `tests/e2e/challenge-validation.spec.ts:103` — knip/unresolved: Unresolved import: /src/services/challengeLoader
-- [!!!] `tests/e2e/challenge-validation.spec.ts:104` — knip/unresolved: Unresolved import: /src/stores/challengeStore
-- [!!!] `tests/e2e/challenge-validation.spec.ts:105` — knip/unresolved: Unresolved import: /src/stores/userProgressStore
+- [!!!] `tests/e2e/challenge-validation.spec.ts:92` — knip/unresolved: Unresolved import: /src/services/challengeLoader
+- [!!!] `tests/e2e/challenge-validation.spec.ts:93` — knip/unresolved: Unresolved import: /src/stores/challengeStore
+- [!!!] `tests/e2e/challenge-validation.spec.ts:94` — knip/unresolved: Unresolved import: /src/stores/userProgressStore
 - [!] `src/lib/constants.ts:209` — knip/exports: Unused export: SLUG_ID_FORMAT
 - [!] `src/lib/constants.ts:58` — knip/types: Unused type: ReplicaType
 - [!] `src/lib/constants.ts:60` — knip/types: Unused type: ScalingRule
@@ -140,12 +140,9 @@
 - [!] `src/services/challengeAutosave.ts:5` — knip/types: Unused type: SavedChallenge
 - [!] `src/stores/dataContextActions.ts:16` — knip/types: Unused type: DataContextActions
 - [!] `src/components/common/DataSourceNote.tsx:4` — knip/types: Unused type: DataSourceKind
-- [!] `src/components/canvas/ArchieNode.tsx:61` — complexity/function-too-long: Function 'ArchieNodeComponent' has 493 lines (max: 80)
-- [!] `src/components/challenges/ChallengeEditor.tsx:93` — complexity/function-too-long: Function 'ChallengeEditor' has 168 lines (max: 80)
-- [!] `src/components/challenges/ChallengeSelector.tsx:62` — complexity/function-too-long: Function 'ChallengeSelector' has 262 lines (max: 80)
-- [!] `src/components/layout/ModeToggle.tsx:27` — complexity/function-too-long: Function 'ModeToggle' has 81 lines (max: 80)
+- [!] `src/components/challenges/MasteryProfilePanel.tsx:197` — complexity/function-too-long: Function 'MasteryProfilePanel' has 116 lines (max: 80)
 
-### lint (48)
+### lint (47)
 
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
@@ -176,33 +173,34 @@
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/challenges/ChallengeTreeView.tsx:59` — unicorn/no-useless-spread: Using a spread operator here creates a new array unnecessarily.
-- [!] `src/components/challenges/MasteryProfilePanel.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
 - [!] `src/components/layout/AppMenuBar.tsx:49` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/layout/AppMenuBar.tsx:49` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/challenges/MasteryProfilePanel.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
+- [!] `src/components/challenges/ChallengeTreeView.tsx:59` — unicorn/no-useless-spread: Using a spread operator here creates a new array unnecessarily.
 - [!] `tests/unit/engine/monitoringFeedback.test.ts:2` — eslint/no-unused-vars: Identifier 'simulateTick' is imported but never used.
-- [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
+- [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'scheduled_events' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:31` — eslint/no-unused-vars: Variable 'hints' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:95` — eslint/no-unused-vars: Variable 'track' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:95` — eslint/no-unused-vars: Variable 'tier' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/schemas/challengeSchema.test.ts:95` — eslint/no-unused-vars: Variable 'rewards' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
-- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/e2e/challenge-validation.spec.ts:61` — eslint/no-unused-vars: Function 'unlockAllChallenges' is declared but never used.
-- [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
+- [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/global-setup.ts:20` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 
-### security (8)
+### security (10)
 
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/firestore (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/storage (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): firebase-admin (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): gaxios (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): google-gax (moderate)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): react-router (high)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): react-router-dom (high)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): retry-request (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): teeny-request (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): uuid (moderate)

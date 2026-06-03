@@ -2981,3 +2981,68 @@ PR: — (direct fast-forward, repo's established dev→main flow; main unprotect
 CI: deploy-production ✅ (run 26913700604, ~40s)
 PROMOTION: N/A (production is final env)
 DEPLOYMENTS: P114
+- 2026-06-03 17:38 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-03 17:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-03 17:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-03 17:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-03 17:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/quest-persistence.spec.ts
+- 2026-06-03 17:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/quest-persistence.spec.ts
+- 2026-06-03 17:53 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/391d86de-5d7b-4ced-8258-f101246833dc/workflows/scripts/tighten-vendor-prose-wf_b98b8154-841.js
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/phoenix.yaml
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/google-cloud-dns.yaml
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/opensearch.yaml
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/cassandra.yaml
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/phoenix.yaml
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/google-cloud-dns.yaml
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/opensearch.yaml
+- 2026-06-03 17:53 | Edit | /home/khujta/projects/bmad/archie/src/data/components/cassandra.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/pushpin.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/meilisearch.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-dns.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/firestore.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/pushpin.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/meilisearch.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-dns.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/firestore.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/kafka-streams.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/typesense.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/google-cloud-cdn.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/kafka-streams.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/google-cloud-sql.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/typesense.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/google-cloud-cdn.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/sidekiq.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/google-cloud-sql.yaml
+- 2026-06-03 17:54 | Edit | /home/khujta/projects/bmad/archie/src/data/components/victoriametrics.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-cdn.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/sidekiq.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/victoriametrics.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/elasticache.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-cdn.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-blob.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/elasticache.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/traefik.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-blob.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/dragonfly.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/traefik.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/cloudflare-r2.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/dragonfly.yaml
+- 2026-06-03 17:55 | Edit | /home/khujta/projects/bmad/archie/src/data/components/apigee.yaml
+- 2026-06-03 17:56 | Edit | /home/khujta/projects/bmad/archie/src/data/components/cloudflare-r2.yaml
+- 2026-06-03 17:56 | Edit | /home/khujta/projects/bmad/archie/src/data/components/apigee.yaml
+- 2026-06-03 17:56 | Edit | /home/khujta/projects/bmad/archie/src/data/components/aws-waf.yaml
+- 2026-06-03 17:56 | Edit | /home/khujta/projects/bmad/archie/src/data/components/aws-waf.yaml
+- 2026-06-03 17:56 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-firewall.yaml
+- 2026-06-03 17:56 | Edit | /home/khujta/projects/bmad/archie/src/data/components/azure-firewall.yaml
+- 2026-06-03 18:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-03 18:01 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+
+## 2026-06-03 18:02 — [35bae34] fix(challenges): align stale progression/profile E2E tests + overall-rank testid
+FINDINGS: 0 critical (lint fixed: 6 window-any → scoped disable, 1 dead helper removed); build green; 1194 yaml/schema tests green
+ACTIONS: committed
+NOTES: Root cause of the 4 long-red tests = stale expectations vs post-rebalance min_xp gates (scale-out min_xp 494; 100 XP = Novice not Builder) + removed overall-rank testid. Resolver correct, no source bug. Full challenge-validation suite 41/41 + quest-persistence green.
+
+## 2026-06-03 18:02 — [c9c1d19] chore(data): tighten vendor metric_explanations to vendor-specific prose
+FINDINGS: 0 critical; 1194 yaml/schema tests green; 0 residual generic-fallback boilerplate
+ACTIONS: committed
+NOTES: 23 new vendor YAMLs, ~150 metric_explanations rewritten vendor-specific (5-agent parallel workflow). Note: aislop 7/100 is knip/lint/security debt — the ai-slop prose engine scores 0; prose fix improves data quality but does not move the aislop score.
