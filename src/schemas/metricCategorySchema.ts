@@ -36,5 +36,4 @@ export const MetricCategorySchema = z.object({
   },
 )
 
-export type ScoreInterpretation = z.infer<typeof ScoreInterpretationSchema>
 export type MetricCategory = z.infer<typeof MetricCategorySchema>

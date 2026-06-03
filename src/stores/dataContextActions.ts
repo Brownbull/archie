@@ -13,7 +13,7 @@ import type { ArchitectureState } from "@/stores/architectureStore"
 type Get = () => ArchitectureState
 type Set = (partial: Partial<ArchitectureState>) => void
 
-export interface DataContextActions {
+interface DataContextActions {
   addDataContextItem: (nodeId: string, item: Omit<DataContextItem, "id">) => void
   updateDataContextItem: (nodeId: string, itemId: string, updates: Partial<Omit<DataContextItem, "id">>) => void
   removeDataContextItem: (nodeId: string, itemId: string) => void

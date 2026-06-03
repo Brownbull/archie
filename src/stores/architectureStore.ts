@@ -774,7 +774,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
  * Pure selector: extracts the skeleton (nodes + edges) from the current store state.
  * Called on export button click — non-reactive read, not a store action.
  */
-export interface ArchitectureSkeleton {
+interface ArchitectureSkeleton {
   nodes: ArchieNode[]
   edges: ArchieEdge[]
   weightProfile: WeightProfile

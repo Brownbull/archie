@@ -45,14 +45,6 @@ const EXTRA_SLOTS: EquipmentSlot[] = [
 
 export const ALL_EQUIPMENT_SLOTS = [...SLOT_MAP, ...EXTRA_SLOTS]
 
-export function getEquipmentSlot(typeId: string): EquipmentSlot | undefined {
-  return ALL_EQUIPMENT_SLOTS.find((s) => s.typeId === typeId)
-}
-
-export function getSlotLabel(typeId: string): string {
-  const slot = getEquipmentSlot(typeId)
-  return slot?.slot ?? COMPONENT_TYPES.get(typeId)?.label ?? typeId
-}
 
 const CATEGORY_COLORS: Record<string, string> = {
   "compute": "#3b82f6", "data-storage": "#22c55e", "caching": "#f97316",

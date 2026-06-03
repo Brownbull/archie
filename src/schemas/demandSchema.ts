@@ -112,7 +112,7 @@ const scenarioPresetBaseFields = {
 
 // Traffic curve (Epic 15) — optional time-varying load on a scenario preset.
 // Absent = legacy constant-level demand (backward compatible). Defense-in-depth bounds.
-export const TrafficCurvePointSchema = z
+const TrafficCurvePointSchema = z
   .object({
     t: z.number().min(0).max(3600),
     rps: z.number().min(0).max(10_000_000),

@@ -186,5 +186,3 @@ export type Component = z.infer<typeof ComponentSchema>
 export type ConfigVariant = z.infer<typeof ConfigVariantSchema>
 export type CodeSnippet = z.infer<typeof CodeSnippetSchema>
 export type MetricExplanation = z.infer<typeof MetricExplanationSchema>
-export type ConnectionProperties = z.infer<typeof ConnectionPropertiesSchema>
-export type PortDefinitionZod = z.infer<typeof PortDefinitionSchema>

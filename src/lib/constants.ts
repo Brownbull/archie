@@ -206,7 +206,7 @@ export const STACK_NAME_MAX_LENGTH = 200
 export const STACK_DESC_MAX_LENGTH = 2000
 export const STACK_ID_MAX_LENGTH = 200
 // Shared slug format for IDs — allows: a-z A-Z 0-9 _ -
-export const SLUG_ID_FORMAT = /^[\w-]+$/
+const SLUG_ID_FORMAT = /^[\w-]+$/
 export const STACK_ID_FORMAT = SLUG_ID_FORMAT
 
 export interface StackComponent {

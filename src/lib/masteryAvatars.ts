@@ -25,7 +25,7 @@ const RANK_AVATARS: ReadonlyMap<number, string> = new Map([
   [9, rank05],   // Grand Architect (level cap)
 ])
 
-export const GRAND_ARCHITECT_AVATAR = rank05
+const GRAND_ARCHITECT_AVATAR = rank05
 
 export function getMasteryAvatar(rank: number): string | null {
   if (rank >= 9) return GRAND_ARCHITECT_AVATAR
@@ -80,12 +80,3 @@ export function getDisciplineAvatars(trackId: string): Array<{ level: number; sr
   return DISCIPLINE_AVATARS[trackId] ?? []
 }
 
-/** Get the highest unlocked discipline avatar for a track given the player's completed count. */
-export function getDisciplineAvatar(trackId: string, completedInTrack: number): string | null {
-  const avatars = getDisciplineAvatars(trackId)
-  let best: string | null = null
-  for (const a of avatars) {
-    if (completedInTrack >= a.level) best = a.src
-  }
-  return best
-}

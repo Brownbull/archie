@@ -38,7 +38,7 @@ export interface ImportError {
   path?: string
 }
 
-export interface HydratedArchitecture {
+interface HydratedArchitecture {
   nodes: ArchieNode[]
   edges: ArchieEdge[]
   placeholderIds: string[]
@@ -50,7 +50,7 @@ export interface HydratedArchitecture {
   activeFailureScenarioId?: string
 }
 
-export type ImportResult =
+type ImportResult =
   | { success: true; architecture: HydratedArchitecture }
   | { success: false; errors: ImportError[] }
 
