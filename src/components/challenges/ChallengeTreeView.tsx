@@ -138,19 +138,19 @@ function TreeNode({ pos, selected, bestStars, onClick }: {
   const grantColor = firstGrant ? getGrantColor(firstGrant) : "#6b7280"
   const trackColor = TRACK_COLORS[c.track ?? ""] ?? "#6b7280"
 
-  // Track-colored borders: completed = bright track color, available = softer track color, locked = dark
-  const borderColor = selected ? "#ffffff" : isCompleted ? trackColor : isAvailable ? trackColor : "#1e2530"
-  const bgFill = isCompleted ? `${trackColor}10` : isAvailable ? `${trackColor}08` : "#0e1118"
+  // Track-colored borders at all states: bright when done/available, muted when locked
+  const borderColor = selected ? "#ffffff" : isCompleted ? trackColor : isAvailable ? trackColor : `${trackColor}30`
+  const bgFill = isCompleted ? `${trackColor}10` : isAvailable ? `${trackColor}08` : `${trackColor}05`
   const glow = isCompleted ? "url(#gl-d)" : isAvailable ? "url(#gl-a)" : undefined
 
   return (
     <g onClick={onClick} style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
       data-testid={`tree-node-${c.id}`} data-status={pos.node.status}>
 
-      {/* Track color ring (outer) — pillar identity */}
+      {/* Track color ring (outer) — pillar identity, visible even when locked */}
       <circle cx={pos.x} cy={pos.y} r={NODE_R + 4} fill="none"
-        stroke={isLocked ? "#141820" : `${trackColor}${isCompleted ? "" : "60"}`}
-        strokeWidth={2} opacity={isLocked ? 0.2 : 0.8} />
+        stroke={trackColor}
+        strokeWidth={2} opacity={isLocked ? 0.15 : isCompleted ? 0.9 : 0.5} />
 
       {/* Grant ring (between track and main circle) */}
       {grants.length > 0 && !isLocked && (
@@ -178,11 +178,11 @@ function TreeNode({ pos, selected, bestStars, onClick }: {
           ))}
         </g>
       )}
-      {isLocked && <Lock x={pos.x - 6} y={pos.y - 6} width={12} height={12} color="#2a3040" />}
+      {isLocked && <Lock x={pos.x - 6} y={pos.y - 6} width={12} height={12} color={`${trackColor}40`} />}
 
       {/* Title + XP */}
       <text x={pos.x} y={pos.y + NODE_R + 14} fontSize={11} fontWeight={600}
-        fill={isLocked ? "#2a3040" : "#c8cdd5"} textAnchor="middle">
+        fill={isLocked ? `${trackColor}35` : "#c8cdd5"} textAnchor="middle">
         {c.title.length > 14 ? c.title.slice(0, 13) + "…" : c.title}
       </text>
       <text x={pos.x} y={pos.y + NODE_R + 25} fontSize={9} fill="#6b7280" textAnchor="middle">
