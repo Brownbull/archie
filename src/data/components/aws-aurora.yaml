@@ -2,6 +2,7 @@ id: aws-aurora
 name: AWS Aurora
 category: data-storage
 type_id: relational-db
+vendor_url: https://aws.amazon.com/rds/aurora/
 description: Managed MySQL/Postgres-compatible database with a distributed storage layer
 is: A fully managed AWS relational database that separates compute from a multi-AZ distributed storage layer, giving fast failover and read replicas with MySQL/Postgres compatibility
 gain:

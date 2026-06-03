@@ -2,6 +2,7 @@ id: algolia
 name: Algolia
 category: search
 type_id: search-engine
+vendor_url: https://www.algolia.com/
 description: Hosted search-as-a-service tuned for instant, typo-tolerant UI search
 is: A hosted search API optimized for instant, typo-tolerant as-you-type search with built-in relevance tuning and front-end widgets, trading deep analytics for turnkey speed and simplicity
 gain:

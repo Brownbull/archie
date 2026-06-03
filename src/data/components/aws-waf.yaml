@@ -1,0 +1,143 @@
+id: aws-waf
+name: AWS WAF
+category: monitoring
+type_id: security
+vendor_url: https://aws.amazon.com/waf/
+description: AWS web application firewall with managed rules and Bot Control
+is: A web application firewall integrated with AWS services that inspects HTTP traffic using managed rule groups, custom rules, and Bot Control to protect applications from common web exploits and automated threats
+gain:
+  - Deep integration with ALB, CloudFront, and API Gateway
+  - AWS Managed Rules cover OWASP Top 10 out of the box
+  - Bot Control detects and mitigates automated threats
+cost:
+  - Per-rule and per-request pricing can grow quickly
+  - Rule tuning across multiple web ACLs adds complexity
+  - Bot Control is a premium add-on with separate billing
+tags:
+  - security
+  - waf
+  - aws
+  - firewall
+  - cloud
+base_metrics:
+  - id: alert-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: threat-detection
+    value: high
+    numeric_value: 8
+    category: security
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: waf-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 20
+    max_rps: 200000
+    base_latency_ms: 2
+    metrics:
+      - id: threat-detection
+        value: high
+        numeric_value: 8
+        category: security
+      - id: alert-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: waf-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # AWS WAF — Standard WAF rule check
+        # List active rules
+        aws wafv2 list-web-acls --scope REGIONAL --region us-east-1
+        # Check blocked requests
+        aws wafv2 get-sampled-requests --web-acl-arn $ACL_ARN --rule-metric-name AllRequests --scope REGIONAL --time-window '{"StartTime":"2024-01-01","EndTime":"2024-01-02"}' --max-items 10
+    metric_explanations:
+      threat-detection:
+        reason: AWS WAF Standard detects threats through managed rule sets and behavioral analysis.
+        contributing_factors:
+          - Continuously updated managed rules cover OWASP Top 10
+          - Rate-based rules detect and block volumetric attacks automatically
+      alert-latency:
+        reason: AWS WAF Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      waf-cost-efficiency:
+        reason: AWS WAF Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: advanced
+    name: Advanced
+    monthly_cost: 50
+    max_rps: 300000
+    base_latency_ms: 1
+    metrics:
+      - id: threat-detection
+        value: high
+        numeric_value: 9
+        category: security
+      - id: alert-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: waf-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # AWS WAF — Advanced WAF rule check
+        # List active rules
+        aws wafv2 list-web-acls --scope REGIONAL --region us-east-1
+        # Check blocked requests
+        aws wafv2 get-sampled-requests --web-acl-arn $ACL_ARN --rule-metric-name AllRequests --scope REGIONAL --time-window '{"StartTime":"2024-01-01","EndTime":"2024-01-02"}' --max-items 10
+    metric_explanations:
+      threat-detection:
+        reason: AWS WAF Advanced detects threats through managed rule sets and behavioral analysis.
+        contributing_factors:
+          - Continuously updated managed rules cover OWASP Top 10
+          - Rate-based rules detect and block volumetric attacks automatically
+      alert-latency:
+        reason: AWS WAF Advanced achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      waf-cost-efficiency:
+        reason: AWS WAF Advanced achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 2-25ms
+  co_location_potential: false
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

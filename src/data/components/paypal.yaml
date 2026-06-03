@@ -2,6 +2,7 @@ id: paypal
 name: PayPal / Braintree
 category: compute
 type_id: payments
+vendor_url: https://www.paypal.com/
 description: Ubiquitous consumer wallet plus Braintree's developer-focused gateway
 is: A payments provider pairing the widely-trusted PayPal consumer wallet with Braintree's developer-friendly gateway for cards and alternative methods, offering fast checkout conversion and broad coverage
 gain:

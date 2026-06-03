@@ -2,6 +2,7 @@ id: weaviate
 name: Weaviate
 category: data-storage
 type_id: vector-store
+vendor_url: https://weaviate.io/
 description: Open-source vector database with built-in vectorization and hybrid search
 is: An open-source vector database that can generate embeddings via pluggable modules and blend keyword (BM25) with vector search, so you get hybrid retrieval without a separate embedding pipeline
 gain:

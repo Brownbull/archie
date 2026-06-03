@@ -2,6 +2,7 @@ id: anthropic
 name: Anthropic Claude API
 category: compute
 type_id: llm-gateway
+vendor_url: https://www.anthropic.com/
 description: Hosted Claude models for chat, long-context reasoning, and tool use
 is: A hosted inference API for Anthropic's Claude family, with a balanced mid model for everyday reasoning and a fast small model for cheap high-volume calls, strong on long context and instruction-following
 gain:

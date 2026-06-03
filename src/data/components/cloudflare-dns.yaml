@@ -2,6 +2,7 @@ id: cloudflare-dns
 name: Cloudflare DNS
 category: delivery-network
 type_id: dns
+vendor_url: https://www.cloudflare.com/dns/
 description: Fast anycast authoritative DNS with DNSSEC and traffic steering
 is: A globally anycast authoritative DNS service that resolves domain names to addresses from the edge with very low latency, optional DNSSEC, and health-based traffic steering
 gain:

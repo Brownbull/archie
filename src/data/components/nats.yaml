@@ -2,6 +2,7 @@ id: nats
 name: NATS
 category: messaging
 type_id: message-queue
+vendor_url: https://nats.io/
 description: Lightweight, high-throughput messaging system with optional persistence
 is: A tiny, fast messaging system for pub/sub and request/reply that adds durable streams via JetStream when you need them, trading RabbitMQ's rich routing for raw speed and simplicity
 gain:

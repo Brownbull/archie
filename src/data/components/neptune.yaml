@@ -2,6 +2,7 @@ id: neptune
 name: Amazon Neptune
 category: data-storage
 type_id: graph-db
+vendor_url: https://aws.amazon.com/neptune/
 description: Fully managed graph database supporting Gremlin, openCypher, and SPARQL
 is: A managed AWS graph database with a multi-AZ distributed storage layer that runs property-graph (Gremlin/openCypher) and RDF (SPARQL) workloads without operating graph infrastructure yourself
 gain:

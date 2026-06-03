@@ -1,0 +1,152 @@
+id: opensearch
+name: OpenSearch
+category: search
+type_id: search-engine
+vendor_url: https://opensearch.org/
+description: AWS-backed open-source fork of Elasticsearch with integrated dashboards
+is: An open-source search and analytics suite forked from Elasticsearch, offering full-text search, log analytics, and built-in dashboards with broad AWS ecosystem integration
+gain:
+  - Open-source with no license concerns
+  - Integrated dashboards for log and search analytics
+  - Drop-in Elasticsearch API compatibility
+cost:
+  - Lags upstream Elasticsearch in newer features
+  - Cluster management complexity mirrors Elasticsearch
+  - Dashboard plugin ecosystem smaller than Kibana
+tags:
+  - search
+  - full-text
+  - opensearch
+  - analytics
+  - aws
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: index-freshness
+    value: high
+    numeric_value: 7
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: operational-complexity
+    value: high
+    numeric_value: 7
+    category: operational-complexity
+  - id: opensearch-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 55
+    max_rps: 3000
+    base_latency_ms: 22
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 7
+        category: scalability
+      - id: operational-complexity
+        value: high
+        numeric_value: 7
+        category: operational-complexity
+      - id: opensearch-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // OpenSearch — Standard search query
+        const results = await client.search({
+          index: 'products',
+          query: { match: { name: searchTerm } },
+          size: 20,
+          highlight: { fields: { name: {} } },
+        })
+    metric_explanations:
+      query-latency:
+        reason: OpenSearch Standard queries time-series data efficiently through pre-aggregated rollups.
+        contributing_factors:
+          - Time-partitioned storage enables efficient range scans
+          - Pre-computed rollups speed up aggregation queries
+      horizontal-scalability:
+        reason: OpenSearch Standard scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      operational-complexity:
+        reason: OpenSearch Standard simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+  - id: optimized
+    name: Optimized
+    monthly_cost: 120
+    max_rps: 8000
+    base_latency_ms: 15
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: opensearch-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // OpenSearch — Optimized search query
+        const results = await client.search({
+          index: 'products',
+          query: { match: { name: searchTerm } },
+          size: 20,
+          highlight: { fields: { name: {} } },
+        })
+    metric_explanations:
+      query-latency:
+        reason: OpenSearch Optimized queries time-series data efficiently through pre-aggregated rollups.
+        contributing_factors:
+          - Time-partitioned storage enables efficient range scans
+          - Pre-computed rollups speed up aggregation queries
+      horizontal-scalability:
+        reason: OpenSearch Optimized scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      operational-complexity:
+        reason: OpenSearch Optimized simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 5-50ms
+  co_location_potential: false
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,0 +1,150 @@
+id: cassandra
+name: Apache Cassandra
+category: data-storage
+type_id: nosql
+vendor_url: https://cassandra.apache.org/
+description: Distributed wide-column store for massive scale with linear horizontal scaling
+is: A distributed wide-column NoSQL database designed for handling large volumes of data across many commodity servers with no single point of failure, providing linear scalability and proven fault tolerance
+gain:
+  - Linear horizontal scaling with no single point of failure
+  - Tunable consistency for balancing availability and correctness
+  - Optimized for high write throughput across data centers
+cost:
+  - Data modeling requires query-first design approach
+  - Limited ad-hoc query support compared to SQL databases
+  - Operational complexity increases with cluster size
+tags:
+  - nosql
+  - wide-column
+  - database
+  - distributed
+  - cassandra
+base_metrics:
+  - id: read-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: cassandra-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: single-dc
+    name: Single DC
+    monthly_cost: 70
+    max_rps: 15000
+    base_latency_ms: 10
+    write_ratio: 0.3
+    write_distribution: sharded
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 8
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 7
+        category: reliability
+      - id: cassandra-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Apache Cassandra — Single DC document query
+        const doc = await db.collection('users').doc(userId).get()
+        if (!doc.exists) throw new Error('Not found')
+        return doc.data()
+    metric_explanations:
+      write-throughput:
+        reason: Apache Cassandra Single DC handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+      horizontal-scalability:
+        reason: Apache Cassandra Single DC scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Apache Cassandra Single DC ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+  - id: multi-dc
+    name: Multi DC
+    monthly_cost: 180
+    max_rps: 40000
+    base_latency_ms: 8
+    write_ratio: 0.3
+    write_distribution: sharded
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cassandra-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Apache Cassandra — Multi DC document query
+        const doc = await db.collection('users').doc(userId).get()
+        if (!doc.exists) throw new Error('Not found')
+        return doc.data()
+    metric_explanations:
+      write-throughput:
+        reason: Apache Cassandra Multi DC handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+      horizontal-scalability:
+        reason: Apache Cassandra Multi DC scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Apache Cassandra Multi DC ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 3-30ms
+  co_location_potential: true
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

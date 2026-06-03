@@ -2,6 +2,7 @@ id: cloudfront
 name: AWS CloudFront
 category: delivery-network
 type_id: cdn
+vendor_url: https://aws.amazon.com/cloudfront/
 description: AWS global CDN with deep origin integration and edge compute
 is: AWS's global content delivery network that caches static and dynamic content at edge locations worldwide, integrates tightly with S3/ALB origins, and runs edge logic via CloudFront Functions or Lambda@Edge
 gain:

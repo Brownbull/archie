@@ -1,0 +1,144 @@
+id: phoenix
+name: Phoenix Channels
+category: real-time
+type_id: realtime
+vendor_url: https://www.phoenixframework.org/
+description: Elixir realtime framework with built-in WebSocket channels and massive concurrency via BEAM VM
+is: An Elixir web framework with built-in WebSocket channels that leverages the BEAM VM for massive concurrency, offering presence tracking, PubSub, and fault-tolerant realtime messaging across distributed nodes
+gain:
+  - Massive concurrency from BEAM VM lightweight processes
+  - Built-in presence tracking and PubSub out of the box
+  - Fault-tolerant — process crashes are isolated and self-healing
+cost:
+  - Elixir/Erlang ecosystem is smaller than Node or Python
+  - BEAM VM tuning and deployment is a niche skill
+  - Clustering requires distributed Erlang or a PubSub adapter
+tags:
+  - realtime
+  - websocket
+  - elixir
+  - phoenix
+  - beam
+base_metrics:
+  - id: message-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: phoenix-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 60
+    max_rps: 8000
+    base_latency_ms: 4
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: phoenix-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Phoenix Channels — Standard WebSocket connection
+        import WebSocket from 'ws'
+
+        const ws = new WebSocket(process.env.WS_URL!)
+        ws.on('open', () => ws.send(JSON.stringify({ event: 'subscribe', channel: 'updates' })))
+        ws.on('message', (data) => console.log('received:', data.toString()))
+    metric_explanations:
+      message-latency:
+        reason: Phoenix Channels Standard delivers messages to connected clients with minimal delay.
+        contributing_factors:
+          - In-process message dispatch avoids network hops for local clients
+          - Pub/sub pattern enables efficient fan-out without polling
+      concurrent-connections:
+        reason: Phoenix Channels Standard handles high connection counts through efficient I/O multiplexing.
+        contributing_factors:
+          - Event-driven architecture scales with connections not threads
+          - Connection pooling reduces per-connection memory overhead
+      phoenix-cost-efficiency:
+        reason: Phoenix Channels Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: clustered
+    name: Clustered
+    monthly_cost: 120
+    max_rps: 20000
+    base_latency_ms: 3
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: phoenix-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Phoenix Channels — Clustered WebSocket connection
+        import WebSocket from 'ws'
+
+        const ws = new WebSocket(process.env.WS_URL!)
+        ws.on('open', () => ws.send(JSON.stringify({ event: 'subscribe', channel: 'updates' })))
+        ws.on('message', (data) => console.log('received:', data.toString()))
+    metric_explanations:
+      message-latency:
+        reason: Phoenix Channels Clustered delivers messages to connected clients with minimal delay.
+        contributing_factors:
+          - In-process message dispatch avoids network hops for local clients
+          - Pub/sub pattern enables efficient fan-out without polling
+      concurrent-connections:
+        reason: Phoenix Channels Clustered handles high connection counts through efficient I/O multiplexing.
+        contributing_factors:
+          - Event-driven architecture scales with connections not threads
+          - Connection pooling reduces per-connection memory overhead
+      phoenix-cost-efficiency:
+        reason: Phoenix Channels Clustered achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: WebSocket/HTTPS
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: 5-60ms
+  co_location_potential: true
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

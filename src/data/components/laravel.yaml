@@ -2,6 +2,7 @@ id: laravel
 name: PHP + Laravel
 category: compute
 type_id: compute
+vendor_url: https://laravel.com/
 description: Expressive PHP framework for web apps, with cheap ubiquitous hosting
 is: A productive, well-documented PHP framework on a share-nothing per-request model that is trivial to host and scale horizontally, with persistent-worker modes (Octane) for high throughput
 gain:

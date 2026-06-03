@@ -2,6 +2,7 @@ id: envoy
 name: Envoy Proxy
 category: delivery-network
 type_id: load-balancer
+vendor_url: https://www.envoyproxy.io/
 description: High-performance L4/L7 proxy and the data plane for modern service meshes
 is: A high-performance C++ proxy with rich L4/L7 routing, observability, and dynamic xDS configuration, used both as an edge load balancer and as the sidecar data plane in service meshes
 gain:

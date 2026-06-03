@@ -2,6 +2,7 @@ id: route53
 name: AWS Route 53
 category: delivery-network
 type_id: dns
+vendor_url: https://aws.amazon.com/route53/
 description: Managed authoritative DNS with health checks and rich routing policies
 is: AWS's highly available authoritative DNS with health checks and routing policies (latency, geolocation, weighted, failover) that integrate tightly with AWS endpoints
 gain:

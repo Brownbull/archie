@@ -2,6 +2,7 @@ id: kong
 name: Kong Gateway
 category: delivery-network
 type_id: api-gateway
+vendor_url: https://konghq.com/products/kong-gateway
 description: Plugin-driven API gateway for routing, auth, rate limiting, and observability
 is: A high-performance API gateway built on NGINX/OpenResty that fronts your services with routing, authentication, rate limiting, and transformations applied as composable plugins
 gain:

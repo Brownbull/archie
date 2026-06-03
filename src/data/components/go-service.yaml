@@ -2,6 +2,7 @@ id: go-service
 name: Go Service
 category: compute
 type_id: compute
+vendor_url: https://go.dev/
 description: A compiled Go backend service with lightweight goroutine concurrency and low resource use
 is: A long-running HTTP service written in Go, handling many concurrent requests per instance with low CPU and memory
 gain:

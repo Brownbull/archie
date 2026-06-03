@@ -2,6 +2,7 @@ id: haproxy
 name: HAProxy
 category: delivery-network
 type_id: load-balancer
+vendor_url: https://www.haproxy.org/
 description: Dedicated high-performance TCP/HTTP load balancer and reverse proxy
 is: A specialized layer-4/7 load balancer built for reliability and observability, distributing traffic across backend pools with rich health checking
 gain:

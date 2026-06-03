@@ -2,6 +2,7 @@ id: airflow
 name: Apache Airflow
 category: compute
 type_id: etl
+vendor_url: https://airflow.apache.org/
 description: DAG-based workflow orchestrator for scheduling and monitoring data pipelines
 is: A Python-native orchestrator that schedules directed-acyclic-graph workflows, manages task dependencies and retries, and monitors batch data pipelines — it coordinates work rather than processing data itself
 gain:

@@ -2,6 +2,7 @@ id: keycloak
 name: Keycloak
 category: auth-security
 type_id: auth
+vendor_url: https://www.keycloak.org/
 description: Self-hosted open-source identity and access management (OIDC/SAML)
 is: An open-source identity and access management server you self-host, providing login, SSO, social/enterprise federation, and OAuth2/OIDC/SAML token issuance with full control of user data
 gain:

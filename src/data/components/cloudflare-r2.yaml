@@ -1,0 +1,136 @@
+id: cloudflare-r2
+name: Cloudflare R2
+category: data-storage
+type_id: object-storage
+vendor_url: https://www.cloudflare.com/developer-platform/products/r2/
+description: S3-compatible object storage with zero egress fees at Cloudflare's edge
+is: An S3-compatible object storage service that eliminates egress fees by serving data from Cloudflare's global edge network, making it cost-effective for read-heavy workloads
+gain:
+  - Zero egress fees regardless of download volume
+  - Full S3 API compatibility for easy migration
+  - Edge-distributed for low-latency global reads
+cost:
+  - Smaller feature set than mature S3 (no lifecycle tiers yet)
+  - Newer service with less operational track record
+  - Workers integration required for advanced logic
+tags:
+  - storage
+  - object
+  - blob
+  - cloudflare
+  - s3-compatible
+base_metrics:
+  - id: query-latency
+    value: medium
+    numeric_value: 4
+    category: performance
+  - id: storage-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: cost-per-gb
+    value: high
+    numeric_value: 9
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 10
+    max_rps: 8000
+    base_latency_ms: 12
+    metrics:
+      - id: storage-scalability
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: cost-per-gb
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Cloudflare R2 — Standard object operations
+        # Upload
+        aws s3 cp ./backup.tar.gz s3://my-bucket/backups/ --storage-class STANDARD
+        # Download
+        aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
+    metric_explanations:
+      storage-scalability:
+        reason: Cloudflare R2 Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      data-durability:
+        reason: Cloudflare R2 Standard ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+      cost-per-gb:
+        reason: Cloudflare R2 Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: enterprise
+    name: Enterprise
+    monthly_cost: 25
+    max_rps: 15000
+    base_latency_ms: 8
+    metrics:
+      - id: storage-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: cost-per-gb
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Cloudflare R2 — Enterprise object operations
+        # Upload
+        aws s3 cp ./backup.tar.gz s3://my-bucket/backups/ --storage-class STANDARD
+        # Download
+        aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
+    metric_explanations:
+      storage-scalability:
+        reason: Cloudflare R2 Enterprise achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      data-durability:
+        reason: Cloudflare R2 Enterprise ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+      cost-per-gb:
+        reason: Cloudflare R2 Enterprise achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 20-60ms
+  co_location_potential: false
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

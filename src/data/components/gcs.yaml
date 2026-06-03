@@ -2,6 +2,7 @@ id: gcs
 name: Google Cloud Storage
 category: data-storage
 type_id: object-storage
+vendor_url: https://cloud.google.com/storage
 description: Google's managed object storage with unified API across storage classes
 is: A managed object store on Google Cloud with one API across Standard, Nearline, and Coldline classes, so hot and archival data share the same bucket interface with lifecycle-based tiering
 gain:

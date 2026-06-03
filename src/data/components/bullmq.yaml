@@ -2,6 +2,7 @@ id: bullmq
 name: BullMQ
 category: compute
 type_id: worker
+vendor_url: https://docs.bullmq.io/
 description: Redis-backed job queue for Node.js with retries, scheduling, and rate limits
 is: A robust Node.js job queue built on Redis where workers consume jobs with retries, delays, repeatable schedules, and rate limiting, giving background processing without a separate broker
 gain:

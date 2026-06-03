@@ -2,6 +2,7 @@ id: auth0
 name: Auth0
 category: auth-security
 type_id: auth
+vendor_url: https://auth0.com/
 description: Hosted identity platform for login, social/SSO, and token issuance
 is: A hosted identity-as-a-service platform handling login, social and enterprise SSO, MFA, and OAuth/OIDC token issuance, so apps delegate authentication instead of building it
 gain:

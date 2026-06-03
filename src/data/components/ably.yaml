@@ -2,6 +2,7 @@ id: ably
 name: Ably
 category: real-time
 type_id: realtime
+vendor_url: https://ably.com/
 description: Managed realtime messaging platform with global edge and guaranteed delivery
 is: A managed pub/sub realtime platform with a global edge network, message ordering, history, and presence, delivering low-latency websockets at scale with connection-state recovery built in
 gain:

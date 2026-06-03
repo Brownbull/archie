@@ -2,6 +2,7 @@ id: rails
 name: Ruby on Rails
 category: compute
 type_id: compute
+vendor_url: https://rubyonrails.org/
 description: Convention-over-configuration Ruby framework for fast full-stack development
 is: A batteries-included Ruby framework optimized for developer happiness and speed of delivery, with moderate throughput and a global VM lock that bounds in-process CPU parallelism
 gain:

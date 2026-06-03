@@ -2,6 +2,7 @@ id: timescaledb
 name: TimescaleDB
 category: data-storage
 type_id: time-series-db
+vendor_url: https://www.timescale.com/
 description: Time-series database built as a PostgreSQL extension — full SQL on hypertables
 is: A PostgreSQL extension that turns Postgres into a time-series database via auto-partitioned hypertables, keeping full SQL, joins, and the Postgres ecosystem while scaling time-series ingest and queries
 gain:

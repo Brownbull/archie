@@ -2,6 +2,7 @@ id: amazon-mq
 name: Amazon MQ
 category: messaging
 type_id: message-queue
+vendor_url: https://aws.amazon.com/amazon-mq/
 description: Managed message broker for ActiveMQ and RabbitMQ with standard protocols
 is: A managed AWS broker running ActiveMQ or RabbitMQ that speaks standard protocols (AMQP, MQTT, STOMP, JMS), letting you lift-and-shift existing messaging apps without operating the broker yourself
 gain:

@@ -2,6 +2,7 @@ id: pusher
 name: Pusher
 category: real-time
 type_id: realtime
+vendor_url: https://pusher.com/
 description: Managed hosted realtime messaging with channels, presence, and global edge
 is: A fully managed pub-sub realtime service that delivers messages over WebSockets through hosted Channels, handling connection state, presence, and fan-out so you run no socket servers
 gain:

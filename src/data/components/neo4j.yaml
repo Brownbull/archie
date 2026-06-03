@@ -2,6 +2,7 @@ id: neo4j
 name: Neo4j
 category: data-storage
 type_id: graph-db
+vendor_url: https://neo4j.com/
 description: Native property-graph database with the Cypher query language
 is: The market-leading native graph database storing nodes and relationships with index-free adjacency, queried in Cypher, with ACID transactions and a graph data-science library
 gain:

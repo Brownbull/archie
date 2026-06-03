@@ -2,6 +2,7 @@ id: aws-kinesis
 name: AWS Kinesis
 category: messaging
 type_id: event-stream
+vendor_url: https://aws.amazon.com/kinesis/
 description: Fully managed event streaming service for real-time data at scale
 is: A managed, serverless-leaning streaming platform that ingests and delivers ordered records across shards with zero brokers to operate
 gain:

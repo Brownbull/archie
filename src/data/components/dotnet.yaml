@@ -2,6 +2,7 @@ id: dotnet
 name: C# + ASP.NET Core
 category: compute
 type_id: compute
+vendor_url: https://dotnet.microsoft.com/
 description: High-performance, strongly-typed .NET web framework with async-first I/O
 is: A modern, compiled, strongly-typed runtime with a fast HTTP server (Kestrel) and async/await throughout — high throughput and CPU efficiency, strongest in the Microsoft/Azure ecosystem
 gain:

@@ -2,6 +2,7 @@ id: cockroachdb
 name: CockroachDB
 category: data-storage
 type_id: relational-db
+vendor_url: https://www.cockroachlabs.com/
 description: Distributed SQL database with horizontal scale and survivability built in
 is: A Postgres-wire-compatible distributed SQL database that shards and replicates data across nodes automatically, giving horizontal write scale and zone/region survivability without manual sharding
 gain:

@@ -78,6 +78,7 @@ export const ComponentSchema = z.object({
   // Fundamental type this component is a PROVIDER of (e.g. "cdn", "cache"). Optional for
   // back-compat: docs seeded before P5 have no typeId and fall back to `category` grouping.
   typeId: z.string().min(1).optional(),
+  vendorUrl: z.string().optional(),
   description: z.string().min(1),
   is: z.string().min(1),
   gain: z.array(z.string()).min(1),
@@ -148,6 +149,7 @@ export const ComponentYamlSchema = z.object({
   name: z.string().min(1),
   category: z.string().min(1),
   type_id: z.string().min(1).optional(),
+  vendor_url: z.string().url().optional(),
   description: z.string().min(1),
   is: z.string().min(1),
   gain: z.array(z.string()).min(1),
@@ -165,6 +167,7 @@ export const ComponentYamlSchema = z.object({
   name: data.name,
   category: data.category,
   typeId: data.type_id,
+  vendorUrl: data.vendor_url,
   description: data.description,
   is: data.is,
   gain: data.gain,

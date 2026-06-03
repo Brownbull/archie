@@ -2,6 +2,7 @@ id: cloudflare-waf
 name: Cloudflare WAF
 category: monitoring
 type_id: security
+vendor_url: https://www.cloudflare.com/application-services/products/waf/
 description: Edge web application firewall with managed rules, bot, and DDoS protection
 is: A web application firewall running at Cloudflare's edge that filters malicious HTTP traffic with managed and custom rules, layering bot management and DDoS mitigation in front of your origin
 gain:

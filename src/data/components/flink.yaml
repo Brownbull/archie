@@ -2,6 +2,7 @@ id: flink
 name: Apache Flink
 category: compute
 type_id: stream-processor
+vendor_url: https://flink.apache.org/
 description: Stateful stream processing with exactly-once semantics and event-time windows
 is: A distributed stream processor that runs continuous, stateful computations over event streams with exactly-once guarantees, event-time windowing, and checkpointed state for low-latency analytics
 gain:

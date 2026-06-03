@@ -2,6 +2,7 @@ id: socketio
 name: Socket.IO
 category: real-time
 type_id: realtime
+vendor_url: https://socket.io/
 description: Self-hosted realtime library for Node with rooms and automatic reconnection
 is: A self-hosted realtime library for Node.js offering event-based messaging, rooms, and automatic reconnection over websockets with long-polling fallback, scaled across instances via a Redis adapter
 gain:

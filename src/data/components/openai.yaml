@@ -2,6 +2,7 @@ id: openai
 name: OpenAI API
 category: compute
 type_id: llm-gateway
+vendor_url: https://openai.com/
 description: Hosted GPT models for chat, embeddings, and tool use over a simple API
 is: A hosted inference API for OpenAI's GPT family, offering a flagship model for hard reasoning and a small fast model for high-volume cheap calls, accessed over HTTPS with no infrastructure to run
 gain:

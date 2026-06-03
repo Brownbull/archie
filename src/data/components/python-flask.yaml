@@ -2,6 +2,7 @@ id: python-flask
 name: Python + Flask
 category: compute
 type_id: compute
+vendor_url: https://flask.palletsprojects.com/
 description: Minimal, unopinionated Python microframework for APIs and small services
 is: A lightweight Python microframework that ships only routing and request handling — you assemble the ORM, auth, and validation you want, trading batteries-included for a small, explicit core
 gain:

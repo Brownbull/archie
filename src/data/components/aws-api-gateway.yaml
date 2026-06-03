@@ -2,6 +2,7 @@ id: aws-api-gateway
 name: AWS API Gateway
 category: delivery-network
 type_id: api-gateway
+vendor_url: https://aws.amazon.com/api-gateway/
 description: Managed API gateway for REST/HTTP APIs with auth, throttling, and caching
 is: A fully managed AWS gateway that fronts Lambda or HTTP backends with request validation, authorizers, throttling, and response caching, scaling automatically with no servers to run
 gain:

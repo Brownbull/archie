@@ -2,6 +2,7 @@ id: splunk
 name: Splunk
 category: monitoring
 type_id: security
+vendor_url: https://www.splunk.com/
 description: Market-leading security analytics and SIEM platform with the SPL search language
 is: A powerful log analytics and SIEM platform that indexes machine data at scale and runs SPL searches and correlation rules for threat detection, with the trade-off of ingestion-based pricing
 gain:

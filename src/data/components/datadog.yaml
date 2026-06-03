@@ -2,6 +2,7 @@ id: datadog
 name: Datadog
 category: monitoring
 type_id: observability
+vendor_url: https://www.datadoghq.com/
 description: A SaaS observability platform unifying metrics, traces, and logs with zero infrastructure to run
 is: A hosted monitoring service that ingests metrics, traces, and logs and renders dashboards, alerts, and APM out of the box
 gain:

@@ -2,6 +2,7 @@ id: grafana
 name: Grafana Stack
 category: monitoring
 type_id: observability
+vendor_url: https://grafana.com/
 description: Open observability stack — Grafana dashboards over Loki, Mimir, and Tempo
 is: An open-source observability stack pairing Grafana dashboards with Loki (logs), Mimir/Prometheus (metrics), and Tempo (traces), giving unified visualization self-hosted or on Grafana Cloud
 gain:

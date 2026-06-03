@@ -2,6 +2,7 @@ id: aws-lambda
 name: AWS Lambda
 category: compute
 type_id: serverless
+vendor_url: https://aws.amazon.com/lambda/
 description: Event-driven functions that scale to zero and bill per invocation, with no servers to manage
 is: A serverless compute service that runs your code on demand in response to events, scaling automatically from zero
 gain:

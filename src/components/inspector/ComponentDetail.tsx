@@ -24,7 +24,7 @@ import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { formatRps, formatLatencyMs } from "@/lib/formatStats"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { InspectorDisclosure } from "@/components/inspector/InspectorDisclosure"
-import { ChevronDown, ChevronRight, Trash2 } from "lucide-react"
+import { ChevronDown, ChevronRight, ExternalLink, Trash2 } from "lucide-react"
 
 interface ComponentDetailProps {
   component: Component
@@ -225,6 +225,18 @@ export function ComponentDetail({
             )}
             {/* Vendor lives here now that the heading is the logical type. */}
             {typeLabel && <span data-testid="inspector-summary-provider" className="font-medium text-text-primary">{component.name}</span>}
+            {component.vendorUrl && (
+              <a
+                href={component.vendorUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="inspector-vendor-link"
+                className="inline-flex items-center gap-0.5 text-blue-400 hover:text-blue-300"
+                title={`Visit ${component.name}`}
+              >
+                <ExternalLink className="h-2.5 w-2.5" />
+              </a>
+            )}
             {activeVariant?.name && <span data-testid="inspector-summary-variant">{activeVariant.name}</span>}
             <span data-testid="inspector-summary-cost" className="font-medium text-emerald-400">
               {currentEconomics.monthlyCost === 0 ? "Free" : `$${currentEconomics.monthlyCost}/mo`}

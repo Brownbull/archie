@@ -2,6 +2,7 @@ id: gcp-pubsub
 name: Google Pub/Sub
 category: messaging
 type_id: event-stream
+vendor_url: https://cloud.google.com/pubsub
 description: Fully managed, globally-scalable event ingestion and delivery service
 is: A serverless Google Cloud messaging service that auto-scales to absorb global event ingestion with no partitions or capacity to manage, offering push or pull delivery with at-least-once semantics
 gain:

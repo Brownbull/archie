@@ -1,0 +1,150 @@
+id: sidekiq
+name: Sidekiq
+category: compute
+type_id: worker
+vendor_url: https://sidekiq.org/
+description: Ruby background job framework using Redis for job storage, known for efficiency and simplicity
+is: A Ruby background job framework that uses Redis for job storage and multi-threaded workers for efficient processing, offering retries, scheduled jobs, batches, and a real-time web dashboard for monitoring
+gain:
+  - Multi-threaded — handles many jobs per process efficiently
+  - Simple API with automatic retries and scheduling
+  - Built-in web dashboard for monitoring and managing jobs
+cost:
+  - Ruby-only — not usable from other language ecosystems
+  - Redis is a hard dependency for job storage
+  - Enterprise features (batches, rate limiting) require a paid license
+tags:
+  - worker
+  - background-jobs
+  - ruby
+  - sidekiq
+  - task-queue
+base_metrics:
+  - id: job-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: worker-concurrency
+    value: high
+    numeric_value: 7
+    category: scalability
+  - id: task-reliability
+    value: high
+    numeric_value: 7
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 4
+    category: operational-complexity
+  - id: sidekiq-cost-efficiency
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 40
+    max_rps: 4000
+    base_latency_ms: 20
+    metrics:
+      - id: worker-concurrency
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: job-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: sidekiq-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Sidekiq — Standard background job
+        import { Queue, Worker } from 'bullmq'
+
+        const queue = new Queue('tasks', { connection: { host: process.env.REDIS_HOST } })
+        new Worker('tasks', async (job) => {
+          await processJob(job.data)
+        }, { concurrency: 5 })
+    metric_explanations:
+      worker-concurrency:
+        reason: Sidekiq Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      job-throughput:
+        reason: Sidekiq Standard processes jobs efficiently through concurrent execution.
+        contributing_factors:
+          - Multi-threaded execution maximizes CPU utilization per worker
+          - Job prioritization ensures critical tasks complete first
+      sidekiq-cost-efficiency:
+        reason: Sidekiq Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: enterprise
+    name: Enterprise
+    monthly_cost: 90
+    max_rps: 10000
+    base_latency_ms: 15
+    metrics:
+      - id: worker-concurrency
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: job-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: sidekiq-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Sidekiq — Enterprise background job
+        import { Queue, Worker } from 'bullmq'
+
+        const queue = new Queue('tasks', { connection: { host: process.env.REDIS_HOST } })
+        new Worker('tasks', async (job) => {
+          await processJob(job.data)
+        }, { concurrency: 5 })
+    metric_explanations:
+      worker-concurrency:
+        reason: Sidekiq Enterprise achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      job-throughput:
+        reason: Sidekiq Enterprise processes jobs efficiently through concurrent execution.
+        contributing_factors:
+          - Multi-threaded execution maximizes CPU utilization per worker
+          - Job prioritization ensures critical tasks complete first
+      sidekiq-cost-efficiency:
+        reason: Sidekiq Enterprise achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: AMQP
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: 10-200ms
+  co_location_potential: true
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: db-out
+    type: database
+    direction: out
+  - id: cache-out
+    type: cache
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

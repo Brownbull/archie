@@ -1,0 +1,162 @@
+id: dragonfly
+name: Dragonfly
+category: data-storage
+type_id: cache
+vendor_url: https://www.dragonflydb.io/
+description: Modern Redis-compatible in-memory store using multi-threaded architecture for higher throughput
+is: A modern, Redis-compatible in-memory data store built with a multi-threaded shared-nothing architecture that delivers significantly higher throughput and better memory efficiency than traditional single-threaded in-memory stores
+gain:
+  - Multi-threaded architecture utilizes all CPU cores for higher throughput
+  - Redis-compatible API enables drop-in replacement
+  - Better memory efficiency through novel data structure implementations
+cost:
+  - Younger ecosystem with smaller community than Redis
+  - Some advanced Redis modules not yet supported
+  - Limited production track record compared to established alternatives
+tags:
+  - database
+  - nosql
+  - in-memory
+  - cache
+  - redis-compatible
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 10
+    category: performance
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: data-durability
+    value: medium
+    numeric_value: 5
+    category: reliability
+  - id: dragonfly-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 45
+    max_rps: 60000
+    base_latency_ms: 1
+    cache_hit_ratio: 0.83
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 3
+        category: scalability
+      - id: write-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: dragonfly-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Dragonfly — Standard cache usage
+        import Redis from 'ioredis'
+
+        const redis = new Redis(process.env.REDIS_URL)
+        const cached = await redis.get(`user:${userId}`)
+        if (!cached) {
+          const data = await fetchFromDB(userId)
+          await redis.set(`user:${userId}`, JSON.stringify(data), 'EX', 3600)
+        }
+    metric_explanations:
+      read-latency:
+        reason: Dragonfly Standard optimizes read paths for low-latency data access.
+        contributing_factors:
+          - Indexed queries route to the optimal storage shard
+          - Connection pooling amortizes per-query connection overhead
+      horizontal-scalability:
+        reason: Dragonfly Standard scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      write-throughput:
+        reason: Dragonfly Standard handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+  - id: scaled
+    name: Scaled
+    monthly_cost: 100
+    max_rps: 200000
+    base_latency_ms: 0.5
+    cache_hit_ratio: 0.92
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: write-throughput
+        value: high
+        numeric_value: 10
+        category: performance
+      - id: dragonfly-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Dragonfly — Scaled cache usage
+        import Redis from 'ioredis'
+
+        const redis = new Redis(process.env.REDIS_URL)
+        const cached = await redis.get(`user:${userId}`)
+        if (!cached) {
+          const data = await fetchFromDB(userId)
+          await redis.set(`user:${userId}`, JSON.stringify(data), 'EX', 3600)
+        }
+    metric_explanations:
+      read-latency:
+        reason: Dragonfly Scaled optimizes read paths for low-latency data access.
+        contributing_factors:
+          - Indexed queries route to the optimal storage shard
+          - Connection pooling amortizes per-query connection overhead
+      horizontal-scalability:
+        reason: Dragonfly Scaled scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      write-throughput:
+        reason: Dragonfly Scaled handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+    - pub-sub
+  typical_latency: <1ms
+  co_location_potential: true
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: cache-in
+    type: cache
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

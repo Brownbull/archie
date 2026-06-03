@@ -1,0 +1,137 @@
+id: google-cloud-dns
+name: Google Cloud DNS
+category: delivery-network
+type_id: dns
+vendor_url: https://cloud.google.com/dns
+description: Google's managed authoritative DNS with 100% uptime SLA
+is: Google Cloud's globally distributed, managed authoritative DNS service that offers 100% availability SLA, DNSSEC support, and tight integration with GCP resources
+gain:
+  - 100% availability SLA backed by Google's global anycast network
+  - Deep GCP integration with Cloud Load Balancing and GKE
+  - DNSSEC support with automatic key management
+cost:
+  - GCP-only; priced per managed zone and per query
+  - Fewer routing policies compared to Route 53
+  - Limited feature set outside the GCP ecosystem
+tags:
+  - dns
+  - networking
+  - managed
+  - gcp
+  - google-cloud-dns
+base_metrics:
+  - id: resolution-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 10
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: gcloud-dns-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 3
+    max_rps: 60000
+    base_latency_ms: 2
+    metrics:
+      - id: resolution-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: gcloud-dns-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Google Cloud DNS — Standard DNS query test
+        dig @ns1.example.com example.com A +short
+        # Verify resolution latency
+        dig example.com +stats | grep "Query time"
+    metric_explanations:
+      resolution-latency:
+        reason: Google Cloud DNS Standard resolves queries through a global anycast network, keeping resolution latency predictable.
+        contributing_factors:
+          - Global anycast resolver fleet distributes queries geographically
+          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+      global-availability:
+        reason: Google Cloud DNS Standard distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      gcloud-dns-cost-efficiency:
+        reason: Google Cloud DNS Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: premium
+    name: Premium
+    monthly_cost: 12
+    max_rps: 80000
+    base_latency_ms: 1
+    metrics:
+      - id: resolution-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: gcloud-dns-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Google Cloud DNS — Premium DNS query test
+        dig @ns1.example.com example.com A +short
+        # Verify resolution latency
+        dig example.com +stats | grep "Query time"
+    metric_explanations:
+      resolution-latency:
+        reason: Google Cloud DNS Premium resolves queries through a global anycast network, keeping resolution latency predictable.
+        contributing_factors:
+          - Global anycast resolver fleet distributes queries geographically
+          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+      global-availability:
+        reason: Google Cloud DNS Premium distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      gcloud-dns-cost-efficiency:
+        reason: Google Cloud DNS Premium achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: DNS/UDP
+  communication_patterns:
+    - request-response
+  typical_latency: 5-45ms
+  co_location_potential: false
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

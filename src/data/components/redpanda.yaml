@@ -2,6 +2,7 @@ id: redpanda
 name: Redpanda
 category: messaging
 type_id: event-stream
+vendor_url: https://redpanda.com/
 description: Kafka-compatible streaming platform in a single C++ binary, no ZooKeeper
 is: A Kafka-API-compatible event streaming platform written in C++ that runs as one binary with no JVM or ZooKeeper, delivering lower tail latency and a simpler operational story than Kafka
 gain:

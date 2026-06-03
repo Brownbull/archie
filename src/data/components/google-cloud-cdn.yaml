@@ -1,0 +1,137 @@
+id: google-cloud-cdn
+name: Google Cloud CDN
+category: delivery-network
+type_id: cdn
+vendor_url: https://cloud.google.com/cdn
+description: GCP edge caching with tight GCS and Cloud Run integration
+is: Google Cloud's content delivery network that caches content at Google's global edge points of presence, integrates tightly with Cloud Storage and Cloud Run origins, and leverages Google's premium-tier network for low-latency delivery
+gain:
+  - Tight integration with GCS, Cloud Run, and GKE origins
+  - Leverages Google's premium-tier global backbone
+  - Signed URLs and signed cookies for access control
+cost:
+  - GCP-only; egress and cache-fill fees apply
+  - Fewer edge locations than CloudFront or Akamai
+  - Cache invalidation is limited to URL-pattern-based purges
+tags:
+  - cdn
+  - edge
+  - gcp
+  - google-cloud-cdn
+  - caching
+base_metrics:
+  - id: edge-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: gcloud-cdn-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard Caching
+    monthly_cost: 35
+    max_rps: 90000
+    base_latency_ms: 6
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: gcloud-cdn-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Google Cloud CDN — Standard Caching cache status check
+        curl -sI https://cdn.example.com/assets/app.js | grep -i "cache-status\|x-cache\|age"
+        # Purge cached asset
+        curl -X PURGE https://cdn.example.com/assets/app.js
+    metric_explanations:
+      edge-latency:
+        reason: Google Cloud CDN Standard Caching serves content from edge locations close to end users.
+        contributing_factors:
+          - Geographically distributed edge nodes minimize round-trip time
+          - Cache hit ratio reduces origin fetch latency
+      global-availability:
+        reason: Google Cloud CDN Standard Caching distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      gcloud-cdn-cost-efficiency:
+        reason: Google Cloud CDN Standard Caching achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: premium
+    name: Premium Tier
+    monthly_cost: 80
+    max_rps: 150000
+    base_latency_ms: 4
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: gcloud-cdn-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Google Cloud CDN — Premium Tier cache status check
+        curl -sI https://cdn.example.com/assets/app.js | grep -i "cache-status\|x-cache\|age"
+        # Purge cached asset
+        curl -X PURGE https://cdn.example.com/assets/app.js
+    metric_explanations:
+      edge-latency:
+        reason: Google Cloud CDN Premium Tier serves content from edge locations close to end users.
+        contributing_factors:
+          - Geographically distributed edge nodes minimize round-trip time
+          - Cache hit ratio reduces origin fetch latency
+      global-availability:
+        reason: Google Cloud CDN Premium Tier distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      gcloud-cdn-cost-efficiency:
+        reason: Google Cloud CDN Premium Tier achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 10-80ms
+  co_location_potential: false
+ports:
+  - id: cdn-in
+    type: cdn
+    direction: in
+  - id: cdn-out
+    type: cdn
+    direction: out
+  - id: http-in
+    type: http
+    direction: in

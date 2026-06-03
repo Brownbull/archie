@@ -1,0 +1,152 @@
+id: meilisearch
+name: Meilisearch
+category: search
+type_id: search-engine
+vendor_url: https://www.meilisearch.com/
+description: Lightning-fast, typo-tolerant search engine focused on developer experience
+is: A lightweight, developer-friendly search engine that provides instant typo-tolerant full-text search with simple RESTful APIs and minimal configuration out of the box
+gain:
+  - Sub-50ms search with typo tolerance by default
+  - Minimal configuration for quick setup
+  - Simple RESTful API with great developer ergonomics
+cost:
+  - Single-node only — no native clustering
+  - Less suited for complex analytics queries
+  - Smaller ecosystem than Elasticsearch
+tags:
+  - search
+  - full-text
+  - meilisearch
+  - instant-search
+  - typo-tolerant
+base_metrics:
+  - id: query-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: index-freshness
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 5
+    category: scalability
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: meilisearch-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 40
+    max_rps: 2000
+    base_latency_ms: 12
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: operational-complexity
+        value: low
+        numeric_value: 2
+        category: operational-complexity
+      - id: meilisearch-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Meilisearch — Standard search query
+        const results = await client.search({
+          index: 'products',
+          query: { match: { name: searchTerm } },
+          size: 20,
+          highlight: { fields: { name: {} } },
+        })
+    metric_explanations:
+      query-latency:
+        reason: Meilisearch Standard queries time-series data efficiently through pre-aggregated rollups.
+        contributing_factors:
+          - Time-partitioned storage enables efficient range scans
+          - Pre-computed rollups speed up aggregation queries
+      horizontal-scalability:
+        reason: Meilisearch Standard scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      operational-complexity:
+        reason: Meilisearch Standard simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+  - id: scaled
+    name: Scaled
+    monthly_cost: 90
+    max_rps: 5000
+    base_latency_ms: 8
+    metrics:
+      - id: query-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: operational-complexity
+        value: low
+        numeric_value: 3
+        category: operational-complexity
+      - id: meilisearch-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Meilisearch — Scaled search query
+        const results = await client.search({
+          index: 'products',
+          query: { match: { name: searchTerm } },
+          size: 20,
+          highlight: { fields: { name: {} } },
+        })
+    metric_explanations:
+      query-latency:
+        reason: Meilisearch Scaled queries time-series data efficiently through pre-aggregated rollups.
+        contributing_factors:
+          - Time-partitioned storage enables efficient range scans
+          - Pre-computed rollups speed up aggregation queries
+      horizontal-scalability:
+        reason: Meilisearch Scaled scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      operational-complexity:
+        reason: Meilisearch Scaled simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 5-50ms
+  co_location_potential: false
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

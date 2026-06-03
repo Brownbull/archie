@@ -2,6 +2,7 @@ id: arangodb
 name: ArangoDB
 category: data-storage
 type_id: graph-db
+vendor_url: https://arangodb.com/
 description: Multi-model database combining graph, document, and key/value in one engine
 is: An open-source multi-model database that stores graph, document, and key/value data in a single engine with one query language (AQL), letting you mix traversals and document queries without separate systems
 gain:

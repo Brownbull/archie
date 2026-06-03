@@ -2,6 +2,7 @@ id: pinecone
 name: Pinecone
 category: data-storage
 type_id: vector-store
+vendor_url: https://www.pinecone.io/
 description: A fully managed vector database for low-latency similarity search at scale, with zero operations
 is: A hosted vector database that indexes embeddings and serves approximate-nearest-neighbour queries with no infra to run
 gain:

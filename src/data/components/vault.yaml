@@ -2,6 +2,7 @@ id: vault
 name: HashiCorp Vault
 category: monitoring
 type_id: security
+vendor_url: https://www.vaultproject.io/
 description: Secrets management with dynamic credentials, encryption, and tight access control
 is: A secrets-management system that stores and dynamically issues credentials, encrypts data via a transit API, and enforces fine-grained policy-based access with full audit logging, self-hosted or as HCP Vault
 gain:

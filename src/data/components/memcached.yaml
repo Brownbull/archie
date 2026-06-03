@@ -2,6 +2,7 @@ id: memcached
 name: Memcached
 category: caching
 type_id: cache
+vendor_url: https://memcached.org/
 description: A high-performance, multi-threaded in-memory key-value cache for simple, ephemeral data
 is: A lightweight distributed memory cache that stores simple key-value pairs entirely in RAM with no persistence
 gain:

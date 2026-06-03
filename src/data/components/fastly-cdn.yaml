@@ -2,6 +2,7 @@ id: fastly-cdn
 name: Fastly CDN
 category: delivery-network
 type_id: cdn
+vendor_url: https://www.fastly.com/
 description: A developer-focused edge cloud platform with instant purge and programmable edge compute
 is: A globally distributed edge network that caches content and runs custom logic close to users with sub-second cache invalidation
 gain:

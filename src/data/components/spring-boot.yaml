@@ -2,6 +2,7 @@ id: spring-boot
 name: Java + Spring Boot
 category: compute
 type_id: compute
+vendor_url: https://spring.io/
 description: JVM web framework for high-throughput, strongly-typed enterprise services
 is: A mature, strongly-typed JVM stack with thread-per-request concurrency, excellent tooling, and high steady-state throughput at the cost of memory and startup time
 gain:

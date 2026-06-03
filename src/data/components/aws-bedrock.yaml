@@ -2,6 +2,7 @@ id: aws-bedrock
 name: AWS Bedrock
 category: compute
 type_id: llm-gateway
+vendor_url: https://aws.amazon.com/bedrock/
 description: Fully managed gateway to multiple foundation models through one AWS API
 is: A managed multi-model inference service exposing Claude, Llama, Mistral, Titan, and more behind a single IAM-secured endpoint with no infrastructure to run
 gain:

@@ -2,6 +2,7 @@ id: cloudflare-workers
 name: Cloudflare Workers
 category: compute
 type_id: serverless
+vendor_url: https://workers.cloudflare.com/
 description: Edge serverless runtime on V8 isolates with near-zero cold starts
 is: A serverless platform that runs JavaScript/Wasm in lightweight V8 isolates at Cloudflare's edge, giving near-zero cold starts and global low latency, with Durable Objects for stateful coordination
 gain:

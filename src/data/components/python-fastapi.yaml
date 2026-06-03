@@ -2,6 +2,7 @@ id: python-fastapi
 name: Python + FastAPI
 category: compute
 type_id: compute
+vendor_url: https://fastapi.tiangolo.com/
 description: Modern async Python framework with type hints and automatic validation
 is: An async-first Python framework built on Starlette and Pydantic — high throughput for I/O-bound APIs with request/response validation and OpenAPI docs generated from type hints
 gain:

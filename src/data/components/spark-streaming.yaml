@@ -2,6 +2,7 @@ id: spark-streaming
 name: Spark Structured Streaming
 category: compute
 type_id: stream-processor
+vendor_url: https://spark.apache.org/streaming/
 description: Micro-batch stream processing on Spark with unified batch/stream SQL
 is: A stream processor built on Apache Spark that runs streaming as small micro-batches, reusing the Spark SQL/DataFrame API so the same code spans batch and streaming over large data volumes
 gain:

@@ -1,0 +1,153 @@
+id: google-cloud-sql
+name: Google Cloud SQL
+category: data-storage
+type_id: relational-db
+vendor_url: https://cloud.google.com/sql
+description: Fully managed MySQL/PostgreSQL/SQL Server with automatic replication and backups
+is: A fully managed relational database service on Google Cloud providing high availability, automated backups, and seamless scaling for MySQL, PostgreSQL, and SQL Server workloads
+gain:
+  - Fully managed with automatic patching and backups
+  - Built-in high availability with regional failover
+  - Seamless integration with Google Cloud services
+cost:
+  - Higher cost than self-managed databases at scale
+  - Limited customization of database engine parameters
+  - Vendor lock-in to Google Cloud platform
+tags:
+  - database
+  - sql
+  - relational
+  - managed
+  - gcp
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: write-throughput
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: horizontal-scalability
+    value: low
+    numeric_value: 3
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: google-cloud-sql-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 95
+    max_rps: 4000
+    base_latency_ms: 12
+    write_ratio: 0.3
+    write_distribution: primary
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 2
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: google-cloud-sql-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Google Cloud SQL — Standard query
+        import { Pool } from 'pg'
+
+        const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+        const { rows } = await pool.query('SELECT id, name FROM users WHERE active = $1 LIMIT 100', [true])
+    metric_explanations:
+      read-latency:
+        reason: Google Cloud SQL Standard optimizes read paths for low-latency data access.
+        contributing_factors:
+          - Indexed queries route to the optimal storage shard
+          - Connection pooling amortizes per-query connection overhead
+      horizontal-scalability:
+        reason: Google Cloud SQL Standard scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Google Cloud SQL Standard ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+  - id: ha-replica
+    name: HA Replica
+    monthly_cost: 200
+    max_rps: 8000
+    base_latency_ms: 8
+    write_ratio: 0.3
+    write_distribution: primary
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: google-cloud-sql-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Google Cloud SQL — HA Replica query
+        import { Pool } from 'pg'
+
+        const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+        const { rows } = await pool.query('SELECT id, name FROM users WHERE active = $1 LIMIT 100', [true])
+    metric_explanations:
+      read-latency:
+        reason: Google Cloud SQL HA Replica optimizes read paths for low-latency data access.
+        contributing_factors:
+          - Indexed queries route to the optimal storage shard
+          - Connection pooling amortizes per-query connection overhead
+      horizontal-scalability:
+        reason: Google Cloud SQL HA Replica scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Google Cloud SQL HA Replica ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+    - connection-pooling
+  typical_latency: 1-10ms
+  co_location_potential: true
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

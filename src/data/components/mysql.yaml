@@ -2,6 +2,7 @@ id: mysql
 name: MySQL
 category: data-storage
 type_id: relational-db
+vendor_url: https://www.mysql.com/
 description: A widely deployed open-source relational database known for fast reads and operational simplicity
 is: A mature relational database that stores structured data in tables with ACID transactions and SQL queries
 gain:

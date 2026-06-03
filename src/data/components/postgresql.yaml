@@ -2,6 +2,7 @@ id: postgresql
 name: PostgreSQL
 category: data-storage
 type_id: relational-db
+vendor_url: https://www.postgresql.org/
 description: Advanced open-source relational database with strong ACID compliance and extensibility
 is: A powerful, open-source object-relational database known for reliability, data integrity, and correctness
 gain:

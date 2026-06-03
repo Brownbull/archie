@@ -1,0 +1,136 @@
+id: azure-blob
+name: Azure Blob Storage
+category: data-storage
+type_id: object-storage
+vendor_url: https://azure.microsoft.com/en-us/products/storage/blobs
+description: Microsoft's massively scalable object storage with tiered access (hot/cool/archive)
+is: A managed object storage service in Azure that stores unstructured data as blobs with automatic tiering across hot, cool, and archive access tiers for cost optimization at any scale
+gain:
+  - Hot/cool/archive tiers optimize cost by access pattern
+  - Deep Azure ecosystem integration (Functions, Data Factory)
+  - Geo-redundant replication options for disaster recovery
+cost:
+  - Egress and operation charges can surprise at scale
+  - Archive tier retrieval latency measured in hours
+  - Naming and SDK conventions differ from S3
+tags:
+  - storage
+  - object
+  - blob
+  - azure
+  - cloud
+base_metrics:
+  - id: query-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: storage-scalability
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 10
+    category: reliability
+  - id: cost-per-gb
+    value: high
+    numeric_value: 8
+    category: cost-efficiency
+config_variants:
+  - id: hot
+    name: Hot
+    monthly_cost: 22
+    max_rps: 12000
+    base_latency_ms: 14
+    metrics:
+      - id: storage-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: cost-per-gb
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Azure Blob Storage — Hot object operations
+        # Upload
+        aws s3 cp ./backup.tar.gz s3://my-bucket/backups/ --storage-class STANDARD
+        # Download
+        aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
+    metric_explanations:
+      storage-scalability:
+        reason: Azure Blob Storage Hot achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      data-durability:
+        reason: Azure Blob Storage Hot ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+      cost-per-gb:
+        reason: Azure Blob Storage Hot achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: cool
+    name: Cool
+    monthly_cost: 10
+    max_rps: 5000
+    base_latency_ms: 25
+    metrics:
+      - id: storage-scalability
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: cost-per-gb
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Azure Blob Storage — Cool object operations
+        # Upload
+        aws s3 cp ./backup.tar.gz s3://my-bucket/backups/ --storage-class STANDARD
+        # Download
+        aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
+    metric_explanations:
+      storage-scalability:
+        reason: Azure Blob Storage Cool achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      data-durability:
+        reason: Azure Blob Storage Cool ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+      cost-per-gb:
+        reason: Azure Blob Storage Cool achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 20-60ms
+  co_location_potential: false
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

@@ -1,0 +1,137 @@
+id: azure-dns
+name: Azure DNS
+category: delivery-network
+type_id: dns
+vendor_url: https://azure.microsoft.com/en-us/products/dns
+description: Azure's DNS hosting with global anycast and deep Azure integration
+is: Azure's managed authoritative DNS service that leverages Microsoft's global anycast network, offers deep integration with Azure resources via alias records, and supports both public and private DNS zones
+gain:
+  - Global anycast network with low-latency resolution
+  - Deep Azure integration with alias records for Traffic Manager and App Service
+  - Private DNS zones for VNet name resolution
+cost:
+  - Azure-only; priced per zone and per query
+  - Fewer advanced routing policies than Route 53
+  - Private zones add cost for cross-VNet resolution
+tags:
+  - dns
+  - networking
+  - managed
+  - azure
+  - azure-dns
+base_metrics:
+  - id: resolution-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: azure-dns-cost-efficiency
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 8
+    max_rps: 150000
+    base_latency_ms: 1
+    metrics:
+      - id: resolution-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: azure-dns-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Azure DNS — Standard DNS query test
+        dig @ns1.example.com example.com A +short
+        # Verify resolution latency
+        dig example.com +stats | grep "Query time"
+    metric_explanations:
+      resolution-latency:
+        reason: Azure DNS Standard resolves queries through a global anycast network, keeping resolution latency predictable.
+        contributing_factors:
+          - Global anycast resolver fleet distributes queries geographically
+          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+      global-availability:
+        reason: Azure DNS Standard distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      azure-dns-cost-efficiency:
+        reason: Azure DNS Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: private-zones
+    name: Private Zones
+    monthly_cost: 15
+    max_rps: 150000
+    base_latency_ms: 1
+    metrics:
+      - id: resolution-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: azure-dns-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Azure DNS — Private Zones DNS query test
+        dig @ns1.example.com example.com A +short
+        # Verify resolution latency
+        dig example.com +stats | grep "Query time"
+    metric_explanations:
+      resolution-latency:
+        reason: Azure DNS Private Zones resolves queries through a global anycast network, keeping resolution latency predictable.
+        contributing_factors:
+          - Global anycast resolver fleet distributes queries geographically
+          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+      global-availability:
+        reason: Azure DNS Private Zones distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      azure-dns-cost-efficiency:
+        reason: Azure DNS Private Zones achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: DNS/UDP
+  communication_patterns:
+    - request-response
+  typical_latency: 5-45ms
+  co_location_potential: false
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

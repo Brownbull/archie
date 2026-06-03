@@ -2,6 +2,7 @@ id: mongodb
 name: MongoDB
 category: data-storage
 type_id: nosql
+vendor_url: https://www.mongodb.com/
 description: Document database with a flexible schema and horizontal sharding
 is: A document-oriented NoSQL database storing flexible JSON-like documents, scaling horizontally via sharding with replica sets for high availability and a rich query and aggregation language
 gain:

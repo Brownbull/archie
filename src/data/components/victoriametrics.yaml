@@ -1,0 +1,148 @@
+id: victoriametrics
+name: VictoriaMetrics
+category: data-storage
+type_id: time-series-db
+vendor_url: https://victoriametrics.com/
+description: High-performance time-series database compatible with Prometheus with better compression and speed
+is: A high-performance time-series database and monitoring solution that is fully compatible with Prometheus remote-write and PromQL, offering superior compression ratios and query speed at scale
+gain:
+  - Drop-in Prometheus compatibility (remote-write + PromQL)
+  - Up to 10x better compression than Prometheus TSDB
+  - Single-binary simplicity for small deployments
+cost:
+  - Clustering requires the enterprise or cloud edition
+  - Smaller community than Prometheus or InfluxDB
+  - Advanced features (downsampling, dedup) need tuning
+tags:
+  - time-series
+  - metrics
+  - victoriametrics
+  - prometheus
+  - monitoring
+base_metrics:
+  - id: write-throughput
+    value: high
+    numeric_value: 9
+    category: performance
+  - id: query-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: storage-compression
+    value: high
+    numeric_value: 10
+    category: scalability
+  - id: data-durability
+    value: medium
+    numeric_value: 6
+    category: reliability
+  - id: victoriametrics-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: single-node
+    name: Single Node
+    monthly_cost: 65
+    max_rps: 70000
+    base_latency_ms: 3
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 9
+        category: performance
+      - id: storage-compression
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: data-durability
+        value: medium
+        numeric_value: 5
+        category: reliability
+      - id: victoriametrics-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # VictoriaMetrics — Single Node metric ingestion
+        curl -X POST http://localhost:8428/api/v1/write \
+          -d 'cpu_usage{host="server1"} 0.72 1700000000'
+        # Query
+        curl 'http://localhost:8428/api/v1/query?query=cpu_usage{host="server1"}[5m]'
+    metric_explanations:
+      write-throughput:
+        reason: VictoriaMetrics Single Node handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+      storage-compression:
+        reason: VictoriaMetrics Single Node achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      data-durability:
+        reason: VictoriaMetrics Single Node ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+  - id: cluster
+    name: Cluster
+    monthly_cost: 150
+    max_rps: 200000
+    base_latency_ms: 2
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 10
+        category: performance
+      - id: storage-compression
+        value: high
+        numeric_value: 10
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: victoriametrics-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # VictoriaMetrics — Cluster metric ingestion
+        curl -X POST http://localhost:8428/api/v1/write \
+          -d 'cpu_usage{host="server1"} 0.72 1700000000'
+        # Query
+        curl 'http://localhost:8428/api/v1/query?query=cpu_usage{host="server1"}[5m]'
+    metric_explanations:
+      write-throughput:
+        reason: VictoriaMetrics Cluster handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+      storage-compression:
+        reason: VictoriaMetrics Cluster achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+      data-durability:
+        reason: VictoriaMetrics Cluster ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 4-40ms
+  co_location_potential: true
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

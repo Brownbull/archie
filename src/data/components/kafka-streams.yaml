@@ -1,0 +1,150 @@
+id: kafka-streams
+name: Kafka Streams
+category: compute
+type_id: stream-processor
+vendor_url: https://kafka.apache.org/documentation/streams/
+description: Client library for building stream processing apps on top of Kafka with no separate cluster needed
+is: A lightweight Java client library for building stream processing applications directly on Apache Kafka, requiring no separate processing cluster, with support for stateful transformations, windowing, and exactly-once semantics
+gain:
+  - No separate cluster — runs as a standard JVM application
+  - Exactly-once semantics via Kafka transactions
+  - Elastic scaling by adding or removing app instances
+cost:
+  - Tightly coupled to Kafka as the only source and sink
+  - Java/JVM only — no first-class support for other languages
+  - State stores need local disk and careful partition tuning
+tags:
+  - stream-processing
+  - kafka
+  - stateful
+  - exactly-once
+  - jvm
+base_metrics:
+  - id: processing-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: processing-throughput
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: state-consistency
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: kafka-streams-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 60
+    max_rps: 30000
+    base_latency_ms: 5
+    metrics:
+      - id: processing-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 5
+        category: operational-complexity
+      - id: kafka-streams-cost-efficiency
+        value: high
+        numeric_value: 7
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Kafka Streams — Standard stream topology
+        import { KafkaStreams } from 'kafka-streams'
+
+        const factory = new KafkaStreams({ kafkaHost: process.env.KAFKA_URL })
+        const stream = factory.getKStream('input-topic')
+        stream.map(msg => transform(msg)).to('output-topic')
+        await stream.start()
+    metric_explanations:
+      processing-latency:
+        reason: Kafka Streams Standard processes events with low end-to-end latency.
+        contributing_factors:
+          - In-memory processing avoids disk I/O for active event streams
+          - Micro-batching balances latency with throughput efficiency
+      operational-complexity:
+        reason: Kafka Streams Standard simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+      kafka-streams-cost-efficiency:
+        reason: Kafka Streams Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: scaled
+    name: Scaled
+    monthly_cost: 120
+    max_rps: 80000
+    base_latency_ms: 4
+    metrics:
+      - id: processing-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 6
+        category: operational-complexity
+      - id: kafka-streams-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Kafka Streams — Scaled stream topology
+        import { KafkaStreams } from 'kafka-streams'
+
+        const factory = new KafkaStreams({ kafkaHost: process.env.KAFKA_URL })
+        const stream = factory.getKStream('input-topic')
+        stream.map(msg => transform(msg)).to('output-topic')
+        await stream.start()
+    metric_explanations:
+      processing-latency:
+        reason: Kafka Streams Scaled processes events with low end-to-end latency.
+        contributing_factors:
+          - In-memory processing avoids disk I/O for active event streams
+          - Micro-batching balances latency with throughput efficiency
+      operational-complexity:
+        reason: Kafka Streams Scaled simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+      kafka-streams-cost-efficiency:
+        reason: Kafka Streams Scaled achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - event-streaming
+  typical_latency: 5-60ms
+  co_location_potential: false
+ports:
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: db-out
+    type: database
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

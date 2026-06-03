@@ -2,6 +2,7 @@ id: adyen
 name: Adyen
 category: compute
 type_id: payments
+vendor_url: https://www.adyen.com/
 description: Enterprise unified-commerce platform spanning online, in-app, and POS
 is: An enterprise payments platform that unifies online, in-app, and point-of-sale on one acquiring stack with global method coverage and built-in risk tooling, aimed at large multi-channel merchants
 gain:

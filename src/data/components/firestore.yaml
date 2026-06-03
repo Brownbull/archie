@@ -1,0 +1,151 @@
+id: firestore
+name: Cloud Firestore
+category: data-storage
+type_id: nosql
+vendor_url: https://firebase.google.com/products/firestore
+description: Google's serverless document database with real-time sync and offline support
+is: A serverless, scalable NoSQL document database from Google that provides real-time data synchronization, offline support for mobile and web clients, and automatic multi-region replication
+gain:
+  - Real-time listeners push data changes to connected clients instantly
+  - Built-in offline support with automatic conflict resolution
+  - Serverless with automatic scaling and zero infrastructure management
+cost:
+  - Pricing based on reads/writes/deletes can be unpredictable at scale
+  - Limited query capabilities compared to full SQL or MongoDB aggregations
+  - Vendor lock-in to Google Cloud and Firebase ecosystem
+tags:
+  - nosql
+  - document
+  - database
+  - serverless
+  - firebase
+  - realtime
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: write-throughput
+    value: medium
+    numeric_value: 6
+    category: performance
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: data-durability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: firestore-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 40
+    max_rps: 3000
+    base_latency_ms: 14
+    write_ratio: 0.3
+    write_distribution: sharded
+    metrics:
+      - id: write-throughput
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 6
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: firestore-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Cloud Firestore — Standard document query
+        const doc = await db.collection('users').doc(userId).get()
+        if (!doc.exists) throw new Error('Not found')
+        return doc.data()
+    metric_explanations:
+      write-throughput:
+        reason: Cloud Firestore Standard handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+      horizontal-scalability:
+        reason: Cloud Firestore Standard scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Cloud Firestore Standard ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+  - id: scaled
+    name: Scaled
+    monthly_cost: 100
+    max_rps: 10000
+    base_latency_ms: 10
+    write_ratio: 0.3
+    write_distribution: sharded
+    metrics:
+      - id: write-throughput
+        value: high
+        numeric_value: 7
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 9
+        category: scalability
+      - id: data-durability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: firestore-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Cloud Firestore — Scaled document query
+        const doc = await db.collection('users').doc(userId).get()
+        if (!doc.exists) throw new Error('Not found')
+        return doc.data()
+    metric_explanations:
+      write-throughput:
+        reason: Cloud Firestore Scaled handles write operations through an optimized ingestion pipeline.
+        contributing_factors:
+          - Write batching reduces per-operation overhead
+          - Durable write-ahead log ensures consistency without sacrificing throughput
+      horizontal-scalability:
+        reason: Cloud Firestore Scaled scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Cloud Firestore Scaled ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+  typical_latency: 3-30ms
+  co_location_potential: true
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

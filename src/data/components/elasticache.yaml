@@ -1,0 +1,163 @@
+id: elasticache
+name: Amazon ElastiCache
+category: data-storage
+type_id: cache
+vendor_url: https://aws.amazon.com/elasticache/
+description: AWS managed Redis/Memcached with automatic failover and Multi-AZ
+is: A fully managed in-memory caching service from AWS supporting Redis and Memcached engines, providing automatic failover, Multi-AZ deployment, and seamless integration with the AWS ecosystem
+gain:
+  - Fully managed with automatic patching and failover
+  - Multi-AZ deployment for high availability
+  - Seamless integration with AWS services and VPC networking
+cost:
+  - Higher cost than self-hosted Redis for equivalent resources
+  - Limited to Redis and Memcached engine versions supported by AWS
+  - Vendor lock-in to AWS infrastructure
+tags:
+  - database
+  - nosql
+  - in-memory
+  - cache
+  - managed
+  - aws
+base_metrics:
+  - id: read-latency
+    value: low
+    numeric_value: 1
+    category: performance
+  - id: write-throughput
+    value: high
+    numeric_value: 8
+    category: performance
+  - id: horizontal-scalability
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: data-durability
+    value: medium
+    numeric_value: 5
+    category: reliability
+  - id: elasticache-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 55
+    max_rps: 45000
+    base_latency_ms: 1
+    cache_hit_ratio: 0.82
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: horizontal-scalability
+        value: low
+        numeric_value: 3
+        category: scalability
+      - id: data-durability
+        value: medium
+        numeric_value: 5
+        category: reliability
+      - id: elasticache-cost-efficiency
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Amazon ElastiCache — Standard cache usage
+        import Redis from 'ioredis'
+
+        const redis = new Redis(process.env.REDIS_URL)
+        const cached = await redis.get(`user:${userId}`)
+        if (!cached) {
+          const data = await fetchFromDB(userId)
+          await redis.set(`user:${userId}`, JSON.stringify(data), 'EX', 3600)
+        }
+    metric_explanations:
+      read-latency:
+        reason: Amazon ElastiCache Standard optimizes read paths for low-latency data access.
+        contributing_factors:
+          - Indexed queries route to the optimal storage shard
+          - Connection pooling amortizes per-query connection overhead
+      horizontal-scalability:
+        reason: Amazon ElastiCache Standard scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Amazon ElastiCache Standard ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+  - id: clustered
+    name: Clustered
+    monthly_cost: 130
+    max_rps: 150000
+    base_latency_ms: 0.5
+    cache_hit_ratio: 0.9
+    metrics:
+      - id: read-latency
+        value: low
+        numeric_value: 1
+        category: performance
+      - id: horizontal-scalability
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: data-durability
+        value: medium
+        numeric_value: 6
+        category: reliability
+      - id: elasticache-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Amazon ElastiCache — Clustered cache usage
+        import Redis from 'ioredis'
+
+        const redis = new Redis(process.env.REDIS_URL)
+        const cached = await redis.get(`user:${userId}`)
+        if (!cached) {
+          const data = await fetchFromDB(userId)
+          await redis.set(`user:${userId}`, JSON.stringify(data), 'EX', 3600)
+        }
+    metric_explanations:
+      read-latency:
+        reason: Amazon ElastiCache Clustered optimizes read paths for low-latency data access.
+        contributing_factors:
+          - Indexed queries route to the optimal storage shard
+          - Connection pooling amortizes per-query connection overhead
+      horizontal-scalability:
+        reason: Amazon ElastiCache Clustered scales capacity by distributing load across nodes.
+        contributing_factors:
+          - Data partitioning distributes load across multiple nodes
+          - Automatic rebalancing maintains even distribution as nodes are added
+      data-durability:
+        reason: Amazon ElastiCache Clustered ensures data durability through replication and persistence.
+        contributing_factors:
+          - Synchronous replication guarantees no data loss on node failure
+          - Point-in-time recovery enables restoration to any recent state
+connection_properties:
+  protocol: TCP
+  communication_patterns:
+    - request-response
+    - pub-sub
+  typical_latency: <1ms
+  co_location_potential: true
+ports:
+  - id: db-in
+    type: database
+    direction: in
+  - id: cache-in
+    type: cache
+    direction: in
+  - id: monitor-out
+    type: monitor
+    direction: out

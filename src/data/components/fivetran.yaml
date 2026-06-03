@@ -2,6 +2,7 @@ id: fivetran
 name: Fivetran
 category: compute
 type_id: etl
+vendor_url: https://www.fivetran.com/
 description: Managed ELT with prebuilt connectors that sync sources into the warehouse
 is: A managed ELT service with hundreds of prebuilt connectors that automatically extract from SaaS and database sources and load them into your warehouse, handling schema drift and incremental syncs for you
 gain:

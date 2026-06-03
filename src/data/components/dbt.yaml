@@ -2,6 +2,7 @@ id: dbt
 name: dbt
 category: compute
 type_id: etl
+vendor_url: https://www.getdbt.com/
 description: SQL-first transformation framework — the "T" in ELT, run in your warehouse
 is: A transformation framework that lets analysts build, test, and document data models in SQL that run inside the warehouse, turning raw loaded tables into trusted datasets with lineage and tests
 gain:

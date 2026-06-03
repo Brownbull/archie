@@ -2,6 +2,7 @@ id: celery
 name: Celery
 category: compute
 type_id: worker
+vendor_url: https://docs.celeryq.dev/
 description: Distributed task queue for Python — background jobs pulled from a broker
 is: A distributed task queue for Python where worker processes pull jobs from a broker (Redis/RabbitMQ) and execute them asynchronously, with retries, scheduling, and result backends
 gain:

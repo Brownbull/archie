@@ -2,6 +2,7 @@ id: qdrant
 name: Qdrant
 category: data-storage
 type_id: vector-store
+vendor_url: https://qdrant.tech/
 description: Open-source vector database written in Rust for fast similarity search
 is: A Rust-based vector database with HNSW indexing and rich payload filtering that runs self-hosted or as managed cloud, tuned for low-latency similarity search at scale
 gain:

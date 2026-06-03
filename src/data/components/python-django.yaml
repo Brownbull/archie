@@ -2,6 +2,7 @@ id: python-django
 name: Python + Django
 category: compute
 type_id: compute
+vendor_url: https://www.djangoproject.com/
 description: Batteries-included Python web framework for APIs and full web applications
 is: A high-level Python framework with ORM, admin, auth, and migrations built in — fast to build with a broad ecosystem, bounded by the GIL for CPU-parallel work
 gain:

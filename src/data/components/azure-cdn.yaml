@@ -1,0 +1,137 @@
+id: azure-cdn
+name: Azure CDN
+category: delivery-network
+type_id: cdn
+vendor_url: https://azure.microsoft.com/en-us/products/cdn
+description: Azure edge delivery with integrated DDoS protection
+is: Azure's content delivery network that accelerates static and dynamic content via Microsoft's global edge network, includes integrated DDoS protection, and supports custom domain HTTPS with managed certificates
+gain:
+  - Integrated DDoS protection at the edge
+  - Deep Azure integration with Blob Storage, App Service, and Front Door
+  - Managed TLS certificates for custom domains
+cost:
+  - Azure-only; egress pricing varies by region
+  - Multiple SKUs (Standard, Premium) complicate selection
+  - Rules engine limited in Standard tier
+tags:
+  - cdn
+  - edge
+  - azure
+  - azure-cdn
+  - caching
+base_metrics:
+  - id: edge-latency
+    value: low
+    numeric_value: 3
+    category: performance
+  - id: global-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: operational-complexity
+    value: low
+    numeric_value: 3
+    category: operational-complexity
+  - id: azure-cdn-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 55
+    max_rps: 180000
+    base_latency_ms: 5
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: azure-cdn-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Azure CDN — Standard cache status check
+        curl -sI https://cdn.example.com/assets/app.js | grep -i "cache-status\|x-cache\|age"
+        # Purge cached asset
+        curl -X PURGE https://cdn.example.com/assets/app.js
+    metric_explanations:
+      edge-latency:
+        reason: Azure CDN Standard serves content from edge locations close to end users.
+        contributing_factors:
+          - Geographically distributed edge nodes minimize round-trip time
+          - Cache hit ratio reduces origin fetch latency
+      global-availability:
+        reason: Azure CDN Standard distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      azure-cdn-cost-efficiency:
+        reason: Azure CDN Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: premium
+    name: Premium
+    monthly_cost: 120
+    max_rps: 250000
+    base_latency_ms: 3
+    metrics:
+      - id: edge-latency
+        value: low
+        numeric_value: 2
+        category: performance
+      - id: global-availability
+        value: high
+        numeric_value: 9
+        category: reliability
+      - id: azure-cdn-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Azure CDN — Premium cache status check
+        curl -sI https://cdn.example.com/assets/app.js | grep -i "cache-status\|x-cache\|age"
+        # Purge cached asset
+        curl -X PURGE https://cdn.example.com/assets/app.js
+    metric_explanations:
+      edge-latency:
+        reason: Azure CDN Premium serves content from edge locations close to end users.
+        contributing_factors:
+          - Geographically distributed edge nodes minimize round-trip time
+          - Cache hit ratio reduces origin fetch latency
+      global-availability:
+        reason: Azure CDN Premium distributes DNS across multiple availability zones for high uptime.
+        contributing_factors:
+          - Multi-zone redundancy eliminates single points of failure
+          - Automatic health checks route away from degraded endpoints
+      azure-cdn-cost-efficiency:
+        reason: Azure CDN Premium achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 10-80ms
+  co_location_potential: false
+ports:
+  - id: cdn-in
+    type: cdn
+    direction: in
+  - id: cdn-out
+    type: cdn
+    direction: out
+  - id: http-in
+    type: http
+    direction: in

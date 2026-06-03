@@ -2,6 +2,7 @@ id: aws-s3
 name: AWS S3
 category: data-storage
 type_id: object-storage
+vendor_url: https://aws.amazon.com/s3/
 description: A fully managed object store with virtually unlimited capacity and eleven nines of durability
 is: A managed object storage service that holds files (blobs) addressable by key over HTTP, with near-infinite scale
 gain:

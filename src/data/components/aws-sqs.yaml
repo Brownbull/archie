@@ -2,6 +2,7 @@ id: aws-sqs
 name: AWS SQS
 category: messaging
 type_id: message-queue
+vendor_url: https://aws.amazon.com/sqs/
 description: A fully managed message queue that decouples producers and consumers at virtually any scale
 is: A managed queue service that buffers messages between services with at-least-once delivery and no servers to run
 gain:

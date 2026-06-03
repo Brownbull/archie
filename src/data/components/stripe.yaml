@@ -2,6 +2,7 @@ id: stripe
 name: Stripe
 category: compute
 type_id: payments
+vendor_url: https://stripe.com/
 description: Developer-first payment service provider with hosted PCI compliance
 is: A single-provider payment platform that handles cards, wallets, and subscriptions through a polished API, offloading most PCI scope to Stripe's hosted infrastructure
 gain:

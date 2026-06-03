@@ -2,6 +2,7 @@ id: elasticsearch
 name: Elasticsearch
 category: search
 type_id: search-engine
+vendor_url: https://www.elastic.co/elasticsearch
 description: Distributed full-text search and analytics engine built on Lucene
 is: A distributed search and analytics engine built on Lucene that indexes documents into shards for fast full-text search, filtering, aggregations, and relevance ranking at scale
 gain:

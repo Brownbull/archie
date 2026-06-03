@@ -2,6 +2,7 @@ id: aws-alb
 name: AWS ALB
 category: delivery-network
 type_id: load-balancer
+vendor_url: https://aws.amazon.com/elasticloadbalancing/
 description: Managed layer-7 application load balancer with health checks and autoscaling
 is: A fully managed AWS layer-7 load balancer that routes HTTP/HTTPS by host/path, scales its own capacity with traffic, and integrates health checks, TLS termination, and optional WAF
 gain:

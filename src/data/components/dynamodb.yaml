@@ -2,6 +2,7 @@ id: dynamodb
 name: AWS DynamoDB
 category: data-storage
 type_id: nosql
+vendor_url: https://aws.amazon.com/dynamodb/
 description: Serverless key-value and document store with single-digit-ms latency at scale
 is: A fully managed serverless NoSQL key-value/document database that delivers consistent single-digit-millisecond latency at any scale, with on-demand or provisioned capacity and no servers to run
 gain:

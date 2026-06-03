@@ -2,6 +2,7 @@ id: rabbitmq
 name: RabbitMQ
 category: messaging
 type_id: message-queue
+vendor_url: https://www.rabbitmq.com/
 description: Open-source message broker supporting multiple messaging protocols
 is: A reliable message broker that implements AMQP for decoupling services and managing work queues
 gain:

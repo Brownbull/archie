@@ -2,6 +2,7 @@ id: newrelic
 name: New Relic
 category: monitoring
 type_id: observability
+vendor_url: https://newrelic.com/
 description: Full-platform observability with APM, infrastructure, logs, and usage pricing
 is: A SaaS observability platform unifying APM, infrastructure, logs, browser, and synthetics under one query language (NRQL), priced on data ingested plus per-user, with auto-instrumentation agents
 gain:

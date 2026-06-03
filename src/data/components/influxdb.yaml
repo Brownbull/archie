@@ -2,6 +2,7 @@ id: influxdb
 name: InfluxDB
 category: data-storage
 type_id: time-series-db
+vendor_url: https://www.influxdata.com/
 description: Purpose-built time-series database for metrics, events, and IoT data
 is: A time-series database optimized for high-ingest timestamped data with columnar compression, retention policies, and downsampling, plus a query language built for time-windowed aggregation
 gain:

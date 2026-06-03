@@ -2,6 +2,7 @@ id: minio
 name: MinIO
 category: data-storage
 type_id: object-storage
+vendor_url: https://min.io/
 description: Self-hosted S3-compatible object storage for on-prem and hybrid clouds
 is: A high-performance, S3-API-compatible object store you run yourself on commodity disks, giving on-prem or hybrid blob storage without cloud egress fees or vendor lock-in
 gain:

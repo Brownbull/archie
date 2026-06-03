@@ -1,0 +1,144 @@
+id: apigee
+name: Apigee
+category: delivery-network
+type_id: api-gateway
+vendor_url: https://cloud.google.com/apigee
+description: Google Cloud's full lifecycle API management platform
+is: Google Cloud's enterprise API management platform that provides full lifecycle API governance including design, security, analytics, monetization, and developer portal capabilities on top of a high-performance gateway proxy
+gain:
+  - Full lifecycle API management (design, publish, monitor, monetize)
+  - Built-in analytics, traffic management, and developer portal
+  - Deep GCP integration with Cloud Endpoints and Anthos
+cost:
+  - Enterprise pricing is significantly higher than OSS alternatives
+  - Complex setup and learning curve for the full platform
+  - Overkill for simple API proxying use cases
+tags:
+  - api-gateway
+  - networking
+  - apigee
+  - routing
+  - plugins
+base_metrics:
+  - id: request-latency
+    value: low
+    numeric_value: 5
+    category: performance
+  - id: concurrent-connections
+    value: high
+    numeric_value: 8
+    category: scalability
+  - id: policy-enforcement
+    value: high
+    numeric_value: 9
+    category: security
+  - id: operational-complexity
+    value: medium
+    numeric_value: 6
+    category: operational-complexity
+  - id: apigee-cost-efficiency
+    value: medium
+    numeric_value: 5
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 60
+    max_rps: 160000
+    base_latency_ms: 6
+    metrics:
+      - id: request-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: operational-complexity
+        value: medium
+        numeric_value: 6
+        category: operational-complexity
+      - id: apigee-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Apigee — Standard proxy configuration
+        curl -s https://api.example.com/v1/resource \
+          -H "Authorization: Bearer $TOKEN" \
+          -H "Content-Type: application/json" | jq '.'
+    metric_explanations:
+      request-latency:
+        reason: Apigee Standard processes requests with minimal overhead through optimized routing.
+        contributing_factors:
+          - Efficient request routing minimizes per-request overhead
+          - Connection keep-alive reduces handshake latency
+      operational-complexity:
+        reason: Apigee Standard simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+      apigee-cost-efficiency:
+        reason: Apigee Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: enterprise
+    name: Enterprise
+    monthly_cost: 150
+    max_rps: 300000
+    base_latency_ms: 4
+    metrics:
+      - id: request-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: operational-complexity
+        value: low
+        numeric_value: 4
+        category: operational-complexity
+      - id: apigee-cost-efficiency
+        value: medium
+        numeric_value: 4
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |-
+        # Apigee — Enterprise proxy configuration
+        curl -s https://api.example.com/v1/resource \
+          -H "Authorization: Bearer $TOKEN" \
+          -H "Content-Type: application/json" | jq '.'
+    metric_explanations:
+      request-latency:
+        reason: Apigee Enterprise processes requests with minimal overhead through optimized routing.
+        contributing_factors:
+          - Efficient request routing minimizes per-request overhead
+          - Connection keep-alive reduces handshake latency
+      operational-complexity:
+        reason: Apigee Enterprise simplifies operations through managed infrastructure.
+        contributing_factors:
+          - Managed service handles patching, backups, and scaling automatically
+          - Monitoring and alerting are built into the platform
+      apigee-cost-efficiency:
+        reason: Apigee Enterprise achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: HTTP
+  communication_patterns:
+    - request-response
+  typical_latency: 2-25ms
+  co_location_potential: false
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: auth-out
+    type: auth
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

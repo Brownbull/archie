@@ -1,0 +1,144 @@
+id: pushpin
+name: Pushpin
+category: real-time
+type_id: realtime
+vendor_url: https://pushpin.org/
+description: Reverse proxy for real-time push that decouples WebSocket handling from backend logic
+is: A reverse proxy that handles WebSocket, HTTP streaming, and Server-Sent Events connections on behalf of your backend, letting any language publish to open connections via a simple REST API without managing socket state
+gain:
+  - Decouples realtime push from backend language and framework
+  - Backend publishes via REST — no socket state to manage
+  - Supports WebSocket, SSE, and HTTP long-polling in one proxy
+cost:
+  - Extra infrastructure hop adds a small latency overhead
+  - Proxy must be scaled and monitored independently
+  - Less ecosystem tooling compared to Socket.IO or Phoenix
+tags:
+  - realtime
+  - websocket
+  - reverse-proxy
+  - pushpin
+  - language-agnostic
+base_metrics:
+  - id: message-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: concurrent-connections
+    value: medium
+    numeric_value: 6
+    category: scalability
+  - id: operational-complexity
+    value: medium
+    numeric_value: 5
+    category: operational-complexity
+  - id: pushpin-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    monthly_cost: 50
+    max_rps: 6000
+    base_latency_ms: 5
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: concurrent-connections
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: pushpin-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Pushpin — Standard WebSocket connection
+        import WebSocket from 'ws'
+
+        const ws = new WebSocket(process.env.WS_URL!)
+        ws.on('open', () => ws.send(JSON.stringify({ event: 'subscribe', channel: 'updates' })))
+        ws.on('message', (data) => console.log('received:', data.toString()))
+    metric_explanations:
+      message-latency:
+        reason: Pushpin Standard delivers messages to connected clients with minimal delay.
+        contributing_factors:
+          - In-process message dispatch avoids network hops for local clients
+          - Pub/sub pattern enables efficient fan-out without polling
+      concurrent-connections:
+        reason: Pushpin Standard handles high connection counts through efficient I/O multiplexing.
+        contributing_factors:
+          - Event-driven architecture scales with connections not threads
+          - Connection pooling reduces per-connection memory overhead
+      pushpin-cost-efficiency:
+        reason: Pushpin Standard achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+  - id: scaled
+    name: Scaled
+    monthly_cost: 100
+    max_rps: 15000
+    base_latency_ms: 4
+    metrics:
+      - id: message-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: concurrent-connections
+        value: high
+        numeric_value: 8
+        category: scalability
+      - id: pushpin-cost-efficiency
+        value: medium
+        numeric_value: 6
+        category: cost-efficiency
+    code_snippet:
+      language: typescript
+      code: |-
+        // Pushpin — Scaled WebSocket connection
+        import WebSocket from 'ws'
+
+        const ws = new WebSocket(process.env.WS_URL!)
+        ws.on('open', () => ws.send(JSON.stringify({ event: 'subscribe', channel: 'updates' })))
+        ws.on('message', (data) => console.log('received:', data.toString()))
+    metric_explanations:
+      message-latency:
+        reason: Pushpin Scaled delivers messages to connected clients with minimal delay.
+        contributing_factors:
+          - In-process message dispatch avoids network hops for local clients
+          - Pub/sub pattern enables efficient fan-out without polling
+      concurrent-connections:
+        reason: Pushpin Scaled handles high connection counts through efficient I/O multiplexing.
+        contributing_factors:
+          - Event-driven architecture scales with connections not threads
+          - Connection pooling reduces per-connection memory overhead
+      pushpin-cost-efficiency:
+        reason: Pushpin Scaled achieves this metric level through its architecture and configuration.
+        contributing_factors:
+          - Platform-level optimizations reduce overhead
+          - Configuration defaults are tuned for typical production workloads
+connection_properties:
+  protocol: WebSocket/HTTPS
+  communication_patterns:
+    - publish-subscribe
+  typical_latency: 5-60ms
+  co_location_potential: true
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: stream-in
+    type: stream
+    direction: in
+  - id: stream-out
+    type: stream
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out
