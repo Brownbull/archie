@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { Shield, Lock } from "lucide-react"
 import { toast } from "sonner"
+import { useState } from "react"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { getAllChallenges } from "@/services/challengeLoader"
@@ -10,7 +11,7 @@ import {
   CHALLENGE_TRACKS, CHALLENGE_TRACK_IDS, MASTERY_RANKS, RANK_XP_THRESHOLDS,
   rankForXp, xpToNextRank, MAX_LEVEL,
 } from "@/lib/challengeTracks"
-import { getMasteryAvatar, getTrackAvatar } from "@/lib/masteryAvatars"
+import { getMasteryAvatar, getTrackAvatar, getDisciplineAvatars } from "@/lib/masteryAvatars"
 import { ALL_EQUIPMENT_SLOTS, getBlockColor } from "@/lib/equipmentSlots"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -46,6 +47,77 @@ function EquipmentSlotBox({ typeId, unlocked }: { typeId: string; unlocked: bool
   )
 }
 
+function DisciplineRow({ trackId, xp, completedCount, totalCount, equippedAvatar, onEquip }: {
+  trackId: string; xp: number; completedCount: number; totalCount: number
+  equippedAvatar: string | null; onEquip: (key: string) => void
+}) {
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const track = CHALLENGE_TRACKS.get(trackId)
+  if (!track) return null
+  const color = TRACK_COLORS[trackId] ?? "#6b7280"
+  const baseAvatar = getTrackAvatar(trackId)
+  const disciplineAvatars = getDisciplineAvatars(trackId)
+  const currentKey = `track:${trackId}`
+  const isEquipped = equippedAvatar === currentKey
+
+  return (
+    <div className="rounded-md border border-[#1e2530] p-2" style={{ backgroundColor: `${color}06` }}>
+      <div className="flex items-center gap-2">
+        {/* Clickable avatar that opens tier picker */}
+        <button type="button" onClick={() => setPickerOpen((v) => !v)}
+          className={`relative shrink-0 rounded border-2 p-0.5 transition-all ${isEquipped ? "border-[#c9a961]" : "border-transparent hover:border-[#c9a961]/40"}`}
+          title="Click to see discipline avatars">
+          {baseAvatar ? (
+            <img src={baseAvatar} alt={track.name} className="h-8 w-8 rounded" style={{ imageRendering: "pixelated" }} />
+          ) : (
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-4 w-4 text-[#4b5563]" /></div>
+          )}
+        </button>
+        <div className="flex-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[0.75rem] font-semibold" style={{ color }}>{track.name}</span>
+            <span className="text-[0.5625rem] text-[#6b7280]">{completedCount}/{totalCount}</span>
+          </div>
+          <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-[#1a1a2e]">
+            <div className="h-full rounded-full transition-all" style={{ backgroundColor: color, width: `${Math.min(100, xp > 0 ? 10 + (xp / 2000) * 90 : 0)}%` }} />
+          </div>
+          <span className="text-[0.5rem] text-[#4b5563]">{xp} XP</span>
+        </div>
+      </div>
+
+      {/* Discipline tier avatar picker */}
+      {pickerOpen && disciplineAvatars.length > 0 && (
+        <div className="mt-2 flex gap-1 rounded-md border border-[#1e2530] bg-[#0a0c10] p-1.5">
+          {/* Base track avatar (always available if any quest completed) */}
+          <button type="button" onClick={() => { onEquip(currentKey); setPickerOpen(false) }}
+            className={`rounded border-2 p-0.5 ${isEquipped ? "border-[#c9a961]" : completedCount > 0 ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent opacity-30"}`}
+            disabled={completedCount === 0} title={`${track.name} (base)`}>
+            {baseAvatar ? (
+              <img src={baseAvatar} alt="Base" className={`h-7 w-7 rounded ${completedCount > 0 ? "" : "grayscale"}`} style={{ imageRendering: "pixelated" }} />
+            ) : (
+              <div className="flex h-7 w-7 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-3 w-3 text-[#4b5563]" /></div>
+            )}
+          </button>
+          {/* Tier avatars */}
+          {disciplineAvatars.map((a) => {
+            const unlocked = completedCount >= a.level
+            const key = `discipline:${trackId}:${a.level}`
+            const isThis = equippedAvatar === key
+            return (
+              <button key={a.level} type="button" onClick={() => { if (unlocked) { onEquip(key); setPickerOpen(false) } }}
+                disabled={!unlocked}
+                className={`rounded border-2 p-0.5 ${isThis ? "border-[#c9a961]" : unlocked ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent opacity-30"}`}
+                title={unlocked ? `Tier ${a.level} avatar` : `Unlocks at ${a.level} quests completed`}>
+                <img src={a.src} alt={`Tier ${a.level}`} className={`h-7 w-7 rounded ${unlocked ? "" : "grayscale"}`} style={{ imageRendering: "pixelated" }} />
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function MasteryProfilePanel({ open, onOpenChange }: Props) {
   const trackXp = useUserProgressStore((s) => s.trackXp)
   const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
@@ -61,6 +133,12 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
 
   const avatar = useMemo(() => {
     if (equippedAvatar?.startsWith("rank:")) return getMasteryAvatar(parseInt(equippedAvatar.slice(5), 10))
+    if (equippedAvatar?.startsWith("discipline:")) {
+      const parts = equippedAvatar.slice(11).split(":")
+      const trackId = parts[0], level = parseInt(parts[1], 10)
+      const avatars = getDisciplineAvatars(trackId)
+      return avatars.find((a) => a.level === level)?.src ?? getTrackAvatar(trackId)
+    }
     if (equippedAvatar?.startsWith("track:")) return getTrackAvatar(equippedAvatar.slice(6))
     return getMasteryAvatar(overallRank.rank)
   }, [equippedAvatar, overallRank.rank])
@@ -171,39 +249,14 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
               </div>
             </div>
 
-            {/* Track progression — colored bars */}
+            {/* Track progression — colored bars with clickable discipline avatars */}
             <div className="flex flex-col gap-2">
               <span className="text-[0.625rem] font-semibold text-[#6b7280]">Disciplines</span>
-              {CHALLENGE_TRACK_IDS.map((id) => {
-                const track = CHALLENGE_TRACKS.get(id)
-                if (!track) return null
-                const xp = trackXp[id] ?? 0
-                const color = TRACK_COLORS[id] ?? "#6b7280"
-                const stats = trackStats[id]
-                const trackAvatar = getTrackAvatar(id)
-                return (
-                  <div key={id} className="flex items-center gap-2 rounded-md border border-[#1e2530] p-2"
-                    style={{ backgroundColor: `${color}06` }}>
-                    {trackAvatar ? (
-                      <img src={trackAvatar} alt={track.name} className="h-7 w-7 rounded" style={{ imageRendering: "pixelated" }} />
-                    ) : (
-                      <div className="flex h-7 w-7 items-center justify-center rounded bg-[#1a1a1a]">
-                        <Shield className="h-4 w-4 text-[#4b5563]" />
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[0.75rem] font-semibold" style={{ color }}>{track.name}</span>
-                        <span className="text-[0.5625rem] text-[#6b7280]">{stats?.completed ?? 0}/{stats?.total ?? 0}</span>
-                      </div>
-                      <div className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-[#1a1a2e]">
-                        <div className="h-full rounded-full transition-all" style={{ backgroundColor: color, width: `${Math.min(100, xp > 0 ? 10 + (xp / 2000) * 90 : 0)}%` }} />
-                      </div>
-                      <span className="text-[0.5rem] text-[#4b5563]">{xp} XP</span>
-                    </div>
-                  </div>
-                )
-              })}
+              {CHALLENGE_TRACK_IDS.map((id) => (
+                <DisciplineRow key={id} trackId={id} xp={trackXp[id] ?? 0}
+                  completedCount={trackStats[id]?.completed ?? 0} totalCount={trackStats[id]?.total ?? 0}
+                  equippedAvatar={equippedAvatar} onEquip={handleEquip} />
+              ))}
             </div>
 
             {/* Placeholder: Blueprints & Stacks unlocks */}

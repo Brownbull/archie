@@ -3,7 +3,7 @@ import { CircleUser, LogOut, Trophy } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { rankForXp } from "@/lib/challengeTracks"
-import { getMasteryAvatar, getTrackAvatar } from "@/lib/masteryAvatars"
+import { getMasteryAvatar, getTrackAvatar, getDisciplineAvatars } from "@/lib/masteryAvatars"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -23,6 +23,10 @@ export function AccountMenu() {
   const totalXp = Object.values(trackXp).reduce((sum, v) => sum + v, 0)
   const avatar = useMemo(() => {
     if (equippedAvatar?.startsWith("rank:")) return getMasteryAvatar(parseInt(equippedAvatar.slice(5), 10))
+    if (equippedAvatar?.startsWith("discipline:")) {
+      const parts = equippedAvatar.slice(11).split(":")
+      return getDisciplineAvatars(parts[0]).find((a) => a.level === parseInt(parts[1], 10))?.src ?? getTrackAvatar(parts[0])
+    }
     if (equippedAvatar?.startsWith("track:")) return getTrackAvatar(equippedAvatar.slice(6))
     return getMasteryAvatar(rankForXp(totalXp).rank)
   }, [equippedAvatar, totalXp])

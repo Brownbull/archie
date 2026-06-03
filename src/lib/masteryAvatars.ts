@@ -50,3 +50,42 @@ const TRACK_AVATARS: ReadonlyMap<string, string> = new Map([
 export function getTrackAvatar(trackId: string): string | null {
   return TRACK_AVATARS.get(trackId) ?? null
 }
+
+/** Discipline-tier avatars: each track has tiered avatars that unlock at specific quest completion counts. */
+const DISCIPLINE_AVATARS: Record<string, Array<{ level: number; src: string }>> = {}
+
+// Lazy-load discipline avatars (they're in a subdirectory)
+let disciplineLoaded = false
+function loadDisciplineAvatars() {
+  if (disciplineLoaded) return
+  disciplineLoaded = true
+  const modules = import.meta.glob(
+    "@/../docs/gabe/plans/2026-06-02-mastery-tracks/avatars/disciplines/*.png",
+    { eager: true, import: "default" },
+  ) as Record<string, string>
+  for (const [path, src] of Object.entries(modules)) {
+    const match = path.match(/\/([a-z]+)-(\d+)\.png$/)
+    if (!match) continue
+    const [, track, levelStr] = match
+    const level = parseInt(levelStr, 10)
+    if (!DISCIPLINE_AVATARS[track]) DISCIPLINE_AVATARS[track] = []
+    DISCIPLINE_AVATARS[track].push({ level, src })
+  }
+  for (const arr of Object.values(DISCIPLINE_AVATARS)) arr.sort((a, b) => a.level - b.level)
+}
+
+/** Get all discipline tier avatars for a track (sorted by level ascending). */
+export function getDisciplineAvatars(trackId: string): Array<{ level: number; src: string }> {
+  loadDisciplineAvatars()
+  return DISCIPLINE_AVATARS[trackId] ?? []
+}
+
+/** Get the highest unlocked discipline avatar for a track given the player's completed count. */
+export function getDisciplineAvatar(trackId: string, completedInTrack: number): string | null {
+  const avatars = getDisciplineAvatars(trackId)
+  let best: string | null = null
+  for (const a of avatars) {
+    if (completedInTrack >= a.level) best = a.src
+  }
+  return best
+}
