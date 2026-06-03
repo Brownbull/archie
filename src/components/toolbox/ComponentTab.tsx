@@ -156,8 +156,9 @@ export function ComponentTab() {
 
   // P86 progressive disclosure: partition by experience level. At/below-level blocks render in
   // their category sections; above-level blocks fall into the "More advanced blocks" drawer.
-  // An active search bypasses gating entirely — searching means the user wants to see everything.
-  const showAllLevels = searchQuery.length > 0
+  // Quest mode: show ALL blocks flat (no level gating — the quest controls the palette).
+  // Search: bypasses gating — searching means the user wants to see everything.
+  const showAllLevels = searchQuery.length > 0 || !!activeChallenge
   const inLevelGroups = useMemo(
     () => (showAllLevels ? groups : groups.filter((g) => typeWithinLevel(g.typeId, experienceLevel))),
     [groups, showAllLevels, experienceLevel],

@@ -105,6 +105,7 @@ function TreeEdges({ positions }: { positions: NodePos[] }) {
           if (!from) return null
           const isLocked = to.node.status === "locked"
           const isDone = from.node.status === "completed" && to.node.status !== "locked"
+          const edgeTrackColor = TRACK_COLORS[to.node.challenge.track ?? ""] ?? "#4a9eff"
           const x1 = from.x, y1 = from.y + NODE_R
           const x2 = to.x, y2 = to.y - NODE_R
           const my = (y1 + y2) / 2
@@ -113,7 +114,7 @@ function TreeEdges({ positions }: { positions: NodePos[] }) {
             : `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`
           return (
             <path key={`${reqId}->${to.node.challenge.id}`} d={d} fill="none"
-              stroke={isDone ? "#4a9eff" : isLocked ? "#1a1e28" : "#2a3040"}
+              stroke={isDone ? edgeTrackColor : isLocked ? "#1a1e28" : "#2a3040"}
               strokeWidth={isDone ? 2 : 1.5} opacity={isLocked ? 0.3 : isDone ? 0.8 : 0.3}
               strokeDasharray={isLocked ? "5 4" : undefined}
               filter={isDone ? "url(#gl-a)" : undefined} />
@@ -137,8 +138,9 @@ function TreeNode({ pos, selected, bestStars, onClick }: {
   const grantColor = firstGrant ? getGrantColor(firstGrant) : "#6b7280"
   const trackColor = TRACK_COLORS[c.track ?? ""] ?? "#6b7280"
 
-  const borderColor = selected ? "#ffffff" : isCompleted ? "#ffd700" : isAvailable ? "#4a9eff" : "#1e2530"
-  const bgFill = isCompleted ? "#1c1a10" : isAvailable ? "#101828" : "#0e1118"
+  // Track-colored borders: completed = bright track color, available = softer track color, locked = dark
+  const borderColor = selected ? "#ffffff" : isCompleted ? trackColor : isAvailable ? trackColor : "#1e2530"
+  const bgFill = isCompleted ? `${trackColor}10` : isAvailable ? `${trackColor}08` : "#0e1118"
   const glow = isCompleted ? "url(#gl-d)" : isAvailable ? "url(#gl-a)" : undefined
 
   return (
@@ -207,9 +209,16 @@ function QuestDetailPanel({ node, bestStars, onStart }: { node: TechTreeNode; be
   const trackMeta = c.track ? CHALLENGE_TRACKS.get(c.track) : undefined
   const trackColor = TRACK_COLORS[c.track ?? ""] ?? "#6b7280"
 
+  const isLocked = node.status === "locked"
+  const panelBorderColor = isLocked ? "#2a3040" : `${trackColor}60`
+  const panelBg = isLocked
+    ? "linear-gradient(135deg, #12141a 0%, #181c24 100%)"
+    : `linear-gradient(135deg, ${trackColor}08 0%, ${trackColor}04 50%, #1a1410 100%)`
+
   return (
-    <div data-testid="tree-detail-panel" className="w-80 shrink-0 overflow-y-auto rounded-lg border-2 border-[#8b7355] bg-gradient-to-b from-[#1a1410] to-[#2a2015]">
-      <div className="border-b-2 border-[#8b7355] px-4 py-3">
+    <div data-testid="tree-detail-panel" className="w-full h-full overflow-y-auto rounded-lg quest-scroll"
+      style={{ border: `2px solid ${panelBorderColor}`, background: panelBg }}>
+      <div className="px-4 py-3" style={{ borderBottom: `2px solid ${panelBorderColor}` }}>
         <div className="flex items-center gap-2">
           {node.status === "available" && <span className="text-xl font-black text-yellow-400">!</span>}
           {node.status === "completed" && <CheckCircle2 className="h-5 w-5 text-[#ffd700]" />}
