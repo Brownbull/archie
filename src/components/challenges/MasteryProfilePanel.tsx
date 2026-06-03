@@ -89,13 +89,18 @@ function DisciplineRow({ trackId, xp, completedCount, totalCount, equippedAvatar
       {pickerOpen && disciplineAvatars.length > 0 && (
         <div className="mt-2 flex gap-1 rounded-md border border-[#1e2530] bg-[#0a0c10] p-1.5">
           {/* Base track avatar (always available if any quest completed) */}
-          <button type="button" onClick={() => { onEquip(currentKey); setPickerOpen(false) }}
-            className={`rounded border-2 p-0.5 ${isEquipped ? "border-[#c9a961]" : completedCount > 0 ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent opacity-30"}`}
+          <button type="button" onClick={() => { if (completedCount > 0) { onEquip(currentKey); setPickerOpen(false) } }}
+            className={`relative rounded border-2 p-0.5 ${isEquipped ? "border-[#c9a961]" : completedCount > 0 ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent"}`}
             disabled={completedCount === 0} title={`${track.name} (base)`}>
             {baseAvatar ? (
-              <img src={baseAvatar} alt="Base" className={`h-7 w-7 rounded ${completedCount > 0 ? "" : "grayscale"}`} style={{ imageRendering: "pixelated" }} />
+              <img src={baseAvatar} alt="Base" className={`h-7 w-7 rounded ${completedCount > 0 ? "" : "grayscale brightness-[0.3]"}`} style={{ imageRendering: "pixelated" }} />
             ) : (
               <div className="flex h-7 w-7 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-3 w-3 text-[#4b5563]" /></div>
+            )}
+            {completedCount === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Lock className="h-3 w-3 text-[#6b7280]" />
+              </div>
             )}
           </button>
           {/* Tier avatars */}
@@ -106,9 +111,14 @@ function DisciplineRow({ trackId, xp, completedCount, totalCount, equippedAvatar
             return (
               <button key={a.level} type="button" onClick={() => { if (unlocked) { onEquip(key); setPickerOpen(false) } }}
                 disabled={!unlocked}
-                className={`rounded border-2 p-0.5 ${isThis ? "border-[#c9a961]" : unlocked ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent opacity-30"}`}
+                className={`relative rounded border-2 p-0.5 ${isThis ? "border-[#c9a961]" : unlocked ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent"}`}
                 title={unlocked ? `Tier ${a.level} avatar` : `Unlocks at ${a.level} quests completed`}>
-                <img src={a.src} alt={`Tier ${a.level}`} className={`h-7 w-7 rounded ${unlocked ? "" : "grayscale"}`} style={{ imageRendering: "pixelated" }} />
+                <img src={a.src} alt={`Tier ${a.level}`} className={`h-7 w-7 rounded ${unlocked ? "" : "grayscale brightness-[0.3]"}`} style={{ imageRendering: "pixelated" }} />
+                {!unlocked && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Lock className="h-3 w-3 text-[#6b7280]" />
+                  </div>
+                )}
               </button>
             )
           })}
@@ -237,11 +247,16 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
                   return (
                     <button key={i} type="button" disabled={!unlocked}
                       onClick={() => unlocked && handleEquip(key)}
-                      className={`relative rounded border-2 p-0.5 ${isEquipped ? "border-[#c9a961]" : unlocked ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent opacity-30"}`}>
+                      className={`relative rounded border-2 p-0.5 ${isEquipped ? "border-[#c9a961]" : unlocked ? "border-transparent hover:border-[#c9a961]/40" : "border-transparent"}`}>
                       {src ? (
-                        <img src={src} alt={name} className={`h-8 w-8 rounded ${unlocked ? "" : "grayscale"}`} style={{ imageRendering: "pixelated" }} />
+                        <img src={src} alt={name} className={`h-8 w-8 rounded ${unlocked ? "" : "grayscale brightness-[0.3]"}`} style={{ imageRendering: "pixelated" }} />
                       ) : (
                         <div className="flex h-8 w-8 items-center justify-center rounded bg-[#1a1a1a]"><Shield className="h-4 w-4 text-[#4b5563]" /></div>
+                      )}
+                      {!unlocked && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <Lock className="h-3.5 w-3.5 text-[#6b7280]" />
+                        </div>
                       )}
                     </button>
                   )
