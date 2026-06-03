@@ -73,24 +73,26 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
     >
       <div className="absolute left-0 top-0 h-full w-1 rounded-l-md" style={{ backgroundColor: color }} />
 
-      {/* Mastery indicator + add button */}
-      <div className="absolute right-0.5 top-0.5 flex items-center gap-0.5">
+      {/* Add button — top-right */}
+      <button
+        data-testid={`add-type-${group.typeId ?? group.key}`}
+        type="button"
+        className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded text-text-secondary opacity-60 transition-opacity hover:bg-archie-border hover:opacity-100"
+        draggable={false}
+        onDragStart={(e) => e.stopPropagation()}
+        onClick={handleAdd}
+        title="Add to canvas"
+      >
+        <Plus className="h-3.5 w-3.5" />
+      </button>
+
+      {/* Mastery indicator — bottom-right */}
+      <div className="absolute bottom-1 right-1">
         {isMastered ? (
           <span title="Mastered — unlocked via quest"><CheckCircle2 className="h-3.5 w-3.5 text-[#ff8a3d]" /></span>
         ) : (
           <span title="Not yet mastered — complete its quest"><Lock className="h-3 w-3 text-text-secondary opacity-40" /></span>
         )}
-        <button
-          data-testid={`add-type-${group.typeId ?? group.key}`}
-          type="button"
-          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary opacity-60 transition-opacity hover:bg-archie-border hover:opacity-100"
-          draggable={false}
-          onDragStart={(e) => e.stopPropagation()}
-          onClick={handleAdd}
-          title="Add to canvas"
-        >
-          <Plus className="h-3.5 w-3.5" />
-        </button>
       </div>
 
       <div className="flex flex-col gap-1 pr-6">

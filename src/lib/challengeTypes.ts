@@ -105,6 +105,8 @@ export interface StarBreakdown {
   stars: 0 | 1 | 2 | 3
   /** Base pass: uptime ≥ target AND p99 ≤ target. Required for any star. */
   passedMetrics: boolean
+  /** All required_types present on canvas. Separate from metrics (architecture, not performance). */
+  hasRequiredBlocks: boolean
   /** Total cost ≤ budgetCap (only awarded if passedMetrics). */
   underBudget: boolean
   /** Zero topology issues (only awarded if passedMetrics). */

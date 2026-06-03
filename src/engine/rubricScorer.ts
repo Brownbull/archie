@@ -32,7 +32,8 @@ export function evaluateAttempt(
 
   return {
     stars: stars as StarBreakdown["stars"],
-    passedMetrics: passedMetrics && hasAllRequiredTypes,
+    passedMetrics,
+    hasRequiredBlocks: hasAllRequiredTypes,
     underBudget,
     cleanTopology,
   }

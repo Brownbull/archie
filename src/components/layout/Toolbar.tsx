@@ -44,7 +44,7 @@ export function Toolbar() {
       )}
 
       <div className="flex items-center gap-2">
-        <ExperienceLevelControl />
+        {!(activeChallenge && attemptState !== "idle") && <ExperienceLevelControl />}
         <IssuesSummary />
         <SettingsMenu />
         <AccountMenu />

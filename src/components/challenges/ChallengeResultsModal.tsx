@@ -21,6 +21,7 @@ import { useAttemptComparison } from "@/hooks/useAttemptComparison"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 import { DeltaChip } from "@/components/challenges/DeltaChip"
 import { CHALLENGE_TRACKS, rankForXp, MASTERY_RANKS, RANK_XP_THRESHOLDS } from "@/lib/challengeTracks"
+import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { getMasteryAvatar } from "@/lib/masteryAvatars"
 import starFilled from "@/assets/star-filled.png"
 import starEmpty from "@/assets/star-empty.png"
@@ -231,6 +232,15 @@ export function ChallengeResultsModal() {
             label="Metrics"
             detail={`uptime ${measured.uptimePercent.toFixed(1)}%/${challenge.targetMetrics.uptimePercent}% · p99 ${Math.round(measured.p99LatencyMs)}/${challenge.targetMetrics.p99LatencyMs}ms`}
           />
+          {challenge.requiredTypes.length > 0 && (
+            <Criterion
+              met={result.hasRequiredBlocks}
+              label="Required blocks"
+              detail={result.hasRequiredBlocks
+                ? "all deployed"
+                : `missing: ${challenge.requiredTypes.map((rt) => COMPONENT_TYPES.get(rt)?.label ?? rt).join(", ")}`}
+            />
+          )}
           <Criterion
             met={result.underBudget}
             label="Under budget"
