@@ -30,8 +30,9 @@ track: realtime
 tier: 2
 requires: [async-pipeline]
 unlocks: []
+min_xp: 494
 required_types: [message-queue, worker]
 available_blocks: [traffic-source, compute, message-queue, worker, load-balancer]
 grants: []
 rewards:
-  xp: 200
+  xp: 260

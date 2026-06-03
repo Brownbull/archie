@@ -29,4 +29,4 @@ required_types: [observability]
 available_blocks: [compute, relational-db, observability]
 grants: [observability]
 rewards:
-  xp: 80
+  xp: 100

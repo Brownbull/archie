@@ -32,8 +32,9 @@ track: realtime
 tier: 5
 requires: [realtime-live]
 unlocks: []
+min_xp: 10520
 required_types: [message-queue, event-stream, stream-processor, realtime]
 available_blocks: [compute, message-queue, event-stream, stream-processor, realtime, load-balancer, relational-db, cache, traffic-source]
 grants: []
 rewards:
-  xp: 400
+  xp: 1600

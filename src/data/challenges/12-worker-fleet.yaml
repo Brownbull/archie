@@ -27,8 +27,9 @@ track: foundations
 tier: 4
 requires: [serverless-burst]
 unlocks: [foundations-mastery]
+min_xp: 5138
 required_types: [worker, message-queue]
 available_blocks: [traffic-source, compute, load-balancer, serverless, worker, message-queue]
 grants: [worker]
 rewards:
-  xp: 250
+  xp: 780

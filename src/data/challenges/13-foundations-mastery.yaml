@@ -30,8 +30,9 @@ track: foundations
 tier: 5
 requires: [worker-fleet, cache-the-hot-path]
 unlocks: []
+min_xp: 10520
 required_types: [load-balancer, cache, message-queue]
 available_blocks: [traffic-source, compute, load-balancer, serverless, worker, message-queue, cache, relational-db]
 grants: []
 rewards:
-  xp: 300
+  xp: 1600

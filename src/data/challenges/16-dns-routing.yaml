@@ -27,4 +27,4 @@ required_types: [dns]
 available_blocks: [compute, traffic-source, dns]
 grants: [dns]
 rewards:
-  xp: 80
+  xp: 100

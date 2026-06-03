@@ -27,8 +27,9 @@ track: data
 tier: 3
 requires: [cache-the-hot-path]
 unlocks: [search-at-scale, write-storm]
+min_xp: 1976
 required_types: [relational-db, nosql, cache]
 available_blocks: [compute, relational-db, nosql, cache, object-storage, traffic-source]
 grants: [nosql]
 rewards:
-  xp: 200
+  xp: 455

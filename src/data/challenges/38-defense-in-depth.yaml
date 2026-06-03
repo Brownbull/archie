@@ -33,8 +33,9 @@ track: security
 tier: 4
 requires: [siem-audit]
 unlocks: [fortress]
+min_xp: 5138
 required_types: [auth, rate-limiter, security, observability]
 available_blocks: [traffic-source, compute, auth, rate-limiter, security, observability, load-balancer, cache]
 grants: []
 rewards:
-  xp: 250
+  xp: 960

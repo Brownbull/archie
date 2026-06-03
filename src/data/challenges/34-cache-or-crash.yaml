@@ -29,8 +29,9 @@ track: data
 tier: 3
 requires: [cache-the-hot-path]
 unlocks: []
+min_xp: 1976
 required_types: [relational-db, cache]
 available_blocks: [traffic-source, compute, relational-db, cache]
 grants: []
 rewards:
-  xp: 200
+  xp: 455

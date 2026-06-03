@@ -327,7 +327,8 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
   const fontSize = usePreferencesStore((s) => s.fontSize)
   const scale = FONT_SCALE[fontSize] ?? 1
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const tree = useMemo(() => resolveTechTree(challenges, completedChallenges), [challenges, completedChallenges])
+  const totalXp = Object.values(useUserProgressStore.getState().trackXp).reduce((s, v) => s + v, 0)
+  const tree = useMemo(() => resolveTechTree(challenges, completedChallenges, undefined, totalXp), [challenges, completedChallenges, totalXp])
   const layout = useMemo(() => layoutTree(tree.ordered), [tree.ordered])
   const selectedNode = selectedId ? tree.nodes.get(selectedId) : null
 

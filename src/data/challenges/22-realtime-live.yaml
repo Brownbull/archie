@@ -27,8 +27,9 @@ track: realtime
 tier: 4
 requires: [stream-processor]
 unlocks: [async-backbone]
+min_xp: 5138
 required_types: [realtime, stream-processor]
 available_blocks: [compute, realtime, event-stream, stream-processor, cache, traffic-source]
 grants: [realtime]
 rewards:
-  xp: 250
+  xp: 960

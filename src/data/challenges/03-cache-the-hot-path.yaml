@@ -26,8 +26,9 @@ track: data
 tier: 2
 requires: [add-a-database]
 unlocks: [polyglot-persistence, rag-retrieval, foundations-mastery, cache-or-crash]
+min_xp: 494
 required_types: [relational-db, cache]
 available_blocks: [compute, relational-db, cache, object-storage, traffic-source]
 grants: [cache, object-storage]
 rewards:
-  xp: 150
+  xp: 200

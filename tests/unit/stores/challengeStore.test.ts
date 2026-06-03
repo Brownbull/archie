@@ -10,7 +10,7 @@ const challenge: Challenge = {
   requiredComponents: ["compute"],
   targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 },
   scheduledEvents: [], hints: [],
-  schemaVersion: 2, requires: [], unlocks: [], requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
+  schemaVersion: 2, requires: [], unlocks: [], minXp: 0, requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
 }
 const stats = (uptime: number, p99: number): SimulationStats => ({
   uptimePercent: uptime, avgLatencyMs: 0, p99LatencyMs: p99, currentRps: 0, servedRps: 0, failedRps: 0, totalServed: 0, totalFailed: 0,

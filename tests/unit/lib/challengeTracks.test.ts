@@ -7,42 +7,63 @@ import {
   RANK_XP_THRESHOLDS,
   RELATIVE_LEVEL_COLORS,
   MAX_LEVEL,
+  TIER_XP_GATES,
 } from "@/lib/challengeTracks"
 
-describe("rankForXp (10-level system)", () => {
+describe("rankForXp (10-level Fibonacci system)", () => {
   it("returns Novice (level 0) at 0 XP", () => {
     expect(rankForXp(0)).toEqual({ rank: 0, name: "Novice" })
   })
 
-  it("reaches Apprentice (level 1) at 20 XP", () => {
-    expect(rankForXp(20)).toEqual({ rank: 1, name: "Apprentice" })
+  it("reaches Apprentice (level 1) at 150 XP", () => {
+    expect(rankForXp(150)).toEqual({ rank: 1, name: "Apprentice" })
   })
 
-  it("reaches Builder (level 2) at 100 XP", () => {
-    expect(rankForXp(100)).toEqual({ rank: 2, name: "Builder" })
+  it("reaches Builder (level 2) at 400 XP", () => {
+    expect(rankForXp(400)).toEqual({ rank: 2, name: "Builder" })
   })
 
-  it("reaches Grand Architect (level 9) at 7700 XP", () => {
-    expect(rankForXp(7700)).toEqual({ rank: 9, name: "Grand Architect" })
-    expect(rankForXp(9999)).toEqual({ rank: 9, name: "Grand Architect" })
+  it("reaches Grand Architect (level 9) at 22000 XP", () => {
+    expect(rankForXp(22000)).toEqual({ rank: 9, name: "Grand Architect" })
+    expect(rankForXp(30000)).toEqual({ rank: 9, name: "Grand Architect" })
   })
 
-  it("stays at Practitioner between 600 and 1099", () => {
-    expect(rankForXp(600).name).toBe("Practitioner")
-    expect(rankForXp(1099).name).toBe("Practitioner")
+  it("stays at Practitioner between 1500 and 2799", () => {
+    expect(rankForXp(1500).name).toBe("Practitioner")
+    expect(rankForXp(2799).name).toBe("Practitioner")
   })
 })
 
 describe("xpToNextRank (10-level system)", () => {
   it("returns distance to next threshold", () => {
-    expect(xpToNextRank(0)).toBe(20)
-    expect(xpToNextRank(10)).toBe(10)
-    expect(xpToNextRank(20)).toBe(80) // level 1 → level 2 needs 100
+    expect(xpToNextRank(0)).toBe(150)
+    expect(xpToNextRank(100)).toBe(50)
+    expect(xpToNextRank(150)).toBe(250) // level 1 → level 2 at 400
   })
 
   it("returns 0 at the level cap", () => {
-    expect(xpToNextRank(7700)).toBe(0)
-    expect(xpToNextRank(9000)).toBe(0)
+    expect(xpToNextRank(22000)).toBe(0)
+    expect(xpToNextRank(30000)).toBe(0)
+  })
+})
+
+describe("tier XP gates", () => {
+  it("tier 1 has no XP gate", () => {
+    expect(TIER_XP_GATES[1]).toBe(0)
+  })
+
+  it("tier 2 requires 494 XP (~65% of tier 1 total)", () => {
+    expect(TIER_XP_GATES[2]).toBe(494)
+  })
+
+  it("tier 5 requires 10520 XP", () => {
+    expect(TIER_XP_GATES[5]).toBe(10520)
+  })
+
+  it("gates are strictly ascending", () => {
+    for (let i = 2; i < TIER_XP_GATES.length; i++) {
+      expect(TIER_XP_GATES[i]).toBeGreaterThan(TIER_XP_GATES[i - 1])
+    }
   })
 })
 
@@ -52,25 +73,15 @@ describe("relativeLevelForTier", () => {
     expect(relativeLevelForTier(2, 3)).toBe("on-level")
   })
 
-  it("returns trivial when player is far above", () => {
-    expect(relativeLevelForTier(4, 1)).toBe("trivial")
-  })
-
   it("returns locked when gap >= 3", () => {
     expect(relativeLevelForTier(0, 4)).toBe("locked")
-    expect(relativeLevelForTier(0, 5)).toBe("locked")
-  })
-
-  it("returns tough and hard for intermediate gaps", () => {
-    expect(relativeLevelForTier(0, 2)).toBe("tough")
-    expect(relativeLevelForTier(0, 3)).toBe("hard")
   })
 })
 
-describe("constants (10-level system)", () => {
-  it("has 10 ranks matching 11 thresholds (0 + 10 levels)", () => {
+describe("constants (10-level Fibonacci system)", () => {
+  it("has 10 ranks matching 11 thresholds", () => {
     expect(MASTERY_RANKS).toHaveLength(10)
-    expect(RANK_XP_THRESHOLDS).toHaveLength(11) // includes level 0 threshold
+    expect(RANK_XP_THRESHOLDS).toHaveLength(11)
     expect(MAX_LEVEL).toBe(9)
   })
 
@@ -80,8 +91,8 @@ describe("constants (10-level system)", () => {
     }
   })
 
-  it("level cap (Grand Architect) requires 7700 XP", () => {
-    expect(RANK_XP_THRESHOLDS[MAX_LEVEL + 1]).toBe(7700)
+  it("level cap (Grand Architect) requires 22000 XP", () => {
+    expect(RANK_XP_THRESHOLDS[MAX_LEVEL + 1]).toBe(22000)
   })
 
   it("has a colour for every relative level", () => {

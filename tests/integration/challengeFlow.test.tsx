@@ -40,7 +40,7 @@ const challenge: Challenge = {
   trafficCurve: [{ t: 0, rps: 0 }, { t: 90, rps: 200 }],
   requiredComponents: ["compute"], targetMetrics: { uptimePercent: 90, p99LatencyMs: 500 },
   scheduledEvents: [], hints: [],
-  schemaVersion: 2, requires: [], unlocks: [], requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
+  schemaVersion: 2, requires: [], unlocks: [], minXp: 0, requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
 }
 const cs = () => useChallengeStore.getState()
 

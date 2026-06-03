@@ -16,6 +16,7 @@ export function resolveTechTree(
   challenges: readonly Challenge[],
   completedIds: Iterable<string>,
   baseBlocks: readonly string[] = BASE_UNLOCKED_BLOCKS,
+  playerXp = 0,
 ): TechTreeResult {
   const completed = new Set(completedIds)
 
@@ -25,7 +26,8 @@ export function resolveTechTree(
   for (const challenge of challenges) {
     const isDone = completed.has(challenge.id)
     const missingRequirements = isDone ? [] : challenge.requires.filter((r) => !completed.has(r))
-    const status: TechTreeStatus = isDone ? "completed" : missingRequirements.length === 0 ? "available" : "locked"
+    const meetsXpGate = isDone || (challenge.minXp ?? 0) <= playerXp
+    const status: TechTreeStatus = isDone ? "completed" : (missingRequirements.length === 0 && meetsXpGate) ? "available" : "locked"
 
     nodes.set(challenge.id, { challenge, status, missingRequirements })
 

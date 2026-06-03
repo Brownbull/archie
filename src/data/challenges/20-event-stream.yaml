@@ -27,8 +27,9 @@ track: realtime
 tier: 2
 requires: [async-pipeline]
 unlocks: [stream-processor]
+min_xp: 494
 required_types: [event-stream, message-queue]
 available_blocks: [compute, message-queue, event-stream, relational-db, nosql, cache, traffic-source]
 grants: [event-stream]
 rewards:
-  xp: 200
+  xp: 260

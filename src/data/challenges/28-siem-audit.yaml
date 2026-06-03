@@ -28,8 +28,9 @@ track: security
 tier: 3
 requires: [rate-limit]
 unlocks: [fortress, defense-in-depth]
+min_xp: 1976
 required_types: [auth, rate-limiter, security]
 available_blocks: [compute, auth, rate-limiter, security, observability, traffic-source]
 grants: [security]
 rewards:
-  xp: 200
+  xp: 455

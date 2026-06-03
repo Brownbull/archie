@@ -27,8 +27,9 @@ track: foundations
 tier: 2
 requires: [first-service]
 unlocks: [serverless-burst, edge-balance, zone-replica, cold-start-spike]
+min_xp: 494
 required_types: [load-balancer]
 available_blocks: [traffic-source, compute, load-balancer]
 grants: [load-balancer]
 rewards:
-  xp: 150
+  xp: 260

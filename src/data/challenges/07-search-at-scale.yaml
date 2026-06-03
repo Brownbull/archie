@@ -28,8 +28,9 @@ track: data
 tier: 4
 requires: [polyglot-persistence]
 unlocks: [analytics-backbone]
+min_xp: 5138
 required_types: [search-engine, cache]
 available_blocks: [compute, relational-db, cache, search-engine, cdn, traffic-source]
 grants: [search-engine]
 rewards:
-  xp: 250
+  xp: 960

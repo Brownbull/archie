@@ -27,8 +27,9 @@ track: reliability
 tier: 2
 requires: [observe-baseline, scale-out]
 unlocks: [zone-failure]
+min_xp: 494
 required_types: [observability, load-balancer]
 available_blocks: [compute, relational-db, observability, load-balancer]
 grants: []
 rewards:
-  xp: 120
+  xp: 260

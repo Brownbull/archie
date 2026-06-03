@@ -28,8 +28,9 @@ track: reliability
 tier: 2
 requires: [observe-baseline]
 unlocks: []
+min_xp: 494
 required_types: [observability]
 available_blocks: [traffic-source, compute, observability, load-balancer]
 grants: []
 rewards:
-  xp: 150
+  xp: 260

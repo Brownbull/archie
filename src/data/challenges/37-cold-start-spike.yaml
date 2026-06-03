@@ -29,8 +29,9 @@ track: foundations
 tier: 3
 requires: [scale-out]
 unlocks: []
+min_xp: 1976
 required_types: [serverless]
 available_blocks: [traffic-source, compute, serverless, load-balancer]
 grants: []
 rewards:
-  xp: 175
+  xp: 455

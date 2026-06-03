@@ -27,8 +27,9 @@ track: security
 tier: 2
 requires: [auth-101]
 unlocks: [siem-audit]
+min_xp: 494
 required_types: [auth, rate-limiter]
 available_blocks: [compute, auth, rate-limiter, traffic-source]
 grants: [rate-limiter]
 rewards:
-  xp: 150
+  xp: 260

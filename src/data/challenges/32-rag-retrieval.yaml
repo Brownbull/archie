@@ -31,8 +31,9 @@ track: aiml
 tier: 3
 requires: [data-pipeline, search-at-scale, cache-the-hot-path]
 unlocks: [production-ai]
+min_xp: 1976
 required_types: [llm-gateway, vector-store, search-engine]
 available_blocks: [traffic-source, load-balancer, compute, llm-gateway, vector-store, relational-db, cache, search-engine]
 grants: [vector-store]
 rewards:
-  xp: 250
+  xp: 560

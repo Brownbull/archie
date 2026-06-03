@@ -78,7 +78,7 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
   const trackXp = useUserProgressStore((s) => s.trackXp)
 
   const tree = useMemo(
-    () => resolveTechTree(challenges, completedChallenges),
+    () => resolveTechTree(challenges, completedChallenges, undefined, Object.values(trackXp).reduce((s, v) => s + v, 0)),
     [challenges, completedChallenges],
   )
 

@@ -31,4 +31,4 @@ required_types: [message-queue, relational-db]
 available_blocks: [compute, message-queue, relational-db, cache, load-balancer, traffic-source]
 grants: [message-queue]
 rewards:
-  xp: 150
+  xp: 130

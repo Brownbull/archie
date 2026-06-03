@@ -28,8 +28,9 @@ track: foundations
 tier: 4
 requires: [serverless-burst]
 unlocks: []
+min_xp: 5138
 required_types: [payments, relational-db]
 available_blocks: [traffic-source, compute, load-balancer, payments, relational-db, cache]
 grants: [payments]
 rewards:
-  xp: 225
+  xp: 780

@@ -28,8 +28,9 @@ track: edge
 tier: 4
 requires: [edge-delivery]
 unlocks: [edge-resilience]
+min_xp: 5138
 required_types: [api-gateway, auth]
 available_blocks: [compute, traffic-source, dns, load-balancer, cdn, api-gateway, auth]
 grants: [api-gateway]
 rewards:
-  xp: 200
+  xp: 960

@@ -73,7 +73,7 @@ describe("RunSimulationButton (Epic 15)", () => {
       id: "c1", title: "T", brief: "b", difficulty: "beginner", budgetCap: 100, durationSeconds: 60,
       trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }], requiredComponents: ["compute"],
       targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 }, scheduledEvents: [], hints: [],
-  schemaVersion: 2, requires: [], unlocks: [], requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
+  schemaVersion: 2, requires: [], unlocks: [], minXp: 0, requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
     } as Challenge
     useChallengeStore.getState().selectChallenge(challenge) // idle sim + nodes, but in challenge mode
     render(<RunSimulationButton />)

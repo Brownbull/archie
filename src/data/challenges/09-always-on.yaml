@@ -30,8 +30,9 @@ track: reliability
 tier: 4
 requires: [zone-failure]
 unlocks: [chaos-day, fortress, production-ai]
+min_xp: 5138
 required_types: [observability, load-balancer, cache]
 available_blocks: [compute, relational-db, observability, load-balancer, cache, cdn, message-queue]
 grants: []
 rewards:
-  xp: 200
+  xp: 960

@@ -34,8 +34,9 @@ track: security
 tier: 5
 requires: [siem-audit, always-on]
 unlocks: []
+min_xp: 10520
 required_types: [auth, rate-limiter, security, observability]
 available_blocks: [compute, auth, rate-limiter, security, cdn, observability, cache, relational-db, traffic-source]
 grants: []
 rewards:
-  xp: 300
+  xp: 1600

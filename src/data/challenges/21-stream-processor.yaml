@@ -29,8 +29,9 @@ track: realtime
 tier: 3
 requires: [event-stream]
 unlocks: [realtime-live]
+min_xp: 1976
 required_types: [stream-processor, event-stream]
 available_blocks: [compute, event-stream, stream-processor, relational-db, cache, traffic-source]
 grants: [stream-processor]
 rewards:
-  xp: 250
+  xp: 560

@@ -13,7 +13,7 @@ const sample: Challenge[] = [
     trafficCurve: [{ t: 0, rps: 0 }, { t: 60, rps: 100 }],
     requiredComponents: ["compute"], targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 },
     scheduledEvents: [], hints: ["Pick the cheapest variant"],
-    schemaVersion: 2, requires: [], unlocks: ["ha"], requiredTypes: [], availableBlocks: ["traffic-source", "compute"], grants: [], origin: "builtin",
+    schemaVersion: 2, requires: [], unlocks: ["ha"], minXp: 0, requiredTypes: [], availableBlocks: ["traffic-source", "compute"], grants: [], origin: "builtin",
     track: "foundations", tier: 1, rewards: { xp: 100 },
   },
   {
@@ -22,7 +22,7 @@ const sample: Challenge[] = [
     trafficCurve: [{ t: 0, rps: 0 }, { t: 120, rps: 1000 }],
     requiredComponents: ["compute", "load-balancing"], targetMetrics: { uptimePercent: 99.9, p99LatencyMs: 150 },
     scheduledEvents: [], hints: [],
-    schemaVersion: 2, requires: ["starter"], unlocks: [], requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
+    schemaVersion: 2, requires: ["starter"], unlocks: [], minXp: 0, requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
     track: "reliability", tier: 3, rewards: { xp: 200 },
   },
 ]

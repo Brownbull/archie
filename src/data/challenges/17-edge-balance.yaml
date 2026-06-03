@@ -25,8 +25,9 @@ track: edge
 tier: 2
 requires: [dns-routing, scale-out]
 unlocks: [edge-delivery, edge-cache-ratio]
+min_xp: 494
 required_types: [dns, load-balancer]
 available_blocks: [compute, traffic-source, dns, load-balancer]
 grants: []
 rewards:
-  xp: 120
+  xp: 260

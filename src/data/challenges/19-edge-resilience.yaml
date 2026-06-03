@@ -32,8 +32,9 @@ track: edge
 tier: 5
 requires: [api-gateway, zone-failure]
 unlocks: []
+min_xp: 10520
 required_types: [cdn, api-gateway, cache]
 available_blocks: [compute, traffic-source, dns, load-balancer, cdn, api-gateway, cache]
 grants: []
 rewards:
-  xp: 280
+  xp: 1600

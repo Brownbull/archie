@@ -128,10 +128,9 @@ export function MasteryProfilePanel({ open, onOpenChange }: MasteryProfilePanelP
   const equipAvatar = useUserProgressStore((s) => s.equipAvatar)
   const userId = useCurrentUserId()
 
-  const challenges = getAllChallenges()
-  const tree = useMemo(() => resolveTechTree(challenges, completedChallenges), [challenges, completedChallenges])
-
   const totalXp = Object.values(trackXp).reduce((sum, v) => sum + v, 0)
+  const challenges = getAllChallenges()
+  const tree = useMemo(() => resolveTechTree(challenges, completedChallenges, undefined, totalXp), [challenges, completedChallenges, totalXp])
   const overallRank = rankForXp(totalXp)
 
   const displayAvatar = useMemo(() => {

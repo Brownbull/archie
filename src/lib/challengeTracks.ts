@@ -67,13 +67,21 @@ export type MasteryRank = (typeof MASTERY_RANKS)[number]
 export const MAX_LEVEL = MASTERY_RANKS.length - 1
 
 /**
- * Cumulative XP thresholds for each level. Quadratic curve: level N costs 20×N² XP.
- * Total XP pool is ~8230 (41 challenges × 3 stars). Level 10 (Grand Architect) needs 7700
- * (94% of pool) — requires near-complete mastery across all tracks.
+ * Cumulative XP thresholds for each level. Fibonacci-like growth curve.
+ * Total XP pool is ~25785 (41 challenges with tier-scaled rewards).
+ * Level 10 (Grand Architect) at 22000 XP requires ~85% of all content.
  *
- * Levels are GLOBAL (sum of all track XP), not per-track.
+ * XP is GLOBAL (sum of all challenge XP earned), not per-track.
+ * Tier gates (65% cumulative) control access to higher-tier challenges separately.
  */
-export const RANK_XP_THRESHOLDS: readonly number[] = [0, 20, 100, 280, 600, 1100, 1820, 2800, 4080, 5700, 7700]
+export const RANK_XP_THRESHOLDS: readonly number[] = [0, 150, 400, 800, 1500, 2800, 5000, 8000, 11500, 16000, 22000]
+
+/**
+ * Minimum cumulative XP needed to access challenges at each tier. Based on 65% of the
+ * cumulative XP from all previous tiers. Forces players to complete ~65% of the previous
+ * tier before accessing the next, preventing tier-skipping.
+ */
+export const TIER_XP_GATES: readonly number[] = [0, 0, 494, 1976, 5138, 10520]
 
 /** Derive the mastery level for a given cumulative XP value. */
 export function rankForXp(xp: number): { rank: number; name: MasteryRank } {
