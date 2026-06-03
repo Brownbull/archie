@@ -2,17 +2,17 @@ import { describe, it, expect } from "vitest"
 import { getMasteryAvatar, getTrackAvatar } from "@/lib/masteryAvatars"
 
 describe("getMasteryAvatar", () => {
-  it("returns a URL for every rank 0–4", () => {
-    for (let r = 0; r <= 4; r++) {
+  it("returns a URL for every level via fallback", () => {
+    for (let r = 0; r <= 9; r++) {
       const url = getMasteryAvatar(r)
       expect(typeof url).toBe("string")
       expect(url!.length).toBeGreaterThan(0)
     }
   })
 
-  it("returns the Grand Architect avatar for rank 4+", () => {
-    const r4 = getMasteryAvatar(4)
-    const r5 = getMasteryAvatar(5)
+  it("returns the Grand Architect avatar for level 9+", () => {
+    const r4 = getMasteryAvatar(9)
+    const r5 = getMasteryAvatar(10)
     expect(r4).toBe(r5)
   })
 

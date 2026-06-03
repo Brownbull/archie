@@ -238,10 +238,10 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent data-testid="challenge-tree-view" className="max-w-[95vw]! max-h-[90vh] w-full">
+      <DialogContent data-testid="quest-log" className="max-w-[95vw]! max-h-[90vh] w-full">
         <DialogHeader>
-          <DialogTitle>Challenge Journey</DialogTitle>
-          <DialogDescription>Tracks as columns, tiers flow top to bottom. Click a challenge to inspect it.</DialogDescription>
+          <DialogTitle>Quest Log</DialogTitle>
+          <DialogDescription>Complete quests to master architecture patterns and unlock new blocks.</DialogDescription>
         </DialogHeader>
 
         <div className="flex gap-4" style={{ height: "calc(85vh - 80px)" }}>

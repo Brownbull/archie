@@ -234,7 +234,7 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(500)
 
       // Open journey and check unlocked challenges
-      await page.getByTestId("menu-journey").click()
+      await page.getByTestId("menu-quests").click()
       await page.waitForTimeout(1000)
 
       // First Service should show completed (3 stars earned)
@@ -278,8 +278,8 @@ test.describe("Challenge Validation E2E", () => {
 
       const rank = page.getByTestId("overall-rank")
       await expect(rank).toBeVisible()
-      // first-service awards ~34 XP per star (100/3) × 3 stars = ~100 XP → Apprentice (≥100)
-      await expect(rank).toContainText("Apprentice")
+      // first-service awards ~34 XP per star × 3 = ~100 XP → Builder (level 2, threshold 100)
+      await expect(rank).toContainText("Builder")
 
       await page.screenshot({ path: `${SCREENSHOT_DIR}/progression-02-profile.png`, fullPage: true })
     })

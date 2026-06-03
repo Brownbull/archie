@@ -33,7 +33,7 @@ export function AppMenuBar() {
   const setChallengesOpen = useUiStore((s) => s.setChallengesOpen)
   const setResetCanvasOpen = useUiStore((s) => s.setResetCanvasOpen)
   const [fileOpen, setFileOpen] = useState(false)
-  const [journeyOpen, setJourneyOpen] = useState(false)
+  const [questLogOpen, setQuestLogOpen] = useState(false)
 
   return (
     <div className="flex items-center gap-0.5" data-testid="app-menu-bar">
@@ -91,13 +91,13 @@ export function AppMenuBar() {
 
       <button
         type="button"
-        data-testid="menu-journey"
+        data-testid="menu-quests"
         className={TRIGGER_CLASS + " flex items-center gap-1"}
-        onClick={() => setJourneyOpen(true)}
+        onClick={() => setQuestLogOpen(true)}
       >
-        <Map className="h-3.5 w-3.5" /> Journey
+        <Map className="h-3.5 w-3.5" /> Quests
       </button>
-      <ChallengeTreeView open={journeyOpen} onOpenChange={setJourneyOpen} />
+      <ChallengeTreeView open={questLogOpen} onOpenChange={setQuestLogOpen} />
     </div>
   )
 }

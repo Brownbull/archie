@@ -6,38 +6,43 @@ import {
   MASTERY_RANKS,
   RANK_XP_THRESHOLDS,
   RELATIVE_LEVEL_COLORS,
+  MAX_LEVEL,
 } from "@/lib/challengeTracks"
 
-describe("rankForXp", () => {
-  it("returns Novice (rank 0) at 0 XP", () => {
+describe("rankForXp (10-level system)", () => {
+  it("returns Novice (level 0) at 0 XP", () => {
     expect(rankForXp(0)).toEqual({ rank: 0, name: "Novice" })
   })
 
-  it("reaches Apprentice at exactly 100 XP", () => {
-    expect(rankForXp(100)).toEqual({ rank: 1, name: "Apprentice" })
+  it("reaches Apprentice (level 1) at 20 XP", () => {
+    expect(rankForXp(20)).toEqual({ rank: 1, name: "Apprentice" })
   })
 
-  it("reaches Architect at 1000+ XP", () => {
-    expect(rankForXp(1000)).toEqual({ rank: 4, name: "Architect" })
-    expect(rankForXp(9999)).toEqual({ rank: 4, name: "Architect" })
+  it("reaches Builder (level 2) at 100 XP", () => {
+    expect(rankForXp(100)).toEqual({ rank: 2, name: "Builder" })
   })
 
-  it("stays at Practitioner between 300 and 599", () => {
-    expect(rankForXp(300).name).toBe("Practitioner")
-    expect(rankForXp(599).name).toBe("Practitioner")
+  it("reaches Grand Architect (level 9) at 7700 XP", () => {
+    expect(rankForXp(7700)).toEqual({ rank: 9, name: "Grand Architect" })
+    expect(rankForXp(9999)).toEqual({ rank: 9, name: "Grand Architect" })
+  })
+
+  it("stays at Practitioner between 600 and 1099", () => {
+    expect(rankForXp(600).name).toBe("Practitioner")
+    expect(rankForXp(1099).name).toBe("Practitioner")
   })
 })
 
-describe("xpToNextRank", () => {
+describe("xpToNextRank (10-level system)", () => {
   it("returns distance to next threshold", () => {
-    expect(xpToNextRank(0)).toBe(100)
-    expect(xpToNextRank(50)).toBe(50)
-    expect(xpToNextRank(100)).toBe(200)
+    expect(xpToNextRank(0)).toBe(20)
+    expect(xpToNextRank(10)).toBe(10)
+    expect(xpToNextRank(20)).toBe(80) // level 1 → level 2 needs 100
   })
 
-  it("returns 0 at the cap", () => {
-    expect(xpToNextRank(1000)).toBe(0)
-    expect(xpToNextRank(5000)).toBe(0)
+  it("returns 0 at the level cap", () => {
+    expect(xpToNextRank(7700)).toBe(0)
+    expect(xpToNextRank(9000)).toBe(0)
   })
 })
 
@@ -62,16 +67,21 @@ describe("relativeLevelForTier", () => {
   })
 })
 
-describe("constants", () => {
-  it("has 5 ranks matching 5 thresholds", () => {
-    expect(MASTERY_RANKS).toHaveLength(5)
-    expect(RANK_XP_THRESHOLDS).toHaveLength(5)
+describe("constants (10-level system)", () => {
+  it("has 10 ranks matching 11 thresholds (0 + 10 levels)", () => {
+    expect(MASTERY_RANKS).toHaveLength(10)
+    expect(RANK_XP_THRESHOLDS).toHaveLength(11) // includes level 0 threshold
+    expect(MAX_LEVEL).toBe(9)
   })
 
   it("thresholds are strictly ascending", () => {
     for (let i = 1; i < RANK_XP_THRESHOLDS.length; i++) {
       expect(RANK_XP_THRESHOLDS[i]).toBeGreaterThan(RANK_XP_THRESHOLDS[i - 1])
     }
+  })
+
+  it("level cap (Grand Architect) requires 7700 XP", () => {
+    expect(RANK_XP_THRESHOLDS[MAX_LEVEL + 1]).toBe(7700)
   })
 
   it("has a colour for every relative level", () => {

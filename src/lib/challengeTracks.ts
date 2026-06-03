@@ -55,35 +55,42 @@ export const MAX_CHALLENGE_TIER = 5
  */
 export const BASE_UNLOCKED_BLOCKS: readonly string[] = ["traffic-source", "compute"]
 
-/** Mastery rank names displayed on profile + titles (D40). Index = rank (0-based). */
-export const MASTERY_RANKS = ["Novice", "Apprentice", "Practitioner", "Specialist", "Architect"] as const
+/**
+ * Mastery level names (10-level system, Season 1). Index = level (0-based).
+ * Level 10 requires completing ~94% of all challenges at high star count.
+ */
+export const MASTERY_RANKS = [
+  "Novice", "Apprentice", "Builder", "Journeyman", "Practitioner",
+  "Specialist", "Expert", "Architect", "Master", "Grand Architect",
+] as const
 export type MasteryRank = (typeof MASTERY_RANKS)[number]
+export const MAX_LEVEL = MASTERY_RANKS.length - 1
 
 /**
- * Cumulative XP thresholds for each rank within a track. A player reaches rank N when their
- * track XP ≥ RANK_XP_THRESHOLDS[N]. The curve is tuned to the current content: the 10-challenge
- * spine totals ~1625 XP spread across 4 tracks, so reaching Specialist (600) in any one track
- * requires completing most of that track's challenges; Architect (1000) needs the capstone + help
- * from cross-track prerequisites. Phase 4 (more content) may shift these.
+ * Cumulative XP thresholds for each level. Quadratic curve: level N costs 20×N² XP.
+ * Total XP pool is ~8230 (41 challenges × 3 stars). Level 10 (Grand Architect) needs 7700
+ * (94% of pool) — requires near-complete mastery across all tracks.
+ *
+ * Levels are GLOBAL (sum of all track XP), not per-track.
  */
-export const RANK_XP_THRESHOLDS: readonly number[] = [0, 100, 300, 600, 1000]
+export const RANK_XP_THRESHOLDS: readonly number[] = [0, 20, 100, 280, 600, 1100, 1820, 2800, 4080, 5700, 7700]
 
-/** Derive the mastery rank for a given cumulative XP value. */
+/** Derive the mastery level for a given cumulative XP value. */
 export function rankForXp(xp: number): { rank: number; name: MasteryRank } {
   let rank = 0
   for (let i = RANK_XP_THRESHOLDS.length - 1; i >= 0; i--) {
     if (xp >= RANK_XP_THRESHOLDS[i]) {
-      rank = i
+      rank = Math.min(i, MAX_LEVEL)
       break
     }
   }
   return { rank, name: MASTERY_RANKS[rank] }
 }
 
-/** XP needed to reach the next rank, or 0 if already at the cap. */
+/** XP needed to reach the next level, or 0 if already at the cap. */
 export function xpToNextRank(xp: number): number {
   const { rank } = rankForXp(xp)
-  if (rank >= MASTERY_RANKS.length - 1) return 0
+  if (rank >= MAX_LEVEL) return 0
   return RANK_XP_THRESHOLDS[rank + 1] - xp
 }
 

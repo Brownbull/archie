@@ -12,21 +12,28 @@ import trackReliability from "@/../docs/gabe/plans/2026-06-02-mastery-tracks/ava
 import trackSecurity from "@/../docs/gabe/plans/2026-06-02-mastery-tracks/avatars/track-security-warden.png"
 import trackAiml from "@/../docs/gabe/plans/2026-06-02-mastery-tracks/avatars/track-aiml-oracle.png"
 
-/** Resolve a mastery rank (0–4) to its local avatar PNG. Full set: Novice → Grand Architect. */
+/**
+ * Map 10 levels to the 6 rank avatars (Novice → Grand Architect).
+ * Levels 0-1: Novice, 2-3: Apprentice, 4-5: Builder/Engineer, 6-7: Architect, 8-9: Grand Architect.
+ */
 const RANK_AVATARS: ReadonlyMap<number, string> = new Map([
-  [0, rank00],
-  [1, rank01],
-  [2, rank02],
-  [3, rank03],
-  [4, rank04],
+  [0, rank00],   // Novice
+  [2, rank01],   // Apprentice
+  [4, rank02],   // Builder
+  [6, rank03],   // Engineer/Architect
+  [8, rank04],   // Master
+  [9, rank05],   // Grand Architect (level cap)
 ])
 
-/** Rank 5 (Grand Architect) is the legacy max-rank avatar from the design phase. */
 export const GRAND_ARCHITECT_AVATAR = rank05
 
 export function getMasteryAvatar(rank: number): string | null {
-  if (rank >= 4) return GRAND_ARCHITECT_AVATAR
-  return RANK_AVATARS.get(rank) ?? null
+  if (rank >= 9) return GRAND_ARCHITECT_AVATAR
+  for (let r = rank; r >= 0; r--) {
+    const url = RANK_AVATARS.get(r)
+    if (url) return url
+  }
+  return null
 }
 
 /** Resolve a track id to its local avatar PNG. Full set: all 7 tracks. */
