@@ -54,7 +54,7 @@ export function AccountMenu() {
           {name && <DropdownMenuLabel className="max-w-[200px] truncate">{name}</DropdownMenuLabel>}
           {name && <DropdownMenuSeparator />}
           <DropdownMenuItem data-testid="account-mastery-profile" onSelect={() => setProfileOpen(true)}>
-            <Trophy className="mr-2 h-3.5 w-3.5" /> Mastery Profile
+            <Trophy className="mr-2 h-3.5 w-3.5" /> Quest Profile
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem data-testid="account-sign-out" onSelect={() => signOut()}>
