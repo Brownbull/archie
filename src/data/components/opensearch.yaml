@@ -75,20 +75,23 @@ config_variants:
         })
     metric_explanations:
       query-latency:
-        reason: OpenSearch Standard queries time-series data efficiently through pre-aggregated rollups.
+        reason: OpenSearch Standard resolves full-text queries against Lucene inverted indices held in the OS page cache, keeping single-shard term lookups fast at moderate request volumes.
         contributing_factors:
-          - Time-partitioned storage enables efficient range scans
-          - Pre-computed rollups speed up aggregation queries
+          - Lucene inverted-index postings lists resolve term matches without table scans
+          - OS page cache keeps hot segments in memory, avoiding disk reads on repeated queries
+          - Query-phase coordination fans out to one replica per shard to spread CPU
       horizontal-scalability:
-        reason: OpenSearch Standard scales capacity by distributing load across nodes.
+        reason: OpenSearch Standard scales by splitting each index into primary shards spread across data nodes, so adding nodes increases parallel query and indexing capacity.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Index sharding parallelizes search and indexing across data nodes
+          - Replica shards add read throughput and survive single-node loss
+          - Shard allocation awareness spreads copies across availability zones
       operational-complexity:
-        reason: OpenSearch Standard simplifies operations through managed infrastructure.
+        reason: OpenSearch Standard is self-managed, so operators own JVM heap tuning, shard sizing, and cluster-state health on top of the bundled Dashboards and security plugins.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - JVM heap and field-data circuit breakers require manual tuning to avoid OOM
+          - Shard count and sizing must be planned to keep cluster state stable
+          - Bundled OpenSearch Dashboards covers observability but rolling upgrades are operator-driven
   - id: optimized
     name: Optimized
     monthly_cost: 120
@@ -123,20 +126,23 @@ config_variants:
         })
     metric_explanations:
       query-latency:
-        reason: OpenSearch Optimized queries time-series data efficiently through pre-aggregated rollups.
+        reason: OpenSearch Optimized cuts tail latency by warming segments onto local NVMe and enabling request caching plus search-thread pool sizing, so aggregation-heavy queries return faster than on the Standard tier.
         contributing_factors:
-          - Time-partitioned storage enables efficient range scans
-          - Pre-computed rollups speed up aggregation queries
+          - Local NVMe-backed segments eliminate cold-shard disk seeks
+          - Shard request cache memoizes repeated aggregation and filter results
+          - Larger search thread pool sustains higher concurrent query fan-out
       horizontal-scalability:
-        reason: OpenSearch Optimized scales capacity by distributing load across nodes.
+        reason: OpenSearch Optimized adds dedicated coordinator and data node roles plus more primary shards, letting indexing and search scale independently to higher request rates.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Dedicated coordinator nodes offload result aggregation from data nodes
+          - Higher primary-shard counts increase indexing and query parallelism
+          - Role separation lets ingest and search capacity scale independently
       operational-complexity:
-        reason: OpenSearch Optimized simplifies operations through managed infrastructure.
+        reason: OpenSearch Optimized lowers operator burden with index State Management policies and rollover automation, though heap, shard, and node-role tuning still require expertise.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - Index State Management automates rollover, hot-warm transitions, and deletion
+          - Snapshot policies schedule backups to a repository without manual triggers
+          - Node-role separation simplifies capacity planning versus a flat cluster
 connection_properties:
   protocol: HTTPS
   communication_patterns:

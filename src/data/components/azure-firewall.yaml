@@ -69,20 +69,21 @@ config_variants:
         aws wafv2 get-sampled-requests --web-acl-arn $ACL_ARN --rule-metric-name AllRequests --scope REGIONAL --time-window '{"StartTime":"2024-01-01","EndTime":"2024-01-02"}' --max-items 10
     metric_explanations:
       threat-detection:
-        reason: Azure Firewall Standard detects threats through managed rule sets and behavioral analysis.
+        reason: The Standard SKU filters virtual-network traffic with Microsoft threat-intelligence feeds plus network and application rule collections, alerting or denying connections to known malicious IPs and domains without the Premium IDPS engine.
         contributing_factors:
-          - Continuously updated managed rules cover OWASP Top 10
-          - Rate-based rules detect and block volumetric attacks automatically
+          - Threat-intelligence feeds from Microsoft Security flag traffic to known-bad IPs and FQDNs
+          - Application rules enforce FQDN allowlists for outbound HTTP/S egress control
+          - Network rules filter by port, protocol, and IP across the VNet hub
       alert-latency:
-        reason: Azure Firewall Standard achieves this metric level through its architecture and configuration.
+        reason: Rule processing happens inline on the stateful firewall data plane, and matches stream to Azure Monitor and Log Analytics through diagnostic settings, surfacing threat-intel and rule hits within the platform's ingestion window.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Stateful inline inspection evaluates connections in the forwarding path, not as a batch job
+          - Diagnostic logs flow to Log Analytics where Sentinel rules can alert in near real time
       waf-cost-efficiency:
-        reason: Azure Firewall Standard achieves this metric level through its architecture and configuration.
+        reason: The Standard SKU bills a fixed per-hour deployment fee plus per-GB data processing, so cost efficiency is moderate because the firewall runs continuously even when traffic is light.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Pricing combines a flat hourly deployment charge with a per-GB processed-data fee
+          - Always-on managed instances incur baseline cost regardless of throughput
   - id: premium
     name: Premium
     monthly_cost: 80
@@ -111,20 +112,21 @@ config_variants:
         aws wafv2 get-sampled-requests --web-acl-arn $ACL_ARN --rule-metric-name AllRequests --scope REGIONAL --time-window '{"StartTime":"2024-01-01","EndTime":"2024-01-02"}' --max-items 10
     metric_explanations:
       threat-detection:
-        reason: Azure Firewall Premium detects threats through managed rule sets and behavioral analysis.
+        reason: The Premium SKU adds a signature-based IDPS engine and TLS inspection, decrypting outbound and east-west TLS to scan payloads against thousands of Microsoft exploit signatures, achieving the highest detection coverage in the lineup.
         contributing_factors:
-          - Continuously updated managed rules cover OWASP Top 10
-          - Rate-based rules detect and block volumetric attacks automatically
+          - IDPS matches decrypted traffic against Microsoft's continuously updated signature set
+          - TLS inspection terminates and re-encrypts sessions so encrypted payloads are scanned, not bypassed
+          - URL filtering and web categories extend FQDN control to full-path and category granularity
       alert-latency:
-        reason: Azure Firewall Premium achieves this metric level through its architecture and configuration.
+        reason: IDPS signature hits and TLS-inspection verdicts are produced inline on the Premium data plane and exported to Log Analytics, so deep-packet detections reach Azure Monitor and Sentinel with minimal delay.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - IDPS alert and deny verdicts are generated in the inline inspection path per packet
+          - Structured IDPS logs feed Log Analytics for immediate Sentinel correlation and alerting
       waf-cost-efficiency:
-        reason: Azure Firewall Premium achieves this metric level through its architecture and configuration.
+        reason: The Premium SKU carries a higher fixed hourly rate than Standard plus per-GB processing, and TLS decryption adds compute overhead, making it the least cost-efficient tier despite its superior detection.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Premium's hourly deployment fee exceeds the Standard SKU for the same idle footprint
+          - TLS inspection and IDPS add CPU-bound processing that raises effective per-GB cost
 connection_properties:
   protocol: HTTPS
   communication_patterns:

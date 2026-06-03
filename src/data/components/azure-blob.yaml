@@ -65,20 +65,23 @@ config_variants:
         aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
     metric_explanations:
       storage-scalability:
-        reason: Azure Blob Storage Hot achieves this metric level through its architecture and configuration.
+        reason: Azure Blob Storage Hot scales by spreading blobs across a flat namespace whose range-partition index Azure auto-splits as traffic grows, so a single account absorbs petabytes without manual provisioning.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Flat namespace keyed by account, container, and blob name avoids directory limits
+          - Range partitions auto-split and rebalance across the storage stamp under load
+          - Capacity is provisioned on demand with no upfront volume sizing
       data-durability:
-        reason: Azure Blob Storage Hot ensures data durability through replication and persistence.
+        reason: Azure Blob Storage Hot synchronously writes three replicas within a region via locally redundant storage and can extend to zone- or geo-redundant copies for higher durability.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - LRS keeps three synchronous replicas within a single data-center stamp
+          - ZRS or GRS options spread copies across zones or a paired region
+          - Soft delete and blob versioning recover overwritten or deleted objects
       cost-per-gb:
-        reason: Azure Blob Storage Hot achieves this metric level through its architecture and configuration.
+        reason: Azure Blob Storage Hot prices for frequent access, charging a higher per-GB storage rate but low read and transaction fees, making it economical for actively served data.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Hot-tier storage rate is highest but read and operation charges are lowest
+          - No early-deletion penalty, unlike the cool and archive tiers
+          - Lifecycle policies can later demote idle blobs to cheaper tiers
   - id: cool
     name: Cool
     monthly_cost: 10
@@ -107,20 +110,23 @@ config_variants:
         aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
     metric_explanations:
       storage-scalability:
-        reason: Azure Blob Storage Cool achieves this metric level through its architecture and configuration.
+        reason: Azure Blob Storage Cool uses the same auto-partitioned flat namespace as the hot tier, so it scales to the same petabyte-plus capacity while targeting infrequently accessed data.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Shares the hot tier's range-partition index and auto-split scaling
+          - Tier is a per-blob attribute, so capacity limits are identical to hot
+          - Suited to large archival datasets that still need millisecond retrieval
       data-durability:
-        reason: Azure Blob Storage Cool ensures data durability through replication and persistence.
+        reason: Azure Blob Storage Cool offers identical replication guarantees to the hot tier, with the same LRS, ZRS, and geo-redundant options independent of the chosen access tier.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Same LRS, ZRS, and GRS redundancy choices as the hot tier
+          - Access tier affects pricing, not the number of durable replicas
+          - Soft delete and versioning protect cool blobs the same way
       cost-per-gb:
-        reason: Azure Blob Storage Cool achieves this metric level through its architecture and configuration.
+        reason: Azure Blob Storage Cool charges a markedly lower per-GB storage rate than hot in exchange for higher read and transaction fees plus a 30-day minimum retention.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Lower per-GB storage rate suits data read less than once a month
+          - Higher per-operation and data-retrieval fees offset the storage savings
+          - 30-day minimum retention applies an early-deletion charge if removed sooner
 connection_properties:
   protocol: HTTPS
   communication_patterns:

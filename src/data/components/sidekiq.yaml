@@ -71,20 +71,20 @@ config_variants:
         }, { concurrency: 5 })
     metric_explanations:
       worker-concurrency:
-        reason: Sidekiq Standard achieves this metric level through its architecture and configuration.
+        reason: A standard Sidekiq process runs a fixed thread pool (default around ten threads) that each pull and execute jobs in parallel, so one process handles many jobs at once as long as the work is I/O-bound enough to overlap under Ruby's GVL.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - One process multiplexes jobs across its thread pool instead of forking a worker per job
+          - Concurrency is capped by the configured pool size and the Redis client connection pool it shares
       job-throughput:
-        reason: Sidekiq Standard processes jobs efficiently through concurrent execution.
+        reason: Each worker thread does a blocking BRPOP-style fetch from Redis queues and runs the job inline, so throughput tracks how fast the threads can pop from Redis and complete short jobs.
         contributing_factors:
-          - Multi-threaded execution maximizes CPU utilization per worker
-          - Job prioritization ensures critical tasks complete first
+          - Redis-backed queues give near-constant-time enqueue and pop for fast job hand-off
+          - Strict queue ordering lets high-priority queues drain ahead of lower ones
       sidekiq-cost-efficiency:
-        reason: Sidekiq Standard achieves this metric level through its architecture and configuration.
+        reason: The open-source standard tier packs heavy concurrency into a single Ruby process backed by one Redis instance, so a small footprint clears a large job volume without per-job infrastructure or license cost.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Open-source Sidekiq with only a shared Redis as its dependency
+          - High threads-per-process density means fewer worker processes for a given job rate
   - id: enterprise
     name: Enterprise
     monthly_cost: 90
@@ -115,20 +115,20 @@ config_variants:
         }, { concurrency: 5 })
     metric_explanations:
       worker-concurrency:
-        reason: Sidekiq Enterprise achieves this metric level through its architecture and configuration.
+        reason: The Enterprise license runs more worker processes and larger thread pools while adding rate limiting and unique-job locks, so concurrency scales further without duplicate or thundering-herd jobs overwhelming downstream systems.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Multiple processes plus larger per-process thread pools raise total parallel job slots
+          - Enterprise concurrency limiters and unique jobs throttle hot job types so added threads stay productive
       job-throughput:
-        reason: Sidekiq Enterprise processes jobs efficiently through concurrent execution.
+        reason: Enterprise batches and reliable fetch let many worker threads churn through large job sets while tracking batch completion, pushing total throughput above the standard tier on the same Redis-backed queues.
         contributing_factors:
-          - Multi-threaded execution maximizes CPU utilization per worker
-          - Job prioritization ensures critical tasks complete first
+          - Batches group thousands of jobs with callbacks so high volumes flow without per-job bookkeeping
+          - Reliable fetch re-queues interrupted jobs, keeping threads busy instead of stalling on crashes
       sidekiq-cost-efficiency:
-        reason: Sidekiq Enterprise achieves this metric level through its architecture and configuration.
+        reason: Enterprise adds a paid per-seat license and runs more standing worker processes, so it trades some raw cost-per-job for rate limiting, batches, and reliability features that a heavy production workload needs.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Commercial Enterprise license adds a recurring fee on top of the open-source core
+          - Extra always-on worker processes raise baseline compute cost versus the single-process standard tier
 connection_properties:
   protocol: AMQP
   communication_patterns:

@@ -75,20 +75,23 @@ config_variants:
         })
     metric_explanations:
       query-latency:
-        reason: Meilisearch Standard queries time-series data efficiently through pre-aggregated rollups.
+        reason: Meilisearch Standard answers search-as-you-type from a memory-mapped LMDB index, resolving prefixes and typo variants through precomputed ranking rules to stay under 50ms.
         contributing_factors:
-          - Time-partitioned storage enables efficient range scans
-          - Pre-computed rollups speed up aggregation queries
+          - Memory-mapped LMDB index serves reads straight from the OS page cache
+          - Prefix and bucketed typo-tolerance structures avoid per-query scans
+          - Default relevancy ranking rules are precomputed rather than evaluated live
       horizontal-scalability:
-        reason: Meilisearch Standard scales capacity by distributing load across nodes.
+        reason: Meilisearch Standard runs as a single write node, so capacity scales vertically with CPU and RAM rather than by sharding across a cluster.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Single-node architecture means no native sharding or clustering
+          - Throughput grows by adding CPU cores and RAM to one instance
+          - Read load can be fronted by a cache or CDN since the engine itself is single-writer
       operational-complexity:
-        reason: Meilisearch Standard simplifies operations through managed infrastructure.
+        reason: Meilisearch Standard ships as one self-contained binary with sane defaults, so setup and indexing need almost no tuning beyond pointing it at a data directory.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - Single static binary with no external dependencies to deploy
+          - Schemaless indexing infers field types on first document ingest
+          - Sensible default ranking rules require no relevance configuration to start
   - id: scaled
     name: Scaled
     monthly_cost: 90
@@ -123,20 +126,23 @@ config_variants:
         })
     metric_explanations:
       query-latency:
-        reason: Meilisearch Scaled queries time-series data efficiently through pre-aggregated rollups.
+        reason: Meilisearch Scaled drives latency below 10ms by hosting the full LMDB index in RAM on a larger instance, so prefix and typo lookups never touch disk under load.
         contributing_factors:
-          - Time-partitioned storage enables efficient range scans
-          - Pre-computed rollups speed up aggregation queries
+          - Larger RAM footprint keeps the entire memory-mapped index resident
+          - Higher core count parallelizes concurrent search request handling
+          - Hot ranking-rule structures stay cached, avoiding cold-start penalties
       horizontal-scalability:
-        reason: Meilisearch Scaled scales capacity by distributing load across nodes.
+        reason: Meilisearch Scaled remains single-writer but fans reads out to remote replicas synced from the primary, raising read concurrency without true sharding.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Read replicas synced from the primary absorb high query concurrency
+          - Writes still funnel through one primary, capping write scalability
+          - Load balancing across replicas spreads search traffic but not index size
       operational-complexity:
-        reason: Meilisearch Scaled simplifies operations through managed infrastructure.
+        reason: Meilisearch Scaled keeps the single-binary simplicity but adds replica sync and snapshot scheduling that operators must monitor and configure.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - Replica syncing introduces lag monitoring not present on a single node
+          - Periodic snapshots and dumps must be scheduled for backup and restore
+          - Capacity planning shifts to balancing primary writes against replica reads
 connection_properties:
   protocol: HTTPS
   communication_patterns:

@@ -63,20 +63,23 @@ config_variants:
         for i in $(seq 1 10); do curl -s http://lb.example.com/api/ping | jq -r '.server'; done | sort | uniq -c
     metric_explanations:
       request-latency:
-        reason: Traefik Edge Router processes requests with minimal overhead through optimized routing.
+        reason: Traefik Edge Router matches each request against a router-rule tree compiled in Go and watches provider events to hot-reload routes, so configuration changes never restart the proxy and per-request matching stays sub-millisecond.
         contributing_factors:
-          - Efficient request routing minimizes per-request overhead
-          - Connection keep-alive reduces handshake latency
+          - Router rules matched by a compiled Go matcher, no per-request config parse
+          - Provider watch hot-reloads routes without dropping in-flight connections
+          - Automatic Let's Encrypt TLS terminates at the edge with cached certificates
       concurrent-connections:
-        reason: Traefik Edge Router handles high connection counts through efficient I/O multiplexing.
+        reason: Traefik Edge Router rides Go's goroutine-per-connection model over the net/http server, so each connection is a cheap green thread on the runtime scheduler rather than an OS thread, letting one process hold tens of thousands of open sockets.
         contributing_factors:
-          - Event-driven architecture scales with connections not threads
-          - Connection pooling reduces per-connection memory overhead
+          - Goroutine-per-connection multiplexed onto a small OS thread pool
+          - Go runtime scheduler parks idle connections at near-zero memory cost
+          - Backend connections reused via the shared HTTP transport pool
       traefik-cost-efficiency:
-        reason: Traefik Edge Router achieves this metric level through its architecture and configuration.
+        reason: Traefik Edge Router is open-source and runs as a single static Go binary that auto-discovers backends, so a small VM handles edge routing with no per-route licensing or external control plane.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Single self-contained Go binary, no runtime dependencies to license
+          - Automatic service discovery removes manual config-management toil
+          - Free community edition covers core HTTP, TCP, and TLS routing
   - id: load-balancer
     name: Load Balancer
     monthly_cost: 30
@@ -104,20 +107,23 @@ config_variants:
         for i in $(seq 1 10); do curl -s http://lb.example.com/api/ping | jq -r '.server'; done | sort | uniq -c
     metric_explanations:
       request-latency:
-        reason: Traefik Load Balancer processes requests with minimal overhead through optimized routing.
+        reason: Traefik Load Balancer adds weighted round-robin and sticky-session selection plus active health checks per backend, so it picks a healthy server in-process and forwards over a pooled keep-alive connection with little added latency.
         contributing_factors:
-          - Efficient request routing minimizes per-request overhead
-          - Connection keep-alive reduces handshake latency
+          - Weighted round-robin server pick computed in-process per request
+          - Active health checks evict failing backends before they add latency
+          - Sticky-session cookie avoids cross-node cache misses on stateful backends
       concurrent-connections:
-        reason: Traefik Load Balancer handles high connection counts through efficient I/O multiplexing.
+        reason: Traefik Load Balancer fans many client goroutines onto a smaller pool of reused upstream connections, so connection growth is decoupled from backend sockets and the Go scheduler keeps thousands of clients balanced across servers.
         contributing_factors:
-          - Event-driven architecture scales with connections not threads
-          - Connection pooling reduces per-connection memory overhead
+          - Client goroutines multiplexed onto a reused upstream connection pool
+          - Per-backend max-connection limits prevent overloading a single server
+          - Go scheduler spreads connection load without per-socket OS threads
       traefik-cost-efficiency:
-        reason: Traefik Load Balancer achieves this metric level through its architecture and configuration.
+        reason: Traefik Load Balancer delivers L7 balancing, health checking, and sticky sessions from the free open-source binary, so it replaces a paid hardware or cloud load balancer at the cost of a commodity VM.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Core load-balancing and health checks ship in the free community edition
+          - One binary balances HTTP, TCP, and gRPC without separate appliances
+          - Self-hosted on commodity compute, no per-hour managed-LB charge
 connection_properties:
   protocol: HTTP
   communication_patterns:

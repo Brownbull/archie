@@ -69,20 +69,21 @@ config_variants:
         aws wafv2 get-sampled-requests --web-acl-arn $ACL_ARN --rule-metric-name AllRequests --scope REGIONAL --time-window '{"StartTime":"2024-01-01","EndTime":"2024-01-02"}' --max-items 10
     metric_explanations:
       threat-detection:
-        reason: AWS WAF Standard detects threats through managed rule sets and behavioral analysis.
+        reason: The Standard tier inspects HTTP traffic against AWS Managed Rule groups (Core Rule Set, Known Bad Inputs, SQLi) combined with rate-based statements, giving strong coverage of common web exploits without the Bot Control add-on.
         contributing_factors:
-          - Continuously updated managed rules cover OWASP Top 10
-          - Rate-based rules detect and block volumetric attacks automatically
+          - AWS Managed Rules auto-update as Amazon's threat research publishes new signatures
+          - Rate-based rules track per-IP request counts in 5-minute windows to block volumetric floods
+          - Regex and IP-set match statements let teams add targeted custom rules per web ACL
       alert-latency:
-        reason: AWS WAF Standard achieves this metric level through its architecture and configuration.
+        reason: Web ACLs evaluate inline at the CloudFront or ALB edge, so rule matches surface in CloudWatch metrics and sampled-request logs within seconds of an offending request.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Rule evaluation runs in the data path at the regional or edge PoP, not as an out-of-band batch
+          - CloudWatch per-rule metrics emit at 1-minute granularity for fast blocked-request visibility
       waf-cost-efficiency:
-        reason: AWS WAF Standard achieves this metric level through its architecture and configuration.
+        reason: At a modest WCU budget the Standard tier stays cheap because managed-rule and custom-rule capacity fits within the base web ACL allotment without the per-request Bot Control surcharge.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Pricing is the web ACL fee plus per-rule and per-million-request charges, low at small rule counts
+          - WCU limits keep rule complexity bounded, avoiding runaway inspection cost
   - id: advanced
     name: Advanced
     monthly_cost: 50
@@ -111,20 +112,21 @@ config_variants:
         aws wafv2 get-sampled-requests --web-acl-arn $ACL_ARN --rule-metric-name AllRequests --scope REGIONAL --time-window '{"StartTime":"2024-01-01","EndTime":"2024-01-02"}' --max-items 10
     metric_explanations:
       threat-detection:
-        reason: AWS WAF Advanced detects threats through managed rule sets and behavioral analysis.
+        reason: The Advanced tier layers AWS WAF Bot Control and Fraud Control on top of the managed rule groups, using machine-learning bot classification and account-takeover signals to catch automated and credential-abuse threats the Standard tier misses.
         contributing_factors:
-          - Continuously updated managed rules cover OWASP Top 10
-          - Rate-based rules detect and block volumetric attacks automatically
+          - Bot Control fingerprints clients and scores traffic to separate verified bots from malicious automation
+          - Account Takeover Prevention inspects login attempts against compromised-credential intelligence
+          - Targeted rate-based and CAPTCHA actions throttle scrapers and brute-force attempts
       alert-latency:
-        reason: AWS WAF Advanced achieves this metric level through its architecture and configuration.
+        reason: Inline inspection at the edge plus Bot Control telemetry streams labeled detections into CloudWatch and Kinesis Firehose logging in near real time, so analysts see classified threats almost immediately.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Bot and fraud verdicts are attached to requests inline, not computed after the fact
+          - Full-request logging via Kinesis Data Firehose enables sub-minute downstream alerting
       waf-cost-efficiency:
-        reason: AWS WAF Advanced achieves this metric level through its architecture and configuration.
+        reason: Bot Control and Fraud Control bill per-million inspected requests on top of the base web ACL fee, so the Advanced tier trades higher per-request cost for richer automated-threat coverage.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Bot Control adds a per-million-request inspection charge beyond standard rule pricing
+          - Fraud Control and CAPTCHA actions carry their own usage fees on inspected traffic
 connection_properties:
   protocol: HTTPS
   communication_patterns:

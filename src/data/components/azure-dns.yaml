@@ -64,20 +64,23 @@ config_variants:
         dig example.com +stats | grep "Query time"
     metric_explanations:
       resolution-latency:
-        reason: Azure DNS Standard resolves queries through a global anycast network, keeping resolution latency predictable.
+        reason: Azure DNS Standard serves public zones from Microsoft's anycast name servers across the global WAN, and alias records resolve Traffic Manager and Front Door targets at the name server itself so clients skip an extra CNAME hop.
         contributing_factors:
-          - Global anycast resolver fleet distributes queries geographically
-          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+          - Anycast public name servers answer from the nearest Microsoft edge site
+          - Alias records resolve Azure resource IPs inline, avoiding a second lookup
+          - Records served from replicated in-memory zone data rather than disk
       global-availability:
-        reason: Azure DNS Standard distributes DNS across multiple availability zones for high uptime.
+        reason: Azure DNS Standard spreads each public zone across Microsoft's anycast name-server fleet on the global backbone, so a single site outage is withdrawn from BGP while the remaining sites keep answering authoritatively.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - Anycast name servers span many Microsoft edge sites worldwide
+          - BGP withdrawal reroutes resolvers off a degraded site automatically
+          - Zone data replicated across regions by the Azure DNS control plane
       azure-dns-cost-efficiency:
-        reason: Azure DNS Standard achieves this metric level through its architecture and configuration.
+        reason: Azure DNS Standard prices public hosting per hosted zone plus per-million queries with the first billion queries at the lowest tier, keeping cost low for typical public domains.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Per-hosted-zone monthly fee with volume discounts past 25 zones
+          - Query billing tiered down after the first billion monthly lookups
+          - Public zones avoid the per-VNet-link charge that private zones incur
   - id: private-zones
     name: Private Zones
     monthly_cost: 15
@@ -105,20 +108,23 @@ config_variants:
         dig example.com +stats | grep "Query time"
     metric_explanations:
       resolution-latency:
-        reason: Azure DNS Private Zones resolves queries through a global anycast network, keeping resolution latency predictable.
+        reason: Azure DNS Private Zones answers from the 168.63.129.16 platform resolver inside each linked VNet, so VM-to-VM name lookups stay on the local virtual network fabric and never leave Azure for a sub-millisecond response.
         contributing_factors:
-          - Global anycast resolver fleet distributes queries geographically
-          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+          - Private resolver reachable at the in-fabric 168.63.129.16 address
+          - Lookups stay within the VNet's software-defined network, off the public internet
+          - Auto-registration keeps VM A-records current without manual TTL waits
       global-availability:
-        reason: Azure DNS Private Zones distributes DNS across multiple availability zones for high uptime.
+        reason: Azure DNS Private Zones links a single zone to many VNets across regions through the redundant Azure platform resolver, so name resolution survives the loss of any one VNet or region as long as another link remains.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - One private zone linked to multiple VNets across regions
+          - Platform resolver is part of the redundant Azure host infrastructure
+          - Registration and resolution VNet links can be split for resilience
       azure-dns-cost-efficiency:
-        reason: Azure DNS Private Zones achieves this metric level through its architecture and configuration.
+        reason: Azure DNS Private Zones adds a per-VNet-link charge on top of the hosted-zone and query fees, so cross-VNet private resolution costs more than equivalent public hosting as the number of linked networks grows.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Each linked VNet bills a separate monthly virtual-network-link fee
+          - Hosted-zone and query charges still apply on top of the link fee
+          - Cost scales with the number of VNets sharing the private namespace
 connection_properties:
   protocol: DNS/UDP
   communication_patterns:

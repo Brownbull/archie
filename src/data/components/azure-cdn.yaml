@@ -64,20 +64,23 @@ config_variants:
         curl -X PURGE https://cdn.example.com/assets/app.js
     metric_explanations:
       edge-latency:
-        reason: Azure CDN Standard serves content from edge locations close to end users.
+        reason: Azure CDN Standard caches objects at Microsoft's global edge POPs and absorbs volumetric floods inline with always-on infrastructure DDoS protection, so legitimate cache hits return in single-digit milliseconds even under attack.
         contributing_factors:
-          - Geographically distributed edge nodes minimize round-trip time
-          - Cache hit ratio reduces origin fetch latency
+          - Cache hits served from the Microsoft edge POP nearest the client
+          - Always-on infrastructure DDoS scrubbing keeps the edge responsive under flood
+          - Cache-Control and rules-engine TTLs hold objects to maximize hit ratio
       global-availability:
-        reason: Azure CDN Standard distributes DNS across multiple availability zones for high uptime.
+        reason: Azure CDN Standard advertises one anycast endpoint from Microsoft's worldwide POP network, so a POP outage is routed around by BGP while cached content keeps serving from the remaining edge sites.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - Anycast endpoint reachable from every Microsoft edge POP
+          - BGP reroutes clients off a failed POP without a DNS change
+          - Edge cache continues serving objects through a transient origin outage
       azure-cdn-cost-efficiency:
-        reason: Azure CDN Standard achieves this metric level through its architecture and configuration.
+        reason: Azure CDN Standard charges zone-based per-GB egress plus per-10k requests, and DDoS protection is bundled at no extra charge, giving solid value for static delivery within a single pricing zone.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Per-GB egress tiered by geographic billing zone
+          - Infrastructure DDoS protection included with no separate fee
+          - Standard SKU avoids the higher rules-engine and WAF costs of Premium
   - id: premium
     name: Premium
     monthly_cost: 120
@@ -105,20 +108,23 @@ config_variants:
         curl -X PURGE https://cdn.example.com/assets/app.js
     metric_explanations:
       edge-latency:
-        reason: Azure CDN Premium serves content from edge locations close to end users.
+        reason: Azure CDN Premium runs a programmable rules engine at the edge that rewrites, redirects, and sets cache keys without a round trip to origin, so personalized and conditional responses are decided at the POP and returned in a few milliseconds.
         contributing_factors:
-          - Geographically distributed edge nodes minimize round-trip time
-          - Cache hit ratio reduces origin fetch latency
+          - Rules engine evaluates routing and header logic at the edge POP
+          - Edge-computed cache keys raise hit ratio for query-string variants
+          - Dynamic site acceleration tunes the origin path for uncacheable requests
       global-availability:
-        reason: Azure CDN Premium distributes DNS across multiple availability zones for high uptime.
+        reason: Azure CDN Premium combines the anycast edge with health-probed origin failover and a managed WAF, so unhealthy origins are bypassed and malicious traffic is filtered at the edge while the global POP network keeps serving.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - Health-probed origin groups fail traffic over to a healthy backend
+          - Managed WAF rules block layer-7 attacks before they reach origin
+          - Anycast POP network rides out single-site failures via BGP rerouting
       azure-cdn-cost-efficiency:
-        reason: Azure CDN Premium achieves this metric level through its architecture and configuration.
+        reason: Azure CDN Premium adds per-rule, per-WAF-request, and dynamic-acceleration charges on top of egress, so the programmable edge raises cost per request and only pays off when its routing and security features are actually used.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Rules-engine and WAF requests metered separately from egress GB
+          - Dynamic site acceleration billed for uncacheable origin traffic
+          - Premium SKU cost-effective only when edge logic or WAF is required
 connection_properties:
   protocol: HTTP
   communication_patterns:

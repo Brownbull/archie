@@ -65,20 +65,23 @@ config_variants:
         aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
     metric_explanations:
       storage-scalability:
-        reason: Cloudflare R2 Standard achieves this metric level through its architecture and configuration.
+        reason: Cloudflare R2 Standard scales object capacity across Cloudflare's distributed storage backed by its global network, growing on demand without provisioning while exposing the S3 API.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Objects distribute across Cloudflare's storage infrastructure automatically
+          - Capacity grows on demand with no bucket or volume sizing step
+          - S3-compatible API lets existing tooling address the bucket unchanged
       data-durability:
-        reason: Cloudflare R2 Standard ensures data durability through replication and persistence.
+        reason: Cloudflare R2 Standard redundantly stores each object across multiple devices and locations so individual hardware failures do not cause data loss.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Each object is replicated across multiple storage devices on write
+          - Spreading copies across locations survives single-site hardware failure
+          - Background integrity checks detect and repair corrupted replicas
       cost-per-gb:
-        reason: Cloudflare R2 Standard achieves this metric level through its architecture and configuration.
+        reason: Cloudflare R2 Standard keeps total cost low chiefly by charging zero egress fees, so read-heavy workloads pay only flat storage and per-operation rates.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Zero egress fees remove the dominant cost of read-heavy object workloads
+          - Flat per-GB storage pricing with no regional egress multipliers
+          - Class A and B operation fees are the only usage charges beyond storage
   - id: enterprise
     name: Enterprise
     monthly_cost: 25
@@ -107,20 +110,23 @@ config_variants:
         aws s3 cp s3://my-bucket/backups/backup.tar.gz ./restore.tar.gz
     metric_explanations:
       storage-scalability:
-        reason: Cloudflare R2 Enterprise achieves this metric level through its architecture and configuration.
+        reason: Cloudflare R2 Enterprise raises throughput and request ceilings on the same distributed store, letting high-volume tenants sustain more concurrent operations against ever-larger buckets.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Higher request-rate limits sustain greater concurrent object operations
+          - Same on-demand capacity model scales bucket size without provisioning
+          - Jurisdictional placement can pin objects to a region for compliance
       data-durability:
-        reason: Cloudflare R2 Enterprise ensures data durability through replication and persistence.
+        reason: Cloudflare R2 Enterprise inherits the same multi-device, multi-location redundancy as Standard while adding bucket-level controls like object lock to prevent premature deletion.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Multi-device, multi-location replication matches the Standard tier
+          - Object-lock retention guards critical data against overwrite or deletion
+          - Bucket-level access policies tighten who can mutate stored objects
       cost-per-gb:
-        reason: Cloudflare R2 Enterprise achieves this metric level through its architecture and configuration.
+        reason: Cloudflare R2 Enterprise preserves zero egress while offering committed-volume pricing that lowers the effective per-GB storage rate for large, predictable footprints.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Zero egress fees carry over from the Standard tier
+          - Committed-use volume discounts reduce the effective per-GB rate
+          - Predictable storage-plus-operations billing without egress surprises
 connection_properties:
   protocol: HTTPS
   communication_patterns:

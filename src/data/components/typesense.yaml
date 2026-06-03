@@ -75,20 +75,23 @@ config_variants:
         })
     metric_explanations:
       query-latency:
-        reason: Typesense Standard queries time-series data efficiently through pre-aggregated rollups.
+        reason: Typesense Standard keeps the entire index in RAM and serves search-as-you-type from in-memory structures, so typo-tolerant lookups resolve without disk I/O.
         contributing_factors:
-          - Time-partitioned storage enables efficient range scans
-          - Pre-computed rollups speed up aggregation queries
+          - Whole index resides in RAM, eliminating disk seeks on every query
+          - In-memory tries power instant prefix and typo-tolerant matching
+          - Single-node setup avoids network hops between query coordinators
       horizontal-scalability:
-        reason: Typesense Standard scales capacity by distributing load across nodes.
+        reason: Typesense Standard runs as one node, so search capacity scales by adding RAM and CPU to that instance rather than by sharding the dataset across machines.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Single-node deployment caps dataset size to one machine's RAM
+          - Throughput grows vertically with more cores and memory
+          - No data sharding, so very large corpora require a bigger instance
       operational-complexity:
-        reason: Typesense Standard simplifies operations through managed infrastructure.
+        reason: Typesense Standard self-hosts as a single static binary with a JSON schema and API key, needing no external datastore or coordination service to run.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - One self-contained binary with no external service dependencies
+          - Explicit collection schema defines field types and faceting upfront
+          - API-key bootstrapping is the only required security setup
   - id: ha-cluster
     name: HA Cluster
     monthly_cost: 80
@@ -123,20 +126,23 @@ config_variants:
         })
     metric_explanations:
       query-latency:
-        reason: Typesense HA Cluster queries time-series data efficiently through pre-aggregated rollups.
+        reason: Typesense HA Cluster serves reads from any of three in-memory replicas, so a load balancer can route searches to the nearest healthy node and keep latency near single-digit ms.
         contributing_factors:
-          - Time-partitioned storage enables efficient range scans
-          - Pre-computed rollups speed up aggregation queries
+          - Each replica holds the full in-memory index for local query resolution
+          - Reads spread across all nodes, lowering per-node contention
+          - Healthy-node routing avoids waiting on a busy or recovering peer
       horizontal-scalability:
-        reason: Typesense HA Cluster scales capacity by distributing load across nodes.
+        reason: Typesense HA Cluster replicates the index across a Raft quorum of nodes, multiplying read throughput and tolerating a node failure without losing search availability.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Raft consensus keeps three replicas in sync for the same dataset
+          - Adding replicas scales read capacity while preserving consistency
+          - Quorum survives single-node loss without dropping query traffic
       operational-complexity:
-        reason: Typesense HA Cluster simplifies operations through managed infrastructure.
+        reason: Typesense HA Cluster adds Raft membership, leader election, and replica health to operate, raising complexity over the single-node binary while remaining self-managed.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - Raft peer configuration and quorum sizing must be maintained
+          - Leader election and replica catch-up require monitoring during failover
+          - Self-hosted clustering means operators own node provisioning and upgrades
 connection_properties:
   protocol: HTTPS
   communication_patterns:

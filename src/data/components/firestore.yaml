@@ -75,20 +75,23 @@ config_variants:
         return doc.data()
     metric_explanations:
       write-throughput:
-        reason: Cloud Firestore Standard handles write operations through an optimized ingestion pipeline.
+        reason: Firestore commits each document write as a serverless transaction that synchronously updates the document plus every automatic index, which bounds sustained throughput by the well-known ~1 write/sec-per-document and ~500 writes/sec-per-collection-group hotspot limits unless writes are spread across many document keys.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - Every write also updates all automatic single-field and composite indexes synchronously
+          - The ~1 write/sec per single document soft limit caps contention on any one key
+          - Monotonically increasing or sequential document IDs create index hotspots and must be sharded
       horizontal-scalability:
-        reason: Cloud Firestore Standard scales capacity by distributing load across nodes.
+        reason: As a serverless database, Firestore transparently range-splits its key space behind the scenes and adds capacity without any provisioning, but read and write scaling depends on the application distributing documents across many keys rather than on operator-managed nodes.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Google-managed automatic range splitting reshards the key space as data and traffic grow
+          - No servers, replicas, or shards to provision — capacity is fully serverless
+          - Even key distribution (avoiding sequential IDs) is required to actually realize the scaling
       data-durability:
-        reason: Cloud Firestore Standard ensures data durability through replication and persistence.
+        reason: Firestore synchronously replicates every committed write to multiple zones within the region using Paxos before acknowledging, so a single document write is durable across independent failure domains the moment the client sees success.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Paxos-based synchronous replication across zones before commit acknowledgement
+          - Strong consistency means an acknowledged write is immediately visible to subsequent reads
+          - Google-managed point-in-time recovery restores the database to a prior timestamp
   - id: scaled
     name: Scaled
     monthly_cost: 100
@@ -122,20 +125,23 @@ config_variants:
         return doc.data()
     metric_explanations:
       write-throughput:
-        reason: Cloud Firestore Scaled handles write operations through an optimized ingestion pipeline.
+        reason: At scale, Firestore reaches high aggregate write throughput by spreading load across many document keys and sharded counters so the per-document and per-collection-group hotspot limits never bind, while the serverless backend keeps splitting hot key ranges automatically.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - Distributed/sharded counters fan a high-frequency aggregate across many documents
+          - Automatic range-split traffic warm-up (gradual ramp) avoids overwhelming a fresh split
+          - Batched writes group up to 500 operations into one atomic commit
       horizontal-scalability:
-        reason: Cloud Firestore Scaled scales capacity by distributing load across nodes.
+        reason: A well-keyed Firestore workload scales to very high request rates because the serverless engine keeps subdividing the key space across more storage servers automatically, with no node count, sharding strategy, or rebalancing for the operator to manage.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Automatic, continuous range splitting follows traffic to keep partitions balanced
+          - Serverless capacity grows without provisioning instances or read replicas
+          - Collection-group queries scale independently of any single collection's size
       data-durability:
-        reason: Cloud Firestore Scaled ensures data durability through replication and persistence.
+        reason: Higher-traffic Firestore deployments retain the same multi-zone Paxos-replicated durability, with the option of a multi-region instance that synchronously replicates across geographically separated regions to survive a full regional outage.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Multi-region instances replicate synchronously across separated regions for regional fault tolerance
+          - Paxos commit across zones keeps acknowledged writes durable under zone failure
+          - Managed point-in-time recovery and automatic backups guard against accidental data loss
 connection_properties:
   protocol: TCP
   communication_patterns:

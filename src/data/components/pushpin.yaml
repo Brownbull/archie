@@ -66,20 +66,20 @@ config_variants:
         ws.on('message', (data) => console.log('received:', data.toString()))
     metric_explanations:
       message-latency:
-        reason: Pushpin Standard delivers messages to connected clients with minimal delay.
+        reason: A single Pushpin instance holds the client sockets and pushes data the instant the backend POSTs to its GRIP publish endpoint, adding only one local proxy hop between the backend's REST call and the open WebSocket or SSE stream.
         contributing_factors:
-          - In-process message dispatch avoids network hops for local clients
-          - Pub/sub pattern enables efficient fan-out without polling
+          - Backend-to-proxy publish is a fire-and-forget GRIP HTTP call, not a polling cycle
+          - Pushpin fans the published item straight to subscribed connections without buffering through a separate broker
       concurrent-connections:
-        reason: Pushpin Standard handles high connection counts through efficient I/O multiplexing.
+        reason: Pushpin's ZeroMQ-based proxy core uses non-blocking event-driven sockets to park many idle long-lived connections on one instance, while the stateless backend never has to hold socket state itself.
         contributing_factors:
-          - Event-driven architecture scales with connections not threads
-          - Connection pooling reduces per-connection memory overhead
+          - Idle held connections consume proxy memory only, freeing backend workers for request handling
+          - Event-loop I/O lets one process keep thousands of long-poll, SSE, and WebSocket clients open at once
       pushpin-cost-efficiency:
-        reason: Pushpin Standard achieves this metric level through its architecture and configuration.
+        reason: As an open-source proxy that offloads connection-holding from the application, the single standard instance lets a small stateless backend serve a large realtime audience without per-connection server scaling.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Open-source GPL proxy with no per-connection or managed-service fee
+          - Connection offload means backend capacity is sized for publish rate, not for held sockets
   - id: scaled
     name: Scaled
     monthly_cost: 100
@@ -109,20 +109,20 @@ config_variants:
         ws.on('message', (data) => console.log('received:', data.toString()))
     metric_explanations:
       message-latency:
-        reason: Pushpin Scaled delivers messages to connected clients with minimal delay.
+        reason: Running multiple Pushpin instances behind a load balancer keeps the same single-hop GRIP publish path, and because each instance independently matches published items to its own held subscriptions, fan-out latency stays flat as the tier grows.
         contributing_factors:
-          - In-process message dispatch avoids network hops for local clients
-          - Pub/sub pattern enables efficient fan-out without polling
+          - A GRIP publish is broadcast to all proxy instances, so any client lands one hop from its data regardless of which node holds it
+          - No shared connection state between instances means no cross-node coordination delay on publish
       concurrent-connections:
-        reason: Pushpin Scaled handles high connection counts through efficient I/O multiplexing.
+        reason: The scaled tier shards held connections across several stateless Pushpin instances, so total socket capacity rises with instance count while each node keeps using non-blocking event-driven I/O for its share.
         contributing_factors:
-          - Event-driven architecture scales with connections not threads
-          - Connection pooling reduces per-connection memory overhead
+          - Connections distribute across instances behind the balancer, multiplying the per-node socket ceiling
+          - Each instance stays stateless, so adding nodes needs no session replication or sticky routing
       pushpin-cost-efficiency:
-        reason: Pushpin Scaled achieves this metric level through its architecture and configuration.
+        reason: Scaling out adds standing proxy instances and the GRIP fan-out cost of publishing to every node, trading some per-connection economy for the connection headroom and redundancy of a multi-instance fleet.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Several always-on proxy instances raise baseline cost versus a single node
+          - Publishing each item to all instances adds bandwidth overhead that grows with fleet size
 connection_properties:
   protocol: WebSocket/HTTPS
   communication_patterns:

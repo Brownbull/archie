@@ -74,20 +74,23 @@ config_variants:
         return doc.data()
     metric_explanations:
       write-throughput:
-        reason: Apache Cassandra Single DC handles write operations through an optimized ingestion pipeline.
+        reason: Cassandra's LSM-tree storage engine makes writes append-only — each mutation lands in the commit log and an in-memory memtable, with SSTable flushes and compaction deferred off the write path, so a single DC sustains high ingest without read-modify-write seeks.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - Append-only commit log plus memtable avoids in-place disk updates on the hot path
+          - Coordinator hashes the partition key onto the token ring and writes directly to replica nodes
+          - Tunable write consistency (e.g. ONE or LOCAL_QUORUM) trades acknowledgement strictness for throughput
       horizontal-scalability:
-        reason: Apache Cassandra Single DC scales capacity by distributing load across nodes.
+        reason: A single-datacenter Cassandra cluster scales linearly because the consistent-hashing token ring spreads partitions evenly across peer nodes with no primary, and newly joined nodes claim virtual-node token ranges to absorb their share of traffic.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Masterless peer-to-peer ring means every node accepts reads and writes
+          - Virtual nodes (vnodes) let new members stream only their token ranges during bootstrap
+          - Gossip protocol propagates membership and load so coordinators route around hot nodes
       data-durability:
-        reason: Apache Cassandra Single DC ensures data durability through replication and persistence.
+        reason: Durability in a single DC comes from a configurable replication factor that stores each partition on multiple ring nodes, backed by a fsync-able commit log that replays uncommitted mutations after a crash.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Replication factor copies each partition to multiple distinct ring nodes
+          - Commit log replay recovers any mutations not yet flushed to SSTables
+          - Hinted handoff and read repair reconcile replicas that missed a write
   - id: multi-dc
     name: Multi DC
     monthly_cost: 180
@@ -121,20 +124,23 @@ config_variants:
         return doc.data()
     metric_explanations:
       write-throughput:
-        reason: Apache Cassandra Multi DC handles write operations through an optimized ingestion pipeline.
+        reason: With NetworkTopologyStrategy across datacenters, a client can ack at LOCAL_QUORUM against the nearest DC while asynchronous cross-DC replication carries the mutation onward, keeping local write latency low even as total ingest capacity grows with every added DC and node.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - LOCAL_QUORUM acks against the local DC avoid waiting on inter-region round trips
+          - Asynchronous cross-DC replication fans the mutation out to remote replicas in the background
+          - LSM append-only commit-log writes parallelize across all ring nodes per DC
       horizontal-scalability:
-        reason: Apache Cassandra Multi DC scales capacity by distributing load across nodes.
+        reason: Multi-DC topology extends the token ring across regions so the same keyspace is served close to every population of users, and capacity scales by adding either nodes within a DC or entire datacenters to the ring.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - NetworkTopologyStrategy places replicas per-DC and per-rack for locality and fault isolation
+          - Adding a whole datacenter rebalances via token-range streaming without downtime
+          - Snitch-aware routing sends each read to the closest replica DC
       data-durability:
-        reason: Apache Cassandra Multi DC ensures data durability through replication and persistence.
+        reason: Spanning multiple datacenters survives the loss of an entire region — independent per-DC replication factors keep full copies of every partition in each datacenter, so a regional outage never reduces the surviving copies to zero.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Per-DC replication factor guarantees complete copies of data in every datacenter
+          - Region-level redundancy tolerates a full datacenter outage without data loss
+          - Anti-entropy repair reconciles divergent replicas across DCs after partitions heal
 connection_properties:
   protocol: TCP
   communication_patterns:

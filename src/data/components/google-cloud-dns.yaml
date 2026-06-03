@@ -64,20 +64,23 @@ config_variants:
         dig example.com +stats | grep "Query time"
     metric_explanations:
       resolution-latency:
-        reason: Google Cloud DNS Standard resolves queries through a global anycast network, keeping resolution latency predictable.
+        reason: Google Cloud DNS Standard answers from Google anycast name servers that share the same IP block as GCP's premium backbone, so the BGP path to the nearest PoP is short and resolution stays in the low single-digit milliseconds.
         contributing_factors:
-          - Global anycast resolver fleet distributes queries geographically
-          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+          - Anycast ns-cloud-* name servers announced from every Google edge PoP
+          - Zone records served from in-memory authoritative replicas, not disk lookups
+          - Short default record TTLs propagate edits in seconds without re-querying upstream
       global-availability:
-        reason: Google Cloud DNS Standard distributes DNS across multiple availability zones for high uptime.
+        reason: Google Cloud DNS Standard publishes each zone across four independent anycast name-server clusters, so a regional or cluster failure is absorbed by BGP withdrawal without losing authority for the zone.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - Four diverse ns-cloud name-server sets per zone (-a through -d)
+          - BGP anycast withdraws an unhealthy PoP and reroutes resolvers automatically
+          - Authoritative data replicated synchronously across Google's control plane
       gcloud-dns-cost-efficiency:
-        reason: Google Cloud DNS Standard achieves this metric level through its architecture and configuration.
+        reason: Google Cloud DNS Standard charges a flat per-managed-zone fee plus a low per-million-query rate, so small public zones with steady traffic cost only a few dollars a month.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Flat $0.20-per-zone monthly fee covers the first 25 zones
+          - Per-query billing tapers after the first billion lookups
+          - No charge for serving DNSSEC-signed responses on Standard zones
   - id: premium
     name: Premium
     monthly_cost: 12
@@ -105,20 +108,23 @@ config_variants:
         dig example.com +stats | grep "Query time"
     metric_explanations:
       resolution-latency:
-        reason: Google Cloud DNS Premium resolves queries through a global anycast network, keeping resolution latency predictable.
+        reason: Google Cloud DNS Premium adds geo-location and weighted routing policies evaluated at the anycast edge, returning the closest healthy answer in roughly a millisecond without a round trip back to a region.
         contributing_factors:
-          - Global anycast resolver fleet distributes queries geographically
-          - Aggressive TTL caching at downstream resolvers reduces repeat lookups
+          - Routing-policy logic resolved in-line at the edge PoP, not at origin
+          - Geo and weighted policies steer resolvers to the nearest healthy target
+          - Anycast premium-tier path keeps the resolver-to-name-server hop minimal
       global-availability:
-        reason: Google Cloud DNS Premium distributes DNS across multiple availability zones for high uptime.
+        reason: Google Cloud DNS Premium layers health-checked failover routing policies on top of the four anycast name-server clusters, so a failing endpoint is dropped from answers within a check interval while authority itself never goes down.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - Health-checked routing policies remove unhealthy targets from responses
+          - Four anycast name-server sets keep zone authority continuously online
+          - Automatic failover policy promotes a backup target without manual edits
       gcloud-dns-cost-efficiency:
-        reason: Google Cloud DNS Premium achieves this metric level through its architecture and configuration.
+        reason: Google Cloud DNS Premium bills the routing-policy and health-check features per query and per check on top of the zone fee, so the richer steering raises cost for high-traffic zones versus plain Standard resolution.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Routing policies metered per resolution add to the base query charge
+          - Per-endpoint health checks billed hourly regardless of query volume
+          - Justified only when geo or failover steering is actually required
 connection_properties:
   protocol: DNS/UDP
   communication_patterns:

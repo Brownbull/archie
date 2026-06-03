@@ -66,20 +66,20 @@ config_variants:
         ws.on('message', (data) => console.log('received:', data.toString()))
     metric_explanations:
       message-latency:
-        reason: Phoenix Channels Standard delivers messages to connected clients with minimal delay.
+        reason: On a single node, Phoenix.PubSub dispatches channel broadcasts directly through the local BEAM process registry, so a message reaches subscribed sockets without leaving the VM or touching an external broker.
         contributing_factors:
-          - In-process message dispatch avoids network hops for local clients
-          - Pub/sub pattern enables efficient fan-out without polling
+          - Local PubSub delivery is in-VM message passing between Erlang processes, not a network round-trip
+          - Each channel runs in its own lightweight BEAM process, so a slow subscriber does not block others
       concurrent-connections:
-        reason: Phoenix Channels Standard handles high connection counts through efficient I/O multiplexing.
+        reason: A single Phoenix node holds tens of thousands of WebSocket sockets because each connection is backed by a few-KB Erlang process rather than an OS thread, and the BEAM scheduler multiplexes them across all cores.
         contributing_factors:
-          - Event-driven architecture scales with connections not threads
-          - Connection pooling reduces per-connection memory overhead
+          - Per-socket BEAM processes have tiny heap footprints, so connection count is bounded by RAM rather than threads
+          - Preemptive BEAM scheduling keeps one chatty socket from starving the rest of the connection pool
       phoenix-cost-efficiency:
-        reason: Phoenix Channels Standard achieves this metric level through its architecture and configuration.
+        reason: One commodity VM can serve a large channel fan-out on the open-source BEAM stack, so the standard single-node deployment delivers many concurrent connections per dollar with no broker or license fees.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Open-source Elixir/Phoenix with no per-connection licensing or managed-broker cost
+          - High socket density per node means fewer instances for a given connection target
   - id: clustered
     name: Clustered
     monthly_cost: 120
@@ -109,20 +109,20 @@ config_variants:
         ws.on('message', (data) => console.log('received:', data.toString()))
     metric_explanations:
       message-latency:
-        reason: Phoenix Channels Clustered delivers messages to connected clients with minimal delay.
+        reason: Across a distributed-Erlang cluster the PubSub adapter gossips broadcasts node-to-node over the BEAM distribution channel, so a publish on one node reaches sockets on every node in a single hop with no central message bus to traverse.
         contributing_factors:
-          - In-process message dispatch avoids network hops for local clients
-          - Pub/sub pattern enables efficient fan-out without polling
+          - PubSub replicates broadcasts directly between clustered nodes rather than routing through an external broker
+          - Phoenix.Presence CRDTs sync membership without a coordination round-trip, keeping fan-out latency flat
       concurrent-connections:
-        reason: Phoenix Channels Clustered handles high connection counts through efficient I/O multiplexing.
+        reason: Clustering spreads sockets across multiple BEAM nodes joined by distributed Erlang, so the connection ceiling scales near-linearly with node count while PubSub keeps every node's subscribers in sync.
         contributing_factors:
-          - Event-driven architecture scales with connections not threads
-          - Connection pooling reduces per-connection memory overhead
+          - Each added node contributes its own RAM-bound pool of lightweight per-socket processes
+          - Distributed-Erlang mesh lets any node broadcast to sockets held anywhere in the cluster
       phoenix-cost-efficiency:
-        reason: Phoenix Channels Clustered achieves this metric level through its architecture and configuration.
+        reason: The clustered variant runs several always-on nodes plus inter-node distribution traffic, so it trades some per-connection economy for horizontal headroom and cross-node redundancy.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Multiple standing nodes raise baseline spend versus a single instance
+          - Distributed-Erlang chatter and presence CRDT sync add overhead that scales with cluster size
 connection_properties:
   protocol: WebSocket/HTTPS
   communication_patterns:

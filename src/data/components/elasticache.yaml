@@ -79,20 +79,23 @@ config_variants:
         }
     metric_explanations:
       read-latency:
-        reason: Amazon ElastiCache Standard optimizes read paths for low-latency data access.
+        reason: ElastiCache keeps the entire dataset in RAM and serves it over the Redis protocol from a single primary node, so GET operations are O(1) hash-table lookups returning in sub-millisecond time with no disk I/O on the hot path.
         contributing_factors:
-          - Indexed queries route to the optimal storage shard
-          - Connection pooling amortizes per-query connection overhead
+          - Whole working set resides in memory — reads never touch persistent disk
+          - O(1) key lookups in Redis's in-memory hash table dominate the access pattern
+          - Placement inside the application VPC and AZ trims network round-trip latency
       horizontal-scalability:
-        reason: Amazon ElastiCache Standard scales capacity by distributing load across nodes.
+        reason: A non-clustered (single-shard) primary/replica setup scales reads by attaching replica nodes but keeps all keys on one primary, so the keyspace cannot grow beyond a single node's memory — hence only low horizontal scalability in this mode.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Single primary shard caps total dataset size at one node's memory
+          - Replica nodes add read fan-out but hold a full copy, not a partition
+          - Growing capacity here means a larger node type, not more shards
       data-durability:
-        reason: Amazon ElastiCache Standard ensures data durability through replication and persistence.
+        reason: Durability is moderate because ElastiCache is a cache first — it can enable AOF logging and take RDB snapshots to S3, and Multi-AZ replicas allow automatic failover, but the in-memory model means recent writes can still be lost on an unclean failure.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Optional append-only file (AOF) plus periodic RDB snapshots to S3 provide backup points
+          - Multi-AZ replica enables AWS-managed automatic failover on primary loss
+          - As an in-memory store, un-snapshotted recent writes are not guaranteed to survive a crash
   - id: clustered
     name: Clustered
     monthly_cost: 130
@@ -130,20 +133,23 @@ config_variants:
         }
     metric_explanations:
       read-latency:
-        reason: Amazon ElastiCache Clustered optimizes read paths for low-latency data access.
+        reason: In cluster mode each key maps to one of 16384 hash slots owned by a specific shard, so a slot-aware client connects straight to the node holding the key and gets the same sub-millisecond in-memory GET while requests parallelize across shards.
         contributing_factors:
-          - Indexed queries route to the optimal storage shard
-          - Connection pooling amortizes per-query connection overhead
+          - 16384 hash slots distributed across shards let clients route directly to the owning node
+          - Each shard's working set stays in RAM for O(1) lookups with no disk hop
+          - Read replicas per shard absorb read fan-out close to the application
       horizontal-scalability:
-        reason: Amazon ElastiCache Clustered scales capacity by distributing load across nodes.
+        reason: Cluster mode partitions the keyspace across multiple primary shards via hash slots, so total memory and throughput scale by adding shards and online slot rebalancing redistributes data without downtime — giving high horizontal scalability.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Hash-slot partitioning spreads keys across many primary shards
+          - Adding shards and migrating slots online grows capacity without downtime
+          - Aggregate memory and request throughput scale roughly linearly with shard count
       data-durability:
-        reason: Amazon ElastiCache Clustered ensures data durability through replication and persistence.
+        reason: Clustered durability improves modestly over a single shard because each shard runs its own Multi-AZ replica for independent automatic failover, but it remains an in-memory cache where AOF and RDB snapshots, not synchronous disk commits, are the recovery mechanism.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Per-shard Multi-AZ replicas give each partition independent automatic failover
+          - AOF logging and RDB snapshots to S3 provide per-shard backup and restore points
+          - In-memory design still risks loss of writes not yet captured in AOF or a snapshot
 connection_properties:
   protocol: TCP
   communication_patterns:

@@ -75,20 +75,23 @@ config_variants:
         const { rows } = await pool.query('SELECT id, name FROM users WHERE active = $1 LIMIT 100', [true])
     metric_explanations:
       read-latency:
-        reason: Google Cloud SQL Standard optimizes read paths for low-latency data access.
+        reason: A standalone Cloud SQL instance serves reads from a single primary backed by local SSD persistent disk and the engine's buffer cache (InnoDB or PostgreSQL shared_buffers), so warm B-tree index lookups return in low single-digit milliseconds without any cross-zone replica hop.
         contributing_factors:
-          - Indexed queries route to the optimal storage shard
-          - Connection pooling amortizes per-query connection overhead
+          - SSD-backed persistent disk with the engine buffer pool keeps hot pages in memory
+          - B-tree indexes turn point and range lookups into shallow page reads
+          - Single-zone placement avoids cross-zone replication latency on the read path
       horizontal-scalability:
-        reason: Google Cloud SQL Standard scales capacity by distributing load across nodes.
+        reason: As a single-primary relational engine, Cloud SQL Standard scales reads only by adding asynchronous read replicas and scales writes vertically by resizing the primary's vCPU and memory — it does not shard a table across nodes, which is why horizontal scalability is low.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - All writes funnel through one primary; there is no built-in write sharding
+          - Read replicas offload SELECT traffic but lag the primary asynchronously
+          - Scaling up means a larger machine tier, not more cooperating nodes
       data-durability:
-        reason: Google Cloud SQL Standard ensures data durability through replication and persistence.
+        reason: Durability rests on the managed write-ahead log (PostgreSQL WAL / MySQL binlog) flushed to replicated regional persistent disk, plus automated daily backups and continuous WAL archiving that enable point-in-time recovery to any second in the retention window.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - WAL/binlog fsync to durable persistent disk before commit acknowledgement
+          - Automated managed backups plus retained transaction logs enable point-in-time recovery
+          - Regional persistent disk replicates blocks across zones underneath the instance
   - id: ha-replica
     name: HA Replica
     monthly_cost: 200
@@ -123,20 +126,23 @@ config_variants:
         const { rows } = await pool.query('SELECT id, name FROM users WHERE active = $1 LIMIT 100', [true])
     metric_explanations:
       read-latency:
-        reason: Google Cloud SQL HA Replica optimizes read paths for low-latency data access.
+        reason: The HA configuration adds read replicas that absorb SELECT traffic off the primary, so read latency drops further as concurrent reads are spread across replicas while each still serves from its own SSD-backed buffer cache and B-tree indexes.
         contributing_factors:
-          - Indexed queries route to the optimal storage shard
-          - Connection pooling amortizes per-query connection overhead
+          - Dedicated read replicas remove SELECT contention from the write primary
+          - Each replica caches hot pages locally so warm index lookups stay sub-millisecond
+          - Clients can route latency-sensitive reads to the nearest in-region replica
       horizontal-scalability:
-        reason: Google Cloud SQL HA Replica scales capacity by distributing load across nodes.
+        reason: HA improves read scale-out and availability via cross-zone replicas and automatic failover, but writes still serialize through a single primary, so it reaches only medium horizontal scalability rather than the linear scaling of a sharded store.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Read replicas scale read capacity horizontally while writes remain single-primary
+          - Synchronous standby enables fast failover but does not add write throughput
+          - True write sharding still requires application-level partitioning, not the engine
       data-durability:
-        reason: Google Cloud SQL HA Replica ensures data durability through replication and persistence.
+        reason: The HA tier keeps a synchronous standby in a second zone that receives every committed transaction before acknowledgement, so a zonal failure triggers automatic failover with zero committed-data loss, on top of the same WAL archiving and point-in-time recovery.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Synchronous cross-zone standby commits each transaction before the primary acks
+          - Automatic failover promotes the standby on zone loss with no committed-data loss
+          - Continuous WAL/binlog archiving still backs point-in-time recovery to any second
 connection_properties:
   protocol: TCP
   communication_patterns:

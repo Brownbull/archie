@@ -71,20 +71,20 @@ config_variants:
         await stream.start()
     metric_explanations:
       processing-latency:
-        reason: Kafka Streams Standard processes events with low end-to-end latency.
+        reason: A single Streams instance pulls records straight from its assigned Kafka partitions and runs the topology record-by-record in the consumer poll loop, so per-event latency is dominated by one local transform plus the produce back to the output topic.
         contributing_factors:
-          - In-memory processing avoids disk I/O for active event streams
-          - Micro-batching balances latency with throughput efficiency
+          - Records flow one-at-a-time through the topology rather than waiting on a batch window
+          - RocksDB-backed local state stores serve stateful lookups from disk-backed cache without a remote call
       operational-complexity:
-        reason: Kafka Streams Standard simplifies operations through managed infrastructure.
+        reason: Kafka Streams ships as a JVM library embedded in your own application, so there is no separate processing cluster to run, but you still operate the JVM app and its RocksDB state stores yourself against an existing Kafka cluster.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - No dedicated stream-processing cluster — the topology runs inside a standard JVM service you already deploy
+          - Consumer-group membership handles task assignment, but you own RocksDB state-store disk and rebalance tuning
       kafka-streams-cost-efficiency:
-        reason: Kafka Streams Standard achieves this metric level through its architecture and configuration.
+        reason: The standard single-instance topology reuses the JVM service and the existing Kafka cluster with no extra processing tier, so it adds throughput cheaply on the open-source library.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Open-source library with no separate cluster or per-node processing license
+          - Co-locating processing with the app avoids a standalone compute fleet for a moderate event rate
   - id: scaled
     name: Scaled
     monthly_cost: 120
@@ -115,20 +115,20 @@ config_variants:
         await stream.start()
     metric_explanations:
       processing-latency:
-        reason: Kafka Streams Scaled processes events with low end-to-end latency.
+        reason: Adding instances spreads partition-keyed tasks across more JVMs so each handles fewer partitions, shrinking per-record queue time, though exactly-once mode commits Kafka transactions on a fixed interval that sets a latency floor under heavy load.
         contributing_factors:
-          - In-memory processing avoids disk I/O for active event streams
-          - Micro-batching balances latency with throughput efficiency
+          - More instances mean fewer partitions per task and shorter per-record wait
+          - Transactional exactly-once commits add a periodic flush that caps how low latency can go
       operational-complexity:
-        reason: Kafka Streams Scaled simplifies operations through managed infrastructure.
+        reason: Scaling out elastically adds JVM instances that auto-rebalance partition assignments via the consumer group, but each rebalance migrates RocksDB state and replays changelog topics, so larger fleets need careful standby-replica and partition tuning.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - Stateful task migration on rebalance forces changelog-topic restore, which you must size standby replicas for
+          - Coordinating exactly-once transactions and state across more instances raises tuning and monitoring burden
       kafka-streams-cost-efficiency:
-        reason: Kafka Streams Scaled achieves this metric level through its architecture and configuration.
+        reason: The scaled topology runs several standing JVM instances plus the broker traffic of changelog and repartition topics, so throughput climbs but per-event cost rises with the extra compute and Kafka storage it consumes.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Multiple always-on JVM instances raise baseline compute spend
+          - Changelog and repartition topics add Kafka storage and replication cost as state grows
 connection_properties:
   protocol: TCP
   communication_patterns:

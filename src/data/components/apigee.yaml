@@ -68,20 +68,23 @@ config_variants:
           -H "Content-Type: application/json" | jq '.'
     metric_explanations:
       request-latency:
-        reason: Apigee Standard processes requests with minimal overhead through optimized routing.
+        reason: Apigee Standard runs each request through a sequential policy pipeline of message processors, so latency is dominated by the attached policies (OAuth, quota, transforms) rather than raw proxying, landing in the mid single-digit milliseconds for a typical flow.
         contributing_factors:
-          - Efficient request routing minimizes per-request overhead
-          - Connection keep-alive reduces handshake latency
+          - Policy flow executed step-by-step on Apigee message processors
+          - OAuth and quota checks add per-request work beyond plain forwarding
+          - Response caching policy short-circuits backend calls for cacheable targets
       operational-complexity:
-        reason: Apigee Standard simplifies operations through managed infrastructure.
+        reason: Apigee Standard is a Google-managed control plane, so Google patches and scales the gateway runtime while teams still author proxy bundles, policy XML, and the full API lifecycle themselves.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - Google operates and patches the message-processor runtime
+          - Teams own proxy-bundle authoring, policy XML, and environment promotion
+          - Built-in analytics dashboards surface traffic and error metrics
       apigee-cost-efficiency:
-        reason: Apigee Standard achieves this metric level through its architecture and configuration.
+        reason: Apigee Standard prices on an entitlement of API calls with overage charges, so cost efficiency depends on staying within the committed call volume rather than on per-request infrastructure tuning.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Billing tied to a committed monthly API-call entitlement
+          - Overage calls billed at a higher marginal rate past the commitment
+          - Response caching reduces billable backend calls on repeat requests
   - id: enterprise
     name: Enterprise
     monthly_cost: 150
@@ -109,20 +112,23 @@ config_variants:
           -H "Content-Type: application/json" | jq '.'
     metric_explanations:
       request-latency:
-        reason: Apigee Enterprise processes requests with minimal overhead through optimized routing.
+        reason: Apigee Enterprise provisions dedicated, multi-region message-processor capacity so policy pipelines run on reserved compute close to backends, trimming queuing and cold-path overhead to a few milliseconds even under heavy policy load.
         contributing_factors:
-          - Efficient request routing minimizes per-request overhead
-          - Connection keep-alive reduces handshake latency
+          - Dedicated message-processor capacity avoids noisy-neighbor queuing
+          - Multi-region deployment places the gateway near regional backends
+          - Distributed caching keeps tokens and cacheable responses hot at the edge
       operational-complexity:
-        reason: Apigee Enterprise simplifies operations through managed infrastructure.
+        reason: Apigee Enterprise adds Google-managed multi-region high availability, autoscaling, and advanced API security analytics on top of the managed runtime, so platform operations stay low even as governance and lifecycle scope expand.
         contributing_factors:
-          - Managed service handles patching, backups, and scaling automatically
-          - Monitoring and alerting are built into the platform
+          - Google handles cross-region failover and runtime autoscaling
+          - Advanced API security flags abuse and anomalies automatically
+          - Developer portal and lifecycle tooling reduce manual governance work
       apigee-cost-efficiency:
-        reason: Apigee Enterprise achieves this metric level through its architecture and configuration.
+        reason: Apigee Enterprise carries a high committed-capacity floor for its dedicated multi-region runtime, so per-call cost only improves at large sustained volume and the platform is expensive for low-traffic API programs.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - High fixed entitlement reserves dedicated multi-region capacity
+          - Per-call cost amortizes only at sustained enterprise traffic levels
+          - Advanced security and monetization features included but raise the floor
 connection_properties:
   protocol: HTTP
   communication_patterns:

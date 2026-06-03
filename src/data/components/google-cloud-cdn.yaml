@@ -64,20 +64,23 @@ config_variants:
         curl -X PURGE https://cdn.example.com/assets/app.js
     metric_explanations:
       edge-latency:
-        reason: Google Cloud CDN Standard Caching serves content from edge locations close to end users.
+        reason: Google Cloud CDN Standard Caching serves cache hits from the Google Front End closest to the user over the same anycast VIP used by the load balancer, so warm objects return in single-digit milliseconds without touching the origin.
         contributing_factors:
-          - Geographically distributed edge nodes minimize round-trip time
-          - Cache hit ratio reduces origin fetch latency
+          - Cache hits served at the Google Front End nearest the client
+          - Single anycast VIP shared with the HTTP(S) load balancer routes to the closest PoP
+          - Origin fetches only triggered on cache miss, then held by Cache-Control TTL
       global-availability:
-        reason: Google Cloud CDN Standard Caching distributes DNS across multiple availability zones for high uptime.
+        reason: Google Cloud CDN Standard Caching fronts the global external HTTP(S) load balancer, so the same anycast VIP is served from every Google PoP and a degraded PoP is withdrawn while others continue serving cached content.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - One global anycast VIP advertised from all Google edge PoPs
+          - Backend health checks pull failing origins out of rotation
+          - Cached objects keep serving from the edge even during an origin outage
       gcloud-cdn-cost-efficiency:
-        reason: Google Cloud CDN Standard Caching achieves this metric level through its architecture and configuration.
+        reason: Google Cloud CDN Standard Caching bills cache egress at a lower rate than origin egress and charges a small per-10k cache-lookup fee, so a high cache-hit ratio on static assets keeps the per-request cost low.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Cache-egress rates undercut serving the same bytes straight from the origin
+          - Per-10,000 cache-lookup fee is small relative to avoided origin fetches
+          - Cache-fill charges apply only on misses, rewarding a high hit ratio
   - id: premium
     name: Premium Tier
     monthly_cost: 80
@@ -105,20 +108,23 @@ config_variants:
         curl -X PURGE https://cdn.example.com/assets/app.js
     metric_explanations:
       edge-latency:
-        reason: Google Cloud CDN Premium Tier serves content from edge locations close to end users.
+        reason: Google Cloud CDN Premium Tier keeps both the client hop and the cache-miss path on Google's private backbone end to end, so even origin fetches ride low-congestion fiber and warm hits return in a couple of milliseconds.
         contributing_factors:
-          - Geographically distributed edge nodes minimize round-trip time
-          - Cache hit ratio reduces origin fetch latency
+          - Traffic enters and exits at the Google PoP nearest the user
+          - Cache-fill traffic traverses Google's private backbone, not the public internet
+          - Premium-tier egress avoids the congested transit hops Standard tier uses
       global-availability:
-        reason: Google Cloud CDN Premium Tier distributes DNS across multiple availability zones for high uptime.
+        reason: Google Cloud CDN Premium Tier carries traffic on Google's private global backbone from edge to origin, so cold-cache and dynamic requests avoid public-internet brownouts and inherit the backbone's redundant path diversity.
         contributing_factors:
-          - Multi-zone redundancy eliminates single points of failure
-          - Automatic health checks route away from degraded endpoints
+          - Private backbone provides redundant, monitored paths between PoPs and origins
+          - Global anycast VIP fails a degraded PoP over to healthy edges
+          - Backbone routing sidesteps third-party transit congestion and outages
       gcloud-cdn-cost-efficiency:
-        reason: Google Cloud CDN Premium Tier achieves this metric level through its architecture and configuration.
+        reason: Google Cloud CDN Premium Tier prices egress higher than Standard tier because it reserves Google's private backbone all the way to the user, so the latency gain comes at a per-GB premium that hurts cost efficiency on bulk traffic.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Premium-tier egress carries a per-GB surcharge over Standard tier
+          - Backbone reservation bills regardless of cache-hit ratio
+          - Justified for latency-sensitive global apps, costly for bulk static delivery
 connection_properties:
   protocol: HTTP
   communication_patterns:

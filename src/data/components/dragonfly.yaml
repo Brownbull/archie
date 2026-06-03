@@ -78,20 +78,23 @@ config_variants:
         }
     metric_explanations:
       read-latency:
-        reason: Dragonfly Standard optimizes read paths for low-latency data access.
+        reason: Dragonfly serves reads from memory through its Dash extendible-hashing table, and its shared-nothing thread-per-core model pins each key to one thread so lookups run lock-free without the cross-thread contention that would add tail latency.
         contributing_factors:
-          - Indexed queries route to the optimal storage shard
-          - Connection pooling amortizes per-query connection overhead
+          - Dash extendible hash table keeps in-memory point lookups cache-friendly and O(1)
+          - Shared-nothing thread-per-core sharding lets each key be read without locking
+          - Entirely in-RAM working set means reads never wait on disk
       horizontal-scalability:
-        reason: Dragonfly Standard scales capacity by distributing load across nodes.
+        reason: A single Dragonfly process scales vertically by adding CPU cores rather than across machines — its shared-nothing engine partitions the keyspace across threads, so on one node horizontal (multi-node) scalability is low and growth comes mainly from a bigger instance.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Multi-threaded shared-nothing design scales up across cores within one process
+          - A standalone node has no built-in sharding to spread keys across machines
+          - Capacity grows by adding vCPUs and RAM to the instance, not by adding nodes
       write-throughput:
-        reason: Dragonfly Standard handles write operations through an optimized ingestion pipeline.
+        reason: Dragonfly's thread-per-core architecture is the key write differentiator — because each shard's keys are owned by exactly one thread, SET operations execute lock-free in parallel across all cores, letting a single node sustain very high write rates a single-threaded Redis core cannot reach.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - Thread-per-core sharding runs writes to different keys fully in parallel without locks
+          - All CPU cores process the command pipeline simultaneously rather than one event loop
+          - Fork-less point-in-time snapshotting persists data without stalling the write path
   - id: scaled
     name: Scaled
     monthly_cost: 100
@@ -129,20 +132,23 @@ config_variants:
         }
     metric_explanations:
       read-latency:
-        reason: Dragonfly Scaled optimizes read paths for low-latency data access.
+        reason: On a larger multi-core instance Dragonfly keeps reads sub-millisecond and scales read concurrency with core count, since the shared-nothing engine adds an independent lock-free Dash-table partition per core that fields its share of GET traffic in parallel.
         contributing_factors:
-          - Indexed queries route to the optimal storage shard
-          - Connection pooling amortizes per-query connection overhead
+          - More cores add more independent shard threads serving reads concurrently
+          - Dash extendible hashing keeps each partition's lookups O(1) and cache-resident
+          - In-memory residency holds even at large dataset sizes, avoiding disk reads
       horizontal-scalability:
-        reason: Dragonfly Scaled scales capacity by distributing load across nodes.
+        reason: The scaled tier reaches medium horizontal scalability mainly by scaling the engine across many cores on a big instance, with optional Dragonfly cluster mode extending Redis-cluster slot semantics across nodes when a single machine is outgrown.
         contributing_factors:
-          - Data partitioning distributes load across multiple nodes
-          - Automatic rebalancing maintains even distribution as nodes are added
+          - Thread-per-core scaling absorbs far more load per node before another node is needed
+          - Optional cluster mode distributes Redis-compatible hash slots across multiple nodes
+          - Higher per-node ceiling reduces how many nodes a given workload requires
       write-throughput:
-        reason: Dragonfly Scaled handles write operations through an optimized ingestion pipeline.
+        reason: At scale Dragonfly pushes write throughput to extreme rates because every additional core becomes another lock-free shard processing SET commands in parallel, so aggregate write capacity rises with core count instead of being pinned to one event loop.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - Write throughput scales near-linearly with the number of CPU cores per node
+          - Lock-free per-shard ownership eliminates contention as concurrent writers increase
+          - Fork-less snapshotting persists large datasets without pausing the write path
 connection_properties:
   protocol: TCP
   communication_patterns:

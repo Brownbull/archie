@@ -73,20 +73,23 @@ config_variants:
         curl 'http://localhost:8428/api/v1/query?query=cpu_usage{host="server1"}[5m]'
     metric_explanations:
       write-throughput:
-        reason: VictoriaMetrics Single Node handles write operations through an optimized ingestion pipeline.
+        reason: VictoriaMetrics Single Node sustains very high ingest by buffering samples in memory and flushing them as immutable LSM parts, avoiding per-sample index locks on the hot path.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - In-memory buffering coalesces samples before each flush to disk
+          - Immutable LSM-style parts make ingestion append-only and contention-free
+          - Inverted-index updates are batched per flush rather than per sample
       storage-compression:
-        reason: VictoriaMetrics Single Node achieves this metric level through its architecture and configuration.
+        reason: VictoriaMetrics Single Node reaches near-best-in-class density by storing timestamps and values in separate columns and applying Gorilla-style delta-of-delta and XOR encoding.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Columnar layout compresses timestamps and values independently
+          - Gorilla delta-of-delta timestamps and XOR float encoding shrink series data
+          - Background merges recompress parts, raising the long-term compression ratio
       data-durability:
-        reason: VictoriaMetrics Single Node ensures data durability through replication and persistence.
+        reason: VictoriaMetrics Single Node persists merged parts to a single local disk, so durability depends on that volume's resilience with no built-in cross-node replication.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Flushed parts are written to local disk and survive process restarts
+          - Single-node storage has no internal replica, so disk loss loses data
+          - Periodic vmbackup snapshots to object storage protect against volume failure
   - id: cluster
     name: Cluster
     monthly_cost: 150
@@ -119,20 +122,23 @@ config_variants:
         curl 'http://localhost:8428/api/v1/query?query=cpu_usage{host="server1"}[5m]'
     metric_explanations:
       write-throughput:
-        reason: VictoriaMetrics Cluster handles write operations through an optimized ingestion pipeline.
+        reason: VictoriaMetrics Cluster splits ingestion across stateless vminsert nodes that consistently hash each series to vmstorage shards, scaling write rate linearly as nodes are added.
         contributing_factors:
-          - Write batching reduces per-operation overhead
-          - Durable write-ahead log ensures consistency without sacrificing throughput
+          - Stateless vminsert frontends accept writes and shard them by series
+          - Consistent hashing routes each series to a fixed vmstorage node
+          - Adding vmstorage shards raises aggregate ingest capacity near-linearly
       storage-compression:
-        reason: VictoriaMetrics Cluster achieves this metric level through its architecture and configuration.
+        reason: VictoriaMetrics Cluster applies the same columnar Gorilla-style encoding per vmstorage shard, preserving the high compression ratio while spreading data across nodes.
         contributing_factors:
-          - Platform-level optimizations reduce overhead
-          - Configuration defaults are tuned for typical production workloads
+          - Each vmstorage shard compresses its own columns independently
+          - Delta-of-delta and XOR encoding carry over from the single-node engine
+          - Sharded background merges recompress parts in parallel across nodes
       data-durability:
-        reason: VictoriaMetrics Cluster ensures data durability through replication and persistence.
+        reason: VictoriaMetrics Cluster raises durability with a configurable replication factor that mirrors each series to multiple vmstorage nodes so a node loss does not drop data.
         contributing_factors:
-          - Synchronous replication guarantees no data loss on node failure
-          - Point-in-time recovery enables restoration to any recent state
+          - Replication factor stores copies of each series on distinct vmstorage nodes
+          - vminsert dual-writes replicas so a single node failure is non-fatal
+          - vmselect deduplicates across replicas to return complete query results
 connection_properties:
   protocol: HTTPS
   communication_patterns:
