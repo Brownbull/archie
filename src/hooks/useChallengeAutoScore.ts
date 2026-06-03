@@ -4,6 +4,7 @@ import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeSimStats } from "@/lib/simulationStats"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { componentLibrary } from "@/services/componentLibrary"
 
 /**
  * Auto-scores a challenge attempt when its simulation finishes (Epic 16 Phase 4).
@@ -53,11 +54,13 @@ export function useChallengeAutoScore(): void {
       solvableIssueCount = Math.max(0, rawIssueCount - unsolvable.length)
     }
 
-    // Collect type ids on the canvas for required_types validation.
+    // Collect component TYPE ids on the canvas for required_types validation.
+    // Node data has archieComponentId (vendor, e.g. "nginx") — we need the typeId
+    // (fundamental type, e.g. "load-balancer") which is on the Component in the library.
     const canvasTypeIds = new Set<string>()
     for (const node of archState.nodes) {
-      const typeId = node.data?.typeId as string | undefined
-      if (typeId) canvasTypeIds.add(typeId)
+      const component = componentLibrary.getComponent(node.data.archieComponentId)
+      if (component?.typeId) canvasTypeIds.add(component.typeId)
     }
 
     scoreAttempt(stats, solvableIssueCount, totalCost, canvasTypeIds)

@@ -161,7 +161,7 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     })
   })
 
-  it("Close returns to building mode (stays in challenge) and clears the simulation", () => {
+  it("Close returns to building mode (stays in challenge) and preserves sim data", () => {
     useChallengeStore.setState({
       activeChallenge: challenge, attemptState: "scored",
       lastResult: { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true },
@@ -172,6 +172,8 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     fireEvent.click(screen.getByTestId("result-close"))
     expect(cs().activeChallenge?.id).toBe("c1")
     expect(cs().attemptState).toBe("building")
-    expect(useSimulationStore.getState().status).toBe("idle")
+    // Sim data is PRESERVED so the player can inspect the run
+    expect(useSimulationStore.getState().status).toBe("done")
+    expect(useSimulationStore.getState().ticks).toHaveLength(1)
   })
 })

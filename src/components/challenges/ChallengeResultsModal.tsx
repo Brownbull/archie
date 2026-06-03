@@ -128,7 +128,8 @@ export function ChallengeResultsModal() {
     selectChallenge(challenge)
   }
   const onClose = () => {
-    resetSim()
+    // Keep the sim data so the player can inspect the run afterward.
+    // Only clear the challenge's scored state → back to building mode.
     selectChallenge(challenge)
   }
 
