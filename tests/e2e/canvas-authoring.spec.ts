@@ -49,7 +49,7 @@ test.describe("Canvas authoring fixes (P2)", () => {
 
     await page.locator('[data-testid="open-challenges"]').click()
     await expect(page.locator('[data-testid="challenge-selector"]')).toBeVisible()
-    await page.locator('[data-testid="challenge-card-first-service"]').click()
+    await page.locator('[data-testid="challenge-play-first-service"]').click()
 
     const label = page.locator('[data-testid="challenge-budget-label"]')
     await expect(label).toBeVisible()

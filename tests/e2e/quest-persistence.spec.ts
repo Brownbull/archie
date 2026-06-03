@@ -19,7 +19,7 @@ test.describe("Quest persistence across page reload", () => {
     await page.waitForTimeout(300)
     await page.getByTestId("menu-challenges").click()
     await page.waitForTimeout(1000)
-    await page.getByTestId("challenge-card-first-service").click()
+    await page.getByTestId("challenge-play-first-service").click()
     await page.waitForTimeout(2000)
 
     // Step 2: Run the simulation (challenge seeds a traffic source + compute)
@@ -42,8 +42,9 @@ test.describe("Quest persistence across page reload", () => {
     await page.getByTestId("result-close").click()
     await page.waitForTimeout(500)
 
-    // Exit challenge
+    // Exit challenge — challenge-exit opens an "Exit Quest?" confirm; click confirm to leave.
     await page.getByTestId("challenge-exit").click()
+    await page.getByRole("button", { name: "Exit Quest", exact: true }).click()
     await page.waitForTimeout(1000)
 
     // Step 3: Verify quest log shows completion BEFORE reload

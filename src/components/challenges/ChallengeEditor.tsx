@@ -93,7 +93,15 @@ function BlockPicker({ selected, onChange, label }: { selected: string[]; onChan
 export function ChallengeEditor({ open, onOpenChange, editingChallenge }: ChallengeEditorProps) {
   const addChallenge = useUserChallengeStore((s) => s.addChallenge)
   const updateChallenge = useUserChallengeStore((s) => s.updateChallenge)
-  const isEditing = !!editingChallenge
+  const userChallenges = useUserChallengeStore((s) => s.challenges)
+
+  // True only when editing a genuine, already-saved USER challenge. A clone of a built-in (or any
+  // not-yet-saved "-copy") is a "Create from Template" — it generates a new id and origin "user".
+  const isEditing = useMemo(() => {
+    if (!editingChallenge || editingChallenge.origin !== "user") return false
+    const nsId = namespaceUserId(editingChallenge.id)
+    return userChallenges.some((c) => c.id === nsId)
+  }, [editingChallenge, userChallenges])
 
   const [draft, setDraft] = useState<Omit<Challenge, "origin">>(() =>
     editingChallenge ? { ...editingChallenge, id: stripUserPrefix(editingChallenge.id) } : emptyDraft(),
@@ -102,6 +110,10 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
   const updateField = useCallback(<K extends keyof typeof draft>(key: K, value: (typeof draft)[K]) => {
     setDraft((prev) => ({ ...prev, [key]: value }))
   }, [])
+
+  // A clone-from-template: an editingChallenge is provided but it is NOT a saved user challenge.
+  const isTemplate = !!editingChallenge && !isEditing
+  const editorTitle = isEditing ? "Edit Challenge" : isTemplate ? "Create from Template" : "Create Challenge"
 
   const isValid = useMemo(() => {
     return draft.id.trim().length > 0 && draft.title.trim().length > 0 && draft.brief.trim().length > 0
@@ -143,7 +155,7 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="challenge-editor" className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Edit Challenge" : "Create Challenge"}</DialogTitle>
+          <DialogTitle>{editorTitle}</DialogTitle>
           <DialogDescription>All fields are scoped to valid options. User challenges do not grant progression.</DialogDescription>
         </DialogHeader>
 

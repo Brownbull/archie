@@ -82,7 +82,7 @@ test.describe("UI layout — controls are well-distributed & non-overlapping", (
 
     // Enter a challenge → the HUD appears (top-left), the overlay toolbar stays (top-center).
     await page.locator('[data-testid="open-challenges"]').click()
-    await page.locator('[data-testid="challenge-card-first-service"]').click()
+    await page.locator('[data-testid="challenge-play-first-service"]').click()
     await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible()
 
     // Place a component so the Start trigger appears (now bottom-center, off the overlay toolbar).

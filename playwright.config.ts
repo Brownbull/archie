@@ -11,7 +11,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: "http://localhost:5173",
+    baseURL: "http://localhost:5174",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
@@ -32,8 +32,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:5173",
+    command: "bash -c 'unset ${!VITE_FIREBASE_*} 2>/dev/null; npx vite --port 5174'",
+    url: "http://localhost:5174",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

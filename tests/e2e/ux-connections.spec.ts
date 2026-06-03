@@ -49,7 +49,7 @@ test.describe("Cross-surface UX connections", () => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
     await page.locator('[data-testid="open-challenges"]').click()
-    await page.locator('[data-testid="challenge-card-first-service"]').click()
+    await page.locator('[data-testid="challenge-play-first-service"]').click()
     await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible({ timeout: 5_000 })
 
     await page.getByRole("tab", { name: "Blocks" }).click()

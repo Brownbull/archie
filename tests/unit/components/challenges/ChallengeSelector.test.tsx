@@ -48,14 +48,24 @@ describe("ChallengeSelector (Phase 2)", () => {
     render(<ChallengeSelector />)
     fireEvent.click(screen.getByTestId("open-challenges"))
     expect(screen.getByTestId("challenge-selector")).toBeInTheDocument()
-    expect(screen.getByTestId("challenge-card-starter")).toHaveTextContent("First Service")
-    expect(screen.getByTestId("challenge-card-ha")).toHaveTextContent("Survive an Outage")
+    expect(screen.getByTestId("challenge-clone-starter")).toHaveTextContent("First Service")
+    expect(screen.getByTestId("challenge-clone-ha")).toHaveTextContent("Survive an Outage")
   })
 
-  it("selecting an available card enters building mode", () => {
+  it("clicking the card body clones into the editor without starting an attempt", () => {
     render(<ChallengeSelector />)
     fireEvent.click(screen.getByTestId("open-challenges"))
-    fireEvent.click(screen.getByTestId("challenge-card-starter"))
+    fireEvent.click(screen.getByTestId("challenge-clone-starter"))
+    // Clone opens the editor as a template (does NOT enter challenge mode).
+    expect(s().activeChallenge).toBeNull()
+    expect(screen.getByTestId("challenge-editor")).toBeInTheDocument()
+    expect(screen.getByText("Create from Template")).toBeInTheDocument()
+  })
+
+  it("the play button starts the challenge in building mode", () => {
+    render(<ChallengeSelector />)
+    fireEvent.click(screen.getByTestId("open-challenges"))
+    fireEvent.click(screen.getByTestId("challenge-play-starter"))
     expect(s().activeChallenge?.id).toBe("starter")
     expect(s().attemptState).toBe("building")
   })
@@ -63,7 +73,7 @@ describe("ChallengeSelector (Phase 2)", () => {
   it("locks challenges whose prerequisites are incomplete", () => {
     render(<ChallengeSelector />)
     fireEvent.click(screen.getByTestId("open-challenges"))
-    const haCard = screen.getByTestId("challenge-card-ha")
+    const haCard = screen.getByTestId("challenge-clone-ha")
     expect(haCard).toHaveAttribute("data-status", "locked")
     expect(haCard).toBeDisabled()
     expect(haCard).toHaveTextContent("Requires")
@@ -73,7 +83,7 @@ describe("ChallengeSelector (Phase 2)", () => {
     useUserProgressStore.setState({ completedChallenges: ["starter"] })
     render(<ChallengeSelector />)
     fireEvent.click(screen.getByTestId("open-challenges"))
-    const haCard = screen.getByTestId("challenge-card-ha")
+    const haCard = screen.getByTestId("challenge-clone-ha")
     expect(haCard).toHaveAttribute("data-status", "available")
     expect(haCard).not.toBeDisabled()
   })

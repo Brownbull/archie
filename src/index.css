@@ -351,7 +351,14 @@
   .block-loop * { animation: none !important; }
 }
 
-/* Quest log dark scrollbar */
+/* App-wide dark scrollbar defaults — every scrollable area matches the quest log. */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #0a0e14; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a4858; }
+* { scrollbar-width: thin; scrollbar-color: #2a3040 #0a0e14; }
+
+/* Quest log dark scrollbar (kept for backward compat; global rules extend coverage) */
 .quest-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .quest-scroll::-webkit-scrollbar-track { background: #0a0e14; border-radius: 3px; }
 .quest-scroll::-webkit-scrollbar-thumb { background: #2a3040; border-radius: 3px; }

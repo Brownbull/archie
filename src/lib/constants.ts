@@ -7,9 +7,13 @@ export const INSPECTOR_MIN_WIDTH = 200
 export const INSPECTOR_MAX_WIDTH = 700
 export const INSPECTOR_COLLAPSED_WIDTH = 40
 export const DASHBOARD_HEIGHT = 100
-// Canvas node width. Reduced from 208 to 176 (11× the 16px grid) for a more compact canvas.
-// Still grid-aligned, so placement math stays consistent.
-export const NODE_WIDTH = 176
+// Canvas node width. NODE_MIN_WIDTH (176 = 11× the 16px grid) is the grid-aligned floor that keeps
+// placement/layout math consistent; NODE_MAX_WIDTH caps how far a node grows to fit its content
+// (variable-width blocks, no truncation). NODE_WIDTH aliases the min so existing importers
+// (drop-position math, layout spacing) keep using 176 as their spacing basis.
+export const NODE_MIN_WIDTH = 176
+export const NODE_MAX_WIDTH = 280
+export const NODE_WIDTH = NODE_MIN_WIDTH
 export const BORDER_RADIUS = 6
 
 // Spacing scale (UX16 — 4px base)
@@ -85,12 +89,12 @@ export const METRIC_MAX_VALUE = 10
 
 // Canvas configuration (UX7, UX8)
 export const CANVAS_GRID_SIZE = 16
-export const CANVAS_MIN_ZOOM = 0.5
+export const CANVAS_MIN_ZOOM = 0.3
 export const CANVAS_MAX_ZOOM = 2
 /** Snap radius (px) for drag-to-connect — enlarged from React Flow's 20px default for more forgiving wiring. */
 export const CANVAS_CONNECTION_RADIUS = 40
 /** Padding (fraction) used when auto-fitting the viewport to the graph after a load/import. */
-export const CANVAS_FIT_PADDING = 0.2
+export const CANVAS_FIT_PADDING = 0.35
 export const NODE_TYPE_COMPONENT = "archie-component" as const
 export const NODE_TYPE_PLACEHOLDER = "placeholder" as const
 export const NODE_TYPE_GHOST = "ghost" as const

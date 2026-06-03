@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 import { ArchieNode } from "@/components/canvas/ArchieNode"
 import { useSimulationStore } from "@/stores/simulationStore"
-import { HEATMAP_COLORS, NODE_WIDTH, MAX_REPLICAS, type Constraint } from "@/lib/constants"
+import { HEATMAP_COLORS, NODE_MIN_WIDTH, NODE_MAX_WIDTH, MAX_REPLICAS, type Constraint } from "@/lib/constants"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
 import type { TopMetric } from "@/hooks/useTopMetrics"
@@ -298,36 +298,28 @@ describe("ArchieNode", () => {
     render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, archieComponentId: "no-icon-component" }} />)
     const node = screen.getByTestId("archie-node")
     expect(node.querySelector("svg")).toBeInTheDocument()
-    expect(screen.queryByTestId("component-pixel-icon")).not.toBeInTheDocument()
-  })
+    expect(screen.queryByTestId("component-pixel-icon")).not.toBeInTheDocument() })
 
-  it("has correct width", () => {
+  it("sizes to content within min/max width bounds", () => {
     render(<ArchieNode {...defaultProps} />)
-    const node = screen.getByTestId("archie-node")
-    expect(node).toHaveStyle({ width: `${NODE_WIDTH}px` })
+    expect(screen.getByTestId("archie-node")).toHaveStyle({ minWidth: `${NODE_MIN_WIDTH}px`, maxWidth: `${NODE_MAX_WIDTH}px`, width: "fit-content" })
   })
 
-  it("renders target handle", () => {
-    render(<ArchieNode {...defaultProps} />)
-    expect(screen.getByTestId("archie-node-handle-target")).toBeInTheDocument()
-  })
+  it("renders target handle", () => { render(<ArchieNode {...defaultProps} />); expect(screen.getByTestId("archie-node-handle-target")).toBeInTheDocument() })
 
-  it("renders source handle", () => {
-    render(<ArchieNode {...defaultProps} />)
-    expect(screen.getByTestId("archie-node-handle-source")).toBeInTheDocument()
-  })
+  it("renders source handle", () => { render(<ArchieNode {...defaultProps} />); expect(screen.getByTestId("archie-node-handle-source")).toBeInTheDocument() })
 
-  it("truncates long component names with CSS class", () => {
+  it("keeps the component name on a single line without truncating", () => {
     render(<ArchieNode {...defaultProps} />)
     const nameEl = screen.getByText("PostgreSQL")
-    expect(nameEl.className).toContain("truncate")
+    expect(nameEl.className).toContain("whitespace-nowrap")
+    expect(nameEl.className).not.toContain("truncate")
   })
 
   it("renders only component name when no metrics and no variant lookup", () => {
     render(<ArchieNode {...defaultProps} />)
     expect(screen.getByText("PostgreSQL")).toBeInTheDocument()
-    expect(screen.queryByTestId("inline-metric-bar")).not.toBeInTheDocument()
-  })
+    expect(screen.queryByTestId("inline-metric-bar")).not.toBeInTheDocument() })
 
   describe("heatmap glow", () => {
     it("renders box-shadow glow when heatmap enabled and status is healthy", () => {

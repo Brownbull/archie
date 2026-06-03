@@ -54,7 +54,7 @@ describe("Layout Constants (UX1)", () => {
   })
 
   it("NODE_WIDTH matches UX spec", () => {
-    expect(NODE_WIDTH).toBe(208)
+    expect(NODE_WIDTH).toBe(176)
   })
 
   it("BORDER_RADIUS matches UX spec", () => {

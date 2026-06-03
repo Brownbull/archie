@@ -138,9 +138,9 @@ test.describe("Challenge Validation E2E", () => {
       await page.getByTestId("menu-challenges").click()
       await page.waitForTimeout(1000)
 
-      const card = page.getByTestId("challenge-card-first-service")
+      const card = page.getByTestId("challenge-clone-first-service")
       await expect(card).toBeVisible()
-      await card.click()
+      await page.getByTestId("challenge-play-first-service").click()
       await page.waitForTimeout(1000)
 
       await expect(page.getByTestId("challenge-active-indicator")).toBeVisible()
@@ -154,7 +154,7 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(300)
       await page.getByTestId("menu-challenges").click()
       await page.waitForTimeout(1000)
-      await page.getByTestId("challenge-card-first-service").click()
+      await page.getByTestId("challenge-play-first-service").click()
       await page.waitForTimeout(1000)
 
       const startBtn = page.getByTestId("start-challenge")
@@ -180,7 +180,7 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(300)
       await page.getByTestId("menu-challenges").click()
       await page.waitForTimeout(1000)
-      await page.getByTestId("challenge-card-first-service").click()
+      await page.getByTestId("challenge-play-first-service").click()
       await page.waitForTimeout(1000)
 
       await page.getByTestId("start-challenge").click()
@@ -202,11 +202,13 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(300)
       await page.getByTestId("menu-challenges").click()
       await page.waitForTimeout(1000)
-      await page.getByTestId("challenge-card-first-service").click()
+      await page.getByTestId("challenge-play-first-service").click()
       await page.waitForTimeout(1000)
 
       await expect(page.getByTestId("challenge-hud")).toBeVisible()
       await page.getByTestId("challenge-exit").click()
+      // challenge-exit opens an "Exit Quest?" confirm; click the destructive confirm to leave.
+      await page.getByRole("button", { name: "Exit Quest", exact: true }).click()
       await page.waitForTimeout(500)
 
       await expect(page.getByTestId("challenge-active-indicator")).toHaveCount(0)
@@ -222,7 +224,7 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(300)
       await page.getByTestId("menu-challenges").click()
       await page.waitForTimeout(1000)
-      await page.getByTestId("challenge-card-first-service").click()
+      await page.getByTestId("challenge-play-first-service").click()
       await page.waitForTimeout(1000)
       await page.getByTestId("start-challenge").click()
       const speedBtn = page.getByTestId("playback-speed-10")
@@ -231,6 +233,8 @@ test.describe("Challenge Validation E2E", () => {
       await page.getByTestId("result-close").click()
       await page.waitForTimeout(500)
       await page.getByTestId("challenge-exit").click()
+      // challenge-exit opens an "Exit Quest?" confirm; click the destructive confirm to leave.
+      await page.getByRole("button", { name: "Exit Quest", exact: true }).click()
       await page.waitForTimeout(500)
 
       // Open journey and check unlocked challenges
@@ -259,7 +263,7 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(300)
       await page.getByTestId("menu-challenges").click()
       await page.waitForTimeout(1000)
-      await page.getByTestId("challenge-card-first-service").click()
+      await page.getByTestId("challenge-play-first-service").click()
       await page.waitForTimeout(1000)
       await page.getByTestId("start-challenge").click()
       const speedBtn = page.getByTestId("playback-speed-10")
@@ -268,6 +272,8 @@ test.describe("Challenge Validation E2E", () => {
       await page.getByTestId("result-close").click()
       await page.waitForTimeout(500)
       await page.getByTestId("challenge-exit").click()
+      // challenge-exit opens an "Exit Quest?" confirm; click the destructive confirm to leave.
+      await page.getByRole("button", { name: "Exit Quest", exact: true }).click()
       await page.waitForTimeout(500)
 
       // Open mastery profile
@@ -293,7 +299,7 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(1000)
 
       // Tier II+ challenges should be locked
-      const scaleOut = page.getByTestId("challenge-card-scale-out")
+      const scaleOut = page.getByTestId("challenge-clone-scale-out")
       if (await scaleOut.isVisible()) {
         // scale-out requires first-service — should be locked if not completed
         const status = await scaleOut.getAttribute("data-status")

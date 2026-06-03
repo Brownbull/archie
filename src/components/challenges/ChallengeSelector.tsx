@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef } from "react"
-import { Trophy, Star, Lock, LogIn, Plus, Upload, Pencil, Trash2 } from "lucide-react"
+import { Trophy, Star, Lock, LogIn, Plus, Upload, Pencil, Trash2, PlayCircle } from "lucide-react"
 import { toast } from "sonner"
 import {
   Dialog,
@@ -68,6 +68,11 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
   const [pending, setPending] = useState<Challenge | null>(null)
   const [editorOpen, setEditorOpen] = useState(false)
   const [editingChallenge, setEditingChallenge] = useState<Challenge | null>(null)
+  // Bumped on every openEditor() so ChallengeEditor is keyed per session and REMOUNTS — its
+  // draft useState initializer reads the current editingChallenge fresh each time. Without this,
+  // the always-mounted editor keeps the draft from its first mount (empty), so clones/edits never
+  // pre-fill the form.
+  const [editorSession, setEditorSession] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const userId = useCurrentUserId()
@@ -77,9 +82,10 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
   const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
   const trackXp = useUserProgressStore((s) => s.trackXp)
 
+  const totalXp = useMemo(() => Object.values(trackXp).reduce((s, v) => s + v, 0), [trackXp])
   const tree = useMemo(
-    () => resolveTechTree(challenges, completedChallenges, undefined, Object.values(trackXp).reduce((s, v) => s + v, 0)),
-    [challenges, completedChallenges],
+    () => resolveTechTree(challenges, completedChallenges, undefined, totalXp),
+    [challenges, completedChallenges, totalXp],
   )
 
   const startChallenge = (c: Challenge) => {
@@ -112,12 +118,26 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
 
   const openEditor = (challenge?: Challenge) => {
     setEditingChallenge(challenge ?? null)
+    setEditorSession((n) => n + 1)
     setEditorOpen(true)
+  }
+
+  // Clone a challenge into the editor as a fresh USER draft: new id (`-copy` suffix), origin "user".
+  // A built-in clone becomes a user challenge so it never grants XP or affects unlocks (D45).
+  const cloneChallenge = (c: Challenge) => {
+    const copy: Challenge = { ...c, id: `${c.id}-copy`, origin: "user" }
+    openEditor(copy)
   }
 
   const onPick = (c: Challenge, node: TechTreeNode | undefined) => {
     if (!userId) return
     if (node?.status === "locked") return
+    cloneChallenge(c)
+  }
+
+  // Play starts the challenge for real — clears the canvas (after confirm if work is in progress).
+  const onPlay = (c: Challenge) => {
+    if (!userId) return
     if (useArchitectureStore.getState().nodes.length > 0) {
       setOpen(false)
       setPending(c)
@@ -162,49 +182,72 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
               const trackMeta = c.track ? CHALLENGE_TRACKS.get(c.track) : undefined
 
               return (
-                <button
+                <div
                   key={c.id}
-                  type="button"
-                  data-testid={`challenge-card-${c.id}`}
-                  data-status={node.status}
-                  onClick={() => onPick(c, node)}
-                  disabled={isLocked}
-                  className={`flex flex-col gap-1.5 rounded-md border p-3 text-left transition-colors ${
+                  className={`relative flex flex-col rounded-md border transition-colors ${
                     isLocked
-                      ? "cursor-not-allowed border-archie-border/50 bg-surface/50 opacity-60"
+                      ? "border-archie-border/50 bg-surface/50 opacity-60"
                       : "border-archie-border bg-surface hover:border-blue-500/60"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="truncate text-sm font-semibold text-text-primary">
-                      {isLocked && <Lock className="mr-1 inline h-3 w-3 text-text-secondary" />}
-                      {c.title}
-                    </span>
-                    <LevelBadge level={level} />
-                  </div>
+                  <button
+                    type="button"
+                    data-testid={`challenge-clone-${c.id}`}
+                    data-status={node.status}
+                    onClick={() => onPick(c, node)}
+                    disabled={isLocked}
+                    title={isLocked ? undefined : "Clone into the editor"}
+                    className={`flex flex-col gap-1.5 p-3 pr-9 text-left ${
+                      isLocked ? "cursor-not-allowed" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="truncate text-sm font-semibold text-text-primary">
+                        {isLocked && <Lock className="mr-1 inline h-3 w-3 text-text-secondary" />}
+                        {c.title}
+                      </span>
+                      <LevelBadge level={level} />
+                    </div>
 
-                  {trackMeta && (
-                    <span className="text-[0.5625rem] text-text-secondary">
-                      {trackMeta.name} · Tier {c.tier}
-                    </span>
+                    {trackMeta && (
+                      <span className="text-[0.5625rem] text-text-secondary">
+                        {trackMeta.name} · Tier {c.tier}
+                      </span>
+                    )}
+
+                    <p className="line-clamp-2 text-[0.6875rem] text-text-secondary">{c.brief}</p>
+
+                    {isLocked && node.missingRequirements.length > 0 && (
+                      <p className="text-[0.5625rem] text-amber-400">
+                        Requires: {node.missingRequirements.join(", ")}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between text-[0.625rem] text-text-secondary">
+                      <span>
+                        ${c.budgetCap}/mo · {c.durationSeconds}s
+                        {c.rewards?.xp ? ` · ${c.rewards.xp} XP` : ""}
+                      </span>
+                      <StarRow earned={bestStars[c.id] ?? 0} />
+                    </div>
+                  </button>
+
+                  {!isLocked && (
+                    <button
+                      type="button"
+                      data-testid={`challenge-play-${c.id}`}
+                      title="Play this challenge"
+                      aria-label="Play this challenge"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onPlay(c)
+                      }}
+                      className="absolute right-2 top-2 rounded p-1 text-text-secondary transition-colors hover:text-blue-400"
+                    >
+                      <PlayCircle className="h-4 w-4" />
+                    </button>
                   )}
-
-                  <p className="line-clamp-2 text-[0.6875rem] text-text-secondary">{c.brief}</p>
-
-                  {isLocked && node.missingRequirements.length > 0 && (
-                    <p className="text-[0.5625rem] text-amber-400">
-                      Requires: {node.missingRequirements.join(", ")}
-                    </p>
-                  )}
-
-                  <div className="flex items-center justify-between text-[0.625rem] text-text-secondary">
-                    <span>
-                      ${c.budgetCap}/mo · {c.durationSeconds}s
-                      {c.rewards?.xp ? ` · ${c.rewards.xp} XP` : ""}
-                    </span>
-                    <StarRow earned={bestStars[c.id] ?? 0} />
-                  </div>
-                </button>
+                </div>
               )
             })}
           </div>
@@ -249,7 +292,7 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
         )}
       </DialogContent>
 
-      <ChallengeEditor open={editorOpen} onOpenChange={setEditorOpen} editingChallenge={editingChallenge} />
+      <ChallengeEditor key={editorSession} open={editorOpen} onOpenChange={setEditorOpen} editingChallenge={editingChallenge} />
 
       <Dialog open={pending !== null} onOpenChange={(o) => { if (!o) setPending(null) }}>
         <DialogContent data-testid="challenge-clear-confirm" className="max-w-sm">

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { waitForComponentLibrary, addComponentToCanvas } from "./helpers/canvas-helpers"
+import { waitForComponentLibrary } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/challenge"
 
@@ -9,10 +9,10 @@ test.describe("Challenge Mode E2E (Epic 16)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // SELECT — open the Challenges dialog and pick a specific level (not order-dependent).
-    await page.locator('[data-testid="open-challenges"]').click()
+    // SELECT — open the Challenges dialog via the always-visible mode toggle, then Play a level.
+    await page.locator('[data-testid="mode-toggle-quest"]').click()
     await expect(page.locator('[data-testid="challenge-selector"]')).toBeVisible()
-    const card = page.locator('[data-testid="challenge-card-first-service"]')
+    const card = page.locator('[data-testid="challenge-play-first-service"]')
     await expect(card).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-selector.png`, fullPage: true })
     await card.click()
@@ -25,8 +25,14 @@ test.describe("Challenge Mode E2E (Epic 16)", () => {
     await expect(page.locator('[data-testid="run-simulation"]')).toHaveCount(0)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-build-mode.png`, fullPage: true })
 
-    // Place a component so the canvas is non-empty and the Start trigger can appear.
-    await addComponentToCanvas(page, 0)
+    // Place a component so the Start trigger can appear. The challenge seeds a traffic-source
+    // node on entry, so add one MORE block and assert the count grew by one (no empty-canvas
+    // assumption).
+    const nodesBefore = await page.locator('[data-testid="archie-node"]').count()
+    await page.locator('[data-testid^="add-type-"]').first().click()
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(nodesBefore + 1, {
+      timeout: 5_000,
+    })
 
     // START — the challenge Start button appears; click it to run the real simulation.
     const startBtn = page.locator('[data-testid="start-challenge"]')
@@ -48,11 +54,13 @@ test.describe("Challenge Mode E2E (Epic 16)", () => {
     await expect(page.locator('[data-testid="suggestion-card"]')).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/04-results.png`, fullPage: true })
 
-    // CLOSE — leaving the modal exits challenge mode and restores the Run trigger.
+    // CLOSE — leaving the results modal clears only the scored state and returns to BUILDING
+    // mode (ChallengeResultsModal.onClose re-selects the challenge). The HUD stays and we remain
+    // in Quest Mode so the player can tweak and retry — closing results does NOT exit the quest.
     await page.locator('[data-testid="result-close"]').click()
     await expect(page.locator('[data-testid="challenge-results"]')).toHaveCount(0)
-    await expect(page.locator('[data-testid="challenge-hud"]')).toHaveCount(0)
-    await expect(page.locator('[data-testid="run-simulation"]')).toBeVisible()
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/05-exited.png`, fullPage: true })
+    await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible()
+    await expect(page.locator('[data-testid="mode-toggle-quest"]')).toHaveAttribute("aria-pressed", "true")
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/05-back-to-building.png`, fullPage: true })
   })
 })

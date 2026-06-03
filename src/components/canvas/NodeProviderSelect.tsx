@@ -48,7 +48,7 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
     return (
       <div data-testid="archie-node-variant" className="flex items-center gap-1.5 px-3 pb-0.5">
         <ComponentIcon componentId={componentId} category={category} className="h-4 w-4 shrink-0" />
-        <span className="truncate text-[0.75rem] text-text-secondary">
+        <span className="whitespace-nowrap text-[0.75rem] text-text-secondary">
           {name}{variantName ? ` · ${variantName}` : ""}
         </span>
       </div>
@@ -68,7 +68,7 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
           title="Switch vendor — see each one's cost, throughput, and latency"
           className="h-7 w-full gap-1.5 border-archie-border bg-surface px-2 py-0 text-[0.75rem] text-text-secondary"
         >
-          <span className="flex min-w-0 items-center gap-1.5">
+          <span className="flex items-center gap-1.5 whitespace-nowrap">
             <ComponentIcon componentId={componentId} category={category} className="h-4 w-4 shrink-0" />
             <SelectValue>{name}</SelectValue>
           </span>

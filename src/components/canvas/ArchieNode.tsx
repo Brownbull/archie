@@ -4,7 +4,7 @@ import type { NodeProps } from "@xyflow/react"
 import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
-import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_WIDTH, MIN_REPLICAS, MAX_REPLICAS, getScalingRule, type ComponentCategoryId } from "@/lib/constants"
+import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_MIN_WIDTH, NODE_MAX_WIDTH, MIN_REPLICAS, MAX_REPLICAS, getScalingRule, type ComponentCategoryId } from "@/lib/constants"
 import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { NodeActionToolbar } from "@/components/canvas/NodeActionToolbar"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
@@ -228,7 +228,10 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
             : "border-archie-border opacity-100"
       }${animationsEnabled && isRippling ? " archie-ripple" : ""}`}
       style={{
-        width: `${NODE_WIDTH}px`,
+        minWidth: `${NODE_MIN_WIDTH}px`,
+        maxWidth: `${NODE_MAX_WIDTH}px`,
+        width: "fit-content",
+        whiteSpace: "nowrap",
         minHeight: dynamicMinHeight,
         boxShadow,
         "--ripple-color": heatmapStatus ? HEATMAP_COLORS[heatmapStatus] : undefined,
@@ -259,7 +262,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
             className="h-4 w-4 shrink-0"
           />
         )}
-        <span className="truncate text-xs font-medium text-text-primary">
+        <span className="whitespace-nowrap text-xs font-medium text-text-primary">
           {nodeTitle}
         </span>
       </div>
@@ -281,7 +284,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
               category={data.componentCategory as ComponentCategoryId}
               className="h-3 w-3 shrink-0"
             />
-            <span className="truncate text-[0.625rem] text-text-secondary">{nodeSubtitle}</span>
+            <span className="whitespace-nowrap text-[0.625rem] text-text-secondary">{nodeSubtitle}</span>
           </div>
         )
       )}
@@ -291,7 +294,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       {!isTraffic && (rpsLabel || latencyLabel || nodeCost.monthlyCost !== undefined) && (
         <div className="flex items-center justify-between gap-2 px-3 pb-1 text-[0.625rem] font-medium">
           {/* Throughput · latency on the left … */}
-          <span data-testid="archie-node-rps" className="truncate text-text-secondary">
+          <span data-testid="archie-node-rps" className="whitespace-nowrap text-text-secondary">
             {[rpsLabel, latencyLabel].filter(Boolean).join(" · ")}
           </span>
           {/* … monthly cost on the right. */}

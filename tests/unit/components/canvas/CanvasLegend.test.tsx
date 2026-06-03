@@ -64,6 +64,24 @@ describe("CanvasLegend", () => {
     expect(panel.getAttribute("class")).toContain("pointer-events-auto")
   })
 
+  it("minimize toggle hides the legend body but keeps the title and is independent of dismiss", () => {
+    render(<CanvasLegend />)
+    // Expanded by default: body content visible.
+    expect(screen.getByText("Healthy")).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId("legend-collapse-toggle"))
+
+    // Minimized: body hidden, title + panel still mounted, dismiss still available.
+    expect(screen.queryByText("Healthy")).not.toBeInTheDocument()
+    expect(screen.getByText("Heatmap Legend")).toBeInTheDocument()
+    expect(screen.getByTestId("canvas-legend-dismiss")).toBeInTheDocument()
+    expect(useUiStore.getState().legendDismissed).toBe(false)
+
+    // Toggle again to expand.
+    fireEvent.click(screen.getByTestId("legend-collapse-toggle"))
+    expect(screen.getByText("Healthy")).toBeInTheDocument()
+  })
+
   it("toggleHeatmap resets legendDismissed when re-enabling heatmap (AC-FUNC-6)", () => {
     // Dismiss the legend
     useUiStore.setState({ legendDismissed: true })

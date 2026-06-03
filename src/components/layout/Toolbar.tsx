@@ -1,6 +1,7 @@
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { ExperienceLevelControl } from "@/components/layout/ExperienceLevelControl"
 import { AppMenuBar } from "@/components/layout/AppMenuBar"
+import { ModeToggle } from "@/components/layout/ModeToggle"
 import { AccountMenu } from "@/components/layout/AccountMenu"
 import { IssuesSummary } from "@/components/layout/IssuesSummary"
 import { ResetCanvasDialog } from "@/components/layout/ResetCanvasDialog"
@@ -30,6 +31,7 @@ export function Toolbar() {
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-text-primary">Archie</span>
         <AppMenuBar />
+        <ModeToggle />
       </div>
 
       {activeChallenge && attemptState !== "idle" && (

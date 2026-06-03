@@ -15,7 +15,7 @@ test.describe("Quest Profile — rank avatar picker", () => {
     await page.waitForTimeout(300)
     await page.getByTestId("menu-challenges").click()
     await page.waitForTimeout(1000)
-    await page.getByTestId("challenge-card-first-service").click()
+    await page.getByTestId("challenge-play-first-service").click()
     await page.waitForTimeout(2000)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-quest-mode-entered.png`, fullPage: true })
 

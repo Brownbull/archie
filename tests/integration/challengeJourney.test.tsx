@@ -73,7 +73,7 @@ describe("challenge journey (integration): select → build → start → score 
     // SELECT — open the selector and pick a real authored level (loaded via the build-time glob).
     fireEvent.click(screen.getByTestId("open-challenges"))
     expect(screen.getByTestId("challenge-selector")).toBeInTheDocument()
-    fireEvent.click(screen.getByTestId("challenge-card-first-service"))
+    fireEvent.click(screen.getByTestId("challenge-play-first-service"))
     expect(cs().activeChallenge?.id).toBe("first-service")
     expect(cs().attemptState).toBe("building")
 
@@ -123,7 +123,7 @@ describe("challenge journey (integration): select → build → start → score 
 
     render(<ChallengeSurface />)
     fireEvent.click(screen.getByTestId("open-challenges"))
-    fireEvent.click(screen.getByTestId("challenge-card-zone-failure"))
+    fireEvent.click(screen.getByTestId("challenge-play-zone-failure"))
     // edge → compute → db; compute (maxRPS 500) is overloaded by the 1600-rps peak.
     act(() => {
       useArchitectureStore.setState({

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Check, AlertCircle, ChevronDown, ChevronRight } from "lucide-react"
+import { Check, AlertCircle, Minus, Maximize2 } from "lucide-react"
 import { useBuildGuidance } from "@/hooks/useBuildGuidance"
 import { useChallengeStore } from "@/stores/challengeStore"
 
@@ -31,7 +31,7 @@ export function BuildHealthPanel() {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center gap-1.5"
       >
-        {open ? <ChevronDown className="h-3 w-3 text-text-secondary" /> : <ChevronRight className="h-3 w-3 text-text-secondary" />}
+        {open ? <Minus className="h-3 w-3 text-text-secondary" /> : <Maximize2 className="h-3 w-3 text-text-secondary" />}
         {allMet
           ? <Check className="h-3.5 w-3.5 text-emerald-400" />
           : <AlertCircle className="h-3.5 w-3.5 text-amber-400" />}
