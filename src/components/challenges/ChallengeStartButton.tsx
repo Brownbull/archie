@@ -3,6 +3,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { buildSimGraph, computeTotalArchitectureCost, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
+import { componentLibrary } from "@/services/componentLibrary"
 
 /**
  * "Start Challenge" trigger (Epic 16 Phase 4). Replaces RunSimulationButton while a challenge
@@ -26,11 +27,24 @@ export function ChallengeStartButton() {
   const onStart = () => {
     const { nodes, edges, topologyIssues } = useArchitectureStore.getState()
     const graph = buildSimGraph(nodes, edges)
+    // Freeze the structural graph (node-id→TYPE-id + edges) for required_topology grading (D66) —
+    // same start-time discipline as cost/topology. typeId resolves vendor componentId → fundamental type.
+    const typeByNodeId = new Map<string, string>()
+    for (const n of nodes) {
+      const typeId = componentLibrary.getComponent(n.data.archieComponentId)?.typeId
+      if (typeId) typeByNodeId.set(n.id, typeId)
+    }
+    // Keep only edges whose BOTH endpoints resolved to a typed node — a dangling edge (e.g. a stale
+    // imported node id) must not inflate fan-out or skew adjacency in required_topology grading.
+    const typedEdges = edges
+      .filter((e) => typeByNodeId.has(e.source) && typeByNodeId.has(e.target))
+      .map((e) => ({ source: e.source, target: e.target }))
     // Snapshot cost + topology NOW: the sim runs on this graph, so scoring must use the
     // architecture as it is at start, not the live canvas (the user can edit mid-run).
     startAttempt({
       totalCost: computeTotalArchitectureCost(nodes),
       topologyIssueCount: topologyIssues.length,
+      topologyGraph: { typeByNodeId, edges: typedEdges },
     }) // building → running BEFORE the sim, so a single-tick run is still scored
     // ISAPivot (D63): when the challenge declares typed trafficSources, derive the load from them
     // (peak-anchored, summed) — they OVERRIDE the legacy trafficCurve. Otherwise use trafficCurve.

@@ -1,5 +1,6 @@
 import type { SimulationStats } from "@/lib/simulationStats"
 import type { Challenge, StarBreakdown } from "@/lib/challengeTypes"
+import { evaluateRequiredTopology, allTopologyAssertionsPass, type TopologyGraphInput } from "@/engine/topologyAssertions"
 
 /**
  * Scores a challenge attempt against its rubric (Epic 16, D28).
@@ -13,6 +14,9 @@ import type { Challenge, StarBreakdown } from "@/lib/challengeTypes"
  *
  * @param costPerRequest measured cost-efficiency (monthly cost ÷ requests served), derived by the
  *   caller at score time. undefined when unmeasured — a defined cost target then fails conservatively.
+ * @param topologyGraph the attempt's frozen structural graph (node-id→type + edges) for
+ *   required_topology assertions (D66). undefined ⇒ a challenge WITH assertions fails conservatively;
+ *   the 41 built-ins declare no assertions so they never reach that branch.
  */
 export function evaluateAttempt(
   stats: SimulationStats,
@@ -21,6 +25,7 @@ export function evaluateAttempt(
   totalCost: number,
   canvasTypeIds?: ReadonlySet<string>,
   costPerRequest?: number,
+  topologyGraph?: TopologyGraphInput,
 ): StarBreakdown {
   const tm = challenge.targetMetrics
   const passedMetrics =
@@ -32,6 +37,12 @@ export function evaluateAttempt(
       || (costPerRequest !== undefined && costPerRequest <= tm.costPerRequest))
   const underBudget = totalCost <= challenge.budgetCap
   const cleanTopology = topologyIssueCount === 0
+
+  // required_topology (ISAPivot Phase 3, D66): empty/absent ⇒ true (identity — the 41 built-ins).
+  // Present but no frozen graph ⇒ conservative fail. Folded into the clean-topology star below.
+  const requiredTopologyOk = !challenge.requiredTopology?.length
+    ? true
+    : !!topologyGraph && allTopologyAssertionsPass(evaluateRequiredTopology(topologyGraph, challenge.requiredTopology))
 
   // required_types: the key blocks the challenge is designed to teach MUST be on the canvas.
   // Missing a required type blocks all stars — you can't pass without the right architecture.
@@ -46,7 +57,10 @@ export function evaluateAttempt(
   const forbiddenTypesOk = !hasForbidden
 
   const basePass = passedMetrics && hasAllRequiredTypes && forbiddenTypesOk
-  const stars = basePass ? 1 + (underBudget ? 1 : 0) + (cleanTopology ? 1 : 0) : 0
+  // The topology star requires BOTH zero issues AND all required_topology assertions (D66).
+  // For the 41 built-ins requiredTopologyOk is always true, so this equals the prior cleanTopology gate.
+  const topologyStar = cleanTopology && requiredTopologyOk
+  const stars = basePass ? 1 + (underBudget ? 1 : 0) + (topologyStar ? 1 : 0) : 0
 
   return {
     stars: stars as StarBreakdown["stars"],
@@ -55,5 +69,6 @@ export function evaluateAttempt(
     underBudget,
     cleanTopology,
     forbiddenTypesOk,
+    requiredTopologyOk,
   }
 }

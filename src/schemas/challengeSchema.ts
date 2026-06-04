@@ -67,6 +67,39 @@ const blockTypeId = z
   .refine((id) => COMPONENT_TYPES.has(id), { message: "Unknown component type id" })
 
 /**
+ * A required-topology assertion (ISAPivot Phase 3, D66). snake_case → camelCase. Per-rule field
+ * requirements enforced in superRefine so a malformed assertion is rejected at load, not silently
+ * un-passable at score time. blockTypeId reuse rejects typo'd component type ids.
+ */
+const RequiredTopologyAssertionSchema = z
+  .object({
+    rule_type: z.enum(["CACHE_BETWEEN", "LB_UPSTREAM", "FAN_OUT_GTE"]),
+    source_type: blockTypeId.optional(),
+    target_type: blockTypeId.optional(),
+    min_count: z.number().int().min(1).max(50).optional(),
+    description: z.string().min(1).max(CHALLENGE_HINT_MAX).optional(),
+  })
+  .strict()
+  .superRefine((d, ctx) => {
+    if (d.rule_type === "CACHE_BETWEEN" && (!d.source_type || !d.target_type)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["source_type"], message: "CACHE_BETWEEN requires source_type and target_type" })
+    }
+    if (d.rule_type === "LB_UPSTREAM" && !d.target_type) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["target_type"], message: "LB_UPSTREAM requires target_type" })
+    }
+    if (d.rule_type === "FAN_OUT_GTE" && !d.source_type) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["source_type"], message: "FAN_OUT_GTE requires source_type" })
+    }
+  })
+  .transform((d) => ({
+    ruleType: d.rule_type,
+    sourceType: d.source_type,
+    targetType: d.target_type,
+    minCount: d.min_count,
+    description: d.description ? sanitizeDisplayString(d.description, CHALLENGE_HINT_MAX) : undefined,
+  }))
+
+/**
  * YAML variant for a Challenge (snake_case → camelCase transform). Used by challengeLoader.
  * Defense-in-depth bounds on every numeric + sanitized display strings.
  *
@@ -106,6 +139,7 @@ export const ChallengeYamlSchema = z
     min_xp: z.number().int().min(0).max(100000).default(0),
     required_types: z.array(blockTypeId).max(20).default([]),
     forbidden_types: z.array(blockTypeId).max(20).default([]),
+    required_topology: z.array(RequiredTopologyAssertionSchema).max(10).default([]),
     available_blocks: z.array(blockTypeId).max(40).default([]),
     grants: z.array(blockTypeId).max(40).default([]),
     rewards: RewardsYamlSchema.optional(),
@@ -178,6 +212,7 @@ export const ChallengeYamlSchema = z
     minXp: d.min_xp,
     requiredTypes: d.required_types,
     forbiddenTypes: d.forbidden_types,
+    requiredTopology: d.required_topology,
     availableBlocks: d.available_blocks,
     grants: d.grants,
     rewards: d.rewards,

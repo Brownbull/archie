@@ -20,13 +20,13 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import type { Challenge } from "@/lib/challengeTypes"
 
-const LIB: Record<string, { category: string; maxRPS: number; baseLatencyMs: number; monthlyCost: number }> = {
-  app: { category: "compute", maxRPS: 300, baseLatencyMs: 15, monthlyCost: 50 },
-  db: { category: "data-storage", maxRPS: 1000, baseLatencyMs: 8, monthlyCost: 30 },
+const LIB: Record<string, { typeId: string; category: string; maxRPS: number; baseLatencyMs: number; monthlyCost: number }> = {
+  app: { typeId: "compute", category: "compute", maxRPS: 300, baseLatencyMs: 15, monthlyCost: 50 },
+  db: { typeId: "relational-db", category: "data-storage", maxRPS: 1000, baseLatencyMs: 8, monthlyCost: 30 },
 }
 function comp(id: string) {
   const c = LIB[id]
-  return { id, name: id, category: c.category, configVariants: [{ id: "default", name: "d", metrics: [], maxRPS: c.maxRPS, baseLatencyMs: c.baseLatencyMs, monthlyCost: c.monthlyCost }] }
+  return { id, name: id, typeId: c.typeId, category: c.category, configVariants: [{ id: "default", name: "d", metrics: [], maxRPS: c.maxRPS, baseLatencyMs: c.baseLatencyMs, monthlyCost: c.monthlyCost }] }
 }
 const node = (id: string, c: string) => ({
   id,
@@ -71,8 +71,15 @@ describe("challenge flow (integration): Start → real sim → auto-score → re
     fireEvent.click(screen.getByTestId("start-challenge"))
     expect(cs().attemptState).toBe("running")
     expect(useSimulationStore.getState().status).toBe("running")
-    // snapshot captured the real start-time cost (50 + 30) before any playback
-    expect(cs().attemptSnapshot).toEqual({ totalCost: 80, topologyIssueCount: 0 })
+    // snapshot captured the real start-time cost (50 + 30) + the frozen topology graph (3b, D66)
+    const snap = cs().attemptSnapshot
+    expect(snap?.totalCost).toBe(80)
+    expect(snap?.topologyIssueCount).toBe(0)
+    expect(snap?.topologyGraph?.edges).toEqual([{ source: "n-app", target: "n-db" }])
+    expect([...(snap?.topologyGraph?.typeByNodeId.entries() ?? [])].sort()).toEqual([
+      ["n-app", "compute"],
+      ["n-db", "relational-db"],
+    ])
 
     // Play the simulation through to completion (50 ticks × 1000ms at speed 1).
     act(() => {

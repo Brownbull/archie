@@ -30,6 +30,29 @@ export interface ChallengeTrafficSource {
   origin: ChallengeTrafficOrigin
 }
 
+/**
+ * Structural-wiring rules a challenge can require (ISAPivot Phase 3, D66). Graded against the
+ * UNDIRECTED adjacency of the attempt's frozen graph — the canvas edge convention (source→target)
+ * does not affect the verdict. The author specifies the endpoint TYPE ids per assertion; the
+ * intermediary (cache / load-balancer) is implied by the rule name.
+ */
+export type RequiredTopologyRule = "CACHE_BETWEEN" | "LB_UPSTREAM" | "FAN_OUT_GTE"
+
+/**
+ * One authored topology assertion. `sourceType`/`targetType` are component TYPE ids (allowlisted).
+ * - CACHE_BETWEEN: a cache node is adjacent to both a `sourceType` node and a `targetType` node.
+ * - LB_UPSTREAM: every `targetType` node is adjacent to a load-balancer node (≥1 target required).
+ * - FAN_OUT_GTE: some `sourceType` node has ≥ `minCount` distinct adjacent nodes (default 2).
+ */
+export interface RequiredTopologyAssertion {
+  ruleType: RequiredTopologyRule
+  sourceType?: string
+  targetType?: string
+  minCount?: number
+  /** Human-readable intent, surfaced in the results modal. */
+  description?: string
+}
+
 /** Provenance of a challenge — determines whether it grants Mastery Tracks progression (D45). */
 export type ChallengeOrigin = "builtin" | "user"
 
@@ -100,6 +123,11 @@ export interface Challenge {
   requiredTypes: string[]
   /** Component TYPE ids that MUST NOT be on the canvas — present ⇒ hard 0★ (ISAPivot Phase 3). */
   forbiddenTypes?: string[]
+  /**
+   * Structural wiring assertions (ISAPivot Phase 3, D66). Empty/absent ⇒ no structural requirement.
+   * When present, ALL must pass for the clean-topology star (folded in alongside zero topology issues).
+   */
+  requiredTopology?: RequiredTopologyAssertion[]
   /** Component TYPE ids usable inside this challenge (Phase 2 hard-gate input). Empty = no gate. */
   availableBlocks: string[]
   /** Component TYPE ids permanently unlocked for the player on completion. */
@@ -157,6 +185,11 @@ export interface StarBreakdown {
   cleanTopology: boolean
   /** No forbidden component type present (ISAPivot Phase 3). False ⇒ hard 0★. Absent forbiddenTypes ⇒ always true. */
   forbiddenTypesOk: boolean
+  /**
+   * All required_topology assertions pass (ISAPivot Phase 3, D66). Folded into the clean-topology star
+   * (star = zero issues AND this). Absent requiredTopology ⇒ always true (the 41 built-ins).
+   */
+  requiredTopologyOk: boolean
 }
 
 /**

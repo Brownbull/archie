@@ -4,6 +4,7 @@ import { writeSavedChallenge } from "@/services/challengeAutosave"
 import { SIM_TICKS } from "@/lib/constants"
 import type { Challenge, StarBreakdown, MeasuredAttempt } from "@/lib/challengeTypes"
 import type { SimulationStats } from "@/lib/simulationStats"
+import type { TopologyGraphInput } from "@/engine/topologyAssertions"
 
 export type AttemptState = "idle" | "building" | "running" | "scored"
 
@@ -11,6 +12,12 @@ export type AttemptState = "idle" | "building" | "running" | "scored"
 export interface AttemptSnapshot {
   totalCost: number
   topologyIssueCount: number
+  /**
+   * Frozen structural graph (node-id→TYPE-id + edges) for required_topology assertions (ISAPivot
+   * Phase 3, D66). Captured at start like cost/topology so scoring grades the simulated architecture,
+   * not a mid-run edit. Absent when the attempt started outside the Start button.
+   */
+  topologyGraph?: TopologyGraphInput
 }
 
 interface ChallengeState {
@@ -66,7 +73,9 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     const secondsPerTick = challenge.durationSeconds / SIM_TICKS
     const requestCount = stats.totalServed * secondsPerTick
     const costPerRequest = requestCount > 0 ? totalCost / requestCount : undefined
-    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds, costPerRequest)
+    // required_topology is graded against the frozen start-time graph (D66), pulled from the snapshot.
+    const topologyGraph = get().attemptSnapshot?.topologyGraph
+    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds, costPerRequest, topologyGraph)
     const prevBest = get().bestStars[challenge.id] ?? 0
     set({
       lastResult: result,

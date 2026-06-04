@@ -108,4 +108,46 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
       expect(r.passedMetrics).toBe(false)
     })
   })
+
+  describe("required_topology folded into the clean-topology star (Phase 3 3b, D66)", () => {
+    const cacheRule = { ruleType: "CACHE_BETWEEN" as const, sourceType: "compute", targetType: "relational-db" }
+    const ch = { ...challenge, requiredTopology: [cacheRule] }
+    // compute→cache→db satisfies CACHE_BETWEEN
+    const goodGraph = {
+      typeByNodeId: new Map([["c1", "compute"], ["k1", "cache"], ["d1", "relational-db"]]),
+      edges: [{ source: "c1", target: "k1" }, { source: "k1", target: "d1" }],
+    }
+    const badGraph = {
+      typeByNodeId: new Map([["c1", "compute"], ["d1", "relational-db"]]),
+      edges: [{ source: "c1", target: "d1" }],
+    }
+
+    it("requiredTopologyOk is true by default (no assertions — the 41 built-ins)", () => {
+      expect(evaluateAttempt(stats(100, 50), challenge, 0, 100).requiredTopologyOk).toBe(true)
+    })
+
+    it("3★ when assertions pass against the frozen graph (zero issues + wiring met)", () => {
+      const r = evaluateAttempt(stats(100, 50), ch, 0, 100, undefined, undefined, goodGraph)
+      expect(r.requiredTopologyOk).toBe(true)
+      expect(r.stars).toBe(3)
+    })
+
+    it("loses the topology star (2★) when assertions fail despite zero topology issues", () => {
+      const r = evaluateAttempt(stats(100, 50), ch, 0, 100, undefined, undefined, badGraph)
+      expect(r.requiredTopologyOk).toBe(false)
+      expect(r.cleanTopology).toBe(true) // zero issues — but the wiring rule is unmet
+      expect(r.stars).toBe(2) // base + budget, no topology star
+    })
+
+    it("fails the topology star conservatively when assertions exist but no graph was captured", () => {
+      const r = evaluateAttempt(stats(100, 50), ch, 0, 100, undefined, undefined, undefined)
+      expect(r.requiredTopologyOk).toBe(false)
+      expect(r.stars).toBe(2)
+    })
+
+    it("still 0★ when metrics fail, regardless of topology assertions passing", () => {
+      const r = evaluateAttempt(stats(90, 50), ch, 0, 100, undefined, undefined, goodGraph) // uptime < 99
+      expect(r.stars).toBe(0)
+    })
+  })
 })

@@ -276,6 +276,15 @@ export function ChallengeResultsModal() {
             label="Clean topology"
             detail={measured.topologyIssueCount === 0 ? "no issues" : `${measured.topologyIssueCount} issue${measured.topologyIssueCount === 1 ? "" : "s"}`}
           />
+          {challenge.requiredTopology && challenge.requiredTopology.length > 0 && (
+            <Criterion
+              met={result.requiredTopologyOk}
+              label="Required wiring"
+              detail={result.requiredTopologyOk
+                ? `${challenge.requiredTopology.length} rule${challenge.requiredTopology.length === 1 ? "" : "s"} met`
+                : `missing: ${challenge.requiredTopology.map((a) => a.description ?? a.ruleType).join("; ")}`}
+            />
+          )}
         </div>
 
         {challenge.origin === "builtin" && <XpProgressSection award={lastAward} track={challenge.track} />}
