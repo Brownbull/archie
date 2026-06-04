@@ -3168,3 +3168,9 @@ NOTES: New userCanvasesStore (owner-only userCanvases/{uid}, ≤2 named slots, o
 FINDINGS: 0 critical
 ACTIONS: committed
 NOTES: ux-connections/ui-layout/canvas-authoring used the unrendered open-challenges trigger → repointed to menu-build→menu-challenges→challenge-play; ui-layout overlap test switched to relative-count add (challenge seeds a traffic-source node). Pre-existing unrelated: ux-connections "Stacks tab 12+" (catalog/experience filtering) left out of scope.
+
+## 2026-06-03 21:57 — PUSH dev -> main
+PR: — (direct fast-forward, established dev→main flow)
+CI: deploy-production ✅ (run 26925229620, ~40s)
+DEPLOYMENTS: P118
+NOTE: userCanvases firestore.rules deployed manually before this push.
