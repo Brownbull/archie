@@ -3689,3 +3689,7 @@ FINDINGS: 0 (tsc -b + eslint clean, 4726 unit, solvability 47/47, tech-tree vali
 ADDED: read-aside (CACHE_BETWEEN), serverless-or-bust (forbidden lb), no-cache-no-mercy (forbidden cache+cdn), follow-the-sun (multi-region), the-long-tail (tight p95) — leaves on existing tracks.
 HARNESS: builder now satisfies required_topology (4c-deferred) + edge dedup. cost_per_request deferred (over-provisioned ref solution = high cost).
 REMAINING (D69): ~3 more lever (fan-it-out FAN_OUT/LB_UPSTREAM, four-front-war 4-source, write-storm-brownout chaos+write) + ~6 absurd tier-5 capstones.
+
+## 2026-06-04 19:15 — PUSH dev -> main
+CI: all passed (deploy-production success, run 26985671052)
+DEPLOYMENTS: P130 (creator XP removal + create/import/export E2E + expansion batch 1)
