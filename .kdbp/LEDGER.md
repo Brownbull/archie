@@ -3620,3 +3620,12 @@ PHASE 5: 5a model+rules + 5b UI DONE (feature complete; rules re-deployed by use
 ## 2026-06-04 18:00 — PUSH dev -> main
 CI: all passed (deploy-production success, run 26981728712)
 DEPLOYMENTS: P126 (Phase 5 Hint Economy shipped)
+- 2026-06-04 17:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:54 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:54 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:54 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:54 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:54 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-04 17:55 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+- 2026-06-04 17:55 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts

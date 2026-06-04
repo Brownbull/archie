@@ -6,11 +6,22 @@ const COLLECTION = "userProgress"
 
 let loadSeq = 0
 
+/**
+ * Progress generation (ISAPivot Phase 6, D65). Bumped to force a ONE-TIME, all-user reset to ground
+ * zero after the ISAPivot challenge rebalance + hint economy — so the harder, recast challenges are
+ * fair for everyone and the spendable-star pool starts clean. A user whose stored `generation` is
+ * below this is wiped + re-stamped on their next load (idempotent: it runs once, then they're current).
+ * Generation 1 = pre-ISAPivot (the implicit default for legacy docs that predate the field).
+ */
+export const PROGRESS_GENERATION = 2
+
 export interface UserProgress {
   trackXp: Readonly<Record<string, number>>
   completedChallenges: readonly string[]
   bestStarsCloud: Readonly<Record<string, number>>
   equippedAvatar: string | null
+  /** Schema/reset generation this progress was last stamped at (Phase 6). */
+  generation: number
   /**
    * Hint economy (ISAPivot Phase 5, D68): challengeId → number of progressive hints unlocked.
    * Each unlock spends 1 star; spent stars are DERIVED as the sum of these counts (single source of
@@ -19,7 +30,7 @@ export interface UserProgress {
   hintsUnlocked: Readonly<Record<string, number>>
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {} }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, generation: PROGRESS_GENERATION }
 
 /** Total stars earned across challenges (sum of per-challenge bests — the ratings, unchanged by spending). */
 export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): number {
@@ -78,12 +89,28 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
       if (seq !== loadSeq) return
       if (snap.exists()) {
         const data = snap.data()
+        const storedGen = (data.generation as number) ?? 1 // legacy docs (pre-Phase-6) are generation 1
+        if (storedGen < PROGRESS_GENERATION) {
+          // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
+          // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
+          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, generation: PROGRESS_GENERATION }
+          set({ ...wiped, loading: false })
+          try {
+            // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
+            await setDoc(doc(db, COLLECTION, userId), { ...wiped, updatedAt: serverTimestamp() })
+          } catch (err) {
+            if (import.meta.env.DEV) console.error("Failed to persist progress reset:", err)
+            set({ error: "Could not reset your progress." })
+          }
+          return
+        }
         set({
           trackXp: (data.trackXp as Record<string, number>) ?? {},
           completedChallenges: (data.completedChallenges as string[]) ?? [],
           bestStarsCloud: (data.bestStarsCloud as Record<string, number>) ?? {},
           equippedAvatar: (data.equippedAvatar as string) ?? null,
           hintsUnlocked: (data.hintsUnlocked as Record<string, number>) ?? {},
+          generation: storedGen,
           loading: false,
         })
       } else {
@@ -125,7 +152,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { trackXp: newTrackXp, completedChallenges: newCompleted, bestStarsCloud: newBestStars, updatedAt: serverTimestamp() },
+        { trackXp: newTrackXp, completedChallenges: newCompleted, bestStarsCloud: newBestStars, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
@@ -146,7 +173,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { hintsUnlocked: newHints, updatedAt: serverTimestamp() },
+        { hintsUnlocked: newHints, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
@@ -160,7 +187,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     if (!userId) return
     set({ equippedAvatar: avatarKey })
     try {
-      await setDoc(doc(db, COLLECTION, userId), { equippedAvatar: avatarKey, updatedAt: serverTimestamp() }, { merge: true })
+      await setDoc(doc(db, COLLECTION, userId), { equippedAvatar: avatarKey, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
     } catch (err) {
       if (import.meta.env.DEV) console.error("Failed to save equipped avatar:", err)
     }

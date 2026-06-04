@@ -8,7 +8,13 @@ vi.mock("firebase/firestore", () => ({
   serverTimestamp: vi.fn(() => "ts"),
 }))
 
-import { useUserProgressStore, spendableStars, totalEarnedStars, totalHintsUnlocked } from "@/stores/userProgressStore"
+import { getDoc, setDoc } from "firebase/firestore"
+import { useUserProgressStore, spendableStars, totalEarnedStars, totalHintsUnlocked, PROGRESS_GENERATION } from "@/stores/userProgressStore"
+
+const mockGetDoc = vi.mocked(getDoc)
+const mockSetDoc = vi.mocked(setDoc)
+const snapshot = (data: Record<string, unknown>) => ({ exists: () => true, data: () => data }) as never
+const noDoc = () => ({ exists: () => false, data: () => undefined }) as never
 
 describe("hint economy selectors (ISAPivot Phase 5, D68)", () => {
   it("totalEarnedStars sums per-challenge bests", () => {
@@ -76,5 +82,62 @@ describe("unlockHint — atomic guarded spend (D68)", () => {
     useUserProgressStore.setState({ bestStarsCloud: { c1: 3 }, hintsUnlocked: {} })
     expect(await useUserProgressStore.getState().unlockHint("", "c1", 5)).toBe(false)
     expect(await useUserProgressStore.getState().unlockHint("u1", "c1", 0)).toBe(false)
+  })
+})
+
+describe("loadProgress — Phase 6 generation reset (D65)", () => {
+  beforeEach(() => {
+    mockGetDoc.mockReset()
+    mockSetDoc.mockReset().mockResolvedValue(undefined as never)
+    useUserProgressStore.setState({ trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, generation: PROGRESS_GENERATION, error: null, loading: false, lastAward: null })
+  })
+
+  it("wipes + stamps a below-generation doc, persisting a FULL replace (not a merge)", async () => {
+    mockGetDoc.mockResolvedValue(snapshot({
+      generation: 1, trackXp: { foundations: 500 }, completedChallenges: ["a", "b"],
+      bestStarsCloud: { a: 3, b: 2 }, hintsUnlocked: { a: 2 }, equippedAvatar: "rank-avatar",
+    }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    const s = useUserProgressStore.getState()
+    expect(s.trackXp).toEqual({})
+    expect(s.completedChallenges).toEqual([])
+    expect(s.bestStarsCloud).toEqual({})
+    expect(s.hintsUnlocked).toEqual({})
+    expect(s.equippedAvatar).toBeNull()
+    expect(s.generation).toBe(PROGRESS_GENERATION)
+    expect(spendableStars(s)).toBe(0)
+    // persisted once, as a FULL document replace (no merge options) so old maps are truly cleared
+    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+    const call = mockSetDoc.mock.calls[0]
+    expect(call[1]).toMatchObject({ trackXp: {}, bestStarsCloud: {}, hintsUnlocked: {}, generation: PROGRESS_GENERATION })
+    expect(call[2]).toBeUndefined() // no { merge: true } → full replace
+  })
+
+  it("treats a legacy doc with no generation field as generation 1 → resets", async () => {
+    mockGetDoc.mockResolvedValue(snapshot({ trackXp: { foundations: 100 }, bestStarsCloud: { a: 2 } }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    expect(useUserProgressStore.getState().bestStarsCloud).toEqual({})
+    expect(useUserProgressStore.getState().generation).toBe(PROGRESS_GENERATION)
+    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+  })
+
+  it("loads a current-generation doc unchanged — no reset, no write (idempotent)", async () => {
+    mockGetDoc.mockResolvedValue(snapshot({
+      generation: PROGRESS_GENERATION, trackXp: { foundations: 300 }, completedChallenges: ["a"],
+      bestStarsCloud: { a: 3 }, hintsUnlocked: { a: 1 }, equippedAvatar: "y",
+    }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    const s = useUserProgressStore.getState()
+    expect(s.bestStarsCloud).toEqual({ a: 3 })
+    expect(s.hintsUnlocked).toEqual({ a: 1 })
+    expect(s.generation).toBe(PROGRESS_GENERATION)
+    expect(mockSetDoc).not.toHaveBeenCalled()
+  })
+
+  it("no existing doc → empty at current generation, no write", async () => {
+    mockGetDoc.mockResolvedValue(noDoc())
+    await useUserProgressStore.getState().loadProgress("u1")
+    expect(useUserProgressStore.getState().generation).toBe(PROGRESS_GENERATION)
+    expect(mockSetDoc).not.toHaveBeenCalled()
   })
 })
