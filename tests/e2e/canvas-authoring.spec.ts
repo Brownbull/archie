@@ -47,7 +47,8 @@ test.describe("Canvas authoring fixes (P2)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    await page.locator('[data-testid="open-challenges"]').click()
+    await page.getByTestId("menu-build").click()
+    await page.getByTestId("menu-challenges").click()
     await expect(page.locator('[data-testid="challenge-selector"]')).toBeVisible()
     await page.locator('[data-testid="challenge-play-first-service"]').click()
 

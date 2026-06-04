@@ -48,7 +48,8 @@ test.describe("Cross-surface UX connections", () => {
   test("active challenge surfaces the component-guidance banner", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
-    await page.locator('[data-testid="open-challenges"]').click()
+    await page.getByTestId("menu-build").click()
+    await page.getByTestId("menu-challenges").click()
     await page.locator('[data-testid="challenge-play-first-service"]').click()
     await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible({ timeout: 5_000 })
 

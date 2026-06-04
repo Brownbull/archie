@@ -81,12 +81,17 @@ test.describe("UI layout — controls are well-distributed & non-overlapping", (
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
     // Enter a challenge → the HUD appears (top-left), the overlay toolbar stays (top-center).
-    await page.locator('[data-testid="open-challenges"]').click()
+    await page.getByTestId("menu-build").click()
+    await page.getByTestId("menu-challenges").click()
     await page.locator('[data-testid="challenge-play-first-service"]').click()
     await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible()
 
     // Place a component so the Start trigger appears (now bottom-center, off the overlay toolbar).
-    await addComponentToCanvas(page, 0)
+    // The challenge seeds a traffic-source node, so add one MORE block and assert a relative bump
+    // (the addComponentToCanvas helper assumes an empty canvas, which a started challenge isn't).
+    const before = await page.locator('[data-testid="archie-node"]').count()
+    await page.locator('[data-testid^="add-type-"]').first().click()
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(before + 1, { timeout: 5_000 })
     const startBtn = page.locator('[data-testid="start-challenge"]')
     await expect(startBtn).toBeVisible()
 
