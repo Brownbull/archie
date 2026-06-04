@@ -3651,3 +3651,7 @@ PLAN: ISAPivot marked complete (status: active → complete) — all 7 phases sh
 - 2026-06-04 18:16 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
 - 2026-06-04 18:19 | Write | /home/khujta/projects/bmad/archie/tests/e2e/quest-log-layout.spec.ts
 - 2026-06-04 18:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/quest-log-layout.spec.ts
+
+## 2026-06-04 18:32 — PUSH dev -> main
+CI: all passed (deploy-production success, run 26983489829)
+DEPLOYMENTS: P128 (Quest Log tier-banded layout shipped)
