@@ -104,7 +104,8 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
 
 /**
  * Routes `targetRps` through the graph for a single tick.
- * Directional flow (source → target), even split at fan-out, per-node shed on overload.
+ * Directional flow (source → target): per-source-weighted entry seeding, even split at fan-out,
+ * per-node shed on overload.
  * Processes nodes in topological order (Kahn); nodes in a cycle are processed once without
  * forwarding (v1 limitation — flagged for the engine's cycle handling).
  */
@@ -125,8 +126,24 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
   const entries = graph.nodes.filter((n) => (indeg.get(n.id) ?? 0) === 0).map((n) => n.id)
   const inflow = new Map<string, number>(graph.nodes.map((n) => [n.id, 0]))
   if (entries.length > 0) {
-    const perEntry = targetRps / entries.length
-    for (const id of entries) inflow.set(id, perEntry)
+    // Per-source inflow seeding (ISAPivot Phase 2): when traffic-source nodes are entries, split
+    // targetRps across them PROPORTIONAL to each source's rate (effectiveMaxRps = its peak rps), so a
+    // 60k source pulls 20× the load of a 3k one — replacing the old flat even-split. With no traffic
+    // entries (generic graphs) it stays an exact even-split across all entries — zero behavior change.
+    const trafficEntries = entries.filter((id) => nodeById.get(id)?.category === "traffic")
+    if (trafficEntries.length > 0) {
+      const weights = trafficEntries.map((id) => Math.max(0, nodeById.get(id)?.effectiveMaxRps ?? 0))
+      const totalWeight = weights.reduce((a, b) => a + b, 0)
+      if (totalWeight > 0) {
+        trafficEntries.forEach((id, i) => inflow.set(id, targetRps * (weights[i] / totalWeight)))
+      } else {
+        const per = targetRps / trafficEntries.length
+        for (const id of trafficEntries) inflow.set(id, per)
+      }
+    } else {
+      const perEntry = targetRps / entries.length
+      for (const id of entries) inflow.set(id, perEntry)
+    }
   }
 
   // Kahn topological order.

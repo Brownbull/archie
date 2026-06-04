@@ -274,3 +274,47 @@ describe("defaultTrafficCurve", () => {
     expect(interpolateRps(defaultTrafficCurve(90, 1000), 45)).toBe(500)
   })
 })
+
+describe("simulateTick — per-source inflow seeding (ISAPivot Phase 2)", () => {
+  it("splits targetRps across traffic-source entries proportional to each source's rate", () => {
+    const g: SimGraph = {
+      nodes: [node("s1", 9000, { category: "traffic" }), node("s2", 3000, { category: "traffic" }), node("app", 100000)],
+      edges: [edge("s1", "app"), edge("s2", "app")],
+    }
+    const s = simulateTick(g, 0, 12000)
+    expect(tel(s, "s1").incomingRps).toBeCloseTo(9000, 5) // 9000/12000 of the load
+    expect(tel(s, "s2").incomingRps).toBeCloseTo(3000, 5) // 3000/12000 of the load
+  })
+
+  it("a single traffic source receives all targetRps", () => {
+    const g: SimGraph = { nodes: [node("s", 5000, { category: "traffic" }), node("app", 100000)], edges: [edge("s", "app")] }
+    expect(tel(simulateTick(g, 0, 4000), "s").incomingRps).toBeCloseTo(4000, 5)
+  })
+
+  it("falls back to an even split when entries are not traffic sources (generic graph — no behavior change)", () => {
+    const g: SimGraph = { nodes: [node("a", 1000), node("b", 1000), node("db", 100000)], edges: [edge("a", "db"), edge("b", "db")] }
+    const s = simulateTick(g, 0, 1000)
+    expect(tel(s, "a").incomingRps).toBeCloseTo(500, 5)
+    expect(tel(s, "b").incomingRps).toBeCloseTo(500, 5)
+  })
+
+  it("falls back to an even split among traffic entries when their rates are all 0 (uncapped)", () => {
+    const g: SimGraph = {
+      nodes: [node("s1", 0, { category: "traffic" }), node("s2", 0, { category: "traffic" }), node("app", 100000)],
+      edges: [edge("s1", "app"), edge("s2", "app")],
+    }
+    const s = simulateTick(g, 0, 1000)
+    expect(tel(s, "s1").incomingRps).toBeCloseTo(500, 5)
+    expect(tel(s, "s2").incomingRps).toBeCloseTo(500, 5)
+  })
+
+  it("seeds only the traffic source when entries are mixed — an orphaned non-traffic entry gets 0 (load originates from sources)", () => {
+    const g: SimGraph = {
+      nodes: [node("src", 5000, { category: "traffic" }), node("orphan", 1000), node("app", 100000)],
+      edges: [edge("src", "app")], // 'orphan' has no incoming AND no upstream source
+    }
+    const s = simulateTick(g, 0, 5000)
+    expect(tel(s, "src").incomingRps).toBeCloseTo(5000, 5) // the source carries all the load
+    expect(tel(s, "orphan").incomingRps).toBe(0) // orphaned non-traffic entry: no source feeds it
+  })
+})
