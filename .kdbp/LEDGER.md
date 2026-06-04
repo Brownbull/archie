@@ -3611,3 +3611,8 @@ PHASE 5: 5a done (model+rules); 5b HintPanel UI, 5c tests/E2E remain.
 - 2026-06-04 17:41 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
 - 2026-06-04 17:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
 - 2026-06-04 17:42 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/HintPanel.test.tsx
+
+## 2026-06-04 17:52 — [33190f5] feat(challenges): HintPanel spend-to-reveal UI (Phase 5 5b)
+FINDINGS: 0 (tsc -b + eslint clean, 4712 unit; +5 HintPanel tests, HUD test updated)
+UI: balance + revealed hints + "Reveal next hint (1★)" wired to unlockHint; disables signed-out/no-stars/all-revealed; final hint = full solution. Replaced the free hints toggle.
+PHASE 5: 5a model+rules + 5b UI DONE (feature complete; rules re-deployed by user). 5c E2E deferred (unit/component coverage strong; E2E needs heavy auth+Firestore setup).
