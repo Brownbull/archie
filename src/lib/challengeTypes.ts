@@ -36,6 +36,14 @@ export type ChallengeOrigin = "builtin" | "user"
 export interface ChallengeTargetMetrics {
   uptimePercent: number
   p99LatencyMs: number
+  /** Optional tighter latency gate (ISAPivot Phase 3). When set, p95 ≤ this is also required for the metrics star. */
+  p95LatencyMs?: number
+  /**
+   * Optional cost-efficiency gate (ISAPivot Phase 3): monthly cost ÷ requests served during the run window.
+   * When set, the measured ratio must be ≤ this for the metrics star. A directional efficiency lever,
+   * not a billing figure — lower means more cost-effective per unit of served load.
+   */
+  costPerRequest?: number
 }
 
 /** Per-challenge rewards granted on completion (Mastery Tracks, D40). */
@@ -158,6 +166,10 @@ export interface StarBreakdown {
 export interface MeasuredAttempt {
   uptimePercent: number
   p99LatencyMs: number
+  /** Measured p95 latency (ISAPivot Phase 3). Shown in the results modal when a p95 target is defined. */
+  p95LatencyMs?: number
   totalCost: number
   topologyIssueCount: number
+  /** Derived cost-efficiency at score time (ISAPivot Phase 3). undefined when no requests were served. */
+  costPerRequest?: number
 }

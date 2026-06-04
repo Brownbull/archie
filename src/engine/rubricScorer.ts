@@ -3,11 +3,16 @@ import type { Challenge, StarBreakdown } from "@/lib/challengeTypes"
 
 /**
  * Scores a challenge attempt against its rubric (Epic 16, D28).
- * - Base pass (1★): uptime ≥ target AND p99 latency ≤ target.
+ * - Base pass (1★): uptime ≥ target AND p99 latency ≤ target. ISAPivot Phase 3 adds two OPTIONAL gates,
+ *   folded into the same metrics star: p95 ≤ target (when authored) and cost-per-request ≤ target (when
+ *   authored). Absent on the 41 built-ins ⇒ skipped ⇒ identical scoring.
  * - +1★: total cost ≤ budgetCap.
  * - +1★: zero topology issues.
  * Budget and topology stars are only awarded when the base pass is met (roadmap "pass → 1★ then +1/+1").
  * The breakdown booleans report the RAW conditions (for display), independent of the gate.
+ *
+ * @param costPerRequest measured cost-efficiency (monthly cost ÷ requests served), derived by the
+ *   caller at score time. undefined when unmeasured — a defined cost target then fails conservatively.
  */
 export function evaluateAttempt(
   stats: SimulationStats,
@@ -15,10 +20,16 @@ export function evaluateAttempt(
   topologyIssueCount: number,
   totalCost: number,
   canvasTypeIds?: ReadonlySet<string>,
+  costPerRequest?: number,
 ): StarBreakdown {
+  const tm = challenge.targetMetrics
   const passedMetrics =
-    stats.uptimePercent >= challenge.targetMetrics.uptimePercent &&
-    stats.p99LatencyMs <= challenge.targetMetrics.p99LatencyMs
+    stats.uptimePercent >= tm.uptimePercent &&
+    stats.p99LatencyMs <= tm.p99LatencyMs &&
+    (tm.p95LatencyMs === undefined
+      || (stats.p95LatencyMs !== undefined && stats.p95LatencyMs <= tm.p95LatencyMs)) &&
+    (tm.costPerRequest === undefined
+      || (costPerRequest !== undefined && costPerRequest <= tm.costPerRequest))
   const underBudget = totalCost <= challenge.budgetCap
   const cleanTopology = topologyIssueCount === 0
 

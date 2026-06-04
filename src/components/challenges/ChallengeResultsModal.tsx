@@ -203,6 +203,19 @@ export function ChallengeResultsModal() {
 
   const xpPerStar = challenge.rewards?.xp ? Math.ceil(challenge.rewards.xp / 3) : 0
 
+  // Metrics detail (ISAPivot Phase 3): uptime + p99 always; p95 + cost/req only when authored as targets.
+  const tm = challenge.targetMetrics
+  const metricBits = [
+    `uptime ${measured.uptimePercent.toFixed(1)}%/${tm.uptimePercent}%`,
+    `p99 ${Math.round(measured.p99LatencyMs)}/${tm.p99LatencyMs}ms`,
+  ]
+  if (tm.p95LatencyMs !== undefined && measured.p95LatencyMs !== undefined) {
+    metricBits.push(`p95 ${Math.round(measured.p95LatencyMs)}/${tm.p95LatencyMs}ms`)
+  }
+  if (tm.costPerRequest !== undefined && measured.costPerRequest !== undefined) {
+    metricBits.push(`$/req ${measured.costPerRequest.toFixed(4)}/${tm.costPerRequest}`)
+  }
+
   return (
     <Dialog open onOpenChange={(next) => !next && onClose()}>
       <DialogContent data-testid="challenge-results" className="max-w-md">
@@ -233,7 +246,7 @@ export function ChallengeResultsModal() {
           <Criterion
             met={result.passedMetrics}
             label="Metrics"
-            detail={`uptime ${measured.uptimePercent.toFixed(1)}%/${challenge.targetMetrics.uptimePercent}% · p99 ${Math.round(measured.p99LatencyMs)}/${challenge.targetMetrics.p99LatencyMs}ms`}
+            detail={metricBits.join(" · ")}
           />
           {challenge.requiredTypes.length > 0 && (
             <Criterion

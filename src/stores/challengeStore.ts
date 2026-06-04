@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { evaluateAttempt } from "@/engine/rubricScorer"
 import { writeSavedChallenge } from "@/services/challengeAutosave"
+import { SIM_TICKS } from "@/lib/constants"
 import type { Challenge, StarBreakdown, MeasuredAttempt } from "@/lib/challengeTypes"
 import type { SimulationStats } from "@/lib/simulationStats"
 
@@ -59,15 +60,23 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds) => {
     const challenge = get().activeChallenge
     if (!challenge) return null
-    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds)
+    // Cost-efficiency (ISAPivot Phase 3): monthly cost ÷ requests served during the run. totalServed
+    // is per-tick served RPS summed over SIM_TICKS ticks; each tick spans durationSeconds/SIM_TICKS
+    // seconds, so requests = totalServed × secondsPerTick. undefined when no traffic was served.
+    const secondsPerTick = challenge.durationSeconds / SIM_TICKS
+    const requestCount = stats.totalServed * secondsPerTick
+    const costPerRequest = requestCount > 0 ? totalCost / requestCount : undefined
+    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds, costPerRequest)
     const prevBest = get().bestStars[challenge.id] ?? 0
     set({
       lastResult: result,
       lastMeasured: {
         uptimePercent: stats.uptimePercent,
         p99LatencyMs: stats.p99LatencyMs,
+        p95LatencyMs: stats.p95LatencyMs,
         totalCost,
         topologyIssueCount,
+        costPerRequest,
       },
       attemptState: "scored",
       bestStars: { ...get().bestStars, [challenge.id]: Math.max(prevBest, result.stars) },

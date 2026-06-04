@@ -43,6 +43,9 @@ const TargetMetricsYamlSchema = z
   .object({
     uptime_percent: z.number().min(0).max(100),
     p99_latency_ms: z.number().min(0).max(60_000),
+    // ISAPivot Phase 3 — optional richer gates. Absent on the 41 built-ins, so they score identically.
+    p95_latency_ms: z.number().min(0).max(60_000).optional(),
+    cost_per_request: z.number().min(0).max(1_000_000).optional(),
   })
   .strict()
 
@@ -159,7 +162,12 @@ export const ChallengeYamlSchema = z
     trafficCurve: d.traffic_curve ?? [],
     trafficSources: d.traffic_sources,
     requiredComponents: d.required_components,
-    targetMetrics: { uptimePercent: d.target_metrics.uptime_percent, p99LatencyMs: d.target_metrics.p99_latency_ms },
+    targetMetrics: {
+      uptimePercent: d.target_metrics.uptime_percent,
+      p99LatencyMs: d.target_metrics.p99_latency_ms,
+      ...(d.target_metrics.p95_latency_ms !== undefined ? { p95LatencyMs: d.target_metrics.p95_latency_ms } : {}),
+      ...(d.target_metrics.cost_per_request !== undefined ? { costPerRequest: d.target_metrics.cost_per_request } : {}),
+    },
     scheduledEvents: d.scheduled_events,
     hints: d.hints,
     allowedCategories: d.allowed_categories,

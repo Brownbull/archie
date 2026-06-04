@@ -7,6 +7,11 @@ export interface SimulationStats {
   avgLatencyMs: number
   /** 99th-percentile per-tick system latency, ms. */
   p99LatencyMs: number
+  /**
+   * 95th-percentile per-tick system latency, ms (ISAPivot Phase 3 — a tighter latency lever than p99).
+   * Always populated by computeSimStats; optional on the type only so pre-Phase-3 stat fixtures need no update.
+   */
+  p95LatencyMs?: number
   /** Target RPS at the current tick. */
   currentRps: number
   /** Served RPS at the current tick. */
@@ -22,6 +27,7 @@ const EMPTY: SimulationStats = {
   uptimePercent: 100,
   avgLatencyMs: 0,
   p99LatencyMs: 0,
+  p95LatencyMs: 0,
   currentRps: 0,
   servedRps: 0,
   failedRps: 0,
@@ -64,12 +70,15 @@ export function computeSimStats(ticks: TickState[], uptoTick: number): Simulatio
   const totalReq = totalServed + totalFailed
   const uptimePercent = totalReq > 0 ? (totalServed / totalReq) * 100 : 100
   const avgLatencyMs = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0
-  const p99LatencyMs = percentile([...latencies].sort((a, b) => a - b), 99)
+  const sortedLatencies = [...latencies].sort((a, b) => a - b)
+  const p99LatencyMs = percentile(sortedLatencies, 99)
+  const p95LatencyMs = percentile(sortedLatencies, 95)
 
   return {
     uptimePercent,
     avgLatencyMs,
     p99LatencyMs,
+    p95LatencyMs,
     currentRps: current.targetRps,
     servedRps: current.totalServedRps,
     failedRps: current.totalFailedRps,

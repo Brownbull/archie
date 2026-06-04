@@ -76,4 +76,36 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
   it("forbiddenTypesOk is true by default (no forbiddenTypes declared — the 41 built-ins)", () => {
     expect(evaluateAttempt(stats(100, 50), challenge, 0, 100).forbiddenTypesOk).toBe(true)
   })
+
+  describe("optional p95 + cost-per-request gates (Phase 3 3a)", () => {
+    it("0★ when a p95 target is set and measured p95 exceeds it (folds into metrics star)", () => {
+      const ch = { ...challenge, targetMetrics: { ...challenge.targetMetrics, p95LatencyMs: 100 } }
+      const r = evaluateAttempt({ ...stats(100, 150), p95LatencyMs: 120 }, ch, 0, 100) // p99 ok, p95 120 > 100
+      expect(r.stars).toBe(0)
+      expect(r.passedMetrics).toBe(false)
+    })
+
+    it("full stars when the p95 target is met", () => {
+      const ch = { ...challenge, targetMetrics: { ...challenge.targetMetrics, p95LatencyMs: 100 } }
+      expect(evaluateAttempt({ ...stats(100, 150), p95LatencyMs: 80 }, ch, 0, 100).stars).toBe(3)
+    })
+
+    it("0★ when a cost_per_request target is set and the measured ratio exceeds it", () => {
+      const ch = { ...challenge, targetMetrics: { ...challenge.targetMetrics, costPerRequest: 0.01 } }
+      const r = evaluateAttempt(stats(100, 50), ch, 0, 100, undefined, 0.05) // 0.05 > 0.01
+      expect(r.stars).toBe(0)
+      expect(r.passedMetrics).toBe(false)
+    })
+
+    it("full stars when the cost_per_request target is met", () => {
+      const ch = { ...challenge, targetMetrics: { ...challenge.targetMetrics, costPerRequest: 0.1 } }
+      expect(evaluateAttempt(stats(100, 50), ch, 0, 100, undefined, 0.05).stars).toBe(3)
+    })
+
+    it("fails a cost_per_request target conservatively when cost/req is unmeasured (no requests served)", () => {
+      const ch = { ...challenge, targetMetrics: { ...challenge.targetMetrics, costPerRequest: 0.1 } }
+      const r = evaluateAttempt(stats(100, 50), ch, 0, 100, undefined, undefined)
+      expect(r.passedMetrics).toBe(false)
+    })
+  })
 })

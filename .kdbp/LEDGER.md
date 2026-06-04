@@ -3430,3 +3430,35 @@ VERIFY: deterministic — write-pressure modulation tested both directions (writ
 GATES: tsc -b OK · eslint 0 errors · full vitest 4618/4618.
 PLAN: PHASE 2 COMPLETE (Exec done, Commit done). Per-source routing (proportional seeding + workload bias).
   Current Phase to 3 (richer targets + rubric). Remaining: 3, 4 (recast), 5 (economy + rules-deploy gate), 6 (reset gate).
+- 2026-06-04 14:47 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.golden.test.ts
+- 2026-06-04 14:47 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.golden.test.ts
+- 2026-06-04 14:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.golden.test.ts
+- 2026-06-04 14:48 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-04 14:48 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-04 14:49 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-04 14:49 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-04 14:49 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-04 14:50 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-04 14:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+
+## 2026-06-04 14:53 — [43ef152] feat(challenges): forbidden_types gate + golden harness (Phase 3: 3f, 3c)
+3f: golden-snapshot regression harness (tests/unit/engine/rubricScorer.golden.test.ts + .snap) — scores
+  all 41 built-ins across an attempt grid, snapshots the LEGACY StarBreakdown. The Phase-3 invariant proof.
+3c: forbidden_types hard 0-star gate (basePass &&= forbiddenTypesOk); schema forbidden_types (blockTypeId-
+  validated, ≤20); results modal "No forbidden blocks" row. Golden snapshot HOLDS → 41 byte-identical.
+GATES: tsc -b OK · eslint 0 errors · full vitest 4622/4622 · golden snapshot holds.
+PLAN: Phase 3 Exec in-progress — 3f + 3c done. Remaining: 3a (p95+cost/req targets, med), 3b
+  (required_topology, high — adversarial), 3d (origin grading, high — adversarial), 3e (chaos_intensity, med).
+- 2026-06-04 15:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-06-04 15:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-06-04 15:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-06-04 15:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-04 15:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-04 15:01 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-04 15:01 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-04 15:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-04 15:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-04 15:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-04 15:02 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-04 15:02 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-04 15:02 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
