@@ -227,7 +227,7 @@ test.describe("Challenge Validation E2E", () => {
       await page.waitForTimeout(500)
 
       // Open journey and check unlocked challenges
-      await page.getByTestId("menu-quests").click()
+      await page.getByTestId("mode-toggle-quest").click()
       await page.waitForTimeout(1000)
 
       // First Service should show completed (3 stars earned)

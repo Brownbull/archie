@@ -51,7 +51,7 @@ test.describe("Quest persistence across page reload", () => {
     await page.waitForTimeout(1000)
 
     // Step 3: Verify quest log shows completion BEFORE reload
-    await page.getByTestId("menu-quests").click()
+    await page.getByTestId("mode-toggle-quest").click()
     await page.waitForTimeout(1500)
 
     const firstNode = page.locator('[data-testid="tree-node-first-service"]')
@@ -65,7 +65,7 @@ test.describe("Quest persistence across page reload", () => {
     await page.waitForTimeout(5000) // Wait for auth + Firestore load
 
     // Step 5: Verify progress persists after reload
-    await page.getByTestId("menu-quests").click()
+    await page.getByTestId("mode-toggle-quest").click()
     await page.waitForTimeout(1500)
 
     const firstNodeAfter = page.locator('[data-testid="tree-node-first-service"]')

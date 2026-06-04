@@ -9,8 +9,9 @@ test.describe("Challenge Mode E2E (Epic 16)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // SELECT — open the Challenges dialog via the always-visible mode toggle, then Play a level.
-    await page.locator('[data-testid="mode-toggle-quest"]').click()
+    // SELECT — open the Challenges grid via Build → Challenges, then Play a level.
+    await page.getByTestId("menu-build").click()
+    await page.getByTestId("menu-challenges").click()
     await expect(page.locator('[data-testid="challenge-selector"]')).toBeVisible()
     const card = page.locator('[data-testid="challenge-play-first-service"]')
     await expect(card).toBeVisible()

@@ -17,23 +17,22 @@ import { useUiStore } from "@/stores/uiStore"
  * Always-visible Quest/Free mode toggle for the toolbar's left section (F2). Mode is DERIVED
  * from challengeStore: Quest Mode === activeChallenge !== null.
  *
- * Entering Quest Mode just opens the challenge selector — it does NOT clear the canvas itself.
- * ChallengeSelector.startChallenge() is the single place that actually clears the canvas, and it
- * guards that destructive step with its own confirm. So the to-quest path opens the selector
- * directly with no confirm here (avoiding a double-confirm and a clear-promise we don't keep).
- * Exiting Quest Mode IS destructive at this layer (it abandons the active quest), so it routes
- * through a local confirm dialog mirroring ResetCanvasDialog.
+ * Entering Quest Mode opens the Quest Log (journey tree). Accepting a quest there starts it
+ * (sets activeChallenge → quest mode); closing the log without accepting leaves activeChallenge
+ * null, so the toggle stays on Free. The "build challenges" surface (provider grid, clone, create)
+ * lives separately under Build → Challenges. Exiting Quest Mode IS destructive at this layer
+ * (it abandons the active quest), so it routes through a local confirm dialog.
  */
 export function ModeToggle() {
   const activeChallenge = useChallengeStore((s) => s.activeChallenge)
-  const setChallengesOpen = useUiStore((s) => s.setChallengesOpen)
+  const setQuestLogOpen = useUiStore((s) => s.setQuestLogOpen)
   const [exitPending, setExitPending] = useState(false)
 
   const isQuestMode = activeChallenge !== null
 
   const onQuestClick = () => {
     if (isQuestMode) return
-    setChallengesOpen(true)
+    setQuestLogOpen(true)
   }
 
   const onFreeClick = () => {

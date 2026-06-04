@@ -22,6 +22,9 @@ interface UiState {
   searchQuery: string
   commandPaletteOpen: boolean
   challengesOpen: boolean
+  /** Quest Log (journey tree) dialog open? Lifted to uiStore so the Quest/Free mode toggle can
+      open it — selecting a quest there starts it (enters quest mode); cancelling stays in Free. */
+  questLogOpen: boolean
   /** AI-prompt template dialog open? Lifted to uiStore so the menu bar can open it (P95). */
   promptOpen: boolean
   /** Reset-canvas confirm dialog open? Lifted to uiStore so the menu bar can open it (P95). */
@@ -46,6 +49,7 @@ interface UiState {
   setSearchQuery: (query: string) => void
   setCommandPaletteOpen: (open: boolean) => void
   setChallengesOpen: (open: boolean) => void
+  setQuestLogOpen: (open: boolean) => void
   setPromptOpen: (open: boolean) => void
   setResetCanvasOpen: (open: boolean) => void
   setSelectedNodeId: (id: string | null) => void
@@ -67,6 +71,7 @@ export const useUiStore = create<UiState>()((set) => ({
   searchQuery: "",
   commandPaletteOpen: false,
   challengesOpen: false,
+  questLogOpen: false,
   promptOpen: false,
   resetCanvasOpen: false,
   selectedNodeId: null,
@@ -93,6 +98,7 @@ export const useUiStore = create<UiState>()((set) => ({
   setSearchQuery: (query) => set({ searchQuery: query }),
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
   setChallengesOpen: (open) => set({ challengesOpen: open }),
+  setQuestLogOpen: (open) => set({ questLogOpen: open }),
   setPromptOpen: (open) => set({ promptOpen: open }),
   setResetCanvasOpen: (open) => set({ resetCanvasOpen: open }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),

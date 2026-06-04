@@ -7,6 +7,7 @@ import { IssuesSummary } from "@/components/layout/IssuesSummary"
 import { ResetCanvasDialog } from "@/components/layout/ResetCanvasDialog"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
 import { ChallengeSelector } from "@/components/challenges/ChallengeSelector"
+import { ChallengeTreeView } from "@/components/challenges/ChallengeTreeView"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useUiStore } from "@/stores/uiStore"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
@@ -19,6 +20,8 @@ import { TOOLBAR_HEIGHT } from "@/lib/constants"
 export function Toolbar() {
   const promptOpen = useUiStore((s) => s.promptOpen)
   const setPromptOpen = useUiStore((s) => s.setPromptOpen)
+  const questLogOpen = useUiStore((s) => s.questLogOpen)
+  const setQuestLogOpen = useUiStore((s) => s.setQuestLogOpen)
   const activeChallenge = useChallengeStore((s) => s.activeChallenge)
   const attemptState = useChallengeStore((s) => s.attemptState)
 
@@ -55,6 +58,7 @@ export function Toolbar() {
       {/* Dialogs opened from the menu bar — open state lives in uiStore. */}
       <PromptTemplateDialog open={promptOpen} onOpenChange={setPromptOpen} />
       <ChallengeSelector hideTrigger />
+      <ChallengeTreeView open={questLogOpen} onOpenChange={setQuestLogOpen} />
       <ResetCanvasDialog />
     </header>
   )

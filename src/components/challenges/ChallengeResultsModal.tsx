@@ -27,6 +27,8 @@ import starFilled from "@/assets/star-filled.png"
 import starEmpty from "@/assets/star-empty.png"
 import starNew from "@/assets/star-new.png"
 
+/* eslint-disable react-hooks/purity -- decorative confetti: each particle's angle/size/color is
+   intentionally randomized per render so the burst varies; determinism/caching is not wanted here. */
 function Particle({ delay }: { delay: number }) {
   const angle = Math.random() * 360
   const dist = 20 + Math.random() * 30
@@ -48,6 +50,7 @@ function Particle({ delay }: { delay: number }) {
     />
   )
 }
+/* eslint-enable react-hooks/purity */
 
 function AnimatedStar({ earned, isNew, index }: { earned: boolean; isNew: boolean; index: number }) {
   const src = earned ? (isNew ? starNew : starFilled) : starEmpty
@@ -283,9 +286,8 @@ export function ChallengeResultsModal() {
               onClick={() => {
                 selectChallenge(challenge)
                 useUiStore.getState().setChallengesOpen(false)
-                // Open the quest log
-                const btn = document.querySelector('[data-testid="menu-quests"]') as HTMLElement
-                btn?.click()
+                // Open the Quest Log (journey tree) to pick the next quest.
+                useUiStore.getState().setQuestLogOpen(true)
               }}
             >
               <Map className="h-3.5 w-3.5" /> Next Quest
