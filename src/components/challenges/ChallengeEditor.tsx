@@ -24,10 +24,23 @@ import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { useUserChallengeStore, namespaceUserId, stripUserPrefix } from "@/stores/userChallengeStore"
 import { exportChallenge } from "@/services/challengeExporter"
 import { BLOB_REVOKE_DELAY_MS } from "@/components/import-export/ExportButton"
-import type { Challenge, ChallengeDifficulty } from "@/lib/challengeTypes"
+import { CHALLENGE_TRAFFIC_SOURCE_TYPES } from "@/lib/challengeTypes"
+import type { Challenge, ChallengeDifficulty, ChallengeTrafficSource, ChallengeTrafficWorkload, ChallengeTrafficOrigin } from "@/lib/challengeTypes"
+import { TRAFFIC_KINDS, trafficKindEnvelope, type TrafficKind } from "@/engine/trafficPatterns"
+import { TRAFFIC_RPS_STEPS } from "@/lib/constants"
+import { formatRpsCompact } from "@/lib/formatStats"
 
 const DIFFICULTIES: ChallengeDifficulty[] = ["beginner", "intermediate", "advanced"]
 const BLOCK_IDS = [...COMPONENT_TYPES.keys()]
+const WORKLOAD_OPTS: { id: ChallengeTrafficWorkload; label: string }[] = [
+  { id: "read", label: "Read-heavy" },
+  { id: "write", label: "Write-heavy" },
+  { id: "mixed", label: "Mixed R/W" },
+]
+const ORIGIN_OPTS: { id: ChallengeTrafficOrigin; label: string }[] = [
+  { id: "one-region", label: "One region" },
+  { id: "multi-region", label: "Multi-region" },
+]
 interface ChallengeEditorProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -48,7 +61,7 @@ function emptyDraft(): Omit<Challenge, "origin"> {
     requiredTypes: [],
     targetMetrics: { uptimePercent: 95, p99LatencyMs: 400 },
     scheduledEvents: [],
-    hints: [],
+    hints: [""],
     schemaVersion: 2,
     track: "foundations",
     tier: 1,
@@ -90,6 +103,127 @@ function BlockPicker({ selected, onChange, label }: { selected: string[]; onChan
   )
 }
 
+/** Ordered hint authoring (D65): 1–5 hints, the last is the full solution; each costs the player 1★. */
+function HintsEditor({ hints, onChange }: { hints: string[]; onChange: (h: string[]) => void }) {
+  return (
+    <div>
+      <label className="text-[0.625rem] font-medium text-text-secondary">
+        Hints (1–5, ordered — the last is the full solution; each costs the player 1★ to unlock)
+      </label>
+      <div className="mt-1 flex flex-col gap-1">
+        {hints.map((h, i) => (
+          <div key={i} className="flex items-center gap-1">
+            <span className="w-12 shrink-0 text-[0.5625rem] text-text-secondary">
+              {hints.length > 1 && i === hints.length - 1 ? "Answer" : `Hint ${i + 1}`}
+            </span>
+            <Input
+              data-testid={`editor-hint-${i}`}
+              value={h}
+              onChange={(e) => onChange(hints.map((x, j) => (j === i ? e.target.value.slice(0, 300) : x)))}
+              placeholder={i === 0 ? "First nudge…" : "Next hint…"}
+              className="h-7 flex-1 text-xs"
+            />
+            <button
+              type="button"
+              data-testid={`editor-hint-remove-${i}`}
+              onClick={() => onChange(hints.filter((_, j) => j !== i))}
+              disabled={hints.length <= 1}
+              aria-label={`Remove hint ${i + 1}`}
+              className="rounded px-1.5 text-text-secondary hover:text-text-primary disabled:opacity-30"
+            >×</button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        data-testid="editor-hint-add"
+        onClick={() => onChange([...hints, ""])}
+        disabled={hints.length >= 5}
+        className="mt-1 rounded-md border border-archie-border px-2 py-0.5 text-[0.625rem] text-text-secondary hover:text-text-primary disabled:opacity-30"
+      >+ Add hint</button>
+    </div>
+  )
+}
+
+/** Typed traffic-source authoring (D63/D64): ≤4, one per type; when set, they define the load. */
+function TrafficSourcesEditor({
+  sources,
+  onChange,
+}: {
+  sources: ChallengeTrafficSource[] | undefined
+  onChange: (s: ChallengeTrafficSource[] | undefined) => void
+}) {
+  const list = sources ?? []
+  const used = new Set(list.map((s) => s.type))
+  const free = CHALLENGE_TRAFFIC_SOURCE_TYPES.filter((t) => !used.has(t))
+  const patch = (i: number, p: Partial<ChallengeTrafficSource>) => onChange(list.map((s, j) => (j === i ? { ...s, ...p } : s)))
+  const add = () => {
+    if (free.length) onChange([...list, { type: free[0], rps: 3000, kind: "steady", workload: "mixed", origin: "one-region" }])
+  }
+  const remove = (i: number) => {
+    const next = list.filter((_, j) => j !== i)
+    onChange(next.length ? next : undefined)
+  }
+  return (
+    <div>
+      <label className="text-[0.625rem] font-medium text-text-secondary">
+        Traffic sources (optional, ≤4 — one per type; when set, these define the load instead of the legacy curve)
+      </label>
+      <div className="mt-1 flex flex-col gap-2">
+        {list.map((s, i) => {
+          const env = trafficKindEnvelope(s.kind, s.rps)
+          const typeOpts = CHALLENGE_TRAFFIC_SOURCE_TYPES.filter((t) => t === s.type || !used.has(t))
+          return (
+            <div key={i} data-testid={`editor-source-${i}`} className="rounded-md border border-archie-border bg-surface/50 p-1.5">
+              <div className="flex items-center gap-1">
+                <Select value={s.type} onValueChange={(v) => patch(i, { type: v as ChallengeTrafficSource["type"] })}>
+                  <SelectTrigger data-testid={`editor-source-type-${i}`} className="h-6 flex-1 text-[0.625rem]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{typeOpts.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  data-testid={`editor-source-remove-${i}`}
+                  onClick={() => remove(i)}
+                  aria-label={`Remove source ${i + 1}`}
+                  className="rounded px-1.5 text-text-secondary hover:text-text-primary"
+                >×</button>
+              </div>
+              <div className="mt-1 grid grid-cols-2 gap-1">
+                <Select value={String(s.rps)} onValueChange={(v) => patch(i, { rps: Number(v) })}>
+                  <SelectTrigger data-testid={`editor-source-rps-${i}`} className="h-6 text-[0.625rem]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{TRAFFIC_RPS_STEPS.map((r) => <SelectItem key={r} value={String(r)}>{formatRpsCompact(r)} peak</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={s.kind} onValueChange={(v) => patch(i, { kind: v as TrafficKind })}>
+                  <SelectTrigger data-testid={`editor-source-kind-${i}`} className="h-6 text-[0.625rem]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{TRAFFIC_KINDS.map((k) => <SelectItem key={k.id} value={k.id}>{k.label}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={s.workload} onValueChange={(v) => patch(i, { workload: v as ChallengeTrafficWorkload })}>
+                  <SelectTrigger data-testid={`editor-source-workload-${i}`} className="h-6 text-[0.625rem]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{WORKLOAD_OPTS.map((w) => <SelectItem key={w.id} value={w.id}>{w.label}</SelectItem>)}</SelectContent>
+                </Select>
+                <Select value={s.origin} onValueChange={(v) => patch(i, { origin: v as ChallengeTrafficOrigin })}>
+                  <SelectTrigger data-testid={`editor-source-origin-${i}`} className="h-6 text-[0.625rem]"><SelectValue /></SelectTrigger>
+                  <SelectContent>{ORIGIN_OPTS.map((o) => <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="mt-0.5 text-[0.5625rem] text-text-secondary">
+                {s.kind === "steady" ? `${formatRpsCompact(s.rps)} steady` : `~${formatRpsCompact(env.min)}–${formatRpsCompact(env.peak)} · avg ~${formatRpsCompact(env.avg)}`}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+      <button
+        type="button"
+        data-testid="editor-source-add"
+        onClick={add}
+        disabled={free.length === 0}
+        className="mt-1 rounded-md border border-archie-border px-2 py-0.5 text-[0.625rem] text-text-secondary hover:text-text-primary disabled:opacity-30"
+      >+ Add traffic source{free.length === 0 ? " (max 4)" : ""}</button>
+    </div>
+  )
+}
+
 export function ChallengeEditor({ open, onOpenChange, editingChallenge }: ChallengeEditorProps) {
   const addChallenge = useUserChallengeStore((s) => s.addChallenge)
   const updateChallenge = useUserChallengeStore((s) => s.updateChallenge)
@@ -118,6 +252,7 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
   const isValid = useMemo(() => {
     return draft.id.trim().length > 0 && draft.title.trim().length > 0 && draft.brief.trim().length > 0
       && draft.availableBlocks.length > 0 && draft.track !== undefined
+      && draft.hints.length >= 1 && draft.hints.length <= 5 && draft.hints.every((h) => h.trim().length > 0)
   }, [draft])
 
   const handleSave = useCallback(() => {
@@ -243,6 +378,10 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
             </div>
 
             <BlockPicker selected={draft.availableBlocks} onChange={(v) => updateField("availableBlocks", v)} label="Available blocks (palette for this challenge)" />
+
+            <HintsEditor hints={draft.hints} onChange={(v) => updateField("hints", v)} />
+
+            <TrafficSourcesEditor sources={draft.trafficSources} onChange={(v) => updateField("trafficSources", v)} />
           </div>
         </ScrollArea>
 

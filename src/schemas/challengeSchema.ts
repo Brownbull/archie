@@ -88,7 +88,7 @@ export const ChallengeYamlSchema = z
     required_components: z.array(z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH)).max(20),
     target_metrics: TargetMetricsYamlSchema,
     scheduled_events: z.array(ScheduledEventSchema).max(20).default([]),
-    hints: z.array(z.string().min(1).transform((s) => sanitizeDisplayString(s, CHALLENGE_HINT_MAX))).max(10).default([]),
+    hints: z.array(z.string().min(1).transform((s) => sanitizeDisplayString(s, CHALLENGE_HINT_MAX))).max(5).default([]),
     allowed_categories: z.array(z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH)).max(20).optional(),
     // --- v2 tech-tree fields ---
     track: z

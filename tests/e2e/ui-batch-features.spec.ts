@@ -94,4 +94,40 @@ test.describe("UI — mode toggle (quest log) + challenge clone/play", () => {
     await expect(page.getByTestId("challenge-hud")).toBeVisible({ timeout: 5_000 })
     await expect(page.getByTestId("mode-toggle-quest")).toHaveAttribute("aria-pressed", "true")
   })
+
+  test("Build → Challenges: creator authors hints + typed traffic sources (ISAPivot)", async ({ page }) => {
+    await page.goto("/")
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: no seeded data")
+    await page.waitForTimeout(1000)
+
+    await page.getByTestId("menu-build").click()
+    await page.getByTestId("menu-challenges").click()
+    await expect(page.getByTestId("challenge-selector")).toBeVisible({ timeout: 5_000 })
+
+    await page.getByTestId("forge-create").click()
+    const editor = page.getByTestId("challenge-editor")
+    await expect(editor).toBeVisible({ timeout: 5_000 })
+
+    await page.getByTestId("editor-id").fill("my-ramp")
+    await page.getByTestId("editor-title").fill("My Ramp")
+    await page.getByTestId("editor-brief").fill("Handle a bursty multi-source load.")
+
+    // NEW (D65): hints authoring — one field by default; fill it + add the "Answer" hint.
+    await page.getByTestId("editor-hint-0").fill("Put a cache in front of the DB.")
+    await page.getByTestId("editor-hint-add").click()
+    await page.getByTestId("editor-hint-1").fill("Cache + read replicas + a CDN clears it.")
+
+    // NEW (D63/D64): typed traffic source authoring — add one source + set its kind to Search.
+    await page.getByTestId("editor-source-add").click()
+    await expect(page.getByTestId("editor-source-0")).toBeVisible()
+    await page.getByTestId("editor-source-kind-0").click()
+    await page.getByRole("option", { name: /Search/ }).click()
+
+    // Save is enabled (required fields + 1–5 non-empty hints) and persists the new challenge.
+    const save = page.getByTestId("editor-save")
+    await expect(save).toBeEnabled()
+    await save.click()
+    await expect(editor).not.toBeVisible({ timeout: 5_000 })
+  })
 })
