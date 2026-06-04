@@ -3535,3 +3535,11 @@ FINDINGS: 0 (tsc -b clean, eslint 0 err, 4656/4656 unit, golden byte-identical, 
 ADVERSARIAL: 2-lens verify (wi8no3bqh) — 0 real, 0 speculative; byte-identical/threading + formula/numeric clean
 FORMULA: effective = 1 + (authored-1)*chaosIntensity (chaos 0=inert, 1=as-authored byte-identical, >1=harsher); SIM-only, never read by scoring
 PHASE 3 COMPLETE: 3a (p95+cost), 3c (forbidden 0★), 3f (golden harness), 3b (required_topology), 3d (origin grading), 3e (chaos) — all done; Exec ✅ Commit ✅ (Push pending)
+- 2026-06-04 16:22 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:23 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:23 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:30 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:31 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:33 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:33 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:34 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
