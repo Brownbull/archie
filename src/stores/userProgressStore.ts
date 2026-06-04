@@ -11,9 +11,30 @@ export interface UserProgress {
   completedChallenges: readonly string[]
   bestStarsCloud: Readonly<Record<string, number>>
   equippedAvatar: string | null
+  /**
+   * Hint economy (ISAPivot Phase 5, D68): challengeId → number of progressive hints unlocked.
+   * Each unlock spends 1 star; spent stars are DERIVED as the sum of these counts (single source of
+   * truth) — there is no separate spent counter.
+   */
+  hintsUnlocked: Readonly<Record<string, number>>
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {} }
+
+/** Total stars earned across challenges (sum of per-challenge bests — the ratings, unchanged by spending). */
+export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): number {
+  return Object.values(p.bestStarsCloud).reduce((a, b) => a + b, 0)
+}
+
+/** Total hints unlocked (= total stars spent, derived). */
+export function totalHintsUnlocked(p: Pick<UserProgress, "hintsUnlocked">): number {
+  return Object.values(p.hintsUnlocked).reduce((a, b) => a + b, 0)
+}
+
+/** Spendable star balance (D68): earned − spent, never negative. */
+export function spendableStars(p: Pick<UserProgress, "bestStarsCloud" | "hintsUnlocked">): number {
+  return Math.max(0, totalEarnedStars(p) - totalHintsUnlocked(p))
+}
 
 export interface XpAwardResult {
   xpAwarded: number
@@ -30,6 +51,12 @@ interface UserProgressState extends UserProgress {
   loadProgress: (userId: string) => Promise<void>
   awardXp: (userId: string, track: string, totalXp: number, challengeId: string, stars: number) => Promise<void>
   equipAvatar: (userId: string, avatarKey: string) => Promise<void>
+  /**
+   * Unlock the next progressive hint for a challenge by spending 1 spendable star (D68). Returns true
+   * when a hint was unlocked, false when blocked (all `ladderLength` hints already unlocked, or the
+   * spendable balance is < 1). Persists optimistically.
+   */
+  unlockHint: (userId: string, challengeId: string, ladderLength: number) => Promise<boolean>
   reset: () => void
 }
 
@@ -56,6 +83,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           completedChallenges: (data.completedChallenges as string[]) ?? [],
           bestStarsCloud: (data.bestStarsCloud as Record<string, number>) ?? {},
           equippedAvatar: (data.equippedAvatar as string) ?? null,
+          hintsUnlocked: (data.hintsUnlocked as Record<string, number>) ?? {},
           loading: false,
         })
       } else {
@@ -104,6 +132,28 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
       if (import.meta.env.DEV) console.error("Failed to save progress:", err)
       set({ error: "Could not save your progress." })
     }
+  },
+
+  unlockHint: async (userId, challengeId, ladderLength) => {
+    if (!userId || !challengeId || ladderLength <= 0) return false
+    const state = get()
+    const current = state.hintsUnlocked[challengeId] ?? 0
+    if (current >= ladderLength) return false // all hints for this challenge already revealed
+    if (spendableStars(state) < 1) return false // not enough spendable stars
+
+    const newHints = { ...state.hintsUnlocked, [challengeId]: current + 1 }
+    set({ hintsUnlocked: newHints, error: null })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        { hintsUnlocked: newHints, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save unlocked hint:", err)
+      set({ error: "Could not save your hint unlock." })
+    }
+    return true
   },
 
   equipAvatar: async (userId, avatarKey) => {

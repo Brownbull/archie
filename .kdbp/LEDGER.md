@@ -3592,3 +3592,9 @@ NEXT: Phase 5 (hint economy — spendable stars + HintPanel + Firestore rules HA
 ## 2026-06-04 17:28 — PUSH dev -> main
 CI: all passed (deploy-production success, run 26980644249)
 DEPLOYMENTS: P125 (Phase 4d shipped — PHASE 4 COMPLETE)
+- 2026-06-04 17:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-04 17:32 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-04 17:33 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts

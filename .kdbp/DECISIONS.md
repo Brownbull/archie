@@ -1035,3 +1035,24 @@ in place is fair — everyone restarts anyway — so there is no "don't break re
 - 4d — author 1-5 progressive hint ladders (last = full solution).
 
 **Status:** active.
+
+## D68 — Phase 5 Hint Economy model (2026-06-04)
+
+**Context:** D65 set the hint economy (spendable stars, progressive hints, full reset). This pins the
+concrete model now that Phase 4 authored the 1-5 hint ladders.
+
+**Decisions:**
+1. **Spendable balance = Σ(bestStarsCloud) − starsSpent.** Ratings (per-challenge best stars) stay as
+   achievements (unchanged); a derived spendable pool = total earned stars minus stars spent on hints.
+   `starsSpent` is a new monotonic counter on userProgress.
+2. **hintsUnlocked: Record<challengeId, count>.** Hints unlock sequentially (one at a time); count =
+   how many of the challenge's ladder are revealed. Unlocking the next costs 1 spendable star.
+3. **unlockHint is an atomic guarded spend:** no-op when all hints already unlocked OR spendable < 1;
+   otherwise increment hintsUnlocked[ch] + starsSpent and persist. Hints accessible anytime, any
+   challenge (D65). The last ladder hint is the full reference solution.
+4. **Firestore:** add `starsSpent` (int ≥0) + `hintsUnlocked` (map) to userProgress/{uid}; rules
+   `hasOnly` allowlist + type checks extended (HARD GATE — manual `firebase deploy --only firestore:rules`).
+   Backward compatible: existing docs without the fields still pass hasOnly (subset).
+
+**Sub-slices:** 5a model + spend + rules (gated) · 5b HintPanel UI · 5c tests/E2E.
+**Status:** active.
