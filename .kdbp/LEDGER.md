@@ -3616,3 +3616,7 @@ PHASE 5: 5a done (model+rules); 5b HintPanel UI, 5c tests/E2E remain.
 FINDINGS: 0 (tsc -b + eslint clean, 4712 unit; +5 HintPanel tests, HUD test updated)
 UI: balance + revealed hints + "Reveal next hint (1★)" wired to unlockHint; disables signed-out/no-stars/all-revealed; final hint = full solution. Replaced the free hints toggle.
 PHASE 5: 5a model+rules + 5b UI DONE (feature complete; rules re-deployed by user). 5c E2E deferred (unit/component coverage strong; E2E needs heavy auth+Firestore setup).
+
+## 2026-06-04 18:00 — PUSH dev -> main
+CI: all passed (deploy-production success, run 26981728712)
+DEPLOYMENTS: P126 (Phase 5 Hint Economy shipped)
