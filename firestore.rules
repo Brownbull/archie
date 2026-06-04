@@ -113,6 +113,24 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Per-type block configuration defaults — owner-only, keyed by uid.
+    // Document id IS the user's uid, so the path itself enforces ownership.
+    // `defaults` maps a block typeId → { providerId, variantId } chosen by the user.
+    match /userBlockDefaults/{uid} {
+      allow read: if isAuthenticated() && request.auth.uid == uid;
+      allow create: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['defaults', 'updatedAt'])
+        && request.resource.data.defaults is map
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['defaults', 'updatedAt'])
+        && request.resource.data.defaults is map
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     // Deny all by default
     match /{document=**} {
       allow read, write: if false;

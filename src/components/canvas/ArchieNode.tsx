@@ -8,6 +8,7 @@ import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_MIN_WIDTH, NODE_MAX_WIDTH, M
 import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { NodeActionToolbar } from "@/components/canvas/NodeActionToolbar"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
+import { SaveBlockDefaultButton } from "@/components/canvas/SaveBlockDefaultButton"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
 import { StatusDot } from "@/components/canvas/StatusDot"
 import { useNodeOverlay } from "@/hooks/useNodeOverlay"
@@ -243,6 +244,16 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
 
       <ConstraintViolationBadge violationCount={violationCount} tooltipText={tooltipText} />
 
+      {/* Save-as-default button (top-right, inside the card). Only for typed blocks — it persists
+          a per-user provider+tier default for this block type. Hidden for pre-P5 typeless blocks. */}
+      {typeInfo.typeId && (
+        <SaveBlockDefaultButton
+          typeId={typeInfo.typeId}
+          providerId={data.archieComponentId}
+          variantId={data.activeConfigVariantId}
+        />
+      )}
+
       {/* Category stripe — identity, never heatmap (UX18, AC-ARCH-NO-9) */}
       <div
         className="h-1 w-full rounded-t-md"
@@ -250,7 +261,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         data-testid="archie-node-stripe"
       />
 
-      <div className="flex items-center gap-2 px-3 py-2">
+      <div className="flex items-center gap-2 py-2 pl-3 pr-8">
         {typeInfo.typeId ? (
           <TypeIcon typeId={typeInfo.typeId} size="sm" color={color} className="shrink-0" />
         ) : iconSet === "pixel" && typeInfo.iconUrl ? (

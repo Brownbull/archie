@@ -4,6 +4,7 @@ import { applyNodeChanges } from "@xyflow/react"
 import { toast } from "sonner"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
+import { useUserBlockDefaultsStore } from "@/stores/userBlockDefaultsStore"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
@@ -312,10 +313,28 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       toast.warning(`Canvas limit reached (${MAX_CANVAS_NODES} components)`)
       return
     }
-    const component = componentLibrary.getComponent(componentId)
-    if (!component) return
+    const requested = componentLibrary.getComponent(componentId)
+    if (!requested) return
 
-    const defaultVariant = component.configVariants[0]
+    // Apply the user's saved default (provider + variant) for this block TYPE, if any. Future
+    // adds only — never retroactive. Validate against the library so a stale saved provider/variant
+    // (e.g. removed from the catalog, or no longer of this type) falls back to the requested block.
+    let component = requested
+    let defaultVariant = component.configVariants[0]
+    const typeId = requested.typeId
+    if (typeId) {
+      const saved = useUserBlockDefaultsStore.getState().getDefault(typeId)
+      if (saved) {
+        const savedProvider = componentLibrary.getComponent(saved.providerId)
+        const savedVariant = savedProvider?.typeId === typeId
+          ? savedProvider.configVariants.find((v) => v.id === saved.variantId)
+          : undefined
+        if (savedProvider && savedVariant) {
+          component = savedProvider
+          defaultVariant = savedVariant
+        }
+      }
+    }
     if (!defaultVariant) return
 
     const newNode: ArchieNode = {
