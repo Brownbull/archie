@@ -3658,3 +3658,7 @@ DEPLOYMENTS: P128 (Quest Log tier-banded layout shipped)
 - 2026-06-04 18:43 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
 - 2026-06-04 18:43 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
 - 2026-06-04 18:43 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+
+## 2026-06-04 18:42 — PUSH dev -> main
+CI: all passed (deploy-production success, run 26984146276)
+DEPLOYMENTS: P129 (Quest Log layout polish — compact bands + visible connectors)
