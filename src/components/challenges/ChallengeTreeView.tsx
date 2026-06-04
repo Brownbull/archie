@@ -25,7 +25,9 @@ const HEADER_H = 24
 const PAD_X = 50
 const NODE_W = NODE_R * 2 + 20 // horizontal slot per node
 const SUBROW_H = NODE_R * 2 + ROW_GAP // vertical pitch per dependency sub-row
-const TIER_GAP = 64 // vertical space between tier bands (holds the separator + label)
+const NODE_FOOT = NODE_R * 2 + 32 // a node's real footprint: circle + title + XP label
+const BAND_GAP = 44 // compact gap between a band's last element and the next tier separator
+const SEP_OFFSET = 20 // separator line sits this far above its band's first row
 
 const TRACK_COLORS: Record<string, string> = {
   foundations: "#3b82f6", data: "#22c55e", edge: "#06b6d4", realtime: "#ec4899",
@@ -72,17 +74,17 @@ function layoutTree(ordered: TechTreeNode[]) {
     for (const n of ordered) if (tierOf(n) === t) subRow.set(n.challenge.id, dep(n.challenge.id))
   }
 
-  // Stack tier bands top-to-bottom; each band is (maxSubRow + 1) sub-rows tall, separated by TIER_GAP.
+  // Stack tier bands top-to-bottom. Each band is sized to its ACTUAL content — (rows-1) sub-row
+  // pitches plus one node footprint — so there's no empty slack between the last element and the next
+  // tier separator. Bands are separated by a tight BAND_GAP that holds the separator + label.
   const bandY = new Map<number, number>()
-  const bandRows = new Map<number, number>()
   const bands: TierBand[] = []
-  let y = HEADER_H + TIER_GAP
+  let y = HEADER_H + SEP_OFFSET + 8
   for (const t of tiers) {
     const rowsInTier = 1 + Math.max(0, ...ordered.filter((n) => tierOf(n) === t).map((n) => subRow.get(n.challenge.id)!))
-    bandRows.set(t, rowsInTier)
     bandY.set(t, y)
-    bands.push({ tier: t, y: y - TIER_GAP / 2, label: `Tier ${TIER_LABELS[t] ?? t}` })
-    y += rowsInTier * SUBROW_H + TIER_GAP
+    bands.push({ tier: t, y: y - SEP_OFFSET, label: `Tier ${TIER_LABELS[t] ?? t}` })
+    y += (rowsInTier - 1) * SUBROW_H + NODE_FOOT + BAND_GAP
   }
   const totalHeight = y
 
@@ -142,8 +144,8 @@ function TreeEdges({ positions }: { positions: NodePos[] }) {
             : `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`
           return (
             <path key={`${reqId}->${to.node.challenge.id}`} d={d} fill="none"
-              stroke={isDone ? edgeTrackColor : isLocked ? "#1a1e28" : "#2a3040"}
-              strokeWidth={isDone ? 2 : 1.5} opacity={isLocked ? 0.3 : isDone ? 0.8 : 0.3}
+              stroke={isDone ? edgeTrackColor : isLocked ? "#4a5468" : "#7184a6"}
+              strokeWidth={isDone ? 2 : 1.75} opacity={isDone ? 0.9 : isLocked ? 0.5 : 0.72}
               strokeDasharray={isLocked ? "5 4" : undefined}
               filter={isDone ? "url(#gl-a)" : undefined} />
           )
