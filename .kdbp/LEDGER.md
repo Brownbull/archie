@@ -3570,3 +3570,10 @@ PHASE 4: 4a + 4b done; 4c harden (Phase 3 levers), 4d progressive hints remain.
 - 2026-06-04 16:54 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
 - 2026-06-04 16:59 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
 - 2026-06-04 17:00 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.golden.test.ts
+
+## 2026-06-04 17:02 — [9bc7069] feat(challenges): harden 41 built-ins with Phase 3 levers (Phase 4c)
+FINDINGS: 0 (tsc -b + eslint clean, 4698 unit + 148 integration, solvability 41/41, golden holds)
+HARDENED: 38 tighter p95 targets, 5 chaos_intensity (event challenges), 8 forbidden_types bans (workflow w94vwfzvu)
+HARNESS GUARD WORKED: caught 3 over-hardenings — 2 relational-db bans (fixed via repForCategory non-forbidden fallback) + 1 production-ai multi-region (reverted; availableBlocks lacks dns). Builder now forbidden-aware + multi-region-aware.
+DEFERRED: required_topology (needs topology-conforming builder); multi-region content (needs a challenge with cdn+dns+db available).
+PHASE 4: 4a/4b/4c done; 4d progressive 1-5 hint ladders remains.
