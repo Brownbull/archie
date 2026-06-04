@@ -3549,3 +3549,9 @@ FINDINGS: 0 (tsc -b clean, eslint 0 err, integration 148/148, harness 41/41 clea
 SAFETY NET: reference-solution-per-challenge → real sim+scorer → asserts ≥1★. Locks solvability baseline before 4b/4c recast+harden.
 KEY MECHANIC: cache/CDN hits served terminally (only misses forward) → stacked cdn+cache (~99% absorption) survives full compute az_outage; variant picker maximizes hit ratio for cdn/cache. Async tiers off the sync path.
 PHASE 4: 4a done; 4b recast trafficSources, 4c harden, 4d progressive hints remain.
+
+## 2026-06-04 16:39 — PUSH dev -> main
+PR: — (direct dev→main per PUSH.md convention)
+CI: all passed (deploy-production success, ~49s, run 26978132274)
+PROMOTION: N/A (single production env)
+DEPLOYMENTS: P123 (Phase 3 complete + Phase 4a shipped)
