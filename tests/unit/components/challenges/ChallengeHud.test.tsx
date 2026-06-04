@@ -11,6 +11,8 @@ vi.mock("@/stores/architectureStoreHelpers", async (importActual) => {
   const actual = await importActual<typeof import("@/stores/architectureStoreHelpers")>()
   return { ...actual, computeTotalArchitectureCost: () => mockCost }
 })
+// HintPanel (Phase 5) reads auth; default to signed-out so the HUD renders the locked hint state.
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: null }) }))
 
 import { ChallengeHud } from "@/components/challenges/ChallengeHud"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -98,17 +100,14 @@ describe("ChallengeHud (Epic 16)", () => {
     expect(screen.getByTestId("challenge-budget-label")).toHaveClass("text-red-400")
   })
 
-  it("toggles hints open and closed", () => {
+  it("renders the hint economy panel locked when signed out (Phase 5)", () => {
     cs().selectChallenge(challenge)
     render(<ChallengeHud />)
-    const toggle = screen.getByTestId("challenge-hints-toggle")
-    expect(toggle).toHaveAttribute("aria-expanded", "false")
+    // No free hint list anymore — hints are gated behind the economy.
     expect(screen.queryByTestId("challenge-hints")).not.toBeInTheDocument()
-    fireEvent.click(toggle)
-    expect(toggle).toHaveAttribute("aria-expanded", "true")
-    expect(screen.getByTestId("challenge-hints")).toHaveTextContent("Use a managed database")
-    fireEvent.click(toggle)
-    expect(screen.queryByTestId("challenge-hints")).not.toBeInTheDocument()
+    expect(screen.getByTestId("hint-panel")).toHaveTextContent("Hints (0/2)")
+    expect(screen.getByTestId("hint-reveal-next")).toBeDisabled()
+    expect(screen.getByTestId("hint-login")).toBeInTheDocument()
   })
 
   it("exit button opens confirm dialog, then exits on confirm", () => {

@@ -1,9 +1,10 @@
 import { useState } from "react"
-import { Check, X as XIcon, Lightbulb, Minus, Maximize2 } from "lucide-react"
+import { Check, X as XIcon, Minus, Maximize2 } from "lucide-react"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
 import { ChallengeCoach } from "@/components/challenges/ChallengeCoach"
+import { HintPanel } from "@/components/challenges/HintPanel"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
@@ -14,7 +15,6 @@ export function ChallengeHud() {
   const challenge = useChallengeStore((s) => s.activeChallenge)
   const reset = useChallengeStore((s) => s.reset)
   const nodes = useArchitectureStore((s) => s.nodes)
-  const [showHints, setShowHints] = useState(false)
   const [minimized, setMinimized] = useState(false)
   const [confirmExit, setConfirmExit] = useState(false)
 
@@ -88,20 +88,7 @@ export function ChallengeHud() {
               })}
             </div>
 
-            {challenge.hints.length > 0 && (
-              <div className="mt-3">
-                <button type="button" data-testid="challenge-hints-toggle"
-                  onClick={() => setShowHints((v) => !v)} aria-expanded={showHints}
-                  className="flex items-center gap-1 text-[0.75rem] text-text-secondary hover:text-text-primary">
-                  <Lightbulb className="h-3.5 w-3.5" /> Hints ({challenge.hints.length})
-                </button>
-                {showHints && (
-                  <ul data-testid="challenge-hints" className="mt-1 list-disc pl-4 text-[0.75rem] text-text-secondary">
-                    {challenge.hints.map((h, i) => <li key={i}>{h}</li>)}
-                  </ul>
-                )}
-              </div>
-            )}
+            <HintPanel />
           </div>
         )}
       </div>

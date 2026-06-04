@@ -3598,3 +3598,16 @@ DEPLOYMENTS: P125 (Phase 4d shipped — PHASE 4 COMPLETE)
 - 2026-06-04 17:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
 - 2026-06-04 17:32 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
 - 2026-06-04 17:33 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+
+## 2026-06-04 17:40 — [dc17819] feat(challenges): hint economy model + spend + rules (Phase 5 5a)
+FINDINGS: 0 (tsc -b + eslint clean, 4707 unit; +9 userProgressStore tests)
+MODEL (D68): spendable = Σ bestStarsCloud − Σ hintsUnlocked (derived). unlockHint = atomic guarded spend (no-op when all-unlocked or balance<1). Shared pool, anytime access. Selectors exported.
+RULES: firestore.rules userProgress hasOnly + type check extended for hintsUnlocked (backward compatible). ⚠ NEEDS MANUAL RE-DEPLOY.
+PHASE 5: 5a done (model+rules); 5b HintPanel UI, 5c tests/E2E remain.
+- 2026-06-04 17:40 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/HintPanel.tsx
+- 2026-06-04 17:40 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-04 17:40 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-04 17:40 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-04 17:41 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
+- 2026-06-04 17:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
+- 2026-06-04 17:42 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/HintPanel.test.tsx

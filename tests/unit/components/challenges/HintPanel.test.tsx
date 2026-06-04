@@ -1,0 +1,83 @@
+import { describe, it, expect, vi, beforeEach } from "vitest"
+import { render, screen, fireEvent } from "@testing-library/react"
+import type { Challenge } from "@/lib/challengeTypes"
+
+let mockUser: { uid: string } | null = null
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: mockUser }) }))
+vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
+vi.mock("firebase/firestore", () => ({
+  doc: vi.fn(() => ({})),
+  getDoc: vi.fn(),
+  setDoc: vi.fn(() => Promise.resolve()),
+  serverTimestamp: vi.fn(() => "ts"),
+}))
+
+import { HintPanel } from "@/components/challenges/HintPanel"
+import { useChallengeStore } from "@/stores/challengeStore"
+import { useUserProgressStore } from "@/stores/userProgressStore"
+
+const challenge: Challenge = {
+  id: "c1", title: "T", brief: "b", difficulty: "beginner", budgetCap: 100, durationSeconds: 60,
+  trafficCurve: [{ t: 0, rps: 0 }], requiredComponents: [], targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 },
+  scheduledEvents: [], hints: ["First nudge", "Second hint", "The full solution"],
+  schemaVersion: 2, requires: [], unlocks: [], minXp: 0, requiredTypes: [], availableBlocks: [], grants: [], origin: "builtin",
+}
+const PROGRESS_BASE = { trackXp: {}, completedChallenges: [], equippedAvatar: null, error: null, loading: false, lastAward: null }
+
+beforeEach(() => {
+  mockUser = null
+  useChallengeStore.setState({ activeChallenge: challenge })
+  useUserProgressStore.setState({ ...PROGRESS_BASE, bestStarsCloud: {}, hintsUnlocked: {} })
+})
+
+describe("HintPanel (ISAPivot Phase 5 hint economy)", () => {
+  it("renders nothing with no active challenge", () => {
+    useChallengeStore.setState({ activeChallenge: null })
+    const { container } = render(<HintPanel />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  it("signed out: shows 0 balance, a login prompt, and a disabled reveal button", () => {
+    render(<HintPanel />)
+    expect(screen.getByTestId("hint-panel")).toHaveTextContent("Hints (0/3)")
+    expect(screen.getByTestId("hint-balance")).toHaveTextContent("0")
+    expect(screen.getByTestId("hint-reveal-next")).toBeDisabled()
+    expect(screen.getByTestId("hint-login")).toBeInTheDocument()
+    expect(screen.queryByTestId("hint-0")).not.toBeInTheDocument()
+  })
+
+  it("signed in with no spendable stars: reveal disabled + earn-stars prompt", () => {
+    mockUser = { uid: "u1" }
+    render(<HintPanel />)
+    expect(screen.getByTestId("hint-reveal-next")).toBeDisabled()
+    expect(screen.getByTestId("hint-no-stars")).toBeInTheDocument()
+  })
+
+  it("signed in with stars: reveals the next hint and drains the balance", () => {
+    mockUser = { uid: "u1" }
+    useUserProgressStore.setState({ bestStarsCloud: { cX: 3 } }) // 3 spendable (earned elsewhere)
+    render(<HintPanel />)
+    expect(screen.getByTestId("hint-balance")).toHaveTextContent("3")
+    expect(screen.queryByTestId("hint-0")).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId("hint-reveal-next"))
+
+    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(1)
+    expect(screen.getByTestId("hint-0")).toHaveTextContent("First nudge")
+    expect(screen.getByTestId("hint-balance")).toHaveTextContent("2")
+  })
+
+  it("labels the final hint as the full solution and shows all-revealed when done", () => {
+    mockUser = { uid: "u1" }
+    useUserProgressStore.setState({ bestStarsCloud: { cX: 10 }, hintsUnlocked: { c1: 2 } }) // 2 of 3 revealed
+    render(<HintPanel />)
+    expect(screen.getByTestId("hint-reveal-next")).toHaveTextContent("full solution")
+
+    fireEvent.click(screen.getByTestId("hint-reveal-next"))
+
+    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(3)
+    expect(screen.getByTestId("hint-2")).toHaveTextContent("The full solution")
+    expect(screen.getByTestId("hint-all-revealed")).toBeInTheDocument()
+    expect(screen.queryByTestId("hint-reveal-next")).not.toBeInTheDocument()
+  })
+})
