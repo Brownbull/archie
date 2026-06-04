@@ -5,7 +5,7 @@
 
 ## Goal
 
-Traffic Realism + Challenge Difficulty (ISAPivot) — make traffic sources first-class configurable objects ({ type, rps, kind, workload, origin }, ≤4 per challenge, one per type) editable in the inspector and on the canvas block and authorable on challenges, then use that plus the dormant simulation levers (write/read split, cache, queue, cold-start) to make challenges genuinely hard via per-source routing, richer targets, topology assertions, forbidden types, and origin-graded architecture.
+Traffic Realism + Challenge Difficulty (ISAPivot) — make traffic sources first-class configurable objects ({ type, rps, kind, workload, origin }, ≤4 per challenge, one per type) editable in the inspector and on the canvas block and authorable on challenges, then use that plus the dormant simulation levers (write/read split, cache, queue, cold-start) to make challenges genuinely hard via per-source routing, richer targets, topology assertions, forbidden types, and origin-graded architecture. Plus a Hint Economy (D65): stars become a spendable currency (Σ earned − Σ spent) that unlocks 1–5 progressive per-challenge hints (final = full solution), with a one-time full progress reset so every user restarts earning XP + stars.
 
 ## Context
 
@@ -25,6 +25,8 @@ Traffic Realism + Challenge Difficulty (ISAPivot) — make traffic sources first
 | 2 | Per-source routing (engine) | Thread an options object (sourceRouting, chaosIntensity) through simulationStore.start → runSimulation → simulateTick, replacing flat even-split with per-source inflow seeding (even-split fallback kept); workload biases the source's RPS toward the write/DB path vs cacheable/read path. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Richer targets + rubric | Add p95LatencyMs + costPerRequest targets (compute in SimulationStats); required_topology assertions (cache BETWEEN compute/db, LB UPSTREAM, fan-out ≥N — thread edges into evaluateAttempt); forbidden_types (hard 0★ gate); origin-as-architecture grading; chaos_intensity scalar; optional bounded scoring rubric; update results modal. All optional/defaulted so the 42 existing challenges score identically. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Author the hard challenges | Recast/author challenges using multi-source typed traffic + the new levers; ship as NEW ids (don't break returning players); solvability smoke test per challenge (a reference solution must clear it). | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Hint economy (stars currency) | hints schema → 1–5 (min1/max5, ordered, last=answer); add hintsUnlocked + spendable balance (Σ bestStars − Σ unlocked) to userProgress; HintPanel in challenge mode (unlock next hint for 1★, reveal one-at-a-time, permanent, disable at no-stars/all-revealed); owner-only Firestore rule + manual deploy. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 6 | Progress reset migration | PROGRESS_GENERATION constant + load-time wipe (trackXp+completedChallenges+bestStarsCloud+hintsUnlocked → 0) so every user restarts; tree re-locks via requires/min_xp; ships LAST (after retrofit + hint economy). | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec ⬜/🔄/✅. Review/Commit/Push auto-ticked. A phase is complete when all four are ✅. -->
 
@@ -58,6 +60,7 @@ decisions_entry: D59
 ```
 - **Tier:** ent — replaces the just-stabilized replicaCount RPS mechanism (P105/P107); canvas layout is a sensitive area; one-per-type enforcement spans free-play + challenge modes.
 - **Key files:** `src/components/inspector/ComponentDetail.tsx`, `src/components/canvas/ArchieNode.tsx`, `src/components/canvas/TrafficPatternSelect.tsx`, `src/services/trafficSourceInjection.ts`, `src/stores/architectureStoreHelpers.ts`
+- **Slice 8 (D64):** extend `src/components/challenges/ChallengeEditor.tsx` with a trafficSources config section (add/remove ≤4 typed sources; rps stepper + kind + workload + origin + envelope) + 1–5 ordered hints (progressive, last=answer, D65) — GUI authoring parity. Decisions: D63 + D64 + D65.
 - **Runtime evidence:** E2E — configure RPS/kind/workload/origin on a traffic node; confirm block shows origin; one-per-type WARN/block.
 
 ### Phase 2 — Per-source routing (engine)
@@ -101,10 +104,43 @@ decisions_entry: D62
 ```
 - **Tier:** ent — new challenge content must be solvable AND hard; a solvability smoke test (reference solution clears each) prevents unwinnable challenges. Ship as new ids so returning players' progress is unaffected.
 - **Key files:** `src/data/challenges/*.yaml`, new solvability test.
+- **Scope (D64):** recast ALL 41 built-in challenges to trafficSources (not only new ids) + author new hard ones; per-challenge solvability smoke test; retire legacy `trafficCurve` once every built-in is recast.
+- **Hints (D65):** author 1–5 progressive hints per challenge (escalating, final = full solution) during the recast — covering everything needed to solve it.
+
+### Phase 5 — Hint economy (stars currency)
+```yaml
+phase: 5
+types: [user-facing, client-state, data]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Frontend, Data]
+suppressed_dims_count: 0
+decisions_entry: D65
+```
+- **Tier:** ent — a second user-level currency + spend flow persisted to Firestore (owner-only, schema-mirrored rule + manual deploy); a balance-accounting bug or rule gap is a real correctness/security risk.
+- **Model (D65):** spendable = Σ bestStarsCloud − Σ hintsUnlocked (ratings untouched); unlock costs 1★, permanent, revealed one-at-a-time in order, last = full solution; unlock anytime on any unlocked challenge.
+- **Key files:** `src/schemas/challengeSchema.ts` (hints 1–5), `src/lib/challengeTypes.ts`, `src/stores/userProgressStore.ts` (hintsUnlocked + spendableStars selector + unlockHint), new `src/components/challenges/HintPanel.tsx`, `firestore.rules` (hintsUnlocked field — manual deploy).
+- **Runtime evidence:** E2E — earn stars on an easy challenge, unlock hints (balance decrements, one-at-a-time, final = answer), exhaust the balance.
+
+### Phase 6 — Progress reset migration
+```yaml
+phase: 6
+types: [data, client-state]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Data]
+suppressed_dims_count: 0
+decisions_entry: D65
+```
+- **Tier:** ent — destructive one-time wipe of every user's quest progress (XP + completions + stars + hints). Must ship LAST (after Phases 4–5) so users restart into the complete model; a premature/buggy wipe is unrecoverable.
+- **Mechanism (D65):** `PROGRESS_GENERATION` constant; on loadProgress, stored generation < current → treat as empty + overwrite (client-side wipe on next load). Tree re-locks via existing requires/min_xp gates.
+- **Key files:** `src/stores/userProgressStore.ts`, `src/lib/constants.ts` (PROGRESS_GENERATION).
 
 ## Current Phase
 
-Phase 0: Schema + types foundation
+Phase 1: Traffic config UX (slice 1 ✅ committed d6fa599; slices 2–8 pending)
 
 ## Dependencies
 
@@ -112,7 +148,9 @@ Phase 0: Schema + types foundation
 - Phase 2 (routing) is the prerequisite for the `workload` axis actually biting and for Phase 3's per-source-aware scoring.
 - Phase 3 depends on Phase 2 for topology/origin grading to be meaningful; targets/rubric can partially land earlier.
 - Phase 4 depends on Phases 0–3 (authoring uses the full lever set).
-- Recommended split: Part A = Phases 0–2 (one effort), Part B = Phases 3–4 (second).
+- Phase 5 (hint economy) depends on Phase 4's authored hints (final=answer); the currency + HintPanel mechanics can land in parallel with Phase 4.
+- Phase 6 (reset) ships LAST — after Phases 4 + 5 — so the wipe drops users into the complete model.
+- Recommended split: Part A = Phases 0–2, Part B = Phases 3–4, Part C = Phases 5–6.
 
 ## Risks
 

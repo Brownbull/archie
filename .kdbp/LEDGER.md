@@ -3262,3 +3262,29 @@ CI: ✅ deploy-production 1/1 (58s) — build + Firebase hosting deploy live
 PROMOTION: N/A (production is the only env)
 DEPLOYMENTS: P120
 PLAN: Phase 0 Push ticked (Exec ✅ Commit ✅ Push ✅; Review ⬜ — adversarial workflow wkuphy5qr stood in for /gabe-review).
+- 2026-06-04 09:50 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 09:50 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 09:50 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 09:50 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 09:51 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 09:51 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 09:51 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 09:53 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-04 09:53 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-04 09:54 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-04 09:54 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-04 10:04 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+- 2026-06-04 10:04 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+- 2026-06-04 10:05 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+
+## 2026-06-04 10:07 — [d6fa599] feat(traffic): trafficRps + getNodeCost peak-rps + normalize-on-write (Phase 1 slice 1)
+FINDINGS: 3 low doc-drift (wells G1 Canvas / G3 Data Layer / G4 UI Panels — accepted, → /gabe-teach)
+VERIFY: 3-lens adversarial workflow (wtb344711) — no critical/high; fixed 1 medium (swapNodeComponent
+  bypassed the normalizer on category change) + 2 low (addNode didn't backfill trafficRps; stale ArchieNode
+  comment). Invariant established: every store-node write (load/setNodes/placeStack/addNode/swap) normalizes.
+GATES: tsc -b ✅ · eslint 0 errors ✅ · full vitest 4584/4584 ✅
+DECISIONS: D63 (rps=PEAK + 5 UX decisions) recorded.
+NOTE: architectureStore.ts + ArchieNode.tsx edits via sed (D3 size guard / churn gravity-well — documented
+  workaround). Store grew ~+15 lines; split remains the proper fix (D3). Stepper UI rewire = slice 4.
+PLAN: Phase 1 Exec 🔄 (slice 1 of 7 done). Remaining: workload/origin fields(2), persistence(3), block UX(4),
+  inspector UX(5), challenge injection+combined curve(6), free-play hard-gate(7).

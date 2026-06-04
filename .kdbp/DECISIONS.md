@@ -971,3 +971,27 @@ Locked with the product owner before Phase 1 implementation:
 6. **Surface the envelope.** Show derived min/avg/peak (from rps + kind) on the block, inspector, and challenge brief — author/player always see the real load range.
 
 **Source:** Phase 1 design workflow (whgxzrg8j) + product-owner Q&A. Supersedes the Phase 0 doc note that called `rps` the "average".
+
+## D64 — Challenge-authoring parity + full built-in retrofit (2026-06-04)
+
+**Status:** active
+
+Follow-up to D63 (closes two scope gaps the product owner surfaced):
+
+1. **ChallengeEditor gains trafficSources config (new Phase 1 slice 8).** The in-app create/clone editor today has NO traffic configuration — `trafficCurve` is hardcoded (ChallengeEditor.tsx:45) and there is no trafficSources field. Add a "Traffic sources" section: add/remove ≤4 typed sources (one per type), each with the rps stepper + kind + workload + origin selects (reuse the canvas-block controls) + the derived min/avg/peak envelope. Brings GUI authoring to parity with the new model; until then, trafficSources is YAML-import-only.
+2. **Phase 4 recasts ALL 41 built-in challenges to trafficSources** (not just new ids). Per-challenge solvability smoke test (a reference solution must clear each). Author new trafficSources-based hard challenges alongside. Once every built-in is recast, retire the legacy `trafficCurve` field. ("Quests" = the same challenge data rendered as the journey tree — no separate retrofit.)
+
+**Source:** product-owner Q&A. Extends Phase 1 (adds slice 8) + Phase 4 (recast-all + retire trafficCurve).
+
+## D65 — Hint Economy: spendable stars + progressive hints + full reset (2026-06-04)
+
+**Status:** active
+
+A second currency + progressive hint system layered on the existing star scoring:
+
+1. **Spendable stars (earned−spent pool).** Spendable balance = Σ(bestStarsCloud) − Σ(hintsUnlocked). Per-challenge star RATINGS stay permanent; spending only draws down the global pool. New `hintsUnlocked: Record<challengeId, number>` on the `userProgress/{uid}` Firestore doc.
+2. **Progressive hints.** 1–5 per challenge (schema min1/max5 — safe: all 41 currently have 1–3), ordered, revealed ONE AT A TIME, each costs 1★, permanent once unlocked (no re-pay, no refund), the FINAL hint = the full solution. Hints must cover everything needed to solve the challenge.
+3. **Unlock anytime** on any unlocked challenge while the player has ≥1 spendable star and unspent hints remain.
+4. **Full progress reset (one-time).** A `PROGRESS_GENERATION` constant; on loadProgress a stale generation wipes trackXp + completedChallenges + bestStarsCloud + hintsUnlocked → ground zero, so every user restarts earning XP AND stars. Ships LAST (after retrofit + hint economy). Tree re-locks via existing requires/min_xp gates.
+
+**Plan impact:** extends Phase 1 slice 8 (creator configures hints) + Phase 4 (author progressive hints during recast); adds Phase 5 (hint economy) + Phase 6 (reset migration). **Source:** product-owner Q&A (follow-up to D63/D64).
