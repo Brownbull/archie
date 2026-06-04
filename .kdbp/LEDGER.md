@@ -3645,3 +3645,9 @@ RULES: generation field deployed manually BEFORE code push (correct order — no
 TOPICS: recorded 5 (T1 solvability harness, T2 golden-snapshot, T3 cache/CDN fronting, T4 PROGRESS_GENERATION, T5 adversarial-verify) — all pending, awaiting interactive verification
 WELLS: G2 Engine, G3 Data Layer
 PLAN: ISAPivot marked complete (status: active → complete) — all 7 phases shipped P120-P127
+- 2026-06-04 18:15 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-04 18:16 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-04 18:16 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-04 18:16 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-04 18:19 | Write | /home/khujta/projects/bmad/archie/tests/e2e/quest-log-layout.spec.ts
+- 2026-06-04 18:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/quest-log-layout.spec.ts

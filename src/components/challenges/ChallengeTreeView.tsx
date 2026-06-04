@@ -23,6 +23,9 @@ const NODE_R = 32
 const ROW_GAP = 56
 const HEADER_H = 24
 const PAD_X = 50
+const NODE_W = NODE_R * 2 + 20 // horizontal slot per node
+const SUBROW_H = NODE_R * 2 + ROW_GAP // vertical pitch per dependency sub-row
+const TIER_GAP = 64 // vertical space between tier bands (holds the separator + label)
 
 const TRACK_COLORS: Record<string, string> = {
   foundations: "#3b82f6", data: "#22c55e", edge: "#06b6d4", realtime: "#ec4899",
@@ -39,50 +42,75 @@ function getGrantColor(typeId: string): string {
   return t ? (CATEGORY_COLORS[t.category] ?? "#6b7280") : "#6b7280"
 }
 
-interface NodePos { node: TechTreeNode; x: number; y: number; depth: number }
+interface NodePos { node: TechTreeNode; x: number; y: number; row: number }
+interface TierBand { tier: number; y: number; label: string }
 
-/** Layout by DAG depth — true tree, not a grid. */
+/**
+ * Layout in vertical TIER BANDS (tier 1 at top → tier 5 at bottom, separators between), and within a
+ * band, in dependency SUB-ROWS: a quest sits one row below any same-tier quest it requires (Rule 2).
+ * Cross-tier dependencies are satisfied implicitly because a higher tier's band is entirely below a
+ * lower one (Rule 1). Quests sharing a (tier, sub-row) spread horizontally, grouped by track.
+ */
 function layoutTree(ordered: TechTreeNode[]) {
   const byId = new Map(ordered.map((n) => [n.challenge.id, n]))
-  const depth = new Map<string, number>()
+  const tierOf = (n: TechTreeNode) => n.challenge.tier ?? 0
+  const tiers = [...new Set(ordered.map(tierOf))].sort((a, b) => a - b)
 
-  function getDepth(id: string): number {
-    if (depth.has(id)) return depth.get(id)!
-    const c = byId.get(id)
-    if (!c || c.challenge.requires.length === 0) { depth.set(id, 0); return 0 }
-    const d = 1 + Math.max(...c.challenge.requires.map((r) => getDepth(r)))
-    depth.set(id, d)
-    return d
+  // Sub-row within a tier = local dependency depth counting ONLY same-tier prerequisites.
+  const subRow = new Map<string, number>()
+  for (const t of tiers) {
+    const memo = new Map<string, number>()
+    const dep = (id: string): number => {
+      const cached = memo.get(id)
+      if (cached !== undefined) return cached
+      const n = byId.get(id)
+      const sameTierReqs = n ? n.challenge.requires.filter((r) => byId.has(r) && tierOf(byId.get(r)!) === t) : []
+      const d = sameTierReqs.length === 0 ? 0 : 1 + Math.max(...sameTierReqs.map(dep))
+      memo.set(id, d)
+      return d
+    }
+    for (const n of ordered) if (tierOf(n) === t) subRow.set(n.challenge.id, dep(n.challenge.id))
   }
-  for (const n of ordered) getDepth(n.challenge.id)
 
-  const maxDepth = Math.max(...[...depth.values()], 0)
-  const byDepth: TechTreeNode[][] = Array.from({ length: maxDepth + 1 }, () => [])
-  for (const n of ordered) byDepth[depth.get(n.challenge.id) ?? 0].push(n)
+  // Stack tier bands top-to-bottom; each band is (maxSubRow + 1) sub-rows tall, separated by TIER_GAP.
+  const bandY = new Map<number, number>()
+  const bandRows = new Map<number, number>()
+  const bands: TierBand[] = []
+  let y = HEADER_H + TIER_GAP
+  for (const t of tiers) {
+    const rowsInTier = 1 + Math.max(0, ...ordered.filter((n) => tierOf(n) === t).map((n) => subRow.get(n.challenge.id)!))
+    bandRows.set(t, rowsInTier)
+    bandY.set(t, y)
+    bands.push({ tier: t, y: y - TIER_GAP / 2, label: `Tier ${TIER_LABELS[t] ?? t}` })
+    y += rowsInTier * SUBROW_H + TIER_GAP
+  }
+  const totalHeight = y
 
-  const maxWidth = Math.max(...byDepth.map((row) => row.length))
-  const totalW = maxWidth * (NODE_R * 2 + 20) + PAD_X * 2
+  // Group by (tier, sub-row); spread each group horizontally, centered, grouped by track for legibility.
+  const groups = new Map<string, TechTreeNode[]>()
+  for (const n of ordered) {
+    const key = `${tierOf(n)}:${subRow.get(n.challenge.id)}`
+    const arr = groups.get(key)
+    if (arr) arr.push(n)
+    else groups.set(key, [n])
+  }
+  for (const arr of groups.values()) {
+    arr.sort((a, b) =>
+      (a.challenge.track ?? "").localeCompare(b.challenge.track ?? "") || a.challenge.id.localeCompare(b.challenge.id))
+  }
+  const maxRowCount = Math.max(1, ...[...groups.values()].map((a) => a.length))
+  const totalW = maxRowCount * NODE_W + PAD_X * 2
 
   const positions: NodePos[] = []
-  for (let d = 0; d <= maxDepth; d++) {
-    const row = byDepth[d]
-    const rowW = row.length * (NODE_R * 2 + 20)
+  for (const [key, arr] of groups) {
+    const [t, lr] = key.split(":").map(Number)
+    const rowW = arr.length * NODE_W
     const startX = PAD_X + (totalW - PAD_X * 2 - rowW) / 2 + NODE_R + 10
-    for (let i = 0; i < row.length; i++) {
-      positions.push({
-        node: row[i],
-        x: startX + i * (NODE_R * 2 + 20),
-        y: HEADER_H + d * (NODE_R * 2 + ROW_GAP) + NODE_R,
-        depth: d,
-      })
-    }
+    const rowY = bandY.get(t)! + lr * SUBROW_H + NODE_R
+    arr.forEach((node, i) => positions.push({ node, x: startX + i * NODE_W, y: rowY, row: lr }))
   }
 
-  return {
-    positions,
-    width: totalW,
-    height: HEADER_H + (maxDepth + 1) * (NODE_R * 2 + ROW_GAP) + ROW_GAP,
-  }
+  return { positions, width: totalW, height: totalHeight, bands }
 }
 
 function TreeDefs() {
@@ -121,6 +149,21 @@ function TreeEdges({ positions }: { positions: NodePos[] }) {
           )
         }),
       )}
+    </>
+  )
+}
+
+function TierSeparators({ bands, width }: { bands: TierBand[]; width: number }) {
+  return (
+    <>
+      {bands.map((b) => (
+        <g key={b.tier} data-testid={`tier-separator-${b.tier}`}>
+          <line x1={16} y1={b.y} x2={width - 16} y2={b.y} stroke="#2a3040" strokeWidth={1} strokeDasharray="2 6" opacity={0.7} />
+          <text x={20} y={b.y - 7} fontSize={11} fontWeight={700} fill="#8b7355" letterSpacing={1.5}>
+            {b.label.toUpperCase()}
+          </text>
+        </g>
+      ))}
     </>
   )
 }
@@ -371,6 +414,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
               <svg width={layout.width * scale} height={layout.height * scale}
                 viewBox={`0 0 ${layout.width} ${layout.height}`} className="select-none">
               <TreeDefs />
+              <TierSeparators bands={layout.bands} width={layout.width} />
               <TreeEdges positions={layout.positions} />
               {layout.positions.map((pos) => (
                 <TreeNode key={pos.node.challenge.id} pos={pos}
