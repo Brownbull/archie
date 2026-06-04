@@ -3129,3 +3129,42 @@ NOTES: Removed standalone "Quests" menu button; toggle Quest Mode now opens the 
 PR: — (direct fast-forward, established dev→main flow)
 CI: deploy-production ✅ (run 26923396343, ~40s)
 DEPLOYMENTS: P117
+- 2026-06-03 21:31 | Write | /home/khujta/projects/bmad/archie/src/lib/firestoreSanitize.ts
+- 2026-06-03 21:31 | Write | /home/khujta/projects/bmad/archie/src/services/canvasSnapshot.ts
+- 2026-06-03 21:32 | Write | /home/khujta/projects/bmad/archie/src/stores/userCanvasesStore.ts
+- 2026-06-03 21:32 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-03 21:32 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 21:33 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 21:33 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 21:33 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 21:33 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-03 21:33 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-03 21:33 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-03 21:34 | Write | /home/khujta/projects/bmad/archie/src/components/layout/SaveCanvasDialog.tsx
+- 2026-06-03 21:35 | Write | /home/khujta/projects/bmad/archie/src/components/layout/SavedCanvasesDialog.tsx
+- 2026-06-03 21:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 21:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 21:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 21:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 21:35 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 21:36 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-03 21:36 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-03 21:38 | Write | /home/khujta/projects/bmad/archie/src/components/layout/ModeToggle.tsx
+- 2026-06-03 21:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/quest-persistence.spec.ts
+- 2026-06-03 21:40 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-03 21:40 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/userCanvasesStore.test.ts
+- 2026-06-03 21:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/AppMenuBar.test.tsx
+- 2026-06-03 21:44 | Write | /home/khujta/projects/bmad/archie/tests/e2e/save-canvas.spec.ts
+- 2026-06-03 21:49 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SaveCanvasDialog.tsx
+- 2026-06-03 21:49 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SaveCanvasDialog.tsx
+- 2026-06-03 21:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-layout.spec.ts
+
+## 2026-06-03 21:55 — [49b077e] feat(canvas): save canvas to 1 of 2 per-user slots + mode-switch save guard
+FINDINGS: 0 critical (fixed: setState-in-effect → render-time reset); build green; 4552 unit/integration + E2E green
+ACTIONS: committed
+NOTES: New userCanvasesStore (owner-only userCanvases/{uid}, ≤2 named slots, optimistic, stripUndefined sanitize, 700KB guard). File menu Save Canvas… / Saved Canvases…. ModeToggle guard [Save & continue / Don't save / Cancel] on Free↔Quest with non-empty canvas. FIRESTORE RULES DEPLOYED manually (firebase deploy --only firestore:rules, archie-2a560) — cross-device persistence live.
+
+## 2026-06-03 21:55 — [de74007] test(e2e): repoint stale challenge-entry specs to Build → Challenges
+FINDINGS: 0 critical
+ACTIONS: committed
+NOTES: ux-connections/ui-layout/canvas-authoring used the unrendered open-challenges trigger → repointed to menu-build→menu-challenges→challenge-play; ui-layout overlap test switched to relative-count add (challenge seeds a traffic-source node). Pre-existing unrelated: ux-connections "Stacks tab 12+" (catalog/experience filtering) left out of scope.
