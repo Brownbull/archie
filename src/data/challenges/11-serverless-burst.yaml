@@ -21,6 +21,7 @@ required_components:
 target_metrics:
   uptime_percent: 98
   p99_latency_ms: 300
+  p95_latency_ms: 240
 hints:
   - Serverless functions can absorb the burst without permanent provisioning cost.
   - Keep the load balancer in front so traffic splits between compute and serverless.

@@ -20,6 +20,7 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 250
+  p95_latency_ms: 160
 hints:
   - p99 latency rises sharply once any node runs past 100% load — the target is met by keeping every tier under capacity, not by overloading one.
   - Give the caching and data-storage tiers enough capacity (variant size or replicas) that the read path never saturates at peak.

@@ -147,15 +147,20 @@ function buildSolution(c: Challenge): { nodes: RefNode[]; edges: Array<{ id: str
   // availableBlocks hard-gates the player's palette; a faithful reference solution only uses allowed
   // types. Empty availableBlocks ⇒ unrestricted.
   const allowed = c.availableBlocks.length > 0 ? new Set(c.availableBlocks) : null
-  const canUse = (t: string) => allowed === null || allowed.has(t)
+  // forbidden_types (4c hardening) must NOT appear in a passing solution — never place them.
+  const forbidden = new Set(c.forbiddenTypes ?? [])
+  const canUse = (t: string) => (allowed === null || allowed.has(t)) && !forbidden.has(t)
   const catOf = (t: string) => COMPONENT_TYPES.get(t)?.category
 
-  // Pick an allowed representative TYPE for a required category (prefer the canonical primary).
+  // Pick a USABLE representative TYPE for a required category (prefer the canonical primary, but never
+  // a forbidden / disallowed one — when the primary is banned, fall back to any usable type of the
+  // category so a forbidden_types hardening that targets the primary still yields a valid solution).
   const repForCategory = (cat: string): string | undefined => {
     const primary = CATEGORY_PRIMARY_TYPE[cat]
     if (primary && canUse(primary)) return primary
-    if (allowed) for (const t of allowed) if (catOf(t) === cat) return t
-    return primary
+    const pool = allowed ? [...allowed] : [...COMPONENT_TYPES.keys()]
+    for (const t of pool) if (canUse(t) && catOf(t) === cat) return t
+    return undefined
   }
 
   // TYPE ids to place: required categories + explicit required types + compute, then resilience fronting
@@ -167,6 +172,16 @@ function buildSolution(c: Challenge): { nodes: RefNode[]; edges: Array<{ id: str
   }
   for (const t of c.requiredTypes) wanted.add(t)
   for (const t of ["cdn", "cache"]) if (canUse(t)) wanted.add(t)
+  // Multi-region origin grading (4c): a multi-region source requires CDN + DNS + a database present.
+  // Ensure all three are in the solution (cdn already added above when allowed).
+  if (c.trafficSources?.some((s) => s.origin === "multi-region")) {
+    for (const t of ["cdn", "dns"]) if (canUse(t)) wanted.add(t)
+    const hasDb = [...wanted].some((t) => catOf(t) === "data-storage")
+    if (!hasDb) {
+      const db = canUse("relational-db") ? "relational-db" : [...(allowed ?? [])].find((t) => catOf(t) === "data-storage")
+      if (db) wanted.add(db)
+    }
+  }
 
   const nodes: RefNode[] = []
   const idByType = new Map<string, string>()

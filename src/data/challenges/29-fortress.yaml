@@ -26,12 +26,14 @@ required_components:
 target_metrics:
   uptime_percent: 99
   p99_latency_ms: 300
+  p95_latency_ms: 220
 scheduled_events:
   - { t: 45, type: latency_spike, target: auth-security, multiplier: 8, durationS: 30 }
   - { t: 105, type: az_outage, target: compute, durationS: 40 }
 hints:
   - Rate limiting is your first line of defence against the credential flood.
   - The CDN + cache absorb read traffic while compute recovers from the outage.
+chaos_intensity: 2.5
 schema_version: 2
 track: security
 tier: 5

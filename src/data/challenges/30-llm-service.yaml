@@ -19,6 +19,7 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 500
+  p95_latency_ms: 350
 hints:
   - The LLM gateway is the expensive tier — cache identical prompts to save cost.
   - A relational DB holds conversation history so context persists across requests.

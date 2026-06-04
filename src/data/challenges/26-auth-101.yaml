@@ -19,6 +19,7 @@ required_components:
 target_metrics:
   uptime_percent: 96
   p99_latency_ms: 400
+  p95_latency_ms: 300
 hints:
   - Auth sits in front of compute — it's the gatekeeper, not the service itself.
 schema_version: 2

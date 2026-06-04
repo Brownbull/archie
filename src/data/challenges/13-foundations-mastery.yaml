@@ -24,9 +24,11 @@ required_components:
 target_metrics:
   uptime_percent: 99
   p99_latency_ms: 200
+  p95_latency_ms: 160
 hints:
   - Cache the read path, queue the write path, and burst to serverless under peaks.
   - This capstone draws from everything you've learned in Foundations.
+forbidden_types: [relational-db]
 schema_version: 2
 track: foundations
 tier: 5

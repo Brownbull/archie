@@ -19,6 +19,7 @@ required_components:
 target_metrics:
   uptime_percent: 80
   p99_latency_ms: 400
+  p95_latency_ms: 280
 scheduled_events:
   - { t: 30, type: component_failure, target: compute, durationS: 30 }
 hints:

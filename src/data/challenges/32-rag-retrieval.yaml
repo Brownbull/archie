@@ -24,11 +24,13 @@ required_components:
 target_metrics:
   uptime_percent: 98
   p99_latency_ms: 350
+  p95_latency_ms: 220
 scheduled_events:
   - { t: 75, type: component_failure, target: data-storage, durationS: 30 }
 hints:
   - The vector store handles semantic search; the cache reduces repeated lookups.
   - When the vector store fails, the search engine can serve as a fallback for keyword-based retrieval.
+forbidden_types: [relational-db]
 schema_version: 2
 track: aiml
 tier: 3

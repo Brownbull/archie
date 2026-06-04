@@ -28,6 +28,8 @@ function meetingStats(t: ChallengeTargetMetrics): SimulationStats {
     uptimePercent: t.uptimePercent, // exactly meets the uptime target
     avgLatencyMs: 0,
     p99LatencyMs: t.p99LatencyMs, // exactly meets the p99 target
+    // Phase 4c added optional p95 targets to some built-ins — meet them too so "all metrics met" holds.
+    p95LatencyMs: t.p95LatencyMs ?? 0,
     currentRps: 0,
     servedRps: 0,
     failedRps: 0,

@@ -21,11 +21,14 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 400
+  p95_latency_ms: 260
 scheduled_events:
   - { t: 60, type: latency_spike, target: compute, multiplier: 4, durationS: 20 }
 hints:
   - The message queue decouples ingest from processing — the ETL tier drains it async.
   - Object storage is the landing zone for raw data before ETL transforms it.
+forbidden_types: [relational-db]
+chaos_intensity: 2
 schema_version: 2
 track: aiml
 tier: 2

@@ -25,6 +25,7 @@ required_components:
 target_metrics:
   uptime_percent: 98.5
   p99_latency_ms: 250
+  p95_latency_ms: 160
 scheduled_events:
   - { t: 75, type: az_outage, target: messaging, durationS: 45 }
 hints:

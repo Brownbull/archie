@@ -19,6 +19,7 @@ required_components:
 target_metrics:
   uptime_percent: 98
   p99_latency_ms: 200
+  p95_latency_ms: 140
 hints:
   - The delivery/network tier is your entry point — route edge → compute so traffic enters there.
   - Whatever a node serves flows on to what it points at, so the compute tier still sees the served load — give it (or its replicas) enough capacity to stay under 100% at peak.

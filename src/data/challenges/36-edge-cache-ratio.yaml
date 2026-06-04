@@ -21,6 +21,7 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 200
+  p95_latency_ms: 130
 hints:
   - The CDN absorbs ~85% of requests at edge latency (10-20ms).
   - Only ~15% (1500 rps) reaches your origin — well within its 2000 rps capacity.

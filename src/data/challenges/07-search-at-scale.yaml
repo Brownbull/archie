@@ -21,6 +21,7 @@ required_components:
 target_metrics:
   uptime_percent: 99
   p99_latency_ms: 180
+  p95_latency_ms: 140
 hints:
   - Your design must include the caching and search tiers; give each enough capacity that neither saturates at peak.
   - Scale compute with replicas behind the edge/LB; a single node won't hold p99 here.

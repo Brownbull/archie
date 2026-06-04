@@ -25,9 +25,11 @@ required_components:
 target_metrics:
   uptime_percent: 98.5
   p99_latency_ms: 300
+  p95_latency_ms: 220
 hints:
   - Each data model (time-series, graph, vector) excels at different query shapes.
   - Cache the analytics read path; the ingest write path goes direct to storage.
+forbidden_types: [relational-db]
 schema_version: 2
 track: data
 tier: 5

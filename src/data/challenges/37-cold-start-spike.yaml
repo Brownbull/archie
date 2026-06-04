@@ -22,6 +22,7 @@ required_components:
 target_metrics:
   uptime_percent: 98
   p99_latency_ms: 100
+  p95_latency_ms: 65
 hints:
   - On-demand serverless has cold starts — 10% of requests pay a 200ms penalty.
   - Under burst traffic, cold starts dominate p99 latency.

@@ -22,6 +22,7 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 300
+  p95_latency_ms: 180
 hints:
   - The DB can only handle 500 rps — without a cache, most traffic is shed.
   - A cache with ~80% hit ratio means the DB only sees ~400 of the 2000 rps.

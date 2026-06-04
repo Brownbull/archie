@@ -22,6 +22,7 @@ required_components:
 target_metrics:
   uptime_percent: 99
   p99_latency_ms: 250
+  p95_latency_ms: 180
 hints:
   - The API gateway handles validation + routing before traffic reaches compute.
   - Auth sits alongside the gateway to enforce identity on every request.

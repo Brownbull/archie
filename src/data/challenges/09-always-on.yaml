@@ -23,6 +23,7 @@ required_components:
 target_metrics:
   uptime_percent: 99.5
   p99_latency_ms: 200
+  p95_latency_ms: 155
 hints:
   - Every tier on the request path carries the load routed to it — size edge, compute, cache, and data-storage so none exceeds 100% at peak.
   - Scale compute with replicas behind the edge/LB until peak traffic fits under capacity.

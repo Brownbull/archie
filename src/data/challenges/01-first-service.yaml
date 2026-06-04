@@ -18,6 +18,7 @@ required_components:
 target_metrics:
   uptime_percent: 95
   p99_latency_ms: 400
+  p95_latency_ms: 250
 hints:
   - One compute node is enough at this traffic — pick the cheapest variant that keeps up.
   - Watch the budget bar; a bigger instance than you need just burns money.

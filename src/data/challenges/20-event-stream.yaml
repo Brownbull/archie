@@ -21,6 +21,7 @@ required_components:
 target_metrics:
   uptime_percent: 98
   p99_latency_ms: 250
+  p95_latency_ms: 150
 hints:
   - An event stream (Kafka-style) is durable and ordered — unlike a simple queue.
   - The cache absorbs repeated reads so the stream isn't re-read for every consumer.

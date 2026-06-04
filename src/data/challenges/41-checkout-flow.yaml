@@ -21,10 +21,12 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 400
+  p95_latency_ms: 280
 hints:
   - The payment gateway adds latency to every transaction — keep the chain efficient.
   - A load balancer in front of compute helps distribute the checkout load.
   - Cache the product catalog reads so the DB only handles order writes.
+forbidden_types: [cache]
 schema_version: 2
 track: foundations
 tier: 4

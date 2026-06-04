@@ -19,6 +19,7 @@ required_components:
 target_metrics:
   uptime_percent: 95
   p99_latency_ms: 500
+  p95_latency_ms: 300
 hints:
   - Connect compute to the database — traffic flows from the entry node downstream.
   - The database adds latency; a single managed instance is plenty at this load.

@@ -22,10 +22,12 @@ required_components:
 target_metrics:
   uptime_percent: 96
   p99_latency_ms: 400
+  p95_latency_ms: 240
 hints:
   - SQL databases bottleneck on writes at the primary — replicas only help reads.
   - A NoSQL sharded database distributes writes across multiple nodes.
   - Alternatively, a message queue can absorb the write burst and drain steadily.
+forbidden_types: [relational-db]
 schema_version: 2
 track: data
 tier: 4

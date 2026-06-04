@@ -23,6 +23,7 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 300
+  p95_latency_ms: 220
 hints:
   - The rate limiter sheds excess requests before they reach auth + compute.
 schema_version: 2

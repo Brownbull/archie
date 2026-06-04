@@ -18,6 +18,7 @@ required_components:
 target_metrics:
   uptime_percent: 97
   p99_latency_ms: 350
+  p95_latency_ms: 260
 hints:
   - DNS sits at the very front of the network path — everything downstream depends on it.
 schema_version: 2

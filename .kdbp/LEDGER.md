@@ -3560,3 +3560,13 @@ DEPLOYMENTS: P123 (Phase 3 complete + Phase 4a shipped)
 - 2026-06-04 16:41 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
 - 2026-06-04 16:46 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
 - 2026-06-04 16:46 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+
+## 2026-06-04 16:48 — [be4aa5b] feat(challenges): recast all 41 built-ins onto typed trafficSources (Phase 4b)
+FINDINGS: 0 (tsc -b + eslint clean, 4698 unit + 148 integration, solvability 41/41, challenge parse 62/62)
+RECAST: 7-agent workflow (wix1302mq) proposed typed sources; rps SUM == traffic_curve peak for all 41 (load preserved); one-per-type; origin one-region (multi-region deferred to 4c).
+HARNESS: now derives curve like the game (trafficSources override trafficCurve) → validates the real recast load. challengeJourney test updated to new behavior.
+PHASE 4: 4a + 4b done; 4c harden (Phase 3 levers), 4d progressive hints remain.
+- 2026-06-04 16:54 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:54 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:59 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 17:00 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.golden.test.ts

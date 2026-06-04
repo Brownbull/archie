@@ -21,11 +21,13 @@ required_components:
 target_metrics:
   uptime_percent: 97.5
   p99_latency_ms: 300
+  p95_latency_ms: 180
 scheduled_events:
   - { t: 60, type: latency_spike, target: compute, multiplier: 4, durationS: 30 }
 hints:
   - The stream processor (Flink-style) handles windowed aggregation natively.
   - Cache the aggregated output so downstream reads don't re-compute.
+chaos_intensity: 2
 schema_version: 2
 track: realtime
 tier: 3
