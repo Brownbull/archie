@@ -3124,3 +3124,8 @@ NOTE: firestore.rules for userBlockDefaults already deployed manually before thi
 FINDINGS: 0 critical (fixed: scoped eslint-disable for decorative confetti purity); build green; 4544 unit/integration + E2E green
 ACTIONS: committed
 NOTES: Removed standalone "Quests" menu button; toggle Quest Mode now opens the Quest Log (uiStore.questLogOpen) — Accept a quest → quest mode, cancel → stay Free. ChallengeTreeView moved to Toolbar (uiStore-controlled). Build → Challenges still opens ChallengeSelector (clone/play). E2E rewired (ui-batch-features, challenge-mode→Build path, quest-persistence + challenge-validation → mode-toggle-quest).
+
+## 2026-06-03 21:07 — PUSH dev -> main
+PR: — (direct fast-forward, established dev→main flow)
+CI: deploy-production ✅ (run 26923396343, ~40s)
+DEPLOYMENTS: P117
