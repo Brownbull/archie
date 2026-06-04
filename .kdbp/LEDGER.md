@@ -3529,3 +3529,9 @@ PHASE: 3 — Richer targets + rubric (3a/3c/3f/3b/3d done; 3e chaos remains)
 - 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
 - 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
 - 2026-06-04 15:59 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-06-04 16:02 — [e5f507e] feat(challenges): chaos_intensity latency-spike difficulty knob — Phase 3 3e
+FINDINGS: 0 (tsc -b clean, eslint 0 err, 4656/4656 unit, golden byte-identical, all start/runSimulation/computeOverrides callers audited byte-identical-safe)
+ADVERSARIAL: 2-lens verify (wi8no3bqh) — 0 real, 0 speculative; byte-identical/threading + formula/numeric clean
+FORMULA: effective = 1 + (authored-1)*chaosIntensity (chaos 0=inert, 1=as-authored byte-identical, >1=harsher); SIM-only, never read by scoring
+PHASE 3 COMPLETE: 3a (p95+cost), 3c (forbidden 0★), 3f (golden harness), 3b (required_topology), 3d (origin grading), 3e (chaos) — all done; Exec ✅ Commit ✅ (Push pending)

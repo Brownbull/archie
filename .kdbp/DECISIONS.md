@@ -1008,3 +1008,30 @@ Resolved before implementing the scoring layer (design workflow w25nfaeyv):
 4. **chaos_intensity: z.number().min(0).max(10).default(1)** (recommended default taken) — multiplies the latency-spike multiplier in computeOverrides; never read in evaluateAttempt (scoring stays deterministic). 0 = inert, 1 = as-authored, >1 = harsher.
 
 **Invariant (all sub-slices):** every new field optional/defaulted → identity element in its scoring combinator → the 41 existing challenges score byte-identically; proved by a golden-snapshot regression test (sub-slice 3f, built first). **Source:** design workflow w25nfaeyv + product-owner Q&A.
+
+## D67 — Phase 4 strategy: harden in-place + solvability harness + progressive hints (2026-06-04)
+
+**Context:** Phase 4 recasts all 41 built-in challenges onto typed trafficSources (D64) and is the
+epic's "make challenges genuinely harder" deliverable. Two consequential branches were the user's call.
+
+**Decisions (user-selected):**
+1. **Difficulty = Harden + solvability harness.** Recast sources preserving the load peak, then apply
+   the Phase 3 levers (forbidden_types, required_topology, multi-region origin, chaos_intensity, p95)
+   thematically to make challenges genuinely harder. A CI solvability harness builds a reference
+   solution per challenge and asserts it still clears — the safety net that catches over-hardening
+   (mirrors 3f's golden-snapshot role for scoring).
+2. **Hints = author 1-5 progressive ladders now.** Rewrite all 41 hint sets into a progressive ladder
+   where the LAST hint spells out the reference solution. Phase 5 then wires the spending economy on top.
+
+**Reconciliation (supersedes the PLAN "ship as NEW ids" note):** recast IN PLACE (same challenge ids),
+NOT as new ids. New ids would orphan the tech-tree requires/unlocks edges and every returning player's
+completedChallenges. Because Phase 6 performs a full all-user progress reset (D65), re-tuning difficulty
+in place is fair — everyone restarts anyway — so there is no "don't break returning players" cost.
+
+**Sub-slices (harness-first, like Phase 3):**
+- 4a — solvability harness + reference solutions (baseline lock, BEFORE any recast).
+- 4b — recast trafficSources (preserve load peak/shape per theme), verified by 4a.
+- 4c — hardening pass (apply Phase 3 levers thematically; re-tune references), verified by 4a.
+- 4d — author 1-5 progressive hint ladders (last = full solution).
+
+**Status:** active.
