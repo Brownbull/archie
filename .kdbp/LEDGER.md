@@ -3635,3 +3635,8 @@ FINDINGS: 0 (tsc -b + eslint clean, 4716 unit; +4 migration tests)
 MIGRATION (D65): PROGRESS_GENERATION=2; below-gen users wiped to ground zero on load + re-stamped (idempotent, full-replace setDoc not merge). generation added to firestore.rules + all write payloads.
 DEPLOY ORDER: firestore.rules re-deploy MUST precede the code push (code stamps generation; old rules would reject all userProgress writes). PUSH HELD until rules re-deployed.
 PHASE 6: Exec done, Commit done; Push gated on rules re-deploy.
+
+## 2026-06-04 18:20 — PUSH dev -> main
+CI: all passed (deploy-production success, run 26982251777)
+DEPLOYMENTS: P127 (Phase 6 reset shipped — ISAPivot EPIC COMPLETE)
+RULES: generation field deployed manually BEFORE code push (correct order — no write rejections).
