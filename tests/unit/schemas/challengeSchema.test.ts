@@ -28,7 +28,7 @@ describe("ChallengeYamlSchema (Epic 16)", () => {
   })
 
   it("defaults scheduled_events and hints to empty arrays when omitted", () => {
-    const { scheduled_events, hints, ...rest } = valid
+    const { scheduled_events: _se, hints: _hints, ...rest } = valid
     const r = ChallengeYamlSchema.safeParse(rest)
     expect(r.success).toBe(true)
     if (!r.success) return
@@ -92,7 +92,7 @@ describe("ChallengeYamlSchema v2 tech-tree fields (Mastery Tracks)", () => {
   })
 
   it("requires track, tier, and rewards when schema_version is 2", () => {
-    const { track, tier, rewards, ...missing } = v2
+    const { track: _track, tier: _tier, rewards: _rewards, ...missing } = v2
     expect(ChallengeYamlSchema.safeParse(missing).success).toBe(false)
   })
 
@@ -107,5 +107,72 @@ describe("ChallengeYamlSchema v2 tech-tree fields (Mastery Tracks)", () => {
   it("rejects an unknown component type id in available_blocks / grants", () => {
     expect(ChallengeYamlSchema.safeParse({ ...v2, available_blocks: ["not-a-real-block"] }).success).toBe(false)
     expect(ChallengeYamlSchema.safeParse({ ...v2, grants: ["not-a-real-block"] }).success).toBe(false)
+  })
+})
+
+describe("ChallengeYamlSchema traffic_sources (ISAPivot)", () => {
+  it("parses traffic_sources and applies kind/workload/origin defaults", () => {
+    const r = ChallengeYamlSchema.safeParse({
+      ...valid,
+      traffic_sources: [{ type: "web-users", rps: 5000 }],
+    })
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect(r.data.trafficSources).toEqual([
+      { type: "web-users", rps: 5000, kind: "steady", workload: "mixed", origin: "one-region" },
+    ])
+  })
+
+  it("accepts an explicit kind/workload/origin including the new search shape", () => {
+    const r = ChallengeYamlSchema.safeParse({
+      ...valid,
+      traffic_sources: [{ type: "api-client", rps: 12000, kind: "search", workload: "write", origin: "multi-region" }],
+    })
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect(r.data.trafficSources?.[0]).toMatchObject({ kind: "search", workload: "write", origin: "multi-region" })
+  })
+
+  it("rejects a second source of the same type (one per type)", () => {
+    const r = ChallengeYamlSchema.safeParse({
+      ...valid,
+      traffic_sources: [
+        { type: "web-users", rps: 5000 },
+        { type: "web-users", rps: 9000 },
+      ],
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects more than four sources", () => {
+    const r = ChallengeYamlSchema.safeParse({
+      ...valid,
+      traffic_sources: [
+        { type: "web-users", rps: 1 },
+        { type: "api-client", rps: 1 },
+        { type: "iot-sensors", rps: 1 },
+        { type: "mobile-users", rps: 1 },
+        { type: "web-users", rps: 1 },
+      ],
+    })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects an unknown source type and an out-of-range rps", () => {
+    expect(ChallengeYamlSchema.safeParse({ ...valid, traffic_sources: [{ type: "aliens", rps: 5000 }] }).success).toBe(false)
+    expect(ChallengeYamlSchema.safeParse({ ...valid, traffic_sources: [{ type: "web-users", rps: 0 }] }).success).toBe(false)
+  })
+
+  it("allows omitting traffic_curve when traffic_sources is present (at-least-one rule)", () => {
+    const { traffic_curve: _omit, ...noCurve } = valid
+    const r = ChallengeYamlSchema.safeParse({ ...noCurve, traffic_sources: [{ type: "web-users", rps: 5000 }] })
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect(r.data.trafficCurve).toEqual([])
+  })
+
+  it("rejects a challenge with neither traffic_curve nor traffic_sources", () => {
+    const { traffic_curve: _omit, ...noCurve } = valid
+    expect(ChallengeYamlSchema.safeParse(noCurve).success).toBe(false)
   })
 })

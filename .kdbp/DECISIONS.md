@@ -914,3 +914,45 @@ dim_overrides: []
 ## D54 — Phase 8 tier: mvp — Monitoring feedback (2026-06-02)
 **Phase:** Monitoring feedback (E8) · **Types:** engine, simulation · **Prototype:** no
 **Reason:** Monitoring presence shortens failure recovery duration. Makes monitoring non-decorative. **Status:** accepted.
+
+## D55 — Traffic origin graded as architecture, not deep sim (2026-06-03)
+**Decision:** A traffic source's `origin` (one-region | multi-region) affects a challenge by being graded in the rubric as an ARCHITECTURE requirement — multi-region traffic requires the right components (CDN / multi-region-capable DB / DNS) on the canvas to pass — NOT via deep per-region simulation latency/capacity.
+**Rationale:** Challenge scoring is sim-stats-only (uptime/p99/cost/topology) and never reads the demand/heatmap/tier layer; that layer is also off in challenge mode. So the "reuse geographic-spread demand multipliers" path would give origin ZERO effect on a challenge score (verified, workflow w9vlphjd8). Rubric-grading is meaningful and avoids a large new sim surface.
+**Alternatives:** (a) full per-region sim latency/capacity (deferred — large engine effort); (b) cosmetic-only (rejected — owner wants it to matter).
+**Status:** active
+
+## D56 — Add a read/write/mixed workload axis distinct from the shape `kind` (2026-06-03)
+**Decision:** Traffic sources carry BOTH a shape `kind` (steady|realistic|periodic|search) and a separate `workload` (read|write|mixed). They are different axes and cannot share `kind`.
+**Rationale:** The owner specified kind = traffic shape. The lever that actually makes challenges hard (exercising the dormant write/read split, cache, queue mechanics) is the read/write workload, which biases which tier a source's RPS stresses. Keeping them separate keeps both expressive.
+**Status:** active
+
+## D57 — Per-source routing lands in this effort (Phase 2) (2026-06-03)
+**Decision:** Add per-source routing in simulateTick now (Phase 2), replacing the flat even-split, so the kind/workload mix reaches specific tiers (write→DB primary, read→cache path). Even-split fallback retained for non-challenge runs.
+**Rationale:** Without routing, multi-source only changes the aggregate curve shape; the workload axis (D56) and write-bottleneck difficulty cannot bite. Owner chose to include it in this effort rather than defer.
+**Risk:** simulateTick is load-bearing for all sim runs — mitigated by the fallback + deterministic routing tests.
+**Status:** active
+
+## D58 — Phase 0 tier: ent (2026-06-03)
+**Phase:** Schema + types foundation · **Types:** data, schema, engine · **Tier:** ent · **Prototype:** no
+**Reason:** Load-bearing schema (Challenge type + YAML loader) + the trafficPattern→trafficKind rename across ~10 files; back-compat for 42 challenge YAMLs + saved canvases needs deterministic normalizer tests.
+**Review trigger:** n/a (foundation). **Status:** accepted
+
+## D59 — Phase 1 tier: ent (2026-06-03)
+**Phase:** Traffic config UX · **Types:** user-facing, web, client-state · **Tier:** ent · **Prototype:** no
+**Reason:** Replaces the just-stabilized replicaCount-RPS mechanism (P105/P107); canvas layout is sensitive; one-per-type enforcement spans free-play + challenge modes; needs runtime journey evidence.
+**Status:** accepted
+
+## D60 — Phase 2 tier: ent (2026-06-03)
+**Phase:** Per-source routing (engine) · **Types:** engine, simulation · **Tier:** ent · **Prototype:** no
+**Reason:** simulateTick is load-bearing for every run; changing routing risks regressing free-build/scenario runs. Even-split fallback + deterministic routing tests mandatory.
+**Status:** accepted
+
+## D61 — Phase 3 tier: ent (2026-06-03)
+**Phase:** Richer targets + rubric · **Types:** engine, scoring · **Tier:** ent · **Prototype:** no
+**Reason:** Scoring changes affect pass/fail for all challenges; required_topology DAG assertions are easy to get subtly wrong (adversarial tests). New fields optional/defaulted to preserve the 42 existing challenges' scores.
+**Status:** accepted
+
+## D62 — Phase 4 tier: ent (2026-06-03)
+**Phase:** Author the hard challenges · **Types:** data, content · **Tier:** ent · **Prototype:** no
+**Reason:** New content must be solvable AND hard; a solvability smoke test (reference solution clears each) prevents unwinnable challenges. Ship as new ids to protect returning players' progress.
+**Status:** accepted

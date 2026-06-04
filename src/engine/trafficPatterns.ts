@@ -7,8 +7,12 @@ import type { TrafficCurve } from "@/lib/simulationTypes"
  *  - wobble   — organic Gaussian variation (±~15%) so the load isn't a flat line.
  *  - periodic — repeating peaks (~3× the average) — e.g. daily rush hours.
  *  - surge    — one sustained rush (~5× the average) over a window — e.g. a Black Friday sale.
+ *  - search   — frequent sharp narrow spikes (~4× the average) — e.g. bursty search/query traffic.
+ *
+ * `TrafficPattern` is the INTERNAL curve-shape vocabulary (keeps `wobble`/`surge` for migration).
+ * The player-facing axis is `TrafficKind` (steady/realistic/periodic/search) — see `kindToPattern`.
  */
-export type TrafficPattern = "steady" | "wobble" | "periodic" | "surge"
+export type TrafficPattern = "steady" | "wobble" | "periodic" | "surge" | "search"
 
 export const TRAFFIC_PATTERNS: readonly { id: TrafficPattern; label: string; hint: string }[] = [
   { id: "steady", label: "Steady", hint: "Constant load at the set rate" },
@@ -17,6 +21,35 @@ export const TRAFFIC_PATTERNS: readonly { id: TrafficPattern; label: string; hin
   { id: "surge", label: "Surge", hint: "One sustained ~5× rush over a window (e.g. Black Friday)" },
 ]
 
+/**
+ * Player-facing traffic SHAPE (ISAPivot). Distinct from `workload` (read/write/mixed). `realistic`
+ * is the renamed `wobble` curve; `search` is the new sharp-narrow-repeated-spike shape. `surge`
+ * stays internal (not a kind) so existing curves built with it still render.
+ */
+export type TrafficKind = "steady" | "realistic" | "periodic" | "search"
+
+export const TRAFFIC_KINDS: readonly { id: TrafficKind; label: string; hint: string }[] = [
+  { id: "steady", label: "Steady", hint: "Constant load at the set rate" },
+  { id: "realistic", label: "Realistic", hint: "Organic ±15% variation around the average" },
+  { id: "periodic", label: "Periodic", hint: "Repeating peaks up to ~3× the average (rush hours)" },
+  { id: "search", label: "Search / bursty", hint: "Frequent sharp narrow spikes up to ~4× the average" },
+]
+
+/** Map a player-facing `TrafficKind` to the internal curve-shape `TrafficPattern`. */
+export function kindToPattern(kind: TrafficKind): TrafficPattern {
+  switch (kind) {
+    case "realistic":
+      return "wobble"
+    case "periodic":
+      return "periodic"
+    case "search":
+      return "search"
+    case "steady":
+    default:
+      return "steady"
+  }
+}
+
 // Preset shape parameters (the "presets" scope — no per-spike custom config yet).
 const WOBBLE_SIGMA = 0.15 // std-dev as a fraction of the average
 const PERIODIC_PEAK = 3 // ×average at the top of each spike
@@ -24,6 +57,9 @@ const PERIODIC_CYCLES = 4 // number of spikes across the run
 const SURGE_PEAK = 5 // ×average at the height of the surge
 const SURGE_START = 0.35 // surge window start (fraction of the timeline)
 const SURGE_END = 0.7 // surge window end
+const SEARCH_PEAK = 4 // ×average at the top of each search spike
+const SEARCH_CYCLES = 8 // spikes across the run (denser than periodic)
+const SEARCH_SHARPNESS = 6 // sin^n — higher = narrower, sharper spikes
 const CURVE_POINTS = 48 // sample resolution
 
 /** Deterministic PRNG (mulberry32) — the sim must be reproducible, so no Math.random. */
@@ -80,6 +116,12 @@ export function buildPatternCurve(
           const bump = Math.sin(Math.PI * w) // smooth 0 → 1 → 0
           rps = baseRps * (1 + (SURGE_PEAK - 1) * bump)
         }
+        break
+      }
+      case "search": {
+        // Dense, sharp spikes: a high power of sin narrows each peak to a brief burst.
+        const s = Math.pow(Math.max(0, Math.sin(2 * Math.PI * SEARCH_CYCLES * frac)), SEARCH_SHARPNESS)
+        rps = baseRps * (1 + (SEARCH_PEAK - 1) * s)
         break
       }
       case "steady":

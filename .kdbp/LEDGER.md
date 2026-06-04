@@ -3188,3 +3188,29 @@ NOTES: Export/ExportReport ghost buttons restyled as left-aligned menu rows (wer
 PR: — (direct fast-forward)
 CI: deploy-production ✅ (run 26925655875, ~40s)
 DEPLOYMENTS: P119
+
+## 2026-06-03 22:54 — PLAN COMPLETED: Simulation Realism (E1–E8)
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-06-02_simulation-realism.md
+PHASES COMPLETED: 8 of 8 (engine mechanics live in simulateTick; player-facing surface continues in ISAPivot)
+
+## 2026-06-03 22:54 — PLAN CREATED: Traffic Realism + Challenge Difficulty (ISAPivot)
+PHASES: 5 (0–4) | COMPLEXITY: high | MATURITY: enterprise
+TIERS: ent × 5 | PROTOTYPES: 0
+DECISIONS: D55 → D62 (3 product decisions + 5 phase tier decisions)
+HTML_ARTIFACT: docs/gabe/plans/2026-06-03-traffic-challenge-pivot/index.html
+- 2026-06-03 22:55 | Write | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-03-traffic-challenge-pivot/index.html
+- 2026-06-03 23:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-03 23:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-03 23:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-03 23:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-03 23:02 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-03 23:02 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-03 23:02 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-03 23:02 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-03 23:03 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+- 2026-06-03 23:04 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/trafficPatterns.test.ts
+- 2026-06-03 23:04 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/trafficPatterns.test.ts
+- 2026-06-03 23:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+- 2026-06-03 23:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+- 2026-06-03 23:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+- 2026-06-03 23:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts

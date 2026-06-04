@@ -1,6 +1,34 @@
 import type { TrafficCurve, ScheduledEvent } from "@/lib/simulationTypes"
+import type { TrafficKind } from "@/engine/trafficPatterns"
 
 export type ChallengeDifficulty = "beginner" | "intermediate" | "advanced"
+
+/**
+ * The four traffic-source archetypes (ISAPivot). These are the `traffic-source` component's
+ * provider variants — a challenge may declare up to one source of each type (≤4 total).
+ */
+export const CHALLENGE_TRAFFIC_SOURCE_TYPES = ["api-client", "iot-sensors", "mobile-users", "web-users"] as const
+export type ChallengeTrafficSourceType = (typeof CHALLENGE_TRAFFIC_SOURCE_TYPES)[number]
+
+/** Read/write mix of a source's requests — the lever that exercises the DB write path vs cache (D56). */
+export type ChallengeTrafficWorkload = "read" | "write" | "mixed"
+
+/** Where a source's traffic originates — graded as an architecture requirement in the rubric (D55). */
+export type ChallengeTrafficOrigin = "one-region" | "multi-region"
+
+/**
+ * A first-class, configurable traffic source on a challenge (ISAPivot). `kind` is the SHAPE,
+ * `workload` is the read/write mix, `origin` is graded as architecture (not a demand multiplier).
+ * Authored on the challenge YAML and editable in the inspector + on the canvas block (Phase 1).
+ */
+export interface ChallengeTrafficSource {
+  type: ChallengeTrafficSourceType
+  /** Average requests/sec for this source (arbitrary, bounded). */
+  rps: number
+  kind: TrafficKind
+  workload: ChallengeTrafficWorkload
+  origin: ChallengeTrafficOrigin
+}
 
 /** Provenance of a challenge — determines whether it grants Mastery Tracks progression (D45). */
 export type ChallengeOrigin = "builtin" | "user"
@@ -33,6 +61,12 @@ export interface Challenge {
   budgetCap: number
   durationSeconds: number
   trafficCurve: TrafficCurve
+  /**
+   * First-class traffic sources (ISAPivot, ≤4, one per type). Optional + additive: legacy
+   * challenges drive the sim from `trafficCurve` alone; when present, Phase 1 derives the combined
+   * curve by summing each source's `buildPatternCurve`.
+   */
+  trafficSources?: ChallengeTrafficSource[]
   /** Component category ids that must be present on the canvas. */
   requiredComponents: string[]
   targetMetrics: ChallengeTargetMetrics

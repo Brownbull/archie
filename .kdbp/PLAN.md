@@ -5,179 +5,137 @@
 
 ## Goal
 
-Simulation Realism — make component types matter in the simulation engine. Today all components are generic pipes with different maxRPS/latency numbers; a cache, database, and queue behave identically. This epic adds type-specific simulation behaviors (cache hit ratio, write/read split, CDN bifurcation, serverless cold start, queue backpressure, monitoring feedback) so challenges can test whether the player understands *why* they chose a specific component, not just *that* they placed one.
+Traffic Realism + Challenge Difficulty (ISAPivot) — make traffic sources first-class configurable objects ({ type, rps, kind, workload, origin }, ≤4 per challenge, one per type) editable in the inspector and on the canvas block and authorable on challenges, then use that plus the dormant simulation levers (write/read split, cache, queue, cold-start) to make challenges genuinely hard via per-source routing, richer targets, topology assertions, forbidden types, and origin-graded architecture.
 
 ## Context
 
 - **Maturity:** enterprise
 - **Domain:** Software architecture visualization and design tool
-- **Created:** 2026-06-02
-- **Last Updated:** 2026-06-02
-- **Design artifact:** docs/architecture/simulation-enhancements.html (classified proposals)
-- **Source:** Thorough recon of simulationEngine.ts, all 91 component variants, scaling rules, and interaction rules. Current engine uses ONLY effectiveMaxRps + baseLatencyMs — no type-specific behavior.
+- **Created:** 2026-06-03
+- **Last Updated:** 2026-06-03
+- **Predecessor:** Supersedes the engine-complete "Simulation Realism (E1–E8)" epic (archived 2026-06-03). That epic built the type-specific sim mechanics; this one makes them player-facing and testable.
+- **Source:** Investigation + design + adversarial-verify workflow (w9vlphjd8). Key finding: challenge scoring is sim-stats-only (uptime/p99/cost/topology); origin must be graded via the rubric (architecture requirement), not the demand layer. Per-source routing in `simulateTick` is net-new engine work.
 
 ## Phases
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Cache hit ratio (E1) | Add `cache_hit_ratio` to cache variants (Redis, Memcached). Split incoming traffic: hits served at cache latency (0.5ms), misses forwarded downstream. Cache actually reduces DB load instead of being an independent pipe. | ent | med | ✅ | ⬜ | ⬜ | ⬜ |
-| 2 | Write/read path split (E2) | Add `write_ratio` to data-storage variants. Writes bottleneck at primary (SQL) or distribute across shards (NoSQL). Makes SQL vs NoSQL fundamentally different under write-heavy load. | ent | med | ✅ | ⬜ | ⬜ | ⬜ |
-| 3 | CDN edge bifurcation (E3) | Reuse cache_hit_ratio on CDN variants. Hits served from edge (10ms), misses add origin penalty (80ms). CDN is no longer just a high-capacity LB. | mvp | low | ✅ | ⬜ | ⬜ | ⬜ |
-| 4 | Serverless cold start (E4) | Add `cold_start_latency_ms` + `cold_start_ratio` to Lambda on-demand variants. Cold starts spike p99 under burst traffic. Provisioned concurrency eliminates them. | mvp | low | ✅ | ⬜ | ⬜ | ⬜ |
-| 5 | Queue backpressure (E5) | Message queues absorb burst into a buffer instead of shedding. Queue fills → latency grows → overflow sheds. Differentiates Kafka (durable, high buffer) vs RabbitMQ (fast drain). | ent | high | ✅ | ⬜ | ⬜ | ⬜ |
-| 6 | Interaction rules affect capacity (E6) | Category-pair rules (caching→DB) currently adjust metric scores only. Extend to also adjust effective capacity — cache reduces DB incoming traffic, monitoring helps failure recovery. | ent | high | ✅ | ⬜ | ⬜ | ⬜ |
-| 7 | Protocol overhead (E7) | Different connection protocols add different latency overhead. HTTP > gRPC > TCP > Memcached protocol. | mvp | med | ✅ | ⬜ | ⬜ | ⬜ |
-| 8 | Monitoring feedback (E8) | If monitoring is connected to a failing node, recovery is faster. Without monitoring, failure duration ×1.5. Makes monitoring non-decorative. | mvp | med | ✅ | ⬜ | ⬜ | ⬜ |
+| 0 | Schema + types foundation | Add ChallengeTrafficSource + optional trafficSources[] (≤4, one-per-type) to Challenge type + ChallengeYamlSchema (additive, schema_version stays 2, traffic_curve optional + at-least-one rule); rename trafficPattern→trafficKind with back-compat shim (wobble→realistic, surge kept internal) + saved-canvas normalizer; add `search` curve shape; add workload+origin enums + RPS bounds. Parse-all-42-YAMLs guard test. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 1 | Traffic config UX | Inspector + canvas block expose arbitrary RPS + kind + workload + origin; show origin on the block; replace the replicaCount-as-RPS-index hack with real RPS (audit getNodeCost on traffic nodes); enforce one-per-type/max-4 (hard in challenge mode, WARN in free play); derive combined challenge trafficCurve at load (sum per-source buildPatternCurve) + combined-peak clamp. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Per-source routing (engine) | Thread an options object (sourceRouting, chaosIntensity) through simulationStore.start → runSimulation → simulateTick, replacing flat even-split with per-source inflow seeding (even-split fallback kept); workload biases the source's RPS toward the write/DB path vs cacheable/read path. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Richer targets + rubric | Add p95LatencyMs + costPerRequest targets (compute in SimulationStats); required_topology assertions (cache BETWEEN compute/db, LB UPSTREAM, fan-out ≥N — thread edges into evaluateAttempt); forbidden_types (hard 0★ gate); origin-as-architecture grading; chaos_intensity scalar; optional bounded scoring rubric; update results modal. All optional/defaulted so the 42 existing challenges score identically. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Author the hard challenges | Recast/author challenges using multi-source typed traffic + the new levers; ship as NEW ids (don't break returning players); solvability smoke test per challenge (a reference solution must clear it). | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
 
-<!-- Exec ⬜/🔄/✅. Review/Commit/Push auto-ticked. -->
-
-## Current Phase
-
-Phase 5: Queue backpressure (E5)
+<!-- Exec ⬜/🔄/✅. Review/Commit/Push auto-ticked. A phase is complete when all four are ✅. -->
 
 ## Phase Details
 
-### Phase 1 — Cache hit ratio (E1)
+### Phase 0 — Schema + types foundation
+```yaml
+phase: 0
+types: [data, schema, engine]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Data]
+suppressed_dims_count: 0
+decisions_entry: D58
+```
+- **Tier:** ent — load-bearing schema touching the Challenge type + YAML loader + the trafficPattern rename across ~10 files; back-compat for 42 challenge YAMLs + saved canvases requires deterministic normalizer tests.
+- **Key files:** `src/lib/challengeTypes.ts`, `src/schemas/challengeSchema.ts`, `src/services/challengeLoader.ts`, `src/engine/trafficPatterns.ts`, `src/stores/architectureStore.ts`, `src/lib/constants.ts`
+- **Guard:** parse-all-42-challenge-YAMLs test; trafficKind back-compat shim test.
+
+### Phase 1 — Traffic config UX
 ```yaml
 phase: 1
-types: [engine, simulation, data]
+types: [user-facing, web, client-state]
 phase_tier: ent
 prototype: false
 dim_overrides: []
-sections_considered: [Core, Data]
+sections_considered: [Core, Frontend]
 suppressed_dims_count: 0
-decisions_entry: D47
+decisions_entry: D59
 ```
-- **Tier:** ent — the cache hit ratio changes the simulation engine's core traffic propagation logic; it's a load-bearing change that affects every challenge with a cache node. Deterministic round-trip tests required.
-- **Key files:** `src/engine/simulationEngine.ts`, `src/engine/simulationTypes.ts`, `src/data/components/redis.yaml`, `src/data/components/memcached.yaml`
-- **Formula:** `hit_traffic = incoming × cache_hit_ratio` (served at cache latency); `miss_traffic = incoming × (1 - ratio)` (forwarded downstream)
-- **Tests:** Unit tests for the bifurcation logic; integration test showing cache reduces downstream DB RPS by the hit ratio
+- **Tier:** ent — replaces the just-stabilized replicaCount RPS mechanism (P105/P107); canvas layout is a sensitive area; one-per-type enforcement spans free-play + challenge modes.
+- **Key files:** `src/components/inspector/ComponentDetail.tsx`, `src/components/canvas/ArchieNode.tsx`, `src/components/canvas/TrafficPatternSelect.tsx`, `src/services/trafficSourceInjection.ts`, `src/stores/architectureStoreHelpers.ts`
+- **Runtime evidence:** E2E — configure RPS/kind/workload/origin on a traffic node; confirm block shows origin; one-per-type WARN/block.
 
-### Phase 2 — Write/read path split (E2)
+### Phase 2 — Per-source routing (engine)
 ```yaml
 phase: 2
-types: [engine, simulation, data]
+types: [engine, simulation]
 phase_tier: ent
 prototype: false
 dim_overrides: []
-sections_considered: [Core, Data]
+sections_considered: [Core]
 suppressed_dims_count: 0
-decisions_entry: D48
+decisions_entry: D60
 ```
-- **Tier:** ent — differentiates SQL and NoSQL at the simulation level. Write bottleneck on primary is a fundamental architectural concept.
-- **Key files:** `src/engine/simulationEngine.ts`, `src/engine/simulationTypes.ts`, `src/data/components/postgresql.yaml`, `src/data/components/mongodb.yaml`, `src/lib/constants.ts` (scaling rules)
-- **Formula:** `write_rps = incoming × write_ratio` → capped at primary maxRPS (no replica help for SQL); `read_rps = incoming × (1 - write_ratio)` → scales with replicas
-- **NoSQL sharded:** write_rps also scales with shards (writes distribute)
+- **Tier:** ent — simulateTick is load-bearing for every run (free-build, scenario, challenge); changing the even-split routing risks regressing non-challenge runs. Even-split fallback + deterministic routing tests mandatory.
+- **Key files:** `src/stores/simulationStore.ts`, `src/engine/simulationEngine.ts`, `src/lib/simulationTypes.ts`, `src/stores/architectureStoreHelpers.ts`
 
-### Phase 3 — CDN edge bifurcation (E3)
+### Phase 3 — Richer targets + rubric
 ```yaml
 phase: 3
-types: [engine, simulation]
-phase_tier: mvp
+types: [engine, scoring]
+phase_tier: ent
 prototype: false
 dim_overrides: []
 sections_considered: [Core]
 suppressed_dims_count: 0
-decisions_entry: D49
+decisions_entry: D61
 ```
-- **Tier:** mvp — reuses the cache_hit_ratio logic from Phase 1. Adds `miss_latency_penalty_ms` to CDN variants.
-- **Key files:** `src/engine/simulationEngine.ts`, `src/data/components/cloudflare-cdn.yaml`, `src/data/components/cloudfront.yaml`, `src/data/components/fastly-cdn.yaml`
+- **Tier:** ent — scoring changes affect pass/fail for all challenges; required_topology graph assertions on a DAG (with possible cycles) are easy to get subtly wrong → adversarial unit tests. All new fields optional/defaulted to preserve the 42 existing challenges' scores.
+- **Key files:** `src/engine/rubricScorer.ts`, `src/lib/simulationStats.ts`, `src/stores/challengeStore.ts`, `src/hooks/useChallengeAutoScore.ts`, `src/components/challenges/ChallengeResultsModal.tsx`, `src/schemas/challengeSchema.ts`, `src/lib/challengeTypes.ts`
 
-### Phase 4 — Serverless cold start (E4)
+### Phase 4 — Author the hard challenges
 ```yaml
 phase: 4
-types: [engine, simulation]
-phase_tier: mvp
-prototype: false
-dim_overrides: []
-sections_considered: [Core]
-suppressed_dims_count: 0
-decisions_entry: D50
-```
-- **Tier:** mvp — simple latency addition on a subset of requests. ~15 lines.
-- **Key files:** `src/engine/simulationEngine.ts`, `src/data/components/aws-lambda.yaml`, `src/data/components/serverless.yaml`
-
-### Phase 5 — Queue backpressure (E5)
-```yaml
-phase: 5
-types: [engine, simulation, data]
+types: [data, content]
 phase_tier: ent
 prototype: false
 dim_overrides: []
 sections_considered: [Core, Data]
 suppressed_dims_count: 0
-decisions_entry: D51
+decisions_entry: D62
 ```
-- **Tier:** ent — adds a buffer/queue-depth model to the simulation engine. Significant refactor of the per-tick loop.
+- **Tier:** ent — new challenge content must be solvable AND hard; a solvability smoke test (reference solution clears each) prevents unwinnable challenges. Ship as new ids so returning players' progress is unaffected.
+- **Key files:** `src/data/challenges/*.yaml`, new solvability test.
 
-### Phase 6 — Interaction rules affect capacity (E6)
-```yaml
-phase: 6
-types: [engine, simulation, integration]
-phase_tier: ent
-prototype: false
-dim_overrides: []
-sections_considered: [Core, Integration]
-suppressed_dims_count: 0
-decisions_entry: D52
-```
-- **Tier:** ent — bridges the metric system and the traffic simulation; category-pair rules change effective capacity.
+## Current Phase
 
-### Phase 7 — Protocol overhead (E7)
-```yaml
-phase: 7
-types: [engine, simulation]
-phase_tier: mvp
-prototype: false
-dim_overrides: []
-sections_considered: [Core]
-suppressed_dims_count: 0
-decisions_entry: D53
-```
-- **Tier:** mvp — read connection protocol from edge nodes, apply multiplier to latency.
-
-### Phase 8 — Monitoring feedback (E8)
-```yaml
-phase: 8
-types: [engine, simulation]
-phase_tier: mvp
-prototype: false
-dim_overrides: []
-sections_considered: [Core]
-suppressed_dims_count: 0
-decisions_entry: D54
-```
-- **Tier:** mvp — monitoring presence shortens failure recovery duration.
+Phase 0: Schema + types foundation
 
 ## Dependencies
 
-- P1 (cache hit ratio) is standalone — changes the engine's traffic forwarding at cache nodes.
-- P2 (write/read split) is standalone — changes how data-storage nodes process traffic.
-- P3 (CDN bifurcation) depends on P1 — reuses the same cache_hit_ratio + miss_penalty logic.
-- P4 (serverless cold start) is standalone.
-- P5 (queue backpressure) is standalone but significant.
-- P6 (interaction rules) depends on P1 + P2 being in place (the rules reference cache and DB behavior).
-- P7 (protocol overhead) is standalone.
-- P8 (monitoring feedback) is standalone.
+- Phase 1 depends on Phase 0 (types/schema must exist).
+- Phase 2 (routing) is the prerequisite for the `workload` axis actually biting and for Phase 3's per-source-aware scoring.
+- Phase 3 depends on Phase 2 for topology/origin grading to be meaningful; targets/rubric can partially land earlier.
+- Phase 4 depends on Phases 0–3 (authoring uses the full lever set).
+- Recommended split: Part A = Phases 0–2 (one effort), Part B = Phases 3–4 (second).
 
 ## Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| Cache hit ratio changes the traffic propagation DAG — downstream nodes receive less traffic | high | Unit tests: with/without cache, verify DB incoming RPS matches expected ratio. Round-trip deterministic tests. |
-| Write/read split adds complexity to the per-node capacity model | high | Additive field on SimNode (default 0 = no split). Existing behavior unchanged when write_ratio absent. |
-| CDN miss penalty could make CDNs look worse than LBs in the simulation | medium | Tune miss_latency_penalty_ms so CDN with 85% hits still outperforms no-CDN on p99. |
-| Challenge rebalancing — existing challenges may need retuning after engine changes | medium | Run all 33 challenges through the E2E suite before/after; compare star outcomes. Flag any that flip from pass to fail. |
-| Queue backpressure model adds per-tick state (queue depth) | medium | New SimNode field with default empty queue. Existing nodes unaffected. |
+| trafficPattern→trafficKind rename touches persisted node data, exported YAML, canvas select, store setter, tests (~10 files) | high | Single kindToPattern shim + read-time normalizer covering all legacy values (wobble/surge); rename audited with a grep sweep + tests |
+| Dropping replicaCount-as-RPS-index hack (stabilized days ago, P105/P107) regresses the canvas RPS | high | Audit every getNodeCost call on traffic-category nodes; keep TRAFFIC_RPS_STEPS only for migration seeding |
+| Per-source routing is load-bearing for ALL sim runs | high | Even-split fallback when sourceRouting absent; cover with existing engine tests + new routing test |
+| origin has ZERO effect on challenge score via demand layer (scoring is sim-stats-only) | high | Decided: grade origin in the rubric as an architecture requirement (multi-region ⇒ requires CDN/multi-region DB/DNS), not via demand multipliers |
+| required_topology BETWEEN/FAN_OUT graph assertions on a DAG-with-cycles get subtly wrong → zero-star valid solutions | medium | Adversarial unit tests with cyclic/edge-case graphs; clear "all paths vs any path" semantics |
+| Multi-source summed curves exceed engine ceiling / make challenges unwinnable | medium | Combined-peak clamp + per-challenge solvability smoke test (reference solution must clear) |
+| Schema change breaks the 42 existing challenge YAMLs | medium | All new fields optional/defaulted; schema_version stays 2 (lenient); parse-all-42 guard test; make traffic_curve optional + at-least-one superRefine |
 
 ## Notes
 
-- Phases 1-4 are the "ship now" tier (~135 lines total). Phases 5-8 are backlog.
-- Each phase should be independently shippable and testable.
-- The E2E challenge validation suite (tests/e2e/challenge-validation.spec.ts) should be run before/after each phase to catch challenge regressions.
-- Reference: docs/architecture/simulation-enhancements.html for the full analysis.
+Decisions locked with the product owner (logged D55–D57): origin graded as architecture (not deep sim); add read/write/mixed workload axis distinct from the shape `kind`; per-source routing lands in this effort (Phase 2). The `kind` axis = traffic SHAPE (steady/realistic/periodic/search); `workload` = read/write/mixed (the lever that exercises the DB write path / cache). `realistic` reuses the existing `wobble` curve; `surge` kept internal/hidden for migration; `search` is a new sharp-narrow-repeated-spike shape.
 
 ## Review Artifacts
 
-- Design artifact: docs/architecture/simulation-enhancements.html (classified proposals)
-- Engine reference: docs/architecture/simulation-engine.html (how the engine works today)
+- HTML review artifact: docs/gabe/plans/2026-06-03-traffic-challenge-pivot/index.html
+- Canonical source: `.kdbp/PLAN.md`, `.kdbp/DECISIONS.md`, `.kdbp/LEDGER.md`
+
+## Runtime Evidence Checkpoints
+
+- Phase 1 (user-facing): E2E configuring a traffic source's RPS/kind/workload/origin in the inspector + on the canvas block; one-per-type enforcement; screenshots to `test-results/`.
+- Phase 4 (content): solvability smoke test per new challenge (reference solution clears it) + an E2E playing one hard challenge end-to-end.

@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Traffic Realism + Challenge Difficulty (ISAPivot) — Plan</title>
+<style>
+  :root{--bg:#0b0e14;--panel:#121722;--panel2:#171d2b;--bd:#26303f;--tx:#e6eaf0;--mut:#9aa6b8;--accent:#4a9eff;--amber:#facc15;--green:#22c55e;--red:#ef4444}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.55 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+  .banner{background:#1a2230;border-bottom:1px solid var(--bd);padding:8px 20px;font-size:12px;color:var(--mut)}
+  .wrap{display:grid;grid-template-columns:220px 1fr;max-width:1180px;margin:0 auto}
+  nav{position:sticky;top:0;align-self:start;padding:20px 12px;border-right:1px solid var(--bd);height:100vh;overflow:auto}
+  nav a{display:block;color:var(--mut);text-decoration:none;padding:4px 8px;border-radius:6px;font-size:13px}
+  nav a:hover{background:var(--panel2);color:var(--tx)}
+  main{padding:24px 28px;min-width:0}
+  h1{font-size:22px;margin:0 0 4px}
+  h2{font-size:16px;margin:28px 0 10px;border-bottom:1px solid var(--bd);padding-bottom:6px}
+  h3{font-size:13px;margin:16px 0 6px;color:var(--accent)}
+  .sub{color:var(--mut);margin:0 0 16px}
+  .card{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:10px 0}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin:8px 0}
+  th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:var(--mut);font-weight:600}
+  code{background:var(--panel2);padding:1px 5px;border-radius:4px;font-size:12px}
+  .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700}
+  .ent{background:#2a3550;color:#9ec1ff}
+  .hi{color:var(--red)}.md{color:var(--amber)}.lo{color:var(--green)}
+  .flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+  .step{background:var(--panel2);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;font-size:12px;flex:1;min-width:120px}
+  .arrow{color:var(--mut)}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;white-space:pre;background:var(--panel2);border:1px solid var(--bd);border-radius:8px;padding:12px;overflow:auto}
+  .det a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="banner">HTML review artifact; .kdbp/PLAN.md and .kdbp/DECISIONS.md remain canonical.</div>
+<div class="wrap">
+<nav>
+  <a href="#summary">Summary</a>
+  <a href="#spec">Traffic-source spec</a>
+  <a href="#phases">Phase map</a>
+  <a href="#tiers">Tier digest</a>
+  <a href="#decisions">Decisions</a>
+  <a href="#risks">Risks</a>
+  <a href="#verify">Verification</a>
+  <a href="#detail">Detail paths</a>
+</nav>
+<main>
+  <h1>Traffic Realism + Challenge Difficulty <span class="pill ent">ISAPivot</span></h1>
+  <p class="sub">Generated 2026-06-03 · <code>/gabe-plan</code> · source <code>.kdbp/PLAN.md</code> · decisions D55–D62 · LEDGER "PLAN CREATED: Traffic Realism + Challenge Difficulty (ISAPivot)" · investigation workflow <code>w9vlphjd8</code></p>
+
+  <h2 id="summary">Summary</h2>
+  <div class="card">
+    <p>Make <strong>traffic sources first-class configurable objects</strong> and use them — plus the dormant simulation levers built by the now-complete "Simulation Realism (E1–E8)" epic — to make challenges genuinely hard.</p>
+    <p><strong>Why now:</strong> E1–E8 shipped the type-specific sim mechanics (cache hit ratio, write/read split, cold start, queue backpressure, …) but challenges can't exercise them. A challenge today = "place the listed blocks + a couple replicas." This epic adds the player-facing surface + difficulty levers.</p>
+    <p><strong>Key constraint discovered (adversarial verify):</strong> challenge scoring is <em>sim-stats-only</em> (uptime / p99 / cost / topology) — it never reads the demand/heatmap/tier layer, which is off in challenge mode. So <code>origin</code> (multi-region) is graded as an <strong>architecture requirement in the rubric</strong>, not via demand multipliers (which would do nothing).</p>
+  </div>
+
+  <h2 id="spec">Unified traffic-source spec</h2>
+  <div class="mono">TrafficSource {
+  type     : api-client | iot-sensors | mobile-users | web-users   (&le;4 per challenge, one each)
+  rps      : arbitrary, bounded                 // the "RPS we configure" — replaces discrete tiers
+  kind     : steady | realistic | periodic | search   // traffic SHAPE  (realistic = existing 'wobble')
+  workload : read | write | mixed               // NEW — exercises DB write-path / cache (D56)
+  origin   : one-region | multi-region          // graded as architecture in the rubric (D55)
+}</div>
+  <p class="sub">Configurable in the right-panel inspector AND on the canvas block (origin shown on the block); authorable on challenges.</p>
+
+  <h2 id="phases">Phase map</h2>
+  <div class="flow">
+    <div class="step"><b>P0</b> Schema + types<br><span class="mut">types, loader, rename</span></div><span class="arrow">→</span>
+    <div class="step"><b>P1</b> Config UX<br><span class="mut">inspector + block</span></div><span class="arrow">→</span>
+    <div class="step"><b>P2</b> Per-source routing<br><span class="mut">engine</span></div><span class="arrow">→</span>
+    <div class="step"><b>P3</b> Targets + rubric<br><span class="mut">topology, origin-grade</span></div><span class="arrow">→</span>
+    <div class="step"><b>P4</b> Author hard challenges<br><span class="mut">+ solvability test</span></div>
+  </div>
+  <p class="sub">Recommended split: <strong>Part A</strong> = P0–P2 (one effort), <strong>Part B</strong> = P3–P4 (second).</p>
+  <table>
+    <tr><th>#</th><th>Phase</th><th>Tier</th><th>Cx</th><th>Core change</th></tr>
+    <tr><td>0</td><td>Schema + types foundation</td><td><span class="pill ent">ent</span></td><td class="md">med</td><td><code>ChallengeTrafficSource</code> + optional <code>trafficSources[]</code>; rename <code>trafficPattern→trafficKind</code> (+ back-compat shim); add <code>search</code> shape, <code>workload</code>/<code>origin</code> enums, RPS bounds; parse-all-42 guard</td></tr>
+    <tr><td>1</td><td>Traffic config UX</td><td><span class="pill ent">ent</span></td><td class="hi">high</td><td>Inspector + block expose RPS/kind/workload/origin; show origin on block; drop replicaCount-RPS-index hack; one-per-type/max-4; derive combined curve at load</td></tr>
+    <tr><td>2</td><td>Per-source routing (engine)</td><td><span class="pill ent">ent</span></td><td class="hi">high</td><td>Options object through start→runSimulation→simulateTick; per-source inflow seeding (even-split fallback); workload biases write/DB vs read/cache</td></tr>
+    <tr><td>3</td><td>Richer targets + rubric</td><td><span class="pill ent">ent</span></td><td class="hi">high</td><td>p95 + cost/request targets; required_topology (BETWEEN/UPSTREAM/FAN_OUT); forbidden_types (hard gate); origin-as-architecture grading; chaos_intensity; bounded scoring rubric</td></tr>
+    <tr><td>4</td><td>Author the hard challenges</td><td><span class="pill ent">ent</span></td><td class="md">med</td><td>Recast/author with multi-source typed traffic + new levers; ship as NEW ids; per-challenge solvability smoke test</td></tr>
+  </table>
+
+  <h2 id="tiers">Tier digest</h2>
+  <div class="card">All 5 phases are <span class="pill ent">enterprise</span> — each is load-bearing: schema/loader (P0), the just-stabilized RPS mechanism + sensitive canvas layout (P1), <code>simulateTick</code> which every run depends on (P2), pass/fail scoring for all challenges (P3), and unwinnable-challenge risk (P4). No MVP/prototype phases; no per-dim overrides. Full trade-offs in DECISIONS D58–D62.</div>
+
+  <h2 id="decisions">Decisions (D55–D62)</h2>
+  <table>
+    <tr><th>ID</th><th>Decision</th></tr>
+    <tr><td>D55</td><td><b>Origin graded as architecture</b>, not deep sim — multi-region requires CDN/multi-region-DB/DNS in the rubric (demand layer is a no-op for challenge scoring).</td></tr>
+    <tr><td>D56</td><td><b>Add read/write/mixed <code>workload</code></b> axis, separate from the shape <code>kind</code> — it's the lever that exercises the DB write-path/cache.</td></tr>
+    <tr><td>D57</td><td><b>Per-source routing in Phase 2</b> — replaces flat even-split so the kind/workload mix reaches specific tiers (even-split fallback kept).</td></tr>
+    <tr><td>D58–D62</td><td>Per-phase tier = <span class="pill ent">ent</span> with reasons (load-bearing schema / sensitive UI / load-bearing engine / all-challenge scoring / solvability).</td></tr>
+  </table>
+
+  <h2 id="risks">Risks</h2>
+  <table>
+    <tr><th>Risk</th><th>Sev</th><th>Mitigation</th></tr>
+    <tr><td><code>trafficPattern→trafficKind</code> rename touches ~10 files + persisted/exported data</td><td class="hi">high</td><td>single <code>kindToPattern</code> shim + read-time normalizer (wobble→realistic, surge internal) + grep sweep + tests</td></tr>
+    <tr><td>Dropping replicaCount-as-RPS-index hack (P105/P107) regresses canvas RPS</td><td class="hi">high</td><td>audit every <code>getNodeCost</code> on traffic nodes; keep TRAFFIC_RPS_STEPS only for migration seeding</td></tr>
+    <tr><td>Per-source routing is load-bearing for ALL sim runs</td><td class="hi">high</td><td>even-split fallback when <code>sourceRouting</code> absent; engine tests + new routing test</td></tr>
+    <tr><td><code>required_topology</code> graph assertions on a DAG-with-cycles mis-fire</td><td class="md">med</td><td>adversarial unit tests; clear all-paths-vs-any-path semantics</td></tr>
+    <tr><td>Stacked multi-source curves make a challenge unwinnable</td><td class="md">med</td><td>combined-peak clamp + per-challenge solvability smoke test (reference solution must clear)</td></tr>
+    <tr><td>Schema change breaks the 42 existing challenge YAMLs</td><td class="md">med</td><td>all new fields optional/defaulted; schema_version stays 2; parse-all-42 guard; traffic_curve optional + at-least-one rule</td></tr>
+  </table>
+
+  <h2 id="verify">Verification checkpoints</h2>
+  <ul>
+    <li><b>P0:</b> parse-all-42-challenge-YAMLs test green; trafficKind back-compat shim test.</li>
+    <li><b>P1 (runtime):</b> E2E configuring RPS/kind/workload/origin on a traffic node in the inspector + canvas block; one-per-type WARN/block; screenshots.</li>
+    <li><b>P2:</b> deterministic per-source routing tests + even-split fallback regression.</li>
+    <li><b>P3:</b> rubric unit tests (topology assertions on adversarial graphs; forbidden-type hard gate; p95/cost targets); 42 existing challenges score identically.</li>
+    <li><b>P4:</b> per-challenge solvability smoke test (reference solution clears each) + an E2E playing one hard challenge end-to-end.</li>
+  </ul>
+
+  <h2 id="detail">Detail paths</h2>
+  <div class="card det">
+    <ul>
+      <li>Canonical plan + phase details + risks → <a href="../../../../.kdbp/PLAN.md"><code>.kdbp/PLAN.md</code></a></li>
+      <li>Decisions D55–D62 (full rationale) → <a href="../../../../.kdbp/DECISIONS.md"><code>.kdbp/DECISIONS.md</code></a></li>
+      <li>Plan-created + archive ledger entries → <a href="../../../../.kdbp/LEDGER.md"><code>.kdbp/LEDGER.md</code></a></li>
+      <li>Superseded epic (engine-complete) → <code>.kdbp/archive/completed_PLAN_2026-06-02_simulation-realism.md</code></li>
+      <li>Investigation findings (current model, gaps, design proposals, feasibility) → workflow run <code>w9vlphjd8</code> transcript</li>
+      <li>Key code touched: <code>src/lib/challengeTypes.ts</code>, <code>src/schemas/challengeSchema.ts</code>, <code>src/engine/trafficPatterns.ts</code>, <code>src/engine/simulationEngine.ts</code>, <code>src/engine/rubricScorer.ts</code></li>
+    </ul>
+  </div>
+</main>
+</div>
+</body>
+</html>

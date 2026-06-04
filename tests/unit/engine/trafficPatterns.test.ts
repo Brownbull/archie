@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { buildPatternCurve, TRAFFIC_PATTERNS } from "@/engine/trafficPatterns"
+import { buildPatternCurve, kindToPattern, TRAFFIC_KINDS, TRAFFIC_PATTERNS } from "@/engine/trafficPatterns"
 
 const BASE = 1000
 const DURATION = 90
@@ -48,5 +48,33 @@ describe("buildPatternCurve", () => {
   it("scales with the average (surge of 2k peaks ~10k)", () => {
     const c = buildPatternCurve("surge", 2000, DURATION)
     expect(Math.max(...c.map((p) => p.rps))).toBeGreaterThan(8000)
+  })
+
+  it("search produces dense sharp spikes up to ~4× that mostly sit near baseline", () => {
+    const c = buildPatternCurve("search", BASE, DURATION)
+    const max = Math.max(...c.map((p) => p.rps))
+    expect(max).toBeGreaterThan(BASE * 2.5)
+    expect(max).toBeLessThanOrEqual(BASE * 4 + 1)
+    expect(Math.min(...c.map((p) => p.rps))).toBeGreaterThanOrEqual(BASE) // narrow spikes, never below baseline
+    // sharp = most samples are near baseline, not at the peak
+    const nearBaseline = c.filter((p) => p.rps < BASE * 1.5).length
+    expect(nearBaseline).toBeGreaterThan(c.length / 2)
+  })
+})
+
+describe("kindToPattern (ISAPivot)", () => {
+  it("maps every player-facing kind to a valid internal pattern", () => {
+    expect(kindToPattern("steady")).toBe("steady")
+    expect(kindToPattern("realistic")).toBe("wobble")
+    expect(kindToPattern("periodic")).toBe("periodic")
+    expect(kindToPattern("search")).toBe("search")
+  })
+
+  it("every TRAFFIC_KINDS entry resolves to a buildable curve", () => {
+    for (const { id } of TRAFFIC_KINDS) {
+      const c = buildPatternCurve(kindToPattern(id), BASE, DURATION)
+      expect(c[0].t).toBe(0)
+      expect(c[c.length - 1].t).toBe(DURATION)
+    }
   })
 })
