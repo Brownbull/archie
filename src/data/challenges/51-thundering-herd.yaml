@@ -1,0 +1,41 @@
+id: thundering-herd
+title: The Thundering Herd
+brief: >-
+  A viral moment: traffic erupts from near-zero to eight million rps in periodic
+  waves, a classic cache-stampede. If the herd reaches your origin, it dies.
+  Absorb the waves at the edge or be trampled.
+difficulty: advanced
+budget_cap: 150000
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 50000 }
+  - { t: 40, rps: 8000000 }
+  - { t: 60, rps: 200000 }
+  - { t: 90, rps: 8000000 }
+  - { t: 120, rps: 100000 }
+traffic_sources:
+  - { type: web-users, rps: 8000000, kind: periodic, workload: read, origin: multi-region }
+required_components:
+  - delivery-network
+  - caching
+  - compute
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 350
+chaos_intensity: 1.5
+hints:
+  - "The waves spike to 8M rps — origin compute can never see that; the edge must swallow it."
+  - "A multi-region read source needs CDN + DNS; stack a high-hit-ratio cache so the stampede is served at the edge."
+  - "Size CDN + cache replicas for the 8M peak so the miss trickle to compute stays tiny."
+  - "Place traffic → dns → cdn → cache → compute, CDN+cache replicated to absorb 8M rps of reads; origin sees only misses, holding p99 ≤ 350ms across both waves."
+schema_version: 2
+track: edge
+tier: 6
+requires: [edge-resilience]
+unlocks: []
+min_xp: 0
+required_types: [cdn, dns, cache]
+available_blocks: [compute, cdn, dns, load-balancer, cache, relational-db, traffic-source]
+grants: []
+rewards:
+  xp: 1500

@@ -26,7 +26,7 @@ test.describe("Quest Log tier-banded layout", () => {
     await expect(page.getByTestId("quest-log")).toBeVisible({ timeout: 5000 })
 
     // Five tier bands (Tiers I–V across the 41 built-ins), each with a separator.
-    await expect(page.locator('[data-testid^="tier-separator-"]')).toHaveCount(5)
+    await expect(page.locator('[data-testid^="tier-separator-"]')).toHaveCount(6)
     // Tier-1 root + a tier-2 quest are both present (banded vertically).
     await expect(page.getByTestId("tree-node-first-service")).toBeAttached()
     await expect(page.getByTestId("tree-node-scale-out")).toBeAttached()

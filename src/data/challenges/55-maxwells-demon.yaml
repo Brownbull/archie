@@ -1,0 +1,45 @@
+id: maxwells-demon
+title: Maxwell's Demon
+brief: >-
+  Chaos turned up to its maximum. A latency demon haunts your hottest tier,
+  amplified tenfold, hammering it again and again across the run. Capacity won't
+  shed, but the tail will scream — build enough headroom that the system stays
+  up and bounded while the demon does its worst.
+difficulty: advanced
+budget_cap: 180000
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 60, rps: 4000000 }
+  - { t: 120, rps: 6000000 }
+traffic_sources:
+  - { type: web-users, rps: 6000000, kind: realistic, workload: read, origin: multi-region }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+  - data-storage
+  - monitoring
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 5000
+scheduled_events:
+  - { t: 30, type: latency_spike, target: compute, multiplier: 5, durationS: 25 }
+  - { t: 75, type: latency_spike, target: compute, multiplier: 5, durationS: 25 }
+chaos_intensity: 10
+hints:
+  - "chaos_intensity 10 turns each ×5 compute spike into a ~41× latency monster — the tail will be enormous."
+  - "Latency spikes don't cut capacity, so uptime survives if nothing sheds — keep every tier under 100% load."
+  - "Serve most reads from the edge so the demon-struck compute tier handles only a sliver; add observability so failures recover faster."
+  - "Place traffic → dns → cdn → cache → compute → relational-db with observability on compute; the CDN+cache edge carries the bulk so the amplified spikes touch little, keeping uptime ≥97% within the generous p99 bound."
+schema_version: 2
+track: reliability
+tier: 6
+requires: [chaos-day]
+unlocks: []
+min_xp: 0
+required_types: [cdn, cache, observability]
+available_blocks: [compute, cdn, dns, load-balancer, cache, relational-db, observability, traffic-source]
+grants: []
+rewards:
+  xp: 1600

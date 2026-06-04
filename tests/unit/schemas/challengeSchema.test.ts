@@ -100,8 +100,9 @@ describe("ChallengeYamlSchema v2 tech-tree fields (Mastery Tracks)", () => {
     expect(ChallengeYamlSchema.safeParse({ ...v2, track: "wizardry" }).success).toBe(false)
   })
 
-  it("rejects a tier outside 1–5", () => {
-    expect(ChallengeYamlSchema.safeParse({ ...v2, tier: 6 }).success).toBe(false)
+  it("rejects a tier outside 1–6", () => {
+    expect(ChallengeYamlSchema.safeParse({ ...v2, tier: 7 }).success).toBe(false)
+    expect(ChallengeYamlSchema.safeParse({ ...v2, tier: 6 }).success).toBe(true) // Tier 6 = absurd capstones (D70)
   })
 
   it("rejects an unknown component type id in available_blocks / grants", () => {

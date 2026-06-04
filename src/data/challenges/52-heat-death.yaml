@@ -1,0 +1,46 @@
+id: heat-death
+title: Heat Death
+brief: >-
+  Entropy comes for everything. One tier after another goes dark — compute,
+  then storage, then cache, then the edge itself — each for twenty seconds,
+  under heavy chaos. You can't stop the drops; you can only architect to keep
+  serving whatever still stands. Survive the cascade.
+difficulty: advanced
+budget_cap: 120000
+duration_seconds: 150
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 60, rps: 3000000 }
+  - { t: 150, rps: 5000000 }
+traffic_sources:
+  - { type: web-users, rps: 5000000, kind: realistic, workload: read, origin: multi-region }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 60
+  p99_latency_ms: 600
+scheduled_events:
+  - { t: 20, type: az_outage, target: compute, durationS: 20 }
+  - { t: 55, type: az_outage, target: data-storage, durationS: 20 }
+  - { t: 90, type: az_outage, target: caching, durationS: 20 }
+  - { t: 120, type: az_outage, target: delivery-network, durationS: 20 }
+chaos_intensity: 3
+hints:
+  - "Four tiers fall in sequence — you cannot prevent the drops, only minimize them by serving from whatever survives each window."
+  - "While compute is down, a CDN+cache edge still answers reads; while storage is down, the cache still has hits."
+  - "The uptime bar (60%) accounts for the unavoidable losses — over-provision every tier so non-outage windows run at ~100%."
+  - "Place traffic → dns → cdn → cache → compute → relational-db, every tier heavily replicated. The stacked edge carries the compute/storage/cache outages; only the delivery-network outage fully blinds you. Clears ≥60%."
+schema_version: 2
+track: reliability
+tier: 6
+requires: [chaos-day]
+unlocks: []
+min_xp: 0
+required_types: [cdn, cache]
+available_blocks: [compute, serverless, cdn, dns, load-balancer, cache, relational-db, nosql, observability, traffic-source]
+grants: []
+rewards:
+  xp: 1600

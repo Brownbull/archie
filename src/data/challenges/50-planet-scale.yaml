@@ -1,0 +1,43 @@
+id: planet-scale
+title: Planet Scale
+brief: >-
+  Ten million requests a second, from a planet of users. Four audiences, one of
+  them global, a chaos-rattled backbone, and no excuses. This is the architect's
+  final exam — build a multi-region edge that simply does not fall over.
+difficulty: advanced
+budget_cap: 200000
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 60, rps: 6000000 }
+  - { t: 120, rps: 10000000 }
+traffic_sources:
+  - { type: web-users, rps: 4000000, kind: realistic, workload: read, origin: multi-region }
+  - { type: mobile-users, rps: 3000000, kind: realistic, workload: read, origin: one-region }
+  - { type: api-client, rps: 2000000, kind: realistic, workload: mixed, origin: one-region }
+  - { type: iot-sensors, rps: 1000000, kind: steady, workload: write, origin: one-region }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 96
+  p99_latency_ms: 400
+chaos_intensity: 2
+hints:
+  - "Ten million rps cannot reach origin — the edge has to serve almost everything."
+  - "A multi-region source forces CDN + DNS + a database; stack a cache behind the CDN so origin sees a trickle."
+  - "Scale every tier hard: CDN and cache replicas to absorb the reads, compute + DB sized for the cache-miss remainder."
+  - "Place traffic → dns → cdn → cache → load-balancer → compute → relational-db, every tier replicated to clear 10M rps; the stacked edge holds p99 ≤ 400ms and ≥96% uptime through the chaos."
+schema_version: 2
+track: foundations
+tier: 6
+requires: [foundations-mastery]
+unlocks: []
+min_xp: 0
+required_types: [cdn, dns, cache]
+available_blocks: [compute, serverless, cdn, dns, load-balancer, cache, relational-db, nosql, object-storage, traffic-source]
+grants: []
+rewards:
+  xp: 1500

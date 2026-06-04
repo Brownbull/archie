@@ -1,0 +1,42 @@
+id: the-singularity
+title: The Singularity
+brief: >-
+  Production AGI infrastructure: five million inference requests a second across
+  regions, a vector store for retrieval, an LLM gateway at the core, and chaos
+  in the wires. Serve the machine god without the bill (or the latency) going
+  supercritical.
+difficulty: advanced
+budget_cap: 250000
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 60, rps: 3000000 }
+  - { t: 120, rps: 5000000 }
+traffic_sources:
+  - { type: api-client, rps: 3000000, kind: realistic, workload: mixed, origin: multi-region }
+  - { type: web-users, rps: 2000000, kind: realistic, workload: read, origin: one-region }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 96
+  p99_latency_ms: 500
+chaos_intensity: 2
+hints:
+  - "Five million inference calls can't all hit the LLM gateway — cache aggressively and retrieve from the vector store."
+  - "A multi-region source forces CDN + DNS + a database; cache identical prompts so the LLM tier only sees novel work."
+  - "Scale the LLM gateway + vector store for the cache-miss inference load; front everything with a CDN+cache edge."
+  - "Place traffic → dns → cdn → cache → llm-gateway → vector-store, all replicated for 5M rps; the edge + prompt cache keep the inference tier under load, holding p99 ≤ 500ms and ≥96% uptime through chaos."
+schema_version: 2
+track: aiml
+tier: 6
+requires: [production-ai]
+unlocks: []
+min_xp: 0
+required_types: [llm-gateway, vector-store, cdn]
+available_blocks: [compute, llm-gateway, etl, cdn, dns, load-balancer, cache, vector-store, relational-db, message-queue, observability, traffic-source]
+grants: []
+rewards:
+  xp: 1600

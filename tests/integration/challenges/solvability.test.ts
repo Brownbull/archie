@@ -293,8 +293,8 @@ describe("Phase 4 solvability harness — every built-in challenge is clearable 
 
   const challenges = getAllChallenges().slice().sort((a, b) => a.id.localeCompare(b.id))
 
-  it("loads all 46 built-in challenges", () => {
-    expect(challenges.length).toBe(46)
+  it("loads all 55 built-in challenges", () => {
+    expect(challenges.length).toBe(55)
   })
 
   for (const c of challenges) {

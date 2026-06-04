@@ -1,0 +1,42 @@
+id: four-front-war
+title: Four-Front War
+brief: >-
+  Four audiences hit you at once, each with its own shape and read/write mix:
+  chatty API clients (writes), steady IoT sensors (writes), mobile readers, and
+  a mixed web crowd. Provision for the blended load — the write paths bite.
+difficulty: advanced
+budget_cap: 2000
+duration_seconds: 100
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 50, rps: 4000 }
+  - { t: 100, rps: 6000 }
+traffic_sources:
+  - { type: api-client, rps: 1500, kind: realistic, workload: write, origin: one-region }
+  - { type: iot-sensors, rps: 1000, kind: steady, workload: write, origin: one-region }
+  - { type: mobile-users, rps: 1500, kind: realistic, workload: read, origin: one-region }
+  - { type: web-users, rps: 2000, kind: realistic, workload: mixed, origin: one-region }
+required_components:
+  - delivery-network
+  - compute
+  - data-storage
+  - caching
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 300
+hints:
+  - "Four sources sum to 6000 rps, and two of them are write-heavy — the database write path is the squeeze."
+  - "Reads can be cached; writes can't. Size the database for the combined write pressure from api-client + iot-sensors."
+  - "Front reads with a cache, balance compute behind an LB, and scale the database so writes stay under capacity."
+  - "Place traffic → load-balancer → compute → cache + relational-db. Cache absorbs the mobile/web reads; size the DB for ~2500 rps of writes so it never saturates. p99 ≤ 300ms at 6000 rps."
+schema_version: 2
+track: reliability
+tier: 4
+requires: [zone-failure]
+unlocks: []
+min_xp: 0
+required_types: [load-balancer, cache, relational-db]
+available_blocks: [compute, load-balancer, cache, relational-db, nosql, traffic-source]
+grants: []
+rewards:
+  xp: 730

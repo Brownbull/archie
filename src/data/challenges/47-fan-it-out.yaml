@@ -1,0 +1,40 @@
+id: fan-it-out
+title: Fan It Out
+brief: >-
+  One box can't take this. Put a load balancer in front of every compute node
+  and make it fan out to at least three of them. This grades the WIRING — a
+  balancer that only feeds one replica doesn't count as horizontal scale.
+difficulty: advanced
+budget_cap: 1200
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 2500 }
+  - { t: 90, rps: 4000 }
+traffic_sources:
+  - { type: web-users, rps: 4000, kind: realistic, workload: mixed, origin: one-region }
+required_components:
+  - delivery-network
+  - compute
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 250
+required_topology:
+  - { rule_type: LB_UPSTREAM, target_type: compute, description: "every compute node sits behind a load balancer" }
+  - { rule_type: FAN_OUT_GTE, source_type: load-balancer, min_count: 3, description: "the load balancer fans out to at least 3 nodes" }
+hints:
+  - "4000 rps will bury a single compute node — you need a pool, fed fairly."
+  - "Place a load balancer upstream of compute, and give it at least three downstream targets to fan across."
+  - "Add compute replicas (or distinct nodes) until the balancer fans out to ≥3 and total capacity clears 4000 rps."
+  - "Place traffic → load-balancer → 3+ compute nodes. LB_UPSTREAM (every compute behind the LB) and FAN_OUT_GTE 3 (the LB feeds ≥3) both pass, holding p99 ≤ 250ms."
+schema_version: 2
+track: reliability
+tier: 3
+requires: [zone-replica]
+unlocks: []
+min_xp: 0
+required_types: [load-balancer]
+available_blocks: [compute, load-balancer, relational-db, traffic-source]
+grants: []
+rewards:
+  xp: 455

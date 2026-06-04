@@ -17,7 +17,7 @@ import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { CHALLENGE_TRACKS } from "@/lib/challengeTracks"
 import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
-const TIER_LABELS = ["", "I", "II", "III", "IV", "V"]
+const TIER_LABELS = ["", "I", "II", "III", "IV", "V", "VI"]
 const FONT_SCALE: Record<string, number> = { small: 1, medium: 1.15, large: 1.3 }
 const NODE_R = 32
 const ROW_GAP = 56

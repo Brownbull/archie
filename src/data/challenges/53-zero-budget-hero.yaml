@@ -1,0 +1,38 @@
+id: zero-budget-hero
+title: Zero-Budget Hero
+brief: >-
+  The CFO froze spend. Hold 99.5% uptime and a tight latency bar on a shoestring
+  budget — every dollar is scrutinized. Anyone can buy reliability; prove you can
+  engineer it. (Passing is one star; the budget star is the real trophy.)
+difficulty: advanced
+budget_cap: 250
+duration_seconds: 100
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 50, rps: 3000 }
+  - { t: 100, rps: 5000 }
+traffic_sources:
+  - { type: web-users, rps: 5000, kind: realistic, workload: read, origin: one-region }
+required_components:
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 99.5
+  p99_latency_ms: 300
+hints:
+  - "Capacity is easy; capacity that's nearly free is the puzzle. Lean on caching to do the heavy lifting cheaply."
+  - "A cheap cache serving most reads means you need far less compute and database behind it."
+  - "Pick the most cost-efficient variant at each tier that still clears the load; cache hit-ratio is your budget multiplier."
+  - "Place traffic → compute → cache → relational-db with the cheapest variants that keep every node under 100% at 5000 rps; the cache absorbs reads so a single small DB suffices, landing under the $250 cap."
+schema_version: 2
+track: foundations
+tier: 6
+requires: [foundations-mastery]
+unlocks: []
+min_xp: 0
+required_types: [cache, relational-db]
+available_blocks: [compute, serverless, cache, relational-db, nosql, traffic-source]
+grants: []
+rewards:
+  xp: 1400

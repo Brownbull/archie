@@ -15,7 +15,7 @@ function parse(file: string) {
 
 describe("challenge content (Epic 16 P5)", () => {
   it("ships the full built-in challenge set", () => {
-    expect(files.length).toBe(46)
+    expect(files.length).toBe(55)
   })
 
   it.each(files)("%s parses against the schema with known categories", (file) => {
@@ -37,7 +37,7 @@ describe("challenge content (Epic 16 P5)", () => {
     const parsed = files.map(parse)
     expect(parsed.every((r) => r.success)).toBe(true)
     const data = parsed.flatMap((r) => (r.success ? [r.data] : []))
-    expect(new Set(data.map((c) => c.id)).size).toBe(46)
+    expect(new Set(data.map((c) => c.id)).size).toBe(55)
     expect(new Set(data.map((c) => c.difficulty))).toEqual(new Set(["beginner", "intermediate", "advanced"]))
   })
 })

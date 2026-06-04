@@ -7,7 +7,7 @@ import { MAX_FILE_SIZE } from "@/lib/constants"
 describe("challengeLoader (Epic 16 P5)", () => {
   it("loads every authored challenge level via the build-time glob", () => {
     const all = getAllChallenges()
-    expect(all.length).toBe(46)
+    expect(all.length).toBe(55)
   })
 
   it("orders by difficulty (beginner first, advanced last)", () => {
@@ -24,12 +24,12 @@ describe("challengeLoader (Epic 16 P5)", () => {
 })
 
 describe("challengeLoader — Mastery Tracks tech-tree spine", () => {
-  it("recasts all 10 challenges as schema v2 with a known track, tier, and xp reward", () => {
+  it("recasts every challenge as schema v2 with a known track, tier, and xp reward", () => {
     for (const c of getAllChallenges()) {
       expect(c.schemaVersion).toBe(2)
       expect(c.track && isKnownTrackId(c.track)).toBe(true)
       expect(c.tier).toBeGreaterThanOrEqual(1)
-      expect(c.tier).toBeLessThanOrEqual(5)
+      expect(c.tier).toBeLessThanOrEqual(6) // Tier 6 = absurd capstones (D70)
       expect(c.rewards?.xp).toBeGreaterThan(0)
     }
   })

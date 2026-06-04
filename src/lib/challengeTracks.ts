@@ -46,7 +46,7 @@ export function isKnownTrackId(trackId: string): boolean {
 
 /** Tiers run 1 (entry) → 5 (capstone) within every track. */
 export const MIN_CHALLENGE_TIER = 1
-export const MAX_CHALLENGE_TIER = 5
+export const MAX_CHALLENGE_TIER = 6 // Tier 6 = the absurd/theoretical capstone tier (D70)
 
 /**
  * Blocks a brand-new player can use before completing any challenge — the minimum to stand up a
@@ -81,7 +81,7 @@ export const RANK_XP_THRESHOLDS: readonly number[] = [0, 150, 400, 800, 1500, 28
  * cumulative XP from all previous tiers. Forces players to complete ~65% of the previous
  * tier before accessing the next, preventing tier-skipping.
  */
-export const TIER_XP_GATES: readonly number[] = [0, 0, 494, 1976, 5138, 10520]
+export const TIER_XP_GATES: readonly number[] = [0, 0, 494, 1976, 5138, 10520, 18000]
 
 /** Derive the mastery level for a given cumulative XP value. */
 export function rankForXp(xp: number): { rank: number; name: MasteryRank } {

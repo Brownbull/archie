@@ -1,0 +1,40 @@
+id: write-storm-brownout
+title: Write Storm in a Brownout
+brief: >-
+  A relentless write flood, and mid-run the database itself browns out — a
+  latency spike, amplified by elevated chaos. Writes can't be cached away, so
+  you must give the write path enough headroom to ride out the storm.
+difficulty: advanced
+budget_cap: 2200
+duration_seconds: 100
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 50, rps: 3000 }
+  - { t: 100, rps: 4000 }
+traffic_sources:
+  - { type: api-client, rps: 4000, kind: periodic, workload: write, origin: one-region }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 600
+scheduled_events:
+  - { t: 45, type: latency_spike, target: relational-db, multiplier: 4, durationS: 30 }
+chaos_intensity: 2.5
+hints:
+  - "Pure write load at 4000 rps — a cache won't save you, the writes must land in the store."
+  - "chaos_intensity 2.5 amplifies the mid-run database latency spike well beyond its base ×4 — leave latency headroom."
+  - "Over-provision the database write path (sharded or replicated) so it stays under capacity even during the spike."
+  - "Place traffic → compute → relational-db with the write path sized for 4000 rps; the headroom keeps p99 ≤ 600ms through the amplified brownout."
+schema_version: 2
+track: data
+tier: 4
+requires: [write-storm]
+unlocks: []
+min_xp: 0
+required_types: [relational-db]
+available_blocks: [compute, relational-db, nosql, message-queue, traffic-source]
+grants: []
+rewards:
+  xp: 730
