@@ -14,6 +14,8 @@ traffic_curve:
   - { t: 60, rps: 3000 }
   - { t: 75, rps: 400 }
   - { t: 90, rps: 400 }
+traffic_sources:
+  - { type: web-users, rps: 3000, kind: periodic, workload: mixed, origin: one-region }
 required_components:
   - compute
 target_metrics:

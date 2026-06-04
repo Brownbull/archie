@@ -16,6 +16,9 @@ traffic_curve:
   - { t: 120, rps: 3000 }
   - { t: 150, rps: 1500 }
   - { t: 180, rps: 500 }
+traffic_sources:
+  - { type: web-users, rps: 2500, kind: periodic, workload: mixed, origin: one-region }
+  - { type: api-client, rps: 1500, kind: periodic, workload: mixed, origin: one-region }
 required_components:
   - compute
   - auth-security

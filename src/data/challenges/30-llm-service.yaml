@@ -12,6 +12,8 @@ traffic_curve:
   - { t: 30, rps: 200 }
   - { t: 60, rps: 600 }
   - { t: 90, rps: 600 }
+traffic_sources:
+  - { type: api-client, rps: 600, kind: realistic, workload: read, origin: one-region }
 required_components:
   - compute
 target_metrics:

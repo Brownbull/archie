@@ -16,6 +16,9 @@ traffic_curve:
   - { t: 120, rps: 2000 }
   - { t: 150, rps: 1500 }
   - { t: 180, rps: 500 }
+traffic_sources:
+  - { type: iot-sensors, rps: 800, kind: realistic, workload: write, origin: one-region }
+  - { type: web-users, rps: 1200, kind: realistic, workload: read, origin: one-region }
 required_components:
   - compute
   - data-storage

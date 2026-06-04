@@ -11,6 +11,8 @@ duration_seconds: 90
 traffic_curve:
   - { t: 0, rps: 500 }
   - { t: 90, rps: 500 }
+traffic_sources:
+  - { type: web-users, rps: 500, kind: steady, workload: mixed, origin: one-region }
 required_components:
   - compute
   - monitoring

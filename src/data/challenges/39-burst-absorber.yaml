@@ -15,6 +15,8 @@ traffic_curve:
   - { t: 60, rps: 5000 }
   - { t: 75, rps: 500 }
   - { t: 90, rps: 200 }
+traffic_sources:
+  - { type: web-users, rps: 5000, kind: periodic, workload: write, origin: one-region }
 required_components:
   - compute
   - messaging

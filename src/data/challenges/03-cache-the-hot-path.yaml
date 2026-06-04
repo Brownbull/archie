@@ -11,6 +11,8 @@ traffic_curve:
   - { t: 0, rps: 0 }
   - { t: 35, rps: 180 }
   - { t: 75, rps: 280 }
+traffic_sources:
+  - { type: web-users, rps: 280, kind: realistic, workload: read, origin: one-region }
 required_components:
   - compute
   - caching

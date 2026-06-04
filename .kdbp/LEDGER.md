@@ -3555,3 +3555,8 @@ PR: — (direct dev→main per PUSH.md convention)
 CI: all passed (deploy-production success, ~49s, run 26978132274)
 PROMOTION: N/A (single production env)
 DEPLOYMENTS: P123 (Phase 3 complete + Phase 4a shipped)
+- 2026-06-04 16:40 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:41 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:41 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-04 16:46 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx
+- 2026-06-04 16:46 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challengeJourney.test.tsx

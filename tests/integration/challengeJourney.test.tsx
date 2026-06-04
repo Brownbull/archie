@@ -23,6 +23,7 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { getChallenge } from "@/services/challengeLoader"
 import { interpolateRps } from "@/engine/simulationEngine"
+import { buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
 
 const LIB: Record<string, { category: string; maxRPS: number; baseLatencyMs: number; monthlyCost: number }> = {
   edge: { category: "delivery-network", maxRPS: 5000, baseLatencyMs: 2, monthlyCost: 20 },
@@ -146,8 +147,12 @@ describe("challenge journey (integration): select → build → start → score 
     // the az_outage window, but serving normally outside it — proves the event fired transiently.
     expect(computeFrames.some((f) => f.servedRps === 0 && f.incomingRps > 0)).toBe(true)
     expect(computeFrames.some((f) => f.servedRps > 0)).toBe(true)
-    // AUTHORED DURATION honored: the last tick maps to t = durationSeconds, so its target RPS is
-    // the curve endpoint (1600). With the old 90s default it would interpolate to ~1480.
-    expect(ticks[ticks.length - 1].targetRps).toBe(interpolateRps(zone.trafficCurve, zone.durationSeconds))
+    // AUTHORED DURATION honored: the last tick maps to t = durationSeconds. zone-failure now declares
+    // typed trafficSources (Phase 4b), so the load is the peak-anchored DERIVED curve (overriding
+    // trafficCurve) sampled over the authored 100s — exactly as ChallengeStartButton drives it.
+    const drivenCurve = zone.trafficSources && zone.trafficSources.length > 0
+      ? buildTrafficCurveFromSpecs(zone.trafficSources, zone.durationSeconds)
+      : zone.trafficCurve
+    expect(ticks[ticks.length - 1].targetRps).toBe(interpolateRps(drivenCurve, zone.durationSeconds))
   })
 })

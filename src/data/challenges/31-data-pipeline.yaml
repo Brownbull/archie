@@ -13,6 +13,8 @@ traffic_curve:
   - { t: 60, rps: 1000 }
   - { t: 90, rps: 1000 }
   - { t: 120, rps: 300 }
+traffic_sources:
+  - { type: api-client, rps: 1000, kind: realistic, workload: write, origin: one-region }
 required_components:
   - compute
   - messaging

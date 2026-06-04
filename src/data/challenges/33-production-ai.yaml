@@ -15,6 +15,9 @@ traffic_curve:
   - { t: 120, rps: 3500 }
   - { t: 150, rps: 2000 }
   - { t: 180, rps: 500 }
+traffic_sources:
+  - { type: web-users, rps: 2000, kind: realistic, workload: read, origin: one-region }
+  - { type: mobile-users, rps: 1500, kind: realistic, workload: read, origin: one-region }
 required_components:
   - compute
   - monitoring

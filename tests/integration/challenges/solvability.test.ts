@@ -19,7 +19,7 @@ import { getAllChallenges } from "@/services/challengeLoader"
 import { componentLibrary } from "@/services/componentLibrary"
 import { ComponentYamlSchema, type Component } from "@/schemas/componentSchema"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
-import { buildSimGraph, computeTotalArchitectureCost, evaluateTopology } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
 import { runSimulation } from "@/engine/simulationEngine"
 import { computeSimStats } from "@/lib/simulationStats"
 import { evaluateAttempt } from "@/engine/rubricScorer"
@@ -103,8 +103,19 @@ function pickVariant(component: { configVariants: Variant[] }, typeId: string): 
   return variants.reduce((best, v) => ((v.maxRPS ?? 0) > (best.maxRPS ?? 0) ? v : best), variants[0])
 }
 
+/**
+ * The traffic curve the GAME actually runs: when a challenge declares typed trafficSources, the load
+ * is derived from them (peak-anchored, summed) — overriding the authored trafficCurve, exactly as
+ * ChallengeStartButton does. So the harness validates the real recast load, not the legacy curve.
+ */
+function challengeCurve(c: Challenge) {
+  return c.trafficSources && c.trafficSources.length > 0
+    ? buildTrafficCurveFromSpecs(c.trafficSources, c.durationSeconds)
+    : c.trafficCurve
+}
+
 function curvePeak(c: Challenge): number {
-  return c.trafficCurve.reduce((m, p) => Math.max(m, p.rps), 0)
+  return challengeCurve(c).reduce((m, p) => Math.max(m, p.rps), 0)
 }
 
 /** Build a node for a TYPE id via its default provider, sized to cover `peak` rps. */
@@ -197,7 +208,7 @@ function buildSolution(c: Challenge): { nodes: RefNode[]; edges: Array<{ id: str
 function scoreSolution(c: Challenge) {
   const { nodes, edges } = buildSolution(c)
   const graph = buildSimGraph(nodes, edges)
-  const result = runSimulation(graph, c.trafficCurve, undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
+  const result = runSimulation(graph, challengeCurve(c), undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
   const stats = computeSimStats(result.ticks, result.ticks.length - 1)
   const { topologyIssues } = evaluateTopology(nodes, edges)
   const totalCost = computeTotalArchitectureCost(nodes)

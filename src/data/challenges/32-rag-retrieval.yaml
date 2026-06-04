@@ -14,6 +14,9 @@ traffic_curve:
   - { t: 90, rps: 2000 }
   - { t: 120, rps: 1500 }
   - { t: 150, rps: 500 }
+traffic_sources:
+  - { type: web-users, rps: 1200, kind: realistic, workload: read, origin: one-region }
+  - { type: api-client, rps: 800, kind: realistic, workload: read, origin: one-region }
 required_components:
   - compute
   - data-storage

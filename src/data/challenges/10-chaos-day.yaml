@@ -14,6 +14,8 @@ traffic_curve:
   - { t: 40, rps: 2500 }
   - { t: 80, rps: 3500 }
   - { t: 120, rps: 4000 }
+traffic_sources:
+  - { type: web-users, rps: 4000, kind: realistic, workload: mixed, origin: one-region }
 required_components:
   - delivery-network
   - compute
