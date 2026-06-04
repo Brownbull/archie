@@ -203,7 +203,19 @@ function buildSolution(c: Challenge): { nodes: RefNode[]; edges: Array<{ id: str
   let ei = 0
   const link = (source?: string, target?: string) => {
     if (!source || !target || source === target) return
+    if (edges.some((e) => e.source === source && e.target === target)) return // dedup
     edges.push({ id: `e${ei++}`, source, target })
+  }
+  // Add a typed node if missing (and allowed); returns its node id. Used by the topology satisfier.
+  const ensureNode = (typeId?: string): string | undefined => {
+    if (!typeId) return undefined
+    if (idByType.has(typeId)) return idByType.get(typeId)
+    if (!canUse(typeId)) return undefined
+    const n = refNode(typeId, typeId, peak)
+    if (!n) return undefined
+    nodes.push(n)
+    idByType.set(typeId, n.id)
+    return n.id
   }
 
   // Sync spine: traffic → [front spine, ordered] → [compute chain] → fan out to data nodes.
@@ -216,6 +228,33 @@ function buildSolution(c: Challenge): { nodes: RefNode[]; edges: Array<{ id: str
   if (present("observability")) link(primaryCompute, id("observability"))
   // Async tiers (messaging / real-time) stay OFF the sync path: present for required-type coverage,
   // but no synchronous traffic flows through them, so their outage cannot shed the request path.
+
+  // Satisfy required_topology assertions (D69 — the 4c-deferred builder support): add the nodes +
+  // edges each rule needs so a hardened topology challenge is still clearable by the reference solution.
+  for (const a of c.requiredTopology ?? []) {
+    if (a.ruleType === "CACHE_BETWEEN") {
+      const cache = ensureNode("cache")
+      link(cache, ensureNode(a.sourceType)) // cache adjacent to a sourceType node
+      link(cache, ensureNode(a.targetType)) // ...and to a targetType node
+    } else if (a.ruleType === "LB_UPSTREAM") {
+      link(ensureNode("load-balancer"), ensureNode(a.targetType)) // every target adjacent to an LB
+    } else if (a.ruleType === "FAN_OUT_GTE") {
+      const src = ensureNode(a.sourceType)
+      const min = a.minCount ?? 2
+      const neighborsOf = () => new Set(
+        edges.filter((e) => e.source === src || e.target === src).map((e) => (e.source === src ? e.target : e.source)),
+      )
+      let k = 0
+      while (src && neighborsOf().size < min) {
+        const fillerType = canUse("compute") ? "compute" : [...(allowed ?? ["compute"])].find((x) => catOf(x) !== "traffic" && canUse(x))
+        const filler = fillerType ? refNode(`fan-${a.sourceType}-${k}`, fillerType, peak) : null
+        if (!filler) break
+        nodes.push(filler)
+        link(src, filler.id)
+        k++
+      }
+    }
+  }
 
   return { nodes, edges }
 }
@@ -254,8 +293,8 @@ describe("Phase 4 solvability harness — every built-in challenge is clearable 
 
   const challenges = getAllChallenges().slice().sort((a, b) => a.id.localeCompare(b.id))
 
-  it("loads all 41 built-in challenges", () => {
-    expect(challenges.length).toBe(41)
+  it("loads all 46 built-in challenges", () => {
+    expect(challenges.length).toBe(46)
   })
 
   for (const c of challenges) {

@@ -1,0 +1,40 @@
+id: serverless-or-bust
+title: Serverless or Bust
+brief: >-
+  A sharp burst is coming and you have no load balancer to lean on — it's
+  banned for this drill. Absorb the spike with serverless auto-scaling instead
+  of a hand-tuned replica pool. Stay up, stay fast, no LB allowed.
+difficulty: advanced
+budget_cap: 900
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 200 }
+  - { t: 40, rps: 600 }
+  - { t: 55, rps: 3000 }
+  - { t: 70, rps: 3000 }
+  - { t: 90, rps: 500 }
+traffic_sources:
+  - { type: web-users, rps: 3000, kind: periodic, workload: mixed, origin: one-region }
+required_components:
+  - compute
+target_metrics:
+  uptime_percent: 96
+  p99_latency_ms: 350
+forbidden_types: [load-balancer]
+chaos_intensity: 1.5
+hints:
+  - "The load balancer is forbidden — a fixed replica pool behind one isn't an option here."
+  - "Serverless functions scale to the burst automatically without an upstream balancer to wire."
+  - "Provision enough serverless capacity (or a generous compute tier) to cover the 3000-rps plateau without saturating."
+  - "Place traffic → serverless sized for the 3000-rps peak; no load balancer needed. Hold p99 ≤ 350ms across the spike."
+schema_version: 2
+track: foundations
+tier: 3
+requires: [scale-out]
+unlocks: []
+min_xp: 0
+required_types: []
+available_blocks: [compute, serverless, traffic-source]
+grants: []
+rewards:
+  xp: 455

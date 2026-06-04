@@ -1056,3 +1056,23 @@ concrete model now that Phase 4 authored the 1-5 hint ladders.
 
 **Sub-slices:** 5a model + spend + rules (gated) · 5b HintPanel UI · 5c tests/E2E.
 **Status:** active.
+
+## D69 — New challenge expansion: lever set + absurd capstones, all barely-solvable (2026-06-04)
+
+**Context:** Post-ISAPivot, the new levers (forbidden_types, required_topology, multi-region origin,
+chaos_intensity, p95/cost_per_request, typed trafficSources + workload) enable challenge shapes the old
+engine couldn't express. User asked for more challenges + absurd theoretical tier-5 capstones.
+
+**Decisions (user-selected):**
+1. Author BOTH a lever-driven set (~9, slot into existing tiers, one per new lever) AND ~6 absurd
+   tier-5 capstones (10M rps, max chaos, multi-region, sequential outages, AGI-infra, etc.).
+2. Everything is TUNED TO BARELY-SOLVABLE — no `theoretical`/harness-exempt flag. Every new built-in
+   must clear the 4a solvability harness with a reference solution (even Computeless-style ones get a
+   clearable target or are dropped). The harness stays the universal gate.
+
+**Prerequisite:** the harness reference-solution builder must satisfy required_topology assertions
+(deferred in 4c) — CACHE_BETWEEN (cache adjacent to both endpoints), LB_UPSTREAM (LB adjacent to each
+target), FAN_OUT_GTE (source given ≥N neighbors). Build that first, then author + harness-validate +
+tune + weave into the tech tree (requires/unlocks/tier/track) so the Quest Log shows them.
+
+**Status:** active.

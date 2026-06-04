@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260604-184505
+**Date:** 20260604-190234
 **Score:** 14/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,10 +8,10 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 43 | 298ms |
-| code-quality | 57 | 3217ms |
+| lint | 42 | 311ms |
+| code-quality | 57 | 3211ms |
 | ai-slop | 0 | 8ms |
-| security | 10 | 2016ms |
+| security | 10 | 1974ms |
 
 ## Findings
 
@@ -73,30 +73,29 @@
 - [!] `src/services/challengeAutosave.ts:5` — knip/types: Unused type: SavedChallenge
 - [!] `src/lib/equipmentSlots.ts:3` — knip/types: Unused type: EquipmentSlot
 - [!] `src/components/common/DataSourceNote.tsx:4` — knip/types: Unused type: DataSourceKind
-- [!] `src/components/challenges/ChallengeTreeView.tsx:252` — complexity/function-too-long: Function 'QuestDetailPanel' has 122 lines (max: 80)
+- [!] `src/components/challenges/ChallengeEditor.tsx:229` — complexity/function-too-long: Function 'ChallengeEditor' has 169 lines (max: 80)
 
-### lint (43)
+### lint (42)
 
+- [!] `src/components/challenges/ChallengeEditor.tsx:112` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:171` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:303` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:307` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:313` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:326` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:335` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:344` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:358` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:362` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:369` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/challenges/ChallengeEditor.tsx:373` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/dashboard/DashboardOverlay.tsx:255` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/challenges/ChallengeEditor.tsx:110` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:169` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:301` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:305` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:311` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:324` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:333` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:342` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:356` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:360` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:364` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:371` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeEditor.tsx:375` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/dashboard/DashboardOverlay.tsx:255` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
 - [!] `src/services/yamlImporter.ts:139` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
 - [!] `src/components/canvas/NodeProviderSelect.tsx:59` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/NodeProviderSelect.tsx:59` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
@@ -108,11 +107,11 @@
 - [!] `src/components/canvas/ArchieNode.tsx:325` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/challenges/MasteryProfilePanel.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
 - [!] `src/components/layout/AppMenuBar.tsx:51` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/layout/AppMenuBar.tsx:51` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/challenges/MasteryProfilePanel.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
-- [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/engine/monitoringFeedback.test.ts:2` — eslint/no-unused-vars: Identifier 'simulateTick' is imported but never used.
+- [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:144` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.

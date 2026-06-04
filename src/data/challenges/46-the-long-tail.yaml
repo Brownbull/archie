@@ -1,0 +1,40 @@
+id: the-long-tail
+title: The Long Tail
+brief: >-
+  Averages lie. This live feed is judged on its TAIL: a p95 far tighter than the
+  p99 you're used to. A merely-okay design will pass p99 and still fail here.
+  Cut the tail with an edge + cache front so almost every request is fast.
+difficulty: advanced
+budget_cap: 1400
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 1800 }
+  - { t: 90, rps: 2600 }
+traffic_sources:
+  - { type: web-users, rps: 1600, kind: realistic, workload: read, origin: one-region }
+  - { type: mobile-users, rps: 1000, kind: realistic, workload: read, origin: one-region }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 200
+  p95_latency_ms: 90
+hints:
+  - "The pass is won on p95 (90ms), not p99 (200ms) — you need MOST requests fast, not just the typical one."
+  - "Serve the bulk of reads from a fast edge so they never queue behind compute or the database."
+  - "Stack a CDN and a cache in front so the combined hit ratio keeps the tail short; size compute for the misses."
+  - "Place traffic → cdn → cache → compute → relational-db. The stacked edge serves ~most reads in single digits, holding p95 ≤ 90ms and p99 ≤ 200ms at 2600 rps."
+schema_version: 2
+track: realtime
+tier: 3
+requires: [event-stream]
+unlocks: []
+min_xp: 0
+required_types: [cache, cdn]
+available_blocks: [compute, cdn, cache, load-balancer, relational-db, realtime, traffic-source]
+grants: []
+rewards:
+  xp: 455

@@ -1,0 +1,38 @@
+id: no-cache-no-mercy
+title: No Cache, No Mercy
+brief: >-
+  Everyone reaches for a cache. Not today — caching and the CDN are both banned.
+  Hit a read-heavy latency target by scaling the database read path itself
+  (read replicas), and prove you understand where the load really goes.
+difficulty: advanced
+budget_cap: 1100
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 1400 }
+  - { t: 90, rps: 2200 }
+traffic_sources:
+  - { type: web-users, rps: 2200, kind: realistic, workload: read, origin: one-region }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 320
+forbidden_types: [cache, cdn]
+hints:
+  - "Cache and CDN are forbidden — there's no shortcut tier to absorb the reads."
+  - "Reads scale on the database tier itself: add read replicas so no single node is overloaded."
+  - "Scale the relational database's replicas until read capacity comfortably exceeds the 2200-rps peak."
+  - "Place traffic → compute → relational-db with enough read replicas that the store stays under 100% at peak; that alone holds p99 ≤ 320ms without any cache."
+schema_version: 2
+track: data
+tier: 3
+requires: [cache-the-hot-path]
+unlocks: []
+min_xp: 0
+required_types: [relational-db]
+available_blocks: [compute, relational-db, nosql, traffic-source]
+grants: []
+rewards:
+  xp: 455

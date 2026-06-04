@@ -1,0 +1,39 @@
+id: follow-the-sun
+title: Follow the Sun
+brief: >-
+  Your audience is global. One traffic source now originates multi-region, so a
+  single-region stack won't cut it: you need an edge (CDN), name resolution
+  (DNS), and a database behind them. Serve the planet without melting.
+difficulty: advanced
+budget_cap: 1600
+duration_seconds: 100
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 50, rps: 2000 }
+  - { t: 100, rps: 3200 }
+traffic_sources:
+  - { type: web-users, rps: 2000, kind: realistic, workload: read, origin: multi-region }
+  - { type: mobile-users, rps: 1200, kind: realistic, workload: mixed, origin: one-region }
+required_components:
+  - delivery-network
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 99
+  p99_latency_ms: 300
+hints:
+  - "A multi-region source means a single-region design fails the architecture check — you need a global edge."
+  - "Multi-region grading requires a CDN at the edge, DNS for resolution, and a database to serve from."
+  - "Front the stack with CDN + DNS so reads are served at the edge; size compute and the database for the cache-miss remainder."
+  - "Place traffic → dns → cdn → compute → relational-db (CDN + DNS + a database satisfy the multi-region requirement); the CDN edge holds p99 ≤ 300ms at 3200 rps."
+schema_version: 2
+track: edge
+tier: 4
+requires: [edge-delivery]
+unlocks: []
+min_xp: 0
+required_types: [cdn, dns]
+available_blocks: [compute, cdn, dns, load-balancer, relational-db, cache, traffic-source]
+grants: []
+rewards:
+  xp: 730

@@ -1,0 +1,41 @@
+id: read-aside
+title: Read-Aside
+brief: >-
+  Repeat reads are hammering your database. Wire a cache as a read-aside layer
+  BETWEEN compute and the store, so hits never reach the database. This one
+  grades the TOPOLOGY, not just the latency — the cache has to sit on the path.
+difficulty: intermediate
+budget_cap: 450
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 1200 }
+  - { t: 90, rps: 1800 }
+traffic_sources:
+  - { type: web-users, rps: 1800, kind: realistic, workload: read, origin: one-region }
+required_components:
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 220
+  p95_latency_ms: 140
+required_topology:
+  - { rule_type: CACHE_BETWEEN, source_type: compute, target_type: relational-db, description: "a cache between compute and the database" }
+hints:
+  - "Repeat reads at 1800 rps will saturate a lone database — the fix is a read-aside cache that sits on the path."
+  - "The grade checks topology: the cache must be adjacent to BOTH compute and the database, not bolted to the side."
+  - "Size the cache to absorb the read footprint; size the database for the cache-miss remainder. Both stay under 100% at peak."
+  - "Place traffic → compute → cache → relational-db. The cache fronts the database (CACHE_BETWEEN), a high-hit-ratio variant holds p99 ≤ 220ms and p95 ≤ 140ms."
+schema_version: 2
+track: data
+tier: 3
+requires: [cache-the-hot-path]
+unlocks: []
+min_xp: 0
+required_types: [cache, relational-db]
+available_blocks: [compute, cache, relational-db, traffic-source]
+grants: []
+rewards:
+  xp: 455
