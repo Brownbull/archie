@@ -3577,3 +3577,8 @@ HARDENED: 38 tighter p95 targets, 5 chaos_intensity (event challenges), 8 forbid
 HARNESS GUARD WORKED: caught 3 over-hardenings — 2 relational-db bans (fixed via repForCategory non-forbidden fallback) + 1 production-ai multi-region (reverted; availableBlocks lacks dns). Builder now forbidden-aware + multi-region-aware.
 DEFERRED: required_topology (needs topology-conforming builder); multi-region content (needs a challenge with cdn+dns+db available).
 PHASE 4: 4a/4b/4c done; 4d progressive 1-5 hint ladders remains.
+
+## 2026-06-04 17:12 — PUSH dev -> main
+PR: — (direct dev→main per PUSH.md convention)
+CI: all passed (deploy-production success, ~57s, run 26979834232)
+DEPLOYMENTS: P124 (Phase 4b recast + 4c harden shipped)
