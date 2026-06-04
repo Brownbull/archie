@@ -23,8 +23,11 @@ target_metrics:
   p99_latency_ms: 250
   p95_latency_ms: 150
 hints:
-  - An event stream (Kafka-style) is durable and ordered — unlike a simple queue.
-  - The cache absorbs repeated reads so the stream isn't re-read for every consumer.
+  - "The core problem is absorbing 1500 rps write traffic reliably with ordering guarantees — an event stream provides durability and replay semantics that fire-and-forget queues do not."
+  - "Place an event-stream block to handle the 1500 rps write workload while maintaining ordering per partition and durability for offset replay."
+  - "Size the event-stream with enough partitions to handle 1500 rps writes without bottlenecking; add cache downstream to serve repeated reads so consumers don't re-read same events."
+  - "Wire compute to write to event-stream; add cache layer so reads of recent events are served from cache (p99 250ms, p95 150ms target) rather than re-reading from stream."
+  - "Deploy compute with 2 replicas for 1500 rps writes; event-stream with 3-4 partitions for parallel writes; cache with 2+ replicas for cached reads; avoid simple message-queue-only architecture."
 schema_version: 2
 track: realtime
 tier: 2

@@ -28,9 +28,11 @@ target_metrics:
 scheduled_events:
   - { t: 60, type: az_outage, target: compute, durationS: 50 }
 hints:
-  - Observability is your eyes during the outage — without it, you're flying blind.
-  - The CDN + cache serve cached AI responses while the LLM gateway recovers.
-  - This capstone draws from everything you've learned across all tracks.
+  - "This is a multi-region failover capstone: when an AZ outage hits the LLM gateway mid-run, the CDN and cache must serve cached AI responses so the service stays up."
+  - "Observability (monitoring, tracing) is essential to see the outage and route around it. The cache + CDN absorb read load during the compute AZ failure."
+  - "At peak (3500 rps), replica compute instances and a load balancer distribute traffic. When the AZ fails at t=60s for 50s, the CDN serves cached responses and the cache backs up remaining requests until failover completes."
+  - "Use traffic-source → cdn → load-balancer → compute → cache → llm-gateway. Add observability to track AZ health. Deploy 3+ compute instances across AZs with replicated cache."
+  - "Deploy 3-4 compute instances across AZs behind LB. CDN caches ~70-80% (2450-2800 rps from edge), cache (4-6GB) backs requests. At t=60s AZ outage, unaffected AZs + cache + CDN keep p95≤240ms, p99≤400ms, 99% uptime."
 schema_version: 2
 track: aiml
 tier: 4

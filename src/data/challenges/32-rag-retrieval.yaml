@@ -28,8 +28,11 @@ target_metrics:
 scheduled_events:
   - { t: 75, type: component_failure, target: data-storage, durationS: 30 }
 hints:
-  - The vector store handles semantic search; the cache reduces repeated lookups.
-  - When the vector store fails, the search engine can serve as a fallback for keyword-based retrieval.
+  - "This is a read-heavy retrieval problem: a vector store handles semantic search, and a cache layer prevents repeated queries from hitting the store."
+  - "Deploy a cache upstream of the vector store to absorb repeated semantic queries. With ~80-85% hit ratio, only 15-20% of 2000 rps misses reach the store."
+  - "When the vector store fails at t=75s for 30s, your fallback is the search engine (keyword-based retrieval) plus the cache for served-from-cache hits. Ensure the cache is warm before the failure."
+  - "Use traffic-source → load-balancer → compute → cache → vector-store, with search-engine as fallback and llm-gateway to merge context. Avoid relational-db."
+  - "Deploy 2-3 compute instances behind LB. Cache (3-4GB, 85% hit) means vector-store sees ~300 rps. At t=75s, search-engine takes over for cache misses. Achieves 98% uptime, p99≤350ms, p95≤220ms."
 forbidden_types: [relational-db]
 schema_version: 2
 track: aiml

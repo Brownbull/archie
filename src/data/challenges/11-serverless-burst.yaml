@@ -23,8 +23,9 @@ target_metrics:
   p99_latency_ms: 300
   p95_latency_ms: 240
 hints:
-  - Serverless functions can absorb the burst without permanent provisioning cost.
-  - Keep the load balancer in front so traffic splits between compute and serverless.
+  - "The core problem is absorbing a spike from 200 RPS to 3000 RPS without over-provisioning base compute; serverless scales automatically to cover overflow."
+  - "Split traffic between a small base compute tier (sized for steady 200 RPS) and serverless functions that handle overflow during the spike."
+  - "Use a load-balancer to route: steady-state requests go to compute, burst requests spill to serverless; this keeps compute under 100% and avoids idle replicas after the burst ends."
 schema_version: 2
 track: foundations
 tier: 3

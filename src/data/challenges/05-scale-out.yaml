@@ -22,9 +22,10 @@ target_metrics:
   p99_latency_ms: 250
   p95_latency_ms: 160
 hints:
-  - Raise the replica count on compute until it keeps up with peak traffic.
-  - Replicas without a load balancer upstream raise a topology warning — add the LB tier.
-  - Capacity scales with replicas; latency climbs once a node is past 100% load.
+  - "At 1500 RPS, a single compute node cannot handle the load — this is a horizontal scaling problem requiring replicas and a load balancer."
+  - "Replicas of stateless compute spread load evenly, but they require a load balancer upstream to distribute traffic; without it the topology is invalid."
+  - "Raise compute replicas until the total capacity exceeds 1500 RPS; place a load balancer in front to route traffic fairly across the pool."
+  - "Place traffic → load balancer → compute replicas (raise count until each stays under 100% at 1500 RPS); load balancer distributes traffic evenly so the replica pool absorbs the peak and meets p99 < 250 ms."
 schema_version: 2
 track: foundations
 tier: 2

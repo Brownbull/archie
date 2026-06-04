@@ -23,9 +23,9 @@ target_metrics:
 scheduled_events:
   - { t: 30, type: component_failure, target: compute, durationS: 30 }
 hints:
-  - Connect observability to your compute node — it shortens failure recovery by 33%.
-  - Without monitoring, the 30s outage drops too much uptime to pass.
-  - Monitoring actively helps recovery, not just visualization.
+  - "The core problem is a 30-second compute failure at t=30s. Observability actively speeds recovery from 30s to 20s. Without it you fail the 80% uptime target."
+  - "Wire observability to compute. The failure recovers 10 seconds faster with monitoring (20s vs 30s), saving downtime and keeping you at the 80% uptime threshold."
+  - "Place compute with observability connected. At t=30s the 30s failure is detected and recovered in 20s instead, leaving you at exactly 80% uptime (72s up / 90s), meeting the target and staying under 200 budget."
 schema_version: 2
 track: reliability
 tier: 2

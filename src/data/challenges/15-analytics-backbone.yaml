@@ -27,8 +27,10 @@ target_metrics:
   p99_latency_ms: 300
   p95_latency_ms: 220
 hints:
-  - Each data model (time-series, graph, vector) excels at different query shapes.
-  - Cache the analytics read path; the ingest write path goes direct to storage.
+  - "Multi-modal analytics requires time-series for metrics (ingest writes), graph for relationships, and vectors for semantic search; keep ingest flowing while serving analytic reads fast."
+  - "Time-series-db absorbs 800 RPS IoT writes; cache shields 1200 RPS web-user reads on graph and vector stores; writes go direct to time-series-db, reads hit cache then graph/vector."
+  - "Avoid relational-db (forbidden); separate ingest (IoT → time-series-db direct) from analytics (web → cache → graph/vector); size time-series-db for 800 RPS writes, cache and graph/vector for 1200 RPS reads."
+  - "IoT writes: traffic-source → compute → time-series-db (direct, no cache); Web reads: traffic-source → compute → cache → graph-db + vector-store; use 2 compute replicas, 2 cache replicas, 3 time-series-db, 3 graph-db, 2 vector-store replicas for 98.5% uptime and p99 300ms."
 forbidden_types: [relational-db]
 schema_version: 2
 track: data

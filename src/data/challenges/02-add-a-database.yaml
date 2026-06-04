@@ -21,8 +21,8 @@ target_metrics:
   p99_latency_ms: 500
   p95_latency_ms: 300
 hints:
-  - Connect compute to the database — traffic flows from the entry node downstream.
-  - The database adds latency; a single managed instance is plenty at this load.
+  - "You need a relational database to persist state — wire compute downstream to a database node so reads and writes flow through."
+  - "Single instances of both compute and database are enough at 150 RPS; the database adds latency to each request, so size both for peak load without saturation."
 schema_version: 2
 track: data
 tier: 1

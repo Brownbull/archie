@@ -25,9 +25,9 @@ target_metrics:
   p99_latency_ms: 500
   p95_latency_ms: 320
 hints:
-  - A message queue buffers the burst — it absorbs what the worker can't process immediately.
-  - The worker drains the queue at its own pace (500 rps), smoothing out the spike.
-  - Without a queue, the worker sheds 90% of the burst traffic instantly.
+  - "The core problem is a 5000 rps flash sale spike at t=30s hitting a 500 rps worker. Message queuing is the required tier — without a queue, 4500 requests drop instantly."
+  - "A message queue buffers the burst and decouples traffic from the worker, which drains at 500 rps. The queue absorbs the 4500 rps gap during the spike without losing traffic."
+  - "Place message queue between traffic source and worker. At t=30-60s the queue buffers ~220k messages (4500 rps × 30s). It fully drains by t=75s when traffic drops to match worker capacity."
 schema_version: 2
 track: realtime
 tier: 2

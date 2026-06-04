@@ -25,8 +25,11 @@ target_metrics:
 scheduled_events:
   - { t: 60, type: latency_spike, target: compute, multiplier: 4, durationS: 30 }
 hints:
-  - The stream processor (Flink-style) handles windowed aggregation natively.
-  - Cache the aggregated output so downstream reads don't re-compute.
+  - "The core problem is windowing and aggregating 2000 rps events in flight while surviving a 4x latency spike on compute — a stream processor handles time-windowed aggregations natively."
+  - "Place a stream-processor consuming from event-stream, grouping events by time windows, outputting summaries while handling the 2000 rps peak without falling behind."
+  - "Size the stream-processor to process 2000 events/sec with minimal lag; add cache to store latest aggregated results so downstream reads don't re-compute windows."
+  - "Wire compute to event-stream; stream-processor reads continuously, emits windowed aggregates to cache/database so reads serve without re-computing the window."
+  - "Deploy event-stream with 3+ partitions for 2000 rps; stream-processor with 2 replicas through peak and 4x spike; cache with 2+ replicas for p95 180ms reads; size compute at 2 replicas for 2000 rps writes."
 chaos_intensity: 2
 schema_version: 2
 track: realtime

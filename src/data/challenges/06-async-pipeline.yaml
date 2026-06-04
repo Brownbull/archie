@@ -23,8 +23,10 @@ target_metrics:
   p99_latency_ms: 300
   p95_latency_ms: 200
 hints:
-  - The traffic curve peaks, dips, then peaks higher — provision for the highest peak, since the model has no cross-time queue to smooth it.
-  - Route compute → messaging → data-storage; give each tier capacity (or replicas) to carry the served load it receives without shedding.
+  - "The spiky write traffic (peaking at 1000 RPS) must be decoupled from the database — add a messaging queue to buffer writes and let the database catch up asynchronously."
+  - "Traffic pattern peaks 3 times; provision for the highest peak (1000 RPS) since the queue cannot carry requests backward across time."
+  - "Route compute → message queue → database; size the queue and database so that at 1000 RPS peak, neither is saturated and p99 latency stays under 300 ms."
+  - "Place traffic → compute → message queue → database; size compute for 1000 RPS write ingestion, queue to accept all 1000 RPS without blocking, and database to drain queue without saturation."
 schema_version: 2
 track: realtime
 tier: 1

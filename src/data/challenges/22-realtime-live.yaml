@@ -22,8 +22,11 @@ target_metrics:
   uptime_percent: 98
   p99_latency_ms: 150
 hints:
-  - The realtime tier (websocket server) fans events out to connected clients.
-  - Cache helps here — pre-compute the latest state so new connections bootstrap fast.
+  - "The core problem is fanning out processed events to 500+ websocket clients at sub-150ms latency while the stream processor feeds fresh data continuously — realtime tier handles fan-out and connection management."
+  - "Place a realtime block managing 500+ websocket connections and emitting updates under 150ms p99 latency at 2500 rps peak."
+  - "Size realtime with 2-3 replicas for 500+ concurrent connections; add cache to pre-compute latest event state so new connections bootstrap fast."
+  - "Wire stream-processor output to realtime tier which fans updates to subscribed clients; cache stores latest state so new connections don't request stale history."
+  - "Deploy compute with 2 replicas for stream-processor; realtime with 2-3 replicas managing 500+ clients fanning 2500 rps under 150ms p99; cache with 2 replicas; load-balancer distributing connections."
 schema_version: 2
 track: realtime
 tier: 4

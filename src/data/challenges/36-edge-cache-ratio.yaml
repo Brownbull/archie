@@ -23,9 +23,11 @@ target_metrics:
   p99_latency_ms: 200
   p95_latency_ms: 130
 hints:
-  - The CDN absorbs ~85% of requests at edge latency (10-20ms).
-  - Only ~15% (1500 rps) reaches your origin — well within its 2000 rps capacity.
-  - Without the CDN, 10,000 rps hits compute directly and overloads it.
+  - "Your origin compute handles 2000 rps but traffic sends 10,000 rps. A CDN absorbs the majority of requests at the edge, functioning as a distributed cache."
+  - "Deploy a CDN with an 85% hit ratio: it serves 8500 rps from edge locations (10-20ms latency) and only 1500 rps reaches your origin."
+  - "At peak (10,000 rps, t=60-90), the CDN must cache static and semi-static content aggressively (cache-control headers, long TTLs). Miss traffic (1500 rps) hits the origin load balancer."
+  - "Use traffic-source → cdn → load-balancer → compute. CDN caches with TTL tuned for your workload; origin sees ~1500 rps (15% misses)."
+  - "Deploy 1-2 compute instances behind LB, with CDN in front. CDN: 85% hit ratio = 8500 rps from edge, 1500 rps (15% misses) reach LB. Keeps origin at 1500 rps. Achieve 97% uptime, p99≤200ms, p95≤130ms via cache headers and <50ms compute response time."
 schema_version: 2
 track: edge
 tier: 3

@@ -31,9 +31,11 @@ scheduled_events:
   - { t: 20, type: az_outage, target: compute, durationS: 15 }
   - { t: 70, type: az_outage, target: data-storage, durationS: 15 }
 hints:
-  - Two outages hit different tiers — the requests dropped during each window are unavoidable.
-  - Nothing in the model recovers an offline tier early, so the win is in the non-outage windows — keep every serving node under 100% load there so latency and shed stay flat.
-  - Outages take the whole category offline; the score rewards how clean (topology) and cheap (budget) the surviving design is.
+  - "The capstone: survive two az_outages (compute t=20-35, data-storage t=70-85) at 4000 RPS peak with p99 220ms within 1800 budget."
+  - "Each outage takes a whole tier offline; you can't prevent dropped requests during windows, so over-provision every surviving tier for non-outage periods."
+  - "When compute goes down, cache+data-storage absorb the load; when data-storage goes down, cache absorbs all reads. Size survivors to handle peak at ~90% load."
+  - "Use messaging as async buffer for writes during outages so they don't pile up; observability monitors without adding load."
+  - "CDN → load-balancer → 14 compute replicas → cache → relational-db + message-queue for async writes, observability as leaf. Cache needs ~2000 RPS capacity for compute-outage window; this design clears 70% uptime while staying under budget."
 schema_version: 2
 track: reliability
 tier: 5

@@ -23,8 +23,10 @@ target_metrics:
   p99_latency_ms: 250
   p95_latency_ms: 200
 hints:
-  - Replicas across zones means a single-zone outage doesn't take everything down.
-  - The load balancer distributes traffic; observability confirms it's balanced.
+  - "The core problem: single-zone replicas fail together. The load balancer and per-zone observability matter most to spread traffic and confirm balance."
+  - "Deploy compute replicas across 2+ zones. Use the load balancer to distribute traffic evenly. Observability shows per-zone metrics so you catch if one zone is hot."
+  - "Place load-balancer upstream of compute replicas in separate zones (2 replicas minimum). As traffic hits 1200 rps, load-balancer routes equally, keeping latency flat. Monitor each zone independently to confirm distribution."
+  - "Wire traffic → load-balancer → compute replicas zone-a/zone-b (1-2 per zone). Load-balancer uses round-robin/least-connections. Add observability per-zone. With even distribution, p99 stays under 250ms at 1200 rps. Avoid single replica or unmonitored zones."
 schema_version: 2
 track: reliability
 tier: 2

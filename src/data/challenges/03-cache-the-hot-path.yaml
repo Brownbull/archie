@@ -22,8 +22,10 @@ target_metrics:
   p99_latency_ms: 250
   p95_latency_ms: 160
 hints:
-  - p99 latency rises sharply once any node runs past 100% load — the target is met by keeping every tier under capacity, not by overloading one.
-  - Give the caching and data-storage tiers enough capacity (variant size or replicas) that the read path never saturates at peak.
+  - "The read-heavy workload at 280 RPS makes latency tight — the core problem is avoiding database saturation on repeated reads."
+  - "Insert a cache tier between compute and database; read hits bypass the database, and cache misses flow downstream."
+  - "Size the cache and database so that at peak (280 RPS), the cache absorbs most read traffic and the database stays under 100% capacity."
+  - "Place traffic → compute → cache → database, with cache sized large enough to handle the read footprint and database sized to handle writes plus uncached reads; both must stay under 100% at 280 RPS."
 schema_version: 2
 track: data
 tier: 2

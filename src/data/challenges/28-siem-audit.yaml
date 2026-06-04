@@ -24,8 +24,9 @@ target_metrics:
   p99_latency_ms: 250
   p95_latency_ms: 180
 hints:
-  - Security (SIEM) and observability serve different roles — both are needed here.
-  - The audit trail doesn't slow the request path if it's async.
+  - "Core problem: rate limiting blocks the flood but doesn't reveal the attack pattern. SIEM detects anomalies; observability logs the audit trail."
+  - "Add security (SIEM) to flag repeated failed auths or credential patterns. Wire observability async to log every auth event. Both run parallel to auth, not blocking."
+  - "Wire rate-limiter → auth → compute, then tee auth events to security and observability asynchronously. SIEM watches for attack signatures; observability persists forensic logs. Async keeps p99 under 250ms at 1000 rps."
 schema_version: 2
 track: security
 tier: 3

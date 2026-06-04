@@ -20,8 +20,8 @@ target_metrics:
   p99_latency_ms: 400
   p95_latency_ms: 250
 hints:
-  - One compute node is enough at this traffic — pick the cheapest variant that keeps up.
-  - Watch the budget bar; a bigger instance than you need just burns money.
+  - "This is a single-node service problem: pick one compute variant that handles 120 RPS without overload, minimizing cost."
+  - "Compute variants trade cost vs capacity; the cheapest one that stays under 100% utilization at 120 RPS will meet your latency targets."
 schema_version: 2
 track: foundations
 tier: 1

@@ -26,8 +26,10 @@ target_metrics:
   p99_latency_ms: 200
   p95_latency_ms: 160
 hints:
-  - Cache the read path, queue the write path, and burst to serverless under peaks.
-  - This capstone draws from everything you've learned in Foundations.
+  - "Separate the read path (cache) and write path (queue) to handle 4000 RPS peaks without overloading compute — the message queue prevents writes from blocking cache hits."
+  - "Cache absorbs reads for p99/p95 latency; queue writes durably while compute drains them; when peaks exceed steady-state capacity, serverless burst instances handle the overflow."
+  - "Avoid relational-db entirely; use load-balancer to shard reads across cache replicas, message-queue to buffer writes, and serverless workers to process queued jobs asynchronously without blocking the hot path."
+  - "traffic-source → load-balancer → compute (replicas per RPS tier); cache in front of reads, message-queue behind writes; serverless workers scale by queue depth; size compute and cache to keep p99 under 200ms at 4000 RPS, serverless to clear queued writes within 60s."
 forbidden_types: [relational-db]
 schema_version: 2
 track: foundations

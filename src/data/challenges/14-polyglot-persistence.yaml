@@ -23,8 +23,10 @@ target_metrics:
   p99_latency_ms: 250
   p95_latency_ms: 180
 hints:
-  - Use the cache for hot reads so the DBs aren't hammered directly.
-  - NoSQL handles schema-free documents better than relational for this workload.
+  - "Different data shapes demand different databases — structured data thrives in SQL, documents in NoSQL; cache shields all reads so no DB is hammered directly."
+  - "Route reads through cache first; structured queries hit relational-db and documents hit nosql, both cached on warm hits; writes bypass cache and go direct to the appropriate DB."
+  - "Avoid object-storage (forbidden); use relational-db for transactions and nosql for schema-free documents; size cache replicas to hit 80%+ for 1200 RPS so DB load stays below saturation."
+  - "traffic-source → compute → cache; compute routes reads to cache, cache hits return directly, misses fetch from relational-db (structured) or nosql (documents); writes go direct to correct DB; use 2-3 compute + 1-2 cache replicas for p99 250ms and p95 180ms at 1200 RPS."
 forbidden_types: [object-storage]
 schema_version: 2
 track: data

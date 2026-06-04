@@ -21,7 +21,11 @@ target_metrics:
   uptime_percent: 95
   p99_latency_ms: 400
 hints:
-  - Observability is cheap if you pick the right tier — it watches, it doesn't serve.
+  - "The core problem is adding observability to a compute + DB stack without exceeding 150-unit budget while maintaining 95% uptime — observability is non-serving, so pick minimal footprint."
+  - "Place an observability block connected to compute and relational-db to collect request rates, error rates, and latency metrics; size it lightly (1 replica) because it only observes."
+  - "Size observability with 1 replica to monitor 400 rps read workload at t=60; it should track volume, errors, and latency percentiles without exceeding 150-unit budget."
+  - "Wire compute and relational-db to observability block which collects metrics; observability does not sit in request path, so minimal latency impact; size compute 1-2 replicas, relational-db 1 replica."
+  - "Deploy compute 1 replica for 400 rps reads, relational-db 1 replica; connect single observability block (fits 150-unit budget) to collect metrics; achieves 95% uptime and p99 400ms latency watching request/error rates and latency."
 schema_version: 2
 track: reliability
 tier: 1

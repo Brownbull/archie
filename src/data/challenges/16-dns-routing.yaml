@@ -20,7 +20,9 @@ target_metrics:
   p99_latency_ms: 350
   p95_latency_ms: 260
 hints:
-  - DNS sits at the very front of the network path — everything downstream depends on it.
+  - "DNS is the entry point — every request resolves to your compute endpoint; if DNS is slow or unavailable, nothing else matters."
+  - "Route dns to a single compute instance at 500 RPS peak; dns forwards all traffic to compute; p99 and p95 are generous because this is a beginner challenge with minimal load."
+  - "traffic-source → dns → compute; dns resolves to the compute IP; a single compute instance handles 500 RPS; no replicas needed for 97% uptime as long as instance and DNS are up."
 schema_version: 2
 track: edge
 tier: 1

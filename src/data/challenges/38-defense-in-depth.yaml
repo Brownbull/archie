@@ -28,9 +28,9 @@ target_metrics:
 scheduled_events:
   - { t: 45, type: latency_spike, target: auth-security, multiplier: 3, durationS: 30 }
 hints:
-  - The rate limiter sheds abuse traffic before it reaches auth + compute.
-  - Observability doesn't carry traffic but helps the topology star.
-  - Auth adds latency — keep the chain efficient under burst.
+  - "The core problem is credential-stuffing attack spiking to 4000 rps at t=45s during a 3x auth latency spike. Rate limiting and auth are the required tiers."
+  - "Place rate limiter before auth to shed attack traffic. Observability monitors the chain. The rate limiter caps abuse before it reaches auth/compute. Avoid cache (forbidden)."
+  - "Build: traffic-source → rate-limiter (1200 rps cap) → auth → compute → observability. At t=45s, rate limiter sheds the 3000+ rps attack while legitimate 1000 rps flows through. Observability tracks attack pattern, keeping p99 under 300ms and p95 under 200ms within 1200 budget."
 forbidden_types: [cache]
 chaos_intensity: 2
 schema_version: 2

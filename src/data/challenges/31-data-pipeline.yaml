@@ -25,8 +25,11 @@ target_metrics:
 scheduled_events:
   - { t: 60, type: latency_spike, target: compute, multiplier: 4, durationS: 20 }
 hints:
-  - The message queue decouples ingest from processing — the ETL tier drains it async.
-  - Object storage is the landing zone for raw data before ETL transforms it.
+  - "This is an async pipeline problem: ingest must not block; a message queue decouples traffic from ETL compute so you can buffer the burst."
+  - "Place a message queue between the traffic source and compute, and an ETL block to drain it. At peak (1000 rps), the queue absorbs the spike while ETL processes steadily."
+  - "When compute gets a 4x latency spike at t=60s, the queue will grow backlog; size it to hold ~20s of excess writes (4000+ messages) so you don't shed traffic."
+  - "Use traffic-source → message-queue → etl → llm-gateway, with object-storage as the raw data landing zone. Avoid relational-db (forbidden)."
+  - "Deploy 2-3 compute instances running ETL. Peak 1000 rps with 4x spike at t=60s grows queue, but parallel workers drain it. Object-storage holds ~144k docs, queue buffers ~4000+ messages. Achieves 97% uptime and p95≤260ms."
 forbidden_types: [relational-db]
 chaos_intensity: 2
 schema_version: 2

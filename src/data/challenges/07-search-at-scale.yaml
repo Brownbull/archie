@@ -23,9 +23,11 @@ target_metrics:
   p99_latency_ms: 180
   p95_latency_ms: 140
 hints:
-  - Your design must include the caching and search tiers; give each enough capacity that neither saturates at peak.
-  - Scale compute with replicas behind the edge/LB; a single node won't hold p99 here.
-  - Tight latency targets punish any overloaded tier — keep every node under 100% load.
+  - "The core problem is handling 2500 RPS search queries with strict p99 latency; every tier on the critical path must have capacity headroom."
+  - "Layer a CDN at the edge to absorb some traffic, then scale compute with multiple replicas behind a load balancer to distribute the peak load."
+  - "Size the search-engine and cache separately — neither should saturate at 2500 RPS; both must keep individual nodes under 100% load to hold the 180ms p99."
+  - "The search-engine handles compute-intensive queries; the cache sits between compute and search to reduce queries hitting the search tier, multiplying throughput."
+  - "CDN → load-balancer → 8-10 compute replicas → cache → search-engine. Target 250 RPS per compute node, 1250 RPS per cache node, 1250 RPS per search-engine node to stay under 90% and hit p99 180ms."
 schema_version: 2
 track: data
 tier: 4

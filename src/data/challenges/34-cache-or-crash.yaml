@@ -24,9 +24,11 @@ target_metrics:
   p99_latency_ms: 300
   p95_latency_ms: 180
 hints:
-  - The DB can only handle 500 rps — without a cache, most traffic is shed.
-  - A cache with ~80% hit ratio means the DB only sees ~400 of the 2000 rps.
-  - Place the cache BETWEEN compute and the database so it absorbs reads.
+  - "Your database handles 500 rps but traffic sends 2000 rps. A cache upstream absorbs the read hits so the DB only sees misses."
+  - "Place the cache between the traffic source (via compute) and the database. With an 80% hit ratio, the cache serves 1600 rps and the DB only sees 400 rps."
+  - "At peak (2000 rps, t=60-90), the cache must hold the hot dataset (~1-2GB depending on key size and working set). If the cache is undersized, eviction is too aggressive and miss ratio climbs."
+  - "Use traffic-source → compute → cache → relational-db. Size the cache for 80%+ hit ratio. At 2000 rps peak, 400 rps reaches the DB, 1600 rps served from cache."
+  - "Deploy 1 compute with Redis-like cache (2-3GB, LRU). At t=60-90, 2000 rps: cache serves 1600 (80% hit), DB serves 400 (20% miss). Keeps DB from overload, achieves 97% uptime, p99≤300ms, p95≤180ms."
 schema_version: 2
 track: data
 tier: 3

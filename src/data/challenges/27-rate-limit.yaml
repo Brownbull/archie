@@ -25,7 +25,9 @@ target_metrics:
   p99_latency_ms: 300
   p95_latency_ms: 220
 hints:
-  - The rate limiter sheds excess requests before they reach auth + compute.
+  - "Core problem: junk-auth requests flood at 45s (2000 rps spike). Rate limiter is the first defense, shedding abuse before auth chokes."
+  - "Place rate-limiter right after traffic-source and before auth. Set threshold ~1000 rps (sum of legitimate sources) to reject excess during the 45-60s spike."
+  - "Wire traffic → rate-limiter (1000 rps threshold) → auth → compute. Fast-fail rejected requests so they don't queue. Auth/compute see ~1000 rps max, keeping p99 under 300ms. The limiter absorbs the 2000 rps spike entirely."
 schema_version: 2
 track: security
 tier: 2

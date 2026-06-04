@@ -24,8 +24,9 @@ target_metrics:
   p99_latency_ms: 250
   p95_latency_ms: 180
 hints:
-  - The API gateway handles validation + routing before traffic reaches compute.
-  - Auth sits alongside the gateway to enforce identity on every request.
+  - "An API gateway sits between CDN and compute: it validates requests, enforces auth, and routes to the right endpoint — offloading these from compute keeps total p99 under 250ms."
+  - "Traffic flows: api-client → cdn → api-gateway (auth + validation) → compute; api-gateway checks identity on every request and forwards validated traffic downstream."
+  - "traffic-source (api-client) → dns → cdn → api-gateway → load-balancer → compute (4 replicas); api-gateway enforces auth (<10ms overhead), cdn caches cacheable responses, load-balancer spreads 2000 RPS across 4 replicas (500 RPS each) at p99≤250ms with 99% uptime."
 schema_version: 2
 track: edge
 tier: 4

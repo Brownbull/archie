@@ -24,9 +24,11 @@ target_metrics:
 scheduled_events:
   - { t: 25, type: az_outage, target: compute, durationS: 20 }
 hints:
-  - The outage hits early while traffic is still low — that's the cheapest window to lose, but you can't prevent the drop.
-  - An az_outage takes every node of the targeted category down; adding more compute replicas won't dodge it (they're all the same category).
-  - Keep compute under 100% load outside the outage so p99 stays inside the target — that's where the pass is won.
+  - "The core problem is surviving a 20-second compute zone outage while holding p99 latency; the requests lost during the outage are unavoidable at 78% uptime."
+  - "An az_outage takes every compute node offline simultaneously — adding more replicas won't dodge it, so over-provision the non-outage windows for instant recovery."
+  - "Keep all compute nodes under 80% load before t=25 and after t=45 so when the outage hits, recovery happens instantly without latency spikes."
+  - "Use a load-balancer to distribute traffic across compute replicas and add observability to track recovery; 1600 RPS peak requires roughly 5-6 compute replicas."
+  - "Load-balancer → 6 compute replicas → relational-db + cache. Keep nodes under 80% load outside the outage (t=0-25 and t=45-100) to hold p99 250ms during normal operation."
 schema_version: 2
 track: reliability
 tier: 3

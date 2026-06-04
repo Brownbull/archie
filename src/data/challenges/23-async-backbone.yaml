@@ -29,8 +29,11 @@ target_metrics:
 scheduled_events:
   - { t: 75, type: az_outage, target: messaging, durationS: 45 }
 hints:
-  - Redundancy across the event stream is the key — a single-AZ stream is a single point of failure.
-  - This capstone draws from everything you've learned in Realtime.
+  - "The core problem is running a full event pipeline at 4000 rps under an AZ outage on messaging at t=75 for 45s — redundancy across the event-stream is critical because a single-AZ stream is a single point of failure."
+  - "Place message-queue, event-stream, stream-processor, and realtime in sequence; size event-stream with multi-AZ replicas so the t=75-120 AZ outage on messaging does not drop the pipeline."
+  - "Size event-stream with 3+ partitions and 2+ replicas across AZs to survive the outage; add cache to store computed state so realtime serves subscribers even if processor falls behind during recovery."
+  - "Wire compute (2 replicas for writes) to message-queue to event-stream (multi-AZ); stream-processor (2 replicas) reads from stream with windowing to cache; realtime (2 replicas) reads from cache fanning to clients."
+  - "Deploy compute 2 replicas; message-queue to event-stream with 3+ partitions, 2+ AZ-spanning replicas for outage survival; stream-processor 2 replicas; cache 2-3 replicas; realtime 2-3 replicas with load-balancer; meets 98.5% uptime and latency targets during 45s AZ outage."
 schema_version: 2
 track: realtime
 tier: 5

@@ -21,7 +21,9 @@ target_metrics:
   p99_latency_ms: 400
   p95_latency_ms: 300
 hints:
-  - Auth sits in front of compute — it's the gatekeeper, not the service itself.
+  - "The core problem: requests need auth validation before hitting the backend. The auth tier sits upstream as the gatekeeper."
+  - "Place auth upstream of compute so it validates credentials first. Auth adds 50-100ms latency, so scale it lean to keep total p99 under 400ms at 600 rps."
+  - "Wire traffic → auth → compute. Size auth for 600 rps within 200 budget. Latency budget is tight: auth's added latency plus compute must total under p99 400ms. Keep auth stateless and replicate if needed."
 schema_version: 2
 track: security
 tier: 1

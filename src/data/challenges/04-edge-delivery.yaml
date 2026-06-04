@@ -21,8 +21,10 @@ target_metrics:
   p99_latency_ms: 200
   p95_latency_ms: 140
 hints:
-  - The delivery/network tier is your entry point — route edge → compute so traffic enters there.
-  - Whatever a node serves flows on to what it points at, so the compute tier still sees the served load — give it (or its replicas) enough capacity to stay under 100% at peak.
+  - "At 800 RPS the core problem is entry-point bottleneck — you must place a CDN or edge tier as the first layer to absorb requests."
+  - "CDN or load-balancer sits at the entry; compute tier sits downstream and still sees all served load, so it must have capacity for the full peak."
+  - "Traffic enters the CDN/edge tier, flows through to compute; size compute (or its replicas) so it stays under 100% at 800 RPS peak."
+  - "Place traffic → CDN → compute; the compute tier receives all 800 RPS so size it with enough capacity or replicas to stay under saturation and hit the tight 200 ms p99 target."
 schema_version: 2
 track: edge
 tier: 3

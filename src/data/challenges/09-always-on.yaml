@@ -25,9 +25,11 @@ target_metrics:
   p99_latency_ms: 200
   p95_latency_ms: 155
 hints:
-  - Every tier on the request path carries the load routed to it — size edge, compute, cache, and data-storage so none exceeds 100% at peak.
-  - Scale compute with replicas behind the edge/LB until peak traffic fits under capacity.
-  - Keep monitoring off the request path — wired as a leaf it adds budget cost but no load or latency, which is the point.
+  - "The core problem is building a production tier that scales to 3000 RPS while holding p99 200ms and p95 155ms under a 1300-unit budget."
+  - "Distribute traffic across delivery-network (edge), scaled compute, cache, and data-storage so no single tier exceeds 100% load at peak."
+  - "Scale compute with 10-12 replicas behind a load-balancer; use cache in front of data-storage to reduce database queries; add observability as a leaf."
+  - "Each tier sizes for peak: CDN absorbs traffic, load-balancer fans out to compute, compute queries cache first, cache backs off to database."
+  - "CDN → load-balancer → 10 compute replicas → cache → relational-db with observability as leaf. Target 300 RPS per compute, 1500 RPS per cache, cache filtering ~70% of reads to keep all nodes under 90%."
 schema_version: 2
 track: reliability
 tier: 4

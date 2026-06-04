@@ -23,9 +23,9 @@ target_metrics:
   p99_latency_ms: 400
   p95_latency_ms: 280
 hints:
-  - The payment gateway adds latency to every transaction — keep the chain efficient.
-  - A load balancer in front of compute helps distribute the checkout load.
-  - Cache the product catalog reads so the DB only handles order writes.
+  - "The core problem is a checkout pipeline with payment latency peaking at 2000 rps. Payments and database are the required tiers — keep the chain efficient to hit p99 under 400ms."
+  - "A load balancer distributes traffic to compute replicas. Compute processes carts quickly, routes to payment gateway, database persists orders. Avoid cache (forbidden) — this is a write-heavy flow."
+  - "Build: traffic-source → load-balancer → compute (4 replicas) → payments → relational-db. At 2000 rps peak, compute processes carts quickly, payments adds latency per transaction, DB batches writes. Stay under p99 400ms and p95 280ms within 600 budget and avoid cache."
 forbidden_types: [cache]
 schema_version: 2
 track: foundations

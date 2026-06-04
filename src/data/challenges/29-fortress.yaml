@@ -31,8 +31,10 @@ scheduled_events:
   - { t: 45, type: latency_spike, target: auth-security, multiplier: 8, durationS: 30 }
   - { t: 105, type: az_outage, target: compute, durationS: 40 }
 hints:
-  - Rate limiting is your first line of defence against the credential flood.
-  - The CDN + cache absorb read traffic while compute recovers from the outage.
+  - "Core problem: 4000 rps peak + 45s auth latency spike + 105s AZ outage. Rate limit cuts flood, cache/CDN bypass compute during crises, SIEM/observability track it all."
+  - "Use CDN + cache on read path so they serve traffic during outages. Rate limit to ~2500 rps. During 45s auth spike, cached reads stay fast. During 105s AZ loss, CDN/cache hold the line while compute recovers."
+  - "Full path: traffic → CDN → cache → rate-limiter (2500-3000 rps) → auth (2+ AZs) → compute (2-3 per AZ) → DB. Wire auth to security/observability async. During 45s spike, cache serves hits. During 105s outage, CDN/cache serve all traffic. p99 <300ms."
+  - "Topology: traffic → CDN (5-10min TTL) → cache (1-2min) → rate-limiter (drop >2500 rps) → auth (2-3/AZ) → compute (2-3/AZ) → DB. Auth → security/observability async. t=45s: cache serves reads. t=105s: CDN/cache serve traffic. Hit rate >60%/70%. SIEM flags attack."
 chaos_intensity: 2.5
 schema_version: 2
 track: security

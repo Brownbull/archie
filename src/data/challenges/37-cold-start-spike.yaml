@@ -24,9 +24,9 @@ target_metrics:
   p99_latency_ms: 100
   p95_latency_ms: 65
 hints:
-  - On-demand serverless has cold starts — 10% of requests pay a 200ms penalty.
-  - Under burst traffic, cold starts dominate p99 latency.
-  - Provisioned concurrency eliminates cold starts but costs more per month.
+  - "The core problem is cold starts spiking p99 latency on 10% of requests under burst. The compute tier matters most — on-demand serverless has a 200ms penalty."
+  - "Provisioned concurrency eliminates cold starts by keeping instances warm but costs more. Size it high enough to handle 3000 rps peak without falling back to on-demand."
+  - "Size provisioned concurrency to absorb the 3000 rps burst at t=30-60s, keeping cold start penalty on less than 1% of requests, and scale back at t=75s to stay within 400 budget while hitting p99/p95 targets."
 schema_version: 2
 track: foundations
 tier: 3
