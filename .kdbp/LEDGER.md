@@ -3501,3 +3501,15 @@ DEPLOYMENTS: P122 (added row to .kdbp/DEPLOYMENTS.md)
 - 2026-06-04 15:33 | Edit | /home/khujta/projects/bmad/archie/src/engine/topologyAssertions.ts
 - 2026-06-04 15:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
 - 2026-06-04 15:33 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/topologyAssertions.test.ts
+
+## 2026-06-04 15:36 — [5750c3f] feat(challenges): required_topology assertions (CACHE_BETWEEN / LB_UPSTREAM / FAN_OUT_GTE) — Phase 3 3b
+FINDINGS: 0 at commit (tsc -b clean, eslint 0 err, 4648/4648 unit, golden snapshot byte-identical)
+ADVERSARIAL: 5-lens verify workflow (wxphrka29) — 2 REAL high (FAN_OUT self-loop + unresolved-neighbor inflation), both fixed + regression-tested; golden/schema/D66 lenses clean
+DESIGN: D66 — undirected adjacency, author specifies source+target; topologyGraph frozen into AttemptSnapshot at Start; folded into clean-topology star (identity for the 41)
+PHASE: 3 — Richer targets + rubric (3a/3c/3f/3b done; 3d origin, 3e chaos remain)
+- 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts

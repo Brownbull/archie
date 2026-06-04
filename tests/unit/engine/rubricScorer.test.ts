@@ -150,4 +150,42 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
       expect(r.stars).toBe(0)
     })
   })
+
+  describe("multi-region origin grading folded into basePass (Phase 3 3d, D55/D66)", () => {
+    const multiRegion = { type: "web-users" as const, rps: 1000, kind: "steady" as const, workload: "mixed" as const, origin: "multi-region" as const }
+    const oneRegion = { ...multiRegion, origin: "one-region" as const }
+    const mrChallenge = { ...challenge, trafficSources: [multiRegion] }
+
+    it("originRequirementOk is true by default (no trafficSources — the 41 built-ins)", () => {
+      expect(evaluateAttempt(stats(100, 50), challenge, 0, 100, new Set(["compute"])).originRequirementOk).toBe(true)
+    })
+
+    it("originRequirementOk is true when the only source is one-region", () => {
+      const ch = { ...challenge, trafficSources: [oneRegion] }
+      expect(evaluateAttempt(stats(100, 50), ch, 0, 100, new Set(["compute"])).originRequirementOk).toBe(true)
+    })
+
+    it("3★ when a multi-region source is matched by CDN + DNS + a database", () => {
+      const r = evaluateAttempt(stats(100, 50), mrChallenge, 0, 100, new Set(["compute", "cdn", "dns", "relational-db"]))
+      expect(r.originRequirementOk).toBe(true)
+      expect(r.stars).toBe(3)
+    })
+
+    it("0★ (basePass fails) when a multi-region source lacks the multi-region architecture", () => {
+      const r = evaluateAttempt(stats(100, 50), mrChallenge, 0, 100, new Set(["compute", "cdn"])) // no DNS, no DB
+      expect(r.originRequirementOk).toBe(false)
+      expect(r.stars).toBe(0)
+    })
+
+    it("accepts any data-storage type as the database (e.g. object-storage)", () => {
+      const r = evaluateAttempt(stats(100, 50), mrChallenge, 0, 100, new Set(["cdn", "dns", "object-storage"]))
+      expect(r.originRequirementOk).toBe(true)
+    })
+
+    it("fails conservatively when a multi-region source exists but canvasTypeIds is unavailable", () => {
+      const r = evaluateAttempt(stats(100, 50), mrChallenge, 0, 100, undefined)
+      expect(r.originRequirementOk).toBe(false)
+      expect(r.stars).toBe(0)
+    })
+  })
 })

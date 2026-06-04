@@ -1,6 +1,21 @@
 import type { SimulationStats } from "@/lib/simulationStats"
 import type { Challenge, StarBreakdown } from "@/lib/challengeTypes"
 import { evaluateRequiredTopology, allTopologyAssertionsPass, type TopologyGraphInput } from "@/engine/topologyAssertions"
+import { COMPONENT_TYPES } from "@/lib/componentTypes"
+
+// Multi-region origin grading (ISAPivot Phase 3, D55/D66). A multi-region traffic source requires a
+// multi-region-capable architecture: CDN + DNS at the edge plus a database to replicate. "Any
+// data-storage type" is the author-asserted DB proxy (we don't model per-DB replication capability).
+const MULTI_REGION_EDGE_TYPES = ["cdn", "dns"] as const
+const DATA_STORAGE_TYPE_IDS: ReadonlySet<string> = new Set(
+  [...COMPONENT_TYPES.values()].filter((t) => t.category === "data-storage").map((t) => t.id),
+)
+
+function hasMultiRegionArchitecture(canvasTypeIds: ReadonlySet<string>): boolean {
+  const edgeOk = MULTI_REGION_EDGE_TYPES.every((t) => canvasTypeIds.has(t))
+  const dbOk = [...DATA_STORAGE_TYPE_IDS].some((id) => canvasTypeIds.has(id))
+  return edgeOk && dbOk
+}
 
 /**
  * Scores a challenge attempt against its rubric (Epic 16, D28).
@@ -56,7 +71,15 @@ export function evaluateAttempt(
     && challenge.forbiddenTypes.some((t) => canvasTypeIds.has(t))
   const forbiddenTypesOk = !hasForbidden
 
-  const basePass = passedMetrics && hasAllRequiredTypes && forbiddenTypesOk
+  // origin grading (ISAPivot Phase 3, D55/D66): always graded — when any traffic source is
+  // multi-region, the architecture must be multi-region-capable (CDN + DNS + a database). The 41
+  // built-ins declare no multi-region source ⇒ originRequiresMultiRegion false ⇒ originRequirementOk
+  // true ⇒ basePass unchanged. Missing canvasTypeIds with a multi-region source ⇒ conservative fail.
+  const originRequiresMultiRegion = !!challenge.trafficSources?.some((s) => s.origin === "multi-region")
+  const originRequirementOk = !originRequiresMultiRegion
+    || (!!canvasTypeIds && hasMultiRegionArchitecture(canvasTypeIds))
+
+  const basePass = passedMetrics && hasAllRequiredTypes && forbiddenTypesOk && originRequirementOk
   // The topology star requires BOTH zero issues AND all required_topology assertions (D66).
   // For the 41 built-ins requiredTopologyOk is always true, so this equals the prior cleanTopology gate.
   const topologyStar = cleanTopology && requiredTopologyOk
@@ -70,5 +93,6 @@ export function evaluateAttempt(
     cleanTopology,
     forbiddenTypesOk,
     requiredTopologyOk,
+    originRequirementOk,
   }
 }

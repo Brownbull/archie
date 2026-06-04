@@ -285,6 +285,13 @@ export function ChallengeResultsModal() {
                 : `missing: ${challenge.requiredTopology.map((a) => a.description ?? a.ruleType).join("; ")}`}
             />
           )}
+          {challenge.trafficSources?.some((s) => s.origin === "multi-region") && (
+            <Criterion
+              met={result.originRequirementOk}
+              label="Multi-region ready"
+              detail={result.originRequirementOk ? "CDN + DNS + database present" : "needs CDN + DNS + a database"}
+            />
+          )}
         </div>
 
         {challenge.origin === "builtin" && <XpProgressSection award={lastAward} track={challenge.track} />}

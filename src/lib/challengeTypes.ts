@@ -190,6 +190,12 @@ export interface StarBreakdown {
    * (star = zero issues AND this). Absent requiredTopology ⇒ always true (the 41 built-ins).
    */
   requiredTopologyOk: boolean
+  /**
+   * Multi-region origin requirement met (ISAPivot Phase 3, D55/D66): when any traffic source is
+   * multi-region, the architecture must include CDN + DNS + a database. Folded into basePass (an
+   * architecture gate, like required_types). No multi-region source ⇒ always true (the 41 built-ins).
+   */
+  originRequirementOk: boolean
 }
 
 /**
