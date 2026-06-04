@@ -318,3 +318,21 @@ describe("simulateTick — per-source inflow seeding (ISAPivot Phase 2)", () => 
     expect(tel(s, "orphan").incomingRps).toBe(0) // orphaned non-traffic entry: no source feeds it
   })
 })
+
+describe("simulateTick — workload write-pressure (ISAPivot Phase 2b)", () => {
+  it("write-heavy sources raise the effective write ratio at a primary DB (more write-cap failures)", () => {
+    const db = node("db", 1000, { category: "data-storage", baseMaxRps: 200, writeRatio: 0.2, writeDistribution: "primary" })
+    // No write-pressure: writes = 1000×0.2 = 200 ≤ write cap (baseMaxRps 200) → no failures.
+    expect(tel(simulateTick({ nodes: [db], edges: [] }, 0, 1000), "db").failedRps).toBe(0)
+    // writePressure 1.0: eff wr = (0.2+1)/2 = 0.6 → writes 600 > cap 200 → 400 shed.
+    expect(tel(simulateTick({ nodes: [db], edges: [], writePressure: 1.0 }, 0, 1000), "db").failedRps).toBeCloseTo(400, 5)
+  })
+
+  it("read-heavy sources lower the effective write ratio (fewer write-cap failures)", () => {
+    const db = node("db", 1000, { category: "data-storage", baseMaxRps: 200, writeRatio: 0.4, writeDistribution: "primary" })
+    // writeRatio 0.4 alone: writes 400 > cap 200 → 200 shed.
+    expect(tel(simulateTick({ nodes: [db], edges: [] }, 0, 1000), "db").failedRps).toBeCloseTo(200, 5)
+    // read-heavy (writePressure 0): eff wr = (0.4+0)/2 = 0.2 → writes 200 ≤ cap 200 → no failures.
+    expect(tel(simulateTick({ nodes: [db], edges: [], writePressure: 0 }, 0, 1000), "db").failedRps).toBe(0)
+  })
+})

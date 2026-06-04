@@ -27,7 +27,7 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, buildTrafficCurveFromSpecs, hasTrafficKind, normalizeNodeTrafficKind, getNodeCost } from "@/stores/architectureStoreHelpers"
+import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, buildTrafficCurveFromSpecs, hasTrafficKind, normalizeNodeTrafficKind, getNodeCost, buildSimGraph } from "@/stores/architectureStoreHelpers"
 import { TRAFFIC_RPS_STEPS } from "@/lib/constants"
 
 const node = (archieComponentId: string, activeConfigVariantId: string, componentCategory: string) => ({
@@ -224,5 +224,20 @@ describe("getNodeCost traffic RPS (ISAPivot Phase 1)", () => {
 
   it("leaves non-traffic cost scaling unchanged (cost × replicas)", () => {
     expect(getNodeCost("postgresql", "default", 3).monthlyCost).toBe(360) // 120 × 3, untouched branch
+  })
+})
+
+describe("buildSimGraph write-pressure (ISAPivot Phase 2b)", () => {
+  it("computes a global rps-weighted write-pressure from the source workloads", () => {
+    const g = buildSimGraph([
+      { id: "a", data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic" as const, trafficRps: 9000, trafficWorkload: "write" } },
+      { id: "b", data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic" as const, trafficRps: 3000, trafficWorkload: "read" } },
+    ], [])
+    expect(g.writePressure).toBeCloseTo(0.75, 5) // (9000×1 + 3000×0) / 12000
+  })
+
+  it("omits write-pressure when there are no traffic sources", () => {
+    const g = buildSimGraph([{ id: "db", data: { archieComponentId: "postgresql", activeConfigVariantId: "default", componentCategory: "data-storage" as const, replicaCount: 1 } }], [])
+    expect(g.writePressure).toBeUndefined()
   })
 })

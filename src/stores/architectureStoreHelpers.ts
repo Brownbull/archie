@@ -480,9 +480,23 @@ export function computeTotalArchitectureCost(
  * effectiveMaxRps 0 means "unknown/uncapped" (variant has no maxRPS authored).
  */
 export function buildSimGraph(
-  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number; trafficRps?: number } }>,
+  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number; trafficRps?: number; trafficWorkload?: string } }>,
   edges: ReadonlyArray<{ source: string; target: string }>,
 ): SimGraph {
+  // ISAPivot Phase 2b: derive a global write-pressure (0–1) from the traffic sources' workloads,
+  // rps-weighted (write=1, mixed=0.5, read=0). simulateTick blends it into a DB's write/read split.
+  let weightedWrite = 0
+  let totalSourceRps = 0
+  for (const n of nodes) {
+    if (n.data.componentCategory !== "traffic") continue
+    const rps = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps).maxRPS ?? 0
+    if (rps <= 0) continue
+    const w = n.data.trafficWorkload === "write" ? 1 : n.data.trafficWorkload === "read" ? 0 : 0.5
+    weightedWrite += rps * w
+    totalSourceRps += rps
+  }
+  const writePressure = totalSourceRps > 0 ? weightedWrite / totalSourceRps : undefined
+
   const simNodes: SimNode[] = nodes.map((n) => {
     const cost = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps)
     return {
@@ -501,6 +515,6 @@ export function buildSimGraph(
     }
   })
   const simEdges: SimEdge[] = edges.map((e) => ({ source: e.source, target: e.target }))
-  return { nodes: simNodes, edges: simEdges }
+  return { nodes: simNodes, edges: simEdges, ...(writePressure !== undefined ? { writePressure } : {}) }
 }
 

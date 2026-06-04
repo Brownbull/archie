@@ -65,6 +65,13 @@ export interface SimEdge {
 export interface SimGraph {
   nodes: SimNode[]
   edges: SimEdge[]
+  /**
+   * Global write-pressure (0–1) derived from the traffic sources' workloads (rps-weighted: write=1,
+   * mixed=0.5, read=0). ISAPivot Phase 2b: blended into a DB's intrinsic writeRatio so write-heavy
+   * sources push more load onto the write path. Absent (undefined) when there are no traffic sources
+   * → the write/read split uses the node's intrinsic writeRatio unchanged (no behavior change).
+   */
+  writePressure?: number
 }
 
 // --- Per-tick telemetry ---

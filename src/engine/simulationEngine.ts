@@ -188,8 +188,12 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       served = 0
       failed = incoming
     } else if (node.writeRatio !== undefined && node.writeRatio > 0 && capped) {
-      const writeRps = incoming * node.writeRatio
-      const readRps = incoming * (1 - node.writeRatio)
+      // ISAPivot Phase 2b: blend the DB's intrinsic write ratio with the traffic sources' write-pressure
+      // (write-heavy sources push more traffic onto the capacity-limited write path). No sources →
+      // graph.writePressure undefined → the intrinsic writeRatio is used unchanged (no behavior change).
+      const effWriteRatio = graph.writePressure !== undefined ? (node.writeRatio + graph.writePressure) / 2 : node.writeRatio
+      const writeRps = incoming * effWriteRatio
+      const readRps = incoming * (1 - effWriteRatio)
       // Primary distribution: writes capped at baseMaxRps (single primary node).
       // Sharded: writes use full scaled capacity (distributed across shards).
       const writeCap = node.writeDistribution === "primary"
