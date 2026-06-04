@@ -3095,3 +3095,10 @@ DEPLOYMENTS: P115
 FINDINGS: 0 critical; build green; 4544 unit/integration green + save-block-default E2E green
 ACTIONS: committed
 NOTES: Top-right per-node Save button → pins provider+tier as the user's default for that block TYPE (owner-only Firestore userBlockDefaults/{uid}); addNode injects it for future adds (validated, non-retroactive). FIRESTORE RULES DEPLOYED manually: firebase deploy --only firestore:rules (archie-2a560) — released OK, so cross-device persistence is live (CI deploys hosting only).
+
+## 2026-06-03 20:42 — PUSH dev -> main
+PR: — (direct fast-forward, established dev→main flow)
+CI: deploy-production ✅ (run 26922494055, ~40s)
+PROMOTION: N/A
+DEPLOYMENTS: P116
+NOTE: firestore.rules for userBlockDefaults already deployed manually before this push.
