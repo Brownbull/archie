@@ -3214,3 +3214,51 @@ HTML_ARTIFACT: docs/gabe/plans/2026-06-03-traffic-challenge-pivot/index.html
 - 2026-06-03 23:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
 - 2026-06-03 23:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
 - 2026-06-03 23:27 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+
+## 2026-06-03 23:31 — [78049c1] feat(challenges): ISAPivot plan + Phase 0 traffic-source schema/types foundation
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: accept (well doc-drift G2 Engine + G3 Data Layer — deferred to /gabe-teach; docs lag expected mid-epic)
+DEFERRED: none
+NOTE: Phase 0 slice 1/2 (additive types/schema/curve + tests). Slice 2 = trafficPattern→trafficKind rename + ArchieNodeData fields + saved-canvas normalizer. Exec 🔄.
+- 2026-06-03 23:37 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-03 23:39 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-03 23:39 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-03 23:39 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-03 23:41 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-03 23:41 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-03 23:41 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-03 23:41 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficPatternSelect.tsx
+- 2026-06-03 23:42 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-03 23:42 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-03 23:42 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-03 23:42 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlExporter.ts
+- 2026-06-03 23:42 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-03 23:42 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-03 23:43 | Edit | /home/khujta/projects/bmad/archie/src/lib/firestoreSanitize.ts
+- 2026-06-03 23:43 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-06-03 23:43 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/RunSimulationButton.tsx
+- 2026-06-03 23:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-03 23:44 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-03 23:44 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/RunSimulationButton.test.tsx
+- 2026-06-03 23:55 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-03 23:56 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlExporter.ts
+- 2026-06-03 23:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-03 23:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-03 23:59 | Edit | /home/khujta/projects/bmad/archie/tests/integration/yamlRoundTrip.test.ts
+
+## 2026-06-04 00:02 — [a2ceccb] refactor(traffic): trafficPattern→trafficKind + boundary normalizer + non-traffic hardening
+FINDINGS: 3 low (doc-drift wells G1 Canvas / G2 Engine / G3 Data Layer — accepted, → /gabe-teach)
+VERIFY: 4-lens adversarial workflow (wkuphy5qr) — 12 real findings; fixed 1 critical + 4 high (traffic
+  fields now gated to traffic nodes: normalizer strips non-traffic, exporter category-guarded,
+  setNodes/placeStack normalize) + closed 4 test-coverage gaps (+10 tests). Mediums by-design/covered.
+GATES: tsc -b ✅ · eslint 0 errors ✅ · full vitest 4573/4573 ✅ · grep sweep clean ✅
+NOTE: architectureStore.ts edits via sed (D3: file >800-line size guard — documented Write/sed workaround;
+  slice added ~1 net line). Split remains the proper fix (D3).
+PLAN: Phase 0 Exec ✅ + Commit ✅ (Review/Push pending). Phase 0 (schema+types foundation) code-complete.
+
+## 2026-06-04 00:15 — PUSH dev -> main (+ origin/dev synced)
+PR: — (direct push, repo convention)
+CI: ✅ deploy-production 1/1 (58s) — build + Firebase hosting deploy live
+PROMOTION: N/A (production is the only env)
+DEPLOYMENTS: P120
+PLAN: Phase 0 Push ticked (Exec ✅ Commit ✅ Push ✅; Review ⬜ — adversarial workflow wkuphy5qr stood in for /gabe-review).
