@@ -3468,3 +3468,9 @@ FINDINGS: 0 (lint 0 err, tsc -b clean, vitest 4627/4627, shape ok, no deferred m
 ACTIONS: none — all pass
 GOLDEN: 41 built-ins byte-identical (p95/cost optional+absent ⇒ skipped)
 PHASE: 3 — Richer targets + rubric (3a done; 3b topology, 3d origin, 3e chaos remain)
+
+## 2026-06-04 15:20 — PUSH dev -> main
+PR: — (direct dev→main per PUSH.md convention)
+CI: all passed (deploy-production success, ~40s, run 26973574262)
+PROMOTION: N/A (single production env)
+DEPLOYMENTS: P122 (added row to .kdbp/DEPLOYMENTS.md)
