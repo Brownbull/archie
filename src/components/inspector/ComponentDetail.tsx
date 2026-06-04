@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { ComponentSwapper } from "@/components/inspector/ComponentSwapper"
+import { TrafficNodeControls } from "@/components/canvas/TrafficNodeControls"
 import { ConfigSelector } from "@/components/inspector/ConfigSelector"
 import { EconomicsSection } from "@/components/inspector/EconomicsSection"
 import { MetricCard } from "@/components/inspector/MetricCard"
@@ -74,6 +75,9 @@ export function ComponentDetail({
   )
   const trafficRps = useArchitectureStore(
     (s) => (nodeId ? s.nodes.find((n) => n.id === nodeId)?.data.trafficRps : undefined),
+  )
+  const trafficNodeData = useArchitectureStore(
+    (s) => (nodeId ? s.nodes.find((n) => n.id === nodeId)?.data : undefined),
   )
   const removeNode = useArchitectureStore((s) => s.removeNode)
 
@@ -288,6 +292,15 @@ export function ComponentDetail({
             activeVariantId={activeVariantId}
             onVariantChange={onVariantChange}
           />
+        )}
+
+        {/* Traffic configuration (ISAPivot) — peak RPS / kind / workload / origin for a traffic source.
+            Mirrors the on-node controls (D63: editable in inspector AND on the block). */}
+        {nodeId && component.category === "traffic" && trafficNodeData && (
+          <div className="px-3 pt-1" data-testid="inspector-traffic-config">
+            <div className="mb-1 text-[0.6875rem] font-semibold text-text-secondary">Traffic configuration</div>
+            <TrafficNodeControls nodeId={nodeId} data={trafficNodeData} />
+          </div>
         )}
 
         {/* Economics (Epic 13 Phase 4) */}

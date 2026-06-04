@@ -94,14 +94,16 @@ test.describe("Visual audit", () => {
 
     // NEW behaviour: the stepper now sets the source's PEAK rps (trafficRps), snapping through
     // TRAFFIC_RPS_STEPS — replaces the old replicaCount-as-index stepper. Readout reads "… peak".
-    const value = page.locator('[data-testid="rps-stepper-value"]')
+    // Scope to the canvas node — the inspector mirrors the same controls (slice 5), so a page-level
+    // locator would match both the block's and the inspector's rps readout.
+    const value = node.locator('[data-testid="rps-stepper-value"]')
     await expect(value).toContainText("peak")
     const before = await value.textContent()
-    await page.locator('[data-testid="rps-increment"]').click()
+    await node.locator('[data-testid="rps-increment"]').click()
     await page.waitForTimeout(200)
     const afterInc = await value.textContent()
     expect(afterInc, "peak rps should rise on +").not.toBe(before)
-    await page.locator('[data-testid="rps-decrement"]').click()
+    await node.locator('[data-testid="rps-decrement"]').click()
     await page.waitForTimeout(200)
     expect(await value.textContent(), "peak rps should fall back on −").toBe(before)
     await node.screenshot({ path: `${SCREENSHOT_DIR}/16-traffic-node-stepped.png` })
@@ -137,6 +139,25 @@ test.describe("Visual audit", () => {
     // The simulation accepts the config and starts (Run hands off to the sim bar — no crash).
     await page.locator('[data-testid="run-simulation"]').click()
     await expect(page.locator('[data-testid="run-simulation"]')).toHaveCount(0, { timeout: 5_000 })
+  })
+
+  test("traffic config is mirrored in the inspector (ISAPivot)", async ({ page }) => {
+    await ready(page)
+    await addComponentToCanvas(page, 0) // Traffic Source
+    const node = page.locator('[data-testid="archie-node"]').first()
+    await page.waitForTimeout(300)
+    // Select via the node header (top edge) — the control rows below stop propagation.
+    await node.click({ position: { x: 40, y: 12 } })
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+
+    // NEW behaviour: the inspector mirrors the on-node traffic config (D63 — editable in both).
+    const inspectorTraffic = page.getByTestId("inspector-traffic-config")
+    await expect(inspectorTraffic).toBeVisible()
+    await expect(inspectorTraffic.getByTestId("traffic-workload-select")).toBeVisible()
+    await expect(inspectorTraffic.getByTestId("traffic-origin-select")).toBeVisible()
+    await expect(inspectorTraffic.getByTestId("rps-stepper-value")).toContainText("peak")
+    await expect(inspectorTraffic.getByTestId("traffic-envelope")).toBeVisible()
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/18-inspector-traffic-config.png`, fullPage: true })
   })
 
   test("inspector panel", async ({ page }) => {
