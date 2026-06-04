@@ -309,4 +309,45 @@ describe("YAML round-trip (integration)", () => {
     if (!result.success) return
     expect(result.architecture.nodes[0].data.replicaCount).toBe(1)
   })
+
+  // --- ISAPivot: trafficKind round-trip + legacy trafficPattern migration ---
+
+  it("round-trips a traffic source's trafficKind and emits traffic_kind (never traffic_pattern)", () => {
+    const nodes = [
+      makeNode({ id: "src", data: { archieComponentId: "web-users", componentCategory: "traffic", trafficKind: "search" } }),
+      makeNode({ id: "src2", data: { archieComponentId: "web-users", componentCategory: "traffic", trafficKind: "steady" } }),
+    ]
+    const yaml = exportArchitecture(nodes, [])
+    const parsed = load(yaml) as { nodes: Array<Record<string, unknown>> }
+    expect(parsed.nodes[0].traffic_kind).toBe("search")
+    expect(parsed.nodes[0]).not.toHaveProperty("traffic_pattern") // legacy field never emitted
+    expect(parsed.nodes[1]).not.toHaveProperty("traffic_kind") // steady omitted for compactness
+
+    const result = importYamlString(yaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes.find((n) => n.id === "src")!.data.trafficKind).toBe("search")
+  })
+
+  it("migrates a legacy traffic_pattern file to trafficKind (wobble→realistic, surge→realistic)", () => {
+    const legacyYaml = dump({
+      schema_version: CURRENT_SCHEMA_VERSION,
+      nodes: [
+        { id: "a", component_id: "web-users", position: { x: 0, y: 0 }, traffic_pattern: "wobble" },
+        { id: "b", component_id: "web-users", position: { x: 100, y: 0 }, traffic_pattern: "surge" },
+      ],
+      edges: [],
+    })
+    const result = importYamlString(legacyYaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes.find((n) => n.id === "a")!.data.trafficKind).toBe("realistic")
+    expect(result.architecture.nodes.find((n) => n.id === "b")!.data.trafficKind).toBe("realistic")
+  })
+
+  it("does NOT emit traffic_kind for a non-traffic node that carries a stray value", () => {
+    const nodes = [makeNode({ id: "db", data: { archieComponentId: "postgresql", componentCategory: "data-storage", trafficKind: "periodic" } })]
+    const parsed = load(exportArchitecture(nodes, [])) as { nodes: Array<Record<string, unknown>> }
+    expect(parsed.nodes[0]).not.toHaveProperty("traffic_kind")
+  })
 })

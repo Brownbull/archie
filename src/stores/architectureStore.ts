@@ -9,7 +9,7 @@ import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
 import { computeWeightedNodeScore, computeHeatmapStatus } from "@/engine/heatmapCalculator"
-import type { TrafficPattern } from "@/engine/trafficPatterns"
+import type { TrafficKind } from "@/engine/trafficPatterns"
 import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
 import {
   CANVAS_GRID_SIZE,
@@ -39,6 +39,7 @@ import {
   getDemandProfileForScenario,
   getFailureModifiersForScenario,
   evaluateTopology,
+  normalizeNodeTrafficKind,
 } from "@/stores/architectureStoreHelpers"
 import { createDataContextActions } from "@/stores/dataContextActions"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
@@ -54,8 +55,8 @@ export interface ArchieNodeData extends Record<string, unknown> {
   componentCategory: ComponentCategoryId
   // Epic 14: horizontal replica count for this node (default 1, range MIN_REPLICAS..MAX_REPLICAS)
   replicaCount: number
-  // Traffic Source only: how its emitted load varies over the simulation timeline (default steady).
-  trafficPattern?: TrafficPattern
+  // Traffic Source only: the shape its emitted load takes over the sim timeline (default steady).
+  trafficKind?: TrafficKind
 }
 
 export interface ArchieEdgeData extends Record<string, unknown> {
@@ -101,7 +102,7 @@ export interface ArchitectureState {
   ) => void
   updateNodeConfigVariant: (nodeId: string, variantId: string) => void
   setNodeReplicaCount: (nodeId: string, count: number) => void
-  setNodeTrafficPattern: (nodeId: string, pattern: TrafficPattern) => void
+  setNodeTrafficKind: (nodeId: string, kind: TrafficKind) => void
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
   duplicateNode: (nodeId: string) => string | null
   removeNode: (nodeId: string) => void
@@ -368,7 +369,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       return
     }
     set({
-      nodes: [...get().nodes, ...newNodes],
+      nodes: [...get().nodes, ...newNodes.map(normalizeNodeTrafficKind)],
       edges: [...get().edges, ...newEdges],
     })
     evaluateAndSetTier(get, set)
@@ -451,13 +452,13 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     _evaluateTopology(get, set)
   },
 
-  setNodeTrafficPattern: (nodeId, pattern) => {
+  setNodeTrafficKind: (nodeId, kind) => {
     const node = get().nodes.find((n) => n.id === nodeId)
-    // Pattern only shapes the sim's traffic curve at run time — no metric/topology recompute needed.
-    if (!node || node.data.componentCategory !== "traffic" || node.data.trafficPattern === pattern) return
+    // Kind only shapes the sim's traffic curve at run time — no metric/topology recompute needed.
+    if (!node || node.data.componentCategory !== "traffic" || node.data.trafficKind === kind) return
     set({
       nodes: get().nodes.map((n) =>
-        n.id === nodeId ? { ...n, data: { ...n.data, trafficPattern: pattern } } : n,
+        n.id === nodeId ? { ...n, data: { ...n.data, trafficKind: kind } } : n,
       ),
     })
   },
@@ -703,7 +704,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   loadArchitecture: (nodes, edges, weightProfile?, constraints?, dataContextItems?, activeScenarioId?, activeFailureScenarioId?) => {
     clearPendingRippleTimeouts()
     set({
-      nodes,
+      nodes: nodes.map(normalizeNodeTrafficKind),
       edges,
       computedMetrics: new Map(),
       previousMetrics: new Map(),
@@ -731,7 +732,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
   },
 
-  setNodes: (nodes) => set({ nodes }),
+  setNodes: (nodes) => set({ nodes: nodes.map(normalizeNodeTrafficKind) }),
   setEdges: (edges) => {
     set({ edges })
     // Edge changes affect topology (incl. 'replicas-without-lb'); keep issues fresh (Epic 14 review)

@@ -27,7 +27,7 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficPattern } from "@/stores/architectureStoreHelpers"
+import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficKind, normalizeNodeTrafficKind } from "@/stores/architectureStoreHelpers"
 
 const node = (archieComponentId: string, activeConfigVariantId: string, componentCategory: string) => ({
   data: { archieComponentId, activeConfigVariantId, componentCategory, replicaCount: 1 },
@@ -63,25 +63,33 @@ describe("traffic source RPS", () => {
     expect(at(20)).toBe(10_000_000)
   })
 
-  it("hasTrafficPattern detects a non-steady traffic source only", () => {
-    expect(hasTrafficPattern([{ data: { componentCategory: "traffic", trafficPattern: "surge" } }])).toBe(true)
-    expect(hasTrafficPattern([{ data: { componentCategory: "traffic", trafficPattern: "steady" } }])).toBe(false)
-    expect(hasTrafficPattern([{ data: { componentCategory: "traffic" } }])).toBe(false)
-    expect(hasTrafficPattern([{ data: { componentCategory: "compute", trafficPattern: "surge" } }])).toBe(false)
+  it("hasTrafficKind detects a non-steady traffic source only (and reads legacy trafficPattern)", () => {
+    expect(hasTrafficKind([{ data: { componentCategory: "traffic", trafficKind: "realistic" } }])).toBe(true)
+    expect(hasTrafficKind([{ data: { componentCategory: "traffic", trafficKind: "steady" } }])).toBe(false)
+    expect(hasTrafficKind([{ data: { componentCategory: "traffic" } }])).toBe(false)
+    expect(hasTrafficKind([{ data: { componentCategory: "compute", trafficKind: "realistic" } }])).toBe(false)
+    // Legacy persisted field still detected (surge → realistic, a non-steady kind).
+    expect(hasTrafficKind([{ data: { componentCategory: "traffic", trafficPattern: "surge" } }])).toBe(true)
   })
 
-  it("buildTrafficCurveFromSources shapes a single source by its pattern (surge peaks ~5×)", () => {
-    const nodes = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficPattern: "surge" } }]
+  it("buildTrafficCurveFromSources shapes a single source by its kind (periodic peaks ~3×)", () => {
+    const nodes = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficKind: "periodic" } }]
     const curve = buildTrafficCurveFromSources(nodes, 90)
     expect(curve.length).toBeGreaterThan(2)
-    expect(Math.max(...curve.map((p) => p.rps))).toBeGreaterThan(3000 * 4) // base 3000 × ~5
-    expect(curve[0].rps).toBe(3000) // baseline at the edges
+    expect(Math.max(...curve.map((p) => p.rps))).toBeGreaterThan(3000 * 2.5) // base 3000 × ~3
+    expect(curve[0].rps).toBe(3000) // baseline at the edges (sin starts at 0)
+  })
+
+  it("buildTrafficCurveFromSources treats legacy trafficPattern as the migrated kind (wobble ≡ realistic)", () => {
+    const legacy = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficPattern: "wobble" } }]
+    const migrated = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficKind: "realistic" } }]
+    expect(buildTrafficCurveFromSources(legacy, 90)).toEqual(buildTrafficCurveFromSources(migrated, 90))
   })
 
   it("buildTrafficCurveFromSources sums multiple sources tick-aligned", () => {
     const nodes = [
-      { data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficPattern: "steady" } },
-      { data: { archieComponentId: "api-client", activeConfigVariantId: "burst", componentCategory: "traffic", replicaCount: 1, trafficPattern: "steady" } },
+      { data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficKind: "steady" } },
+      { data: { archieComponentId: "api-client", activeConfigVariantId: "burst", componentCategory: "traffic", replicaCount: 1, trafficKind: "steady" } },
     ]
     const curve = buildTrafficCurveFromSources(nodes, 90)
     expect(curve.every((p) => p.rps === 6000)).toBe(true) // 3000 + 3000 (both at step 1, steady) → flat
@@ -100,5 +108,46 @@ describe("traffic source RPS", () => {
     const scaled = scaleTrafficCurveToPeak(curve, 30000)
     expect(scaled.map((p) => p.rps)).toEqual([0, 15000, 30000]) // peak → 30000, midpoint stays 50%
     expect(scaled.map((p) => p.t)).toEqual([0, 45, 90]) // times unchanged
+  })
+})
+
+describe("normalizeNodeTrafficKind (ISAPivot boundary normalizer)", () => {
+  const tnode = (data: Record<string, unknown>) => ({ id: "n1", type: "archie", data })
+
+  it("returns a non-traffic node untouched (same reference) when it has no traffic fields", () => {
+    const n = tnode({ archieComponentId: "postgresql", componentCategory: "data-storage", replicaCount: 2 })
+    expect(normalizeNodeTrafficKind(n)).toBe(n) // identity preserved → React Flow memo-safe
+  })
+
+  it("strips a stray trafficKind/trafficPattern from a NON-traffic node (anti-corruption)", () => {
+    const n = tnode({ archieComponentId: "postgresql", componentCategory: "data-storage", replicaCount: 1, trafficKind: "periodic", trafficPattern: "surge" })
+    const out = normalizeNodeTrafficKind(n)
+    expect(out.data.trafficKind).toBeUndefined()
+    expect(out.data.trafficPattern).toBeUndefined()
+    expect(out.data.replicaCount).toBe(1) // other fields preserved
+  })
+
+  it("migrates a traffic node's legacy trafficPattern to trafficKind and drops the legacy field", () => {
+    const out = normalizeNodeTrafficKind(tnode({ archieComponentId: "web-users", componentCategory: "traffic", replicaCount: 1, trafficPattern: "wobble" }))
+    expect(out.data.trafficKind).toBe("realistic")
+    expect(out.data.trafficPattern).toBeUndefined()
+  })
+
+  it("collapses legacy surge to realistic (surge has no player kind)", () => {
+    expect(normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", trafficPattern: "surge" })).data.trafficKind).toBe("realistic")
+  })
+
+  it("preserves a modern trafficKind and defaults an unset traffic node to steady", () => {
+    expect(normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", trafficKind: "search" })).data.trafficKind).toBe("search")
+    expect(normalizeNodeTrafficKind(tnode({ componentCategory: "traffic" })).data.trafficKind).toBe("steady")
+  })
+
+  it("lets the modern trafficKind win when both fields are present", () => {
+    expect(normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", trafficKind: "periodic", trafficPattern: "wobble" })).data.trafficKind).toBe("periodic")
+  })
+
+  it("is idempotent", () => {
+    const once = normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", trafficPattern: "surge", archieComponentId: "web-users" }))
+    expect(normalizeNodeTrafficKind(once)).toEqual(once)
   })
 })

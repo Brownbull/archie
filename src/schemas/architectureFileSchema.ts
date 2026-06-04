@@ -2,6 +2,7 @@ import { z } from "zod"
 import { METRIC_CATEGORIES, WEIGHT_MIN, WEIGHT_MAX, DEFAULT_WEIGHT_PROFILE, MAX_CANVAS_NODES, MAX_EDGES, MIN_REPLICAS, MAX_REPLICAS, POSITION_MIN, POSITION_MAX, CONSTRAINT_THRESHOLD_MIN, CONSTRAINT_THRESHOLD_MAX, CONSTRAINT_LABEL_MAX_LENGTH, MAX_CONSTRAINTS, DATA_CONTEXT_NAME_MAX_LENGTH, MAX_DATA_CONTEXT_ITEMS_PER_NODE, ACCESS_PATTERN_VALUES, DATA_SIZE_VALUES, STRUCTURE_TYPE_VALUES, MAX_SCHEMA_STRING_LENGTH, SCENARIO_ID_FORMAT, type MetricCategoryId, type ConstraintOperator, type PortDefinition, } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 import { resolvePortPair } from "@/engine/portResolution"
+import { normalizeTrafficKind } from "@/engine/trafficPatterns"
 
 // Static assertion: WeightProfileSchema is built from METRIC_CATEGORIES at module load.
 // If the count changes, the schema shape silently diverges from expectations. (TD-5-1a)
@@ -193,7 +194,9 @@ export const ArchitectureFileNodeSchema = z.object({
   position: PositionSchema,
   // Epic 14: per-node replica count. Optional + bounded; absent defaults to 1 at hydration.
   replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
-  // Traffic Source burst pattern — shapes its load over the sim timeline. Optional; absent = steady.
+  // Traffic Source shape — how its load varies over the sim timeline. Optional; absent = steady.
+  trafficKind: z.enum(["steady", "realistic", "periodic", "search"]).optional(),
+  // Legacy (pre-ISAPivot) shape field — still accepted on import for back-compat; normalized to trafficKind.
   trafficPattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
   dataContext: z.array(DataContextItemSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict()
@@ -230,6 +233,8 @@ const ArchitectureFileNodeYamlSchema = z.object({
   position: PositionSchema,
   // Epic 14: `replicas` is a single word — same key in YAML and camelCase output.
   replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
+  traffic_kind: z.enum(["steady", "realistic", "periodic", "search"]).optional(),
+  // Legacy snake field — accepted for back-compat; normalized to trafficKind in the transform.
   traffic_pattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
   data_context: z.array(DataContextItemYamlSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict().transform((data) => ({
@@ -238,7 +243,7 @@ const ArchitectureFileNodeYamlSchema = z.object({
   configVariantId: data.config_variant_id,
   position: data.position,
   replicas: data.replicas,
-  trafficPattern: data.traffic_pattern,
+  trafficKind: data.traffic_kind ?? (data.traffic_pattern ? normalizeTrafficKind(data.traffic_pattern) : undefined),
   dataContext: data.data_context,
 }))
 

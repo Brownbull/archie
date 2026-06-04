@@ -25,7 +25,7 @@ import { getNodeCost, getNodeComplexity, getNodeCategoryAverages, type Complexit
 import { computeWeightedNodeScore } from "@/engine/heatmapCalculator"
 import { TypeIcon } from "@/components/common/TypeIcon"
 import { TrafficPatternSelect } from "@/components/canvas/TrafficPatternSelect"
-import type { TrafficPattern } from "@/engine/trafficPatterns"
+import { normalizeTrafficKind } from "@/engine/trafficPatterns"
 import { formatRps, formatRpsCompact } from "@/lib/formatStats"
 import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
 import { Gauge } from "lucide-react"
@@ -145,7 +145,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Traffic sources aren't "scaled" with replicas — instead the stepper drives how many
   // requests/sec they emit (replicaCount multiplies the variant's max_rps via getNodeCost).
   const isTraffic = data.componentCategory === "traffic"
-  const trafficPattern = (data.trafficPattern as TrafficPattern | undefined) ?? "steady"
+  const trafficKind = normalizeTrafficKind((data.trafficKind ?? data.trafficPattern) as string | undefined)
   const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)
   const needsLB = useArchitectureStore((s) =>
     (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
@@ -361,7 +361,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
                 </button>
               </div>
               {/* Burst pattern — right, the narrower control (matches the stepper height) */}
-              <TrafficPatternSelect nodeId={id} pattern={trafficPattern} />
+              <TrafficPatternSelect nodeId={id} kind={trafficKind} />
             </div>
           ) : scalingRule.scalable ? (
             <div

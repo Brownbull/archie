@@ -35,6 +35,29 @@ export const TRAFFIC_KINDS: readonly { id: TrafficKind; label: string; hint: str
   { id: "search", label: "Search / bursty", hint: "Frequent sharp narrow spikes up to ~4× the average" },
 ]
 
+/**
+ * Normalize any persisted/imported traffic value — a legacy internal `TrafficPattern`
+ * (steady/wobble/periodic/surge) OR an already-migrated `TrafficKind` — into a `TrafficKind`.
+ * Migration map: `wobble`→`realistic`; `surge` has no player-facing kind, so it collapses to
+ * `realistic` (the closest non-flat shape — existing surge nodes degrade to a wobble curve).
+ * Unknown / empty → `steady`. Idempotent: re-normalizing a kind returns the same kind.
+ */
+export function normalizeTrafficKind(value: string | null | undefined): TrafficKind {
+  switch (value) {
+    case "realistic":
+    case "wobble":
+    case "surge":
+      return "realistic"
+    case "periodic":
+      return "periodic"
+    case "search":
+      return "search"
+    case "steady":
+    default:
+      return "steady"
+  }
+}
+
 /** Map a player-facing `TrafficKind` to the internal curve-shape `TrafficPattern`. */
 export function kindToPattern(kind: TrafficKind): TrafficPattern {
   switch (kind) {

@@ -2,7 +2,7 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph, totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficPattern } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficKind } from "@/stores/architectureStoreHelpers"
 import { defaultTrafficCurve } from "@/engine/simulationEngine"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { SIM_DEFAULT_DURATION_S } from "@/lib/constants"
@@ -26,12 +26,12 @@ export function RunSimulationButton() {
     const graph = buildSimGraph(nodes, edges)
     const sourceTotal = totalTrafficSourceRps(nodes)
     // Curve precedence: an active demand Scenario shapes it (scaled to the source volume); else a
-    // Traffic Source's own pattern (wobble/periodic/surge) drives the shape; else the default ramp.
+    // Traffic Source's own kind (realistic/periodic/search) drives the shape; else the default ramp.
     const scenarioCurve = activeScenarioId ? getScenarioPreset(activeScenarioId)?.trafficCurve : undefined
     let curve
     if (scenarioCurve) {
       curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(scenarioCurve, sourceTotal) : scenarioCurve
-    } else if (hasTrafficPattern(nodes)) {
+    } else if (hasTrafficKind(nodes)) {
       curve = buildTrafficCurveFromSources(nodes, SIM_DEFAULT_DURATION_S)
     } else {
       curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(defaultTrafficCurve(), sourceTotal) : defaultTrafficCurve()

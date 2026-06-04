@@ -44,9 +44,9 @@ export function exportArchitecture(
     if (node.data.replicaCount > 1) {
       nodeObj.replicas = node.data.replicaCount
     }
-    // Traffic Source burst pattern — emit only when non-default (steady omitted for compactness)
-    if (node.data.trafficPattern && node.data.trafficPattern !== "steady") {
-      nodeObj.traffic_pattern = node.data.trafficPattern
+    // Traffic Source shape — emit only on traffic nodes when non-default (steady omitted for compactness)
+    if (node.data.componentCategory === "traffic" && node.data.trafficKind && node.data.trafficKind !== "steady") {
+      nodeObj.traffic_kind = node.data.trafficKind
     }
     // AC-ARCH-PATTERN-1: include data_context only when node has items
     // AC-ARCH-PATTERN-3: fit results NOT exported — only data definitions

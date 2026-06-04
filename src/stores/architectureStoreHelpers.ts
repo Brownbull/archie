@@ -1,7 +1,7 @@
 import { componentLibrary } from "@/services/componentLibrary"
 import { detectTopologyIssues, detectReplicasWithoutLB, type TopologyIssue } from "@/engine/topologyChecker"
 import type { SimGraph, SimNode, SimEdge, TrafficCurve } from "@/lib/simulationTypes"
-import { buildPatternCurve, type TrafficPattern } from "@/engine/trafficPatterns"
+import { buildPatternCurve, kindToPattern, normalizeTrafficKind } from "@/engine/trafficPatterns"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { getFailurePreset } from "@/services/failureLoader"
@@ -368,21 +368,46 @@ export function scaleTrafficCurveToPeak(curve: TrafficCurve, peak: number): Traf
   return curve.map((p) => ({ t: p.t, rps: Math.round((p.rps / max) * peak) }))
 }
 
-/** True if any traffic source carries a non-steady pattern (so the sim should shape its own curve). */
-export function hasTrafficPattern(
-  nodes: ReadonlyArray<{ data?: { componentCategory?: string; trafficPattern?: string } }>,
+/**
+ * Normalize a node's traffic config to the player-facing `trafficKind` (ISAPivot migration).
+ * Idempotent boundary normalizer applied on every architecture load (autosave, saved-canvas slots,
+ * YAML import, blueprints) so legacy `data.trafficPattern` (steady/wobble/periodic/surge) becomes
+ * `data.trafficKind` (steady/realistic/periodic/search). Non-traffic nodes pass through untouched.
+ */
+export function normalizeNodeTrafficKind<T extends { data: Record<string, unknown> }>(node: T): T {
+  const d = node.data
+  if (d.componentCategory !== "traffic") {
+    // Traffic-shape fields are meaningless on non-traffic nodes — strip any stray legacy/new field so
+    // hand-crafted or corrupt input can't round-trip an invalid traffic_kind onto e.g. a database node.
+    if (d.trafficKind === undefined && d.trafficPattern === undefined) return node
+    const { trafficKind: _k, trafficPattern: _p, ...rest } = d
+    return { ...node, data: rest } as T
+  }
+  const trafficKind = normalizeTrafficKind((d.trafficKind ?? d.trafficPattern) as string | undefined)
+  const { trafficPattern: _legacy, ...rest } = d
+  return { ...node, data: { ...rest, trafficKind } } as T
+}
+
+/** True if any traffic source carries a non-steady kind (so the sim should shape its own curve). */
+export function hasTrafficKind(
+  nodes: ReadonlyArray<{ data?: { componentCategory?: string; trafficKind?: string; trafficPattern?: string } }>,
 ): boolean {
-  return nodes.some((n) => n.data?.componentCategory === "traffic" && !!n.data.trafficPattern && n.data.trafficPattern !== "steady")
+  return nodes.some(
+    (n) =>
+      n.data?.componentCategory === "traffic" &&
+      normalizeTrafficKind(n.data.trafficKind ?? n.data.trafficPattern) !== "steady",
+  )
 }
 
 /**
- * Builds the simulation traffic curve from each Traffic Source's own rate + pattern, summed
+ * Builds the simulation traffic curve from each Traffic Source's own rate + kind, summed
  * tick-aligned across all sources (so multiple sources combine). Each source's average = its
- * tier × stepper (getNodeCost.maxRPS); its pattern (wobble/periodic/surge) shapes the curve around
- * that average. Returns [] when there are no rate-bearing sources (caller falls back to the ramp).
+ * tier × stepper (getNodeCost.maxRPS); its kind (realistic/periodic/search) shapes the curve around
+ * that average via kindToPattern. Returns [] when there are no rate-bearing sources (caller falls
+ * back to the ramp). Reads legacy `trafficPattern` defensively for un-normalized callers.
  */
 export function buildTrafficCurveFromSources(
-  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number; trafficPattern?: string } }>,
+  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number; trafficKind?: string; trafficPattern?: string } }>,
   durationS: number,
   points = 48,
 ): TrafficCurve {
@@ -393,7 +418,7 @@ export function buildTrafficCurveFromSources(
     if (!d || d.componentCategory !== "traffic") continue
     const base = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1).maxRPS
     if (base === undefined || base <= 0) continue
-    const pattern = (d.trafficPattern as TrafficPattern) ?? "steady"
+    const pattern = kindToPattern(normalizeTrafficKind(d.trafficKind ?? d.trafficPattern))
     const curve = buildPatternCurve(pattern, base, durationS, points, seed++)
     combined = combined === null
       ? curve.map((p) => ({ ...p }))
