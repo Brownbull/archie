@@ -65,6 +65,9 @@ let mockTopologyIssuesByNodeId = new Map<string, Array<{ issueType: string }>>()
 const mockComputedMetrics = new Map<string, unknown>()
 const mockWeightProfile = {}
 const mockSetNodeReplicaCount = vi.fn()
+const mockSetNodeTrafficRps = vi.fn()
+const mockSetNodeWorkload = vi.fn()
+const mockSetNodeOrigin = vi.fn()
 
 vi.mock("@/stores/architectureStore", () => {
   const fn = Object.assign(
@@ -76,6 +79,9 @@ vi.mock("@/stores/architectureStore", () => {
         rippleActiveNodeIds: mockRippleActiveNodeIds,
         topologyIssuesByNodeId: mockTopologyIssuesByNodeId,
         setNodeReplicaCount: mockSetNodeReplicaCount,
+        setNodeTrafficRps: mockSetNodeTrafficRps,
+        setNodeWorkload: mockSetNodeWorkload,
+        setNodeOrigin: mockSetNodeOrigin,
         edges: mockArchEdges,
         computedMetrics: mockComputedMetrics,
         weightProfile: mockWeightProfile,
@@ -126,6 +132,9 @@ describe("ArchieNode", () => {
     mockArchEdges = []
     mockTopologyIssuesByNodeId = new Map()
     mockSetNodeReplicaCount.mockClear()
+    mockSetNodeTrafficRps.mockClear()
+    mockSetNodeWorkload.mockClear()
+    mockSetNodeOrigin.mockClear()
     useSimulationStore.getState().reset()
   })
 
@@ -217,19 +226,19 @@ describe("ArchieNode", () => {
   describe("traffic-source RPS stepper (P97)", () => {
     it("renders an RPS stepper (not a replica stepper) for a traffic source", () => {
       render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const }} />)
-      expect(screen.getByTestId("rps-stepper-value")).toHaveTextContent("rps")
+      expect(screen.getByTestId("rps-stepper-value")).toHaveTextContent("peak")
       expect(screen.queryByTestId("replica-increment")).not.toBeInTheDocument()
       expect(screen.queryByTestId("replica-count")).not.toBeInTheDocument()
     })
 
-    it("raises RPS via setNodeReplicaCount on + click", () => {
-      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const, replicaCount: 2 }} />)
+    it("raises peak RPS via setNodeTrafficRps on + click (steps through TRAFFIC_RPS_STEPS)", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const, trafficRps: 3000 }} />)
       fireEvent.click(screen.getByTestId("rps-increment"))
-      expect(mockSetNodeReplicaCount).toHaveBeenCalledWith("node-1", 3)
+      expect(mockSetNodeTrafficRps).toHaveBeenCalledWith("node-1", 6000) // next step above 3000
     })
 
-    it("disables the RPS decrement at the minimum", () => {
-      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const, replicaCount: 1 }} />)
+    it("disables the RPS decrement at the minimum peak (3k)", () => {
+      render(<ArchieNode {...defaultProps} data={{ ...defaultProps.data, componentCategory: "traffic" as const, trafficRps: 3000 }} />)
       expect(screen.getByTestId("rps-decrement")).toBeDisabled()
     })
   })

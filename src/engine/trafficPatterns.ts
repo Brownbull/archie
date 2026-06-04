@@ -32,7 +32,7 @@ export const TRAFFIC_KINDS: readonly { id: TrafficKind; label: string; hint: str
   { id: "steady", label: "Steady", hint: "Constant load at the set rate" },
   { id: "realistic", label: "Realistic", hint: "Organic ±15% variation around the average" },
   { id: "periodic", label: "Periodic", hint: "Repeating peaks up to ~3× the average (rush hours)" },
-  { id: "search", label: "Search / bursty", hint: "Frequent sharp narrow spikes up to ~4× the average" },
+  { id: "search", label: "Search", hint: "Bursty — frequent sharp narrow spikes up to ~4× the average" },
 ]
 
 /**
@@ -56,6 +56,23 @@ export function normalizeTrafficKind(value: string | null | undefined): TrafficK
     default:
       return "steady"
   }
+}
+
+/**
+ * Display envelope for a source whose `rps` is its PEAK (D63): the {min, avg, peak} load the kind
+ * produces over the run. Used on the canvas block, inspector, and challenge brief so author/player
+ * see the real load range. peak == rps; the kind sets how far below the peak it sits.
+ */
+export function trafficKindEnvelope(kind: TrafficKind, peakRps: number): { min: number; avg: number; peak: number } {
+  const peak = Math.max(0, Math.round(peakRps))
+  const bands: Record<TrafficKind, { min: number; avg: number }> = {
+    steady: { min: 1, avg: 1 },
+    realistic: { min: 0.6, avg: 0.7 },
+    periodic: { min: 0.33, avg: 0.55 },
+    search: { min: 0.25, avg: 0.37 },
+  }
+  const b = bands[kind]
+  return { min: Math.round(peak * b.min), avg: Math.round(peak * b.avg), peak }
 }
 
 /** Map a player-facing `TrafficKind` to the internal curve-shape `TrafficPattern`. */

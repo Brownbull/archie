@@ -85,38 +85,56 @@ test.describe("Visual audit", () => {
     }
   })
 
-  test("traffic source — decluttered node + working rps stepper", async ({ page }) => {
+  test("traffic source — peak-RPS stepper + kind/workload/origin config (ISAPivot)", async ({ page }) => {
     await ready(page)
     await addComponentToCanvas(page, 0) // first palette block = Traffic Source (multi-provider)
     const node = page.locator('[data-testid="archie-node"]').first()
     await page.waitForTimeout(400)
     await node.screenshot({ path: `${SCREENSHOT_DIR}/15-traffic-node.png` })
 
-    // The −/＋ stepper must actually move the rps readout (regression: it was frozen).
+    // NEW behaviour: the stepper now sets the source's PEAK rps (trafficRps), snapping through
+    // TRAFFIC_RPS_STEPS — replaces the old replicaCount-as-index stepper. Readout reads "… peak".
     const value = page.locator('[data-testid="rps-stepper-value"]')
+    await expect(value).toContainText("peak")
     const before = await value.textContent()
     await page.locator('[data-testid="rps-increment"]').click()
     await page.waitForTimeout(200)
     const afterInc = await value.textContent()
-    expect(afterInc, "rps readout should rise on +").not.toBe(before)
+    expect(afterInc, "peak rps should rise on +").not.toBe(before)
     await page.locator('[data-testid="rps-decrement"]').click()
     await page.waitForTimeout(200)
-    expect(await value.textContent(), "rps readout should fall back on −").toBe(before)
+    expect(await value.textContent(), "peak rps should fall back on −").toBe(before)
     await node.screenshot({ path: `${SCREENSHOT_DIR}/16-traffic-node-stepped.png` })
 
-    // Decluttered: a load origin shows no infra cost / complexity / metric bars.
+    // Decluttered: a load origin shows no infra cost / complexity bars.
     await expect(node.locator('[data-testid="archie-node-cost"]')).toHaveCount(0)
     await expect(node.locator('[data-testid="archie-node-complexity"]')).toHaveCount(0)
 
-    // Burst-pattern picker present + selectable; pick "Big surge".
-    const patternSelect = node.locator('[data-testid="traffic-pattern-select"]')
-    await expect(patternSelect).toBeVisible()
-    await patternSelect.click()
-    await page.getByRole("option", { name: "Surge" }).click()
-    await page.waitForTimeout(250)
-    await node.screenshot({ path: `${SCREENSHOT_DIR}/17-traffic-pattern-surge.png` })
+    // NEW behaviour: the shape picker offers "Search" and the old "Surge" is gone.
+    const kindSelect = node.locator('[data-testid="traffic-pattern-select"]')
+    await expect(kindSelect).toBeVisible()
+    await kindSelect.click()
+    await expect(page.getByRole("option", { name: "Surge" }), "old Surge option retired").toHaveCount(0)
+    await page.getByRole("option", { name: /Search/ }).click()
+    await page.waitForTimeout(150)
 
-    // The simulation accepts the pattern and starts (Run hands off to the sim bar — no crash).
+    // NEW behaviour: workload + origin selectors live on the block (D63 — all 4 controls on the node).
+    const workload = node.locator('[data-testid="traffic-workload-select"]')
+    const origin = node.locator('[data-testid="traffic-origin-select"]')
+    await expect(workload).toBeVisible()
+    await expect(origin).toBeVisible()
+    await workload.click()
+    await page.getByRole("option", { name: "Write-heavy" }).click()
+    await page.waitForTimeout(100)
+    await origin.click()
+    await page.getByRole("option", { name: "Multi-region" }).click()
+    await page.waitForTimeout(150)
+
+    // NEW behaviour: a derived min/avg/peak envelope caption is shown.
+    await expect(node.locator('[data-testid="traffic-envelope"]')).toBeVisible()
+    await node.screenshot({ path: `${SCREENSHOT_DIR}/17-traffic-config-search-write-multiregion.png` })
+
+    // The simulation accepts the config and starts (Run hands off to the sim bar — no crash).
     await page.locator('[data-testid="run-simulation"]').click()
     await expect(page.locator('[data-testid="run-simulation"]')).toHaveCount(0, { timeout: 5_000 })
   })

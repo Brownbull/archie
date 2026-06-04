@@ -24,9 +24,8 @@ import { PORT_TYPES } from "@/lib/constants"
 import { getNodeCost, getNodeComplexity, getNodeCategoryAverages, type ComplexityLevel } from "@/stores/architectureStoreHelpers"
 import { computeWeightedNodeScore } from "@/engine/heatmapCalculator"
 import { TypeIcon } from "@/components/common/TypeIcon"
-import { TrafficPatternSelect } from "@/components/canvas/TrafficPatternSelect"
-import { normalizeTrafficKind } from "@/engine/trafficPatterns"
-import { formatRps, formatRpsCompact } from "@/lib/formatStats"
+import { TrafficNodeControls } from "@/components/canvas/TrafficNodeControls"
+import { formatRps } from "@/lib/formatStats"
 import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
 import { Gauge } from "lucide-react"
 
@@ -129,7 +128,6 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Throughput (requests/sec) + base latency shown on the left of the stats row; cost on the right.
   const rpsLabel = useMemo(() => formatRps(nodeCost.maxRPS), [nodeCost.maxRPS])
   // Compact RPS figure (no "rps" suffix) for the traffic-source stepper readout — handles k and M.
-  const rpsStepValue = useMemo(() => formatRpsCompact(nodeCost.maxRPS), [nodeCost.maxRPS])
   const latencyLabel = nodeCost.baseLatencyMs !== undefined ? `${nodeCost.baseLatencyMs}ms` : null
 
   // Operational-complexity level for the active variant — drives the badge on the right of the
@@ -145,7 +143,6 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Traffic sources aren't "scaled" with replicas — instead the stepper sets their emitted rps
   // (data.trafficRps, the source's peak; legacy nodes fall back to the TRAFFIC_RPS_STEPS index).
   const isTraffic = data.componentCategory === "traffic"
-  const trafficKind = normalizeTrafficKind((data.trafficKind ?? data.trafficPattern) as string | undefined)
   const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)
   const needsLB = useArchitectureStore((s) =>
     (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
@@ -323,46 +320,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
           className="nodrag flex flex-wrap items-center gap-1 px-3 pb-1.5"
         >
           {isTraffic ? (
-            <div className="flex w-full items-stretch gap-1.5">
-              {/* RPS stepper — left, the taller/wider control (the source's average load, 3k → 10M) */}
-              <div
-                className="flex h-7 flex-1 items-center justify-between overflow-hidden rounded-md border border-archie-border bg-surface"
-                onClick={(e) => e.stopPropagation()}
-                title="Average requests/sec this source sends (3k → 10M). Pick the burst shape on the right."
-              >
-                <button
-                  type="button"
-                  data-testid="rps-decrement"
-                  aria-label="Fewer requests per second"
-                  disabled={replicaCount <= MIN_REPLICAS}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setNodeReplicaCount(id, replicaCount - 1)
-                  }}
-                  className="flex h-full items-center px-2 text-[0.8125rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
-                >
-                  −
-                </button>
-                <span data-testid="rps-stepper-value" className="flex-1 whitespace-nowrap text-center text-[0.6875rem] font-semibold text-text-primary">
-                  {rpsStepValue} rps
-                </span>
-                <button
-                  type="button"
-                  data-testid="rps-increment"
-                  aria-label="More requests per second"
-                  disabled={replicaCount >= MAX_REPLICAS}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setNodeReplicaCount(id, replicaCount + 1)
-                  }}
-                  className="flex h-full items-center px-2 text-[0.8125rem] leading-none text-text-secondary hover:text-text-primary disabled:opacity-30"
-                >
-                  +
-                </button>
-              </div>
-              {/* Burst pattern — right, the narrower control (matches the stepper height) */}
-              <TrafficPatternSelect nodeId={id} kind={trafficKind} />
-            </div>
+            <TrafficNodeControls nodeId={id} data={data} />
           ) : scalingRule.scalable ? (
             <div
               className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
