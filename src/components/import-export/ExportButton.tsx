@@ -92,7 +92,7 @@ export function ExportButton() {
       size="sm"
       onClick={handleExport}
       disabled={isEmpty}
-      className="gap-1.5"
+      className="h-auto w-full justify-start gap-2 px-2 py-1.5 font-normal"
     >
       <FileDown className="h-3.5 w-3.5" />
       Export

@@ -20,7 +20,7 @@ export function CanvasLegend() {
   return (
     <div
       data-testid="canvas-legend-container"
-      className={`pointer-events-none absolute bottom-4 left-4 ${Z_INDEX.CANVAS_OVERLAY}`}
+      className={`pointer-events-none absolute bottom-4 left-16 ${Z_INDEX.CANVAS_OVERLAY}`}
     >
       <div
         data-testid="canvas-legend"
