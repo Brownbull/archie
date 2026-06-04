@@ -3588,3 +3588,7 @@ FINDINGS: 0 (tsc -b + eslint clean, 4698 unit + 148 integration, challenge parse
 HINTS: 1-5 progressive ladders (2×2, 3×12, 4×11, 5×16), last = full reference solution. Workflow w720edogp. Feeds Phase 5 hint economy.
 PHASE 4 COMPLETE: 4a harness + 4b recast + 4c harden + 4d hints. Exec ✅ Commit ✅ (4d Push pending; 4b/4c shipped P124).
 NEXT: Phase 5 (hint economy — spendable stars + HintPanel + Firestore rules HARD GATE), Phase 6 (destructive reset HARD GATE).
+
+## 2026-06-04 17:28 — PUSH dev -> main
+CI: all passed (deploy-production success, run 26980644249)
+DEPLOYMENTS: P125 (Phase 4d shipped — PHASE 4 COMPLETE)
