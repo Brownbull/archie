@@ -3174,3 +3174,12 @@ PR: — (direct fast-forward, established dev→main flow)
 CI: deploy-production ✅ (run 26925229620, ~40s)
 DEPLOYMENTS: P118
 NOTE: userCanvases firestore.rules deployed manually before this push.
+- 2026-06-03 22:04 | Edit | /home/khujta/projects/bmad/archie/src/components/import-export/ExportButton.tsx
+- 2026-06-03 22:04 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbar/ExportReportButton.tsx
+- 2026-06-03 22:04 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/CanvasLegend.tsx
+- 2026-06-03 22:06 | Write | /home/khujta/projects/bmad/archie/tests/e2e/menu-and-legend-layout.spec.ts
+
+## 2026-06-03 22:07 — [layout fixes] fix(ui): File-menu Export/Report alignment + heatmap legend off zoom controls
+FINDINGS: 0 critical; lint clean; 17 unit + 3 E2E (menu-and-legend-layout) green
+ACTIONS: committed
+NOTES: Export/ExportReport ghost buttons restyled as left-aligned menu rows (were justify-center/full-width → centered icons). CanvasLegend bottom-4 left-4 → left-16 to clear the React Flow zoom Controls. New layout-regression E2E.
