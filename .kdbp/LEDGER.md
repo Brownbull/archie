@@ -3288,3 +3288,115 @@ NOTE: architectureStore.ts + ArchieNode.tsx edits via sed (D3 size guard / churn
   workaround). Store grew ~+15 lines; split remains the proper fix (D3). Stepper UI rewire = slice 4.
 PLAN: Phase 1 Exec 🔄 (slice 1 of 7 done). Remaining: workload/origin fields(2), persistence(3), block UX(4),
   inspector UX(5), challenge injection+combined curve(6), free-play hard-gate(7).
+- 2026-06-04 10:46 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 10:48 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-04 10:48 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-04 10:48 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-04 10:48 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlExporter.ts
+- 2026-06-04 10:48 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-04 10:48 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-04 10:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-04 10:49 | Edit | /home/khujta/projects/bmad/archie/tests/integration/yamlRoundTrip.test.ts
+- 2026-06-04 10:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+
+## 2026-06-04 10:52 — [0e1880f] feat(traffic): workload + origin fields + persistence (Phase 1 slices 2-3)
+GATES: tsc -b ✅ · eslint 0 errors ✅ · full vitest 4590/4590 ✅
+VERIFY: deterministic only — additive plumbing mirroring the slice-1-verified normalizer/export/import paths
+  (non-traffic strip, round-trip omit-default, store actions covered by dedicated tests). Adversarial
+  workflows reserved for risky slices (Phase 2 routing, 3 rubric, 5 economy, 6 reset).
+PLAN: Phase 1 Exec 🔄 — slices 2-3 done (5/8 remain: block UX, inspector UX, injection+curve, free-play gate, creator UI).
+- 2026-06-04 11:13 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-04 11:13 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficNodeControls.tsx
+- 2026-06-04 11:15 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficNodeControls.tsx
+- 2026-06-04 11:16 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-04 11:18 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode.test.tsx
+- 2026-06-04 11:39 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+
+## 2026-06-04 11:40 — [50d31d8] feat(traffic): canvas-block traffic config UI + fix frozen stepper (Phase 1 slice 4)
+VERIFY (Playwright): full desktop E2E suite 146 passed / 0 failed / 32 skipped (16.4m). visual-audit traffic
+  test rewritten old→new (Surge→Search, replicaCount-stepper→peak-rps-stepper, +workload/origin/envelope).
+  Screenshots: test-results/visual-audit/{15-traffic-node,16-stepped,17-traffic-config-search-write-multiregion}.png.
+  Rough edge found+fixed: slice-1 froze the stepper (replicaCount vs trafficRps) → rewired to setNodeTrafficRps.
+  Polish: "Search / bursty" label → "Search" (fit + consistency with the other one-word kind labels).
+GATES: tsc -b ✅ · eslint 0 errors ✅ · unit 4590/4590 ✅ · E2E 146/146 ✅
+PLAN: Phase 1 Exec 🔄 — slices 1-4 done (5/8 = inspector; 6 = injection+curve; 7 = free-play gate; 8 = creator UI).
+- 2026-06-04 11:47 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-04 11:47 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-04 11:47 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-04 11:49 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-04 11:52 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+
+## 2026-06-04 11:53 — [c6cc718] feat(traffic): inspector traffic-config section (Phase 1 slice 5)
+VERIFY (Playwright): visual-audit E2E 8/8 (49s) incl. new inspector-mirror test. Screenshot:
+  test-results/visual-audit/18-inspector-traffic-config.png. Rough edge found+fixed: slice-5 made the
+  inspector mirror TrafficNodeControls → page-level rps locators in the block test became ambiguous
+  (2 matches) → scoped them to the canvas node.
+GATES: tsc -b ✅ · eslint 0 errors ✅ · unit 4590 ✅ · E2E 8/8 ✅
+PLAN: Phase 1 Exec 🔄 — slices 1-5 done (player-facing traffic UI complete: block + inspector).
+  Remaining: 6 challenge injection + peak-anchored combined curve; 7 free-play hard-gate; 8 creator UI + hints.
+- 2026-06-04 13:07 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-04 13:08 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 13:08 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 13:08 | Edit | /home/khujta/projects/bmad/archie/src/services/trafficSourceInjection.ts
+- 2026-06-04 13:09 | Edit | /home/khujta/projects/bmad/archie/src/services/trafficSourceInjection.ts
+- 2026-06-04 13:10 | Edit | /home/khujta/projects/bmad/archie/src/services/trafficSourceInjection.ts
+- 2026-06-04 13:10 | Edit | /home/khujta/projects/bmad/archie/src/services/trafficSourceInjection.ts
+- 2026-06-04 13:10 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-04 13:10 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeSelector.tsx
+- 2026-06-04 13:10 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-04 13:11 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-04 13:11 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-04 13:11 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-04 13:12 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-04 13:12 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/trafficSourceRps.test.ts
+- 2026-06-04 13:12 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/trafficPatterns.test.ts
+- 2026-06-04 13:13 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/trafficPatterns.test.ts
+- 2026-06-04 13:14 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/trafficSourceInjection.test.ts
+- 2026-06-04 13:14 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/trafficSourceInjection.test.ts
+- 2026-06-04 13:28 | Edit | /home/khujta/projects/bmad/archie/src/engine/trafficPatterns.ts
+- 2026-06-04 13:28 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-04 13:28 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-04 13:28 | Edit | /home/khujta/projects/bmad/archie/src/schemas/architectureFileSchema.ts
+- 2026-06-04 13:29 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlExporter.ts
+- 2026-06-04 13:29 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-04 13:29 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-04 13:30 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/trafficPatterns.test.ts
+- 2026-06-04 13:30 | Edit | /home/khujta/projects/bmad/archie/tests/integration/yamlRoundTrip.test.ts
+
+## 2026-06-04 13:33 — [925b2fd] feat(traffic): peak-anchored combined curve + challenge source injection (Phase 1 slice 6)
+VERIFY: adversarial workflow w9yy5jfvv (3 lenses) — 8 real findings; fixed 2 CRITICAL:
+  (1) realistic/wobble never reached its peak (÷1.45+clamp) → rewrote buildPeakAnchoredCurve to SCALE the
+      curve so max == rps exactly for every kind (incl. stochastic realistic); removed kindPeakMultiplier.
+  (2) trafficRps missing from architectureFileSchema/exporter/importer (slice-3 gap) → save/reload silently
+      dropped it + backfilled the tier index = data loss. Added traffic_rps end-to-end + round-trip test.
+  Highs/mediums resolved by the same fixes (test-gap, multi-realistic summing, mechanism).
+GATES: tsc -b ✅ · eslint 0 errors ✅ · full vitest 4601/4601 ✅
+PLAN: Phase 1 Exec 🔄 — slices 1-6 done. Remaining: 7 free-play hard-gate; 8 creator UI + hints.
+- 2026-06-04 13:41 | Edit | /home/khujta/projects/bmad/archie/src/services/trafficSourceInjection.ts
+- 2026-06-04 13:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/trafficSourceInjection.test.ts
+- 2026-06-04 13:42 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/trafficSourceInjection.test.ts
+- 2026-06-04 13:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+- 2026-06-04 13:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+- 2026-06-04 13:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-mutations.test.ts
+
+## 2026-06-04 13:46 — [d4f0b62] feat(traffic): one-per-type / max-4 hard-gate (Phase 1 slice 7)
+VERIFY: deterministic — gate logic (resolveTrafficSourceAdd remap/cap, wouldDuplicateTrafficType) +
+  store integration (addNode remap to next free type, block at cap, block dup swap) unit-tested.
+  E2E unchanged (single-add path in visual-audit still allowed). Toast-UX confirmation deferred (guard, not new render).
+GATES: tsc -b ✅ · eslint 0 errors ✅ · full vitest 4609/4609 ✅
+PLAN: Phase 1 Exec 🔄 — slices 1-7 done. Remaining: 8 creator UI + hints (ChallengeEditor) — the last Phase 1 slice.
+- 2026-06-04 13:51 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-04 13:51 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 13:51 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 13:51 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 13:52 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 13:52 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 13:55 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-batch-features.spec.ts
+
+## 2026-06-04 13:56 — [db907c0] feat(challenges): creator hints + typed traffic-source authoring (Phase 1 slice 8)
+VERIFY (Playwright): ui-batch-features 5/5 (34s) incl. new creator E2E (forge-create → author 2 hints +
+  a Search-kind typed source → save persists). HintsEditor (1-5, Answer label) + TrafficSourcesEditor
+  (≤4 one-per-type, envelope) added to ChallengeEditor; schema hints capped at 5 (D65).
+GATES: tsc -b ✅ · eslint 0 errors ✅ · unit 4609/4609 ✅ · E2E 5/5 ✅
+PLAN: 🎯 PHASE 1 COMPLETE (Exec ✅ Commit ✅; Review/Push pending) — all 8 slices done.
+  Player-facing + engine + persistence + injection + gate + authoring all shipped & verified.
