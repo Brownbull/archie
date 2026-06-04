@@ -956,3 +956,18 @@ dim_overrides: []
 **Phase:** Author the hard challenges · **Types:** data, content · **Tier:** ent · **Prototype:** no
 **Reason:** New content must be solvable AND hard; a solvability smoke test (reference solution clears each) prevents unwinnable challenges. Ship as new ids to protect returning players' progress.
 **Status:** accepted
+
+## D63 — ISAPivot Phase 1 traffic-config UX decisions (2026-06-04)
+
+**Status:** active
+
+Locked with the product owner before Phase 1 implementation:
+
+1. **rps = PEAK / maximum.** A traffic source's `rps` is the maximum load it reaches (the number the architecture must survive). The `kind` defines the duty cycle BELOW the peak (steady=flat at peak; realistic≈0.6×peak floor; periodic/search sit low and spike to peak). The min/avg are DERIVED and displayed. Curve derivation: baseRps = peakRps / kindPeakMultiplier(kind) {steady 1, realistic ~1.4, periodic 3, search 4}, then clamp max to peakRps.
+2. **RPS input = ± stepper everywhere** (snap through TRAFFIC_RPS_STEPS 3k→10M) on both canvas block and inspector. No free-text numeric. "Arbitrary RPS" = the 20 discrete steps.
+3. **All 4 fields editable on block + inspector.** RPS stepper + kind + workload + origin selects on the canvas block AND mirrored in the inspector. (Supersedes the badge-only block idea.)
+4. **Hard-block one-per-type / max-4 in BOTH modes.** Free play enforces the same limit as challenge mode (toast explains the block). No WARN split.
+5. **trafficSources overrides trafficCurve.** When a challenge has both, derive the curve from sources (ignore trafficCurve); 42 legacy curve-only challenges unaffected (fallback). Direction: migrate ALL challenges to sources, then retire trafficCurve (Phase 4). Dev-time author WARN when both present.
+6. **Surface the envelope.** Show derived min/avg/peak (from rps + kind) on the block, inspector, and challenge brief — author/player always see the real load range.
+
+**Source:** Phase 1 design workflow (whgxzrg8j) + product-owner Q&A. Supersedes the Phase 0 doc note that called `rps` the "average".

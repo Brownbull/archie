@@ -72,6 +72,9 @@ export function ComponentDetail({
   const replicaCount = useArchitectureStore(
     (s) => (nodeId ? (s.nodes.find((n) => n.id === nodeId)?.data.replicaCount ?? 1) : 1),
   )
+  const trafficRps = useArchitectureStore(
+    (s) => (nodeId ? s.nodes.find((n) => n.id === nodeId)?.data.trafficRps : undefined),
+  )
   const removeNode = useArchitectureStore((s) => s.removeNode)
 
   const activeVariant = component.configVariants.find(
@@ -79,8 +82,8 @@ export function ComponentDetail({
   )
 
   const currentEconomics = useMemo(
-    () => getNodeCost(component.id, activeVariantId, replicaCount),
-    [component.id, activeVariantId, replicaCount],
+    () => getNodeCost(component.id, activeVariantId, replicaCount, trafficRps),
+    [component.id, activeVariantId, replicaCount, trafficRps],
   )
   // Cost delta: snapshot the displayed economics so a before→after shows on BOTH a provider
   // swap AND a config-variant switch (the config identity = component + variant). Replica-only

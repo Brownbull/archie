@@ -122,8 +122,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     : variantName
 
   const nodeCost = useMemo(
-    () => getNodeCost(data.archieComponentId, data.activeConfigVariantId, data.replicaCount),
-    [data.archieComponentId, data.activeConfigVariantId, data.replicaCount],
+    () => getNodeCost(data.archieComponentId, data.activeConfigVariantId, data.replicaCount, data.trafficRps),
+    [data.archieComponentId, data.activeConfigVariantId, data.replicaCount, data.trafficRps],
   )
 
   // Throughput (requests/sec) + base latency shown on the left of the stats row; cost on the right.
@@ -142,8 +142,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // --- Replica scaling (Epic 14) ---
   const replicaCount = data.replicaCount ?? 1
   const scalingRule = getScalingRule(data.componentCategory)
-  // Traffic sources aren't "scaled" with replicas — instead the stepper drives how many
-  // requests/sec they emit (replicaCount multiplies the variant's max_rps via getNodeCost).
+  // Traffic sources aren't "scaled" with replicas — instead the stepper sets their emitted rps
+  // (data.trafficRps, the source's peak; legacy nodes fall back to the TRAFFIC_RPS_STEPS index).
   const isTraffic = data.componentCategory === "traffic"
   const trafficKind = normalizeTrafficKind((data.trafficKind ?? data.trafficPattern) as string | undefined)
   const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)

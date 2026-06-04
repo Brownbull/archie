@@ -284,18 +284,21 @@ export function getNodeCost(
   archieComponentId: string,
   activeConfigVariantId: string,
   replicaCount = 1,
+  trafficRps?: number,
 ): NodeCostInfo {
   const component = componentLibrary.getComponent(archieComponentId)
   const variant = component?.configVariants.find((v) => v.id === activeConfigVariantId)
   const replicas = Number.isFinite(replicaCount) ? Math.max(1, Math.floor(replicaCount)) : 1
   const rule = component ? getScalingRule(component.category as ComponentCategoryId) : undefined
-  // Traffic source: the stepper's count is the 1-based index into the discrete rps scale (3k → 10M),
-  // NOT a tier multiplier — so its emitted rate comes straight from TRAFFIC_RPS_STEPS.
+  // Traffic source (ISAPivot): `trafficRps` is the source's PEAK rps — set via the stepper through
+  // TRAFFIC_RPS_STEPS (3k → 10M). It WINS; the legacy replicaCount-as-index is the fallback for any
+  // un-migrated node so maxRPS is never NaN. A traffic source is a free load origin, so its cost is
+  // the variant's flat cost (NOT × the stepper count — that count is no longer a replica multiplier).
   if (component?.category === "traffic") {
     const idx = Math.min(replicas, TRAFFIC_RPS_STEPS.length) - 1
     return {
-      monthlyCost: variant?.monthlyCost === undefined ? undefined : variant.monthlyCost * replicas,
-      maxRPS: TRAFFIC_RPS_STEPS[idx],
+      monthlyCost: variant?.monthlyCost,
+      maxRPS: Number.isFinite(trafficRps) && (trafficRps as number) > 0 ? (trafficRps as number) : TRAFFIC_RPS_STEPS[idx],
       baseMaxRPS: variant?.maxRPS,
       baseLatencyMs: variant?.baseLatencyMs,
       cacheHitRatio: variant?.cacheHitRatio,
@@ -347,13 +350,13 @@ export function getNodeComplexity(
  * which case the simulation falls back to its default/scenario curve.
  */
 export function totalTrafficSourceRps(
-  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number } }>,
+  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number; trafficRps?: number } }>,
 ): number {
   let total = 0
   for (const node of nodes) {
     const d = node.data
     if (!d || d.componentCategory !== "traffic") continue
-    const { maxRPS } = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1)
+    const { maxRPS } = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1, d.trafficRps)
     if (maxRPS !== undefined) total += maxRPS
   }
   return total
@@ -377,15 +380,20 @@ export function scaleTrafficCurveToPeak(curve: TrafficCurve, peak: number): Traf
 export function normalizeNodeTrafficKind<T extends { data: Record<string, unknown> }>(node: T): T {
   const d = node.data
   if (d.componentCategory !== "traffic") {
-    // Traffic-shape fields are meaningless on non-traffic nodes — strip any stray legacy/new field so
-    // hand-crafted or corrupt input can't round-trip an invalid traffic_kind onto e.g. a database node.
-    if (d.trafficKind === undefined && d.trafficPattern === undefined) return node
-    const { trafficKind: _k, trafficPattern: _p, ...rest } = d
+    // Traffic config is meaningless on non-traffic nodes — strip any stray legacy/new field so
+    // hand-crafted or corrupt input can't round-trip invalid traffic config onto e.g. a database node.
+    if (d.trafficKind === undefined && d.trafficPattern === undefined && d.trafficRps === undefined) return node
+    const { trafficKind: _k, trafficPattern: _p, trafficRps: _r, ...rest } = d
     return { ...node, data: rest } as T
   }
   const trafficKind = normalizeTrafficKind((d.trafficKind ?? d.trafficPattern) as string | undefined)
+  // Backfill the real peak rps from the legacy replicaCount-as-index for un-migrated traffic nodes.
+  const rc = Number.isFinite(d.replicaCount) ? Math.max(1, Math.floor(d.replicaCount as number)) : 1
+  const trafficRps = Number.isFinite(d.trafficRps) && (d.trafficRps as number) > 0
+    ? (d.trafficRps as number)
+    : TRAFFIC_RPS_STEPS[Math.min(rc, TRAFFIC_RPS_STEPS.length) - 1]
   const { trafficPattern: _legacy, ...rest } = d
-  return { ...node, data: { ...rest, trafficKind } } as T
+  return { ...node, data: { ...rest, trafficKind, trafficRps } } as T
 }
 
 /** True if any traffic source carries a non-steady kind (so the sim should shape its own curve). */
@@ -407,7 +415,7 @@ export function hasTrafficKind(
  * back to the ramp). Reads legacy `trafficPattern` defensively for un-normalized callers.
  */
 export function buildTrafficCurveFromSources(
-  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number; trafficKind?: string; trafficPattern?: string } }>,
+  nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number; trafficRps?: number; trafficKind?: string; trafficPattern?: string } }>,
   durationS: number,
   points = 48,
 ): TrafficCurve {
@@ -416,7 +424,7 @@ export function buildTrafficCurveFromSources(
   for (const node of nodes) {
     const d = node.data
     if (!d || d.componentCategory !== "traffic") continue
-    const base = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1).maxRPS
+    const base = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1, d.trafficRps).maxRPS
     if (base === undefined || base <= 0) continue
     const pattern = kindToPattern(normalizeTrafficKind(d.trafficKind ?? d.trafficPattern))
     const curve = buildPatternCurve(pattern, base, durationS, points, seed++)
@@ -428,7 +436,7 @@ export function buildTrafficCurveFromSources(
 }
 
 export function computeTotalArchitectureCost(
-  nodes: ReadonlyArray<{ data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number } }>,
+  nodes: ReadonlyArray<{ data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number } }>,
 ): number {
   let total = 0
   for (const node of nodes) {
@@ -436,6 +444,7 @@ export function computeTotalArchitectureCost(
       node.data.archieComponentId,
       node.data.activeConfigVariantId,
       node.data.replicaCount ?? 1,
+      node.data.trafficRps,
     )
     if (monthlyCost !== undefined) {
       total += monthlyCost
@@ -450,11 +459,11 @@ export function computeTotalArchitectureCost(
  * effectiveMaxRps 0 means "unknown/uncapped" (variant has no maxRPS authored).
  */
 export function buildSimGraph(
-  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number } }>,
+  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number; trafficRps?: number } }>,
   edges: ReadonlyArray<{ source: string; target: string }>,
 ): SimGraph {
   const simNodes: SimNode[] = nodes.map((n) => {
-    const cost = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1)
+    const cost = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps)
     return {
       id: n.id,
       category: n.data.componentCategory,

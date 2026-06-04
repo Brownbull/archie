@@ -57,6 +57,8 @@ export interface ArchieNodeData extends Record<string, unknown> {
   replicaCount: number
   // Traffic Source only: the shape its emitted load takes over the sim timeline (default steady).
   trafficKind?: TrafficKind
+  // Traffic Source only (ISAPivot): the source's PEAK rps (set via the stepper through TRAFFIC_RPS_STEPS).
+  trafficRps?: number
 }
 
 export interface ArchieEdgeData extends Record<string, unknown> {
@@ -103,6 +105,7 @@ export interface ArchitectureState {
   updateNodeConfigVariant: (nodeId: string, variantId: string) => void
   setNodeReplicaCount: (nodeId: string, count: number) => void
   setNodeTrafficKind: (nodeId: string, kind: TrafficKind) => void
+  setNodeTrafficRps: (nodeId: string, rps: number) => void
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
   duplicateNode: (nodeId: string) => string | null
   removeNode: (nodeId: string) => void
@@ -357,7 +360,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       width: NODE_WIDTH,
     }
 
-    set({ nodes: [...get().nodes, newNode] })
+    set({ nodes: [...get().nodes, normalizeNodeTrafficKind(newNode)] })
     evaluateAndSetTier(get, set)
     _evaluateAndSetViolations(get, set)
     _evaluateTopology(get, set)
@@ -399,7 +402,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     set({
       nodes: get().nodes.map((n) =>
         n.id === nodeId
-          ? {
+          ? normalizeNodeTrafficKind({
               ...n,
               data: {
                 ...n.data,
@@ -410,7 +413,7 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
                   ? newComponent.category
                   : "compute") as ComponentCategoryId,
               },
-            }
+            })
           : n,
       ),
     })
@@ -461,6 +464,20 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         n.id === nodeId ? { ...n, data: { ...n.data, trafficKind: kind } } : n,
       ),
     })
+  },
+
+  setNodeTrafficRps: (nodeId, rps) => {
+    // ISAPivot: the source's PEAK rps. Reject non-finite; clamp to [1, 10M] (TRAFFIC_RPS_STEPS ceiling).
+    if (!Number.isFinite(rps)) return
+    const clamped = Math.max(1, Math.min(10_000_000, Math.floor(rps)))
+    const node = get().nodes.find((n) => n.id === nodeId)
+    if (!node || node.data.componentCategory !== "traffic" || node.data.trafficRps === clamped) return
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === nodeId ? { ...n, data: { ...n.data, trafficRps: clamped } } : n,
+      ),
+    })
+    get().triggerRecalculation(nodeId)
   },
 
   updateNodePosition: (nodeId, position) => {

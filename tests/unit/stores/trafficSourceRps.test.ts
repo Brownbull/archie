@@ -27,7 +27,8 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficKind, normalizeNodeTrafficKind } from "@/stores/architectureStoreHelpers"
+import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficKind, normalizeNodeTrafficKind, getNodeCost } from "@/stores/architectureStoreHelpers"
+import { TRAFFIC_RPS_STEPS } from "@/lib/constants"
 
 const node = (archieComponentId: string, activeConfigVariantId: string, componentCategory: string) => ({
   data: { archieComponentId, activeConfigVariantId, componentCategory, replicaCount: 1 },
@@ -149,5 +150,48 @@ describe("normalizeNodeTrafficKind (ISAPivot boundary normalizer)", () => {
   it("is idempotent", () => {
     const once = normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", trafficPattern: "surge", archieComponentId: "web-users" }))
     expect(normalizeNodeTrafficKind(once)).toEqual(once)
+  })
+
+  it("backfills trafficRps from the legacy replicaCount index for a traffic node", () => {
+    const out = normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", replicaCount: 7 }))
+    expect(out.data.trafficRps).toBe(TRAFFIC_RPS_STEPS[6]) // index = replicaCount(7) - 1
+  })
+
+  it("preserves an existing trafficRps (backfill is idempotent)", () => {
+    const out = normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", replicaCount: 7, trafficRps: 5000 }))
+    expect(out.data.trafficRps).toBe(5000)
+  })
+
+  it("strips a stray trafficRps from a non-traffic node", () => {
+    const out = normalizeNodeTrafficKind(tnode({ componentCategory: "data-storage", trafficRps: 9000 }))
+    expect(out.data.trafficRps).toBeUndefined()
+  })
+})
+
+describe("getNodeCost traffic RPS (ISAPivot Phase 1)", () => {
+  it("uses trafficRps as the source's maxRPS when set", () => {
+    expect(getNodeCost("web-users", "moderate", 1, 5000).maxRPS).toBe(5000)
+  })
+
+  it("lets trafficRps win over the legacy replicaCount index", () => {
+    expect(getNodeCost("web-users", "moderate", 3, 5000).maxRPS).toBe(5000) // NOT TRAFFIC_RPS_STEPS[2]
+  })
+
+  it("falls back to the TRAFFIC_RPS_STEPS index when trafficRps is absent (back-compat)", () => {
+    expect(getNodeCost("web-users", "moderate", 7).maxRPS).toBe(TRAFFIC_RPS_STEPS[6]) // 60000
+    expect(getNodeCost("web-users", "moderate", 1).maxRPS).toBe(TRAFFIC_RPS_STEPS[0]) // 3000
+  })
+
+  it("falls back when trafficRps is 0 or non-finite (never NaN maxRPS)", () => {
+    expect(getNodeCost("web-users", "moderate", 1, 0).maxRPS).toBe(TRAFFIC_RPS_STEPS[0])
+    expect(getNodeCost("web-users", "moderate", 1, Number.NaN).maxRPS).toBe(TRAFFIC_RPS_STEPS[0])
+  })
+
+  it("decouples traffic cost from the stepper count (not multiplied by replicaCount)", () => {
+    expect(getNodeCost("web-users", "moderate", 3).monthlyCost).toBe(getNodeCost("web-users", "moderate", 1).monthlyCost)
+  })
+
+  it("leaves non-traffic cost scaling unchanged (cost × replicas)", () => {
+    expect(getNodeCost("postgresql", "default", 3).monthlyCost).toBe(360) // 120 × 3, untouched branch
   })
 })

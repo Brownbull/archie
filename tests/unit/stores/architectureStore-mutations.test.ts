@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { useArchitectureStore, type ArchieEdge } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
-import { CANVAS_GRID_SIZE, EDGE_TYPE_CONNECTION, NODE_TYPE_COMPONENT } from "@/lib/constants"
+import { CANVAS_GRID_SIZE, EDGE_TYPE_CONNECTION, NODE_TYPE_COMPONENT, TRAFFIC_RPS_STEPS } from "@/lib/constants"
 
 // vi.hoisted runs before imports, so we define a local factory for use inside vi.mock.
 // This mirrors makeComponent from tests/helpers/factories but is self-contained for hoisting.
@@ -92,6 +92,16 @@ const { testComponentMap } = vi.hoisted(() => {
     cost: [],
     tags: [],
     configVariants: [],
+  }))
+  map.set("web-users", buildComponent({
+    id: "web-users",
+    name: "Web Users",
+    category: "traffic",
+    description: "Traffic source",
+    is: "A traffic source archetype",
+    gain: ["Load origin"],
+    cost: ["Free"],
+    tags: ["traffic"],
   }))
 
   return { testComponentMap: map }
@@ -608,6 +618,29 @@ describe("architectureStore", () => {
       const nodes = useArchitectureStore.getState().nodes
       // y should match the rightmost column's y (snapped)
       expect(nodes[2].position.y).toBe(Math.round(yPos / CANVAS_GRID_SIZE) * CANVAS_GRID_SIZE)
+    })
+  })
+
+  describe("traffic config normalization on mutation (ISAPivot Phase 1)", () => {
+    it("backfills trafficRps when swapping a non-traffic node TO a traffic source", () => {
+      const store = useArchitectureStore.getState()
+      store.addNode("postgresql", { x: 0, y: 0 })
+      const id = useArchitectureStore.getState().nodes[0].id
+      store.swapNodeComponent(id, "web-users")
+      const data = useArchitectureStore.getState().nodes.find((n) => n.id === id)!.data
+      expect(data.componentCategory).toBe("traffic")
+      expect(data.trafficRps).toBe(TRAFFIC_RPS_STEPS[0]) // backfilled from replicaCount (MIN_REPLICAS)
+    })
+
+    it("strips trafficRps when swapping a traffic source TO a non-traffic node", () => {
+      const store = useArchitectureStore.getState()
+      store.addNode("web-users", { x: 0, y: 0 }) // addNode normalizes → trafficRps backfilled
+      const id = useArchitectureStore.getState().nodes[0].id
+      expect(useArchitectureStore.getState().nodes[0].data.trafficRps).toBe(TRAFFIC_RPS_STEPS[0])
+      store.swapNodeComponent(id, "postgresql")
+      const data = useArchitectureStore.getState().nodes.find((n) => n.id === id)!.data
+      expect(data.componentCategory).toBe("data-storage")
+      expect(data.trafficRps).toBeUndefined() // stripped on swap to non-traffic
     })
   })
 
