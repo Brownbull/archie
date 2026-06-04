@@ -172,3 +172,24 @@ export function buildPatternCurve(
   }
   return out
 }
+
+/**
+ * Build a curve whose PEAK equals `peakRps` (D63: a source's rps IS its peak). Builds the kind's raw
+ * shape, then SCALES the whole curve so its maximum equals `peakRps` exactly. Scaling (rather than
+ * dividing by a fixed ratio + clamping) guarantees EVERY kind — including stochastic `realistic`
+ * (wobble), whose max is random — peaks at rps, while preserving the relative shape (the kind sets
+ * the duty cycle below the peak). Deterministic for a given (kind, peakRps, durationS, seed).
+ */
+export function buildPeakAnchoredCurve(
+  peakRps: number,
+  kind: TrafficKind,
+  durationS: number,
+  points = CURVE_POINTS,
+  seed = 1,
+): TrafficCurve {
+  const peak = Math.max(0, Math.round(peakRps))
+  const raw = buildPatternCurve(kindToPattern(kind), peak, durationS, points, seed)
+  if (peak === 0) return raw
+  const max = Math.max(1, ...raw.map((p) => p.rps))
+  return raw.map((p) => ({ t: p.t, rps: Math.round((p.rps / max) * peak) }))
+}

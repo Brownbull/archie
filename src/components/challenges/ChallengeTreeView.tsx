@@ -12,7 +12,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
-import { makeTrafficSourceNode, curvePeakRps } from "@/services/trafficSourceInjection"
+import { makeChallengeTrafficNodes } from "@/services/trafficSourceInjection"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { CHALLENGE_TRACKS } from "@/lib/challengeTracks"
 import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
@@ -344,10 +344,9 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
   const startChallenge = (c: Challenge) => {
     if (!userId) return
     try {
-      const peak = curvePeakRps(c.trafficCurve)
-      const source = makeTrafficSourceNode(peak, { x: 64, y: 240 })
       useSimulationStore.getState().reset()
-      useArchitectureStore.getState().loadArchitecture(source ? [source] : [], [])
+      // ISAPivot: seed one typed source per authored trafficSources entry (else the curve-peak source).
+      useArchitectureStore.getState().loadArchitecture(makeChallengeTrafficNodes(c), [])
     } catch { /* ignore */ }
     usePreferencesStore.getState().setExperienceLevel(c.difficulty)
     selectChallenge(c)

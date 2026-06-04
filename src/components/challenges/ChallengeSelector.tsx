@@ -18,7 +18,7 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
-import { makeTrafficSourceNode, curvePeakRps } from "@/services/trafficSourceInjection"
+import { makeChallengeTrafficNodes } from "@/services/trafficSourceInjection"
 import { useUiStore } from "@/stores/uiStore"
 import { resolveTechTree } from "@/engine/techTree"
 import { rankForXp, relativeLevelForTier, RELATIVE_LEVEL_COLORS, CHALLENGE_TRACKS, type RelativeLevel } from "@/lib/challengeTracks"
@@ -90,10 +90,9 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
 
   const startChallenge = (c: Challenge) => {
     try {
-      const peak = curvePeakRps(c.trafficCurve)
-      const source = makeTrafficSourceNode(peak, { x: 64, y: 240 })
       useSimulationStore.getState().reset()
-      useArchitectureStore.getState().loadArchitecture(source ? [source] : [], [])
+      // ISAPivot: seed one typed source per authored trafficSources entry (else the curve-peak source).
+      useArchitectureStore.getState().loadArchitecture(makeChallengeTrafficNodes(c), [])
     } catch {
       // ignore
     }

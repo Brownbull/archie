@@ -11,8 +11,8 @@ vi.mock("@/services/componentLibrary", () => ({
         : [],
     getComponent: (id: string) =>
       ({
-        "web-users": { id: "web-users", name: "Web Users", ports: [{ id: "http-out", type: "http", direction: "out" }] },
-        "iot-sensors": { id: "iot-sensors", name: "IoT Sensors", ports: [{ id: "http-out", type: "http", direction: "out" }] },
+        "web-users": { id: "web-users", name: "Web Users", category: "traffic", configVariants: [{ id: "moderate" }], ports: [{ id: "http-out", type: "http", direction: "out" }] },
+        "iot-sensors": { id: "iot-sensors", name: "IoT Sensors", category: "traffic", configVariants: [{ id: "fleet" }], ports: [{ id: "http-out", type: "http", direction: "out" }] },
         dns: { id: "dns", name: "DNS", ports: [{ id: "http-in", type: "http", direction: "in" }] },
       })[id],
   },
@@ -23,6 +23,8 @@ import {
   curvePeakRps,
   hasTrafficSource,
   withEntryTrafficSource,
+  makeTrafficSourceNode,
+  makeChallengeTrafficNodes,
 } from "@/services/trafficSourceInjection"
 
 const dnsNode = () => ({
@@ -62,5 +64,39 @@ describe("trafficSourceInjection", () => {
     const result = withEntryTrafficSource([existing] as never, [])
     expect(result.nodes).toHaveLength(1)
     expect(result.edges).toHaveLength(0)
+  })
+
+  it("makeTrafficSourceNode stamps trafficRps + kind/workload/origin from config + uses the explicit type", () => {
+    const node = makeTrafficSourceNode(60000, { x: 0, y: 0 }, { type: "iot-sensors", kind: "search", workload: "write", origin: "multi-region" })
+    expect(node).not.toBeNull()
+    expect(node!.data.archieComponentId).toBe("iot-sensors") // explicit source type → provider
+    expect(node!.data.trafficRps).toBe(60000) // peak set explicitly so the normalizer won't override it
+    expect(node!.data.trafficKind).toBe("search")
+    expect(node!.data.trafficWorkload).toBe("write")
+    expect(node!.data.trafficOrigin).toBe("multi-region")
+  })
+
+  it("makeTrafficSourceNode without config still sets trafficRps from targetRps", () => {
+    expect(makeTrafficSourceNode(9000, { x: 0, y: 0 })!.data.trafficRps).toBe(9000)
+  })
+
+  it("makeChallengeTrafficNodes injects one typed node per trafficSources entry", () => {
+    const nodes = makeChallengeTrafficNodes({
+      trafficCurve: [{ rps: 1000 }],
+      trafficSources: [
+        { type: "web-users", rps: 5000, kind: "realistic", workload: "read", origin: "one-region" },
+        { type: "iot-sensors", rps: 12000, kind: "periodic", workload: "write", origin: "multi-region" },
+      ],
+    })
+    expect(nodes).toHaveLength(2)
+    expect(nodes.map((n) => n.data.archieComponentId)).toEqual(["web-users", "iot-sensors"])
+    expect(nodes.map((n) => n.data.trafficRps)).toEqual([5000, 12000])
+    expect(nodes[1].data.trafficKind).toBe("periodic")
+  })
+
+  it("makeChallengeTrafficNodes falls back to a single curve-peak source when no trafficSources", () => {
+    const nodes = makeChallengeTrafficNodes({ trafficCurve: [{ rps: 0 }, { rps: 50000 }] })
+    expect(nodes).toHaveLength(1)
+    expect(nodes[0].data.trafficRps).toBe(50000) // sized to the curve peak
   })
 })

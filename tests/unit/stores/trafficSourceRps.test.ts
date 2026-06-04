@@ -27,7 +27,7 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
-import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficKind, normalizeNodeTrafficKind, getNodeCost } from "@/stores/architectureStoreHelpers"
+import { totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, buildTrafficCurveFromSpecs, hasTrafficKind, normalizeNodeTrafficKind, getNodeCost } from "@/stores/architectureStoreHelpers"
 import { TRAFFIC_RPS_STEPS } from "@/lib/constants"
 
 const node = (archieComponentId: string, activeConfigVariantId: string, componentCategory: string) => ({
@@ -73,12 +73,25 @@ describe("traffic source RPS", () => {
     expect(hasTrafficKind([{ data: { componentCategory: "traffic", trafficPattern: "surge" } }])).toBe(true)
   })
 
-  it("buildTrafficCurveFromSources shapes a single source by its kind (periodic peaks ~3×)", () => {
+  it("buildTrafficCurveFromSources peak-anchors a source's curve to its rps (D63: rps = PEAK)", () => {
     const nodes = [{ data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentCategory: "traffic", replicaCount: 1, trafficKind: "periodic" } }]
-    const curve = buildTrafficCurveFromSources(nodes, 90)
+    const curve = buildTrafficCurveFromSources(nodes, 90) // no trafficRps → fallback peak = TRAFFIC_RPS_STEPS[0] = 3000
     expect(curve.length).toBeGreaterThan(2)
-    expect(Math.max(...curve.map((p) => p.rps))).toBeGreaterThan(3000 * 2.5) // base 3000 × ~3
-    expect(curve[0].rps).toBe(3000) // baseline at the edges (sin starts at 0)
+    // Peaks AT the source's rps (3000), NOT 3× it — the kind shapes the duty cycle BELOW the peak.
+    expect(Math.max(...curve.map((p) => p.rps))).toBeLessThanOrEqual(3000)
+    expect(Math.max(...curve.map((p) => p.rps))).toBeGreaterThan(3000 * 0.9)
+    expect(Math.min(...curve.map((p) => p.rps))).toBeLessThan(3000) // sits below the peak (baseline ~1000)
+  })
+
+  it("buildTrafficCurveFromSpecs sums peak-anchored sources tick-aligned", () => {
+    const curve = buildTrafficCurveFromSpecs([{ rps: 5000, kind: "steady" }, { rps: 3000, kind: "steady" }], 90)
+    expect(curve.every((p) => p.rps === 8000)).toBe(true) // 5000 + 3000 steady → flat 8000
+  })
+
+  it("buildTrafficCurveFromSpecs peak-anchors a periodic source at its rps (not 3×)", () => {
+    const curve = buildTrafficCurveFromSpecs([{ rps: 9000, kind: "periodic" }], 90)
+    expect(Math.max(...curve.map((p) => p.rps))).toBeLessThanOrEqual(9000)
+    expect(Math.max(...curve.map((p) => p.rps))).toBeGreaterThan(9000 * 0.9)
   })
 
   it("buildTrafficCurveFromSources treats legacy trafficPattern as the migrated kind (wobble ≡ realistic)", () => {

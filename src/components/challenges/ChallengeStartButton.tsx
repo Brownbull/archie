@@ -2,7 +2,7 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph, computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
 
 /**
  * "Start Challenge" trigger (Epic 16 Phase 4). Replaces RunSimulationButton while a challenge
@@ -32,9 +32,15 @@ export function ChallengeStartButton() {
       totalCost: computeTotalArchitectureCost(nodes),
       topologyIssueCount: topologyIssues.length,
     }) // building → running BEFORE the sim, so a single-tick run is still scored
+    // ISAPivot (D63): when the challenge declares typed trafficSources, derive the load from them
+    // (peak-anchored, summed) — they OVERRIDE the legacy trafficCurve. Otherwise use trafficCurve.
+    const curve =
+      challenge.trafficSources && challenge.trafficSources.length > 0
+        ? buildTrafficCurveFromSpecs(challenge.trafficSources, challenge.durationSeconds)
+        : challenge.trafficCurve
     // Pass the challenge's authored duration so the curve + scheduled events map over the
     // intended window (not the engine's default 90s).
-    startSim(graph, challenge.trafficCurve, challenge.scheduledEvents, challenge.durationSeconds)
+    startSim(graph, curve, challenge.scheduledEvents, challenge.durationSeconds)
   }
 
   return (

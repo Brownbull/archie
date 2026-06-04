@@ -338,6 +338,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
           componentName: yamlNode.componentId,
           componentCategory: "compute" as ComponentCategoryId,
           replicaCount: yamlNode.replicas ?? 1,
+          trafficRps: yamlNode.trafficRps,
           trafficKind: yamlNode.trafficKind,
           trafficWorkload: yamlNode.trafficWorkload,
           trafficOrigin: yamlNode.trafficOrigin,
@@ -368,6 +369,7 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
           ? component.category
           : "compute") as ComponentCategoryId,
         replicaCount: yamlNode.replicas ?? 1,
+        trafficRps: yamlNode.trafficRps,
         trafficKind: yamlNode.trafficKind,
         trafficWorkload: yamlNode.trafficWorkload,
         trafficOrigin: yamlNode.trafficOrigin,

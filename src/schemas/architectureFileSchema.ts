@@ -195,6 +195,7 @@ export const ArchitectureFileNodeSchema = z.object({
   // Epic 14: per-node replica count. Optional + bounded; absent defaults to 1 at hydration.
   replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
   // Traffic Source shape — how its load varies over the sim timeline. Optional; absent = steady.
+  trafficRps: z.number().int().min(1).max(10_000_000).optional(),
   trafficKind: z.enum(["steady", "realistic", "periodic", "search"]).optional(),
   // Legacy (pre-ISAPivot) shape field — still accepted on import for back-compat; normalized to trafficKind.
   trafficPattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
@@ -235,6 +236,7 @@ const ArchitectureFileNodeYamlSchema = z.object({
   position: PositionSchema,
   // Epic 14: `replicas` is a single word — same key in YAML and camelCase output.
   replicas: z.number().int().min(MIN_REPLICAS).max(MAX_REPLICAS).optional(),
+  traffic_rps: z.number().int().min(1).max(10_000_000).optional(),
   traffic_kind: z.enum(["steady", "realistic", "periodic", "search"]).optional(),
   // Legacy snake field — accepted for back-compat; normalized to trafficKind in the transform.
   traffic_pattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
@@ -247,6 +249,7 @@ const ArchitectureFileNodeYamlSchema = z.object({
   configVariantId: data.config_variant_id,
   position: data.position,
   replicas: data.replicas,
+  trafficRps: data.traffic_rps,
   trafficKind: data.traffic_kind ?? (data.traffic_pattern ? normalizeTrafficKind(data.traffic_pattern) : undefined),
   trafficWorkload: data.traffic_workload,
   trafficOrigin: data.traffic_origin,

@@ -9,6 +9,16 @@ import {
 } from "@/lib/constants"
 import { snapToGrid } from "@/lib/canvasUtils"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
+import type { TrafficKind } from "@/engine/trafficPatterns"
+import type { ChallengeTrafficWorkload, ChallengeTrafficOrigin, ChallengeTrafficSource } from "@/lib/challengeTypes"
+
+/** Per-source config carried onto an injected traffic node (ISAPivot challenge sources). */
+export interface TrafficSourceConfig {
+  type?: string
+  kind?: TrafficKind
+  workload?: ChallengeTrafficWorkload
+  origin?: ChallengeTrafficOrigin
+}
 
 /**
  * Every diagram should have an explicit origin of load — a Traffic Source — rather than RPS
@@ -56,12 +66,23 @@ export function hasTrafficSource(nodes: ReadonlyArray<{ data?: { componentCatego
   return nodes.some((n) => n.data?.componentCategory === TRAFFIC_CATEGORY)
 }
 
-/** Builds a traffic-source node (sized to targetRps) at a position, or null if none available. */
+/**
+ * Builds a traffic-source node (sized to targetRps = its PEAK) at a position, or null if none
+ * available. With a `config`, uses the given source type (provider) + stamps kind/workload/origin
+ * so an authored challenge source is reproduced faithfully. `trafficRps` is set explicitly so the
+ * load-time normalizer preserves it (it only backfills from the replicaCount index when absent).
+ */
 export function makeTrafficSourceNode(
   targetRps: number | undefined,
   position: { x: number; y: number },
+  config?: TrafficSourceConfig,
 ): ArchieNode | null {
-  const pick = pickTrafficSource(targetRps)
+  // Prefer the explicit source type (a traffic provider id) when given + valid; else best rps match.
+  const explicit = config?.type ? componentLibrary.getComponent(config.type) : undefined
+  const pick =
+    explicit && explicit.category === TRAFFIC_CATEGORY && explicit.configVariants[0]
+      ? { componentId: explicit.id, variantId: explicit.configVariants[0].id }
+      : pickTrafficSource(targetRps)
   if (!pick) return null
   const comp = componentLibrary.getComponent(pick.componentId)
   if (!comp) return null
@@ -75,9 +96,40 @@ export function makeTrafficSourceNode(
       componentName: comp.name,
       componentCategory: TRAFFIC_CATEGORY as ComponentCategoryId,
       replicaCount: MIN_REPLICAS,
+      ...(targetRps && targetRps > 0 ? { trafficRps: targetRps } : {}),
+      ...(config?.kind ? { trafficKind: config.kind } : {}),
+      ...(config?.workload ? { trafficWorkload: config.workload } : {}),
+      ...(config?.origin ? { trafficOrigin: config.origin } : {}),
     },
     width: NODE_WIDTH,
   }
+}
+
+/**
+ * The traffic-source node(s) to seed a challenge's canvas (ISAPivot): one typed, peak-sized node per
+ * authored `trafficSources` entry when present (D63), else a single source sized to the legacy
+ * `trafficCurve` peak. Each node carries trafficRps/kind/workload/origin so it reproduces the source.
+ */
+export function makeChallengeTrafficNodes(challenge: {
+  trafficSources?: readonly ChallengeTrafficSource[]
+  trafficCurve: ReadonlyArray<{ rps: number }>
+}): ArchieNode[] {
+  const sources = challenge.trafficSources
+  if (sources && sources.length > 0) {
+    const nodes: ArchieNode[] = []
+    sources.forEach((s, i) => {
+      const node = makeTrafficSourceNode(s.rps, { x: 64, y: 160 + i * 120 }, {
+        type: s.type,
+        kind: s.kind,
+        workload: s.workload,
+        origin: s.origin,
+      })
+      if (node) nodes.push(node)
+    })
+    return nodes
+  }
+  const single = makeTrafficSourceNode(curvePeakRps(challenge.trafficCurve), { x: 64, y: 240 })
+  return single ? [single] : []
 }
 
 function entryInPort(componentId: string): string | null {

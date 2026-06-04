@@ -1,7 +1,7 @@
 import { componentLibrary } from "@/services/componentLibrary"
 import { detectTopologyIssues, detectReplicasWithoutLB, type TopologyIssue } from "@/engine/topologyChecker"
 import type { SimGraph, SimNode, SimEdge, TrafficCurve } from "@/lib/simulationTypes"
-import { buildPatternCurve, kindToPattern, normalizeTrafficKind } from "@/engine/trafficPatterns"
+import { buildPeakAnchoredCurve, normalizeTrafficKind, type TrafficKind } from "@/engine/trafficPatterns"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
 import { getFailurePreset } from "@/services/failureLoader"
@@ -412,31 +412,48 @@ export function hasTrafficKind(
 }
 
 /**
- * Builds the simulation traffic curve from each Traffic Source's own rate + kind, summed
- * tick-aligned across all sources (so multiple sources combine). Each source's average = its
- * tier × stepper (getNodeCost.maxRPS); its kind (realistic/periodic/search) shapes the curve around
- * that average via kindToPattern. Returns [] when there are no rate-bearing sources (caller falls
- * back to the ramp). Reads legacy `trafficPattern` defensively for un-normalized callers.
+ * Combine N traffic specs (each a PEAK rps + kind, D63) into one curve, summed tick-aligned. Each
+ * source is peak-anchored (its curve peaks AT its rps; the kind shapes the duty cycle below). The
+ * combined peak is therefore bounded by Σ(source peaks). Returns [] when no rate-bearing specs.
+ * Shared by canvas-node curves (buildTrafficCurveFromSources) and authored challenge sources.
+ */
+export function buildTrafficCurveFromSpecs(
+  specs: ReadonlyArray<{ rps: number; kind: TrafficKind }>,
+  durationS: number,
+  points = 48,
+): TrafficCurve {
+  let combined: TrafficCurve | null = null
+  let seed = 1
+  for (const spec of specs) {
+    if (!(spec.rps > 0)) continue
+    const curve = buildPeakAnchoredCurve(spec.rps, spec.kind, durationS, points, seed++)
+    combined = combined === null
+      ? curve.map((p) => ({ ...p }))
+      : combined.map((p, i) => ({ t: p.t, rps: p.rps + (curve[i]?.rps ?? 0) }))
+  }
+  return combined ?? []
+}
+
+/**
+ * Builds the simulation traffic curve from each canvas Traffic Source's PEAK rps + kind, summed
+ * tick-aligned across all sources. Each source peak-anchors (its curve peaks at getNodeCost.maxRPS =
+ * trafficRps). Returns [] when there are no rate-bearing sources (caller falls back to the ramp).
+ * Reads legacy `trafficPattern` defensively for un-normalized callers.
  */
 export function buildTrafficCurveFromSources(
   nodes: ReadonlyArray<{ data?: { archieComponentId: string; activeConfigVariantId: string; componentCategory: string; replicaCount?: number; trafficRps?: number; trafficKind?: string; trafficPattern?: string } }>,
   durationS: number,
   points = 48,
 ): TrafficCurve {
-  let combined: TrafficCurve | null = null
-  let seed = 1
+  const specs: { rps: number; kind: TrafficKind }[] = []
   for (const node of nodes) {
     const d = node.data
     if (!d || d.componentCategory !== "traffic") continue
-    const base = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1, d.trafficRps).maxRPS
-    if (base === undefined || base <= 0) continue
-    const pattern = kindToPattern(normalizeTrafficKind(d.trafficKind ?? d.trafficPattern))
-    const curve = buildPatternCurve(pattern, base, durationS, points, seed++)
-    combined = combined === null
-      ? curve.map((p) => ({ ...p }))
-      : combined.map((p, i) => ({ t: p.t, rps: p.rps + (curve[i]?.rps ?? 0) }))
+    const peak = getNodeCost(d.archieComponentId, d.activeConfigVariantId, d.replicaCount ?? 1, d.trafficRps).maxRPS
+    if (peak === undefined || peak <= 0) continue
+    specs.push({ rps: peak, kind: normalizeTrafficKind(d.trafficKind ?? d.trafficPattern) })
   }
-  return combined ?? []
+  return buildTrafficCurveFromSpecs(specs, durationS, points)
 }
 
 export function computeTotalArchitectureCost(

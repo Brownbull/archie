@@ -45,6 +45,9 @@ export function exportArchitecture(
       nodeObj.replicas = node.data.replicaCount
     }
     // Traffic Source config — emit only on traffic nodes when non-default (defaults omitted for compactness)
+    if (node.data.componentCategory === "traffic" && node.data.trafficRps && node.data.trafficRps !== 3000) {
+      nodeObj.traffic_rps = node.data.trafficRps // 3000 = TRAFFIC_RPS_STEPS[0] default
+    }
     if (node.data.componentCategory === "traffic" && node.data.trafficKind && node.data.trafficKind !== "steady") {
       nodeObj.traffic_kind = node.data.trafficKind
     }

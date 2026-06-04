@@ -345,6 +345,21 @@ describe("YAML round-trip (integration)", () => {
     expect(result.architecture.nodes.find((n) => n.id === "b")!.data.trafficKind).toBe("realistic")
   })
 
+  it("round-trips traffic_rps (peak) and omits the 3000 default", () => {
+    const nodes = [
+      makeNode({ id: "s1", data: { archieComponentId: "web-users", componentCategory: "traffic", trafficRps: 60000 } }),
+      makeNode({ id: "s2", data: { archieComponentId: "web-users", componentCategory: "traffic", trafficRps: 3000 } }),
+    ]
+    const yaml = exportArchitecture(nodes, [])
+    const parsed = load(yaml) as { nodes: Array<Record<string, unknown>> }
+    expect(parsed.nodes[0].traffic_rps).toBe(60000)
+    expect(parsed.nodes[1]).not.toHaveProperty("traffic_rps") // 3000 = default → omitted
+    const result = importYamlString(yaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    expect(result.architecture.nodes.find((n) => n.id === "s1")!.data.trafficRps).toBe(60000)
+  })
+
   it("does NOT emit traffic_kind for a non-traffic node that carries a stray value", () => {
     const nodes = [makeNode({ id: "db", data: { archieComponentId: "postgresql", componentCategory: "data-storage", trafficKind: "periodic" } })]
     const parsed = load(exportArchitecture(nodes, [])) as { nodes: Array<Record<string, unknown>> }
