@@ -3076,3 +3076,22 @@ PR: — (direct fast-forward, established dev→main flow; main unprotected)
 CI: deploy-production ✅ (run 26918031650, ~40s)
 PROMOTION: N/A (production is final env)
 DEPLOYMENTS: P115
+- 2026-06-03 20:30 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-03 20:30 | Write | /home/khujta/projects/bmad/archie/src/stores/userBlockDefaultsStore.ts
+- 2026-06-03 20:30 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-03 20:30 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-03 20:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-06-03 20:31 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStore.ts
+- 2026-06-03 20:31 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/SaveBlockDefaultButton.tsx
+- 2026-06-03 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-03 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-03 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/ArchieNode.tsx
+- 2026-06-03 20:34 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/userBlockDefaultsStore.test.ts
+- 2026-06-03 20:35 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-blockDefaults.test.ts
+- 2026-06-03 20:36 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/SaveBlockDefaultButton.test.tsx
+- 2026-06-03 20:39 | Write | /home/khujta/projects/bmad/archie/tests/e2e/save-block-default.spec.ts
+
+## 2026-06-03 20:41 — [a306595] feat(canvas): per-user "save block default" button on each node
+FINDINGS: 0 critical; build green; 4544 unit/integration green + save-block-default E2E green
+ACTIONS: committed
+NOTES: Top-right per-node Save button → pins provider+tier as the user's default for that block TYPE (owner-only Firestore userBlockDefaults/{uid}); addNode injects it for future adds (validated, non-retroactive). FIRESTORE RULES DEPLOYED manually: firebase deploy --only firestore:rules (archie-2a560) — released OK, so cross-device persistence is live (CI deploys hosting only).
