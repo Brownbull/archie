@@ -995,3 +995,16 @@ A second currency + progressive hint system layered on the existing star scoring
 4. **Full progress reset (one-time).** A `PROGRESS_GENERATION` constant; on loadProgress a stale generation wipes trackXp + completedChallenges + bestStarsCloud + hintsUnlocked → ground zero, so every user restarts earning XP AND stars. Ships LAST (after retrofit + hint economy). Tree re-locks via existing requires/min_xp gates.
 
 **Plan impact:** extends Phase 1 slice 8 (creator configures hints) + Phase 4 (author progressive hints during recast); adds Phase 5 (hint economy) + Phase 6 (reset migration). **Source:** product-owner Q&A (follow-up to D63/D64).
+
+## D66 — Phase 3 rubric/scoring decisions (2026-06-04)
+
+**Status:** active
+
+Resolved before implementing the scoring layer (design workflow w25nfaeyv):
+
+1. **Fixed 3-star model** (defer a configurable weighted rubric). All new criteria fold into the existing base/budget/topology stars — the UI hard-codes 3 stars + XP-per-star = xp/3; a weighted/variable-max rubric would force a modal redesign + break the XP math + risk the byte-identical invariant. A configurable rubric is a later follow-up.
+2. **Origin grading: always grade when a source is multi-region** (NOT opt-in). A challenge with any `trafficSources[].origin === "multi-region"` requires CDN + DNS + a DB type in the rubric (architecture check, D55 — not a demand multiplier). SAFE because no built-in declares trafficSources/multi-region yet (verified), so the 41 score identically; Phase 4 authors will design multi-region challenges with the required architecture.
+3. **required_topology: author-specified source+target types, undirected adjacency.** Each assertion names its types (e.g. CACHE_BETWEEN {source, target}); passes when a node of the rule's pivot type is adjacent (either edge direction) to both a source-type and a target-type node. Robust to the source→target edge convention + matches read-aside wiring.
+4. **chaos_intensity: z.number().min(0).max(10).default(1)** (recommended default taken) — multiplies the latency-spike multiplier in computeOverrides; never read in evaluateAttempt (scoring stays deterministic). 0 = inert, 1 = as-authored, >1 = harsher.
+
+**Invariant (all sub-slices):** every new field optional/defaulted → identity element in its scoring combinator → the 41 existing challenges score byte-identically; proved by a golden-snapshot regression test (sub-slice 3f, built first). **Source:** design workflow w25nfaeyv + product-owner Q&A.

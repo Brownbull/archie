@@ -3407,3 +3407,26 @@ CI: ✅ deploy-production 1/1 — build + Firebase hosting deploy live
 PROMOTION: N/A (production is the only env)
 DEPLOYMENTS: P121
 PLAN: Phase 1 Push ticked (Exec ✅ Commit ✅ Push ✅; Review ⬜ — 2 adversarial workflows stood in for /gabe-review). Current Phase → Phase 2.
+- 2026-06-04 14:05 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-04 14:05 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-04 14:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+
+## 2026-06-04 14:17 — [1f23d33] feat(sim): per-source proportional inflow seeding (Phase 2a)
+VERIFY: adversarial workflow w1x2t06dd (2 lenses: routing math/flow-conservation + no-regression) —
+  7 findings, 1 real (HIGH, self-classified DESIGN-NOT-BUG: orphaned non-traffic entry → 0 inflow is
+  intended; load originates from sources). Test gap closed (+mixed-entry test). Flow conservation sound.
+GATES: tsc -b ✅ · eslint 0 errors ✅ · full vitest 4613/4613 ✅
+PLAN: Phase 2 Exec 🔄 — 2a (per-source seeding) done. Remaining 2b: workload write-pressure bias
+  (source workload → DB write/read split; global approximation, no per-flow attribution).
+- 2026-06-04 14:23 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-04 14:24 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 14:24 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-04 14:24 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+
+## 2026-06-04 14:28 — [b3a108f] feat(sim): workload write-pressure bias (Phase 2b) — Phase 2 COMPLETE
+VERIFY: deterministic — write-pressure modulation tested both directions (write-heavy = more write-cap
+  failures; read-heavy = fewer) + buildSimGraph rps-weighted write-pressure computation. The blend is a
+  contained modulation on the already-verified (E2) write/read split; absent traffic sources = unchanged.
+GATES: tsc -b OK · eslint 0 errors · full vitest 4618/4618.
+PLAN: PHASE 2 COMPLETE (Exec done, Commit done). Per-source routing (proportional seeding + workload bias).
+  Current Phase to 3 (richer targets + rubric). Remaining: 3, 4 (recast), 5 (economy + rules-deploy gate), 6 (reset gate).
