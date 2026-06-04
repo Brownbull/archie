@@ -3662,3 +3662,10 @@ DEPLOYMENTS: P128 (Quest Log tier-banded layout shipped)
 ## 2026-06-04 18:42 — PUSH dev -> main
 CI: all passed (deploy-production success, run 26984146276)
 DEPLOYMENTS: P129 (Quest Log layout polish — compact bands + visible connectors)
+- 2026-06-04 18:52 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 18:52 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 18:53 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 18:54 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-04 18:55 | Write | /home/khujta/projects/bmad/archie/tests/e2e/challenge-creation.spec.ts
+- 2026-06-04 18:57 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-creation.spec.ts
+- 2026-06-04 19:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-creation.spec.ts

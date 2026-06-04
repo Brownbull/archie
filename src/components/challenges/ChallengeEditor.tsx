@@ -69,7 +69,9 @@ function emptyDraft(): Omit<Challenge, "origin"> {
     unlocks: [],
     availableBlocks: ["traffic-source", "compute"],
     grants: [],
-    rewards: { xp: 100 },
+    // User challenges never grant progression (D45). XP is kept at 0 only to satisfy the schema's
+    // schema_version 2 rewards requirement — there is no XP field in the creator UI.
+    rewards: { xp: 0 },
   }
 }
 
@@ -257,7 +259,7 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
 
   const handleSave = useCallback(() => {
     if (!isValid) return
-    const challenge: Challenge = { ...draft, origin: "user" }
+    const challenge: Challenge = { ...draft, origin: "user", rewards: { xp: 0 } }
     if (isEditing) {
       updateChallenge({ ...challenge, id: namespaceUserId(challenge.id) })
     } else {
@@ -269,7 +271,7 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
 
   const handleExport = useCallback(() => {
     try {
-      const challenge: Challenge = { ...draft, origin: "user" }
+      const challenge: Challenge = { ...draft, origin: "user", rewards: { xp: 0 } }
       const yaml = exportChallenge(challenge)
       const blob = new Blob([yaml], { type: "application/x-yaml" })
       const url = URL.createObjectURL(blob)
@@ -351,7 +353,7 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-[0.625rem] font-medium text-text-secondary">Budget cap ($)</label>
                 <Input data-testid="editor-budget" type="number" min={0} max={100000} value={draft.budgetCap} onChange={(e) => updateField("budgetCap", Math.max(0, Math.min(100000, Number(e.target.value))))} className="mt-0.5 h-7 text-xs" />
@@ -359,10 +361,6 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
               <div>
                 <label className="text-[0.625rem] font-medium text-text-secondary">Duration (s)</label>
                 <Input data-testid="editor-duration" type="number" min={10} max={3600} value={draft.durationSeconds} onChange={(e) => updateField("durationSeconds", Math.max(10, Math.min(3600, Number(e.target.value))))} className="mt-0.5 h-7 text-xs" />
-              </div>
-              <div>
-                <label className="text-[0.625rem] font-medium text-text-secondary">XP reward</label>
-                <Input data-testid="editor-xp" type="number" min={0} max={1000} value={draft.rewards?.xp ?? 0} onChange={(e) => updateField("rewards", { xp: Math.max(0, Math.min(1000, Number(e.target.value))) })} className="mt-0.5 h-7 text-xs" />
               </div>
             </div>
 
@@ -386,7 +384,7 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
         </ScrollArea>
 
         <DialogFooter className="gap-1">
-          <Button variant="outline" size="sm" onClick={handleExport} disabled={!isValid} className="gap-1">
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={!isValid} data-testid="editor-export" className="gap-1">
             <Download className="h-3 w-3" /> Export YAML
           </Button>
           <Button size="sm" onClick={handleSave} disabled={!isValid} data-testid="editor-save" className="gap-1">
