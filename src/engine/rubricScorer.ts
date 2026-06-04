@@ -27,7 +27,14 @@ export function evaluateAttempt(
   const hasAllRequiredTypes = challenge.requiredTypes.length === 0
     || (canvasTypeIds ? challenge.requiredTypes.every((t) => canvasTypeIds.has(t)) : true)
 
-  const basePass = passedMetrics && hasAllRequiredTypes
+  // forbidden_types (ISAPivot Phase 3): any forbidden type on the canvas is a hard 0★ gate. Absent
+  // forbiddenTypes (the 41 built-ins) ⇒ hasForbidden false ⇒ forbiddenTypesOk true ⇒ basePass unchanged.
+  const hasForbidden = !!challenge.forbiddenTypes?.length
+    && !!canvasTypeIds
+    && challenge.forbiddenTypes.some((t) => canvasTypeIds.has(t))
+  const forbiddenTypesOk = !hasForbidden
+
+  const basePass = passedMetrics && hasAllRequiredTypes && forbiddenTypesOk
   const stars = basePass ? 1 + (underBudget ? 1 : 0) + (cleanTopology ? 1 : 0) : 0
 
   return {
@@ -36,5 +43,6 @@ export function evaluateAttempt(
     hasRequiredBlocks: hasAllRequiredTypes,
     underBudget,
     cleanTopology,
+    forbiddenTypesOk,
   }
 }

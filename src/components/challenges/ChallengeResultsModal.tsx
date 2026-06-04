@@ -244,6 +244,15 @@ export function ChallengeResultsModal() {
                 : `missing: ${challenge.requiredTypes.map((rt) => COMPONENT_TYPES.get(rt)?.label ?? rt).join(", ")}`}
             />
           )}
+          {challenge.forbiddenTypes && challenge.forbiddenTypes.length > 0 && (
+            <Criterion
+              met={result.forbiddenTypesOk}
+              label="No forbidden blocks"
+              detail={result.forbiddenTypesOk
+                ? "none used"
+                : `forbidden: ${challenge.forbiddenTypes.map((ft) => COMPONENT_TYPES.get(ft)?.label ?? ft).join(", ")}`}
+            />
+          )}
           <Criterion
             met={result.underBudget}
             label="Under budget"

@@ -90,6 +90,8 @@ export interface Challenge {
   minXp: number
   /** Component TYPE ids that MUST be on the canvas to pass (validated at scoring). */
   requiredTypes: string[]
+  /** Component TYPE ids that MUST NOT be on the canvas — present ⇒ hard 0★ (ISAPivot Phase 3). */
+  forbiddenTypes?: string[]
   /** Component TYPE ids usable inside this challenge (Phase 2 hard-gate input). Empty = no gate. */
   availableBlocks: string[]
   /** Component TYPE ids permanently unlocked for the player on completion. */
@@ -145,6 +147,8 @@ export interface StarBreakdown {
   underBudget: boolean
   /** Zero topology issues (only awarded if passedMetrics). */
   cleanTopology: boolean
+  /** No forbidden component type present (ISAPivot Phase 3). False ⇒ hard 0★. Absent forbiddenTypes ⇒ always true. */
+  forbiddenTypesOk: boolean
 }
 
 /**

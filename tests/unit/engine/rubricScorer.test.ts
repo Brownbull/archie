@@ -58,4 +58,22 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
   it("treats uptime/p99 exactly at target as a pass (≥ / ≤)", () => {
     expect(evaluateAttempt(stats(99, 200), challenge, 0, 100).stars).toBe(3)
   })
+
+  it("0★ when a forbidden type is on the canvas, even with perfect metrics/budget/topology (Phase 3)", () => {
+    const ch = { ...challenge, forbiddenTypes: ["serverless"] }
+    const r = evaluateAttempt(stats(100, 50), ch, 0, 100, new Set(["compute", "serverless"]))
+    expect(r.stars).toBe(0)
+    expect(r.forbiddenTypesOk).toBe(false)
+  })
+
+  it("full stars when forbidden types are declared but none are present", () => {
+    const ch = { ...challenge, forbiddenTypes: ["serverless"] }
+    const r = evaluateAttempt(stats(100, 50), ch, 0, 100, new Set(["compute"]))
+    expect(r.stars).toBe(3)
+    expect(r.forbiddenTypesOk).toBe(true)
+  })
+
+  it("forbiddenTypesOk is true by default (no forbiddenTypes declared — the 41 built-ins)", () => {
+    expect(evaluateAttempt(stats(100, 50), challenge, 0, 100).forbiddenTypesOk).toBe(true)
+  })
 })
