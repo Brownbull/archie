@@ -52,6 +52,11 @@
 
 | # | Well | Class | Topic | Status | Tags | ArchConcepts | Last Touched | Verified Date | Score | Source |
 |---|------|-------|-------|--------|------|--------------|--------------|---------------|-------|--------|
+| T1 | G2 | WHEN | Solvability harness — reference solution per challenge → real sim+scorer → asserts ≥1★ clearable; guarded the recast + hardening | pending |  |  | 2026-06-04 | — | — | e750247 |
+| T2 | G2 | WHY | Golden-snapshot invariant — locks the 41 built-ins' StarBreakdown so additive rubric changes are provably non-regressing | pending |  |  | 2026-06-04 | — | — | 43ef152 |
+| T3 | G2 | WHY | Cache/CDN fronting — cache hits served terminally (only misses forward); stacked cdn+cache ~99% absorption survives a full compute az_outage | pending |  |  | 2026-06-04 | — | — | e750247 |
+| T4 | G3 | WHY | PROGRESS_GENERATION idempotent reset — per-user generation stamp; below-gen wiped once on load then re-stamped (full-replace setDoc, not merge) | pending |  |  | 2026-06-04 | — | — | 48b7ec9 |
+| T5 | G2 | WHEN | Adversarial-verify workflow — parallel refutation lenses returning isReal findings; caught 3 real HIGH bugs across the epic | pending | cross |  | 2026-06-04 | — | — | 5750c3f |
 
 <!-- Example rows:
 | T1 | G1 | WHY | Why guardrails run before the LLM | verified |  | input-guardrails, input-validation-at-boundary | 2026-04-17 | 2026-04-17 | 2/2 | a4c9e2f |
@@ -62,6 +67,14 @@
 ## Sessions
 
 <!-- Append-only log of /gabe-teach runs. Enriched with wells active + plan/phase reference. -->
+
+### 2026-06-04 — /gabe-teach topics (ISAPivot epic consolidation)
+- Wells active: G2 Engine, G3 Data Layer
+- Plan reference: .kdbp/PLAN.md — "Traffic Realism + Challenge Difficulty (ISAPivot)" (Phases 0-6 all shipped, P120-P127)
+- Recorded: T1 solvability harness, T2 golden-snapshot invariant, T3 cache/CDN fronting mechanic, T4 PROGRESS_GENERATION reset, T5 adversarial-verify workflow
+- Status: all pending (knowledge captured from the build; verify interactively in a future /gabe-teach topics run)
+- Commits covered: 43ef152, 5750c3f, e750247, 48b7ec9 (+ the full Phase 0-6 chain)
+
 
 <!-- Example:
 ### 2026-04-17 — /gabe-teach topics (post-commit)

@@ -1,6 +1,6 @@
 # Active Plan
 
-<!-- status: active -->
+<!-- status: complete -->
 <!-- project_type: code -->
 
 ## Goal
@@ -140,7 +140,7 @@ decisions_entry: D65
 
 ## Current Phase
 
-Phase 5: Hint Economy — Phase 4 COMPLETE + shipped (P125). D68 model locked. 5a = currency model + spend + Firestore rules (HARD GATE re-deploy). Then 5b HintPanel UI, 5c tests.
+ISAPivot COMPLETE — all 7 phases (0-6) shipped to production (P120-P127). Plan closed 2026-06-04.
 
 ## Dependencies
 

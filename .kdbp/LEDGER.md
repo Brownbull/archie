@@ -3640,3 +3640,8 @@ PHASE 6: Exec done, Commit done; Push gated on rules re-deploy.
 CI: all passed (deploy-production success, run 26982251777)
 DEPLOYMENTS: P127 (Phase 6 reset shipped — ISAPivot EPIC COMPLETE)
 RULES: generation field deployed manually BEFORE code push (correct order — no write rejections).
+
+## 2026-06-04 18:30 — /gabe-teach topics (ISAPivot consolidation)
+TOPICS: recorded 5 (T1 solvability harness, T2 golden-snapshot, T3 cache/CDN fronting, T4 PROGRESS_GENERATION, T5 adversarial-verify) — all pending, awaiting interactive verification
+WELLS: G2 Engine, G3 Data Layer
+PLAN: ISAPivot marked complete (status: active → complete) — all 7 phases shipped P120-P127
