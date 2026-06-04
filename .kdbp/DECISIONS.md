@@ -1076,3 +1076,11 @@ target), FAN_OUT_GTE (source given ≥N neighbors). Build that first, then autho
 tune + weave into the tech tree (requires/unlocks/tier/track) so the Quest Log shows them.
 
 **Status:** active.
+
+## D70 — Absurd capstones get a new Tier 6 (2026-06-04)
+
+Addendum to D69. The absurd/theoretical capstones (Planet Scale, Thundering Herd, Heat Death, Zero-Budget
+Hero, The Singularity, …) land in a NEW **Tier 6** — bump `MAX_CHALLENGE_TIER` 5→6, add the "VI" tier
+label (ChallengeTreeView TIER_LABELS + editor tier select), and verify the tier evaluator / relative-level
+/ rank thresholds tolerate it. The Quest Log gains a bottom band for the endgame. Still barely-solvable
+(D69) — harness-gated. (Lever batch 1 already shipped in existing tiers; this is for batch 2.)

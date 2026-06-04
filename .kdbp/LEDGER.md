@@ -3680,3 +3680,12 @@ DEPLOYMENTS: P129 (Quest Log layout polish — compact bands + visible connector
 - 2026-06-04 19:17 | Edit | /home/khujta/projects/bmad/archie/tests/unit/data/challenges.test.ts
 - 2026-06-04 19:17 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
 - 2026-06-04 19:20 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/challengeLoader.test.ts
+
+## 2026-06-04 19:05 — [bc32484] feat: creator XP removal + create/import/export E2E (items 1+2)
+- Removed the XP field from the challenge creator (forced 0; user challenges grant no progression). +challenge-creation E2E (create/save + export→import round-trip).
+
+## 2026-06-04 19:20 — [da8bd68] feat(challenges): expansion batch 1 — 5 lever challenges + topology-aware harness (D69)
+FINDINGS: 0 (tsc -b + eslint clean, 4726 unit, solvability 47/47, tech-tree valid, golden 41 byte-identical + 5 added)
+ADDED: read-aside (CACHE_BETWEEN), serverless-or-bust (forbidden lb), no-cache-no-mercy (forbidden cache+cdn), follow-the-sun (multi-region), the-long-tail (tight p95) — leaves on existing tracks.
+HARNESS: builder now satisfies required_topology (4c-deferred) + edge dedup. cost_per_request deferred (over-provisioned ref solution = high cost).
+REMAINING (D69): ~3 more lever (fan-it-out FAN_OUT/LB_UPSTREAM, four-front-war 4-source, write-storm-brownout chaos+write) + ~6 absurd tier-5 capstones.
