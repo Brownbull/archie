@@ -3183,3 +3183,8 @@ NOTE: userCanvases firestore.rules deployed manually before this push.
 FINDINGS: 0 critical; lint clean; 17 unit + 3 E2E (menu-and-legend-layout) green
 ACTIONS: committed
 NOTES: Export/ExportReport ghost buttons restyled as left-aligned menu rows (were justify-center/full-width → centered icons). CanvasLegend bottom-4 left-4 → left-16 to clear the React Flow zoom Controls. New layout-regression E2E.
+
+## 2026-06-03 22:08 — PUSH dev -> main
+PR: — (direct fast-forward)
+CI: deploy-production ✅ (run 26925655875, ~40s)
+DEPLOYMENTS: P119
