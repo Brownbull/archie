@@ -350,4 +350,24 @@ describe("YAML round-trip (integration)", () => {
     const parsed = load(exportArchitecture(nodes, [])) as { nodes: Array<Record<string, unknown>> }
     expect(parsed.nodes[0]).not.toHaveProperty("traffic_kind")
   })
+
+  it("round-trips traffic workload + origin and omits the defaults", () => {
+    const nodes = [
+      makeNode({ id: "s1", data: { archieComponentId: "web-users", componentCategory: "traffic", trafficWorkload: "write", trafficOrigin: "multi-region" } }),
+      makeNode({ id: "s2", data: { archieComponentId: "web-users", componentCategory: "traffic", trafficWorkload: "mixed", trafficOrigin: "one-region" } }),
+    ]
+    const yaml = exportArchitecture(nodes, [])
+    const parsed = load(yaml) as { nodes: Array<Record<string, unknown>> }
+    expect(parsed.nodes[0].traffic_workload).toBe("write")
+    expect(parsed.nodes[0].traffic_origin).toBe("multi-region")
+    expect(parsed.nodes[1]).not.toHaveProperty("traffic_workload") // mixed = default → omitted
+    expect(parsed.nodes[1]).not.toHaveProperty("traffic_origin")   // one-region = default → omitted
+
+    const result = importYamlString(yaml)
+    expect(result.success).toBe(true)
+    if (!result.success) return
+    const s1 = result.architecture.nodes.find((n) => n.id === "s1")!.data
+    expect(s1.trafficWorkload).toBe("write")
+    expect(s1.trafficOrigin).toBe("multi-region")
+  })
 })

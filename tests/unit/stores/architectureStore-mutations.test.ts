@@ -642,6 +642,28 @@ describe("architectureStore", () => {
       expect(data.componentCategory).toBe("data-storage")
       expect(data.trafficRps).toBeUndefined() // stripped on swap to non-traffic
     })
+
+    it("setNodeWorkload / setNodeOrigin update a traffic node's config", () => {
+      const store = useArchitectureStore.getState()
+      store.addNode("web-users", { x: 0, y: 0 })
+      const id = useArchitectureStore.getState().nodes[0].id
+      // addNode normalized to the defaults
+      expect(useArchitectureStore.getState().nodes[0].data.trafficWorkload).toBe("mixed")
+      expect(useArchitectureStore.getState().nodes[0].data.trafficOrigin).toBe("one-region")
+      store.setNodeWorkload(id, "write")
+      store.setNodeOrigin(id, "multi-region")
+      const data = useArchitectureStore.getState().nodes.find((n) => n.id === id)!.data
+      expect(data.trafficWorkload).toBe("write")
+      expect(data.trafficOrigin).toBe("multi-region")
+    })
+
+    it("setNodeWorkload no-ops on a non-traffic node", () => {
+      const store = useArchitectureStore.getState()
+      store.addNode("postgresql", { x: 0, y: 0 })
+      const id = useArchitectureStore.getState().nodes[0].id
+      store.setNodeWorkload(id, "write")
+      expect(useArchitectureStore.getState().nodes[0].data.trafficWorkload).toBeUndefined()
+    })
   })
 
 })

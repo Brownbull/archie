@@ -10,6 +10,7 @@ import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
 import { computeWeightedNodeScore, computeHeatmapStatus } from "@/engine/heatmapCalculator"
 import type { TrafficKind } from "@/engine/trafficPatterns"
+import type { ChallengeTrafficWorkload, ChallengeTrafficOrigin } from "@/lib/challengeTypes"
 import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
 import {
   CANVAS_GRID_SIZE,
@@ -59,6 +60,9 @@ export interface ArchieNodeData extends Record<string, unknown> {
   trafficKind?: TrafficKind
   // Traffic Source only (ISAPivot): the source's PEAK rps (set via the stepper through TRAFFIC_RPS_STEPS).
   trafficRps?: number
+  // Traffic Source only (ISAPivot): read/write mix (exercises the DB write path/cache) + origin (graded as architecture).
+  trafficWorkload?: ChallengeTrafficWorkload
+  trafficOrigin?: ChallengeTrafficOrigin
 }
 
 export interface ArchieEdgeData extends Record<string, unknown> {
@@ -106,6 +110,8 @@ export interface ArchitectureState {
   setNodeReplicaCount: (nodeId: string, count: number) => void
   setNodeTrafficKind: (nodeId: string, kind: TrafficKind) => void
   setNodeTrafficRps: (nodeId: string, rps: number) => void
+  setNodeWorkload: (nodeId: string, workload: ChallengeTrafficWorkload) => void
+  setNodeOrigin: (nodeId: string, origin: ChallengeTrafficOrigin) => void
   swapNodeComponent: (nodeId: string, newComponentId: string) => void
   duplicateNode: (nodeId: string) => string | null
   removeNode: (nodeId: string) => void
@@ -478,6 +484,26 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       ),
     })
     get().triggerRecalculation(nodeId)
+  },
+
+  setNodeWorkload: (nodeId, workload) => {
+    const node = get().nodes.find((n) => n.id === nodeId)
+    if (!node || node.data.componentCategory !== "traffic" || node.data.trafficWorkload === workload) return
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === nodeId ? { ...n, data: { ...n.data, trafficWorkload: workload } } : n,
+      ),
+    })
+  },
+
+  setNodeOrigin: (nodeId, origin) => {
+    const node = get().nodes.find((n) => n.id === nodeId)
+    if (!node || node.data.componentCategory !== "traffic" || node.data.trafficOrigin === origin) return
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === nodeId ? { ...n, data: { ...n.data, trafficOrigin: origin } } : n,
+      ),
+    })
   },
 
   updateNodePosition: (nodeId, position) => {

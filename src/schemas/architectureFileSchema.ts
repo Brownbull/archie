@@ -198,6 +198,8 @@ export const ArchitectureFileNodeSchema = z.object({
   trafficKind: z.enum(["steady", "realistic", "periodic", "search"]).optional(),
   // Legacy (pre-ISAPivot) shape field — still accepted on import for back-compat; normalized to trafficKind.
   trafficPattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
+  trafficWorkload: z.enum(["read", "write", "mixed"]).optional(),
+  trafficOrigin: z.enum(["one-region", "multi-region"]).optional(),
   dataContext: z.array(DataContextItemSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict()
 
@@ -236,6 +238,8 @@ const ArchitectureFileNodeYamlSchema = z.object({
   traffic_kind: z.enum(["steady", "realistic", "periodic", "search"]).optional(),
   // Legacy snake field — accepted for back-compat; normalized to trafficKind in the transform.
   traffic_pattern: z.enum(["steady", "wobble", "periodic", "surge"]).optional(),
+  traffic_workload: z.enum(["read", "write", "mixed"]).optional(),
+  traffic_origin: z.enum(["one-region", "multi-region"]).optional(),
   data_context: z.array(DataContextItemYamlSchema).max(MAX_DATA_CONTEXT_ITEMS_PER_NODE).refine((items) => new Set(items.map((i) => i.id)).size === items.length, { message: "Duplicate data context item IDs" }).optional(),
 }).strict().transform((data) => ({
   id: data.id,
@@ -244,6 +248,8 @@ const ArchitectureFileNodeYamlSchema = z.object({
   position: data.position,
   replicas: data.replicas,
   trafficKind: data.traffic_kind ?? (data.traffic_pattern ? normalizeTrafficKind(data.traffic_pattern) : undefined),
+  trafficWorkload: data.traffic_workload,
+  trafficOrigin: data.traffic_origin,
   dataContext: data.data_context,
 }))
 

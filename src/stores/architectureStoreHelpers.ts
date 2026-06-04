@@ -382,8 +382,8 @@ export function normalizeNodeTrafficKind<T extends { data: Record<string, unknow
   if (d.componentCategory !== "traffic") {
     // Traffic config is meaningless on non-traffic nodes — strip any stray legacy/new field so
     // hand-crafted or corrupt input can't round-trip invalid traffic config onto e.g. a database node.
-    if (d.trafficKind === undefined && d.trafficPattern === undefined && d.trafficRps === undefined) return node
-    const { trafficKind: _k, trafficPattern: _p, trafficRps: _r, ...rest } = d
+    if (d.trafficKind === undefined && d.trafficPattern === undefined && d.trafficRps === undefined && d.trafficWorkload === undefined && d.trafficOrigin === undefined) return node
+    const { trafficKind: _k, trafficPattern: _p, trafficRps: _r, trafficWorkload: _w, trafficOrigin: _o, ...rest } = d
     return { ...node, data: rest } as T
   }
   const trafficKind = normalizeTrafficKind((d.trafficKind ?? d.trafficPattern) as string | undefined)
@@ -392,8 +392,12 @@ export function normalizeNodeTrafficKind<T extends { data: Record<string, unknow
   const trafficRps = Number.isFinite(d.trafficRps) && (d.trafficRps as number) > 0
     ? (d.trafficRps as number)
     : TRAFFIC_RPS_STEPS[Math.min(rc, TRAFFIC_RPS_STEPS.length) - 1]
+  // ISAPivot: default the read/write mix + origin so every traffic node carries a full, valid config.
+  const trafficWorkload =
+    d.trafficWorkload === "read" || d.trafficWorkload === "write" || d.trafficWorkload === "mixed" ? d.trafficWorkload : "mixed"
+  const trafficOrigin = d.trafficOrigin === "multi-region" ? "multi-region" : "one-region"
   const { trafficPattern: _legacy, ...rest } = d
-  return { ...node, data: { ...rest, trafficKind, trafficRps } } as T
+  return { ...node, data: { ...rest, trafficKind, trafficRps, trafficWorkload, trafficOrigin } } as T
 }
 
 /** True if any traffic source carries a non-steady kind (so the sim should shape its own curve). */

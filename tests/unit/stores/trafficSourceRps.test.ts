@@ -166,6 +166,24 @@ describe("normalizeNodeTrafficKind (ISAPivot boundary normalizer)", () => {
     const out = normalizeNodeTrafficKind(tnode({ componentCategory: "data-storage", trafficRps: 9000 }))
     expect(out.data.trafficRps).toBeUndefined()
   })
+
+  it("defaults workload=mixed and origin=one-region for a traffic node", () => {
+    const out = normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", trafficRps: 5000 }))
+    expect(out.data.trafficWorkload).toBe("mixed")
+    expect(out.data.trafficOrigin).toBe("one-region")
+  })
+
+  it("preserves explicit workload/origin on a traffic node", () => {
+    const out = normalizeNodeTrafficKind(tnode({ componentCategory: "traffic", trafficWorkload: "write", trafficOrigin: "multi-region" }))
+    expect(out.data.trafficWorkload).toBe("write")
+    expect(out.data.trafficOrigin).toBe("multi-region")
+  })
+
+  it("strips stray workload/origin from a non-traffic node", () => {
+    const out = normalizeNodeTrafficKind(tnode({ componentCategory: "data-storage", trafficWorkload: "write", trafficOrigin: "multi-region" }))
+    expect(out.data.trafficWorkload).toBeUndefined()
+    expect(out.data.trafficOrigin).toBeUndefined()
+  })
 })
 
 describe("getNodeCost traffic RPS (ISAPivot Phase 1)", () => {

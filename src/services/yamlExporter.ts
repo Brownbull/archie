@@ -44,9 +44,15 @@ export function exportArchitecture(
     if (node.data.replicaCount > 1) {
       nodeObj.replicas = node.data.replicaCount
     }
-    // Traffic Source shape — emit only on traffic nodes when non-default (steady omitted for compactness)
+    // Traffic Source config — emit only on traffic nodes when non-default (defaults omitted for compactness)
     if (node.data.componentCategory === "traffic" && node.data.trafficKind && node.data.trafficKind !== "steady") {
       nodeObj.traffic_kind = node.data.trafficKind
+    }
+    if (node.data.componentCategory === "traffic" && node.data.trafficWorkload && node.data.trafficWorkload !== "mixed") {
+      nodeObj.traffic_workload = node.data.trafficWorkload
+    }
+    if (node.data.componentCategory === "traffic" && node.data.trafficOrigin && node.data.trafficOrigin !== "one-region") {
+      nodeObj.traffic_origin = node.data.trafficOrigin
     }
     // AC-ARCH-PATTERN-1: include data_context only when node has items
     // AC-ARCH-PATTERN-3: fit results NOT exported — only data definitions

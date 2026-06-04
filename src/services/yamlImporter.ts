@@ -339,6 +339,8 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
           componentCategory: "compute" as ComponentCategoryId,
           replicaCount: yamlNode.replicas ?? 1,
           trafficKind: yamlNode.trafficKind,
+          trafficWorkload: yamlNode.trafficWorkload,
+          trafficOrigin: yamlNode.trafficOrigin,
         } as ArchieNodeData,
         width: NODE_WIDTH,
       } as unknown as ArchieNode)
@@ -367,6 +369,8 @@ export function hydrateArchitectureSkeleton(data: ArchitectureFile): ImportResul
           : "compute") as ComponentCategoryId,
         replicaCount: yamlNode.replicas ?? 1,
         trafficKind: yamlNode.trafficKind,
+        trafficWorkload: yamlNode.trafficWorkload,
+        trafficOrigin: yamlNode.trafficOrigin,
       },
       width: NODE_WIDTH,
     })
