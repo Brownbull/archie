@@ -3543,3 +3543,9 @@ PHASE 3 COMPLETE: 3a (p95+cost), 3c (forbidden 0★), 3f (golden harness), 3b (r
 - 2026-06-04 16:33 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
 - 2026-06-04 16:33 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
 - 2026-06-04 16:34 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+
+## 2026-06-04 16:18 — [e750247] test(challenges): Phase 4 solvability harness (4a)
+FINDINGS: 0 (tsc -b clean, eslint 0 err, integration 148/148, harness 41/41 clear)
+SAFETY NET: reference-solution-per-challenge → real sim+scorer → asserts ≥1★. Locks solvability baseline before 4b/4c recast+harden.
+KEY MECHANIC: cache/CDN hits served terminally (only misses forward) → stacked cdn+cache (~99% absorption) survives full compute az_outage; variant picker maximizes hit ratio for cdn/cache. Async tiers off the sync path.
+PHASE 4: 4a done; 4b recast trafficSources, 4c harden, 4d progressive hints remain.
