@@ -3707,3 +3707,8 @@ DEPLOYMENTS: P130 (creator XP removal + create/import/export E2E + expansion bat
 - 2026-06-04 19:38 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/54-the-singularity.yaml
 - 2026-06-04 19:38 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/55-maxwells-demon.yaml
 - 2026-06-04 19:39 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/challengeLoader.test.ts
+
+## 2026-06-04 19:45 — [fce4423] feat(challenges): expansion batch 2 — Tier 6 + 9 challenges (D70)
+FINDINGS: 0 (tsc -b + eslint clean, 4744 unit, solvability 56/56, tech-tree valid, golden +9 / 41 byte-identical, Quest Log 6-tier screenshot verified)
+TIER 6: MAX_CHALLENGE_TIER 5→6 + VI label + schema. 3 lever (fan-it-out, four-front-war, write-storm-brownout) + 6 absurd capstones (planet-scale, thundering-herd, heat-death, zero-budget-hero, the-singularity, maxwells-demon).
+EXPANSION COMPLETE (D69/D70): 41 → 55 challenges. Cost_per_request challenges still deferred (needs cost-aware harness builder).
