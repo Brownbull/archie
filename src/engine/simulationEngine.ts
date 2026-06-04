@@ -66,11 +66,13 @@ function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): numbe
  * Resolves the scheduled events active at `timeS` into per-tick overrides (Epic 16).
  * - component_failure: target node offline (sheds all traffic).
  * - az_outage: every node whose category === target goes offline.
- * - latency_spike: target node's latency is multiplied (default ×3).
+ * - latency_spike: target node's latency is multiplied (default ×3), scaled by `chaosIntensity`
+ *   (ISAPivot 3e): effective = 1 + (authored − 1) × chaosIntensity. chaosIntensity 1 (default) ⇒
+ *   exactly the authored multiplier (byte-identical to pre-3e); 0 ⇒ inert; >1 ⇒ harsher.
  * Active window is half-open `[t, t + durationS)`; omitting durationS means "until the end".
  * Concurrent latency_spike events on the same node multiply together (×3 × ×2 = ×6).
  */
-export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], timeS: number, edges?: Array<{ source: string; target: string }>): TickOverrides {
+export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], timeS: number, edges?: Array<{ source: string; target: string }>, chaosIntensity: number = 1): TickOverrides {
   // E8: build a set of nodes monitored by a monitoring-category neighbor.
   const monitoredNodes = new Set<string>()
   if (edges) {
@@ -96,7 +98,9 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
     } else if (e.type === "az_outage") {
       for (const n of nodes) if (n.category === e.target) offlineNodeIds.add(n.id)
     } else if (e.type === "latency_spike") {
-      latencyMultipliers.set(e.target, (latencyMultipliers.get(e.target) ?? 1) * (e.multiplier ?? 3))
+      // 3e: scale the spike INTENSITY (not the raw multiplier) so chaos 0 ⇒ inert (×1), not ×0.
+      const effective = 1 + ((e.multiplier ?? 3) - 1) * chaosIntensity
+      latencyMultipliers.set(e.target, (latencyMultipliers.get(e.target) ?? 1) * effective)
     }
   }
   return { offlineNodeIds, latencyMultipliers }
@@ -287,6 +291,7 @@ export function runSimulation(
   ticks: number = SIM_TICKS,
   durationS: number = SIM_DEFAULT_DURATION_S,
   scheduledEvents: ScheduledEvent[] = [],
+  chaosIntensity: number = 1,
 ): SimulationResult {
   const safeTicks = Math.max(1, Math.floor(ticks))
   const frames: TickState[] = []
@@ -294,7 +299,7 @@ export function runSimulation(
     const t = safeTicks === 1 ? 0 : (i / (safeTicks - 1)) * durationS
     const targetRps = interpolateRps(curve, t)
     // Empty events → undefined overrides → simulateTick behaves exactly as pre-Epic-16 (no regression).
-    const overrides = scheduledEvents.length > 0 ? computeOverrides(graph.nodes, scheduledEvents, t, graph.edges) : undefined
+    const overrides = scheduledEvents.length > 0 ? computeOverrides(graph.nodes, scheduledEvents, t, graph.edges, chaosIntensity) : undefined
     frames.push(simulateTick(graph, i, targetRps, overrides))
   }
   return { ticks: frames, entryNodeIds: findEntryNodes(graph) }

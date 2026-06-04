@@ -128,6 +128,12 @@ export interface Challenge {
    * When present, ALL must pass for the clean-topology star (folded in alongside zero topology issues).
    */
   requiredTopology?: RequiredTopologyAssertion[]
+  /**
+   * Difficulty knob for latency-spike events (ISAPivot Phase 3, 3e). Scales each spike's intensity:
+   * effective multiplier = 1 + (authored − 1) × chaosIntensity. 0 = inert (no spike), 1 = as-authored,
+   * >1 = harsher (bounded [0,10]). A SIM-runtime lever only — NEVER read by scoring. Absent ⇒ 1.
+   */
+  chaosIntensity?: number
   /** Component TYPE ids usable inside this challenge (Phase 2 hard-gate input). Empty = no gate. */
   availableBlocks: string[]
   /** Component TYPE ids permanently unlocked for the player on completion. */

@@ -3513,3 +3513,19 @@ PHASE: 3 — Richer targets + rubric (3a/3c/3f/3b done; 3d origin, 3e chaos rema
 - 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
 - 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
 - 2026-06-04 15:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+
+## 2026-06-04 15:52 — [b1ff50f] feat(challenges): multi-region origin grading — Phase 3 3d
+FINDINGS: 0 (tsc -b clean, eslint 0, 4654/4654 unit, golden byte-identical)
+ADVERSARIAL: 4-lens verify (wr5tuyx2w) — 0 real, 0 speculative; builtin-scan confirmed NO built-in declares a multi-region source (always-grade safe)
+DESIGN: D55/D66 — always grade; multi-region source ⇒ CDN+DNS+any data-storage; folded into basePass (identity for the 41)
+PHASE: 3 — Richer targets + rubric (3a/3c/3f/3b/3d done; 3e chaos remains)
+- 2026-06-04 15:57 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-04 15:57 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-04 15:57 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/stores/simulationStore.ts
+- 2026-06-04 15:58 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-04 15:59 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts

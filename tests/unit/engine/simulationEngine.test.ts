@@ -218,6 +218,19 @@ describe("computeOverrides (scheduled events, Epic 16)", () => {
     expect(computeOverrides(nodes, ev, 5).latencyMultipliers.get("db")).toBe(6) // ×3 × ×2
   })
 
+  it("scales spike intensity by chaosIntensity (3e): 1 = as-authored, 0 = inert, >1 = harsher", () => {
+    const ev: ScheduledEvent[] = [{ t: 0, type: "latency_spike", target: "db", multiplier: 3 }]
+    expect(computeOverrides(nodes, ev, 5, undefined, 1).latencyMultipliers.get("db")).toBe(3) // as-authored (byte-identical)
+    expect(computeOverrides(nodes, ev, 5, undefined, 0).latencyMultipliers.get("db")).toBe(1) // inert: ×1, NOT ×0
+    expect(computeOverrides(nodes, ev, 5, undefined, 2).latencyMultipliers.get("db")).toBe(5) // 1 + (3-1)×2
+    expect(computeOverrides(nodes, ev, 5, undefined, 0.5).latencyMultipliers.get("db")).toBe(2) // 1 + (3-1)×0.5
+  })
+
+  it("chaosIntensity defaults to 1 when omitted (byte-identical to pre-3e)", () => {
+    const ev: ScheduledEvent[] = [{ t: 0, type: "latency_spike", target: "db", multiplier: 4 }]
+    expect(computeOverrides(nodes, ev, 5).latencyMultipliers.get("db")).toBe(4)
+  })
+
   it("treats the active window as half-open [t, t+durationS)", () => {
     const ev: ScheduledEvent[] = [{ t: 30, type: "component_failure", target: "app", durationS: 20 }]
     expect(computeOverrides(nodes, ev, 30).offlineNodeIds.has("app")).toBe(true) // inclusive start

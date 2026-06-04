@@ -140,6 +140,9 @@ export const ChallengeYamlSchema = z
     required_types: z.array(blockTypeId).max(20).default([]),
     forbidden_types: z.array(blockTypeId).max(20).default([]),
     required_topology: z.array(RequiredTopologyAssertionSchema).max(10).default([]),
+    // ISAPivot Phase 3 (3e) — latency-spike difficulty knob. Optional; absent ⇒ 1 (as-authored) at the
+    // sim use-site, so the 41 built-ins are byte-identical. Never read by scoring.
+    chaos_intensity: z.number().min(0).max(10).optional(),
     available_blocks: z.array(blockTypeId).max(40).default([]),
     grants: z.array(blockTypeId).max(40).default([]),
     rewards: RewardsYamlSchema.optional(),
@@ -213,6 +216,7 @@ export const ChallengeYamlSchema = z
     requiredTypes: d.required_types,
     forbiddenTypes: d.forbidden_types,
     requiredTopology: d.required_topology,
+    ...(d.chaos_intensity !== undefined ? { chaosIntensity: d.chaos_intensity } : {}),
     availableBlocks: d.available_blocks,
     grants: d.grants,
     rewards: d.rewards,

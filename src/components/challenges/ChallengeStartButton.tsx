@@ -53,8 +53,8 @@ export function ChallengeStartButton() {
         ? buildTrafficCurveFromSpecs(challenge.trafficSources, challenge.durationSeconds)
         : challenge.trafficCurve
     // Pass the challenge's authored duration so the curve + scheduled events map over the
-    // intended window (not the engine's default 90s).
-    startSim(graph, curve, challenge.scheduledEvents, challenge.durationSeconds)
+    // intended window (not the engine's default 90s), plus its chaos intensity (3e; undefined ⇒ 1).
+    startSim(graph, curve, challenge.scheduledEvents, challenge.durationSeconds, challenge.chaosIntensity)
   }
 
   return (

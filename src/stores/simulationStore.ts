@@ -21,7 +21,7 @@ interface SimulationState {
    * `durationS` sets the simulated wall-clock the curve + events are mapped over (default
    * SIM_DEFAULT_DURATION_S); challenges pass their authored duration so timing is honored.
    */
-  start: (graph: SimGraph, curve: TrafficCurve, scheduledEvents?: ScheduledEvent[], durationS?: number) => void
+  start: (graph: SimGraph, curve: TrafficCurve, scheduledEvents?: ScheduledEvent[], durationS?: number, chaosIntensity?: number) => void
   pause: () => void
   resume: () => void
   /** Restart playback from tick 0 using the already-computed ticks. */
@@ -67,8 +67,8 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     entryNodeIds: [],
     durationS: SIM_DEFAULT_DURATION_S,
 
-    start: (graph, curve, scheduledEvents, durationS) => {
-      const result = runSimulation(graph, curve, undefined, durationS, scheduledEvents)
+    start: (graph, curve, scheduledEvents, durationS, chaosIntensity) => {
+      const result = runSimulation(graph, curve, undefined, durationS, scheduledEvents, chaosIntensity ?? 1)
       stopTimer()
       const hasPlayback = result.ticks.length > 1
       set({
