@@ -66,6 +66,52 @@ export function hasTrafficSource(nodes: ReadonlyArray<{ data?: { componentCatego
   return nodes.some((n) => n.data?.componentCategory === TRAFFIC_CATEGORY)
 }
 
+/** One-per-type / max-4 traffic-source rule (D63 — enforced in free play AND challenge mode). */
+export const MAX_TRAFFIC_SOURCES = 4
+
+/** Traffic provider component ids (the "types"), with the default provider first (add preference). */
+export function trafficProviderTypes(): string[] {
+  const ids = componentLibrary.getComponentsByCategory(TRAFFIC_CATEGORY).map((c) => c.id)
+  return [DEFAULT_SOURCE_ID, ...ids.filter((id) => id !== DEFAULT_SOURCE_ID)]
+}
+
+/** True when `componentId` is a traffic-category provider. */
+export function isTrafficProvider(componentId: string): boolean {
+  return componentLibrary.getComponent(componentId)?.category === TRAFFIC_CATEGORY
+}
+
+/**
+ * Hard-gate for adding a traffic source (D63): returns the provider to actually add — the requested
+ * one, or the next free type when the requested type is already placed (so the palette, which always
+ * passes the default provider, can still add up to one of each) — or `{ blocked }` at the cap.
+ */
+export function resolveTrafficSourceAdd(
+  nodes: ReadonlyArray<{ data?: { componentCategory?: string; archieComponentId?: string } }>,
+  requestedProviderId: string,
+): { providerId: string } | { blocked: string } {
+  const present = new Set(
+    nodes.filter((n) => n.data?.componentCategory === TRAFFIC_CATEGORY).map((n) => n.data?.archieComponentId),
+  )
+  if (present.size >= MAX_TRAFFIC_SOURCES) {
+    return { blocked: `One traffic source per type (max ${MAX_TRAFFIC_SOURCES}) — all types are already placed.` }
+  }
+  if (!present.has(requestedProviderId)) return { providerId: requestedProviderId }
+  const next = trafficProviderTypes().find((id) => !present.has(id))
+  return next ? { providerId: next } : { blocked: `One traffic source per type (max ${MAX_TRAFFIC_SOURCES}).` }
+}
+
+/** True when swapping `nodeId` to `providerId` would duplicate a traffic type already on the canvas. */
+export function wouldDuplicateTrafficType(
+  nodes: ReadonlyArray<{ id: string; data?: { componentCategory?: string; archieComponentId?: string } }>,
+  nodeId: string,
+  providerId: string,
+): boolean {
+  if (!isTrafficProvider(providerId)) return false
+  return nodes.some(
+    (n) => n.id !== nodeId && n.data?.componentCategory === TRAFFIC_CATEGORY && n.data?.archieComponentId === providerId,
+  )
+}
+
 /**
  * Builds a traffic-source node (sized to targetRps = its PEAK) at a position, or null if none
  * available. With a `config`, uses the given source type (provider) + stamps kind/workload/origin

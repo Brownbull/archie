@@ -11,6 +11,7 @@ import { recalculationService } from "@/services/recalculationService"
 import { computeWeightedNodeScore, computeHeatmapStatus } from "@/engine/heatmapCalculator"
 import type { TrafficKind } from "@/engine/trafficPatterns"
 import type { ChallengeTrafficWorkload, ChallengeTrafficOrigin } from "@/lib/challengeTypes"
+import { resolveTrafficSourceAdd, isTrafficProvider, wouldDuplicateTrafficType } from "@/services/trafficSourceInjection"
 import { snapToGrid, findNextAvailablePosition } from "@/lib/canvasUtils"
 import {
   CANVAS_GRID_SIZE,
@@ -323,7 +324,19 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       toast.warning(`Canvas limit reached (${MAX_CANVAS_NODES} components)`)
       return
     }
-    const requested = componentLibrary.getComponent(componentId)
+    // ISAPivot one-per-type / max-4 hard-gate (D63): remap a traffic add to the next free type, or
+    // block at the cap. The palette always passes the default provider, so remap lets it add one of
+    // each. Applies in free play AND challenge mode (challenge-authored sources come via loadArchitecture).
+    let addId = componentId
+    if (isTrafficProvider(componentId)) {
+      const gate = resolveTrafficSourceAdd(get().nodes, componentId)
+      if ("blocked" in gate) {
+        toast.warning(gate.blocked)
+        return
+      }
+      addId = gate.providerId
+    }
+    const requested = componentLibrary.getComponent(addId)
     if (!requested) return
 
     // Apply the user's saved default (provider + variant) for this block TYPE, if any. Future
@@ -402,6 +415,12 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
     const node = get().nodes.find((n) => n.id === nodeId)
     if (!node || node.data.archieComponentId === newComponentId) return
+
+    // ISAPivot one-per-type hard-gate (D63): block swapping a traffic node to a type already placed.
+    if (wouldDuplicateTrafficType(get().nodes, nodeId, newComponentId)) {
+      toast.warning("That traffic source type is already on the canvas (one per type).")
+      return
+    }
 
     // dataContextItems intentionally preserved on swap — user may want to evaluate
     // same data against new component's fit profile (Story 7-1 review decision)

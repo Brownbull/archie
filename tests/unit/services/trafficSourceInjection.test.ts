@@ -25,6 +25,9 @@ import {
   withEntryTrafficSource,
   makeTrafficSourceNode,
   makeChallengeTrafficNodes,
+  resolveTrafficSourceAdd,
+  wouldDuplicateTrafficType,
+  isTrafficProvider,
 } from "@/services/trafficSourceInjection"
 
 const dnsNode = () => ({
@@ -98,5 +101,40 @@ describe("trafficSourceInjection", () => {
     const nodes = makeChallengeTrafficNodes({ trafficCurve: [{ rps: 0 }, { rps: 50000 }] })
     expect(nodes).toHaveLength(1)
     expect(nodes[0].data.trafficRps).toBe(50000) // sized to the curve peak
+  })
+
+  // --- one-per-type / max-4 hard-gate (D63) — mock universe has 2 traffic types: web-users, iot-sensors ---
+
+  it("isTrafficProvider distinguishes traffic providers from other components", () => {
+    expect(isTrafficProvider("web-users")).toBe(true)
+    expect(isTrafficProvider("dns")).toBe(false)
+  })
+
+  it("resolveTrafficSourceAdd allows the requested type when free", () => {
+    expect(resolveTrafficSourceAdd([], "web-users")).toEqual({ providerId: "web-users" })
+  })
+
+  it("resolveTrafficSourceAdd remaps to the next free type when the requested type is already placed", () => {
+    const nodes = [{ data: { componentCategory: "traffic", archieComponentId: "web-users" } }]
+    expect(resolveTrafficSourceAdd(nodes, "web-users")).toEqual({ providerId: "iot-sensors" })
+  })
+
+  it("resolveTrafficSourceAdd blocks when every traffic type is placed", () => {
+    const nodes = [
+      { data: { componentCategory: "traffic", archieComponentId: "web-users" } },
+      { data: { componentCategory: "traffic", archieComponentId: "iot-sensors" } },
+    ]
+    const r = resolveTrafficSourceAdd(nodes, "web-users")
+    expect("blocked" in r).toBe(true)
+  })
+
+  it("wouldDuplicateTrafficType blocks a swap to an already-placed traffic type (and ignores self / non-traffic)", () => {
+    const nodes = [
+      { id: "a", data: { componentCategory: "traffic", archieComponentId: "web-users" } },
+      { id: "b", data: { componentCategory: "traffic", archieComponentId: "iot-sensors" } },
+    ]
+    expect(wouldDuplicateTrafficType(nodes, "b", "web-users")).toBe(true) // b → web-users, which a holds
+    expect(wouldDuplicateTrafficType(nodes, "a", "web-users")).toBe(false) // a already is web-users
+    expect(wouldDuplicateTrafficType(nodes, "b", "dns")).toBe(false) // non-traffic target
   })
 })

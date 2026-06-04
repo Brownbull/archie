@@ -103,6 +103,16 @@ const { testComponentMap } = vi.hoisted(() => {
     cost: ["Free"],
     tags: ["traffic"],
   }))
+  map.set("api-client", buildComponent({
+    id: "api-client",
+    name: "API Client",
+    category: "traffic",
+    description: "Traffic source",
+    is: "An API-client traffic archetype",
+    gain: ["Load origin"],
+    cost: ["Free"],
+    tags: ["traffic"],
+  }))
 
   return { testComponentMap: map }
 })
@@ -110,6 +120,7 @@ const { testComponentMap } = vi.hoisted(() => {
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
     getComponent: vi.fn((id: string) => testComponentMap.get(id)),
+    getComponentsByCategory: (cat: string) => [...testComponentMap.values()].filter((c) => c.category === cat),
     isInitialized: () => true,
     reset: vi.fn(),
   },
@@ -663,6 +674,35 @@ describe("architectureStore", () => {
       const id = useArchitectureStore.getState().nodes[0].id
       store.setNodeWorkload(id, "write")
       expect(useArchitectureStore.getState().nodes[0].data.trafficWorkload).toBeUndefined()
+    })
+  })
+
+  describe("traffic source one-per-type / max-4 hard-gate (ISAPivot)", () => {
+    const traffic = () => useArchitectureStore.getState().nodes.filter((n) => n.data.componentCategory === "traffic")
+
+    it("remaps a 2nd traffic add to the next free type (the palette always passes the default provider)", () => {
+      const store = useArchitectureStore.getState()
+      store.addNode("web-users", { x: 0, y: 0 })
+      store.addNode("web-users", { x: 100, y: 0 }) // requested type taken → remap to the next free type
+      expect(traffic()).toHaveLength(2)
+      expect(new Set(traffic().map((n) => n.data.archieComponentId))).toEqual(new Set(["web-users", "api-client"]))
+    })
+
+    it("blocks adding once every traffic type is placed", () => {
+      const store = useArchitectureStore.getState()
+      store.addNode("web-users", { x: 0, y: 0 })
+      store.addNode("web-users", { x: 100, y: 0 }) // → api-client
+      store.addNode("web-users", { x: 200, y: 0 }) // both mock types placed → blocked (no-op)
+      expect(traffic()).toHaveLength(2)
+    })
+
+    it("blocks swapping a traffic node to a type already on the canvas", () => {
+      const store = useArchitectureStore.getState()
+      store.addNode("web-users", { x: 0, y: 0 })
+      store.addNode("web-users", { x: 100, y: 0 }) // web-users + api-client
+      const apiNode = traffic().find((n) => n.data.archieComponentId === "api-client")!
+      store.swapNodeComponent(apiNode.id, "web-users") // duplicate type → blocked
+      expect(useArchitectureStore.getState().nodes.find((n) => n.id === apiNode.id)!.data.archieComponentId).toBe("api-client")
     })
   })
 
