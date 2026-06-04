@@ -3102,3 +3102,25 @@ CI: deploy-production ✅ (run 26922494055, ~40s)
 PROMOTION: N/A
 DEPLOYMENTS: P116
 NOTE: firestore.rules for userBlockDefaults already deployed manually before this push.
+- 2026-06-03 20:53 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 20:54 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 20:54 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 20:54 | Edit | /home/khujta/projects/bmad/archie/src/stores/uiStore.ts
+- 2026-06-03 20:54 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 20:54 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 20:55 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 20:55 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppMenuBar.tsx
+- 2026-06-03 20:55 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-03 20:55 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-03 20:55 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-03 20:55 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/ModeToggle.tsx
+- 2026-06-03 20:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-03 20:57 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-mode.spec.ts
+- 2026-06-03 20:58 | Write | /home/khujta/projects/bmad/archie/tests/e2e/ui-batch-features.spec.ts
+- 2026-06-03 21:04 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-03 21:04 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+
+## 2026-06-03 21:05 — [00c06a2] feat(challenges): Quest Mode toggle opens the Quest Log; drop standalone Quests menu
+FINDINGS: 0 critical (fixed: scoped eslint-disable for decorative confetti purity); build green; 4544 unit/integration + E2E green
+ACTIONS: committed
+NOTES: Removed standalone "Quests" menu button; toggle Quest Mode now opens the Quest Log (uiStore.questLogOpen) — Accept a quest → quest mode, cancel → stay Free. ChallengeTreeView moved to Toolbar (uiStore-controlled). Build → Challenges still opens ChallengeSelector (clone/play). E2E rewired (ui-batch-features, challenge-mode→Build path, quest-persistence + challenge-validation → mode-toggle-quest).
