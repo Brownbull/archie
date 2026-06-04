@@ -25,6 +25,13 @@ interface UiState {
   /** Quest Log (journey tree) dialog open? Lifted to uiStore so the Quest/Free mode toggle can
       open it — selecting a quest there starts it (enters quest mode); cancelling stays in Free. */
   questLogOpen: boolean
+  /** "Save Canvas" slot-picker dialog open? */
+  saveCanvasOpen: boolean
+  /** "Saved Canvases" (load/delete) dialog open? */
+  savedCanvasesOpen: boolean
+  /** Action to run after a successful save from the slot picker (e.g. the deferred mode switch
+      behind the "Save & continue" guard). Cleared when the save dialog closes. */
+  pendingSaveAction: (() => void) | null
   /** AI-prompt template dialog open? Lifted to uiStore so the menu bar can open it (P95). */
   promptOpen: boolean
   /** Reset-canvas confirm dialog open? Lifted to uiStore so the menu bar can open it (P95). */
@@ -50,6 +57,9 @@ interface UiState {
   setCommandPaletteOpen: (open: boolean) => void
   setChallengesOpen: (open: boolean) => void
   setQuestLogOpen: (open: boolean) => void
+  setSaveCanvasOpen: (open: boolean) => void
+  setSavedCanvasesOpen: (open: boolean) => void
+  setPendingSaveAction: (action: (() => void) | null) => void
   setPromptOpen: (open: boolean) => void
   setResetCanvasOpen: (open: boolean) => void
   setSelectedNodeId: (id: string | null) => void
@@ -72,6 +82,9 @@ export const useUiStore = create<UiState>()((set) => ({
   commandPaletteOpen: false,
   challengesOpen: false,
   questLogOpen: false,
+  saveCanvasOpen: false,
+  savedCanvasesOpen: false,
+  pendingSaveAction: null,
   promptOpen: false,
   resetCanvasOpen: false,
   selectedNodeId: null,
@@ -99,6 +112,9 @@ export const useUiStore = create<UiState>()((set) => ({
   setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
   setChallengesOpen: (open) => set({ challengesOpen: open }),
   setQuestLogOpen: (open) => set({ questLogOpen: open }),
+  setSaveCanvasOpen: (open) => set({ saveCanvasOpen: open }),
+  setSavedCanvasesOpen: (open) => set({ savedCanvasesOpen: open }),
+  setPendingSaveAction: (action) => set({ pendingSaveAction: action }),
   setPromptOpen: (open) => set({ promptOpen: open }),
   setResetCanvasOpen: (open) => set({ resetCanvasOpen: open }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),

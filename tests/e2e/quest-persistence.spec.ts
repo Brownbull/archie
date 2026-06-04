@@ -52,6 +52,10 @@ test.describe("Quest persistence across page reload", () => {
 
     // Step 3: Verify quest log shows completion BEFORE reload
     await page.getByTestId("mode-toggle-quest").click()
+    // Canvas still holds the quest build → the mode-switch save guard appears; skip saving.
+    if (await page.getByTestId("mode-toggle-dialog").isVisible({ timeout: 1500 }).catch(() => false)) {
+      await page.getByTestId("mode-toggle-confirm").click()
+    }
     await page.waitForTimeout(1500)
 
     const firstNode = page.locator('[data-testid="tree-node-first-service"]')
@@ -66,6 +70,10 @@ test.describe("Quest persistence across page reload", () => {
 
     // Step 5: Verify progress persists after reload
     await page.getByTestId("mode-toggle-quest").click()
+    // Canvas still holds the quest build → the mode-switch save guard appears; skip saving.
+    if (await page.getByTestId("mode-toggle-dialog").isVisible({ timeout: 1500 }).catch(() => false)) {
+      await page.getByTestId("mode-toggle-confirm").click()
+    }
     await page.waitForTimeout(1500)
 
     const firstNodeAfter = page.locator('[data-testid="tree-node-first-service"]')

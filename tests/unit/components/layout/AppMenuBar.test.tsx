@@ -8,6 +8,8 @@ import { useHistoryStore } from "@/services/canvasHistory"
 
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
 vi.mock("@/components/challenges/ChallengeTreeView", () => ({ ChallengeTreeView: () => null }))
+// AppMenuBar reads useAuth to gate the Save/Load items; provide a signed-in stub (no AuthProvider here).
+vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: { uid: "u1" } }) }))
 
 describe("AppMenuBar (P95)", () => {
   beforeEach(() => {

@@ -228,6 +228,10 @@ test.describe("Challenge Validation E2E", () => {
 
       // Open journey and check unlocked challenges
       await page.getByTestId("mode-toggle-quest").click()
+      // Canvas still holds the quest build → the mode-switch save guard appears; skip saving.
+      if (await page.getByTestId("mode-toggle-dialog").isVisible({ timeout: 1500 }).catch(() => false)) {
+        await page.getByTestId("mode-toggle-confirm").click()
+      }
       await page.waitForTimeout(1000)
 
       // First Service should show completed (3 stars earned)

@@ -11,38 +11,55 @@ import {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 
 /**
- * Always-visible Quest/Free mode toggle for the toolbar's left section (F2). Mode is DERIVED
- * from challengeStore: Quest Mode === activeChallenge !== null.
+ * Always-visible Quest/Free mode toggle. Mode is DERIVED from challengeStore: Quest Mode ===
+ * activeChallenge !== null.
  *
- * Entering Quest Mode opens the Quest Log (journey tree). Accepting a quest there starts it
- * (sets activeChallenge → quest mode); closing the log without accepting leaves activeChallenge
- * null, so the toggle stays on Free. The "build challenges" surface (provider grid, clone, create)
- * lives separately under Build → Challenges. Exiting Quest Mode IS destructive at this layer
- * (it abandons the active quest), so it routes through a local confirm dialog.
+ * Switching modes is guarded: if the canvas has blocks, we ask whether to save the current canvas
+ * to a slot before switching (Save & continue / Don't save / Cancel). Entering Quest Mode opens the
+ * Quest Log (accept a quest there to actually start it); exiting Quest Mode clears the challenge
+ * state via challengeStore.reset(). An empty canvas switches with no prompt.
  */
 export function ModeToggle() {
   const activeChallenge = useChallengeStore((s) => s.activeChallenge)
+  const nodeCount = useArchitectureStore((s) => s.nodes.length)
   const setQuestLogOpen = useUiStore((s) => s.setQuestLogOpen)
-  const [exitPending, setExitPending] = useState(false)
+  const setSaveCanvasOpen = useUiStore((s) => s.setSaveCanvasOpen)
+  const setPendingSaveAction = useUiStore((s) => s.setPendingSaveAction)
+
+  // The deferred mode switch awaiting the save/discard/cancel decision (null = no prompt open).
+  const [guard, setGuard] = useState<{ proceed: () => void; target: "quest" | "free" } | null>(null)
 
   const isQuestMode = activeChallenge !== null
 
+  const guardThenRun = (proceed: () => void, target: "quest" | "free") => {
+    if (nodeCount === 0) proceed()
+    else setGuard({ proceed, target })
+  }
+
   const onQuestClick = () => {
     if (isQuestMode) return
-    setQuestLogOpen(true)
+    guardThenRun(() => setQuestLogOpen(true), "quest")
   }
 
   const onFreeClick = () => {
     if (!isQuestMode) return
-    setExitPending(true)
+    guardThenRun(() => useChallengeStore.getState().reset(), "free")
   }
 
-  const onConfirm = () => {
-    useChallengeStore.getState().reset()
-    setExitPending(false)
+  const proceedWithoutSaving = () => {
+    const proceed = guard?.proceed
+    setGuard(null)
+    proceed?.()
+  }
+
+  const saveThenProceed = () => {
+    if (guard) setPendingSaveAction(guard.proceed)
+    setGuard(null)
+    setSaveCanvasOpen(true)
   }
 
   return (
@@ -83,20 +100,24 @@ export function ModeToggle() {
         </button>
       </div>
 
-      <Dialog open={exitPending} onOpenChange={(open) => !open && setExitPending(false)}>
+      <Dialog open={guard !== null} onOpenChange={(open) => !open && setGuard(null)}>
         <DialogContent data-testid="mode-toggle-dialog" className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Exit Quest Mode?</DialogTitle>
+            <DialogTitle>{guard?.target === "free" ? "Leave Quest Mode?" : "Switch to Quest Mode?"}</DialogTitle>
             <DialogDescription>
-              Leave the current quest and return to free building.
+              You have {nodeCount} block{nodeCount === 1 ? "" : "s"} on the canvas. Save them to a
+              slot before switching?
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setExitPending(false)}>
+          <DialogFooter className="gap-1 sm:gap-1">
+            <Button variant="outline" size="sm" data-testid="mode-toggle-cancel" onClick={() => setGuard(null)}>
               Cancel
             </Button>
-            <Button size="sm" data-testid="mode-toggle-confirm" onClick={onConfirm}>
-              Exit Quest Mode
+            <Button variant="ghost" size="sm" data-testid="mode-toggle-confirm" onClick={proceedWithoutSaving}>
+              Don&apos;t save
+            </Button>
+            <Button size="sm" data-testid="mode-toggle-save" onClick={saveThenProceed}>
+              Save &amp; continue
             </Button>
           </DialogFooter>
         </DialogContent>

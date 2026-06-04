@@ -131,6 +131,25 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Saved canvases — up to 2 named slots per user, owner-only, keyed by uid.
+    // `slots` is a fixed-length list (≤2) of {name, savedAt, canvas} or null.
+    match /userCanvases/{uid} {
+      allow read: if isAuthenticated() && request.auth.uid == uid;
+      allow create: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['slots', 'updatedAt'])
+        && request.resource.data.slots is list
+        && request.resource.data.slots.size() <= 2
+        && request.resource.data.updatedAt == request.time;
+      allow update: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['slots', 'updatedAt'])
+        && request.resource.data.slots is list
+        && request.resource.data.slots.size() <= 2
+        && request.resource.data.updatedAt == request.time;
+      allow delete: if false;
+    }
+
     // Deny all by default
     match /{document=**} {
       allow read, write: if false;

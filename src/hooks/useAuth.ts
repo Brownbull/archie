@@ -13,6 +13,7 @@ import { useAttemptsStore } from "@/stores/attemptsStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useUserChallengeStore } from "@/stores/userChallengeStore"
 import { useUserBlockDefaultsStore } from "@/stores/userBlockDefaultsStore"
+import { useUserCanvasesStore } from "@/stores/userCanvasesStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 
 const googleProvider = new GoogleAuthProvider()
@@ -66,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           })
           void useUserChallengeStore.getState().loadFromCloud(firebaseUser.uid)
           void useUserBlockDefaultsStore.getState().loadDefaults(firebaseUser.uid)
+          void useUserCanvasesStore.getState().loadCanvases(firebaseUser.uid)
         }
       },
       (err) => {
@@ -107,6 +109,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       useAttemptsStore.getState().reset()
       useUserProgressStore.getState().reset()
       useUserChallengeStore.getState().reset()
+      useUserBlockDefaultsStore.getState().reset()
+      useUserCanvasesStore.getState().reset()
       await firebaseSignOut(auth)
     } catch (err) {
       setError(getErrorMessage(err))

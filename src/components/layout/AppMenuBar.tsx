@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { FileUp, RotateCcw, Undo2, Redo2, BrainCircuit, Trophy } from "lucide-react"
+import { FileUp, RotateCcw, Undo2, Redo2, BrainCircuit, Trophy, Save, FolderOpen } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -13,6 +13,7 @@ import { ExportReportButton } from "@/components/toolbar/ExportReportButton"
 import { useHistoryStore, undo, redo } from "@/services/canvasHistory"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { useAuth } from "@/hooks/useAuth"
 
 const TRIGGER_CLASS =
   "rounded px-2 py-1 text-sm text-text-secondary hover:bg-surface hover:text-text-primary data-[state=open]:bg-surface data-[state=open]:text-text-primary"
@@ -31,6 +32,9 @@ export function AppMenuBar() {
   const setPromptOpen = useUiStore((s) => s.setPromptOpen)
   const setChallengesOpen = useUiStore((s) => s.setChallengesOpen)
   const setResetCanvasOpen = useUiStore((s) => s.setResetCanvasOpen)
+  const setSaveCanvasOpen = useUiStore((s) => s.setSaveCanvasOpen)
+  const setSavedCanvasesOpen = useUiStore((s) => s.setSavedCanvasesOpen)
+  const { user } = useAuth()
   const [fileOpen, setFileOpen] = useState(false)
 
   return (
@@ -48,6 +52,21 @@ export function AppMenuBar() {
             <ExportButton />
             <ExportReportButton />
           </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            data-testid="menu-save-canvas"
+            disabled={nodeCount === 0 || !user}
+            onSelect={() => setSaveCanvasOpen(true)}
+          >
+            <Save className="mr-2 h-3.5 w-3.5" /> Save Canvas…
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            data-testid="menu-saved-canvases"
+            disabled={!user}
+            onSelect={() => setSavedCanvasesOpen(true)}
+          >
+            <FolderOpen className="mr-2 h-3.5 w-3.5" /> Saved Canvases…
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
             data-testid="menu-reset"
