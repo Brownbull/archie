@@ -68,13 +68,13 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "3 of 3 stars")
     expect(screen.getByTestId("result-metrics")).toHaveAttribute("data-met", "true")
     expect(screen.getByTestId("result-under-budget")).toHaveAttribute("data-met", "true")
-    expect(screen.getByTestId("result-clean-topology")).toHaveAttribute("data-met", "true")
+    expect(screen.getByTestId("result-well-formed")).toHaveAttribute("data-met", "true")
   })
 
   it("renders a 0★ failed result with every criterion unmet", () => {
     useChallengeStore.setState({
       activeChallenge: challenge, attemptState: "scored",
-      lastResult: { stars: 0, passedMetrics: false, underBudget: false, cleanTopology: false },
+      lastResult: { stars: 0, passedMetrics: false, underBudget: false, cleanTopology: false, resilient: false },
       lastMeasured: { uptimePercent: 82.3, p99LatencyMs: 640, totalCost: 250, topologyIssueCount: 1 },
     })
     render(<ChallengeResultsModal />)
@@ -82,21 +82,32 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(screen.getByTestId("challenge-results")).toHaveTextContent("Targets not met")
     expect(screen.getByTestId("result-metrics")).not.toHaveAttribute("data-met")
     expect(screen.getByTestId("result-under-budget")).not.toHaveAttribute("data-met")
-    expect(screen.getByTestId("result-clean-topology")).not.toHaveAttribute("data-met")
-    expect(screen.getByTestId("result-clean-topology")).toHaveTextContent("1 issue") // singular
+    expect(screen.getByTestId("result-well-formed")).not.toHaveAttribute("data-met")
+    expect(screen.getByTestId("result-well-formed")).toHaveTextContent("1 disconnected node") // singular
+    // resilient is false ⇒ no bonus badge
+    expect(screen.queryByTestId("result-resilient-badge")).toBeNull()
   })
 
   it("shows unmet criteria for a partial result", () => {
-    const result: StarBreakdown = { stars: 1, passedMetrics: true, underBudget: false, cleanTopology: false }
+    const result: StarBreakdown = { stars: 1, passedMetrics: true, underBudget: false, cleanTopology: false, resilient: false }
     const measured: MeasuredAttempt = { uptimePercent: 99.4, p99LatencyMs: 150, totalCost: 320, topologyIssueCount: 2 }
     useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", lastResult: result, lastMeasured: measured })
     render(<ChallengeResultsModal />)
     expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "1 of 3 stars")
     expect(screen.getByTestId("result-metrics")).toHaveAttribute("data-met", "true")
     expect(screen.getByTestId("result-under-budget")).not.toHaveAttribute("data-met")
-    expect(screen.getByTestId("result-clean-topology")).not.toHaveAttribute("data-met")
+    expect(screen.getByTestId("result-well-formed")).not.toHaveAttribute("data-met")
     expect(screen.getByTestId("challenge-results")).toHaveTextContent("$320 of $100/mo")
-    expect(screen.getByTestId("challenge-results")).toHaveTextContent("2 issues")
+    expect(screen.getByTestId("challenge-results")).toHaveTextContent("2 disconnected nodes")
+  })
+
+  it("shows the Resilient bonus badge when the build has no SPOF (D72)", () => {
+    const result: StarBreakdown = { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true, resilient: true }
+    const measured: MeasuredAttempt = { uptimePercent: 100, p99LatencyMs: 40, totalCost: 60, topologyIssueCount: 0 }
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", lastResult: result, lastMeasured: measured })
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("result-resilient-badge")).toBeInTheDocument()
+    expect(screen.getByTestId("result-resilient-badge")).toHaveTextContent("Resilient")
   })
 
   it("Retry re-enters build mode and clears the finished simulation", () => {

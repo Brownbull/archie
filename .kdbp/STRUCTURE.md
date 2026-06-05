@@ -24,6 +24,7 @@
 | `docs/gabe/**` | Gabe-Lens plan/review HTML artifacts + supporting assets (images, avatars) | MVP |
 | `docs/**/*.{csv,json}` | Tracking/report data (cost tracking, quality reports) | MVP |
 | `tests/**/*.{py,ts,tsx,js,jsx}` | Test files | MVP |
+| `tests/**/fixtures/**` | Test fixture data (e.g. generated reference-solution architecture YAMLs for E2E) | MVP |
 | `scripts/**/*.{sh,py,ts,mts,mjs}` | Utility scripts (incl. tsx-run generators + seeders) | MVP |
 
 ### Web App

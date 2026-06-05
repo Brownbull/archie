@@ -187,8 +187,13 @@ export interface StarBreakdown {
   hasRequiredBlocks: boolean
   /** Total cost ≤ budgetCap (only awarded if passedMetrics). */
   underBudget: boolean
-  /** Zero topology issues (only awarded if passedMetrics). */
+  /** Well-formed: zero BLOCKING topology issues — no orphaned/unreachable nodes (D72). Awards the 3rd
+   *  star (with requiredTopologyOk, only if passedMetrics). SPOF / replicas-without-LB are ADVISORY and
+   *  do NOT affect this star. */
   cleanTopology: boolean
+  /** Resilient (non-star recognition, D72): zero topology issues of ANY kind — no orphans/unreachable
+   *  AND no single-point-of-failure or replicas-without-LB advisories. Surfaced as a "Resilient" badge. */
+  resilient: boolean
   /** No forbidden component type present (ISAPivot Phase 3). False ⇒ hard 0★. Absent forbiddenTypes ⇒ always true. */
   forbiddenTypesOk: boolean
   /**

@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { TrafficCurveSchema } from "@/schemas/demandSchema"
-import { MAX_SCHEMA_STRING_LENGTH } from "@/lib/constants"
+import { MAX_SCHEMA_STRING_LENGTH, MAX_BUILDABLE_PEAK_RPS } from "@/lib/constants"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { isKnownTrackId, MIN_CHALLENGE_TIER, MAX_CHALLENGE_TIER } from "@/lib/challengeTracks"
@@ -154,7 +154,7 @@ export const ChallengeYamlSchema = z
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["track"], message: "schema_version 2 requires a track" })
       }
       if (d.tier === undefined) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["tier"], message: "schema_version 2 requires a tier (1–5)" })
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["tier"], message: "schema_version 2 requires a tier (1–6)" })
       }
       if (!d.rewards) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["rewards"], message: "schema_version 2 requires rewards.xp" })
@@ -183,6 +183,17 @@ export const ChallengeYamlSchema = z
         }
         seen.add(s.type)
       })
+      // Buildability ceiling (D71): the summed source peak must be clearable within the canvas budget
+      // (≤50 nodes × ≤20 replicas). The front tier ingests the full peak, so a higher peak yields a
+      // quest no player can build. Mirrors the challenge-creator gate + the capped solvability harness.
+      const peak = d.traffic_sources.reduce((sum, s) => sum + s.rps, 0)
+      if (peak > MAX_BUILDABLE_PEAK_RPS) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["traffic_sources"],
+          message: `combined traffic peak ${peak} exceeds the buildable maximum ${MAX_BUILDABLE_PEAK_RPS} (50 nodes × 20 replicas)`,
+        })
+      }
     }
   })
   .transform((d) => ({

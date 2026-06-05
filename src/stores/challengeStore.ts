@@ -11,7 +11,10 @@ export type AttemptState = "idle" | "building" | "running" | "scored"
 /** Cost + topology snapshot of the architecture as it was when the attempt's simulation began. */
 export interface AttemptSnapshot {
   totalCost: number
+  /** BLOCKING topology issues (orphan + unreachable) at start — gates the well-formed star (D72). */
   topologyIssueCount: number
+  /** Advisory topology issues (SPOF + replicas-without-LB) at start — feeds the resilient flag (D72). */
+  topologyAdvisoryCount?: number
   /**
    * Frozen structural graph (node-id→TYPE-id + edges) for required_topology assertions (ISAPivot
    * Phase 3, D66). Captured at start like cost/topology so scoring grades the simulated architecture,
@@ -38,8 +41,9 @@ interface ChallengeState {
   selectChallenge: (challenge: Challenge) => void
   /** Mark the attempt as running; records the start-time cost/topology snapshot used for scoring. */
   startAttempt: (snapshot?: AttemptSnapshot) => void
-  /** Score the finished attempt against the rubric and record best stars. */
-  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number, canvasTypeIds?: ReadonlySet<string>) => StarBreakdown | null
+  /** Score the finished attempt against the rubric and record best stars. topologyIssueCount is the
+   *  BLOCKING count (orphan/unreachable); advisoryTopologyCount (SPOF/LB) feeds the resilient flag. */
+  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number, canvasTypeIds?: ReadonlySet<string>, advisoryTopologyCount?: number) => StarBreakdown | null
   /** Leave challenge mode (keeps bestStars history). */
   reset: () => void
 }
@@ -64,7 +68,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     set({ attemptState: "running", lastResult: null, attemptSnapshot: snapshot ?? null })
   },
 
-  scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds) => {
+  scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds, advisoryTopologyCount = 0) => {
     const challenge = get().activeChallenge
     if (!challenge) return null
     // Cost-efficiency (ISAPivot Phase 3): monthly cost ÷ requests served during the run. totalServed
@@ -75,7 +79,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     const costPerRequest = requestCount > 0 ? totalCost / requestCount : undefined
     // required_topology is graded against the frozen start-time graph (D66), pulled from the snapshot.
     const topologyGraph = get().attemptSnapshot?.topologyGraph
-    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds, costPerRequest, topologyGraph)
+    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds, costPerRequest, topologyGraph, advisoryTopologyCount)
     const prevBest = get().bestStars[challenge.id] ?? 0
     set({
       lastResult: result,

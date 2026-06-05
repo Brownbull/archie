@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react"
-import { Check, X as XIcon, Map } from "lucide-react"
+import { Check, X as XIcon, Map, ShieldCheck } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -273,8 +273,8 @@ export function ChallengeResultsModal() {
           />
           <Criterion
             met={result.cleanTopology}
-            label="Clean topology"
-            detail={measured.topologyIssueCount === 0 ? "no issues" : `${measured.topologyIssueCount} issue${measured.topologyIssueCount === 1 ? "" : "s"}`}
+            label="Well-formed"
+            detail={result.cleanTopology ? "no orphaned or unreachable nodes" : `${measured.topologyIssueCount} disconnected node${measured.topologyIssueCount === 1 ? "" : "s"}`}
           />
           {challenge.requiredTopology && challenge.requiredTopology.length > 0 && (
             <Criterion
@@ -291,6 +291,18 @@ export function ChallengeResultsModal() {
               label="Multi-region ready"
               detail={result.originRequirementOk ? "CDN + DNS + database present" : "needs CDN + DNS + a database"}
             />
+          )}
+          {/* Resilient (D72): non-star recognition — a no-single-point-of-failure build (no SPOF, every
+              replicated tier behind a load balancer). Not required for 3★; surfaced as a bonus badge. */}
+          {result.resilient && (
+            <div
+              data-testid="result-resilient-badge"
+              className="flex items-center gap-2 rounded-md border border-violet-500/40 bg-violet-500/10 px-3 py-1.5"
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-violet-300" />
+              <span className="text-xs text-violet-200">Resilient</span>
+              <span className="ml-auto text-[0.625rem] text-violet-300/80">no single point of failure — bonus</span>
+            </div>
           )}
         </div>
 

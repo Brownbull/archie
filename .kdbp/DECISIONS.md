@@ -1084,3 +1084,42 @@ Hero, The Singularity, …) land in a NEW **Tier 6** — bump `MAX_CHALLENGE_TIE
 label (ChallengeTreeView TIER_LABELS + editor tier select), and verify the tier evaluator / relative-level
 / rank thresholds tolerate it. The Quest Log gains a bottom band for the endgame. Still barely-solvable
 (D69) — harness-gated. (Lever batch 1 already shipped in existing tiers; this is for batch 2.)
+
+## D71 — Challenge buildability ceiling: enforce in creator + cap the harness (2026-06-05)
+
+A challenge's peak RPS is bounded by what a player can BUILD, not by the sim. The canvas allows
+MAX_CANVAS_NODES=50 nodes × MAX_REPLICAS=20 replicas; the front tier (DNS/CDN) ingests the full peak at
+~100k rps/replica, so a single front-tier node tops out at ~2M rps. Discovered that 5 of 6 absurd Tier-6
+capstones (authored 4–9M rps) cleared the *uncapped* solvability harness only with 1,250–2,203 replicas —
+unbuildable; a player could never finish them.
+
+**Decisions:**
+1. The solvability harness now scores every reference solution **capped at MAX_REPLICAS** — a challenge
+   is "clearable" only if buildable within the canvas budget, not just theoretically solvable.
+2. New constant `MAX_BUILDABLE_PEAK_RPS = 2_000_000`. The challenge creator (ChallengeEditor) gates the
+   summed traffic-source peak against it (filters the RPS dropdown + blocks Save/Export over budget), and
+   `ChallengeYamlSchema.superRefine` rejects over-budget imported YAML. Logic in `src/lib/challengeBudget.ts`.
+3. The 5 over-scale capstones were re-tuned to 1.2–1.8M peaks (absurd framing kept; brief/hint numbers updated).
+
+**Status:** active.
+
+## D72 — Rethink the star model: well-formed (not redundant) 3★ + Resilient badge (2026-06-05)
+
+Requirement: every challenge must be 3★-completable. 3★ = base-pass (SLA) + budget star + topology star.
+The topology star previously required ZERO topology issues, and `missing-hop` flags any node behind an
+articulation point — so it effectively demanded a no-single-point-of-failure (redundant) architecture,
+which ~doubles cost and made tight-budget challenges un-3★-able (budget vs redundancy tension).
+
+**Decisions:**
+1. The topology star ("Well-formed") now requires only zero **blocking** issues — `orphan` + `unreachable`
+   (a structurally broken graph). `missing-hop` (SPOF) + `replicas-without-lb` are **advisory**: they coach
+   toward resilience but do NOT gate a star. `countTopologyIssues()` (topologyChecker) is the split authority.
+2. New non-star `resilient` flag (zero issues of ANY kind) → a "Resilient — no single point of failure"
+   bonus badge in the results modal. Recognizes redundancy without gating the top star.
+3. The reference-solution builder (referenceSolution.ts) was upgraded: wire aux tiers as traffic-free leaves
+   (no orphans, no shed on their outage), cost-aware replicaType-aware variant sizing (2-pass: build big →
+   measure load → lean-resize), and try-both (lean ∪ max-capacity) — every one of the 55 challenges now
+   clears 3★ within the UI budget (harness + capstone proof assert `=3`). Golden snapshot preserved
+   (scorer takes a blocking-count; synthetic-stats golden unaffected).
+
+**Status:** active.

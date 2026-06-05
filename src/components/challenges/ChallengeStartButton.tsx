@@ -3,6 +3,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { buildSimGraph, computeTotalArchitectureCost, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
+import { countTopologyIssues } from "@/engine/topologyChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 
 /**
@@ -40,10 +41,13 @@ export function ChallengeStartButton() {
       .filter((e) => typeByNodeId.has(e.source) && typeByNodeId.has(e.target))
       .map((e) => ({ source: e.source, target: e.target }))
     // Snapshot cost + topology NOW: the sim runs on this graph, so scoring must use the
-    // architecture as it is at start, not the live canvas (the user can edit mid-run).
+    // architecture as it is at start, not the live canvas (the user can edit mid-run). Split topology
+    // into blocking (orphan/unreachable → gates the well-formed star) + advisory (SPOF/LB → resilient).
+    const topo = countTopologyIssues(topologyIssues)
     startAttempt({
       totalCost: computeTotalArchitectureCost(nodes),
-      topologyIssueCount: topologyIssues.length,
+      topologyIssueCount: topo.blocking,
+      topologyAdvisoryCount: topo.advisory,
       topologyGraph: { typeByNodeId, edges: typedEdges },
     }) // building → running BEFORE the sim, so a single-tick run is still scored
     // ISAPivot (D63): when the challenge declares typed trafficSources, derive the load from them

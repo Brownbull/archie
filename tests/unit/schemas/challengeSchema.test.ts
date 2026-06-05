@@ -51,6 +51,28 @@ describe("ChallengeYamlSchema (Epic 16)", () => {
   it("ScheduledEventSchema rejects an unknown event type", () => {
     expect(ScheduledEventSchema.safeParse({ t: 10, type: "meteor", target: "n1" }).success).toBe(false)
   })
+
+  it("rejects traffic_sources whose combined peak exceeds the buildable maximum (D71)", () => {
+    // 4 sources × 1M = 4M > 2M buildable ceiling — unbuildable within 50 nodes × 20 replicas.
+    const over = {
+      ...valid,
+      traffic_sources: [
+        { type: "web-users", rps: 1_000_000 },
+        { type: "api-client", rps: 1_000_000 },
+        { type: "mobile-users", rps: 1_000_000 },
+        { type: "iot-sensors", rps: 1_000_000 },
+      ],
+    }
+    const r = ChallengeYamlSchema.safeParse(over)
+    expect(r.success).toBe(false)
+    if (r.success) return
+    expect(JSON.stringify(r.error.issues)).toMatch(/buildable maximum/i)
+  })
+
+  it("accepts traffic_sources summing to exactly the buildable maximum", () => {
+    const atMax = { ...valid, traffic_sources: [{ type: "web-users", rps: 2_000_000 }] }
+    expect(ChallengeYamlSchema.safeParse(atMax).success).toBe(true)
+  })
 })
 
 describe("ChallengeYamlSchema v2 tech-tree fields (Mastery Tracks)", () => {

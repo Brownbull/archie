@@ -12,6 +12,29 @@ export interface TopologyIssue {
   description: string
 }
 
+/**
+ * Topology issue types that BLOCK the well-formed (3★) topology star (D72): the graph is structurally
+ * broken — a node is orphaned (no connections) or unreachable from the traffic source. These are real
+ * correctness errors a player must fix to earn the star.
+ *
+ * The other types — `missing-hop` (single point of failure) and `replicas-without-lb` (a replicated
+ * tier with no upstream load balancer) — are ADVISORY: they coach toward resilience/scaling best
+ * practice but do not gate the star. A build with zero advisory issues earns the "Resilient" badge.
+ */
+const BLOCKING_TOPOLOGY_ISSUE_TYPES: ReadonlySet<TopologyIssueType> = new Set<TopologyIssueType>(["orphan", "unreachable"])
+
+/** True when an issue indicates a structurally broken graph (orphaned/unreachable), not just advice. */
+export function isBlockingTopologyIssue(issue: TopologyIssue): boolean {
+  return BLOCKING_TOPOLOGY_ISSUE_TYPES.has(issue.issueType)
+}
+
+/** Split topology issues into the {blocking, advisory} counts the rubric scores on (D72). */
+export function countTopologyIssues(issues: readonly TopologyIssue[]): { blocking: number; advisory: number } {
+  let blocking = 0
+  for (const issue of issues) if (isBlockingTopologyIssue(issue)) blocking++
+  return { blocking, advisory: issues.length - blocking }
+}
+
 interface GraphNode {
   id: string
 }

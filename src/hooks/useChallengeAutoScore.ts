@@ -4,6 +4,7 @@ import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeSimStats } from "@/lib/simulationStats"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { countTopologyIssues } from "@/engine/topologyChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 
 /**
@@ -35,24 +36,18 @@ export function useChallengeAutoScore(): void {
     const { attemptSnapshot, scoreAttempt } = useChallengeStore.getState()
     const stats = computeSimStats(ticks, ticks.length - 1)
     const archState = useArchitectureStore.getState()
-    const { activeChallenge } = useChallengeStore.getState()
-    const rawIssueCount = attemptSnapshot?.topologyIssueCount ?? archState.topologyIssues.length
     const totalCost = attemptSnapshot?.totalCost ?? computeTotalArchitectureCost(archState.nodes)
 
-    // In challenge mode, suppress topology issues the player can't fix with the available blocks.
-    // - replicas-without-lb: requires load-balancer in availableBlocks
-    // - missing-hop (single point of failure): requires redundant paths, often impossible with
-    //   limited block palettes — suppress when availableBlocks is constrained
-    let solvableIssueCount = rawIssueCount
-    if (activeChallenge?.availableBlocks?.length) {
-      const available = new Set(activeChallenge.availableBlocks)
-      const unsolvable = archState.topologyIssues.filter((i) => {
-        if (i.issueType === "replicas-without-lb" && !available.has("load-balancer")) return true
-        if (i.issueType === "missing-hop") return true
-        return false
-      })
-      solvableIssueCount = Math.max(0, rawIssueCount - unsolvable.length)
-    }
+    // Topology scoring (D72): only BLOCKING issues (orphan/unreachable — a structurally broken graph)
+    // gate the well-formed star. SPOF (missing-hop) + replicas-without-LB are ADVISORY: they coach
+    // toward resilience but never block a star (a build with zero of them earns the "Resilient" badge).
+    // Prefer the start-time snapshot counts so a mid-run canvas edit can't skew the score; fall back to
+    // the live topology issues (split here) when no snapshot was recorded.
+    // Use the snapshot consistently (both counts frozen at start) or fall back to live for both —
+    // never mix a snapshot blocking count with a live advisory count.
+    const live = countTopologyIssues(archState.topologyIssues)
+    const blockingIssueCount = attemptSnapshot ? attemptSnapshot.topologyIssueCount : live.blocking
+    const advisoryIssueCount = attemptSnapshot ? (attemptSnapshot.topologyAdvisoryCount ?? 0) : live.advisory
 
     // Collect component TYPE ids on the canvas for required_types validation.
     // Node data has archieComponentId (vendor, e.g. "nginx") — we need the typeId
@@ -63,6 +58,6 @@ export function useChallengeAutoScore(): void {
       if (component?.typeId) canvasTypeIds.add(component.typeId)
     }
 
-    scoreAttempt(stats, solvableIssueCount, totalCost, canvasTypeIds)
+    scoreAttempt(stats, blockingIssueCount, totalCost, canvasTypeIds, advisoryIssueCount)
   }, [simStatus, attemptState])
 }

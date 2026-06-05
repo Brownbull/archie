@@ -109,6 +109,16 @@ export const MIN_REPLICAS = 1
 export const MAX_REPLICAS = 20
 
 /**
+ * Buildability ceiling on a challenge's combined peak RPS (D71). The front tier (DNS/CDN) must INGEST
+ * the full peak — caching only absorbs requests that reach it BEHIND the CDN — and the best front-tier
+ * variant does ~100k rps/replica. So a single front-tier node tops out at MAX_REPLICAS × 100k = 2M rps.
+ * Authoring a challenge whose summed traffic-source peak exceeds this produces a quest no player can
+ * build (it cleared the old uncapped harness only with thousands of replicas). The challenge creator
+ * enforces this maximum, and the solvability harness scores capped at MAX_REPLICAS to back it up.
+ */
+export const MAX_BUILDABLE_PEAK_RPS = 2_000_000
+
+/**
  * Discrete requests/sec scale for the Traffic Source stepper — the source's AVERAGE load. Non-linear
  * so a handful of clicks spans a small demo (3k) to hyperscale (10M). A traffic node's `replicaCount`
  * doubles as the 1-based index into this scale (see getNodeCost), so it persists via the existing

@@ -23,15 +23,20 @@ function hasMultiRegionArchitecture(canvasTypeIds: ReadonlySet<string>): boolean
  *   folded into the same metrics star: p95 ≤ target (when authored) and cost-per-request ≤ target (when
  *   authored). Absent on the 41 built-ins ⇒ skipped ⇒ identical scoring.
  * - +1★: total cost ≤ budgetCap.
- * - +1★: zero topology issues.
+ * - +1★ (well-formed): zero BLOCKING topology issues — orphaned or unreachable nodes (D72). Single-
+ *   point-of-failure and replicas-without-LB issues are ADVISORY and do NOT gate this star; a build
+ *   with none of them additionally earns the `resilient` flag (a non-star "Resilient" recognition).
  * Budget and topology stars are only awarded when the base pass is met (roadmap "pass → 1★ then +1/+1").
  * The breakdown booleans report the RAW conditions (for display), independent of the gate.
  *
+ * @param topologyIssueCount BLOCKING topology issue count (orphan + unreachable) — see countTopologyIssues.
  * @param costPerRequest measured cost-efficiency (monthly cost ÷ requests served), derived by the
  *   caller at score time. undefined when unmeasured — a defined cost target then fails conservatively.
  * @param topologyGraph the attempt's frozen structural graph (node-id→type + edges) for
  *   required_topology assertions (D66). undefined ⇒ a challenge WITH assertions fails conservatively;
  *   the 41 built-ins declare no assertions so they never reach that branch.
+ * @param advisoryTopologyCount SPOF + replicas-without-LB issue count (D72). Does not gate any star;
+ *   zero (with zero blocking) ⇒ `resilient`. Defaults to 0 so legacy callers stay byte-identical.
  */
 export function evaluateAttempt(
   stats: SimulationStats,
@@ -41,6 +46,7 @@ export function evaluateAttempt(
   canvasTypeIds?: ReadonlySet<string>,
   costPerRequest?: number,
   topologyGraph?: TopologyGraphInput,
+  advisoryTopologyCount = 0,
 ): StarBreakdown {
   const tm = challenge.targetMetrics
   const passedMetrics =
@@ -51,7 +57,12 @@ export function evaluateAttempt(
     (tm.costPerRequest === undefined
       || (costPerRequest !== undefined && costPerRequest <= tm.costPerRequest))
   const underBudget = totalCost <= challenge.budgetCap
+  // The topology star is "well-formed": zero BLOCKING issues (orphan/unreachable). cleanTopology now
+  // reflects structural validity, NOT redundancy (D72).
   const cleanTopology = topologyIssueCount === 0
+  // Resilient (non-star recognition): no blocking AND no advisory issues — no SPOF, every replicated
+  // tier behind a load balancer. This is the strict "zero topology issues of any kind" bar.
+  const resilient = topologyIssueCount === 0 && advisoryTopologyCount === 0
 
   // required_topology (ISAPivot Phase 3, D66): empty/absent ⇒ true (identity — the 41 built-ins).
   // Present but no frozen graph ⇒ conservative fail. Folded into the clean-topology star below.
@@ -91,6 +102,7 @@ export function evaluateAttempt(
     hasRequiredBlocks: hasAllRequiredTypes,
     underBudget,
     cleanTopology,
+    resilient,
     forbiddenTypesOk,
     requiredTopologyOk,
     originRequirementOk,

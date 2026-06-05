@@ -25,8 +25,10 @@ const challenge: Challenge = {
 const cs = () => useChallengeStore.getState()
 const frame = (t: number): TickState => ({ tick: t, targetRps: 100, nodes: [], totalServedRps: 100, totalFailedRps: 0 })
 
+// A BLOCKING topology issue (orphan) — counts toward the well-formed star (D72). Uses the real
+// TopologyIssue shape (issueType) so countTopologyIssues classifies it correctly.
 function fakeIssue() {
-  return { type: "replicas-without-lb", nodeId: "n", message: "m" } as never
+  return { issueType: "orphan", nodeId: "n", severity: "warning", description: "m" } as never
 }
 
 describe("useChallengeAutoScore (Epic 16 P4)", () => {

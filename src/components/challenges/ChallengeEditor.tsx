@@ -27,7 +27,8 @@ import { BLOB_REVOKE_DELAY_MS } from "@/components/import-export/ExportButton"
 import { CHALLENGE_TRAFFIC_SOURCE_TYPES } from "@/lib/challengeTypes"
 import type { Challenge, ChallengeDifficulty, ChallengeTrafficSource, ChallengeTrafficWorkload, ChallengeTrafficOrigin } from "@/lib/challengeTypes"
 import { TRAFFIC_KINDS, trafficKindEnvelope, type TrafficKind } from "@/engine/trafficPatterns"
-import { TRAFFIC_RPS_STEPS } from "@/lib/constants"
+import { TRAFFIC_RPS_STEPS, MAX_BUILDABLE_PEAK_RPS } from "@/lib/constants"
+import { combinedSourcePeak } from "@/lib/challengeBudget"
 import { formatRpsCompact } from "@/lib/formatStats"
 
 const DIFFICULTIES: ChallengeDifficulty[] = ["beginner", "intermediate", "advanced"]
@@ -158,6 +159,12 @@ function TrafficSourcesEditor({
   const list = sources ?? []
   const used = new Set(list.map((s) => s.type))
   const free = CHALLENGE_TRAFFIC_SOURCE_TYPES.filter((t) => !used.has(t))
+  // Buildability budget (D71): the summed peak must stay within what a player can build (50 nodes ×
+  // 20 replicas). The front tier ingests the full peak, so authoring above MAX_BUILDABLE_PEAK_RPS
+  // yields a quest nobody can clear. Steps above the ceiling are hidden; the combined total is gated.
+  const rpsSteps = TRAFFIC_RPS_STEPS.filter((r) => r <= MAX_BUILDABLE_PEAK_RPS)
+  const combinedPeak = combinedSourcePeak(sources)
+  const overBudget = combinedPeak > MAX_BUILDABLE_PEAK_RPS
   const patch = (i: number, p: Partial<ChallengeTrafficSource>) => onChange(list.map((s, j) => (j === i ? { ...s, ...p } : s)))
   const add = () => {
     if (free.length) onChange([...list, { type: free[0], rps: 3000, kind: "steady", workload: "mixed", origin: "one-region" }])
@@ -193,7 +200,7 @@ function TrafficSourcesEditor({
               <div className="mt-1 grid grid-cols-2 gap-1">
                 <Select value={String(s.rps)} onValueChange={(v) => patch(i, { rps: Number(v) })}>
                   <SelectTrigger data-testid={`editor-source-rps-${i}`} className="h-6 text-[0.625rem]"><SelectValue /></SelectTrigger>
-                  <SelectContent>{TRAFFIC_RPS_STEPS.map((r) => <SelectItem key={r} value={String(r)}>{formatRpsCompact(r)} peak</SelectItem>)}</SelectContent>
+                  <SelectContent>{rpsSteps.map((r) => <SelectItem key={r} value={String(r)}>{formatRpsCompact(r)} peak</SelectItem>)}</SelectContent>
                 </Select>
                 <Select value={s.kind} onValueChange={(v) => patch(i, { kind: v as TrafficKind })}>
                   <SelectTrigger data-testid={`editor-source-kind-${i}`} className="h-6 text-[0.625rem]"><SelectValue /></SelectTrigger>
@@ -215,6 +222,15 @@ function TrafficSourcesEditor({
           )
         })}
       </div>
+      {list.length > 0 && (
+        <div
+          data-testid="editor-peak-budget"
+          className={`mt-1 text-[0.5625rem] ${overBudget ? "text-red-400" : "text-text-secondary"}`}
+        >
+          Combined peak {formatRpsCompact(combinedPeak)} / {formatRpsCompact(MAX_BUILDABLE_PEAK_RPS)} buildable max
+          {overBudget && " — too high to build within 50 nodes × 20 replicas; lower the sources."}
+        </div>
+      )}
       <button
         type="button"
         data-testid="editor-source-add"
@@ -254,6 +270,7 @@ export function ChallengeEditor({ open, onOpenChange, editingChallenge }: Challe
   const isValid = useMemo(() => {
     return draft.id.trim().length > 0 && draft.title.trim().length > 0 && draft.brief.trim().length > 0
       && draft.availableBlocks.length > 0 && draft.track !== undefined
+      && combinedSourcePeak(draft.trafficSources) <= MAX_BUILDABLE_PEAK_RPS
       && draft.hints.length >= 1 && draft.hints.length <= 5 && draft.hints.every((h) => h.trim().length > 0)
   }, [draft])
 
