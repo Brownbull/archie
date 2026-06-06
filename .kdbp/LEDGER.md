@@ -3975,3 +3975,21 @@ Authored concurrency_limit on llm-gateway variants (single-model 150 / multi-mod
 
 ## 2026-06-06 — EN6: cyclic-flow fixed-point (b7c3107) — closes D7
 Bounded undamped-Jacobi fixed-point for cyclic subgraphs (cap MAX_FLOW_PASSES, queueDepth reset per pass). DAG topo pass untouched (cyclic nodes only forward to cyclic nodes) → 57 byte-identical, golden/par/capstone unchanged, suite 4780. Unblocks EN3. D7 (cyclic totalServedRps overcount) RESOLVED.
+- 2026-06-06 11:00 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 11:00 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 11:00 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 11:01 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 11:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 11:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 11:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 11:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 11:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 11:03 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 11:03 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 11:05 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-06-06 11:05 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-06-06 11:06 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/52-heat-death.yaml
+- 2026-06-06 11:06 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-06-06 — ED2: fractional AZ outage (0374f65) — Phase 3 begun
+az_outage now removes ONE zone (survive at (azCount−1)/azCount) instead of blacking out a whole category. azCount from replicaCount (cap 3); effMax = effectiveMaxRps × capFactor across all branches; capFactor 1 ⇒ byte-identical. Re-tune: heat-death only — surviving capacity runs hot (ED2×ED4) → uptime 83%→93% but p99 spike → target 600→1900. Harness 3★ all 57, suite 4784. Unblocks restore-redundancy. async-backbone still unfixed (messaging carries ~0 traffic). EN6 (b7c3107) + ED2 (0374f65) done this pass.
