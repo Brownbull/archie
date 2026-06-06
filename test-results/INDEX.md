@@ -18,3 +18,4 @@ Screenshots persist per-spec folder. Re-running a spec only overwrites that spec
 | `challenge/` | `challenge-mode.spec.ts` | 16-6 | Challenge journey: select level → build + checklist/budget HUD → Start → real sim → scored results modal (stars) → close |
 | `history/` | `history-tab.spec.ts` | 17-5 | History toolbox tab reachable + submissions panel renders (sort controls) in the live app shell |
 | `component-icons/` | `component-icons.spec.ts` | 17-pol | Pixel-art component icons (PixelLab) render in the toolbox cards; src = local /icons/*.png |
+| `capstone-completion/` | `capstone-completion.spec.ts` | D72 | All 6 Tier-6 absurd capstones replayed to 3★ in the real app: seed an unblocked user → select → import the winning reference architecture → run the sim → 3★ results modal screenshot (planet-scale, thundering-herd, heat-death, zero-budget-hero, the-singularity, maxwells-demon) |
