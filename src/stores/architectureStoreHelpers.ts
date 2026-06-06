@@ -1,6 +1,6 @@
 import { componentLibrary } from "@/services/componentLibrary"
 import { detectTopologyIssues, detectReplicasWithoutLB, type TopologyIssue } from "@/engine/topologyChecker"
-import type { SimGraph, SimNode, SimEdge, TrafficCurve } from "@/lib/simulationTypes"
+import type { SimGraph, SimNode, SimEdge, TrafficCurve, TickState } from "@/lib/simulationTypes"
 import { buildPeakAnchoredCurve, normalizeTrafficKind, type TrafficKind } from "@/engine/trafficPatterns"
 import type { DemandProfile, FailureModifiers } from "@/lib/demandTypes"
 import { getScenarioPreset } from "@/services/scenarioLoader"
@@ -273,6 +273,8 @@ export interface NodeCostInfo {
   readonly writeDistribution: "primary" | "sharded" | undefined
   /** EN2: per-replica concurrency ceiling, replica-scaled like maxRPS. undefined ⇒ no limit. */
   readonly concurrencyLimit: number | undefined
+  /** ED9: pay-per-use elasticity — cost integrates over the load curve instead of flat × replicas. */
+  readonly autoscale: boolean | undefined
 }
 
 /**
@@ -311,6 +313,7 @@ export function getNodeCost(
       writeRatio: variant?.writeRatio,
       writeDistribution: variant?.writeDistribution,
       concurrencyLimit: undefined, // traffic sources are load origins, never concurrency-limited
+      autoscale: undefined, // a traffic source is a load origin, not an autoscaling tier
     }
   }
   const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
@@ -327,6 +330,7 @@ export function getNodeCost(
     writeDistribution: variant?.writeDistribution,
     // EN2: concurrency scales with replicas just like throughput (more replicas = more in-flight slots).
     concurrencyLimit: variant?.concurrencyLimit === undefined ? undefined : variant.concurrencyLimit * capacityFactor,
+    autoscale: variant?.autoscale,
   }
 }
 
@@ -476,6 +480,43 @@ export function computeTotalArchitectureCost(
     if (monthlyCost !== undefined) {
       total += monthlyCost
     }
+  }
+  return total
+}
+
+/**
+ * Monthly cost with ED9 (D74) autoscaling folded in: an autoscale node bills the MEAN of its active
+ * replicas over the load curve (active = ceil(incoming / per-replica capacity), capped at provisioned),
+ * not flat × replicas — so a bursty workload pays near baseline instead of 24/7 peak. When NO node
+ * autoscales (the 57 built-ins) this returns EXACTLY `computeTotalArchitectureCost` (byte-identical).
+ * Idle leading ticks (totalServed 0) are skipped so the curve's ramp doesn't fake an elasticity discount.
+ */
+export function computeIntegratedArchitectureCost(
+  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number } }>,
+  ticks: readonly TickState[],
+): number {
+  const cost = (n: { data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number } }) =>
+    getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps)
+  if (!nodes.some((n) => cost(n).autoscale)) return computeTotalArchitectureCost(nodes)
+  let total = 0
+  for (const node of nodes) {
+    const c = cost(node)
+    if (c.monthlyCost === undefined) continue
+    const R = Math.max(1, node.data.replicaCount ?? 1)
+    if (!c.autoscale || c.baseMaxRPS === undefined || c.baseMaxRPS <= 0) {
+      total += c.monthlyCost // static tier (or no per-replica capacity to scale on) → flat
+      continue
+    }
+    const perReplicaCost = c.monthlyCost / R
+    let sum = 0
+    let counted = 0
+    for (const tk of ticks) {
+      if (tk.totalServedRps <= 0) continue // skip idle ramp ticks
+      const inc = tk.nodes.find((t) => t.nodeId === node.id)?.incomingRps ?? 0
+      sum += Math.min(R, Math.max(1, Math.ceil(inc / c.baseMaxRPS)))
+      counted += 1
+    }
+    total += (counted > 0 ? sum / counted : R) * perReplicaCost
   }
   return total
 }

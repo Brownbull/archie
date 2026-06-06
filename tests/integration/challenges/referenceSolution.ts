@@ -5,7 +5,7 @@ import { load } from "js-yaml"
 import { componentLibrary } from "@/services/componentLibrary"
 import { ComponentYamlSchema, type Component } from "@/schemas/componentSchema"
 import { COMPONENT_TYPES, isOnPathExempt } from "@/lib/componentTypes"
-import { buildSimGraph, computeTotalArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs, getNodeCost } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost, computeIntegratedArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs, getNodeCost } from "@/stores/architectureStoreHelpers"
 import { runSimulation } from "@/engine/simulationEngine"
 import { computeSimStats } from "@/lib/simulationStats"
 import { evaluateAttempt } from "@/engine/rubricScorer"
@@ -426,7 +426,9 @@ export function scoreBuild(c: Challenge, nodes: readonly RefNode[], edges: reado
   // D72: only blocking issues (orphan/unreachable) gate the well-formed star; SPOF/LB are advisory.
   // Match the app's useChallengeAutoScore split so the harness scores identically to the real game.
   const { blocking, advisory } = countTopologyIssues(topologyIssues)
-  const totalCost = computeTotalArchitectureCost(nodes)
+  // ED9 (D74): integrate cost over the curve so autoscale tiers bill mean-active, not flat. No autoscale
+  // node ⇒ exactly computeTotalArchitectureCost (the 57 byte-identical).
+  const totalCost = computeIntegratedArchitectureCost(nodes, result.ticks)
   const canvasTypeIds = new Set<string>()
   const typeByNodeId = new Map<string, string>()
   const cdnHitByNodeId = new Map<string, number>()

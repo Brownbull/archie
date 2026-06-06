@@ -46,6 +46,9 @@ config_variants:
     monthly_cost: 5
     max_rps: 1000
     base_latency_ms: 100
+    # ED9 (D74): scale-to-zero serverless — you pay per invocation, so cost tracks the load curve
+    # (near-nothing at baseline, scaling up only for the burst) instead of 24/7 peak provisioning.
+    autoscale: true
     cold_start_latency_ms: 300
     cold_start_ratio: 0.15
     metrics:
@@ -148,6 +151,8 @@ config_variants:
     monthly_cost: 10
     max_rps: 10000
     base_latency_ms: 30
+    # ED9 (D74): edge functions autoscale per-request too — cost integrates over the curve.
+    autoscale: true
     metrics:
       - id: cold-start-latency
         value: low

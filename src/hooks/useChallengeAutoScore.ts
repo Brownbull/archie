@@ -3,7 +3,7 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeSimStats } from "@/lib/simulationStats"
-import { computeTotalArchitectureCost, getNodeCost } from "@/stores/architectureStoreHelpers"
+import { computeTotalArchitectureCost, computeIntegratedArchitectureCost, getNodeCost } from "@/stores/architectureStoreHelpers"
 import { peakOriginBoundRps } from "@/lib/challengeBudget"
 import { countTopologyIssues } from "@/engine/topologyChecker"
 import { componentLibrary } from "@/services/componentLibrary"
@@ -37,7 +37,13 @@ export function useChallengeAutoScore(): void {
     const { attemptSnapshot, scoreAttempt } = useChallengeStore.getState()
     const stats = computeSimStats(ticks, ticks.length - 1)
     const archState = useArchitectureStore.getState()
-    const totalCost = attemptSnapshot?.totalCost ?? computeTotalArchitectureCost(archState.nodes)
+    // ED9 (D74): an autoscaling build's cost depends on the run (mean active replicas over the curve), so
+    // it can't use the start-time snapshot — integrate over the ticks. Non-autoscale builds keep the
+    // frozen snapshot cost (the D72 mid-run-edit guard), so the 57 are byte-identical.
+    const hasAutoscale = archState.nodes.some((n) => getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps).autoscale === true)
+    const totalCost = hasAutoscale
+      ? computeIntegratedArchitectureCost(archState.nodes, ticks)
+      : (attemptSnapshot?.totalCost ?? computeTotalArchitectureCost(archState.nodes))
 
     // Topology scoring (D72): only BLOCKING issues (orphan/unreachable — a structurally broken graph)
     // gate the well-formed star. SPOF (missing-hop) + replicas-without-LB are ADVISORY: they coach

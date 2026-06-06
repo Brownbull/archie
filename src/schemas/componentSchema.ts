@@ -58,6 +58,10 @@ export const ConfigVariantSchema = z.object({
   /** EN2 (D74): per-replica concurrent-request ceiling. When set, the node sheds (connection-pool
    *  exhaustion) once in-flight requests (served × latency, Little's law) exceed it × replicas. */
   concurrencyLimit: z.number().min(0).max(MAX_CONCURRENCY).optional(),
+  /** ED9 (D74): pay-per-use elasticity. When true, active replicas track per-tick load (capped at the
+   *  provisioned count) and cost INTEGRATES over the curve — so a bursty workload bills near baseline,
+   *  not 24/7 peak. Capacity/latency are unchanged (it still scales to the same ceiling). */
+  autoscale: z.boolean().optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
@@ -121,6 +125,7 @@ const ConfigVariantYamlSchema = z.object({
   write_ratio: z.number().min(0).max(1).optional(),
   write_distribution: z.enum(["primary", "sharded"]).optional(),
   concurrency_limit: z.number().min(0).max(MAX_CONCURRENCY).optional(),
+  autoscale: z.boolean().optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -138,6 +143,7 @@ const ConfigVariantYamlSchema = z.object({
   writeRatio: data.write_ratio,
   writeDistribution: data.write_distribution,
   concurrencyLimit: data.concurrency_limit,
+  autoscale: data.autoscale,
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({
