@@ -3854,3 +3854,14 @@ DEPLOYMENTS: P133 (dedicated unlocked replay account E2E — D72)
 ## 2026-06-05 22:35 — PUSH dev -> main
 CI: deploy-production success (run 27049566432); e2e-unlocked workflow success (skipped — VITE_TEST_UNLOCKED_* secrets not yet configured)
 DEPLOYMENTS: P134 (D73 — cost_per_request challenges + unlocked-E2E CI workflow)
+- 2026-06-05 22:29 | Write | /home/khujta/projects/bmad/archie/docs/quality-reports/learning-fidelity-roast.md
+
+## 2026-06-05 — PLAN CREATED: Learning-Fidelity Redesign
+PHASES: 4 | COMPLEXITY: high | MATURITY: enterprise
+TIERS: ent × 3, scale × 1 | PROTOTYPES: 0
+DECISIONS: D74 → D75 (epic framing + per-phase tiers + re-calibration gate)
+SOURCE: docs/quality-reports/learning-fidelity-roast.md (22 gaps, 3 perspectives)
+HTML_ARTIFACT: docs/gabe/plans/2026-06-05-learning-fidelity-redesign/index.html
+ARCHIVED: completed_PLAN_2026-06-03_traffic-realism-isapivot.md (ISAPivot, superseded)
+- 2026-06-05 22:39 | Write | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-05-learning-fidelity-redesign/index.html
+- 2026-06-05 22:40 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-05-learning-fidelity-redesign/index.html

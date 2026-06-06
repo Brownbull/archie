@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Learning-Fidelity Redesign — Plan Review</title>
+<style>
+  :root{
+    --bg:#0f1320; --panel:#171c2e; --panel2:#1e2438; --border:#2a3147; --ink:#e6e9f2;
+    --muted:#9aa3bd; --accent:#7184f0; --green:#34d399; --amber:#fbbf24; --red:#f87171;
+    --violet:#a78bfa; --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+  nav{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:20px 16px;background:var(--panel);border-right:1px solid var(--border)}
+  nav h1{font-size:14px;color:var(--accent);margin:0 0 14px;letter-spacing:.02em}
+  nav a{display:block;color:var(--muted);text-decoration:none;padding:5px 8px;border-radius:6px;font-size:13px}
+  nav a:hover{background:var(--panel2);color:var(--ink)}
+  main{padding:28px 40px;max-width:1080px}
+  .banner{background:#221c33;border:1px solid var(--violet);border-radius:10px;padding:12px 16px;color:#d8ccff;font-size:13px;margin-bottom:18px}
+  .prov{color:var(--muted);font-size:12.5px;margin-bottom:26px;border-bottom:1px solid var(--border);padding-bottom:16px}
+  .prov code{font-family:var(--mono);color:#cdd5ee}
+  h2{font-size:21px;margin:34px 0 12px;padding-top:6px}
+  h3{font-size:16px;margin:18px 0 8px}
+  section{scroll-margin-top:14px}
+  .lead{color:#cdd5ee}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:14px 0}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--panel2);color:#cdd5ee;font-weight:600}
+  td code,.mono{font-family:var(--mono);font-size:12.5px}
+  .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600}
+  .ent{background:#1e2c44;color:#8fb4ff;border:1px solid #2f4a78}
+  .scale{background:#3a2740;color:#e3a0ff;border:1px solid #5e3c6b}
+  .crit{color:var(--red);font-weight:700} .high{color:var(--amber);font-weight:600} .med{color:#cdd5ee} .low{color:var(--muted)}
+  .phasemap{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin:8px 0 4px}
+  .pbox{flex:1;min-width:200px;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  .pbox .n{font-size:12px;color:var(--muted)} .pbox .t{font-weight:600;margin:3px 0 6px}
+  .pbox .g{font-size:12px;color:var(--muted);font-family:var(--mono)}
+  .part{font-size:11.5px;color:var(--accent);letter-spacing:.04em;text-transform:uppercase;margin-top:14px}
+  ul{margin:6px 0 6px 18px;padding:0} li{margin:3px 0}
+  .files{font-family:var(--mono);font-size:12px;color:#aeb7d6}
+  a.link{color:var(--accent)}
+  .foot{margin-top:40px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <h1>LEARNING-FIDELITY REDESIGN</h1>
+  <a href="#summary">Summary</a>
+  <a href="#map">Phase map</a>
+  <a href="#p1">Phase 1 · scoring+UX (A)</a>
+  <a href="#p2">Phase 2 · engine (B)</a>
+  <a href="#p3">Phase 3 · resilience (C)</a>
+  <a href="#p4">Phase 4 · dimensions (D)</a>
+  <a href="#tiers">Tier digest</a>
+  <a href="#gaps">Gap → phase map</a>
+  <a href="#risks">Risks</a>
+  <a href="#verify">Verification</a>
+  <a href="#detail">Detail paths</a>
+</nav>
+<main>
+  <div class="banner">HTML review artifact; <code>.kdbp/PLAN.md</code> and <code>.kdbp/DECISIONS.md</code> remain canonical.</div>
+  <div class="prov">
+    Generated 2026-06-05 · command <code>/gabe-plan</code> · source plan <code>.kdbp/PLAN.md</code> ·
+    decisions <code>D74–D75</code> · ledger entry “PLAN CREATED: Learning-Fidelity Redesign” ·
+    gap detail <code>docs/quality-reports/learning-fidelity-roast.md</code>
+  </div>
+
+  <section id="summary">
+    <h2>Summary</h2>
+    <p class="lead">Make Archie's simulation, scoring, and lesson-loop teach <strong>real, transferable
+    system design</strong> instead of rewarding harness-gaming. A full A→D epic distilled from a
+    3-perspective roast (architecture-educator, simulation/domain-expert, first-time-learner; 22 gaps).</p>
+    <div class="card">
+      <strong>Guiding principle (D74):</strong> score on <em>behavior</em>, not block-presence. The
+      recurring disease is the rubric rewarding “the right blocks on the canvas” over “the blocks doing
+      their job under load.” The reference builder's own exploits (traffic-free aux leaves, “add cache
+      always wins”, over-provision one tier) are the canary — re-roast after each phase to confirm they
+      shrink.
+    </div>
+  </section>
+
+  <section id="map">
+    <h2>Phase map</h2>
+    <div class="part">Part A — ship standalone (low risk)</div>
+    <div class="phasemap">
+      <div class="pbox"><div class="n">Phase 1 · <span class="pill ent">ent</span></div>
+        <div class="t">Behavior-tied scoring + lesson-loop quick wins</div>
+        <div class="g">ED3 · ED7 · LX1 · LX2 · LX3</div></div>
+    </div>
+    <div class="part">Part B — the fidelity core</div>
+    <div class="phasemap">
+      <div class="pbox"><div class="n">Phase 2 · <span class="pill ent">ent</span></div>
+        <div class="t">Core engine fidelity — latency, utilization, concurrency</div>
+        <div class="g">ED1/EN1 · ED4/LX4 · EN2</div></div>
+      <div class="pbox"><div class="n">Phase 3 · <span class="pill ent">ent</span></div>
+        <div class="t">Resilience as a real subject</div>
+        <div class="g">ED2 · EN3 · EN7 · +restore redundancy</div></div>
+    </div>
+    <div class="part">Part C — new dimensions</div>
+    <div class="phasemap">
+      <div class="pbox"><div class="n">Phase 4 · <span class="pill scale">scale</span></div>
+        <div class="t">New dimensions — consistency, elasticity, usage-cost</div>
+        <div class="g">ED5 · ED9 · EN5 · ED6/EN4/ED8 · EN6</div></div>
+    </div>
+    <svg viewBox="0 0 760 70" width="100%" height="70" style="margin-top:10px" role="img" aria-label="Phase flow 1 to 4 with review gates between parts">
+      <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7184f0"/></marker></defs>
+      <g font-family="ui-monospace,monospace" font-size="12" fill="#e6e9f2">
+        <rect x="6" y="22" width="120" height="28" rx="6" fill="#1e2438" stroke="#2f4a78"/><text x="66" y="40" text-anchor="middle">P1 · A</text>
+        <line x1="128" y1="36" x2="196" y2="36" stroke="#7184f0" marker-end="url(#a)"/><text x="162" y="28" text-anchor="middle" fill="#9aa3bd" font-size="10">review</text>
+        <rect x="200" y="22" width="120" height="28" rx="6" fill="#1e2438" stroke="#2f4a78"/><text x="260" y="40" text-anchor="middle">P2 · B</text>
+        <line x1="322" y1="36" x2="360" y2="36" stroke="#7184f0" marker-end="url(#a)"/>
+        <rect x="364" y="22" width="120" height="28" rx="6" fill="#1e2438" stroke="#2f4a78"/><text x="424" y="40" text-anchor="middle">P3 · B</text>
+        <line x1="486" y1="36" x2="554" y2="36" stroke="#7184f0" marker-end="url(#a)"/><text x="520" y="28" text-anchor="middle" fill="#9aa3bd" font-size="10">review</text>
+        <rect x="558" y="22" width="140" height="28" rx="6" fill="#2a1f3a" stroke="#5e3c6b"/><text x="628" y="40" text-anchor="middle">P4 · C</text>
+      </g>
+    </svg>
+  </section>
+
+  <section id="p1">
+    <h2>Phase 1 — Behavior-tied scoring + lesson-loop quick wins <span class="pill ent">enterprise</span></h2>
+    <p>Highest learning-value per effort; <strong>zero engine re-calibration</strong>; closes the
+    “gaming the harness” hole + the onboarding cliff. Shippable on its own.</p>
+    <table>
+      <tr><th>Gap</th><th>Fix</th></tr>
+      <tr><td><code>ED3</code></td><td><code>required_types</code> must be ON the served path / carry non-trivial flow (removing the block changes the score); model rate-limiter/auth effects so they aren't decorative.</td></tr>
+      <tr><td><code>ED7</code></td><td>Redefine <code>cost_per_request</code> as $/million-requests at peak rps; re-tune the 2 cost challenges to the real unit.</td></tr>
+      <tr><td><code>LX1</code></td><td>Free first hint per challenge (or free until N earned stars) so a stuck beginner isn't gated out.</td></tr>
+      <tr><td><code>LX2</code></td><td>Name the top overloaded node in the iterate-coach + results modal (“compute hit 180% — shed 14%”), linked to the canvas node.</td></tr>
+      <tr><td><code>LX3</code></td><td>After 3★, show the reference solution's cost / node-count as “par”.</td></tr>
+    </table>
+    <div class="files">rubricScorer.ts · useChallengeCoach.ts · ChallengeResultsModal.tsx · HintPanel.tsx · userProgressStore.ts · 56-unit-economics.yaml · 57-lean-at-scale.yaml</div>
+    <p><strong>Exit:</strong> harness still 3★ all 57; cost targets in the real unit; first hint free; failed run names the culprit tier.</p>
+  </section>
+
+  <section id="p2">
+    <h2>Phase 2 — Core engine fidelity <span class="pill ent">enterprise</span></h2>
+    <p>Honest physics. <strong>High re-calibration ripple</strong> — fixes the two most-inverted intuitions.</p>
+    <ul>
+      <li><code>ED1/EN1</code> — end-to-end latency = <strong>SUM</strong> along the served path (+ inter-node RTT); cache hits short-circuit; worst-hop kept only as the overload term.</li>
+      <li><code>ED4/LX4</code> — replace flat-then-linear <code>latencyUnderLoad</code> with a queueing curve (latency → ∞ as ρ→1) so headroom is real and the live gauge teaches.</li>
+      <li><code>EN2</code> — add a concurrency/queue model (per-variant concurrency limit; latency↔queue-depth via Little's law) so saturation = latency AND connection rejection.</li>
+    </ul>
+    <div class="files">simulationEngine.ts · simulationStats.ts · constants.ts · referenceSolution.ts · golden snapshot · capstone fixtures</div>
+    <p><strong>Exit (re-calibration tax, D75):</strong> re-tune all 57 p99 targets · regenerate golden + fixtures · harness 3★ all 57 · capstone E2E green.</p>
+  </section>
+
+  <section id="p3">
+    <h2>Phase 3 — Resilience as a real subject <span class="pill ent">enterprise</span></h2>
+    <p>Make resilience both possible and rewarded. Do the three together — they reinforce.</p>
+    <ul>
+      <li><code>ED2</code> — AZ attribute per node; <code>az_outage</code> removes a <strong>fraction</strong> (1/AZ) of a category so spreading replicas/nodes genuinely survives.</li>
+      <li><code>EN3</code> — cascading failure: shed propagates upstream as timeouts + retry amplification (the real thundering-herd cause).</li>
+      <li><code>EN7</code> — observability earns its keep: faster detect → earlier circuit-break → smaller blast radius (replaces the magic 33% constant).</li>
+      <li><strong>+ restore no-SPOF redundancy to scoring</strong> (topology-star contributor or resilience metric) — reverses the D72 demotion now that redundancy is mechanically meaningful.</li>
+    </ul>
+    <div class="files">simulationEngine.ts · topologyChecker.ts · rubricScorer.ts · challengeTypes.ts</div>
+    <p><strong>Sequence:</strong> needs EN6 (cyclic-flow solve, Phase 4) first — pull it forward or do it before EN3 retries.
+    <strong>Exit:</strong> re-tune outage challenges (chaos-day, async-backbone, heat-death, fortress, zone-*) · regenerate · harness 3★ all 57.</p>
+  </section>
+
+  <section id="p4">
+    <h2>Phase 4 — New dimensions <span class="pill scale">scale</span></h2>
+    <p>The 10x-breadth tier. À-la-carte sub-slices — each additive/defaulted so existing challenges score identically.</p>
+    <ul>
+      <li><code>ED5</code> — dynamic cache hit-ratio (variant ceiling × cacheable-fraction × (1−write-pressure); search/periodic lower it).</li>
+      <li><code>ED9</code> — autoscaling (replicas track load; cost integrates over the curve) so bursts reward elasticity, not peak-provisioning.</li>
+      <li><code>EN5</code> — usage-based cost (per-request + per-GB cross-region transfer) so cost challenges teach egress-dominated bills.</li>
+      <li><code>ED6/EN4/ED8</code> — <strong>the big one:</strong> multi-region latency + replication lag/staleness + a NEW consistency/CAP scoring dimension + challenge family.</li>
+      <li><code>EN6</code> — fixed-point cyclic-flow solve (closes PENDING D7, unblocks EN3 retries).</li>
+    </ul>
+    <div class="files">challengeSchema.ts · challengeTypes.ts · simulationEngine.ts · rubricScorer.ts · simulationStats.ts · architectureStoreHelpers.ts · ChallengeResultsModal.tsx · new challenge YAMLs</div>
+  </section>
+
+  <section id="tiers">
+    <h2>Tier decision digest (D75)</h2>
+    <table>
+      <tr><th>Phase</th><th>Tier</th><th>Escalation reason</th></tr>
+      <tr><td>1</td><td><span class="pill ent">ent</span></td><td>Behavior-tied scoring + learner-loop correctness on an enterprise teaching product; load-bearing for credibility.</td></tr>
+      <tr><td>2</td><td><span class="pill ent">ent</span></td><td>Core engine physics — every challenge's difficulty depends on it.</td></tr>
+      <tr><td>3</td><td><span class="pill ent">ent</span></td><td>Resilience modeling + scoring change; reverses the D72 demotion once redundancy is meaningful.</td></tr>
+      <tr><td>4</td><td><span class="pill scale">scale</span></td><td>Net-new scoring dimensions (consistency/CAP, elasticity, usage-cost, multi-region lag) = 10x breadth.</td></tr>
+    </table>
+  </section>
+
+  <section id="gaps">
+    <h2>Gap → phase map (22 gaps)</h2>
+    <table>
+      <tr><th>Phase</th><th>Educator (ED)</th><th>Engine (EN)</th><th>Learner (LX)</th></tr>
+      <tr><td>1 (A)</td><td>ED3, ED7</td><td>—</td><td>LX1, LX2, LX3</td></tr>
+      <tr><td>2 (B)</td><td>ED1, ED4</td><td>EN1, EN2</td><td>LX4 (=ED4)</td></tr>
+      <tr><td>3 (B)</td><td>ED2</td><td>EN3, EN7</td><td>LX6 (badge meaning)</td></tr>
+      <tr><td>4 (C)</td><td>ED5, ED6, ED8, ED9</td><td>EN4, EN5, EN6</td><td>LX5 (timeline scrubber)</td></tr>
+    </table>
+    <p class="low">Full per-gap detail (description, one-liner, effort, what-we-lose, fix) lives in
+    <code>docs/quality-reports/learning-fidelity-roast.md</code>.</p>
+  </section>
+
+  <section id="risks">
+    <h2>Risks</h2>
+    <table>
+      <tr><th>Risk</th><th>Sev</th><th>Mitigation</th></tr>
+      <tr><td>Engine changes ripple into re-tuning all 57 + golden + fixtures</td><td class="high">high</td><td>D75 exit gate; solvability harness + lean builder automate it; re-roast to confirm exploits shrink.</td></tr>
+      <tr><td>Latency/utilization rewrite silently changes every challenge's difficulty</td><td class="high">high</td><td>Re-tune p99 from the harness; golden catches scoring drift; capstone E2E is the real-app backstop.</td></tr>
+      <tr><td>Restoring redundancy to the star re-opens the budget-vs-redundancy tension (D72)</td><td class="med">med</td><td>Only after ED2 makes redundancy cheap + meaningful; re-verify tight-budget challenges stay 3★-able.</td></tr>
+      <tr><td>Consistency/CAP is XL + a brand-new axis</td><td class="med">med</td><td>Sub-slice P4; ship cache/autoscaling/usage-cost first; gate consistency behind its own challenge family.</td></tr>
+      <tr><td>“Full redesign” scope creep</td><td class="med">med</td><td>Three review gates (A, B, C); stop + re-roast between parts; each phase independently shippable.</td></tr>
+    </table>
+  </section>
+
+  <section id="verify">
+    <h2>Verification checklist</h2>
+    <ul>
+      <li><strong>Phase 1 (user-facing):</strong> run the app, fail a challenge → results modal + coach name the culprit node + show “par”; a 0-star account reveals the first hint free. Screenshots → <code>test-results/learning-fidelity-p1/</code>.</li>
+      <li><strong>Phases 2–4 (engine):</strong> the capstone replay E2E (<code>desktop-unlocked</code>) stays green after each change; add targeted specs per new metric (latency-sum, queueing-curve, AZ-fraction survival, consistency).</li>
+      <li><strong>Every engine phase exit:</strong> harness 3★ all 57 · golden regenerated (additive) · fixtures regenerated.</li>
+    </ul>
+  </section>
+
+  <section id="detail">
+    <h2>Detail paths</h2>
+    <ul>
+      <li>Canonical plan — <code><a class="link" href="../../../../.kdbp/PLAN.md">.kdbp/PLAN.md</a></code></li>
+      <li>Decisions D74–D75 — <code>.kdbp/DECISIONS.md</code></li>
+      <li>Full gap analysis (22 gaps, 3 perspectives) — <code><a class="link" href="../../../quality-reports/learning-fidelity-roast.md">docs/quality-reports/learning-fidelity-roast.md</a></code></li>
+      <li>Solvability harness / reference builder — <code>tests/integration/challenges/referenceSolution.ts</code></li>
+      <li>Capstone replay E2E + dedicated account — <code>tests/e2e/capstone-completion.unlocked.spec.ts</code>, <code>tests/e2e/unlocked-setup.ts</code></li>
+    </ul>
+  </section>
+
+  <div class="foot">Learning-Fidelity Redesign · created 2026-06-05 · <code>/gabe-plan</code> · not yet started (awaiting review). <code>.kdbp/PLAN.md</code> + <code>.kdbp/DECISIONS.md</code> are canonical.</div>
+</main>
+</div>
+</body>
+</html>

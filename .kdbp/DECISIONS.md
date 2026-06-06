@@ -1143,3 +1143,41 @@ environmental flakiness); this is a focused, deterministic capstone-replay signa
 VITE_TEST_UNLOCKED_EMAIL isn't a repo secret.
 
 **Status:** active.
+
+## D74 — Learning-Fidelity Redesign epic: score on behavior, not presence (2026-06-05)
+
+**Decision.** Open a full A→D epic (PLAN.md "Learning-Fidelity Redesign") to make the sim + scoring +
+lesson-loop teach real, transferable system design. The guiding principle: **score on BEHAVIOR, not
+block-presence.** The recurring disease across the 3-perspective roast
+(`docs/quality-reports/learning-fidelity-roast.md`, 22 gaps) is the rubric rewarding "the right blocks
+on the canvas" over "the blocks doing their job under load" (ED2/ED3/ED6/EN4). The reference builder's
+own exploits (traffic-free aux leaves, "add cache always wins", over-provision one tier) are the canary
+— re-roast after each phase and confirm they shrink.
+
+**Scope:** Part A = Phase 1 (behavior-tied scoring + lesson-loop quick wins; standalone, low risk).
+Part B = Phases 2+3 (engine fidelity: additive latency + queueing curve + concurrency, then resilience
+as a real, rewarded subject). Part C = Phase 4 (new dimensions: dynamic cache, autoscaling, usage-cost,
+multi-region replication lag + a consistency/CAP axis). Each phase independently shippable.
+
+**Status:** active.
+
+## D75 — Per-phase tiers + the engine re-calibration exit gate (2026-06-05)
+
+**Tiers (with escalation reasons — enterprise/scale require justification per /gabe-plan):**
+- Phase 1 — **enterprise**: behavior-tied scoring + learner-loop correctness on an enterprise-maturity
+  teaching product; load-bearing for credibility, not throwaway.
+- Phase 2 — **enterprise**: core engine physics (latency/utilization/concurrency); every challenge's
+  difficulty depends on it.
+- Phase 3 — **enterprise**: resilience modeling + a scoring change; load-bearing engine work that
+  reverses the D72 redundancy demotion once redundancy is mechanically meaningful.
+- Phase 4 — **scale**: net-new scoring dimensions (consistency/CAP, elasticity, usage-cost,
+  multi-region lag) = the 10x-breadth tier.
+
+**Re-calibration exit gate (cross-cutting risk + mitigation).** Every engine-changing phase (2/3/4)
+ripples into re-tuning all 57 challenge targets, regenerating the golden snapshot, and regenerating the
+E2E capstone fixtures. The standard phase EXIT criterion is therefore: **re-tune + regenerate golden +
+regenerate fixtures + solvability harness 3★ for all 57 + capstone replay E2E green.** Mitigation: the
+solvability harness (`referenceSolution.ts` buildClearingSolution + scoreSolution, capped at
+MAX_REPLICAS) + the cost-aware lean builder already exist to drive this fast.
+
+**Status:** accepted.
