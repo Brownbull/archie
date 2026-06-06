@@ -270,6 +270,8 @@ export interface NodeCostInfo {
   readonly coldStartRatio: number | undefined
   readonly writeRatio: number | undefined
   readonly writeDistribution: "primary" | "sharded" | undefined
+  /** EN2: per-replica concurrency ceiling, replica-scaled like maxRPS. undefined ⇒ no limit. */
+  readonly concurrencyLimit: number | undefined
 }
 
 /**
@@ -307,6 +309,7 @@ export function getNodeCost(
       coldStartRatio: variant?.coldStartRatio,
       writeRatio: variant?.writeRatio,
       writeDistribution: variant?.writeDistribution,
+      concurrencyLimit: undefined, // traffic sources are load origins, never concurrency-limited
     }
   }
   const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
@@ -321,6 +324,8 @@ export function getNodeCost(
     coldStartRatio: variant?.coldStartRatio,
     writeRatio: variant?.writeRatio,
     writeDistribution: variant?.writeDistribution,
+    // EN2: concurrency scales with replicas just like throughput (more replicas = more in-flight slots).
+    concurrencyLimit: variant?.concurrencyLimit === undefined ? undefined : variant.concurrencyLimit * capacityFactor,
   }
 }
 
@@ -512,6 +517,7 @@ export function buildSimGraph(
       ...(cost.coldStartRatio !== undefined ? { coldStartRatio: cost.coldStartRatio } : {}),
       ...(cost.writeRatio !== undefined ? { writeRatio: cost.writeRatio } : {}),
       ...(cost.writeDistribution !== undefined ? { writeDistribution: cost.writeDistribution } : {}),
+      ...(cost.concurrencyLimit !== undefined ? { concurrencyLimit: cost.concurrencyLimit } : {}),
     }
   })
   const simEdges: SimEdge[] = edges.map((e) => ({ source: e.source, target: e.target }))

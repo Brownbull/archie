@@ -134,6 +134,36 @@ describe("simulateTick — routing + capacity", () => {
     })
   })
 
+  describe("concurrency gate (EN2 / Little's law)", () => {
+    it("rejects via connection-pool exhaustion BELOW the rps cap when requests are slow", () => {
+      // 10k rps cap (ρ=0.1, base 100ms latency) but only 50 concurrent slots: in-flight = 1000×0.1 = 100 > 50,
+      // so throughput is capped at 50×1000/100 = 500 rps — pool-exhausted well under the rps ceiling.
+      const g: SimGraph = { nodes: [node("x", 10000, { baseLatencyMs: 100, concurrencyLimit: 50 })], edges: [] }
+      const t = tel(simulateTick(g, 0, 1000), "x")
+      expect(t.servedRps).toBeCloseTo(500, 6)
+      expect(t.rejectedRps).toBeCloseTo(500, 6)
+      expect(t.failedRps).toBeCloseTo(500, 6)
+      expect(t.overloaded).toBe(true)
+      expect(t.servedRps * (100 / 1000)).toBeCloseTo(50, 6) // Little's identity: in-flight == limit post-gate
+    })
+
+    it("a generous concurrency limit does not bind", () => {
+      const g: SimGraph = { nodes: [node("x", 10000, { baseLatencyMs: 100, concurrencyLimit: 10000 })], edges: [] }
+      const t = tel(simulateTick(g, 0, 1000), "x")
+      expect(t.servedRps).toBe(1000)
+      expect(t.rejectedRps).toBeUndefined()
+      expect(t.overloaded).toBe(false)
+    })
+
+    it("undefined concurrency limit is a no-op: served/failed byte-identical", () => {
+      const withGate: SimGraph = { nodes: [node("x", 600, { baseLatencyMs: 100 })], edges: [] }
+      const t = tel(simulateTick(withGate, 0, 1000), "x")
+      expect(t.servedRps).toBe(600) // pure rps-cap shed, unchanged by the (absent) concurrency gate
+      expect(t.failedRps).toBe(400)
+      expect(t.rejectedRps).toBeUndefined()
+    })
+  })
+
   it("records telemetry for off-path nodes (e.g. monitoring) with zero inflow", () => {
     const g: SimGraph = { nodes: [node("in", 1000), node("mon", 1000, { category: "monitoring" })], edges: [] }
     const s = simulateTick(g, 0, 100)

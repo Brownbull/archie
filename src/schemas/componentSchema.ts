@@ -35,6 +35,9 @@ const MetricExplanationYamlSchema = z.object({
 export const MAX_MONTHLY_COST = 100_000
 export const MAX_RPS = 10_000_000
 export const MAX_LATENCY_MS = 60_000
+// EN2 (D74): per-replica concurrency ceiling (in-flight request slots). Bounds X_cap so a near-zero
+// latency can't produce an unbounded throughput allowance.
+export const MAX_CONCURRENCY = 1_000_000
 
 export const ConfigVariantSchema = z.object({
   id: z.string().min(1),
@@ -52,6 +55,9 @@ export const ConfigVariantSchema = z.object({
   coldStartRatio: z.number().min(0).max(1).optional(),
   writeRatio: z.number().min(0).max(1).optional(),
   writeDistribution: z.enum(["primary", "sharded"]).optional(),
+  /** EN2 (D74): per-replica concurrent-request ceiling. When set, the node sheds (connection-pool
+   *  exhaustion) once in-flight requests (served × latency, Little's law) exceed it × replicas. */
+  concurrencyLimit: z.number().min(0).max(MAX_CONCURRENCY).optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
@@ -114,6 +120,7 @@ const ConfigVariantYamlSchema = z.object({
   cold_start_ratio: z.number().min(0).max(1).optional(),
   write_ratio: z.number().min(0).max(1).optional(),
   write_distribution: z.enum(["primary", "sharded"]).optional(),
+  concurrency_limit: z.number().min(0).max(MAX_CONCURRENCY).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -130,6 +137,7 @@ const ConfigVariantYamlSchema = z.object({
   coldStartRatio: data.cold_start_ratio,
   writeRatio: data.write_ratio,
   writeDistribution: data.write_distribution,
+  concurrencyLimit: data.concurrency_limit,
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({

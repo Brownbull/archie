@@ -54,6 +54,12 @@ export interface SimNode {
   coldStartLatencyMs?: number
   /** Fraction of requests that hit a cold start (0–1). Default 0 = no cold starts (E4). */
   coldStartRatio?: number
+  /**
+   * Concurrency ceiling (EN2, D74): max in-flight requests, replica-scaled. When set, the node sheds
+   * (connection-pool exhaustion) once `served × W/1000` (Little's law, W = queueing latency) exceeds it
+   * — a SECOND saturation axis besides the rps cap. undefined ⇒ no concurrency limit (gate is a no-op).
+   */
+  concurrencyLimit?: number
 }
 
 /** A directed edge: traffic flows source → target. */
@@ -84,6 +90,8 @@ export interface NodeTelemetry {
   servedRps: number
   /** Requests/sec shed because they exceeded capacity. */
   failedRps: number
+  /** Requests/sec rejected by the concurrency gate — connection-pool exhaustion (EN2). Subset of failedRps. */
+  rejectedRps?: number
   /** Effective latency this tick (ms), rising with load. */
   latencyMs: number
   /** incomingRps / effectiveMaxRps (0..>1). 0 when uncapped. */

@@ -142,6 +142,9 @@ export const LATENCY_QUEUE_RHO_CAP = 0.99
 // End-to-end latency = SUM of per-node latency along the served path (ED1/EN1, D74), with this fixed
 // round-trip charged once per traversed edge. Replaces the old "worst single hop" system latency.
 export const INTER_NODE_RTT_MS = 2
+// EN2 (D74): floor for the queueing latency used in the concurrency gate (in-flight = served × W/1000,
+// Little's law). Prevents a near-zero W from producing an unbounded throughput allowance (X_cap).
+export const QUEUEING_LATENCY_EPS = 0.01
 // Wall-clock ms per tick at 1× playback speed; divided by playback speed (1/2/5/10×) in the store.
 export const SIM_BASE_TICK_MS = 1000
 // Default ramp target (req/sec) used when running a simulation with no scenario traffic curve.

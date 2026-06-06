@@ -1,4 +1,4 @@
-import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
+import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
 import type {
   SimGraph,
   SimNode,
@@ -238,7 +238,26 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
 
     // Offline (scheduled failure / AZ outage): zero capacity → sheds all incoming traffic.
     const capacityPercent = offline ? (incoming > 0 ? 1 : 0) : capped ? incoming / node.effectiveMaxRps : 0
-    let baseLatency = offline ? node.baseLatencyMs : latencyUnderLoad(node.baseLatencyMs, capacityPercent)
+    // W_queue (EN2): the bare queueing-curve latency, BEFORE additive terms + latMult — the latency the
+    // concurrency gate uses (so a Phase-3 latency_spike multiplier can't silently collapse throughput).
+    const queueLatencyMs = offline ? node.baseLatencyMs : latencyUnderLoad(node.baseLatencyMs, capacityPercent)
+
+    // Concurrency gate (EN2, D74): a node can exhaust its connection pool BEFORE its rps cap when
+    // requests are slow. In-flight = served × W/1000 (Little's law); if that exceeds the replica-scaled
+    // concurrencyLimit, the excess is rejected — a SECOND saturation axis. undefined limit ⇒ no-op.
+    let rejected = 0
+    if (!offline && node.concurrencyLimit !== undefined && node.concurrencyLimit > 0) {
+      const w = Math.max(queueLatencyMs, QUEUEING_LATENCY_EPS)
+      if (served * (w / 1000) > node.concurrencyLimit) {
+        const xCap = (node.concurrencyLimit * 1000) / w
+        const clamped = Math.min(served, xCap)
+        rejected = served - clamped
+        served = clamped
+        failed += rejected
+      }
+    }
+
+    let baseLatency = queueLatencyMs
 
     // Protocol overhead (E7): different connection protocols add latency.
     if (node.protocolOverheadMs) {
@@ -265,9 +284,10 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       incomingRps: incoming,
       servedRps: served,
       failedRps: failed,
+      ...(rejected > 0 ? { rejectedRps: rejected } : {}),
       latencyMs: baseLatency * latMult,
       capacityPercent,
-      overloaded: offline ? incoming > 0 : capped && incoming > node.effectiveMaxRps,
+      overloaded: (offline ? incoming > 0 : capped && incoming > node.effectiveMaxRps) || rejected > 0,
     })
     if (forward) {
       const outs = outAdj.get(id) ?? []
