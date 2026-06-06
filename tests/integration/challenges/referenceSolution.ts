@@ -5,13 +5,13 @@ import { load } from "js-yaml"
 import { componentLibrary } from "@/services/componentLibrary"
 import { ComponentYamlSchema, type Component } from "@/schemas/componentSchema"
 import { COMPONENT_TYPES, isOnPathExempt } from "@/lib/componentTypes"
-import { buildSimGraph, computeTotalArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs, getNodeCost } from "@/stores/architectureStoreHelpers"
 import { runSimulation } from "@/engine/simulationEngine"
 import { computeSimStats } from "@/lib/simulationStats"
 import { evaluateAttempt } from "@/engine/rubricScorer"
 import { countTopologyIssues } from "@/engine/topologyChecker"
 import { MAX_REPLICAS, getScalingRule } from "@/lib/constants"
-import { costPerMillionRequests, peakCurveRps } from "@/lib/challengeBudget"
+import { costPerMillionRequests, peakCurveRps, peakOriginBoundRps, usageCostPerMonth } from "@/lib/challengeBudget"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import type { Challenge } from "@/lib/challengeTypes"
 import type { ComponentCategoryId } from "@/lib/constants"
@@ -429,16 +429,25 @@ export function scoreBuild(c: Challenge, nodes: readonly RefNode[], edges: reado
   const totalCost = computeTotalArchitectureCost(nodes)
   const canvasTypeIds = new Set<string>()
   const typeByNodeId = new Map<string, string>()
+  const cdnHitByNodeId = new Map<string, number>()
   for (const n of nodes) {
     const typeId = componentLibrary.getComponent(n.data.archieComponentId)?.typeId
     if (typeId) {
       canvasTypeIds.add(typeId)
       typeByNodeId.set(n.id, typeId)
+      if (typeId === "cdn") {
+        const hit = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps).cacheHitRatio
+        if (hit !== undefined && hit > 0) cdnHitByNodeId.set(n.id, hit)
+      }
     }
   }
+  // EN5 (D74): fold per-origin-request usage fees into the bill the SAME way the live app does — the
+  // shared peakOriginBoundRps + usageCostPerMonth helpers (so harness + game grade the identical
+  // quantity). 0 when no usage_rates, so the 57 stay byte-identical.
+  const effectiveCost = totalCost + usageCostPerMonth(c.usageRates, peakOriginBoundRps(result.ticks, cdnHitByNodeId))
   // ED7 (D74): cost-efficiency in $/million-requests at peak demand — same unit the app scores with.
-  const costPerRequest = costPerMillionRequests(totalCost, peakCurveRps(c.trafficCurve))
-  const breakdown = evaluateAttempt(stats, c, blocking, totalCost, canvasTypeIds, costPerRequest, {
+  const costPerRequest = costPerMillionRequests(effectiveCost, peakCurveRps(c.trafficCurve))
+  const breakdown = evaluateAttempt(stats, c, blocking, effectiveCost, canvasTypeIds, costPerRequest, {
     typeByNodeId,
     edges: edges.map((e) => ({ source: e.source, target: e.target })),
   }, advisory)

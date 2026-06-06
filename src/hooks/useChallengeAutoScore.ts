@@ -3,7 +3,8 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeSimStats } from "@/lib/simulationStats"
-import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { computeTotalArchitectureCost, getNodeCost } from "@/stores/architectureStoreHelpers"
+import { peakOriginBoundRps } from "@/lib/challengeBudget"
 import { countTopologyIssues } from "@/engine/topologyChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 
@@ -54,11 +55,16 @@ export function useChallengeAutoScore(): void {
     // (fundamental type, e.g. "load-balancer") which is on the Component in the library.
     const canvasTypeIds = new Set<string>()
     const typeByNodeId = new Map<string, string>()
+    const cdnHitByNodeId = new Map<string, number>() // EN5: CDN nodes' hit ratios (edge absorption)
     for (const node of archState.nodes) {
       const component = componentLibrary.getComponent(node.data.archieComponentId)
       if (component?.typeId) {
         canvasTypeIds.add(component.typeId)
         typeByNodeId.set(node.id, component.typeId)
+        if (component.typeId === "cdn") {
+          const hit = getNodeCost(node.data.archieComponentId, node.data.activeConfigVariantId, node.data.replicaCount ?? 1, node.data.trafficRps).cacheHitRatio
+          if (hit !== undefined && hit > 0) cdnHitByNodeId.set(node.id, hit)
+        }
       }
     }
 
@@ -78,6 +84,10 @@ export function useChallengeAutoScore(): void {
       }
     }
 
-    scoreAttempt(stats, blockingIssueCount, totalCost, canvasTypeIds, advisoryIssueCount, bottleneck)
+    // EN5 (D74): peak origin-bound load (post-CDN) that usage-based fees bill against; the CDN's edge
+    // absorption lowers it. Cheap when no usage_rates (the value is ignored by scoreAttempt then).
+    const originBoundRps = peakOriginBoundRps(ticks, cdnHitByNodeId)
+
+    scoreAttempt(stats, blockingIssueCount, totalCost, canvasTypeIds, advisoryIssueCount, bottleneck, originBoundRps)
   }, [simStatus, attemptState])
 }

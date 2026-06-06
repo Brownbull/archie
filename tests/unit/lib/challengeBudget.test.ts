@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest"
-import { combinedSourcePeak, exceedsBuildablePeak, peakCurveRps, costPerMillionRequests, SECONDS_PER_MONTH } from "@/lib/challengeBudget"
+import { combinedSourcePeak, exceedsBuildablePeak, peakCurveRps, costPerMillionRequests, SECONDS_PER_MONTH, usageCostPerMonth, peakOriginBoundRps } from "@/lib/challengeBudget"
 import { MAX_BUILDABLE_PEAK_RPS } from "@/lib/constants"
 import type { ChallengeTrafficSource } from "@/lib/challengeTypes"
+import type { TickState } from "@/lib/simulationTypes"
 
 const src = (rps: number, type: ChallengeTrafficSource["type"]): ChallengeTrafficSource => ({
   type,
@@ -51,5 +52,26 @@ describe("cost-efficiency unit (ED7, D74)", () => {
   it("is undefined when there is no demand (peak 0)", () => {
     expect(costPerMillionRequests(500, 0)).toBeUndefined()
     expect(SECONDS_PER_MONTH).toBe(2_592_000)
+  })
+})
+
+describe("usage-based cost (EN5, D74)", () => {
+  const tick = (cdnServed: number, total: number): TickState => ({
+    tick: 0, targetRps: total,
+    nodes: [{ nodeId: "cdn", incomingRps: total, servedRps: cdnServed, failedRps: 0, latencyMs: 5, capacityPercent: 0, overloaded: false }],
+    totalServedRps: total, totalFailedRps: 0,
+  })
+
+  it("usageCostPerMonth is 0 without rates or load, scales with origin requests otherwise", () => {
+    expect(usageCostPerMonth(undefined, 100_000)).toBe(0)
+    expect(usageCostPerMonth({ perMillionRequests: 0.004 }, 0)).toBe(0)
+    // 50k origin rps × 2,592,000 s/mo = 1.296e11 req → 129,600 M-req × $0.004 ≈ $518
+    expect(usageCostPerMonth({ perMillionRequests: 0.004 }, 50_000)).toBeCloseTo(518.4, 1)
+  })
+
+  it("peakOriginBoundRps subtracts CDN edge absorption (served × hit) from total served", () => {
+    const ticks = [tick(1000, 1000)]
+    expect(peakOriginBoundRps(ticks, new Map([["cdn", 0.9]]))).toBeCloseTo(100, 6) // 90% absorbed → 100 origin-bound
+    expect(peakOriginBoundRps(ticks, new Map())).toBe(1000) // no CDN → all 1000 reaches origin
   })
 })

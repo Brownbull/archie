@@ -77,6 +77,17 @@ export interface ChallengeRewards {
 }
 
 /**
+ * Usage-based cost rates (EN5, D74): cloud fees billed per request that reaches the ORIGIN (the served
+ * traffic a CDN does NOT absorb at the edge), ON TOP of the flat capacity cost. A CDN cuts the origin
+ * bill — the "front it with a CDN to slash per-request/egress fees" lesson. Absent ⇒ no usage cost
+ * (the capacity-only model, byte-identical to pre-D74).
+ */
+export interface ChallengeUsageRates {
+  /** $ per MILLION origin-bound (post-CDN) requests, per month. */
+  perMillionRequests: number
+}
+
+/**
  * A Challenge Mode level (Epic 16), extended into the Mastery Tracks tech tree (D40, schema v2).
  * Authored as YAML, loaded at build time (and now also at runtime via `loadChallengeFromYaml`).
  *
@@ -141,6 +152,9 @@ export interface Challenge {
   grants: string[]
   /** Progression rewards (XP). Absent on v1 files. */
   rewards?: ChallengeRewards
+  /** Usage-based cost rates (EN5, D74). When set, per-origin-request fees are added to totalCost for the
+   *  budget + cost_per_request gates; a CDN that absorbs requests at the edge lowers the bill. */
+  usageRates?: ChallengeUsageRates
   /**
    * Runtime-only provenance (D45, NOT in the YAML schema). `builtin` is stamped at the build-time
    * glob (the only path that can produce it); `user` is stamped at loadChallengeFromYaml (runtime

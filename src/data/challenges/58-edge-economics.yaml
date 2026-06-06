@@ -1,0 +1,48 @@
+id: edge-economics
+title: Edge Economics
+brief: >-
+  The platform team just enabled a per-request cloud fee — every request that
+  reaches your ORIGIN is metered, and at this volume the bill is brutal. A CDN
+  answers most requests from the edge, so they never hit (or bill) the origin.
+  Front the read-heavy load with a high-hit CDN so the per-request bill collapses
+  and the unit economics survive.
+difficulty: advanced
+budget_cap: 3000
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 300000 }
+  - { t: 90, rps: 600000 }
+traffic_sources:
+  - { type: web-users, rps: 600000, kind: steady, workload: read, origin: one-region }
+required_components:
+  - delivery-network
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 95
+  p99_latency_ms: 400
+  # EN5 (D74): cost-per-request includes the per-origin-request usage fee. A high-hit CDN build lands
+  # ~0.0007 (origin sees ~10% of traffic); a no-CDN build is ~0.0043 (full origin fee) and BLOWS this
+  # gate — so fronting with the CDN is mandatory to pass, not optional polish.
+  cost_per_request: 0.002
+chaos_intensity: 1
+hints:
+  - "There's a NEW cost line now: a per-request fee on every request that reaches your origin. At 600k rps that bill dwarfs the servers."
+  - "A CDN serves cache hits from the edge — those requests never touch (or bill) the origin. A 90%-hit CDN cuts the metered origin traffic by 10×."
+  - "Pick the HIGHEST hit-ratio CDN variant: a low-hit CDN leaves most traffic origin-bound, so the per-request fee — and your cost-per-request — stays high."
+  - "Wire traffic → cdn → cache → compute → relational-db. The CDN absorbs the read bulk at the edge (collapsing the usage fee), the cache shields the origin tiers, and a lean compute + DB clears the budget."
+schema_version: 2
+track: data
+tier: 5
+requires: [unit-economics]
+unlocks: []
+min_xp: 0
+required_types: [cdn, cache]
+available_blocks: [compute, cdn, dns, load-balancer, cache, relational-db, nosql, traffic-source]
+grants: []
+rewards:
+  xp: 1000
+usage_rates:
+  per_million_requests: 0.004

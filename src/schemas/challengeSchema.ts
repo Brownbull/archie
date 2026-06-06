@@ -1,6 +1,7 @@
 import { z } from "zod"
 import { TrafficCurveSchema } from "@/schemas/demandSchema"
 import { MAX_SCHEMA_STRING_LENGTH, MAX_BUILDABLE_PEAK_RPS } from "@/lib/constants"
+import { MAX_MONTHLY_COST } from "@/schemas/componentSchema"
 import { sanitizeDisplayString } from "@/lib/sanitize"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { isKnownTrackId, MIN_CHALLENGE_TIER, MAX_CHALLENGE_TIER } from "@/lib/challengeTracks"
@@ -52,6 +53,13 @@ const TargetMetricsYamlSchema = z
 const RewardsYamlSchema = z
   .object({
     xp: z.number().int().min(0).max(100_000),
+  })
+  .strict()
+
+// Usage-based cost rates (EN5, D74). Snake→camel via the top-level challenge transform.
+const UsageRatesYamlSchema = z
+  .object({
+    per_million_requests: z.number().min(0).max(MAX_MONTHLY_COST),
   })
   .strict()
 
@@ -146,6 +154,7 @@ export const ChallengeYamlSchema = z
     available_blocks: z.array(blockTypeId).max(40).default([]),
     grants: z.array(blockTypeId).max(40).default([]),
     rewards: RewardsYamlSchema.optional(),
+    usage_rates: UsageRatesYamlSchema.optional(),
   })
   .strict()
   .superRefine((d, ctx) => {
@@ -231,4 +240,5 @@ export const ChallengeYamlSchema = z
     availableBlocks: d.available_blocks,
     grants: d.grants,
     rewards: d.rewards,
+    ...(d.usage_rates !== undefined ? { usageRates: { perMillionRequests: d.usage_rates.per_million_requests } } : {}),
   }))

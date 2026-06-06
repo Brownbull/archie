@@ -595,6 +595,37 @@ exports[`rubricScorer — golden regression across all built-in challenges (Phas
     "degraded": {
       "cleanTopology": false,
       "hasRequiredBlocks": true,
+      "passedMetrics": false,
+      "stars": 0,
+      "underBudget": false,
+    },
+    "id": "edge-economics",
+    "metricsFail": {
+      "cleanTopology": true,
+      "hasRequiredBlocks": true,
+      "passedMetrics": false,
+      "stars": 0,
+      "underBudget": true,
+    },
+    "missingReq": {
+      "cleanTopology": true,
+      "hasRequiredBlocks": false,
+      "passedMetrics": false,
+      "stars": 0,
+      "underBudget": true,
+    },
+    "pass": {
+      "cleanTopology": true,
+      "hasRequiredBlocks": true,
+      "passedMetrics": false,
+      "stars": 0,
+      "underBudget": true,
+    },
+  },
+  {
+    "degraded": {
+      "cleanTopology": false,
+      "hasRequiredBlocks": true,
       "passedMetrics": true,
       "stars": 1,
       "underBudget": false,

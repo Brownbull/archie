@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { evaluateAttempt } from "@/engine/rubricScorer"
 import { writeSavedChallenge } from "@/services/challengeAutosave"
-import { costPerMillionRequests, peakCurveRps } from "@/lib/challengeBudget"
+import { costPerMillionRequests, peakCurveRps, usageCostPerMonth } from "@/lib/challengeBudget"
 import type { Challenge, StarBreakdown, MeasuredAttempt } from "@/lib/challengeTypes"
 import type { SimulationStats } from "@/lib/simulationStats"
 import type { TopologyGraphInput } from "@/engine/topologyAssertions"
@@ -43,8 +43,9 @@ interface ChallengeState {
   startAttempt: (snapshot?: AttemptSnapshot) => void
   /** Score the finished attempt against the rubric and record best stars. topologyIssueCount is the
    *  BLOCKING count (orphan/unreachable); advisoryTopologyCount (SPOF/LB) feeds the resilient flag;
-   *  bottleneck is the most-overloaded node (LX2) for actionable failure feedback. */
-  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number, canvasTypeIds?: ReadonlySet<string>, advisoryTopologyCount?: number, bottleneck?: MeasuredAttempt["bottleneck"]) => StarBreakdown | null
+   *  bottleneck is the most-overloaded node (LX2); originBoundRps (EN5) is the post-CDN peak load that
+   *  usage-based fees bill against (0 / omitted ⇒ no usage cost, byte-identical to the capacity model). */
+  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number, canvasTypeIds?: ReadonlySet<string>, advisoryTopologyCount?: number, bottleneck?: MeasuredAttempt["bottleneck"], originBoundRps?: number) => StarBreakdown | null
   /** Leave challenge mode (keeps bestStars history). */
   reset: () => void
 }
@@ -69,15 +70,19 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     set({ attemptState: "running", lastResult: null, attemptSnapshot: snapshot ?? null })
   },
 
-  scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds, advisoryTopologyCount = 0, bottleneck) => {
+  scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds, advisoryTopologyCount = 0, bottleneck, originBoundRps) => {
     const challenge = get().activeChallenge
     if (!challenge) return null
+    // EN5 (D74): fold usage-based fees into the bill the budget + cost_per_request gates see. A CDN that
+    // absorbs requests at the edge lowers originBoundRps → lower usage cost. 0 when no usage_rates.
+    const usageCost = usageCostPerMonth(challenge.usageRates, originBoundRps ?? 0)
+    const effectiveCost = totalCost + usageCost
     // Cost-efficiency (ED7, D74): $ per MILLION requests at the challenge's peak demand — a real,
     // transferable unit. (Was monthly-$ ÷ ~90s of served traffic, a meaningless mixed-timescale ratio.)
-    const costPerRequest = costPerMillionRequests(totalCost, peakCurveRps(challenge.trafficCurve))
+    const costPerRequest = costPerMillionRequests(effectiveCost, peakCurveRps(challenge.trafficCurve))
     // required_topology is graded against the frozen start-time graph (D66), pulled from the snapshot.
     const topologyGraph = get().attemptSnapshot?.topologyGraph
-    const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds, costPerRequest, topologyGraph, advisoryTopologyCount)
+    const result = evaluateAttempt(stats, challenge, topologyIssueCount, effectiveCost, canvasTypeIds, costPerRequest, topologyGraph, advisoryTopologyCount)
     const prevBest = get().bestStars[challenge.id] ?? 0
     set({
       lastResult: result,
@@ -85,7 +90,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
         uptimePercent: stats.uptimePercent,
         p99LatencyMs: stats.p99LatencyMs,
         p95LatencyMs: stats.p95LatencyMs,
-        totalCost,
+        totalCost: effectiveCost,
         topologyIssueCount,
         costPerRequest,
         bottleneck,

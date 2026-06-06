@@ -127,6 +127,10 @@
     "cost": 330,
     "nodes": 6
   },
+  "edge-economics": {
+    "cost": 535,
+    "nodes": 6
+  },
   "edge-resilience": {
     "cost": 75,
     "nodes": 6
