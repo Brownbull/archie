@@ -3947,3 +3947,16 @@ Path-sum end-to-end latency + M/M/1 queueing curve. Re-tune: planet-scale p99 40
 
 ## 2026-06-06 — PHASE 2 EN2 part A: concurrency mechanic (f6a13aa)
 Connection-pool model (Little's law) behind undefined-no-op: schema concurrency_limit + MAX_CONCURRENCY, SimNode.concurrencyLimit (replica-scaled), NodeTelemetry.rejectedRps, the gate in process() (W_queue = bare curve latency), QUEUEING_LATENCY_EPS floor. No variant authors a limit yet → gate is a no-op → harness 3★ all 57 byte-identical, suite 4778. Part B (author limits on reachable variants + concurrency-aware lean builder + a pool-exhaustion challenge + re-tune) remains — the data-heavy lesson-landing pass.
+- 2026-06-06 09:55 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 09:55 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 09:55 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 09:55 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 09:56 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 09:57 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 09:58 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 09:59 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 09:59 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 10:01 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+
+## 2026-06-06 — PHASE 2 EN2 part B (enabler): concurrency-aware builder (d82baee)
+pickCheapestVariant/leanResize now size replicas for the connection pool (W_est at ρ≈0.91 = 5.5× base, matching leanResize's load×1.1). Inert until authoring → 58/58. AUTHORING DEFERRED (PENDING D18): a delicate calibration around the shared llm-gateway (5 challenges) — gate in-flight is curve-inflated at ρ≈0.91, tight window for a binding limit. Recommended: a dedicated high-latency llm variant for a new pool-exhaustion challenge.
