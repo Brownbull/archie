@@ -4013,3 +4013,6 @@ az_outage now removes ONE zone (survive at (azCount−1)/azCount) instead of bla
 
 ## 2026-06-06 — PHASE 3 COMPLETE: resilience as a real subject
 EN7 observability blast-radius (5ef6a31), restore-redundancy resilienceEarned (cdbd294), ED3 required-types-on-served-path (c021e2e). ED3 closes D76/D15: required types must be directed-reachable from traffic (async exempt via shared isOnPathExempt); builder wires non-exempt orphans (security) on-path; presence fallback keeps golden byte-identical. Harness 3-star all 57, suite 4788. Phase 3 (ED2 to EN7 to restore-redundancy to ED3) all shipped. Remaining epic: Phase 4 (ED9, EN5, ED5 once unblocked, ED6/EN4/ED8) plus the optional EN2 force-bite challenge.
+
+## 2026-06-06 22:50 — PUSH dev -> main (P135)
+26 commits: Learning-Fidelity Phases 2-3 (engine fidelity + resilience). deploy-production success (27067649843); e2e-unlocked capstone replay success (27067649842) — the full engine rework (latency/utilization/concurrency/AZ-isolation/observability/on-path-types) validated end-to-end in the running app. DEPLOYMENTS P135.
