@@ -1,0 +1,79 @@
+name: E2E (unlocked replay)
+
+# Runs the capstone/replay E2E (the `desktop-unlocked` Playwright project) against REAL Firebase, using
+# the dedicated all-quests-complete account. Kept SEPARATE from the deploy gate (deploy-production.yml)
+# and from the unit/integration CI (ci.yml) — per D11, full E2E is environmental and not a deploy gate;
+# this is a focused, deterministic signal that capstones still replay to 3★ in the running app.
+#
+# Required repo secrets (skips gracefully if VITE_TEST_UNLOCKED_EMAIL is unset):
+#   VITE_FIREBASE_* (the 6 existing config secrets), VITE_TEST_EMAIL/PASSWORD,
+#   VITE_TEST_UNLOCKED_EMAIL/PASSWORD. The e2e-unlocked account auto-creates on first run if
+#   Email/Password sign-up is enabled in Firebase Auth; otherwise create it once in the console.
+
+on:
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-unlocked-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-unlocked:
+    runs-on: ubuntu-latest
+    env:
+      VITE_TEST_UNLOCKED_EMAIL: ${{ secrets.VITE_TEST_UNLOCKED_EMAIL }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check secrets configured
+        id: guard
+        run: |
+          if [ -z "$VITE_TEST_UNLOCKED_EMAIL" ]; then
+            echo "::notice::VITE_TEST_UNLOCKED_EMAIL secret not set — skipping unlocked E2E."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Playwright (chromium)
+        if: steps.guard.outputs.configured == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Write .env.local from secrets
+        if: steps.guard.outputs.configured == 'true'
+        run: |
+          cat > .env.local <<EOF
+          VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_TEST_EMAIL=${{ secrets.VITE_TEST_EMAIL }}
+          VITE_TEST_PASSWORD=${{ secrets.VITE_TEST_PASSWORD }}
+          VITE_TEST_UNLOCKED_EMAIL=${{ secrets.VITE_TEST_UNLOCKED_EMAIL }}
+          VITE_TEST_UNLOCKED_PASSWORD=${{ secrets.VITE_TEST_UNLOCKED_PASSWORD }}
+          EOF
+
+      - name: Run unlocked replay E2E
+        if: steps.guard.outputs.configured == 'true'
+        run: npx playwright test --project=desktop-unlocked
+
+      - name: Upload Playwright artifacts
+        if: ${{ failure() && steps.guard.outputs.configured == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
