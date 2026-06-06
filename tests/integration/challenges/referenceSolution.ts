@@ -10,7 +10,8 @@ import { runSimulation } from "@/engine/simulationEngine"
 import { computeSimStats } from "@/lib/simulationStats"
 import { evaluateAttempt } from "@/engine/rubricScorer"
 import { countTopologyIssues } from "@/engine/topologyChecker"
-import { SIM_TICKS, MAX_REPLICAS, getScalingRule } from "@/lib/constants"
+import { MAX_REPLICAS, getScalingRule } from "@/lib/constants"
+import { costPerMillionRequests, peakCurveRps } from "@/lib/challengeBudget"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import type { Challenge } from "@/lib/challengeTypes"
 import type { ComponentCategoryId } from "@/lib/constants"
@@ -407,8 +408,8 @@ function scoreBuild(c: Challenge, nodes: readonly RefNode[], edges: readonly Ref
       typeByNodeId.set(n.id, typeId)
     }
   }
-  const requestCount = stats.totalServed * (c.durationSeconds / SIM_TICKS)
-  const costPerRequest = requestCount > 0 ? totalCost / requestCount : undefined
+  // ED7 (D74): cost-efficiency in $/million-requests at peak demand — same unit the app scores with.
+  const costPerRequest = costPerMillionRequests(totalCost, peakCurveRps(c.trafficCurve))
   const breakdown = evaluateAttempt(stats, c, blocking, totalCost, canvasTypeIds, costPerRequest, {
     typeByNodeId,
     edges: edges.map((e) => ({ source: e.source, target: e.target })),

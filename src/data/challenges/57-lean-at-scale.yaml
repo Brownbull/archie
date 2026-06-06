@@ -22,10 +22,10 @@ required_components:
 target_metrics:
   uptime_percent: 95
   p99_latency_ms: 400
-  cost_per_request: 0.00002
+  cost_per_request: 0.0004
 chaos_intensity: 1
 hints:
-  - "At 1.5M rps the fixed cost spreads over far more requests — cost-per-request should fall BELOW the Unit Economics number, not rise."
+  - "At a million requests a second the fixed cost spreads over far more requests — your $/million-requests should fall BELOW the Unit Economics number, not rise."
   - "A fat, high-hit-ratio cache is the whole game: the more reads it absorbs, the fewer compute + DB replicas you pay for."
   - "Keep compute + the database to the cache-miss remainder; cheap small variants beat big expensive ones once the cache is doing the work."
   - "Place traffic → cache → compute → relational-db, cache replicated for the 1.5M read volume and origin sized to the misses; the amortized cache clears the cost-per-request target at ≥95% uptime, p99 ≤ 400ms."

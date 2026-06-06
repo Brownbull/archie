@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { evaluateAttempt } from "@/engine/rubricScorer"
 import { writeSavedChallenge } from "@/services/challengeAutosave"
-import { SIM_TICKS } from "@/lib/constants"
+import { costPerMillionRequests, peakCurveRps } from "@/lib/challengeBudget"
 import type { Challenge, StarBreakdown, MeasuredAttempt } from "@/lib/challengeTypes"
 import type { SimulationStats } from "@/lib/simulationStats"
 import type { TopologyGraphInput } from "@/engine/topologyAssertions"
@@ -72,12 +72,9 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds, advisoryTopologyCount = 0, bottleneck) => {
     const challenge = get().activeChallenge
     if (!challenge) return null
-    // Cost-efficiency (ISAPivot Phase 3): monthly cost ÷ requests served during the run. totalServed
-    // is per-tick served RPS summed over SIM_TICKS ticks; each tick spans durationSeconds/SIM_TICKS
-    // seconds, so requests = totalServed × secondsPerTick. undefined when no traffic was served.
-    const secondsPerTick = challenge.durationSeconds / SIM_TICKS
-    const requestCount = stats.totalServed * secondsPerTick
-    const costPerRequest = requestCount > 0 ? totalCost / requestCount : undefined
+    // Cost-efficiency (ED7, D74): $ per MILLION requests at the challenge's peak demand — a real,
+    // transferable unit. (Was monthly-$ ÷ ~90s of served traffic, a meaningless mixed-timescale ratio.)
+    const costPerRequest = costPerMillionRequests(totalCost, peakCurveRps(challenge.trafficCurve))
     // required_topology is graded against the frozen start-time graph (D66), pulled from the snapshot.
     const topologyGraph = get().attemptSnapshot?.topologyGraph
     const result = evaluateAttempt(stats, challenge, topologyIssueCount, totalCost, canvasTypeIds, costPerRequest, topologyGraph, advisoryTopologyCount)

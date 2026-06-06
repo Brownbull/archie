@@ -213,7 +213,8 @@ export function ChallengeResultsModal() {
     metricBits.push(`p95 ${Math.round(measured.p95LatencyMs)}/${tm.p95LatencyMs}ms`)
   }
   if (tm.costPerRequest !== undefined && measured.costPerRequest !== undefined) {
-    metricBits.push(`$/req ${measured.costPerRequest.toFixed(4)}/${tm.costPerRequest}`)
+    // ED7 (D74): $ per MILLION requests at peak demand — a real, transferable cost-efficiency unit.
+    metricBits.push(`$/M-req ${measured.costPerRequest.toFixed(4)}/${tm.costPerRequest}`)
   }
 
   return (

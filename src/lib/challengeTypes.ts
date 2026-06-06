@@ -62,9 +62,10 @@ export interface ChallengeTargetMetrics {
   /** Optional tighter latency gate (ISAPivot Phase 3). When set, p95 ≤ this is also required for the metrics star. */
   p95LatencyMs?: number
   /**
-   * Optional cost-efficiency gate (ISAPivot Phase 3): monthly cost ÷ requests served during the run window.
-   * When set, the measured ratio must be ≤ this for the metrics star. A directional efficiency lever,
-   * not a billing figure — lower means more cost-effective per unit of served load.
+   * Optional cost-efficiency gate. UNIT (ED7, D74): $ per MILLION requests at peak demand
+   * (monthlyCost ÷ a month of traffic at the challenge's peak rps, ×1e6) — a real, transferable
+   * figure. When set, the measured value must be ≤ this for the metrics star. Lower = more
+   * cost-effective. (Pre-D74 this was monthly-$ ÷ ~90s of served traffic — a meaningless ratio.)
    */
   costPerRequest?: number
 }
@@ -220,7 +221,7 @@ export interface MeasuredAttempt {
   p95LatencyMs?: number
   totalCost: number
   topologyIssueCount: number
-  /** Derived cost-efficiency at score time (ISAPivot Phase 3). undefined when no requests were served. */
+  /** Derived cost-efficiency at score time, in $/million-requests at peak demand (ED7, D74). undefined when no demand. */
   costPerRequest?: number
   /**
    * The most-overloaded node during the run (LX2, D74) — the actionable culprit when metrics fail.

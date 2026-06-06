@@ -51,12 +51,14 @@ describe("challengeStore (Epic 16)", () => {
     s().selectChallenge(challenge)
     s().startAttempt()
     s().scoreAttempt(stats(99.5, 175), 2, 420)
-    expect(s().lastMeasured).toEqual({
+    expect(s().lastMeasured).toMatchObject({
       uptimePercent: 99.5,
       p99LatencyMs: 175,
       totalCost: 420,
       topologyIssueCount: 2,
     })
+    // ED7: cost-efficiency = $/million-req at peak demand (peak 100 rps, $420/mo) ≈ 1.62.
+    expect(s().lastMeasured?.costPerRequest).toBeCloseTo(1.6204, 3)
     s().reset()
     expect(s().lastMeasured).toBeNull() // cleared on leaving challenge mode
   })

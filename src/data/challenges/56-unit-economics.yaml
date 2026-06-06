@@ -21,10 +21,10 @@ required_components:
 target_metrics:
   uptime_percent: 95
   p99_latency_ms: 350
-  cost_per_request: 0.00004
+  cost_per_request: 0.0005
 chaos_intensity: 1
 hints:
-  - "Cost-per-request = monthly spend ÷ requests served. Serve more from cache and the ratio collapses."
+  - "Cost-per-request here = $ per MILLION requests at peak demand (monthly spend ÷ a month of peak traffic). Serve more from cache and the ratio collapses."
   - "A high cache hit-ratio means origin compute + the database see only a sliver — size them small and cheap."
   - "Don't reach for the biggest variant of every block; pick the cheapest one that still carries its measured load."
   - "Place traffic → cache → compute → relational-db: the cache absorbs the read bulk, so a lean compute + DB tier clears the cost-per-request target while holding p99 ≤ 350ms at ≥99% uptime."
