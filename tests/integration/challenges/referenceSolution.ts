@@ -74,7 +74,20 @@ export interface RefEdge {
   target: string
 }
 
-type Variant = { id: string; maxRPS?: number; cacheHitRatio?: number; monthlyCost?: number }
+type Variant = { id: string; maxRPS?: number; cacheHitRatio?: number; monthlyCost?: number; concurrencyLimit?: number; baseLatencyMs?: number }
+
+// EN2 (D74): conservative in-flight estimate for SIZING. W depends on post-resize ρ (circular), so use
+// the queueing curve at the lean builder's actual peak operating point. leanResize sizes to load×1.1, so
+// a node runs at ρ≈1/1.1≈0.91 at peak, where the ED4 curve inflates latency ≈5.5× base — NOT the 2.5×
+// of ρ=0.8 the first cut assumed (that under-sizes the pool and the gate would shed). 5.5× is the
+// conservative upper bound that never under-sizes: replicas so concurrencyLimit × replicas ≥ load × W/1000.
+const SIZING_W_MULTIPLIER = 5.5
+function concurrencyReplicas(v: Variant, load: number, scalesWithReplicas: boolean): number {
+  if (!v.concurrencyLimit || v.concurrencyLimit <= 0 || !scalesWithReplicas) return 1
+  const wEst = Math.max(v.baseLatencyMs ?? 0, 0) * SIZING_W_MULTIPLIER
+  const inFlight = (load || 1) * (wEst / 1000)
+  return Math.max(1, Math.ceil(inFlight / v.concurrencyLimit))
+}
 
 /**
  * PASS-1 variant pick: maximize capacity so the over-provisioned reference never sheds — this gives
@@ -110,15 +123,23 @@ function pickCheapestVariant(component: { configVariants: Variant[] }, typeId: s
     if (withRatio.length > 0) {
       const bestRatio = Math.max(...withRatio.map((v) => v.cacheHitRatio ?? 0))
       const top = withRatio.filter((v) => (v.cacheHitRatio ?? 0) === bestRatio)
-      return top.reduce((best, v) => ((v.monthlyCost ?? 0) < (best.monthlyCost ?? 0) ? v : best))
+      const pick = top.reduce((best, v) => ((v.monthlyCost ?? 0) < (best.monthlyCost ?? 0) ? v : best))
+      // EN2: only short-circuit if the hit-ratio pick's connection pool actually carries the load;
+      // otherwise fall through to the general fits/cost selection. (No-op until a cdn/cache authors a limit.)
+      if (concurrencyReplicas(pick, load, scalesWithReplicas) <= MAX_REPLICAS) return pick
     }
   }
   const replicasFor = (v: Variant) => {
     const per = v.maxRPS && v.maxRPS > 0 ? v.maxRPS : load || 1
-    return scalesWithReplicas ? Math.max(1, Math.ceil((load || 1) / per)) : 1
+    const rpsReplicas = scalesWithReplicas ? Math.max(1, Math.ceil((load || 1) / per)) : 1
+    // EN2: a high-latency variant may need MORE replicas for the connection pool than for throughput.
+    return Math.max(rpsReplicas, concurrencyReplicas(v, load, scalesWithReplicas))
   }
+  // EN2: a non-scaling variant whose own per-replica pool can't carry the in-flight load never fits.
+  const concurrencyOk = (v: Variant) =>
+    scalesWithReplicas || !v.concurrencyLimit || v.concurrencyLimit > (load || 1) * ((Math.max(v.baseLatencyMs ?? 0, 0) * SIZING_W_MULTIPLIER) / 1000)
   const fits = (v: Variant) =>
-    (v.maxRPS ?? 0) > 0 && (scalesWithReplicas ? replicasFor(v) <= MAX_REPLICAS : (v.maxRPS ?? 0) >= load)
+    (v.maxRPS ?? 0) > 0 && concurrencyOk(v) && (scalesWithReplicas ? replicasFor(v) <= MAX_REPLICAS : (v.maxRPS ?? 0) >= load)
   const cost = (v: Variant) => (v.monthlyCost ?? 0) * replicasFor(v)
   const affordable = variants.filter(fits)
   if (affordable.length > 0) return affordable.reduce((best, v) => (cost(v) < cost(best) ? v : best))
@@ -328,7 +349,9 @@ function leanResize(c: Challenge, nodes: readonly RefNode[], edges: readonly Ref
     const scalesWithReplicas = getScalingRule(n.data.componentCategory).replicaType === "full"
     const variant = pickCheapestVariant(component as never, typeId, load, scalesWithReplicas)
     const per = variant.maxRPS && variant.maxRPS > 0 ? variant.maxRPS : load
-    const replicaCount = scalesWithReplicas ? Math.max(1, Math.ceil(load / per)) : 1
+    const rpsReplicas = scalesWithReplicas ? Math.max(1, Math.ceil(load / per)) : 1
+    // EN2: size for the connection pool too — a slow tier needs replicas for concurrency, not just rps.
+    const replicaCount = Math.max(rpsReplicas, concurrencyReplicas(variant as Variant, load, scalesWithReplicas))
     return { ...n, data: { ...n.data, activeConfigVariantId: variant.id, replicaCount } }
   })
 }
