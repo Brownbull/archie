@@ -37,14 +37,23 @@ export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): numbe
   return Object.values(p.bestStarsCloud).reduce((a, b) => a + b, 0)
 }
 
-/** Total hints unlocked (= total stars spent, derived). */
+/** Total hints unlocked across all challenges (raw count, not the spent total). */
 export function totalHintsUnlocked(p: Pick<UserProgress, "hintsUnlocked">): number {
   return Object.values(p.hintsUnlocked).reduce((a, b) => a + b, 0)
 }
 
-/** Spendable star balance (D68): earned − spent, never negative. */
+/**
+ * Stars SPENT on hints (LX1, D74): the FIRST hint per challenge is FREE, so only hints beyond the
+ * first count against the balance. This keeps a stuck beginner (0 earned stars) from being gated out
+ * of the one hint that would unblock them — they still pay for the deeper reference-solution hints.
+ */
+export function totalHintsSpent(p: Pick<UserProgress, "hintsUnlocked">): number {
+  return Object.values(p.hintsUnlocked).reduce((a, b) => a + Math.max(0, b - 1), 0)
+}
+
+/** Spendable star balance (D68): earned − spent (first hint per challenge free, LX1), never negative. */
 export function spendableStars(p: Pick<UserProgress, "bestStarsCloud" | "hintsUnlocked">): number {
-  return Math.max(0, totalEarnedStars(p) - totalHintsUnlocked(p))
+  return Math.max(0, totalEarnedStars(p) - totalHintsSpent(p))
 }
 
 export interface XpAwardResult {
@@ -166,7 +175,8 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     const state = get()
     const current = state.hintsUnlocked[challengeId] ?? 0
     if (current >= ladderLength) return false // all hints for this challenge already revealed
-    if (spendableStars(state) < 1) return false // not enough spendable stars
+    // LX1 (D74): the first hint per challenge is free; only the 2nd+ require a spendable star.
+    if (current >= 1 && spendableStars(state) < 1) return false // not enough spendable stars
 
     const newHints = { ...state.hintsUnlocked, [challengeId]: current + 1 }
     set({ hintsUnlocked: newHints, error: null })

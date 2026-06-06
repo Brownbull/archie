@@ -22,7 +22,9 @@ export function HintPanel() {
   const total = challenge.hints.length
   const allRevealed = unlocked >= total
   const userId = user?.uid ?? null
-  const canUnlock = !!userId && !allRevealed && balance >= 1
+  // LX1 (D74): the first hint per challenge is free — a stuck beginner with 0 stars can still unlock it.
+  const firstIsFree = unlocked === 0
+  const canUnlock = !!userId && !allRevealed && (firstIsFree || balance >= 1)
   const nextIsFinal = unlocked === total - 1
   const revealed = challenge.hints.slice(0, unlocked)
 
@@ -64,15 +66,15 @@ export function HintPanel() {
           >
             <Lock className="h-3 w-3" />
             {nextIsFinal ? "Reveal the full solution" : "Reveal next hint"}
-            <span className="flex items-center gap-0.5 text-yellow-400">
-              (1<Star className="h-2.5 w-2.5 fill-yellow-400" />)
+            <span data-testid="hint-cost" className="flex items-center gap-0.5 text-yellow-400">
+              {firstIsFree ? "(free)" : <>(1<Star className="h-2.5 w-2.5 fill-yellow-400" />)</>}
             </span>
           </button>
           {!userId && (
-            <p data-testid="hint-login" className="mt-1 text-[0.6875rem] text-text-secondary">Log in to spend stars on hints.</p>
+            <p data-testid="hint-login" className="mt-1 text-[0.6875rem] text-text-secondary">Log in to unlock hints.</p>
           )}
-          {userId && balance < 1 && (
-            <p data-testid="hint-no-stars" className="mt-1 text-[0.6875rem] text-text-secondary">Earn stars by clearing challenges to unlock hints.</p>
+          {userId && !firstIsFree && balance < 1 && (
+            <p data-testid="hint-no-stars" className="mt-1 text-[0.6875rem] text-text-secondary">Earn stars by clearing challenges to unlock more hints.</p>
           )}
         </>
       )}

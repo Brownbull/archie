@@ -46,24 +46,39 @@ describe("HintPanel (ISAPivot Phase 5 hint economy)", () => {
     expect(screen.queryByTestId("hint-0")).not.toBeInTheDocument()
   })
 
-  it("signed in with no spendable stars: reveal disabled + earn-stars prompt", () => {
+  it("signed in, first hint FREE even at 0 spendable stars (LX1)", () => {
     mockUser = { uid: "u1" }
+    render(<HintPanel />) // 0 stars, 0 unlocked
+    expect(screen.getByTestId("hint-balance")).toHaveTextContent("0")
+    expect(screen.getByTestId("hint-reveal-next")).toBeEnabled()
+    expect(screen.getByTestId("hint-cost")).toHaveTextContent("free")
+    expect(screen.queryByTestId("hint-no-stars")).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId("hint-reveal-next"))
+    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(1)
+    expect(screen.getByTestId("hint-0")).toHaveTextContent("First nudge")
+  })
+
+  it("signed in, no stars, after the free first hint: 2nd hint disabled + earn-stars prompt", () => {
+    mockUser = { uid: "u1" }
+    useUserProgressStore.setState({ bestStarsCloud: {}, hintsUnlocked: { c1: 1 } }) // free first used, 0 spendable
     render(<HintPanel />)
     expect(screen.getByTestId("hint-reveal-next")).toBeDisabled()
+    expect(screen.getByTestId("hint-cost")).toHaveTextContent("1")
     expect(screen.getByTestId("hint-no-stars")).toBeInTheDocument()
   })
 
-  it("signed in with stars: reveals the next hint and drains the balance", () => {
+  it("signed in with stars: 2nd hint costs a star and drains the balance", () => {
     mockUser = { uid: "u1" }
-    useUserProgressStore.setState({ bestStarsCloud: { cX: 3 } }) // 3 spendable (earned elsewhere)
+    useUserProgressStore.setState({ bestStarsCloud: { cX: 3 }, hintsUnlocked: { c1: 1 } }) // free first used; 3 spendable
     render(<HintPanel />)
     expect(screen.getByTestId("hint-balance")).toHaveTextContent("3")
-    expect(screen.queryByTestId("hint-0")).not.toBeInTheDocument()
+    expect(screen.getByTestId("hint-cost")).toHaveTextContent("1")
 
     fireEvent.click(screen.getByTestId("hint-reveal-next"))
 
-    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(1)
-    expect(screen.getByTestId("hint-0")).toHaveTextContent("First nudge")
+    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(2)
+    expect(screen.getByTestId("hint-1")).toHaveTextContent("Second hint")
     expect(screen.getByTestId("hint-balance")).toHaveTextContent("2")
   })
 
