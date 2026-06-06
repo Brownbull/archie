@@ -45,6 +45,10 @@ config_variants:
     monthly_cost: 50
     max_rps: 100
     base_latency_ms: 500
+    # EN2 (D74): a single-model proxy holds each inference connection ~500ms, so its connection pool
+    # (150) exhausts well before its 100 rps cap — the textbook "slow tier needs replicas for concurrency,
+    # not throughput" lesson. Replicas add pool capacity (concurrency scales with replicas).
+    concurrency_limit: 150
     metrics:
       - id: inference-latency
         value: low
@@ -97,6 +101,8 @@ config_variants:
     monthly_cost: 100
     max_rps: 500
     base_latency_ms: 300
+    # EN2: 300ms holds → pool of 450 (vs 500 rps cap), a milder concurrency constraint than single-model.
+    concurrency_limit: 450
     metrics:
       - id: inference-latency
         value: medium
@@ -155,6 +161,10 @@ config_variants:
     monthly_cost: 150
     max_rps: 2000
     base_latency_ms: 50
+    # EN2: streaming holds connections only ~50ms, so its pool (2000) tracks its rps cap — throughput,
+    # not concurrency, is the binding constraint here (the lesson: a low-latency gateway sidesteps pool
+    # exhaustion). A generous ceiling so it effectively never gates before rps.
+    concurrency_limit: 2000
     metrics:
       - id: inference-latency
         value: low
