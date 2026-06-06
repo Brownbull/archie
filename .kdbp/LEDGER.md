@@ -3960,3 +3960,10 @@ Connection-pool model (Little's law) behind undefined-no-op: schema concurrency_
 
 ## 2026-06-06 — PHASE 2 EN2 part B (enabler): concurrency-aware builder (d82baee)
 pickCheapestVariant/leanResize now size replicas for the connection pool (W_est at ρ≈0.91 = 5.5× base, matching leanResize's load×1.1). Inert until authoring → 58/58. AUTHORING DEFERRED (PENDING D18): a delicate calibration around the shared llm-gateway (5 challenges) — gate in-flight is curve-inflated at ρ≈0.91, tight window for a binding limit. Recommended: a dedicated high-latency llm variant for a new pool-exhaustion challenge.
+- 2026-06-06 10:18 | Edit | /home/khujta/projects/bmad/archie/src/data/components/llm-gateway.yaml
+- 2026-06-06 10:18 | Edit | /home/khujta/projects/bmad/archie/src/data/components/llm-gateway.yaml
+- 2026-06-06 10:18 | Edit | /home/khujta/projects/bmad/archie/src/data/components/llm-gateway.yaml
+- 2026-06-06 10:20 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+
+## 2026-06-06 — PHASE 2 EN2 authoring: llm connection ceilings (645fae0)
+Authored concurrency_limit on llm-gateway variants (single-model 150 / multi-model 450 / streaming 2000). Mechanic now LIVE + behavior-shaping: rag-retrieval's build switches single-model→multi-model-router to avoid pool exhaustion; production-ai (low load) keeps single-model. Gate fires for naive single-model stacking (unit-tested). 58/58, par/golden unchanged. FINDING: the cost-optimizing builder uses streaming (50ms, low-latency) to dodge pool exhaustion, so no clearable challenge is FORCED concurrency-bound — a force-bite pool-exhaustion challenge needs a HIGH-LATENCY-ONLY component (no streaming escape). EN2 core (mechanic + builder + authoring) COMPLETE; the force-bite challenge is an optional enhancement (refined D18). Phase 2 (ED1+ED4+EN2) substantially done.
