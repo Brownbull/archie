@@ -1,0 +1,42 @@
+id: strong-or-stale
+title: Strong or Stale
+brief: >-
+  A multi-region ledger: users in two regions read and write the same balances.
+  Cheap async read-replicas lag the primary — fine for a feed, fatal for money
+  (a read-your-writes anomaly shows the wrong balance). Pick a replication
+  strategy whose worst-case staleness stays inside the consistency budget, and
+  pay the cross-region round-trips it costs. Strong consistency isn't free.
+difficulty: advanced
+budget_cap: 1500
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 18000 }
+  - { t: 90, rps: 30000 }
+traffic_sources:
+  - { type: web-users, rps: 18000, kind: realistic, workload: mixed, origin: multi-region }
+  - { type: api-client, rps: 12000, kind: realistic, workload: mixed, origin: one-region }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 500
+cross_region_rtt_ms: 40
+consistency_target_ms: 100
+chaos_intensity: 1
+hints:
+  - "There is a NEW gate: max read staleness ≤ 100ms. Staleness = replication lag × write-pressure × replica fan-out — async read-replicas (~50ms base lag) blow past it under a write-mixed load."
+  - "Choose a synchronous / strong-consistency database variant (low replication lag). It costs more and adds a little write latency, but it keeps reads fresh enough to clear the consistency budget."
+  - "This is multi-region: every compute + database hop pays a cross-region RTT (40ms). Size for the latency budget AND the consistency budget — that's the CAP trade-off made concrete."
+schema_version: 2
+track: data
+tier: 5
+requires: [unit-economics]
+unlocks: []
+min_xp: 0
+required_types: [relational-db]
+available_blocks: [traffic-source, compute, load-balancer, cdn, cache, relational-db, nosql, dns]
+grants: []
+rewards:
+  xp: 1100

@@ -275,6 +275,8 @@ export interface NodeCostInfo {
   readonly concurrencyLimit: number | undefined
   /** ED9: pay-per-use elasticity — cost integrates over the load curve instead of flat × replicas. */
   readonly autoscale: boolean | undefined
+  /** EN4: read-replica replication lag (ms) — base staleness for the consistency model. */
+  readonly replicationLagMs: number | undefined
 }
 
 /**
@@ -314,6 +316,7 @@ export function getNodeCost(
       writeDistribution: variant?.writeDistribution,
       concurrencyLimit: undefined, // traffic sources are load origins, never concurrency-limited
       autoscale: undefined, // a traffic source is a load origin, not an autoscaling tier
+      replicationLagMs: undefined,
     }
   }
   const capacityFactor = rule && rule.replicaType !== "none" ? replicas : 1
@@ -331,6 +334,7 @@ export function getNodeCost(
     // EN2: concurrency scales with replicas just like throughput (more replicas = more in-flight slots).
     concurrencyLimit: variant?.concurrencyLimit === undefined ? undefined : variant.concurrencyLimit * capacityFactor,
     autoscale: variant?.autoscale,
+    replicationLagMs: variant?.replicationLagMs,
   }
 }
 
@@ -536,6 +540,20 @@ export function cacheErosionForKind(kind: string | undefined): number {
 }
 
 /**
+ * ED6 (D74): the cross-region sim opts derived from a challenge — the SINGLE source of truth shared by
+ * the live app (ChallengeStartButton) and the harness (referenceSolution), so the scored sim and its
+ * oracle never drift. multiRegion is true when any source is multi-region; the RTT is authored-only.
+ */
+export function crossRegionSimOpts(
+  c: { crossRegionRttMs?: number; trafficSources?: ReadonlyArray<{ origin: string }> },
+): { crossRegionRttMs?: number; multiRegion?: boolean } {
+  return {
+    crossRegionRttMs: c.crossRegionRttMs,
+    multiRegion: !!c.trafficSources?.some((s) => s.origin === "multi-region"),
+  }
+}
+
+/**
  * ED5/D20 (D74): the rps-weighted workload blend of a challenge's traffic sources — the SAME quantities
  * buildSimGraph derives from the canvas, computed straight from the authored sources. Used to make the
  * challenge's demand authoritative in the LIVE sim (a locked challenge overrides the player's traffic
@@ -567,6 +585,9 @@ export function workloadBlend(
 export function buildSimGraph(
   nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number; trafficRps?: number; trafficWorkload?: string; trafficKind?: string; cacheableFraction?: number } }>,
   edges: ReadonlyArray<{ source: string; target: string }>,
+  // ED6 (D74): cross-region RTT opts, threaded from the active challenge by the challenge-scoring call
+  // sites (app + harness). Omitted by every other caller ⇒ undefined ⇒ no RTT term (byte-identical).
+  opts?: { crossRegionRttMs?: number; multiRegion?: boolean },
 ): SimGraph {
   // ISAPivot Phase 2b + ED5 (D74): derive the global WORKLOAD behaviors from the traffic sources,
   // rps-weighted. write-pressure (write=1, mixed=0.5, read=0) blends into the DB write/read split;
@@ -606,6 +627,7 @@ export function buildSimGraph(
       ...(cost.writeRatio !== undefined ? { writeRatio: cost.writeRatio } : {}),
       ...(cost.writeDistribution !== undefined ? { writeDistribution: cost.writeDistribution } : {}),
       ...(cost.concurrencyLimit !== undefined ? { concurrencyLimit: cost.concurrencyLimit } : {}),
+      ...(cost.replicationLagMs !== undefined ? { replicationLagMs: cost.replicationLagMs } : {}),
       // ED2: a multi-replica tier spreads across AZs, so it survives an az_outage at (azCount−1)/azCount.
       ...(() => {
         const az = azCountForReplicas(n.data.replicaCount ?? 1)
@@ -620,6 +642,8 @@ export function buildSimGraph(
     ...(writePressure !== undefined ? { writePressure } : {}),
     ...(cacheableFraction !== undefined ? { cacheableFraction } : {}),
     ...(cacheErosion !== undefined ? { cacheErosion } : {}),
+    ...(opts?.crossRegionRttMs !== undefined ? { crossRegionRttMs: opts.crossRegionRttMs } : {}),
+    ...(opts?.multiRegion ? { multiRegion: true } : {}),
   }
 }
 

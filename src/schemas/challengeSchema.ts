@@ -167,6 +167,11 @@ export const ChallengeYamlSchema = z
     grants: z.array(blockTypeId).max(40).default([]),
     rewards: RewardsYamlSchema.optional(),
     usage_rates: UsageRatesYamlSchema.optional(),
+    // ED6/EN4 (D74): cross-region RTT penalty (ms) per cross-region hop + the consistency (max read
+    // staleness, ms) scoring target. Both optional + NEVER auto-defaulted — challenges that omit them
+    // (incl. the 7 existing multi-region ones) are byte-identical.
+    cross_region_rtt_ms: z.number().min(0).max(10_000).optional(),
+    consistency_target_ms: z.number().min(0).max(60_000).optional(),
   })
   .strict()
   .superRefine((d, ctx) => {
@@ -253,4 +258,6 @@ export const ChallengeYamlSchema = z
     grants: d.grants,
     rewards: d.rewards,
     ...(d.usage_rates !== undefined ? { usageRates: { perMillionRequests: d.usage_rates.per_million_requests } } : {}),
+    ...(d.cross_region_rtt_ms !== undefined ? { crossRegionRttMs: d.cross_region_rtt_ms } : {}),
+    ...(d.consistency_target_ms !== undefined ? { consistencyTargetMs: d.consistency_target_ms } : {}),
   }))

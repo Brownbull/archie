@@ -1,4 +1,4 @@
-import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, MAX_FLOW_PASSES, FLOW_EPSILON, OBS_DETECT_DELAY_S, OBS_RESIDUAL_BLAST, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
+import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, MAX_FLOW_PASSES, FLOW_EPSILON, OBS_DETECT_DELAY_S, OBS_RESIDUAL_BLAST, DEFAULT_REPLICATION_LAG_MS, REPLICA_LAG_WRITE_K, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
 import type {
   SimGraph,
   SimNode,
@@ -78,6 +78,15 @@ export function effectiveCacheHitRatio(ceiling: number, graph: Pick<SimGraph, "c
   const mult = (graph.cacheableFraction ?? 1) * (1 - (graph.writePressure ?? 0)) * (graph.cacheErosion ?? 1)
   return Math.max(0, ceiling * mult)
 }
+
+/**
+ * ED6 (D74): categories that pay the cross-region RTT penalty on a multi-region run — the synchronous
+ * request path (compute, data-storage, search, messaging, real-time). Edge tiers (traffic, delivery-
+ * network, caching) terminate locally so they're exempt. SimNode has no typeId, so the rule is by category.
+ */
+const CROSS_REGION_RTT_CATEGORIES: ReadonlySet<string> = new Set([
+  "compute", "data-storage", "search", "messaging", "real-time",
+])
 
 /**
  * Resolves the scheduled events active at `timeS` into per-tick overrides (Epic 16).
@@ -233,6 +242,7 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     // divided by the implicit replica factor). "sharded": writes use the full scaled capacity.
     let served: number
     let failed: number
+    let stalenessMs: number | undefined // EN4 (D74): read staleness, only on the write/read-split branch
     if (offline) {
       served = 0
       failed = incoming
@@ -253,6 +263,13 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       const readServed = Math.min(readRps, readCap)
       served = writeServed + readServed
       failed = Math.max(0, incoming - served)
+      // EN4 (D74): read staleness = replication lag × write-pressure amplification × a BOUNDED replica
+      // fan-out (log2, never linear — a linear fan-out explodes to ~2200ms and makes any target
+      // unbeatable). A synchronous/low-lag variant with few replicas stays small; an async read-replica-
+      // heavy build grows. Feeds the consistency gate (inert until a challenge authors consistency_target).
+      const lag = node.replicationLagMs ?? DEFAULT_REPLICATION_LAG_MS
+      const replicas = node.baseMaxRps && node.baseMaxRps > 0 ? node.effectiveMaxRps / node.baseMaxRps : 1
+      stalenessMs = lag * (1 + effWriteRatio * REPLICA_LAG_WRITE_K) * (1 + Math.log2(Math.max(1, replicas)))
     } else if (node.queueBufferSize !== undefined && node.queueBufferSize > 0 && capped) {
       // Queue backpressure (E5): excess is buffered, not shed. Overflow sheds.
       const drainRate = effMax
@@ -319,12 +336,20 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       baseLatency += node.coldStartLatencyMs * node.coldStartRatio
     }
 
+    // ED6 (D74): cross-region hops pay an RTT penalty (authored + multi-region only; NEVER
+    // auto-defaulted, so the 7 existing multi-region challenges are byte-identical). Edge/cache tiers
+    // terminate locally → only the synchronous compute/data/search/messaging/real-time path pays it.
+    if (graph.crossRegionRttMs !== undefined && graph.multiRegion && CROSS_REGION_RTT_CATEGORIES.has(node.category)) {
+      baseLatency += graph.crossRegionRttMs
+    }
+
     telemetry.set(id, {
       nodeId: id,
       incomingRps: incoming,
       servedRps: served,
       failedRps: failed,
       ...(rejected > 0 ? { rejectedRps: rejected } : {}),
+      ...(stalenessMs !== undefined ? { stalenessMs } : {}),
       latencyMs: baseLatency * latMult,
       capacityPercent,
       overloaded: (offline ? incoming > 0 : capped && incoming > effMax) || rejected > 0,

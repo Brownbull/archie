@@ -190,6 +190,49 @@ config_variants:
           - Data sharded by distribution column across worker nodes
           - New workers can be added to increase capacity
           - Rebalancing shards requires careful planning to avoid downtime
+  - id: synchronous-replica
+    name: Synchronous Replica (Strong Reads)
+    monthly_cost: 380
+    max_rps: 12000
+    base_latency_ms: 9
+    write_ratio: 0.3
+    write_distribution: primary
+    # EN4 (D74): synchronous_commit = remote_apply keeps replicas near-fresh (~8ms lag vs ~50ms async)
+    # at a higher cost + a touch more write latency — the strong-consistency choice for a tight target.
+    replication_lag_ms: 8
+    metrics:
+      - id: read-latency
+        value: medium
+        numeric_value: 5
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: postgres-cost-efficiency
+        value: low
+        numeric_value: 2
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- Synchronous replication: the writer waits for replica apply before commit,
+        -- so a read on any replica reflects all committed writes (no stale reads).
+        ALTER SYSTEM SET synchronous_commit = 'remote_apply';
+        SELECT balance FROM accounts WHERE id = $1; -- fresh on the replica
+    metric_explanations:
+      read-latency:
+        reason: Reads are served from synchronously-applied replicas, so they're fresh but the synchronous commit path adds write latency that backs up under load.
+        contributing_factors:
+          - Replicas apply WAL before the writer acknowledges a commit
+          - Cross-replica acknowledgement adds a round-trip to writes
+          - Read freshness is guaranteed at the cost of write throughput
+      horizontal-scalability:
+        reason: Synchronous replicas serve fresh reads, but coupling write latency to replica apply caps how far you can scale the replica fan-out.
+        contributing_factors:
+          - Fresh reads scale across synchronous replicas
+          - Write latency rises with the number of synchronous replicas
+          - A single writer still funnels all mutations
 connection_properties:
   protocol: TCP
   communication_patterns:

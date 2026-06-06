@@ -85,6 +85,48 @@ config_variants:
           - Up to 15 read replicas share the storage volume
           - Single writer instance for all mutations
           - Reader endpoint balances read traffic
+  - id: synchronous-multi-az
+    name: Synchronous Multi-AZ (Strong Reads)
+    monthly_cost: 320
+    max_rps: 10000
+    base_latency_ms: 7
+    write_ratio: 0.3
+    write_distribution: primary
+    # EN4 (D74): synchronous replication keeps replicas near-fresh (~8ms lag vs ~50ms async) at a higher
+    # cost + a touch more write latency — the strong-consistency choice for a tight staleness target.
+    replication_lag_ms: 8
+    metrics:
+      - id: write-throughput
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: horizontal-scalability
+        value: medium
+        numeric_value: 5
+        category: scalability
+      - id: aurora-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: sql
+      code: |
+        -- Aurora with synchronous replicas: reads from a replica are guaranteed
+        -- to reflect committed writes (no read-your-writes anomalies).
+        SELECT balance FROM accounts WHERE id = $1; -- safe on the reader endpoint
+    metric_explanations:
+      write-throughput:
+        reason: Synchronous commit to replicas adds a round-trip to every write, trimming peak write throughput versus async.
+        contributing_factors:
+          - Writer waits for replica acknowledgement before commit
+          - Cross-AZ acknowledgement adds latency to the write path
+          - Trades throughput for read freshness
+      horizontal-scalability:
+        reason: Reads scale across synchronous replicas, but the synchronous commit couples write latency to replica health.
+        contributing_factors:
+          - Synchronous replicas serve fresh reads
+          - Write latency rises with replica count
+          - Single writer still funnels all mutations
   - id: serverless-v2
     name: Serverless v2 (Auto-Scaling)
     monthly_cost: 90

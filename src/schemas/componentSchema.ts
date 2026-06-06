@@ -62,6 +62,9 @@ export const ConfigVariantSchema = z.object({
    *  provisioned count) and cost INTEGRATES over the curve — so a bursty workload bills near baseline,
    *  not 24/7 peak. Capacity/latency are unchanged (it still scales to the same ceiling). */
   autoscale: z.boolean().optional(),
+  /** EN4 (D74): read-replica replication lag (ms). A synchronous/strong variant sets a low value (reads
+   *  are fresh); an async read-replica a high one. Feeds the consistency staleness model. */
+  replicationLagMs: z.number().min(0).max(60_000).optional(),
 }).strict()
 
 export const ConnectionPropertiesSchema = z.object({
@@ -126,6 +129,7 @@ const ConfigVariantYamlSchema = z.object({
   write_distribution: z.enum(["primary", "sharded"]).optional(),
   concurrency_limit: z.number().min(0).max(MAX_CONCURRENCY).optional(),
   autoscale: z.boolean().optional(),
+  replication_lag_ms: z.number().min(0).max(60_000).optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -144,6 +148,7 @@ const ConfigVariantYamlSchema = z.object({
   writeDistribution: data.write_distribution,
   concurrencyLimit: data.concurrency_limit,
   autoscale: data.autoscale,
+  replicationLagMs: data.replication_lag_ms,
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({

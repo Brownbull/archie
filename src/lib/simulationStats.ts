@@ -21,6 +21,9 @@ export interface SimulationStats {
   /** Cumulative served / failed request-seconds over elapsed ticks. */
   totalServed: number
   totalFailed: number
+  /** EN4 (D74): worst read-replica staleness (ms) over elapsed ticks — the consistency gate's measured
+   *  stat. Absent when no node has a replication-lag model (the build has no write/read-split DB). */
+  maxStalenessMs?: number
 }
 
 const EMPTY: SimulationStats = {
@@ -64,12 +67,16 @@ export function computeSimStats(ticks: TickState[], uptoTick: number): Simulatio
 
   let totalServed = 0
   let totalFailed = 0
+  let maxStalenessMs: number | undefined // EN4: worst read-replica staleness over the window
   const latencies: number[] = []
   for (let i = 0; i <= end; i++) {
     const t = ticks[i]
     totalServed += t.totalServedRps
     totalFailed += t.totalFailedRps
     latencies.push(systemLatency(t))
+    for (const nt of t.nodes) {
+      if (nt.stalenessMs !== undefined) maxStalenessMs = Math.max(maxStalenessMs ?? 0, nt.stalenessMs)
+    }
   }
 
   const totalReq = totalServed + totalFailed
@@ -89,5 +96,6 @@ export function computeSimStats(ticks: TickState[], uptoTick: number): Simulatio
     failedRps: current.totalFailedRps,
     totalServed,
     totalFailed,
+    ...(maxStalenessMs !== undefined ? { maxStalenessMs } : {}),
   }
 }

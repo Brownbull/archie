@@ -2,7 +2,7 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph, computeTotalArchitectureCost, buildTrafficCurveFromSpecs, workloadBlend } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost, buildTrafficCurveFromSpecs, workloadBlend, crossRegionSimOpts } from "@/stores/architectureStoreHelpers"
 import { countTopologyIssues } from "@/engine/topologyChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 
@@ -32,7 +32,7 @@ export function ChallengeStartButton() {
     // the canvas-derived write-pressure / cacheable-fraction / access-pattern erosion with the challenge's
     // own blend so the cache/DB derating matches the harness (the demand is the fixed problem statement;
     // it can't be gamed by editing the traffic node). Once 3★ is earned the node unlocks → canvas wins.
-    const baseGraph = buildSimGraph(nodes, edges)
+    const baseGraph = buildSimGraph(nodes, edges, crossRegionSimOpts(challenge))
     const locked = (bestStars[challenge.id] ?? 0) < 3
     const graph =
       locked && challenge.trafficSources && challenge.trafficSources.length > 0

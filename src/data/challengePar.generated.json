@@ -207,6 +207,10 @@
     "cost": 255,
     "nodes": 5
   },
+  "strong-or-stale": {
+    "cost": 580,
+    "nodes": 6
+  },
   "the-long-tail": {
     "cost": 45,
     "nodes": 6

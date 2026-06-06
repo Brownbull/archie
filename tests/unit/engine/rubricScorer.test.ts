@@ -208,6 +208,31 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
     })
   })
 
+  describe("consistency gate (EN4/ED8, D74)", () => {
+    const ch = { ...challenge, consistencyTargetMs: 100 }
+    it("no target ⇒ not graded (consistencyOk true, byte-identical)", () => {
+      const r = evaluateAttempt({ ...stats(100, 50), maxStalenessMs: 9999 }, challenge, 0, 100)
+      expect(r.consistencyOk).toBe(true)
+      expect(r.stars).toBe(3)
+    })
+    it("staleness within target passes", () => {
+      const r = evaluateAttempt({ ...stats(100, 50), maxStalenessMs: 80 }, ch, 0, 100)
+      expect(r.consistencyOk).toBe(true)
+      expect(r.stars).toBe(3)
+    })
+    it("staleness over target fails passedMetrics ⇒ 0★", () => {
+      const r = evaluateAttempt({ ...stats(100, 50), maxStalenessMs: 130 }, ch, 0, 100)
+      expect(r.consistencyOk).toBe(false)
+      expect(r.passedMetrics).toBe(false)
+      expect(r.stars).toBe(0)
+    })
+    it("conservative-fail: target set but staleness unmeasured ⇒ fail (no write/read-split DB on path)", () => {
+      const r = evaluateAttempt(stats(100, 50), ch, 0, 100) // maxStalenessMs undefined
+      expect(r.consistencyOk).toBe(false)
+      expect(r.stars).toBe(0)
+    })
+  })
+
   describe("required_types must be on the served path (ED3, D74)", () => {
     const reqCh = { ...challenge, requiredTypes: ["compute", "security"] }
     const present = new Set(["compute", "security", "message-queue"])

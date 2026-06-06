@@ -512,3 +512,10 @@ export function azCountForReplicas(replicaCount: number): number {
 // severity (shed fraction): 1 = undetected/unmonitored, OBS_RESIDUAL_BLAST = detected + mitigated.
 export const OBS_DETECT_DELAY_S = 5
 export const OBS_RESIDUAL_BLAST = 0.6
+
+// EN4 (D74): read-replica staleness model. A read replica lags the primary by replicationLagMs (a
+// variant property; this default when unauthored), amplified by write-pressure (more writes = more to
+// replicate) and a BOUNDED replica fan-out (log2, not linear — a linear fan-out explodes to ~2200ms and
+// makes any target unbeatable). staleness = lag × (1 + effWriteRatio×REPLICA_LAG_WRITE_K) × (1 + log2(replicas)).
+export const DEFAULT_REPLICATION_LAG_MS = 50
+export const REPLICA_LAG_WRITE_K = 4

@@ -5,7 +5,7 @@ import { load } from "js-yaml"
 import { componentLibrary } from "@/services/componentLibrary"
 import { ComponentYamlSchema, type Component } from "@/schemas/componentSchema"
 import { COMPONENT_TYPES, isOnPathExempt } from "@/lib/componentTypes"
-import { buildSimGraph, computeTotalArchitectureCost, computeIntegratedArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs, getNodeCost } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost, computeIntegratedArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs, getNodeCost, crossRegionSimOpts } from "@/stores/architectureStoreHelpers"
 import { runSimulation } from "@/engine/simulationEngine"
 import { computeSimStats } from "@/lib/simulationStats"
 import { evaluateAttempt } from "@/engine/rubricScorer"
@@ -74,7 +74,7 @@ export interface RefEdge {
   target: string
 }
 
-type Variant = { id: string; maxRPS?: number; cacheHitRatio?: number; monthlyCost?: number; concurrencyLimit?: number; baseLatencyMs?: number }
+type Variant = { id: string; maxRPS?: number; cacheHitRatio?: number; monthlyCost?: number; concurrencyLimit?: number; baseLatencyMs?: number; replicationLagMs?: number }
 
 // EN2 (D74): conservative in-flight estimate for SIZING. W depends on post-resize ρ (circular), so use
 // the queueing curve at the lean builder's actual peak operating point. leanResize sizes to load×1.1, so
@@ -103,7 +103,11 @@ function pickVariant(component: { configVariants: Variant[] }, typeId: string): 
       return withRatio.reduce((best, v) => ((v.cacheHitRatio ?? 0) > (best.cacheHitRatio ?? 0) ? v : best))
     }
   }
-  return variants.reduce((best, v) => ((v.maxRPS ?? 0) > (best.maxRPS ?? 0) ? v : best), variants[0])
+  // EN4 (D74): a strong-consistency (replicationLagMs) variant is NOT the default over-provisioned pick —
+  // exclude it so adding one never shifts a non-consistency MAX build (the 60 stay byte-identical).
+  const eligible = variants.filter((v) => v.replicationLagMs === undefined)
+  const pool = eligible.length > 0 ? eligible : variants
+  return pool.reduce((best, v) => ((v.maxRPS ?? 0) > (best.maxRPS ?? 0) ? v : best), pool[0])
 }
 
 /**
@@ -116,8 +120,25 @@ function pickVariant(component: { configVariants: Variant[] }, typeId: string): 
  *    binding constraint (writes), so the variant's OWN maxRPS must cover the load.
  * Falls back to the max-throughput variant when nothing fits (minimizes the shortfall).
  */
-function pickCheapestVariant(component: { configVariants: Variant[] }, typeId: string, load: number, scalesWithReplicas: boolean): Variant {
-  const variants = component.configVariants
+function pickCheapestVariant(component: { configVariants: Variant[] }, typeId: string, load: number, scalesWithReplicas: boolean, preferLowLag = false): Variant {
+  // EN4 (D74): strong-consistency (replicationLagMs) variants are eligible ONLY for a consistency-
+  // targeted challenge. Otherwise they're invisible to EVERY branch below — the hit-ratio pick, the
+  // fits/cost selection, AND the max-throughput fallback — so adding one never shifts a non-consistency
+  // build (the 60 stay byte-identical; the fallback was the leak that pulled in the 12k synchronous DB).
+  const nonLag = component.configVariants.filter((v) => v.replicationLagMs === undefined)
+  const variants = preferLowLag || nonLag.length === 0 ? component.configVariants : nonLag
+  // A consistency-targeted challenge needs FRESH reads — prefer the lowest replication-lag variant that
+  // carries the load (then cheapest among ties), trading cost/latency for low staleness.
+  if (preferLowLag) {
+    const withLag = variants.filter((v) => v.replicationLagMs !== undefined)
+    if (withLag.length > 0) {
+      const minLag = Math.min(...withLag.map((v) => v.replicationLagMs ?? Infinity))
+      const lowest = withLag.filter((v) => (v.replicationLagMs ?? Infinity) === minLag)
+      const pick = lowest.reduce((best, v) => ((v.monthlyCost ?? 0) < (best.monthlyCost ?? 0) ? v : best))
+      const tPer = pick.maxRPS && pick.maxRPS > 0 ? pick.maxRPS : load || 1
+      if ((scalesWithReplicas ? Math.ceil((load || 1) / tPer) <= MAX_REPLICAS : (pick.maxRPS ?? 0) >= load)) return pick
+    }
+  }
   if (typeId === "cdn" || typeId === "cache") {
     const withRatio = variants.filter((v) => (v.cacheHitRatio ?? 0) > 0)
     if (withRatio.length > 0) {
@@ -374,7 +395,7 @@ function leanResize(c: Challenge, nodes: readonly RefNode[], edges: readonly Ref
   // re-size, a few times. Converges in ≤3 passes for these topologies; stable builds are no-ops.
   let current: RefNode[] = nodes.map((n) => ({ ...n, data: { ...n.data } }))
   for (let pass = 0; pass < 3; pass++) {
-    const result = runSimulation(buildSimGraph(current, edges), challengeCurve(c), undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
+    const result = runSimulation(buildSimGraph(current, edges, crossRegionSimOpts(c)), challengeCurve(c), undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
     const peakIn = new Map<string, number>()
     for (const tick of result.ticks) {
       for (const nt of tick.nodes) peakIn.set(nt.nodeId, Math.max(peakIn.get(nt.nodeId) ?? 0, nt.incomingRps))
@@ -386,7 +407,8 @@ function leanResize(c: Challenge, nodes: readonly RefNode[], edges: readonly Ref
       const typeId = component.typeId ?? ""
       const load = Math.max(1, Math.ceil((peakIn.get(n.id) ?? 0) * 1.1))
       const scalesWithReplicas = getScalingRule(n.data.componentCategory).replicaType === "full"
-      const variant = pickCheapestVariant(component as never, typeId, load, scalesWithReplicas)
+      // EN4: a consistency-targeted challenge makes the builder prefer fresh (low replication-lag) DB variants.
+      const variant = pickCheapestVariant(component as never, typeId, load, scalesWithReplicas, c.consistencyTargetMs !== undefined)
       const per = variant.maxRPS && variant.maxRPS > 0 ? variant.maxRPS : load
       const rpsReplicas = scalesWithReplicas ? Math.max(1, Math.ceil(load / per)) : 1
       // EN2: size for the connection pool too — a slow tier needs replicas for concurrency, not just rps.
@@ -455,7 +477,7 @@ export interface ScoreResult {
 
 /** Score ONE concrete build (nodes + edges) through the REAL sim + scorer (D72 topology split). */
 export function scoreBuild(c: Challenge, nodes: readonly RefNode[], edges: readonly RefEdge[]): ScoreResult {
-  const graph = buildSimGraph(nodes, edges)
+  const graph = buildSimGraph(nodes, edges, crossRegionSimOpts(c))
   const result = runSimulation(graph, challengeCurve(c), undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
   const stats = computeSimStats(result.ticks, result.ticks.length - 1)
   const { topologyIssues } = evaluateTopology(nodes, edges)

@@ -159,6 +159,12 @@ export interface Challenge {
   /** Usage-based cost rates (EN5, D74). When set, per-origin-request fees are added to totalCost for the
    *  budget + cost_per_request gates; a CDN that absorbs requests at the edge lowers the bill. */
   usageRates?: ChallengeUsageRates
+  /** Cross-region RTT penalty (ms) per cross-region hop (ED6, D74). Applied only on a multi-region run,
+   *  to compute/data/search/messaging/real-time hops. Never auto-defaulted; absent ⇒ no penalty. */
+  crossRegionRttMs?: number
+  /** Consistency target (EN4/ED8, D74): max acceptable read staleness (ms). A 5th metrics sub-gate —
+   *  the build's worst read-replica staleness must be ≤ this. Absent ⇒ not graded (the 60 built-ins). */
+  consistencyTargetMs?: number
   /**
    * Runtime-only provenance (D45, NOT in the YAML schema). `builtin` is stamped at the build-time
    * glob (the only path that can produce it); `user` is stamped at loadChallengeFromYaml (runtime
@@ -217,6 +223,9 @@ export interface StarBreakdown {
    *  exercises a zone outage (az_outage) — the redundancy demonstrably paid off. Optional: only the
    *  rubric populates it; absent ⇒ false. A recognition, not a star (no D72 budget-vs-redundancy tension). */
   resilienceEarned?: boolean
+  /** Consistency sub-gate (EN4/ED8, D74): the build's worst read staleness is within consistency_target_ms.
+   *  Optional: only the rubric populates it; absent ⇒ not graded (no target). Part of passedMetrics when graded. */
+  consistencyOk?: boolean
   /** No forbidden component type present (ISAPivot Phase 3). False ⇒ hard 0★. Absent forbiddenTypes ⇒ always true. */
   forbiddenTypesOk: boolean
   /**
@@ -251,4 +260,7 @@ export interface MeasuredAttempt {
    * nothing was meaningfully loaded.
    */
   bottleneck?: { typeId: string; capacityPercent: number; failedRps: number }
+  /** Worst read-replica staleness (ms) measured this run (EN4, D74) — shown vs consistency_target_ms in
+   *  the results modal. Absent when the build has no write/read-split DB on the path. */
+  maxStalenessMs?: number
 }

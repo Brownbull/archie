@@ -481,3 +481,28 @@ describe("effectiveCacheHitRatio — workload-derated hit ratio (ED5, D74)", () 
     expect(effectiveCacheHitRatio(0.9, { cacheableFraction: 0.5, cacheErosion: 0.8 })).toBeCloseTo(0.36, 6)
   })
 })
+
+describe("cross-region RTT + replication-lag staleness (ED6/EN4, D74)", () => {
+  const compute = { id: "c", category: "compute" as const, effectiveMaxRps: 100000, baseLatencyMs: 10, failureMode: "shed" as const }
+  const lb = { id: "lb", category: "delivery-network" as const, effectiveMaxRps: 1000000, baseLatencyMs: 2, failureMode: "shed" as const }
+
+  it("multi-region + authored RTT adds the penalty to compute, NOT to delivery-network (edge terminates locally)", () => {
+    const g = { nodes: [compute, lb], edges: [], crossRegionRttMs: 40, multiRegion: true }
+    expect(tel(simulateTick(g, 0, 1000), "c").latencyMs).toBeCloseTo(50, 5) // 10 base + 40 RTT
+    expect(tel(simulateTick(g, 0, 1000), "lb").latencyMs).toBeCloseTo(2, 5) // edge tier exempt
+  })
+
+  it("no RTT when not multi-region OR unauthored — byte-identical to pre-ED6", () => {
+    expect(tel(simulateTick({ nodes: [compute], edges: [], crossRegionRttMs: 40 }, 0, 1000), "c").latencyMs).toBeCloseTo(10, 5) // multiRegion absent
+    expect(tel(simulateTick({ nodes: [compute], edges: [], multiRegion: true }, 0, 1000), "c").latencyMs).toBeCloseTo(10, 5) // RTT unauthored
+  })
+
+  it("a write/read-split DB emits BOUNDED staleness (log fanout, not linear); a low-lag variant stays small", () => {
+    const db = { id: "db", category: "data-storage" as const, effectiveMaxRps: 4000, baseMaxRps: 1000, baseLatencyMs: 5, failureMode: "shed" as const, writeRatio: 0.3, writeDistribution: "primary" as const, replicationLagMs: 10 }
+    // effWriteRatio = (0.3 + 0.3)/2 = 0.3 → (1 + 0.3×4) = 2.2; replicas = 4000/1000 = 4 → fanout 1+log2(4) = 3
+    expect(tel(simulateTick({ nodes: [db], edges: [], writePressure: 0.3 }, 0, 2000), "db").stalenessMs).toBeCloseTo(10 * 2.2 * 3, 1)
+    // a high-lag (default 50) variant on the same shape is ~5× staler — the async-vs-synchronous lesson
+    const asyncDb = { ...db, replicationLagMs: 50 }
+    expect(tel(simulateTick({ nodes: [asyncDb], edges: [], writePressure: 0.3 }, 0, 2000), "db").stalenessMs).toBeCloseTo(50 * 2.2 * 3, 1)
+  })
+})

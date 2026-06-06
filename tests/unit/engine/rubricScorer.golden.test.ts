@@ -23,7 +23,7 @@ const legacy = (sb: StarBreakdown) => ({
  * each built-in's StarBreakdown across a grid of fixed attempts; any Phase-3 change that alters a
  * built-in's score breaks the snapshot.
  */
-function meetingStats(t: ChallengeTargetMetrics): SimulationStats {
+function meetingStats(t: ChallengeTargetMetrics, consistencyTargetMs?: number): SimulationStats {
   return {
     uptimePercent: t.uptimePercent, // exactly meets the uptime target
     avgLatencyMs: 0,
@@ -35,6 +35,9 @@ function meetingStats(t: ChallengeTargetMetrics): SimulationStats {
     failedRps: 0,
     totalServed: 0,
     totalFailed: 0,
+    // EN4 (D74): exactly meet the consistency target (0 for the built-ins that omit it — consistencyOk is
+    // then true via the absent-target branch, so this is byte-identical for them).
+    maxStalenessMs: consistencyTargetMs ?? 0,
   }
 }
 
@@ -44,7 +47,7 @@ describe("rubricScorer — golden regression across all built-in challenges (Pha
       .slice()
       .sort((a, b) => a.id.localeCompare(b.id))
       .map((c) => {
-        const stats = meetingStats(c.targetMetrics)
+        const stats = meetingStats(c.targetMetrics, c.consistencyTargetMs)
         const req = new Set(c.requiredTypes)
         return {
           id: c.id,

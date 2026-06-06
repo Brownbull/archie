@@ -103,6 +103,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
         topologyIssueCount,
         costPerRequest,
         bottleneck,
+        ...(stats.maxStalenessMs !== undefined ? { maxStalenessMs: stats.maxStalenessMs } : {}),
       },
       attemptState: "scored",
       bestStars: { ...get().bestStars, [challenge.id]: Math.max(prevBest, result.stars) },

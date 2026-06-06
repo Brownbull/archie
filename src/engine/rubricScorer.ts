@@ -80,13 +80,19 @@ export function evaluateAttempt(
   advisoryTopologyCount = 0,
 ): StarBreakdown {
   const tm = challenge.targetMetrics
+  // EN4/ED8 (D74): consistency sub-gate — the build's worst read-replica staleness must be ≤ the target.
+  // Absent target ⇒ not graded (the 60 built-ins). Conservative-fail: target set but staleness unmeasured
+  // (no write/read-split DB on the path) ⇒ fail — you can't claim a staleness bound you never produced.
+  const consistencyOk = challenge.consistencyTargetMs === undefined
+    || (stats.maxStalenessMs !== undefined && stats.maxStalenessMs <= challenge.consistencyTargetMs)
   const passedMetrics =
     stats.uptimePercent >= tm.uptimePercent &&
     stats.p99LatencyMs <= tm.p99LatencyMs &&
     (tm.p95LatencyMs === undefined
       || (stats.p95LatencyMs !== undefined && stats.p95LatencyMs <= tm.p95LatencyMs)) &&
     (tm.costPerRequest === undefined
-      || (costPerRequest !== undefined && costPerRequest <= tm.costPerRequest))
+      || (costPerRequest !== undefined && costPerRequest <= tm.costPerRequest)) &&
+    consistencyOk
   const underBudget = totalCost <= challenge.budgetCap
   // The topology star is "well-formed": zero BLOCKING issues (orphan/unreachable). cleanTopology now
   // reflects structural validity, NOT redundancy (D72).
@@ -146,6 +152,7 @@ export function evaluateAttempt(
     cleanTopology,
     resilient,
     resilienceEarned,
+    consistencyOk,
     forbiddenTypesOk,
     requiredTopologyOk,
     originRequirementOk,

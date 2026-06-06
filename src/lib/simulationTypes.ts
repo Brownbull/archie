@@ -66,6 +66,12 @@ export interface SimNode {
    * across AZs is what lets it ride out a zone failure. Derived from replicaCount. undefined ⇒ 1 (single AZ).
    */
   azCount?: number
+  /**
+   * Replication lag (ms) for a read-replicated data tier (EN4, D74): the base staleness a read replica
+   * lags the primary. A synchronous/strong variant sets a low value; an async read-replica a high one.
+   * Feeds the consistency staleness model in the write/read-split branch. undefined ⇒ DEFAULT_REPLICATION_LAG_MS.
+   */
+  replicationLagMs?: number
 }
 
 /** A directed edge: traffic flows source → target. */
@@ -96,6 +102,15 @@ export interface SimGraph {
    * have poor cache locality → lower effective hit ratio. Absent ⇒ 1 (no erosion).
    */
   cacheErosion?: number
+  /**
+   * Cross-region RTT penalty (ms) added per cross-region hop (ED6, D74). Applies ONLY to hops whose
+   * category is compute/data-storage/search/messaging/real-time (NOT traffic/delivery-network/caching —
+   * edge tiers terminate locally). Authored per challenge (`cross_region_rtt_ms`); NEVER auto-defaulted,
+   * so a challenge that omits it (incl. the 7 existing multi-region ones) is byte-identical.
+   */
+  crossRegionRttMs?: number
+  /** ED6 (D74): whether this run spans regions (gates crossRegionRttMs). Authored alongside the RTT. */
+  multiRegion?: boolean
 }
 
 // --- Per-tick telemetry ---
@@ -116,6 +131,10 @@ export interface NodeTelemetry {
   capacityPercent: number
   /** true when incomingRps > effectiveMaxRps. */
   overloaded: boolean
+  /** Read staleness (ms) at a read-replicated data tier (EN4, D74): replication lag amplified by
+   *  write-pressure + a bounded replica fan-out. Only emitted for write/read-split nodes; feeds the
+   *  consistency scoring gate. Absent on tiers with no replication-lag model. */
+  stalenessMs?: number
 }
 
 export interface TickState {
