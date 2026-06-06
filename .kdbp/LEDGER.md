@@ -4042,3 +4042,25 @@ EN7 observability blast-radius (5ef6a31), restore-redundancy resilienceEarned (c
 
 ## 2026-06-06 — PHASE 4 begun: EN5 usage-based cost + edge-economics challenge
 Opt-in per-origin-request fee folded into the cost gates; CDN edge absorption lowers it (the "front with a CDN to cut egress" lesson). Avoided all 3 EN5 gotchas (shared peakOriginBoundRps/usageCostPerMonth for scorer+harness; challenge-level usage_rates → no casing bug; originBoundRps scalar 7th param). New challenge edge-economics (58th): no-CDN build cpr 0.0043 vs CDN 0.0007 → blows the 0.002 gate → CDN mandatory. Counts 57→58, golden/par additive (57 byte-identical), harness 3★ all 58, suite 4796. NOT yet pushed (rides next push). Phase 4 remaining: ED9 (autoscaling), ED5 (blocked D16), ED6/EN4/ED8 (XL consistency/CAP).
+- 2026-06-06 13:00 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 13:00 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 13:01 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 13:01 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:01 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:01 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:02 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:03 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-06 13:03 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-06 13:03 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 13:03 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 13:04 | Edit | /home/khujta/projects/bmad/archie/src/data/components/serverless.yaml
+- 2026-06-06 13:04 | Edit | /home/khujta/projects/bmad/archie/src/data/components/serverless.yaml
+- 2026-06-06 13:06 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 13:09 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/autoscaleCost.test.ts
+- 2026-06-06 13:13 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/59-burst-economics.yaml
+- 2026-06-06 13:14 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/59-burst-economics.yaml
+- 2026-06-06 13:15 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/59-burst-economics.yaml
+
+## 2026-06-06 — Phase 4 ED9: autoscaling COST MECHANIC shipped (in-game lesson deferred D19)
+Opt-in `autoscale` variant flag → cost INTEGRATES over the load curve (mean active replicas, capped at provisioned) instead of flat × replicas. serverless cold-start + edge-function tagged (faithful: serverless = pay-per-use). EXACT short-circuit to computeTotalArchitectureCost when no autoscale node → 57 byte-identical; idle ramp ticks skipped. Threaded into scoreBuild (harness) + useChallengeAutoScore (autoscale → integrate; non-autoscale → frozen snapshot, D72 guard preserved). autoscaleCost.test proves the discount (R=4 bursty <0.6× flat; sustained=flat; non-autoscale=exact short-circuit). golden/par unchanged (the 2 serverless challenges are R=1 → discount dormant). Suite 4799. In-game lesson blocked by the always-added generic compute tier (D19). Phase 4 so far: EN5 (full, with edge-economics challenge) + ED9 (mechanic). Remaining: ED5 (D16 blocked), ED6/EN4/ED8 (XL consistency/CAP).
