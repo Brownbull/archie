@@ -4111,3 +4111,57 @@ The traffic source is now the workload descriptor. effectiveCacheHitRatio = ceil
 
 ## 2026-06-06 — D20 RESOLVED: challenge workload authoritative + lock-until-3★ gate
 The live sim used the player's editable traffic node for workload (write-pressure/erosion/cacheable), diverging from the harness + leaving cacheable_fraction unused. Now: workloadBlend(sources) → ChallengeStartButton overrides the canvas workload with the challenge's blend while bestStars<3 (live==harness, ungameable); TrafficNodeControls locks (dimmed + badge) until 3★; once cleared the node unlocks for sandbox + lastRecordable only persists a post-clear run if it re-earns 3★. New challenge personalized-feed (data T5, 30%-cacheable — first to exercise cacheable_fraction; size the $3630 origin for the real load). Counts 59→60, golden/par additive, harness 3★ all 60, suite 4811. PHASE 4 nearly complete: EN5, ED9, ED5, D20 all shipped — only ED6/EN4/ED8 (XL consistency/CAP) remains.
+- 2026-06-06 16:08 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 16:09 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 16:09 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 16:10 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 16:10 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 16:10 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 16:10 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 16:11 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-06 16:11 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-06 16:11 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-06 16:11 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 16:11 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-06 16:11 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-06 16:12 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:12 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:12 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:13 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 16:13 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 16:14 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 16:14 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 16:14 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-06-06 16:14 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-06-06 16:14 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-06-06 16:15 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-06 16:16 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-06 16:16 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-06 16:17 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-06 16:17 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-06 16:17 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.golden.test.ts
+- 2026-06-06 16:18 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.golden.test.ts
+- 2026-06-06 16:19 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 16:19 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 16:19 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 16:19 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 16:19 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 16:19 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 16:20 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 16:21 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:21 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:21 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:21 | Edit | /home/khujta/projects/bmad/archie/src/data/components/aws-aurora.yaml
+- 2026-06-06 16:22 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/61-strong-or-stale.yaml
+- 2026-06-06 16:23 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/61-strong-or-stale.yaml
+- 2026-06-06 16:25 | Edit | /home/khujta/projects/bmad/archie/src/data/components/postgresql.yaml
+- 2026-06-06 16:28 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:29 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:32 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:33 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 16:35 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+- 2026-06-06 16:38 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/componentDataQuality.test.ts
+- 2026-06-06 16:40 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/61-strong-or-stale.yaml
+
+## 2026-06-06 — PHASE 4 COMPLETE: ED6/EN4/ED8 consistency/CAP — epic feature-complete
+The XL finale. Cross-region RTT (category-based, authored-only — 7 existing multi-region challenges byte-identical), bounded replication-lag staleness (log fan-out, not linear → no ~2200ms explosion), consistency scoring gate (5th passedMetrics sub-gate). Shared crossRegionSimOpts() threads opts at all 3 sites (app + leanResize + scoreBuild) — no oracle drift. New synchronous DB variants (postgresql/aurora) + consistency-aware builder (preferLowLag, excludes lag variants from every non-consistency pick incl. fallback). New challenge strong-or-stale (data T5): async ~130ms staleness blows the 100ms budget → must pick synchronous (~21ms) + pay 40ms RTT. Counts 60→61, golden/par additive (60 byte-identical), harness 3★ all 61, suite 4820. LEARNING-FIDELITY EPIC (Phases 1-4) now feature-complete: behavior-tied scoring + engine fidelity (latency/utilization/concurrency) + resilience (AZ/observability/redundancy/on-path) + new dimensions (usage-cost/autoscaling/dynamic-cache/consistency-CAP).
