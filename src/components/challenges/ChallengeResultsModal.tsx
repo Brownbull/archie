@@ -21,6 +21,7 @@ import { useAttemptComparison } from "@/hooks/useAttemptComparison"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 import { DeltaChip } from "@/components/challenges/DeltaChip"
 import { CHALLENGE_TRACKS, rankForXp, MASTERY_RANKS, RANK_XP_THRESHOLDS } from "@/lib/challengeTracks"
+import { getChallengePar } from "@/lib/challengePar"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { getMasteryAvatar } from "@/lib/masteryAvatars"
 import starFilled from "@/assets/star-filled.png"
@@ -203,6 +204,10 @@ export function ChallengeResultsModal() {
 
   const xpPerStar = challenge.rewards?.xp ? Math.ceil(challenge.rewards.xp / 3) : 0
 
+  // LX3 (D74): the lean reference build's cost/nodes — a benchmark so the learner can tell a lean
+  // clear from a wasteful one (the "mastered" coach says "spend less"; this gives the target).
+  const par = getChallengePar(challenge.id)
+
   // Metrics detail (ISAPivot Phase 3): uptime + p99 always; p95 + cost/req only when authored as targets.
   const tm = challenge.targetMetrics
   const metricBits = [
@@ -313,6 +318,16 @@ export function ChallengeResultsModal() {
             </div>
           )}
         </div>
+
+        {/* LX3 (D74): lean-reference benchmark — a concrete "par" so 3★ isn't the end of the lesson. */}
+        {par && (
+          <div data-testid="result-par" className="rounded-md border border-archie-border bg-surface px-3 py-1.5 text-[0.6875rem] text-text-secondary">
+            <span className="font-medium text-text-primary">Lean reference:</span> ${par.cost}/mo · {par.nodes} nodes
+            {measured.totalCost <= par.cost
+              ? <span className="ml-1 text-emerald-400">— you matched or beat it 🎯</span>
+              : <span className="ml-1">— you: ${measured.totalCost}/mo · room to trim</span>}
+          </div>
+        )}
 
         {challenge.origin === "builtin" && <XpProgressSection award={lastAward} track={challenge.track} />}
 

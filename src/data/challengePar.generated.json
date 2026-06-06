@@ -1,0 +1,230 @@
+{
+  "add-a-database": {
+    "cost": 65,
+    "nodes": 3
+  },
+  "auth-101": {
+    "cost": 55,
+    "nodes": 3
+  },
+  "cache-the-hot-path": {
+    "cost": 80,
+    "nodes": 4
+  },
+  "dns-routing": {
+    "cost": 20,
+    "nodes": 3
+  },
+  "first-service": {
+    "cost": 20,
+    "nodes": 2
+  },
+  "observe-baseline": {
+    "cost": 40,
+    "nodes": 3
+  },
+  "async-pipeline": {
+    "cost": 190,
+    "nodes": 4
+  },
+  "burst-absorber": {
+    "cost": 145,
+    "nodes": 4
+  },
+  "cache-or-crash": {
+    "cost": 80,
+    "nodes": 4
+  },
+  "checkout-flow": {
+    "cost": 160,
+    "nodes": 4
+  },
+  "cold-start-spike": {
+    "cost": 50,
+    "nodes": 3
+  },
+  "data-pipeline": {
+    "cost": 380,
+    "nodes": 5
+  },
+  "edge-balance": {
+    "cost": 50,
+    "nodes": 4
+  },
+  "edge-cache-ratio": {
+    "cost": 50,
+    "nodes": 4
+  },
+  "edge-delivery": {
+    "cost": 30,
+    "nodes": 4
+  },
+  "event-stream": {
+    "cost": 150,
+    "nodes": 4
+  },
+  "llm-service": {
+    "cost": 170,
+    "nodes": 3
+  },
+  "observe-to-recover": {
+    "cost": 40,
+    "nodes": 3
+  },
+  "polyglot-persistence": {
+    "cost": 140,
+    "nodes": 5
+  },
+  "rate-limit": {
+    "cost": 85,
+    "nodes": 4
+  },
+  "read-aside": {
+    "cost": 80,
+    "nodes": 4
+  },
+  "scale-out": {
+    "cost": 50,
+    "nodes": 3
+  },
+  "serverless-burst": {
+    "cost": 60,
+    "nodes": 4
+  },
+  "siem-audit": {
+    "cost": 255,
+    "nodes": 6
+  },
+  "worker-fleet": {
+    "cost": 90,
+    "nodes": 4
+  },
+  "zone-replica": {
+    "cost": 70,
+    "nodes": 4
+  },
+  "always-on": {
+    "cost": 110,
+    "nodes": 6
+  },
+  "analytics-backbone": {
+    "cost": 210,
+    "nodes": 5
+  },
+  "api-gateway": {
+    "cost": 115,
+    "nodes": 5
+  },
+  "async-backbone": {
+    "cost": 290,
+    "nodes": 7
+  },
+  "chaos-day": {
+    "cost": 140,
+    "nodes": 8
+  },
+  "defense-in-depth": {
+    "cost": 330,
+    "nodes": 6
+  },
+  "edge-resilience": {
+    "cost": 75,
+    "nodes": 6
+  },
+  "fan-it-out": {
+    "cost": 90,
+    "nodes": 4
+  },
+  "follow-the-sun": {
+    "cost": 75,
+    "nodes": 6
+  },
+  "fortress": {
+    "cost": 250,
+    "nodes": 8
+  },
+  "foundations-mastery": {
+    "cost": 75,
+    "nodes": 5
+  },
+  "four-front-war": {
+    "cost": 185,
+    "nodes": 5
+  },
+  "heat-death": {
+    "cost": 655,
+    "nodes": 7
+  },
+  "lean-at-scale": {
+    "cost": 605,
+    "nodes": 5
+  },
+  "maxwells-demon": {
+    "cost": 10200,
+    "nodes": 8
+  },
+  "no-cache-no-mercy": {
+    "cost": 390,
+    "nodes": 3
+  },
+  "planet-scale": {
+    "cost": 8600,
+    "nodes": 7
+  },
+  "production-ai": {
+    "cost": 435,
+    "nodes": 6
+  },
+  "rag-retrieval": {
+    "cost": 555,
+    "nodes": 6
+  },
+  "realtime-live": {
+    "cost": 185,
+    "nodes": 4
+  },
+  "search-at-scale": {
+    "cost": 125,
+    "nodes": 5
+  },
+  "serverless-or-bust": {
+    "cost": 40,
+    "nodes": 2
+  },
+  "stream-processor": {
+    "cost": 235,
+    "nodes": 5
+  },
+  "the-long-tail": {
+    "cost": 45,
+    "nodes": 5
+  },
+  "the-singularity": {
+    "cost": 14600,
+    "nodes": 9
+  },
+  "thundering-herd": {
+    "cost": 8600,
+    "nodes": 7
+  },
+  "unit-economics": {
+    "cost": 565,
+    "nodes": 5
+  },
+  "write-storm": {
+    "cost": 100,
+    "nodes": 3
+  },
+  "write-storm-brownout": {
+    "cost": 430,
+    "nodes": 3
+  },
+  "zero-budget-hero": {
+    "cost": 175,
+    "nodes": 4
+  },
+  "zone-failure": {
+    "cost": 110,
+    "nodes": 6
+  }
+}

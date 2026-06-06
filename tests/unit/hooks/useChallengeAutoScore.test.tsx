@@ -62,7 +62,7 @@ describe("useChallengeAutoScore (Epic 16 P4)", () => {
     renderHook(() => useChallengeAutoScore())
     expect(cs().attemptState).toBe("scored")
     // 3★ requires under-budget (80≤100) + clean topology (snapshot 0 issues, NOT live 2)
-    expect(cs().lastMeasured).toEqual({ uptimePercent: 100, p99LatencyMs: 50, totalCost: 80, topologyIssueCount: 0 })
+    expect(cs().lastMeasured).toMatchObject({ uptimePercent: 100, p99LatencyMs: 50, totalCost: 80, topologyIssueCount: 0 })
     expect(cs().lastResult?.cleanTopology).toBe(true)
     expect(cs().lastResult?.stars).toBe(3)
   })

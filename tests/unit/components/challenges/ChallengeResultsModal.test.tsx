@@ -13,6 +13,9 @@ vi.mock("@/stores/architectureStoreHelpers", async (orig) => {
   return { ...actual, computeTotalArchitectureCost: () => 80 }
 })
 
+// LX3 par benchmark — fixed for "c1" so the assertion is decoupled from the generated par values.
+vi.mock("@/lib/challengePar", () => ({ getChallengePar: (id: string) => (id === "c1" ? { cost: 100, nodes: 4 } : undefined) }))
+
 // Control the suggestion independently of the engine; null by default so existing cases are unaffected.
 let mockSuggestion: import("@/engine/suggestionEngine").SuggestionResult | null = null
 vi.mock("@/hooks/useChallengeSuggestion", () => ({ useChallengeSuggestion: () => mockSuggestion }))
@@ -63,7 +66,9 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(cs().attemptState).toBe("scored")
     expect(cs().lastResult?.stars).toBe(3)
     // the snapshot of measured actuals is recorded for the modal
-    expect(cs().lastMeasured).toEqual({ uptimePercent: 100, p99LatencyMs: 50, totalCost: 80, topologyIssueCount: 0 })
+    expect(cs().lastMeasured).toMatchObject({ uptimePercent: 100, p99LatencyMs: 50, totalCost: 80, topologyIssueCount: 0 })
+    // ED7: cost-efficiency = $/M-req at peak (peak 100 rps, $80/mo) ≈ 0.309.
+    expect(cs().lastMeasured?.costPerRequest).toBeCloseTo(0.3086, 3)
     expect(screen.getByTestId("challenge-results")).toBeInTheDocument()
     expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "3 of 3 stars")
     expect(screen.getByTestId("result-metrics")).toHaveAttribute("data-met", "true")
@@ -98,6 +103,19 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     const callout = screen.getByTestId("result-bottleneck")
     expect(callout).toHaveTextContent("Compute")
     expect(callout).toHaveTextContent("180%")
+  })
+
+  it("shows the lean-reference par and flags beating it (LX3)", () => {
+    useChallengeStore.setState({
+      activeChallenge: challenge, attemptState: "scored",
+      lastResult: { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true, resilient: false },
+      lastMeasured: { uptimePercent: 99.9, p99LatencyMs: 80, totalCost: 80, topologyIssueCount: 0 }, // 80 ≤ par 100
+    })
+    render(<ChallengeResultsModal />)
+    const par = screen.getByTestId("result-par")
+    expect(par).toHaveTextContent("$100/mo")
+    expect(par).toHaveTextContent("4 nodes")
+    expect(par).toHaveTextContent("matched or beat")
   })
 
   it("omits the culprit callout when metrics pass", () => {
