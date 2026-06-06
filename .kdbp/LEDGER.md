@@ -3912,3 +3912,21 @@ ARCHIVED: completed_PLAN_2026-06-03_traffic-realism-isapivot.md (ISAPivot, super
 TASKS: 4 of 5 shipped — LX1 free-first-hint (5d538d8), LX2 culprit-node (12f469b), ED7 cost-unit (6d07522), LX3 reference-par (this batch). All unit-tested + harness 3★ all 57 green.
 RESCOPED: ED3 (required-types on-path) → Phase 3 (D76 / PENDING D15) — sync/async classification depends on the Phase-3 builder rework.
 PENDING: runtime journey evidence (fail-a-challenge: culprit + par + free first hint) before Exec ✅ + /gabe-review.
+- 2026-06-06 00:01 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-06 00:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 00:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 00:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 00:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 00:02 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 00:02 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationStats.ts
+- 2026-06-06 00:03 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-06-06 00:04 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-06-06 00:04 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-06-06 00:05 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 00:08 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 00:08 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 00:10 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/50-planet-scale.yaml
+- 2026-06-06 00:10 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/51-thundering-herd.yaml
+
+## 2026-06-06 — PHASE 2 (2/3): ED1/EN1 + ED4/LX4 shipped (214a2d3)
+Path-sum end-to-end latency + M/M/1 queueing curve. Re-tune: planet-scale p99 400→1030, thundering-herd 350→1050; 4 par flips (all still 3★). Harness 3★ all 57, golden no-op, capstones green, suite 4775. EN2 (concurrency, XL) remains for its own pass. DECISIONS D78.

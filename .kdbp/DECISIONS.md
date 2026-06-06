@@ -1228,3 +1228,23 @@ adversarially-verified specs for all 13 remaining gaps. Key corrections the adve
 (ED2 → EN7 → restore-redundancy → ED3) → Phase 4 (ED9, EN5, then ED5 once unblocked, then ED6/EN4/ED8).
 
 **Status:** accepted. Playbook is the implementation source of truth; PLAN.md stays canonical for phase state.
+
+## D78 — Phase 2 ED1/EN1 + ED4/LX4 landed: path-sum latency + queueing curve (2026-06-06)
+
+Shipped as one atomic commit (214a2d3) per the playbook's hard rule. End-to-end latency is now the
+SUM along the served path (+ per-edge RTT), traffic-weighted over completion points so cache hits
+short-circuit; latencyUnderLoad is an M/M/1 queueing curve (base below ρ=0.5, base/(1−u) above, capped
+at 50× — no Infinity). pathLatencyMs/worstHopLatencyMs added to TickState; systemLatency reads the sum.
+
+**Re-calibration was far smaller than feared** (the lean builder's short cache-fronted paths stay under
+most targets): only 2 p99 targets moved — planet-scale 400→1030, thundering-herd 350→1050 (their
+only uptime-meeting build is the over-provisioned one, whose long multi-hop path measures ~890/913ms;
+capacity is those challenges' lesson, not tight latency). 4 challenges' lean-par flipped as a CORRECT
+consequence of ED4: high-ρ cost-optimized builds now pay a latency penalty (checkout-flow/api-gateway
+need headroom → costlier par) while over-provisioned long paths over-sum (production-ai/rag-retrieval →
+cheaper lean wins) — all still 3★. Harness 3★ all 57, golden no-op, capstones green, suite 4775.
+
+**EN2 (concurrency/Little's law) still pending** — XL, needs concurrency_limit authored on ~114
+component YAMLs; its own focused pass (the playbook's strict (1)→(4) authoring order).
+
+**Status:** ED1/EN1 + ED4/LX4 accepted + shipped. Phase 2 is 2/3 (EN2 remains).
