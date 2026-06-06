@@ -4016,3 +4016,29 @@ EN7 observability blast-radius (5ef6a31), restore-redundancy resilienceEarned (c
 
 ## 2026-06-06 22:50 — PUSH dev -> main (P135)
 26 commits: Learning-Fidelity Phases 2-3 (engine fidelity + resilience). deploy-production success (27067649843); e2e-unlocked capstone replay success (27067649842) — the full engine rework (latency/utilization/concurrency/AZ-isolation/observability/on-path-types) validated end-to-end in the running app. DEPLOYMENTS P135.
+- 2026-06-06 12:41 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-06 12:41 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-06 12:41 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-06 12:42 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-06 12:42 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-06 12:42 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-06 12:43 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeBudget.ts
+- 2026-06-06 12:43 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeBudget.ts
+- 2026-06-06 12:43 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-06 12:44 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-06 12:44 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-06 12:45 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-06 12:45 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-06 12:45 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-06 12:46 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 12:46 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 12:46 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 12:48 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/58-edge-economics.yaml
+- 2026-06-06 12:49 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-06 12:50 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/58-edge-economics.yaml
+- 2026-06-06 12:50 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/58-edge-economics.yaml
+- 2026-06-06 12:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/challengeBudget.test.ts
+- 2026-06-06 12:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/challengeBudget.test.ts
+
+## 2026-06-06 — PHASE 4 begun: EN5 usage-based cost + edge-economics challenge
+Opt-in per-origin-request fee folded into the cost gates; CDN edge absorption lowers it (the "front with a CDN to cut egress" lesson). Avoided all 3 EN5 gotchas (shared peakOriginBoundRps/usageCostPerMonth for scorer+harness; challenge-level usage_rates → no casing bug; originBoundRps scalar 7th param). New challenge edge-economics (58th): no-CDN build cpr 0.0043 vs CDN 0.0007 → blows the 0.002 gate → CDN mandatory. Counts 57→58, golden/par additive (57 byte-identical), harness 3★ all 58, suite 4796. NOT yet pushed (rides next push). Phase 4 remaining: ED9 (autoscaling), ED5 (blocked D16), ED6/EN4/ED8 (XL consistency/CAP).
