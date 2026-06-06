@@ -505,3 +505,10 @@ export function azCountForReplicas(replicaCount: number): number {
   const r = Number.isFinite(replicaCount) ? Math.max(1, Math.floor(replicaCount)) : 1
   return Math.min(MAX_AZ_COUNT, r)
 }
+
+// EN7 (D74): observability earns its keep by shrinking the BLAST RADIUS of a failure, not by magically
+// recovering faster. A monitored failure runs full-blast for OBS_DETECT_DELAY_S (detection lag), then the
+// system circuit-breaks / sheds onto healthy capacity, leaving only OBS_RESIDUAL_BLAST of the damage.
+// severity (shed fraction): 1 = undetected/unmonitored, OBS_RESIDUAL_BLAST = detected + mitigated.
+export const OBS_DETECT_DELAY_S = 5
+export const OBS_RESIDUAL_BLAST = 0.6

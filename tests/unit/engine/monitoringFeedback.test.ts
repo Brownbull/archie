@@ -3,11 +3,12 @@ import { simulateTick, computeOverrides } from "@/engine/simulationEngine"
 import type { SimGraph, ScheduledEvent } from "@/lib/simulationTypes"
 
 /**
- * TDD — Monitoring Feedback (E8).
+ * Monitoring Feedback (E8 → EN7, D74).
  *
- * When monitoring is connected to a failing node and the `monitoringAidsRecovery`
- * flag is set, the failure duration is shortened. Without monitoring, failures
- * last their full scheduled duration (or even ×1.5 longer with the penalty).
+ * Observability earns its keep by shrinking a failure's BLAST RADIUS, not by recovering faster.
+ * A monitored failure runs its FULL duration, but after a detection delay (OBS_DETECT_DELAY_S) the
+ * blast drops to OBS_RESIDUAL_BLAST and the node serves the rest. Unmonitored failures stay fully
+ * offline for the whole window.
  */
 
 function buildWithMonitoring(hasMonitoring: boolean): SimGraph {
@@ -23,43 +24,35 @@ function buildWithMonitoring(hasMonitoring: boolean): SimGraph {
   return { nodes, edges }
 }
 
-describe("Monitoring Feedback — E8 (TDD RED → GREEN)", () => {
-  it("RED: today, failure duration is the same with or without monitoring", () => {
-    const events: ScheduledEvent[] = [{ t: 0, type: "component_failure", target: "compute", durationS: 30 }]
+describe("Monitoring Feedback — EN7 blast-radius model (D74)", () => {
+  const events: ScheduledEvent[] = [{ t: 0, type: "component_failure", target: "compute", durationS: 30 }]
 
-    const withMon = computeOverrides(buildWithMonitoring(true).nodes, events, 15)
-    const withoutMon = computeOverrides(buildWithMonitoring(false).nodes, events, 15)
-
-    // At t=15 (within the 30s window), compute is offline in BOTH cases
-    expect(withMon.offlineNodeIds.has("compute")).toBe(true)
-    expect(withoutMon.offlineNodeIds.has("compute")).toBe(true)
+  it("before detection (within OBS_DETECT_DELAY_S), a monitored failure is full-blast offline", () => {
+    const g = buildWithMonitoring(true)
+    const ov = computeOverrides(g.nodes, events, 3, g.edges) // t=3 < 5s detection delay
+    expect(ov.offlineNodeIds.has("compute")).toBe(true)
+    expect(ov.capacityFactors?.has("compute")).toBe(false)
   })
 
-  it("GREEN: with monitoring + monitoringAidsRecovery, failure recovers 33% faster", () => {
-    // 30s failure, with monitoring → recovers at 20s (33% faster)
-    const events: ScheduledEvent[] = [{ t: 0, type: "component_failure", target: "compute", durationS: 30 }]
-    const graph = buildWithMonitoring(true)
-
-    // At t=25, with monitoring the node should be recovered (30 × 0.67 = ~20s)
-    const overrides = computeOverrides(graph.nodes, events, 25, graph.edges)
-    expect(overrides.offlineNodeIds.has("compute")).toBe(false) // recovered early!
-
-    // At t=25 WITHOUT monitoring, still offline
-    const noMonGraph = buildWithMonitoring(false)
-    const noMonOverrides = computeOverrides(noMonGraph.nodes, events, 25, noMonGraph.edges)
-    expect(noMonOverrides.offlineNodeIds.has("compute")).toBe(true) // still down
+  it("after detection, a monitored failure is MITIGATED — partial capacity, not offline", () => {
+    const g = buildWithMonitoring(true)
+    const ov = computeOverrides(g.nodes, events, 15, g.edges) // t=15 ≥ 5s → detected
+    expect(ov.offlineNodeIds.has("compute")).toBe(false) // no longer fully down
+    expect(ov.capacityFactors?.get("compute")).toBeCloseTo(1 - 0.6, 6) // serves (1−residual) = 40%
   })
 
-  it("without monitoring, failure lasts full duration", () => {
-    const events: ScheduledEvent[] = [{ t: 0, type: "component_failure", target: "compute", durationS: 30 }]
-    const graph = buildWithMonitoring(false)
+  it("an UNmonitored failure stays fully offline for the whole window", () => {
+    const g = buildWithMonitoring(false)
+    expect(computeOverrides(g.nodes, events, 15, g.edges).offlineNodeIds.has("compute")).toBe(true)
+    expect(computeOverrides(g.nodes, events, 29, g.edges).offlineNodeIds.has("compute")).toBe(true)
+  })
 
-    // At t=29, still offline
-    const overrides = computeOverrides(graph.nodes, events, 29, graph.edges)
-    expect(overrides.offlineNodeIds.has("compute")).toBe(true)
-
-    // At t=30, recovered
-    const overrides30 = computeOverrides(graph.nodes, events, 30, graph.edges)
-    expect(overrides30.offlineNodeIds.has("compute")).toBe(false)
+  it("monitoring shrinks the blast but NOT the duration — recovers only at full durationS", () => {
+    const g = buildWithMonitoring(true)
+    const at29 = computeOverrides(g.nodes, events, 29, g.edges) // still in window, mitigated
+    expect(at29.capacityFactors?.get("compute")).toBeCloseTo(0.4, 6)
+    const at30 = computeOverrides(g.nodes, events, 30, g.edges) // window over → recovered
+    expect(at30.offlineNodeIds.has("compute")).toBe(false)
+    expect(at30.capacityFactors?.has("compute")).toBe(false)
   })
 })

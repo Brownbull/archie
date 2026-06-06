@@ -1,4 +1,4 @@
-import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, MAX_FLOW_PASSES, FLOW_EPSILON, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
+import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, MAX_FLOW_PASSES, FLOW_EPSILON, OBS_DETECT_DELAY_S, OBS_RESIDUAL_BLAST, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
 import type {
   SimGraph,
   SimNode,
@@ -70,53 +70,63 @@ function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): numbe
 
 /**
  * Resolves the scheduled events active at `timeS` into per-tick overrides (Epic 16).
- * - component_failure: target node offline (sheds all traffic).
+ * - component_failure: target node offline (sheds all traffic) — unless monitored + detected (EN7),
+ *   when the blast shrinks to OBS_RESIDUAL_BLAST and the node serves the rest.
  * - az_outage: each node whose category === target loses ONE AZ → survives at (azCount−1)/azCount
- *   capacity (ED2). A single-AZ node survives at 0; spreading replicas across AZs rides it out.
+ *   capacity (ED2). Monitoring shrinks even that loss to (1/azCount)×severity after detection (EN7).
  * - latency_spike: target node's latency is multiplied (default ×3), scaled by `chaosIntensity`
  *   (ISAPivot 3e): effective = 1 + (authored − 1) × chaosIntensity. chaosIntensity 1 (default) ⇒
  *   exactly the authored multiplier (byte-identical to pre-3e); 0 ⇒ inert; >1 ⇒ harsher.
- * Active window is half-open `[t, t + durationS)`; omitting durationS means "until the end".
+ * EN7 (D74): failures run their FULL authored window `[t, t + durationS)` (no early recovery);
+ * observability earns its keep by reducing the blast radius after a detection delay, not the duration.
  * Concurrent latency_spike events on the same node multiply together (×3 × ×2 = ×6).
  */
 export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], timeS: number, edges?: Array<{ source: string; target: string }>, chaosIntensity: number = 1): TickOverrides {
-  // E8: build a set of nodes monitored by a monitoring-category neighbor.
+  // E8/EN7: which nodes (and categories) sit next to a monitoring tier. Coverage is what lets
+  // observability shrink a failure's blast radius after detection.
   const monitoredNodes = new Set<string>()
+  const monitoredCategories = new Set<string>()
   if (edges) {
     const monitorIds = new Set(nodes.filter((n) => n.category === "monitoring").map((n) => n.id))
     for (const e of edges) {
       if (monitorIds.has(e.target)) monitoredNodes.add(e.source)
       if (monitorIds.has(e.source)) monitoredNodes.add(e.target)
     }
+    for (const n of nodes) if (monitoredNodes.has(n.id)) monitoredCategories.add(n.category)
   }
-  const MONITORING_RECOVERY_FACTOR = 0.67
 
   const offlineNodeIds = new Set<string>()
   const latencyMultipliers = new Map<string, number>()
-  const capacityFactors = new Map<string, number>() // ED2: per-node surviving fraction during az_outage
+  const capacityFactors = new Map<string, number>() // ED2/EN7: per-node surviving fraction during a failure
   for (const e of events) {
-    // E8: if the target node is monitored, failure recovers 33% faster.
-    const effectiveDuration = e.durationS != null && monitoredNodes.has(e.target)
-      ? e.durationS * MONITORING_RECOVERY_FACTOR
-      : e.durationS
-    const active = timeS >= e.t && (effectiveDuration == null || timeS < e.t + effectiveDuration)
+    // EN7 (D74): failures now run their FULL authored duration (no magic early recovery). Observability
+    // instead shrinks the BLAST: a monitored failure is full-blast for OBS_DETECT_DELAY_S (detection lag),
+    // then mitigated to OBS_RESIDUAL_BLAST. severity = shed fraction (1 = undetected/unmonitored).
+    const active = timeS >= e.t && (e.durationS == null || timeS < e.t + e.durationS)
     if (!active) continue
-    if (e.type === "component_failure") {
-      offlineNodeIds.add(e.target)
-    } else if (e.type === "az_outage") {
-      // ED2 (D74): an az_outage removes ONE availability zone. A node spread across azCount AZs survives
-      // at (azCount−1)/azCount capacity; a single-AZ node (azCount 1) survives at 0 (fully offline, as
-      // before D74). Spreading a tier across AZs is now what lets it ride out a zone failure.
-      for (const n of nodes) {
-        if (n.category !== e.target) continue
-        const az = n.azCount ?? 1
-        const survFrac = (az - 1) / az
-        capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * survFrac)
-      }
-    } else if (e.type === "latency_spike") {
+    if (e.type === "latency_spike") {
       // 3e: scale the spike INTENSITY (not the raw multiplier) so chaos 0 ⇒ inert (×1), not ×0.
       const effective = 1 + ((e.multiplier ?? 3) - 1) * chaosIntensity
       latencyMultipliers.set(e.target, (latencyMultipliers.get(e.target) ?? 1) * effective)
+      continue
+    }
+    const monitored = e.type === "component_failure" ? monitoredNodes.has(e.target) : monitoredCategories.has(e.target)
+    const severity = monitored && timeS - e.t >= OBS_DETECT_DELAY_S ? OBS_RESIDUAL_BLAST : 1
+    if (e.type === "component_failure") {
+      // Base blast = the whole node. severity 1 ⇒ fully offline (byte-identical to pre-D74 for the
+      // common unmonitored case); mitigated ⇒ the node serves (1−severity) of its capacity.
+      if (severity >= 1) offlineNodeIds.add(e.target)
+      else capacityFactors.set(e.target, (capacityFactors.get(e.target) ?? 1) * (1 - severity))
+    } else if (e.type === "az_outage") {
+      // ED2 (D74): an az_outage removes ONE availability zone (base blast 1/azCount), so a node spread
+      // across azCount AZs survives at (azCount−1)/azCount. EN7: observability shrinks even that blast
+      // to (1/azCount)×severity after detection — a monitored, well-spread tier barely notices.
+      for (const n of nodes) {
+        if (n.category !== e.target) continue
+        const az = n.azCount ?? 1
+        const lost = (1 / az) * severity
+        capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * (1 - lost))
+      }
     }
   }
   return { offlineNodeIds, latencyMultipliers, capacityFactors }
