@@ -496,3 +496,12 @@ export const FAILURE_MULTIPLIER_MAX = 1.0
 export const FAILURE_NONE_LABEL = "No Failure"
 export const FAILURE_SELECTOR_TESTID = "failure-selector"
 export const FAILURE_BANNER_TESTID = "failure-banner"
+
+// ED2 (D74): an availability zone is a failure domain. A node's replicas spread across up to this many
+// AZs; an az_outage takes ONE down, so the node survives at (azCount−1)/azCount capacity. Cap at 3 (the
+// common 3-AZ region). azCount tracks replicaCount — a single-replica tier is single-AZ (all-or-nothing).
+export const MAX_AZ_COUNT = 3
+export function azCountForReplicas(replicaCount: number): number {
+  const r = Number.isFinite(replicaCount) ? Math.max(1, Math.floor(replicaCount)) : 1
+  return Math.min(MAX_AZ_COUNT, r)
+}

@@ -60,6 +60,12 @@ export interface SimNode {
    * — a SECOND saturation axis besides the rps cap. undefined ⇒ no concurrency limit (gate is a no-op).
    */
   concurrencyLimit?: number
+  /**
+   * Availability-zone spread (ED2, D74): how many AZs this node's replicas occupy (1–MAX_AZ_COUNT).
+   * An az_outage removes ONE AZ, so the node survives at (azCount−1)/azCount capacity — spreading a tier
+   * across AZs is what lets it ride out a zone failure. Derived from replicaCount. undefined ⇒ 1 (single AZ).
+   */
+  azCount?: number
 }
 
 /** A directed edge: traffic flows source → target. */
@@ -146,4 +152,10 @@ export interface ScheduledEvent {
 export interface TickOverrides {
   offlineNodeIds: Set<string>
   latencyMultipliers: Map<string, number>
+  /**
+   * ED2 (D74): per-node surviving capacity FRACTION during an az_outage — `(azCount−1)/azCount`. A node
+   * spread across 3 AZs survives at 0.667; a single-AZ node at 0. Optional so legacy override literals
+   * (and the two existing test fixtures) keep compiling; absent ⇒ full capacity (1).
+   */
+  capacityFactors?: Map<string, number>
 }

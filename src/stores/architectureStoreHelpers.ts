@@ -16,6 +16,7 @@ import {
   METRIC_CATEGORIES,
   getScalingRule,
   TRAFFIC_RPS_STEPS,
+  azCountForReplicas,
   type Constraint,
   type WeightProfile,
   type ComponentCategoryId,
@@ -518,6 +519,11 @@ export function buildSimGraph(
       ...(cost.writeRatio !== undefined ? { writeRatio: cost.writeRatio } : {}),
       ...(cost.writeDistribution !== undefined ? { writeDistribution: cost.writeDistribution } : {}),
       ...(cost.concurrencyLimit !== undefined ? { concurrencyLimit: cost.concurrencyLimit } : {}),
+      // ED2: a multi-replica tier spreads across AZs, so it survives an az_outage at (azCount−1)/azCount.
+      ...(() => {
+        const az = azCountForReplicas(n.data.replicaCount ?? 1)
+        return az > 1 ? { azCount: az } : {}
+      })(),
     }
   })
   const simEdges: SimEdge[] = edges.map((e) => ({ source: e.source, target: e.target }))

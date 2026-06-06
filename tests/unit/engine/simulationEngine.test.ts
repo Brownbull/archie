@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest"
 import { interpolateRps, findEntryNodes, simulateTick, runSimulation, defaultTrafficCurve, computeOverrides } from "@/engine/simulationEngine"
 import type { ScheduledEvent } from "@/lib/simulationTypes"
-import { SIM_TICKS } from "@/lib/constants"
+import { SIM_TICKS, azCountForReplicas } from "@/lib/constants"
 import type { SimGraph, SimNode } from "@/lib/simulationTypes"
 
 const node = (id: string, effectiveMaxRps: number, overrides: Partial<SimNode> = {}): SimNode => ({
@@ -182,6 +182,25 @@ describe("simulateTick — routing + capacity", () => {
     })
   })
 
+  describe("fractional AZ outage (ED2)", () => {
+    it("a node serves its surviving AZ fraction during an az_outage (was 0 pre-D74)", () => {
+      const g: SimGraph = { nodes: [node("c", 1000)], edges: [] }
+      const ov = { offlineNodeIds: new Set<string>(), latencyMultipliers: new Map<string, number>(), capacityFactors: new Map([["c", 2 / 3]]) }
+      const t = tel(simulateTick(g, 0, 900, ov), "c")
+      expect(t.servedRps).toBeCloseTo(667, 0) // 1000 × 0.667 surviving capacity (was fully offline → 0)
+      expect(t.failedRps).toBeCloseTo(233, 0)
+      expect(t.overloaded).toBe(true) // 900 incoming > 667 surviving
+    })
+
+    it("capacityFactor 0 (single-AZ) is fully offline", () => {
+      const g: SimGraph = { nodes: [node("c", 1000)], edges: [] }
+      const ov = { offlineNodeIds: new Set<string>(), latencyMultipliers: new Map<string, number>(), capacityFactors: new Map([["c", 0]]) }
+      const t = tel(simulateTick(g, 0, 500, ov), "c")
+      expect(t.servedRps).toBe(0)
+      expect(t.failedRps).toBe(500)
+    })
+  })
+
   it("records telemetry for off-path nodes (e.g. monitoring) with zero inflow", () => {
     const g: SimGraph = { nodes: [node("in", 1000), node("mon", 1000, { category: "monitoring" })], edges: [] }
     const s = simulateTick(g, 0, 100)
@@ -279,11 +298,26 @@ describe("computeOverrides (scheduled events, Epic 16)", () => {
     expect(computeOverrides(nodes, ev, 55).offlineNodeIds.size).toBe(0) // after duration
   })
 
-  it("offlines every node of the target category for an az_outage", () => {
+  it("scales target-category capacity to the surviving AZ fraction for an az_outage (ED2)", () => {
     const ov = computeOverrides(nodes, [{ t: 0, type: "az_outage", target: "compute" }], 5)
-    expect(ov.offlineNodeIds.has("app")).toBe(true)
-    expect(ov.offlineNodeIds.has("app2")).toBe(true)
-    expect(ov.offlineNodeIds.has("db")).toBe(false)
+    // single-AZ nodes (azCount undefined → 1) survive at 0 — fully offline, as before D74
+    expect(ov.capacityFactors?.get("app")).toBe(0)
+    expect(ov.capacityFactors?.get("app2")).toBe(0)
+    expect(ov.capacityFactors?.has("db")).toBe(false) // different category — untouched
+  })
+
+  it("a multi-AZ node survives an az_outage at (azCount−1)/azCount (ED2)", () => {
+    const az3: SimNode[] = [node("c", 1000, { azCount: 3 })]
+    const ov = computeOverrides(az3, [{ t: 0, type: "az_outage", target: "compute" }], 5)
+    expect(ov.capacityFactors?.get("c")).toBeCloseTo(2 / 3, 6) // 3 AZs, lose 1 → 0.667 survives
+  })
+
+  it("azCountForReplicas tracks replicaCount, capped at MAX_AZ_COUNT", () => {
+    expect(azCountForReplicas(1)).toBe(1)
+    expect(azCountForReplicas(2)).toBe(2)
+    expect(azCountForReplicas(3)).toBe(3)
+    expect(azCountForReplicas(20)).toBe(3) // capped at 3
+    expect(azCountForReplicas(0)).toBe(1)
   })
 
   it("applies a latency multiplier for latency_spike (default ×3)", () => {

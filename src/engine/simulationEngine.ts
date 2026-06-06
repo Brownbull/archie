@@ -71,7 +71,8 @@ function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): numbe
 /**
  * Resolves the scheduled events active at `timeS` into per-tick overrides (Epic 16).
  * - component_failure: target node offline (sheds all traffic).
- * - az_outage: every node whose category === target goes offline.
+ * - az_outage: each node whose category === target loses ONE AZ → survives at (azCount−1)/azCount
+ *   capacity (ED2). A single-AZ node survives at 0; spreading replicas across AZs rides it out.
  * - latency_spike: target node's latency is multiplied (default ×3), scaled by `chaosIntensity`
  *   (ISAPivot 3e): effective = 1 + (authored − 1) × chaosIntensity. chaosIntensity 1 (default) ⇒
  *   exactly the authored multiplier (byte-identical to pre-3e); 0 ⇒ inert; >1 ⇒ harsher.
@@ -92,6 +93,7 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
 
   const offlineNodeIds = new Set<string>()
   const latencyMultipliers = new Map<string, number>()
+  const capacityFactors = new Map<string, number>() // ED2: per-node surviving fraction during az_outage
   for (const e of events) {
     // E8: if the target node is monitored, failure recovers 33% faster.
     const effectiveDuration = e.durationS != null && monitoredNodes.has(e.target)
@@ -102,14 +104,22 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
     if (e.type === "component_failure") {
       offlineNodeIds.add(e.target)
     } else if (e.type === "az_outage") {
-      for (const n of nodes) if (n.category === e.target) offlineNodeIds.add(n.id)
+      // ED2 (D74): an az_outage removes ONE availability zone. A node spread across azCount AZs survives
+      // at (azCount−1)/azCount capacity; a single-AZ node (azCount 1) survives at 0 (fully offline, as
+      // before D74). Spreading a tier across AZs is now what lets it ride out a zone failure.
+      for (const n of nodes) {
+        if (n.category !== e.target) continue
+        const az = n.azCount ?? 1
+        const survFrac = (az - 1) / az
+        capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * survFrac)
+      }
     } else if (e.type === "latency_spike") {
       // 3e: scale the spike INTENSITY (not the raw multiplier) so chaos 0 ⇒ inert (×1), not ×0.
       const effective = 1 + ((e.multiplier ?? 3) - 1) * chaosIntensity
       latencyMultipliers.set(e.target, (latencyMultipliers.get(e.target) ?? 1) * effective)
     }
   }
-  return { offlineNodeIds, latencyMultipliers }
+  return { offlineNodeIds, latencyMultipliers, capacityFactors }
 }
 
 /**
@@ -186,9 +196,14 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
   const process = (id: string, forward: boolean) => {
     const node = nodeById.get(id) as SimNode
     const incoming = inflow.get(id) ?? 0
-    const offline = overrides?.offlineNodeIds.has(id) ?? false
+    // ED2 (D74): az_outage scales effective capacity to the surviving fraction (capFactor). capFactor ≤ 0
+    // (single-AZ node) — or a partial AZ hit on an UNCAPPED node (no rated capacity to fractionally keep)
+    // — is treated as fully offline. Otherwise effMax = effectiveMaxRps × capFactor (capFactor 1 ⇒ unchanged).
+    const capFactor = overrides?.capacityFactors?.get(id) ?? 1
+    const offline = (overrides?.offlineNodeIds.has(id) ?? false) || capFactor <= 0 || (node.effectiveMaxRps === 0 && capFactor < 1)
     const latMult = overrides?.latencyMultipliers.get(id) ?? 1
     const capped = node.effectiveMaxRps > 0
+    const effMax = node.effectiveMaxRps * capFactor
 
     // Write/read split (E2): data-storage nodes can split traffic into writes (bottleneck at
     // primary) and reads (scale with replicas). SQL primary: writes capped at base capacity
@@ -207,19 +222,19 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       const effWriteRatio = graph.writePressure !== undefined ? (node.writeRatio + graph.writePressure) / 2 : node.writeRatio
       const writeRps = incoming * effWriteRatio
       const readRps = incoming * (1 - effWriteRatio)
-      // Primary distribution: writes capped at baseMaxRps (single primary node).
-      // Sharded: writes use full scaled capacity (distributed across shards).
-      const writeCap = node.writeDistribution === "primary"
+      // Primary distribution: writes capped at baseMaxRps (single primary node). Sharded: full scaled
+      // capacity. Both scale by capFactor (ED2 — a lost AZ removes a fraction of write + read capacity).
+      const writeCap = (node.writeDistribution === "primary"
         ? (node.baseMaxRps ?? node.effectiveMaxRps)
-        : node.effectiveMaxRps
-      const readCap = node.effectiveMaxRps
+        : node.effectiveMaxRps) * capFactor
+      const readCap = effMax
       const writeServed = Math.min(writeRps, writeCap)
       const readServed = Math.min(readRps, readCap)
       served = writeServed + readServed
       failed = Math.max(0, incoming - served)
     } else if (node.queueBufferSize !== undefined && node.queueBufferSize > 0 && capped) {
       // Queue backpressure (E5): excess is buffered, not shed. Overflow sheds.
-      const drainRate = node.effectiveMaxRps
+      const drainRate = effMax
       served = Math.min(incoming, drainRate)
       const excess = Math.max(0, incoming - drainRate)
       const currentDepth = node.queueDepth ?? 0
@@ -229,15 +244,16 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       node.queueDepth = currentDepth + buffered
       failed = overflow
     } else if (capped) {
-      served = Math.min(incoming, node.effectiveMaxRps)
+      served = Math.min(incoming, effMax)
       failed = Math.max(0, incoming - served)
     } else {
       served = incoming
       failed = 0
     }
 
-    // Offline (scheduled failure / AZ outage): zero capacity → sheds all incoming traffic.
-    const capacityPercent = offline ? (incoming > 0 ? 1 : 0) : capped ? incoming / node.effectiveMaxRps : 0
+    // Offline (scheduled failure / full AZ loss): zero capacity → sheds all incoming traffic. Otherwise
+    // utilization is against the surviving capacity effMax (ED2 — a lost AZ raises ρ on what remains).
+    const capacityPercent = offline ? (incoming > 0 ? 1 : 0) : capped ? incoming / effMax : 0
     // W_queue (EN2): the bare queueing-curve latency, BEFORE additive terms + latMult — the latency the
     // concurrency gate uses (so a Phase-3 latency_spike multiplier can't silently collapse throughput).
     const queueLatencyMs = offline ? node.baseLatencyMs : latencyUnderLoad(node.baseLatencyMs, capacityPercent)
@@ -287,7 +303,7 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       ...(rejected > 0 ? { rejectedRps: rejected } : {}),
       latencyMs: baseLatency * latMult,
       capacityPercent,
-      overloaded: (offline ? incoming > 0 : capped && incoming > node.effectiveMaxRps) || rejected > 0,
+      overloaded: (offline ? incoming > 0 : capped && incoming > effMax) || rejected > 0,
     })
     if (forward) {
       const outs = outAdj.get(id) ?? []

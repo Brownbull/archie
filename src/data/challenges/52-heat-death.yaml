@@ -21,7 +21,10 @@ required_components:
   - data-storage
 target_metrics:
   uptime_percent: 60
-  p99_latency_ms: 600
+  # ED2 (D74): AZ outages no longer black out a whole tier — the surviving zones absorb the load and so
+  # run HOT (ED4 queueing curve), pushing p99 to ~1.6s during the rolling outages. Higher uptime (93%+,
+  # was ~83%) bought with degraded latency is the realistic trade; the loose p99 reflects that.
+  p99_latency_ms: 1900
 scheduled_events:
   - { t: 20, type: az_outage, target: compute, durationS: 20 }
   - { t: 55, type: az_outage, target: data-storage, durationS: 20 }
