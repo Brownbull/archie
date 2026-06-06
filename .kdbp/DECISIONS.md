@@ -1198,3 +1198,33 @@ correct fix shares the SAME on-path/async classification the builder uses — wh
 both safe and natural; rushing it in Phase 1 risks destabilizing all 57 challenges.
 
 **Status:** accepted. ED3 now lives in Phase 3's gap set (tracked as PENDING D15).
+
+## D77 — Phases 2-4 implementation playbook + adversarial corrections (2026-06-05)
+
+A 27-agent design workflow produced `docs/quality-reports/learning-fidelity-playbook.md` — code-grounded,
+adversarially-verified specs for all 13 remaining gaps. Key corrections the adversarial pass surfaced
+(these OVERRIDE the original PLAN phase notes):
+
+- **Dependency directions were inverted.** ED2 (fractional AZ outage) and EN6 (cyclic-flow solve) have
+  NO upstream gap dependency — they are PRECONDITIONS. Order: EN6 → EN3; ED2 → {EN7, restore-redundancy}.
+- **ED5 (dynamic cache hit-ratio) is INFEASIBLE as originally specified** — the reference builder never
+  sets trafficWorkload, so writePressure=0.5 derates EVERY cache in all 57 builds; trafficKind never
+  reaches the harness. Needs a workload-plumbing fix + a 3-step bisectable rollout first. (PENDING D16.)
+- **EN6 must NOT change the `totalServedRps` formula** — keep `max(0, targetRps − totalFailedRps)`;
+  the proposed `Σ(served−forwarded)` breaks queue-buffering builds. The fixed-point fixes forwarding;
+  the existing formula then stays correct. Zero re-calibration (no cyclic topologies in the 57).
+- **`40-observe-to-recover` becomes structurally unclearable** once EN7 deletes MONITORING_RECOVERY_FACTOR
+  (max uptime 66.7% < target 80%, no fronting tier in its palette). REDESIGN it before landing EN3/EN7.
+  Its `component_failure` target is a category string that matches no node id (a mechanical no-op). (PENDING D17.)
+- **restore-redundancy: use the separate-metric route** (a `resilienceEarned` boolean, zero star-math
+  change), NOT a gated-3rd-star modifier — the modifier re-opens the D72 budget-vs-redundancy tension.
+- **ED3 breaks 3 challenges (28/29/38) via the non-exempt `security` type** unless the builder's on-path
+  pass is category-agnostic (link ANY non-exempt orphan required type into the spine, not just compute).
+- **Standard re-calibration loop = D75 exit gate**, applied per engine change: re-tune 57 targets from
+  the harness's measured values → golden is a no-op tripwire (meetingStats meets any target) → regenerate
+  capstone fixtures for flipped candidates → harness 3★ all 57 + capstone E2E green.
+
+**Recommended implementation order:** Phase 2 (ED1/EN1 + ED4/LX4 atomic, then EN2) → EN6 → Phase 3
+(ED2 → EN7 → restore-redundancy → ED3) → Phase 4 (ED9, EN5, then ED5 once unblocked, then ED6/EN4/ED8).
+
+**Status:** accepted. Playbook is the implementation source of truth; PLAN.md stays canonical for phase state.
