@@ -1,7 +1,7 @@
 import type { SimulationStats } from "@/lib/simulationStats"
 import type { Challenge, StarBreakdown } from "@/lib/challengeTypes"
 import { evaluateRequiredTopology, allTopologyAssertionsPass, type TopologyGraphInput } from "@/engine/topologyAssertions"
-import { COMPONENT_TYPES } from "@/lib/componentTypes"
+import { COMPONENT_TYPES, isOnPathExempt } from "@/lib/componentTypes"
 
 // Multi-region origin grading (ISAPivot Phase 3, D55/D66). A multi-region traffic source requires a
 // multi-region-capable architecture: CDN + DNS at the edge plus a database to replicate. "Any
@@ -15,6 +15,37 @@ function hasMultiRegionArchitecture(canvasTypeIds: ReadonlySet<string>): boolean
   const edgeOk = MULTI_REGION_EDGE_TYPES.every((t) => canvasTypeIds.has(t))
   const dbOk = [...DATA_STORAGE_TYPE_IDS].some((id) => canvasTypeIds.has(id))
   return edgeOk && dbOk
+}
+
+/**
+ * ED3 (D74): a required type counts only if it's ON THE SERVED PATH — directed-reachable from a traffic
+ * source through the frozen graph — so "drop a disconnected block" no longer satisfies required_types.
+ * Async tiers (messaging / real-time) are exempt (they legitimately sit off the sync path). Mirrors the
+ * sim's inflow seeding: BFS from in-degree-0 traffic nodes when any exist, else from all in-degree-0.
+ */
+function requiredTypesOnServedPath(graph: TopologyGraphInput, requiredTypes: readonly string[]): boolean {
+  const { typeByNodeId, edges } = graph
+  const indeg = new Map<string, number>()
+  const outAdj = new Map<string, string[]>()
+  for (const id of typeByNodeId.keys()) indeg.set(id, 0)
+  for (const e of edges) {
+    if (!typeByNodeId.has(e.source) || !typeByNodeId.has(e.target)) continue
+    outAdj.set(e.source, [...(outAdj.get(e.source) ?? []), e.target])
+    indeg.set(e.target, (indeg.get(e.target) ?? 0) + 1)
+  }
+  const entries = [...typeByNodeId.keys()].filter((id) => (indeg.get(id) ?? 0) === 0)
+  const trafficEntries = entries.filter((id) => COMPONENT_TYPES.get(typeByNodeId.get(id) ?? "")?.category === "traffic")
+  const seeds = trafficEntries.length > 0 ? trafficEntries : entries
+  const reachable = new Set<string>()
+  const queue = [...seeds]
+  while (queue.length > 0) {
+    const id = queue.shift()!
+    if (reachable.has(id)) continue
+    reachable.add(id)
+    for (const t of outAdj.get(id) ?? []) if (!reachable.has(t)) queue.push(t)
+  }
+  const reachableTypes = new Set([...reachable].map((id) => typeByNodeId.get(id)!))
+  return requiredTypes.every((t) => isOnPathExempt(t) || reachableTypes.has(t))
 }
 
 /**
@@ -70,10 +101,15 @@ export function evaluateAttempt(
     ? true
     : !!topologyGraph && allTopologyAssertionsPass(evaluateRequiredTopology(topologyGraph, challenge.requiredTopology))
 
-  // required_types: the key blocks the challenge is designed to teach MUST be on the canvas.
-  // Missing a required type blocks all stars — you can't pass without the right architecture.
+  // required_types (ED3, D74): the key blocks MUST be ON THE SERVED PATH (directed-reachable from the
+  // traffic source) when the frozen graph is available — a disconnected block no longer counts. Async
+  // tiers are exempt. Without a graph (e.g. the golden's synthetic calls, or no start-time snapshot),
+  // fall back to canvas PRESENCE — byte-identical to pre-D74.
   const hasAllRequiredTypes = challenge.requiredTypes.length === 0
-    || (canvasTypeIds ? challenge.requiredTypes.every((t) => canvasTypeIds.has(t)) : true)
+    ? true
+    : topologyGraph
+      ? requiredTypesOnServedPath(topologyGraph, challenge.requiredTypes)
+      : (canvasTypeIds ? challenge.requiredTypes.every((t) => canvasTypeIds.has(t)) : true)
 
   // forbidden_types (ISAPivot Phase 3): any forbidden type on the canvas is a hard 0★ gate. Absent
   // forbiddenTypes (the 41 built-ins) ⇒ hasForbidden false ⇒ forbiddenTypesOk true ⇒ basePass unchanged.

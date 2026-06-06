@@ -4,7 +4,7 @@ import { load } from "js-yaml"
 
 import { componentLibrary } from "@/services/componentLibrary"
 import { ComponentYamlSchema, type Component } from "@/schemas/componentSchema"
-import { COMPONENT_TYPES } from "@/lib/componentTypes"
+import { COMPONENT_TYPES, isOnPathExempt } from "@/lib/componentTypes"
 import { buildSimGraph, computeTotalArchitectureCost, evaluateTopology, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
 import { runSimulation } from "@/engine/simulationEngine"
 import { computeSimStats } from "@/lib/simulationStats"
@@ -304,15 +304,20 @@ export function buildSolution(c: Challenge): { nodes: RefNode[]; edges: RefEdge[
     }
   }
 
-  // Eliminate orphans (D72): any placed node still with no edge — e.g. an async messaging/real-time
-  // tier added only for required-type coverage — is wired with an edge FROM it INTO compute. This
-  // clears the blocking 'orphan'/'unreachable' topology issues (which gate the well-formed 3★ star)
-  // while leaving the node with NO incoming traffic, so it carries zero load and an AZ outage on it
-  // (e.g. async-backbone's messaging outage) sheds nothing — uptime is unaffected.
+  // Eliminate orphans (D72) — category-aware after ED3 (D74). Any placed node still with no edge:
+  //  - EXEMPT async tiers (messaging / real-time): wired FROM it INTO compute (n→compute), leaving NO
+  //    incoming traffic so it carries zero load (an AZ outage on it sheds nothing). Presence satisfies
+  //    its required-type check (ED3 exempts async tiers).
+  //  - NON-exempt types (e.g. `security`): MUST be on the served path for ED3, so wire compute→n —
+  //    directed-reachable from the traffic source. Side-channel categories (monitoring/security) are
+  //    excluded from path latency, so this doesn't perturb p99.
   const connected = new Set(edges.flatMap((e) => [e.source, e.target]))
   const sink = primaryCompute ?? id("traffic-source")
   for (const n of nodes) {
-    if (!connected.has(n.id) && n.id !== sink) link(n.id, sink)
+    if (connected.has(n.id) || n.id === sink) continue
+    const typeId = componentLibrary.getComponent(n.data.archieComponentId)?.typeId ?? ""
+    if (isOnPathExempt(typeId)) link(n.id, sink) // async tier — stays off the sync path
+    else link(primaryCompute, n.id) // ED3: make it directed-reachable (on the served path)
   }
 
   return { nodes, edges }

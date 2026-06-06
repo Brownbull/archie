@@ -219,3 +219,17 @@ export function providersForComponent(component: Component, all: Component[]): C
   if (component.typeId) return all.filter((c) => c.typeId === component.typeId)
   return all.filter((c) => c.category === component.category)
 }
+
+/**
+ * Categories that legitimately sit OFF the synchronous request path (ED3, D74): asynchronous tiers —
+ * message queues, event streams, real-time/websocket fan-out. A required type in one of these is
+ * satisfied by mere presence; everything else must be directed-reachable from the traffic source
+ * (carry real traffic) to count, so "drop a disconnected block" no longer satisfies required_types.
+ */
+export const ASYNC_OFFPATH_CATEGORIES: ReadonlySet<ComponentCategoryId> = new Set(["messaging", "real-time"])
+
+/** True when a required type may sit off the served path (async tier) — see ASYNC_OFFPATH_CATEGORIES. */
+export function isOnPathExempt(typeId: string): boolean {
+  const cat = COMPONENT_TYPES.get(typeId)?.category
+  return cat !== undefined && ASYNC_OFFPATH_CATEGORIES.has(cat)
+}

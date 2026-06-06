@@ -207,4 +207,35 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
       expect(r.stars).toBe(0)
     })
   })
+
+  describe("required_types must be on the served path (ED3, D74)", () => {
+    const reqCh = { ...challenge, requiredTypes: ["compute", "security"] }
+    const present = new Set(["compute", "security", "message-queue"])
+    const graph = (edges: { source: string; target: string }[]) => ({
+      typeByNodeId: new Map([["t", "traffic-source"], ["c", "compute"], ["s", "security"]]),
+      edges: [{ source: "t", target: "c" }, ...edges],
+    })
+
+    it("a non-exempt required type NOT reachable from traffic fails (disconnected block doesn't count)", () => {
+      const r = evaluateAttempt(stats(99.5, 150), reqCh, 0, 100, present, undefined, graph([]))
+      expect(r.hasRequiredBlocks).toBe(false) // security present but orphaned → off the served path
+    })
+
+    it("a non-exempt required type wired downstream of compute passes", () => {
+      const r = evaluateAttempt(stats(99.5, 150), reqCh, 0, 100, present, undefined, graph([{ source: "c", target: "s" }]))
+      expect(r.hasRequiredBlocks).toBe(true) // compute→security → directed-reachable
+    })
+
+    it("an async (exempt) required type passes even when off-path", () => {
+      const ch = { ...challenge, requiredTypes: ["compute", "message-queue"] }
+      const g = { typeByNodeId: new Map([["t", "traffic-source"], ["c", "compute"], ["q", "message-queue"]]), edges: [{ source: "t", target: "c" }] }
+      const r = evaluateAttempt(stats(99.5, 150), ch, 0, 100, present, undefined, g) // queue orphaned, but messaging is exempt
+      expect(r.hasRequiredBlocks).toBe(true)
+    })
+
+    it("falls back to canvas presence when no frozen graph (golden / no-snapshot path)", () => {
+      const r = evaluateAttempt(stats(99.5, 150), reqCh, 0, 100, present) // no topologyGraph
+      expect(r.hasRequiredBlocks).toBe(true) // presence-only fallback → byte-identical to pre-D74
+    })
+  })
 })
