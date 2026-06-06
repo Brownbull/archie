@@ -164,6 +164,24 @@ describe("simulateTick — routing + capacity", () => {
     })
   })
 
+  describe("cyclic flow (EN6 fixed-point)", () => {
+    it("a cycle member receives forwarded traffic + flow still conserves (closes D7)", () => {
+      // src → a, with a ↔ b forming a cycle. Pre-EN6, b never forwarded and the cycle's flow was dropped.
+      const g: SimGraph = { nodes: [node("src", 0), node("a", 1000), node("b", 1000)], edges: [edge("src", "a"), edge("a", "b"), edge("b", "a")] }
+      const s = simulateTick(g, 0, 200)
+      expect(tel(s, "b").incomingRps).toBeGreaterThan(0) // D7 fix: the cycle member now sees traffic
+      expect(s.totalServedRps + s.totalFailedRps).toBeCloseTo(200, 6) // conservation holds
+      expect(Number.isFinite(s.totalServedRps)).toBe(true)
+    })
+
+    it("a self-loop terminates within the pass cap (no hang)", () => {
+      const g: SimGraph = { nodes: [node("src", 0), node("x", 500)], edges: [edge("src", "x"), edge("x", "x")] }
+      const s = simulateTick(g, 0, 300)
+      expect(tel(s, "x").incomingRps).toBeGreaterThan(0)
+      expect(Number.isFinite(s.totalServedRps)).toBe(true)
+    })
+  })
+
   it("records telemetry for off-path nodes (e.g. monitoring) with zero inflow", () => {
     const g: SimGraph = { nodes: [node("in", 1000), node("mon", 1000, { category: "monitoring" })], edges: [] }
     const s = simulateTick(g, 0, 100)

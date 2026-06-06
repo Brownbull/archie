@@ -1,4 +1,4 @@
-import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
+import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, MAX_FLOW_PASSES, FLOW_EPSILON, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
 import type {
   SimGraph,
   SimNode,
@@ -176,10 +176,10 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       if ((workIndeg.get(target) ?? 0) === 0 && !seen.has(target)) queue.push(target)
     }
   }
-  // Nodes left in a cycle: processed once without forwarding (v1 limitation). For pure DAGs
-  // (the normal case) flow conserves: targetRps = totalServed + totalFailed. When a DAG node
-  // forwards into a cycle member, that member's served traffic neither forwards nor reaches a
-  // sink, so totalServedRps is approximate for cyclic topologies (tracked: D7).
+  // Nodes left in a cycle (not reachable by Kahn). EN6 (D74) gives them a bounded fixed-point below so
+  // they forward their served traffic too — closing D7's totalServedRps overcount. Any node downstream
+  // of a cycle is itself cyclic (Kahn can't consume the cycle's edges to reach it), so cyclic nodes
+  // forward ONLY to other cyclic nodes — the DAG pass above is never disturbed and stays exact.
   const cyclic = graph.nodes.filter((n) => !seen.has(n.id)).map((n) => n.id)
 
   const telemetry = new Map<string, NodeTelemetry>()
@@ -302,7 +302,40 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     }
   }
   for (const id of order) process(id, true)
-  for (const id of cyclic) process(id, false)
+
+  // EN6 (D74): bounded fixed-point for the cyclic subgraph. The DAG pass froze each cyclic node's
+  // inflow CONTRIBUTION from the DAG; here cyclic nodes additionally forward among themselves until
+  // their served traffic settles (undamped Jacobi, capped at MAX_FLOW_PASSES). queueDepth is reset to
+  // the tick-start value each pass so the mutation lands exactly once (no per-pass compounding).
+  if (cyclic.length > 0) {
+    const seedDepth = new Map(cyclic.map((id) => [id, nodeById.get(id)?.queueDepth ?? 0]))
+    const dagInflow = new Map(cyclic.map((id) => [id, inflow.get(id) ?? 0]))
+    let lastServed = new Map<string, number>(cyclic.map((id) => [id, 0]))
+    for (let pass = 0; pass < MAX_FLOW_PASSES; pass++) {
+      // Rebuild cyclic inflows: the frozen DAG contribution + forwards from cyclic peers (prev pass).
+      for (const id of cyclic) inflow.set(id, dagInflow.get(id) ?? 0)
+      for (const id of cyclic) {
+        const node = nodeById.get(id)!
+        const outs = outAdj.get(id) ?? []
+        if (outs.length === 0) continue
+        const hitRatio = node.cacheHitRatio ?? 0
+        const fwd = hitRatio > 0 ? (lastServed.get(id) ?? 0) * (1 - hitRatio) : (lastServed.get(id) ?? 0)
+        const perOut = fwd / outs.length
+        for (const t of outs) inflow.set(t, (inflow.get(t) ?? 0) + perOut) // t is always cyclic
+      }
+      for (const id of cyclic) nodeById.get(id)!.queueDepth = seedDepth.get(id) ?? 0
+      for (const id of cyclic) process(id, false)
+      let change = 0
+      const nowServed = new Map<string, number>()
+      for (const id of cyclic) {
+        const s = telemetry.get(id)?.servedRps ?? 0
+        nowServed.set(id, s)
+        change = Math.max(change, Math.abs(s - (lastServed.get(id) ?? 0)))
+      }
+      lastServed = nowServed
+      if (change < FLOW_EPSILON) break
+    }
+  }
 
   const nodes = graph.nodes.map((n) => telemetry.get(n.id)!)
   const totalFailedRps = nodes.reduce((sum, t) => sum + t.failedRps, 0)

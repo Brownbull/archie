@@ -145,6 +145,12 @@ export const INTER_NODE_RTT_MS = 2
 // EN2 (D74): floor for the queueing latency used in the concurrency gate (in-flight = served × W/1000,
 // Little's law). Prevents a near-zero W from producing an unbounded throughput allowance (X_cap).
 export const QUEUEING_LATENCY_EPS = 0.01
+// EN6 (D74): bounded fixed-point for the CYCLIC subgraph (closes D7's overcount — cycle members now
+// forward their served traffic). The DAG part is still an exact single topo pass; only nodes inside a
+// cycle iterate. MAX_FLOW_PASSES caps any non-converging cycle (no hang); FLOW_EPSILON is the per-node
+// served-rps change below which the cyclic flow is considered settled.
+export const MAX_FLOW_PASSES = 64
+export const FLOW_EPSILON = 1e-3
 // Wall-clock ms per tick at 1× playback speed; divided by playback speed (1/2/5/10×) in the store.
 export const SIM_BASE_TICK_MS = 1000
 // Default ramp target (req/sec) used when running a simulation with no scenario traffic curve.
