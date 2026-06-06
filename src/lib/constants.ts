@@ -133,9 +133,15 @@ export const TRAFFIC_RPS_STEPS = [
 // Simulation engine (Epic 15). Fixed tick count keeps telemetry buffers bounded and playback smooth.
 export const SIM_TICKS = 50
 export const SIM_DEFAULT_DURATION_S = 90
-// Latency-under-load coefficient: latency = baseLatencyMs × (1 + max(0, load−1) × LATENCY_LOAD_K).
-// At 2× capacity, latency ≈ baseLatency × (1 + LATENCY_LOAD_K). Tuned for visible-but-not-extreme growth.
-export const LATENCY_LOAD_K = 2
+// Queueing latency curve (ED4/LX4, D74). Per-node latency rises as utilization ρ→1 — an M/M/1-style
+// curve so headroom is a REAL, teachable quantity (the old flat-then-linear model read "fine" at 99%
+// then fell off a cliff). Below FLOOR: base. Above: renormalize u = (min(ρ,CAP)−FLOOR)/(1−FLOOR),
+// multiplier = 1/(1−u). ρ=0.5→1×, 0.75→2×, 0.9→5×, 0.95→10×, 0.99+→50× (CAP bounds it; no Inf at ρ=1).
+export const LATENCY_QUEUE_FLOOR_RHO = 0.5
+export const LATENCY_QUEUE_RHO_CAP = 0.99
+// End-to-end latency = SUM of per-node latency along the served path (ED1/EN1, D74), with this fixed
+// round-trip charged once per traversed edge. Replaces the old "worst single hop" system latency.
+export const INTER_NODE_RTT_MS = 2
 // Wall-clock ms per tick at 1× playback speed; divided by playback speed (1/2/5/10×) in the store.
 export const SIM_BASE_TICK_MS = 1000
 // Default ramp target (req/sec) used when running a simulation with no scenario traffic curve.

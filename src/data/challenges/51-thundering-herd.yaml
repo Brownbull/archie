@@ -21,7 +21,10 @@ required_components:
   - compute
 target_metrics:
   uptime_percent: 97
-  p99_latency_ms: 350
+  # ED1/EN1 (D74): latency is now summed along the served path. Absorbing the burst at 97% uptime
+  # requires the over-provisioned build, whose multi-hop path measures ~913ms p99 — the lesson is
+  # burst capacity, so the latency gate is loose (don't fall over), not tight.
+  p99_latency_ms: 1050
 chaos_intensity: 1.5
 hints:
   - "The waves spike to 1.5M rps — origin compute can never see that; the edge must swallow it."

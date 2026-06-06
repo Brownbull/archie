@@ -24,7 +24,10 @@ required_components:
   - data-storage
 target_metrics:
   uptime_percent: 96
-  p99_latency_ms: 400
+  # ED1/EN1 (D74): end-to-end latency is now the SUM along the served path (+ per-edge RTT), not the
+  # worst hop. At planet scale the only build that meets 96% uptime is the over-provisioned global one,
+  # whose long multi-hop path measures ~890ms p99 — capacity is the lesson here, not tight latency.
+  p99_latency_ms: 1030
 chaos_intensity: 2
 hints:
   - "1.8M rps cannot all reach origin — the edge has to serve almost everything."

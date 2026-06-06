@@ -1,4 +1,4 @@
-import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_LOAD_K, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
+import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
 import type {
   SimGraph,
   SimNode,
@@ -58,8 +58,14 @@ export function findEntryNodes(graph: SimGraph): string[] {
 }
 
 function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): number {
-  const overload = Math.max(0, capacityPercent - 1)
-  return baseLatencyMs * (1 + overload * LATENCY_LOAD_K)
+  // ED4/LX4 (D74): M/M/1-style queueing curve. At/below FLOOR utilization, latency is the base (a node
+  // with headroom is fast). Above FLOOR, renormalize ρ into u∈[0,1) and return base/(1−u), so latency
+  // climbs steeply toward the cap — making headroom a real, teachable lever. CAP bounds it (no Infinity
+  // at ρ≥1). ρ=0.5→1×, 0.75→2×, 0.9→5×, 0.95→10×, 0.99+→50×.
+  if (capacityPercent <= LATENCY_QUEUE_FLOOR_RHO) return baseLatencyMs
+  const rhoCapped = Math.min(capacityPercent, LATENCY_QUEUE_RHO_CAP)
+  const u = (rhoCapped - LATENCY_QUEUE_FLOOR_RHO) / (1 - LATENCY_QUEUE_FLOOR_RHO)
+  return baseLatencyMs / (1 - u)
 }
 
 /**
@@ -116,14 +122,17 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
 export function simulateTick(graph: SimGraph, tick: number, targetRps: number, overrides?: TickOverrides): TickState {
   const nodeById = new Map(graph.nodes.map((n) => [n.id, n]))
   const outAdj = new Map<string, string[]>()
+  const parentAdj = new Map<string, string[]>() // ED1: reverse edges, for served-path latency accumulation
   const indeg = new Map<string, number>()
   for (const n of graph.nodes) {
     outAdj.set(n.id, [])
+    parentAdj.set(n.id, [])
     indeg.set(n.id, 0)
   }
   for (const e of graph.edges) {
     if (!nodeById.has(e.source) || !nodeById.has(e.target)) continue
     outAdj.get(e.source)!.push(e.target)
+    parentAdj.get(e.target)!.push(e.source)
     indeg.set(e.target, (indeg.get(e.target) ?? 0) + 1)
   }
 
@@ -278,7 +287,51 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
   const nodes = graph.nodes.map((n) => telemetry.get(n.id)!)
   const totalFailedRps = nodes.reduce((sum, t) => sum + t.failedRps, 0)
   const totalServedRps = Math.max(0, targetRps - totalFailedRps)
-  return { tick, targetRps, nodes, totalServedRps, totalFailedRps }
+
+  // ED1/EN1 (D74): end-to-end latency = SUM along the served request path, not the worst single hop.
+  // Each served-carrying edge charges INTER_NODE_RTT_MS; a node's own term is its full telemetry latency.
+  // accLatency(v) = nodeLatency(v) + (servedParents ? RTT + max-parent accLatency : 0). Cache hits
+  // short-circuit: a node is a COMPLETION POINT for the served fraction it does NOT forward (cache hits
+  // complete at the cache; terminals complete everything). pathLatency = the traffic-weighted mean
+  // accLatency over completion points, so a high-hit cache genuinely lowers it (the dominant fraction
+  // completes on the short front path). Side-channel categories (monitoring/messaging/real-time) are
+  // excluded — they're not where user requests complete.
+  const forwardedOf = (id: string): number => {
+    const n = nodeById.get(id)
+    if (!n) return 0
+    const served = telemetry.get(id)?.servedRps ?? 0
+    if ((outAdj.get(id)?.length ?? 0) === 0) return 0
+    const h = n.cacheHitRatio ?? 0
+    return h > 0 ? served * (1 - h) : served
+  }
+  const acc = new Map<string, number>()
+  const nodeLat = (id: string) => telemetry.get(id)?.latencyMs ?? 0
+  for (const id of order) {
+    let maxParentAcc = -1
+    for (const p of parentAdj.get(id) ?? []) {
+      if (forwardedOf(p) > 0 && acc.has(p)) maxParentAcc = Math.max(maxParentAcc, acc.get(p)!)
+    }
+    acc.set(id, nodeLat(id) + (maxParentAcc >= 0 ? INTER_NODE_RTT_MS + maxParentAcc : 0))
+  }
+  for (const id of cyclic) if (!acc.has(id)) acc.set(id, nodeLat(id)) // cyclic nodes contribute as terminals
+
+  const EXCLUDED_FROM_PATH = new Set(["monitoring", "messaging", "real-time"])
+  let worstHop = 0
+  let pSum = 0
+  let pWeight = 0
+  for (const n of graph.nodes) {
+    const t = telemetry.get(n.id)!
+    if (t.latencyMs > worstHop) worstHop = t.latencyMs
+    if (EXCLUDED_FROM_PATH.has(n.category)) continue
+    const completes = t.servedRps - forwardedOf(n.id) // served fraction that terminates here
+    if (completes > 0) {
+      pSum += completes * (acc.get(n.id) ?? t.latencyMs)
+      pWeight += completes
+    }
+  }
+  const pathLatencyMs = pWeight > 0 ? pSum / pWeight : worstHop
+
+  return { tick, targetRps, nodes, totalServedRps, totalFailedRps, pathLatencyMs, worstHopLatencyMs: worstHop }
 }
 
 /**

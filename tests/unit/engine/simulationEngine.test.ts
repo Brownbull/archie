@@ -91,14 +91,47 @@ describe("simulateTick — routing + capacity", () => {
     expect(tel(s, "in").overloaded).toBe(false)
   })
 
-  it("raises latency under overload and keeps base latency under capacity", () => {
+  it("follows the M/M/1 queueing curve as utilization climbs (ED4/LX4)", () => {
     const g: SimGraph = { nodes: [node("in", 100, { baseLatencyMs: 10 })], edges: [] }
-    const under = tel(simulateTick(g, 0, 50), "in")
-    expect(under.latencyMs).toBe(10) // 50% load → base
+    const at = (rps: number) => tel(simulateTick(g, 0, rps), "in").latencyMs
+    expect(at(50)).toBe(10) // ρ=0.50 ≤ FLOOR → base (1×)
+    expect(at(75)).toBeCloseTo(20, 6) // ρ=0.75 → u=0.5 → 2×
+    expect(at(90)).toBeCloseTo(50, 6) // ρ=0.90 → u=0.8 → 5×
+    expect(at(95)).toBeCloseTo(100, 6) // ρ=0.95 → u=0.9 → 10×
     const over = tel(simulateTick(g, 0, 200), "in")
-    // capacityPercent=2 → 10 × (1 + (2-1)×LATENCY_LOAD_K=2) = 30
-    expect(over.latencyMs).toBe(30)
+    expect(over.latencyMs).toBeCloseTo(500, 6) // ρ=2.0 clamps at CAP 0.99 → 50× (finite, no Infinity)
     expect(over.capacityPercent).toBe(2)
+  })
+
+  describe("end-to-end path latency (ED1/EN1)", () => {
+    it("sums per-node latency + inter-node RTT along the served path", () => {
+      // traffic → a(5ms) → b(20ms, terminal); all under capacity so each node is at base latency.
+      const g: SimGraph = { nodes: [node("a", 1000, { baseLatencyMs: 5 }), node("b", 1000, { baseLatencyMs: 20 })], edges: [edge("a", "b")] }
+      const s = simulateTick(g, 0, 100)
+      expect(s.pathLatencyMs).toBeCloseTo(5 + 2 + 20, 6) // 5 + RTT + 20 = 27 (b is the completion point)
+      expect(s.worstHopLatencyMs).toBe(20) // worst single hop unchanged
+    })
+
+    it("a cache hit short-circuits the path, so a high hit-ratio LOWERS end-to-end latency", () => {
+      const mk = (hit: number): SimGraph => ({
+        nodes: [
+          node("src", 100000, { baseLatencyMs: 1 }),
+          node("cache", 100000, { category: "caching", baseLatencyMs: 5, cacheHitRatio: hit }),
+          node("db", 100000, { category: "data-storage", baseLatencyMs: 20 }),
+        ],
+        edges: [edge("src", "cache"), edge("cache", "db")],
+      })
+      const hot = simulateTick(mk(0.9), 0, 1000).pathLatencyMs! // 90% complete at the short src→cache path
+      const cold = simulateTick(mk(0), 0, 1000).pathLatencyMs! // everything reaches the db
+      expect(hot).toBeLessThan(cold)
+    })
+
+    it("fan-in takes the MAX parent path, not the sum", () => {
+      // a(5) and b(30) both feed c(10, terminal). c's path latency uses the slower parent, not a+b.
+      const g: SimGraph = { nodes: [node("a", 1000, { baseLatencyMs: 5 }), node("b", 1000, { baseLatencyMs: 30 }), node("c", 1000, { baseLatencyMs: 10 })], edges: [edge("a", "c"), edge("b", "c")] }
+      const s = simulateTick(g, 0, 100)
+      expect(s.pathLatencyMs).toBeCloseTo(10 + 2 + 30, 6) // c + RTT + max(a,b) = 42, NOT 10+5+30
+    })
   })
 
   it("records telemetry for off-path nodes (e.g. monitoring) with zero inflow", () => {

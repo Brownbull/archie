@@ -41,8 +41,13 @@ function percentile(sortedAsc: number[], p: number): number {
   return sortedAsc[Math.max(0, idx)]
 }
 
-/** Per-tick "system latency" = the worst (max) node latency that tick (slowest hop dominates). */
+/**
+ * Per-tick "system latency" = the end-to-end served-path latency (ED1/EN1, D74). `simulateTick`
+ * computes it (sum along the served path, traffic-weighted over completion points). Legacy fixtures
+ * without `pathLatencyMs` fall back to the old worst-single-hop measure.
+ */
 function systemLatency(tick: TickState): number {
+  if (tick.pathLatencyMs !== undefined) return tick.pathLatencyMs
   let max = 0
   for (const n of tick.nodes) if (n.latencyMs > max) max = n.latencyMs
   return max

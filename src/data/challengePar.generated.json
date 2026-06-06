@@ -36,7 +36,7 @@
     "nodes": 4
   },
   "checkout-flow": {
-    "cost": 160,
+    "cost": 590,
     "nodes": 4
   },
   "cold-start-spike": {
@@ -112,7 +112,7 @@
     "nodes": 5
   },
   "api-gateway": {
-    "cost": 115,
+    "cost": 315,
     "nodes": 5
   },
   "async-backbone": {
@@ -172,11 +172,11 @@
     "nodes": 7
   },
   "production-ai": {
-    "cost": 435,
+    "cost": 105,
     "nodes": 6
   },
   "rag-retrieval": {
-    "cost": 555,
+    "cost": 250,
     "nodes": 6
   },
   "realtime-live": {

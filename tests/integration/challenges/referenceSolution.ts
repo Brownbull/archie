@@ -390,7 +390,7 @@ export interface ScoreResult {
 }
 
 /** Score ONE concrete build (nodes + edges) through the REAL sim + scorer (D72 topology split). */
-function scoreBuild(c: Challenge, nodes: readonly RefNode[], edges: readonly RefEdge[]): ScoreResult {
+export function scoreBuild(c: Challenge, nodes: readonly RefNode[], edges: readonly RefEdge[]): ScoreResult {
   const graph = buildSimGraph(nodes, edges)
   const result = runSimulation(graph, challengeCurve(c), undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
   const stats = computeSimStats(result.ticks, result.ticks.length - 1)

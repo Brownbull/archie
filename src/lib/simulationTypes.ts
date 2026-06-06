@@ -102,6 +102,14 @@ export interface TickState {
   totalServedRps: number
   /** Requests/sec shed at any hop this tick. */
   totalFailedRps: number
+  /**
+   * End-to-end latency this tick (ED1/EN1, D74): traffic-weighted mean of the SUMMED per-node latency
+   * along the served path to each completion point (+ inter-node RTT per edge). Optional only so legacy
+   * fixtures without it fall back to worst-hop; `simulateTick` always populates it.
+   */
+  pathLatencyMs?: number
+  /** Worst single-hop node latency this tick (the pre-ED1 system-latency metric), kept for telemetry. */
+  worstHopLatencyMs?: number
 }
 
 export interface SimulationResult {
