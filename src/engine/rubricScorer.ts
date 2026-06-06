@@ -91,6 +91,12 @@ export function evaluateAttempt(
     || (!!canvasTypeIds && hasMultiRegionArchitecture(canvasTypeIds))
 
   const basePass = passedMetrics && hasAllRequiredTypes && forbiddenTypesOk && originRequirementOk
+  // restore-redundancy (D74): now that a fractional AZ outage (ED2) makes spreading replicas across
+  // zones mechanically meaningful, recognize it. resilienceEarned = a no-SPOF build that PASSED a
+  // challenge that actually exercises a zone outage — i.e., the redundancy demonstrably paid off. A
+  // separate recognition (NOT a star modifier), so it never re-opens the D72 budget-vs-redundancy tension.
+  const challengeExercisesOutage = challenge.scheduledEvents.some((e) => e.type === "az_outage")
+  const resilienceEarned = basePass && resilient && challengeExercisesOutage
   // The topology star requires BOTH zero issues AND all required_topology assertions (D66).
   // For the 41 built-ins requiredTopologyOk is always true, so this equals the prior cleanTopology gate.
   const topologyStar = cleanTopology && requiredTopologyOk
@@ -103,6 +109,7 @@ export function evaluateAttempt(
     underBudget,
     cleanTopology,
     resilient,
+    resilienceEarned,
     forbiddenTypesOk,
     requiredTopologyOk,
     originRequirementOk,

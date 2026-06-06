@@ -195,6 +195,10 @@ export interface StarBreakdown {
   /** Resilient (non-star recognition, D72): zero topology issues of ANY kind — no orphans/unreachable
    *  AND no single-point-of-failure or replicas-without-LB advisories. Surfaced as a "Resilient" badge. */
   resilient: boolean
+  /** Resilience EARNED (restore-redundancy, D74): a no-SPOF build that PASSED a challenge which actually
+   *  exercises a zone outage (az_outage) — the redundancy demonstrably paid off. Optional: only the
+   *  rubric populates it; absent ⇒ false. A recognition, not a star (no D72 budget-vs-redundancy tension). */
+  resilienceEarned?: boolean
   /** No forbidden component type present (ISAPivot Phase 3). False ⇒ hard 0★. Absent forbiddenTypes ⇒ always true. */
   forbiddenTypesOk: boolean
   /**

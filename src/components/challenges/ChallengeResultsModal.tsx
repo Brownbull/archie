@@ -314,7 +314,11 @@ export function ChallengeResultsModal() {
             >
               <ShieldCheck className="h-3.5 w-3.5 text-violet-300" />
               <span className="text-xs text-violet-200">Resilient</span>
-              <span className="ml-auto text-[0.625rem] text-violet-300/80">no single point of failure — bonus</span>
+              {/* restore-redundancy (D74): on a zone-outage challenge, say WHY it's resilient — the
+                  redundancy demonstrably rode out the outage, not just "no SPOF in the abstract" (LX6). */}
+              <span className="ml-auto text-[0.625rem] text-violet-300/80">
+                {result.resilienceEarned ? "rode out the zone outage — redundancy paid off" : "no single point of failure — bonus"}
+              </span>
             </div>
           )}
         </div>

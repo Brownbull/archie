@@ -109,6 +109,25 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
     })
   })
 
+  describe("resilienceEarned (restore-redundancy, D74)", () => {
+    const outageCh: Challenge = { ...challenge, scheduledEvents: [{ t: 10, type: "az_outage", target: "compute", durationS: 20 }] }
+    it("a no-SPOF build that passes a zone-outage challenge earns resilience", () => {
+      // basePass (uptime+p99 met) + zero topology issues (no SPOF) + the challenge exercises an az_outage
+      const r = evaluateAttempt(stats(99.5, 150), outageCh, 0, 100)
+      expect(r.resilienceEarned).toBe(true)
+      expect(r.resilient).toBe(true)
+    })
+    it("NOT earned on a challenge with no zone outage (nothing to ride out)", () => {
+      const r = evaluateAttempt(stats(99.5, 150), challenge, 0, 100)
+      expect(r.resilient).toBe(true) // still no-SPOF...
+      expect(r.resilienceEarned).toBe(false) // ...but there was no outage to survive
+    })
+    it("NOT earned when there is a SPOF (advisory issue), even on an outage challenge", () => {
+      const r = evaluateAttempt(stats(99.5, 150), outageCh, 0, 100, undefined, undefined, undefined, 1) // advisory=1 (SPOF)
+      expect(r.resilienceEarned).toBe(false)
+    })
+  })
+
   describe("required_topology folded into the clean-topology star (Phase 3 3b, D66)", () => {
     const cacheRule = { ruleType: "CACHE_BETWEEN" as const, sourceType: "compute", targetType: "relational-db" }
     const ch = { ...challenge, requiredTopology: [cacheRule] }
