@@ -4064,3 +4064,10 @@ Opt-in per-origin-request fee folded into the cost gates; CDN edge absorption lo
 
 ## 2026-06-06 — Phase 4 ED9: autoscaling COST MECHANIC shipped (in-game lesson deferred D19)
 Opt-in `autoscale` variant flag → cost INTEGRATES over the load curve (mean active replicas, capped at provisioned) instead of flat × replicas. serverless cold-start + edge-function tagged (faithful: serverless = pay-per-use). EXACT short-circuit to computeTotalArchitectureCost when no autoscale node → 57 byte-identical; idle ramp ticks skipped. Threaded into scoreBuild (harness) + useChallengeAutoScore (autoscale → integrate; non-autoscale → frozen snapshot, D72 guard preserved). autoscaleCost.test proves the discount (R=4 bursty <0.6× flat; sustained=flat; non-autoscale=exact short-circuit). golden/par unchanged (the 2 serverless challenges are R=1 → discount dormant). Suite 4799. In-game lesson blocked by the always-added generic compute tier (D19). Phase 4 so far: EN5 (full, with edge-economics challenge) + ED9 (mechanic). Remaining: ED5 (D16 blocked), ED6/EN4/ED8 (XL consistency/CAP).
+- 2026-06-06 13:27 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 13:28 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/59-burst-economics.yaml
+- 2026-06-06 13:30 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/59-burst-economics.yaml
+- 2026-06-06 13:31 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/59-burst-economics.yaml
+
+## 2026-06-06 — D19 RESOLVED: ED9 lands in-game (burst-economics)
+Builder now adds generic compute only when no compute-category type is required (byte-identical for all 58 — they list compute in required_components). New challenge burst-economics (serverless-only, spiky 5k→50k): autoscale integrated $41 clears the $50 budget; a static fleet ($80) blows it. Counts 58→59, golden/par additive, harness 3★ all 59, suite 4801. Phase 4 now: EN5 (full) + ED9 (full, mechanic+challenge). Pushed P136 (EN5+ED9 mechanic); burst-economics rides next push.
