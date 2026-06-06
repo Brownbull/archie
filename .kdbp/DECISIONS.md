@@ -1181,3 +1181,20 @@ solvability harness (`referenceSolution.ts` buildClearingSolution + scoreSolutio
 MAX_REPLICAS) + the cost-aware lean builder already exist to drive this fast.
 
 **Status:** accepted.
+
+## D76 — ED3 (required-types on-path) rescoped from Phase 1 to Phase 3 (2026-06-05)
+
+**Decision.** Move ED3 (required_types must be ON the served path, not merely present) out of Phase 1
+into Phase 3. Phase 1 ships its other four tasks (LX1 free-first-hint, LX2 culprit-node, ED7 cost unit,
+LX3 reference par); ED3 is deferred.
+
+**Why.** A safe sync/async split is impossible without the builder's exact on-path classification:
+`worker` and `stream-processor` are component-category `compute` yet are functionally async and the
+reference builder wires them OFF the synchronous spine (only `messaging`/`real-time` are explicitly
+routed off-path). A category-based exemption would mis-classify them and could break the harness 3★ for
+several challenges (worker+message-queue, stream-processor+event-stream, realtime+stream-processor). The
+correct fix shares the SAME on-path/async classification the builder uses — which Phase 3 reworks anyway
+(ED2 fractional-AZ outage removes the very reason async tiers are wired traffic-free). Doing ED3 there is
+both safe and natural; rushing it in Phase 1 risks destabilizing all 57 challenges.
+
+**Status:** accepted. ED3 now lives in Phase 3's gap set (tracked as PENDING D15).

@@ -3865,3 +3865,50 @@ HTML_ARTIFACT: docs/gabe/plans/2026-06-05-learning-fidelity-redesign/index.html
 ARCHIVED: completed_PLAN_2026-06-03_traffic-realism-isapivot.md (ISAPivot, superseded)
 - 2026-06-05 22:39 | Write | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-05-learning-fidelity-redesign/index.html
 - 2026-06-05 22:40 | Edit | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-05-learning-fidelity-redesign/index.html
+- 2026-06-05 22:52 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-05 22:52 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-05 22:53 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/HintPanel.tsx
+- 2026-06-05 22:53 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/HintPanel.tsx
+- 2026-06-05 22:54 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+- 2026-06-05 22:54 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+- 2026-06-05 22:55 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+- 2026-06-05 22:55 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+- 2026-06-05 22:55 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/HintPanel.test.tsx
+- 2026-06-05 22:59 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-05 22:59 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 22:59 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 22:59 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 23:00 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-05 23:00 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-05 23:00 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-05 23:01 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 23:02 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-05 23:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeBudget.ts
+- 2026-06-05 23:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeBudget.ts
+- 2026-06-05 23:06 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 23:06 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 23:06 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 23:06 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 23:07 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-05 23:08 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/56-unit-economics.yaml
+- 2026-06-05 23:08 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/57-lean-at-scale.yaml
+- 2026-06-05 23:08 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 23:08 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-05 23:09 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-05 23:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/challengeStore.test.ts
+- 2026-06-05 23:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/challengeBudget.test.ts
+- 2026-06-05 23:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/challengeBudget.test.ts
+- 2026-06-05 23:12 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/challengePar.test.ts
+- 2026-06-05 23:12 | Write | /home/khujta/projects/bmad/archie/src/lib/challengePar.ts
+- 2026-06-05 23:13 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 23:13 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 23:13 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 23:14 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-05 23:14 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-05 23:16 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-05 23:18 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeAutoScore.test.tsx
+
+## 2026-06-05 — PHASE 1 EXEC (partial): Behavior-tied scoring + lesson-loop quick wins
+TASKS: 4 of 5 shipped — LX1 free-first-hint (5d538d8), LX2 culprit-node (12f469b), ED7 cost-unit (6d07522), LX3 reference-par (this batch). All unit-tested + harness 3★ all 57 green.
+RESCOPED: ED3 (required-types on-path) → Phase 3 (D76 / PENDING D15) — sync/async classification depends on the Phase-3 builder rework.
+PENDING: runtime journey evidence (fail-a-challenge: culprit + par + free first hint) before Exec ✅ + /gabe-review.
