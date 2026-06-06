@@ -1,0 +1,44 @@
+id: burst-economics
+title: Burst Economics
+brief: >-
+  Traffic is spiky: a low hum most of the time, punctuated by sharp peaks 10×
+  the baseline. Provision a fixed fleet for those peaks and you pay for them
+  24/7 — most replicas sit idle between spikes. Serverless scales per-request, so
+  it bills for the peak only while the peak lasts. Serve the burst on elastic
+  compute and watch the monthly bill track the troughs, not the spikes.
+difficulty: advanced
+budget_cap: 50
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 5, rps: 5000 }
+  - { t: 20, rps: 5000 }
+  - { t: 25, rps: 50000 }
+  - { t: 32, rps: 50000 }
+  - { t: 37, rps: 5000 }
+  - { t: 58, rps: 5000 }
+  - { t: 63, rps: 50000 }
+  - { t: 70, rps: 50000 }
+  - { t: 75, rps: 5000 }
+  - { t: 90, rps: 5000 }
+required_components:
+  - delivery-network
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 300
+chaos_intensity: 1
+hints:
+  - "The load is spiky — 5k baseline with brief 50k peaks. A fixed fleet sized for 50k sits ~90% idle between spikes, but you pay for all of it, all month."
+  - "Serverless (scale-to-zero / edge functions) bills active replicas over time, not the provisioned peak — so on a spiky curve it costs a fraction of an always-on fleet."
+  - "Provision serverless replicas to cover the 50k peak (so the spikes don't shed), then relax: cost integrates over the curve, charging baseline rates during the long troughs."
+schema_version: 2
+track: foundations
+tier: 4
+requires: [serverless-burst]
+unlocks: []
+min_xp: 0
+required_types: [serverless]
+available_blocks: [traffic-source, compute, load-balancer, serverless]
+grants: []
+rewards:
+  xp: 820

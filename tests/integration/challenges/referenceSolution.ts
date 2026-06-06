@@ -206,14 +206,20 @@ export function buildSolution(c: Challenge): { nodes: RefNode[]; edges: RefEdge[
     return undefined
   }
 
-  // TYPE ids to place: required categories + explicit required types + compute, then resilience fronting
-  // (stacked cdn + cache when allowed — survives compute outages, cuts latency).
-  const wanted = new Set<string>(["traffic-source", "compute"])
+  // TYPE ids to place: required categories + explicit required types, then a compute serving tier,
+  // then resilience fronting (stacked cdn + cache when allowed — survives compute outages, cuts latency).
+  const wanted = new Set<string>(["traffic-source"])
   for (const cat of c.requiredComponents) {
     const t = repForCategory(cat)
     if (t) wanted.add(t)
   }
   for (const t of c.requiredTypes) wanted.add(t)
+  // D19 (ED9): ensure a compute-category serving tier exists — but add the canonical generic `compute`
+  // ONLY when none is already required. All 57 built-ins list `compute` in required_components, so this
+  // is byte-identical for them; a serverless-PRIMARY challenge (requires serverless, omits the compute
+  // category) then builds serverless-only, letting ED9's autoscale discount dominate the bill instead of
+  // being dwarfed by a redundant static compute tier.
+  if (![...wanted].some((t) => catOf(t) === "compute")) wanted.add("compute")
   // Resilience fronting (stacked cdn + cache to absorb reads): worth its cost when the load is high
   // enough to need absorption OR the challenge has scheduled outages to survive. Below that, the
   // origin serves directly and the extra tiers would only bust tight low-tier budgets (D72 — the

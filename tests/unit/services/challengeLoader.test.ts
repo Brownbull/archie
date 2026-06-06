@@ -7,7 +7,7 @@ import { MAX_FILE_SIZE } from "@/lib/constants"
 describe("challengeLoader (Epic 16 P5)", () => {
   it("loads every authored challenge level via the build-time glob", () => {
     const all = getAllChallenges()
-    expect(all.length).toBe(58)
+    expect(all.length).toBe(59)
   })
 
   it("orders by difficulty (beginner first, advanced last)", () => {

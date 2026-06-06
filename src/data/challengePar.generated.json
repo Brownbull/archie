@@ -119,6 +119,10 @@
     "cost": 290,
     "nodes": 7
   },
+  "burst-economics": {
+    "cost": 80,
+    "nodes": 3
+  },
   "chaos-day": {
     "cost": 140,
     "nodes": 8
