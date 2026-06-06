@@ -10,13 +10,13 @@ budget_cap: 200000
 duration_seconds: 120
 traffic_curve:
   - { t: 0, rps: 0 }
-  - { t: 60, rps: 1080000 }
-  - { t: 120, rps: 1800000 }
+  - { t: 60, rps: 540000 }
+  - { t: 120, rps: 900000 }
 traffic_sources:
-  - { type: web-users, rps: 720000, kind: realistic, workload: read, origin: multi-region }
-  - { type: mobile-users, rps: 540000, kind: realistic, workload: read, origin: one-region }
-  - { type: api-client, rps: 360000, kind: realistic, workload: mixed, origin: one-region }
-  - { type: iot-sensors, rps: 180000, kind: steady, workload: write, origin: one-region }
+  - { type: web-users, rps: 360000, kind: realistic, workload: read, origin: multi-region }
+  - { type: mobile-users, rps: 270000, kind: realistic, workload: read, origin: one-region }
+  - { type: api-client, rps: 180000, kind: realistic, workload: mixed, origin: one-region }
+  - { type: iot-sensors, rps: 90000, kind: steady, workload: write, origin: one-region }
 required_components:
   - delivery-network
   - compute

@@ -26,8 +26,20 @@ const TrafficSourceYamlSchema = z
     kind: z.enum(["steady", "realistic", "periodic", "search"]).default("steady"),
     workload: z.enum(["read", "write", "mixed"]).default("mixed"),
     origin: z.enum(["one-region", "multi-region"]).default("one-region"),
+    // ED5 (D74): fraction of THIS source's requests that are cacheable (0–1). A user behavior — IoT
+    // telemetry is ~0% cacheable, a read-heavy content site ~0.95. Default 1 (fully cacheable) so sources
+    // that omit it behave as before. MUST snake→camel HERE (the schema has no outer per-source transform).
+    cacheable_fraction: z.number().min(0).max(1).optional(),
   })
   .strict()
+  .transform((d) => ({
+    type: d.type,
+    rps: d.rps,
+    kind: d.kind,
+    workload: d.workload,
+    origin: d.origin,
+    ...(d.cacheable_fraction !== undefined ? { cacheableFraction: d.cacheable_fraction } : {}),
+  }))
 
 // Scheduled failure event (Epic 16) — mirrors simulationTypes.ScheduledEvent.
 export const ScheduledEventSchema = z

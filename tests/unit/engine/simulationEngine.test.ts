@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { interpolateRps, findEntryNodes, simulateTick, runSimulation, defaultTrafficCurve, computeOverrides } from "@/engine/simulationEngine"
+import { interpolateRps, findEntryNodes, simulateTick, runSimulation, defaultTrafficCurve, computeOverrides, effectiveCacheHitRatio } from "@/engine/simulationEngine"
 import type { ScheduledEvent } from "@/lib/simulationTypes"
 import { SIM_TICKS, azCountForReplicas } from "@/lib/constants"
 import type { SimGraph, SimNode } from "@/lib/simulationTypes"
@@ -462,5 +462,22 @@ describe("simulateTick — workload write-pressure (ISAPivot Phase 2b)", () => {
     expect(tel(simulateTick({ nodes: [db], edges: [] }, 0, 1000), "db").failedRps).toBeCloseTo(200, 5)
     // read-heavy (writePressure 0): eff wr = (0.4+0)/2 = 0.2 → writes 200 ≤ cap 200 → no failures.
     expect(tel(simulateTick({ nodes: [db], edges: [], writePressure: 0 }, 0, 1000), "db").failedRps).toBe(0)
+  })
+})
+
+describe("effectiveCacheHitRatio — workload-derated hit ratio (ED5, D74)", () => {
+  it("returns the ceiling unchanged when no workload data (byte-identical to pre-ED5)", () => {
+    expect(effectiveCacheHitRatio(0.9, {})).toBeCloseTo(0.9, 6)
+  })
+  it("a fully-read, steady, fully-cacheable workload keeps the ceiling", () => {
+    expect(effectiveCacheHitRatio(0.9, { writePressure: 0, cacheErosion: 1, cacheableFraction: 1 })).toBeCloseTo(0.9, 6)
+  })
+  it("write-pressure derates (writes can't be cached): half-write halves the hit ratio", () => {
+    expect(effectiveCacheHitRatio(0.9, { writePressure: 0.5 })).toBeCloseTo(0.45, 6)
+    expect(effectiveCacheHitRatio(0.9, { writePressure: 1 })).toBe(0) // pure writes ⇒ cache useless
+  })
+  it("cacheable-fraction + access-pattern erosion compound multiplicatively", () => {
+    // 0.9 ceiling × 0.5 cacheable × 0.8 erosion = 0.36
+    expect(effectiveCacheHitRatio(0.9, { cacheableFraction: 0.5, cacheErosion: 0.8 })).toBeCloseTo(0.36, 6)
   })
 })

@@ -10,11 +10,11 @@ budget_cap: 250000
 duration_seconds: 120
 traffic_curve:
   - { t: 0, rps: 0 }
-  - { t: 60, rps: 720000 }
-  - { t: 120, rps: 1200000 }
+  - { t: 60, rps: 360000 }
+  - { t: 120, rps: 600000 }
 traffic_sources:
-  - { type: api-client, rps: 720000, kind: realistic, workload: mixed, origin: multi-region }
-  - { type: web-users, rps: 480000, kind: realistic, workload: read, origin: one-region }
+  - { type: api-client, rps: 360000, kind: realistic, workload: mixed, origin: multi-region }
+  - { type: web-users, rps: 240000, kind: realistic, workload: read, origin: one-region }
 required_components:
   - delivery-network
   - compute

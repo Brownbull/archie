@@ -21,7 +21,7 @@ required_components:
   - delivery-network
   - compute
 target_metrics:
-  uptime_percent: 99
+  uptime_percent: 98
   p99_latency_ms: 300
   p95_latency_ms: 180
 scheduled_events:

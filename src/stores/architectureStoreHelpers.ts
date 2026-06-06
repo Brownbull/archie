@@ -522,17 +522,35 @@ export function computeIntegratedArchitectureCost(
 }
 
 /**
+ * ED5 (D74): how much a traffic source's ACCESS PATTERN erodes cache locality. Steady traffic hits the
+ * same hot set (cache fully effective); search/long-tail spreads across a huge key space (poor locality).
+ * Directional, not measured. Unknown/undefined kind ⇒ 1 (no erosion — preserves pre-ED5 behavior).
+ */
+export function cacheErosionForKind(kind: string | undefined): number {
+  switch (kind) {
+    case "search": return 0.6
+    case "periodic": return 0.9
+    case "realistic": return 0.95
+    default: return 1 // steady, or unknown
+  }
+}
+
+/**
  * Builds the immutable SimGraph the simulation engine runs over (Epic 15).
  * Each node's effective capacity (maxRPS scaled by replicas) + base latency come from getNodeCost.
  * effectiveMaxRps 0 means "unknown/uncapped" (variant has no maxRPS authored).
  */
 export function buildSimGraph(
-  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number; trafficRps?: number; trafficWorkload?: string } }>,
+  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount?: number; trafficRps?: number; trafficWorkload?: string; trafficKind?: string; cacheableFraction?: number } }>,
   edges: ReadonlyArray<{ source: string; target: string }>,
 ): SimGraph {
-  // ISAPivot Phase 2b: derive a global write-pressure (0–1) from the traffic sources' workloads,
-  // rps-weighted (write=1, mixed=0.5, read=0). simulateTick blends it into a DB's write/read split.
+  // ISAPivot Phase 2b + ED5 (D74): derive the global WORKLOAD behaviors from the traffic sources,
+  // rps-weighted. write-pressure (write=1, mixed=0.5, read=0) blends into the DB write/read split;
+  // cacheable-fraction (default 1) + access-pattern erosion (steady 1 → search 0.6) derate a cache's
+  // headline hit ratio to its REAL one (a write-heavy / long-tail / low-cacheable workload caches poorly).
   let weightedWrite = 0
+  let weightedCacheable = 0
+  let weightedErosion = 0
   let totalSourceRps = 0
   for (const n of nodes) {
     if (n.data.componentCategory !== "traffic") continue
@@ -540,9 +558,13 @@ export function buildSimGraph(
     if (rps <= 0) continue
     const w = n.data.trafficWorkload === "write" ? 1 : n.data.trafficWorkload === "read" ? 0 : 0.5
     weightedWrite += rps * w
+    weightedCacheable += rps * (n.data.cacheableFraction ?? 1)
+    weightedErosion += rps * cacheErosionForKind(n.data.trafficKind)
     totalSourceRps += rps
   }
   const writePressure = totalSourceRps > 0 ? weightedWrite / totalSourceRps : undefined
+  const cacheableFraction = totalSourceRps > 0 ? weightedCacheable / totalSourceRps : undefined
+  const cacheErosion = totalSourceRps > 0 ? weightedErosion / totalSourceRps : undefined
 
   const simNodes: SimNode[] = nodes.map((n) => {
     const cost = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps)
@@ -568,6 +590,12 @@ export function buildSimGraph(
     }
   })
   const simEdges: SimEdge[] = edges.map((e) => ({ source: e.source, target: e.target }))
-  return { nodes: simNodes, edges: simEdges, ...(writePressure !== undefined ? { writePressure } : {}) }
+  return {
+    nodes: simNodes,
+    edges: simEdges,
+    ...(writePressure !== undefined ? { writePressure } : {}),
+    ...(cacheableFraction !== undefined ? { cacheableFraction } : {}),
+    ...(cacheErosion !== undefined ? { cacheErosion } : {}),
+  }
 }
 

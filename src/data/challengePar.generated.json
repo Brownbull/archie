@@ -32,7 +32,7 @@
     "nodes": 4
   },
   "cache-or-crash": {
-    "cost": 80,
+    "cost": 155,
     "nodes": 4
   },
   "checkout-flow": {
@@ -77,7 +77,7 @@
   },
   "rate-limit": {
     "cost": 85,
-    "nodes": 4
+    "nodes": 5
   },
   "read-aside": {
     "cost": 80,
@@ -104,27 +104,27 @@
     "nodes": 4
   },
   "always-on": {
-    "cost": 110,
+    "cost": 205,
     "nodes": 6
   },
   "analytics-backbone": {
     "cost": 210,
-    "nodes": 5
+    "nodes": 6
   },
   "api-gateway": {
     "cost": 315,
     "nodes": 5
   },
   "async-backbone": {
-    "cost": 290,
-    "nodes": 7
+    "cost": 310,
+    "nodes": 8
   },
   "burst-economics": {
     "cost": 80,
     "nodes": 3
   },
   "chaos-day": {
-    "cost": 140,
+    "cost": 235,
     "nodes": 8
   },
   "defense-in-depth": {
@@ -132,7 +132,7 @@
     "nodes": 6
   },
   "edge-economics": {
-    "cost": 535,
+    "cost": 495,
     "nodes": 6
   },
   "edge-resilience": {
@@ -144,27 +144,27 @@
     "nodes": 4
   },
   "follow-the-sun": {
-    "cost": 75,
-    "nodes": 6
+    "cost": 150,
+    "nodes": 7
   },
   "fortress": {
-    "cost": 250,
-    "nodes": 8
+    "cost": 270,
+    "nodes": 9
   },
   "foundations-mastery": {
-    "cost": 75,
+    "cost": 95,
     "nodes": 5
   },
   "four-front-war": {
-    "cost": 185,
-    "nodes": 5
+    "cost": 455,
+    "nodes": 8
   },
   "heat-death": {
-    "cost": 655,
+    "cost": 535,
     "nodes": 7
   },
   "lean-at-scale": {
-    "cost": 605,
+    "cost": 485,
     "nodes": 5
   },
   "maxwells-demon": {
@@ -176,16 +176,16 @@
     "nodes": 3
   },
   "planet-scale": {
-    "cost": 8600,
-    "nodes": 7
+    "cost": 8440,
+    "nodes": 10
   },
   "production-ai": {
-    "cost": 105,
-    "nodes": 6
+    "cost": 155,
+    "nodes": 7
   },
   "rag-retrieval": {
     "cost": 250,
-    "nodes": 6
+    "nodes": 7
   },
   "realtime-live": {
     "cost": 185,
@@ -200,23 +200,23 @@
     "nodes": 2
   },
   "stream-processor": {
-    "cost": 235,
+    "cost": 255,
     "nodes": 5
   },
   "the-long-tail": {
     "cost": 45,
-    "nodes": 5
+    "nodes": 6
   },
   "the-singularity": {
-    "cost": 14600,
-    "nodes": 9
+    "cost": 14240,
+    "nodes": 10
   },
   "thundering-herd": {
     "cost": 8600,
     "nodes": 7
   },
   "unit-economics": {
-    "cost": 565,
+    "cost": 485,
     "nodes": 5
   },
   "write-storm": {
@@ -232,7 +232,7 @@
     "nodes": 4
   },
   "zone-failure": {
-    "cost": 110,
+    "cost": 205,
     "nodes": 6
   }
 }

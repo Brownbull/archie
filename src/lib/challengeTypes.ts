@@ -28,6 +28,10 @@ export interface ChallengeTrafficSource {
   kind: TrafficKind
   workload: ChallengeTrafficWorkload
   origin: ChallengeTrafficOrigin
+  /** ED5 (D74): fraction of this source's requests that are cacheable (0–1). Absent ⇒ 1 (fully
+   *  cacheable). A user behavior: combined with workload (write-pressure) + kind (access-pattern erosion)
+   *  it determines the cache's REAL hit ratio, not the variant's headline ceiling. */
+  cacheableFraction?: number
 }
 
 /**

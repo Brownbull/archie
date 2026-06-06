@@ -65,7 +65,7 @@ export interface RefNode {
   id: string
   type: "archie"
   position: { x: number; y: number }
-  data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount: number; trafficRps?: number; trafficWorkload?: string }
+  data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount: number; trafficRps?: number; trafficWorkload?: string; trafficKind?: string; cacheableFraction?: number }
 }
 
 export interface RefEdge {
@@ -208,7 +208,7 @@ export function buildSolution(c: Challenge): { nodes: RefNode[]; edges: RefEdge[
 
   // TYPE ids to place: required categories + explicit required types, then a compute serving tier,
   // then resilience fronting (stacked cdn + cache when allowed — survives compute outages, cuts latency).
-  const wanted = new Set<string>(["traffic-source"])
+  const wanted = new Set<string>()
   for (const cat of c.requiredComponents) {
     const t = repForCategory(cat)
     if (t) wanted.add(t)
@@ -272,10 +272,33 @@ export function buildSolution(c: Challenge): { nodes: RefNode[]; edges: RefEdge[
     return n.id
   }
 
+  // ED5 (D74): emit one traffic node PER challenge source, each stamped with its workload behaviors
+  // (workload → write-pressure, kind → access-pattern erosion, cacheableFraction). buildSimGraph blends
+  // them rps-weighted into the cache's REAL hit ratio. Legacy curve-only challenges → one aggregate node.
+  const trafficIds: string[] = []
+  const srcs = c.trafficSources ?? []
+  if (srcs.length > 0) {
+    srcs.forEach((s, i) => {
+      const tn = refNode(`traffic-${i}`, "traffic-source", s.rps, s.rps)
+      if (!tn) return
+      tn.data.trafficWorkload = s.workload
+      tn.data.trafficKind = s.kind
+      if (s.cacheableFraction !== undefined) tn.data.cacheableFraction = s.cacheableFraction
+      nodes.push(tn)
+      trafficIds.push(tn.id)
+    })
+  } else {
+    const tn = refNode("traffic-source", "traffic-source", peak, peak)
+    if (tn) { nodes.push(tn); trafficIds.push(tn.id) }
+  }
+  if (trafficIds.length > 0) idByType.set("traffic-source", trafficIds[0]) // spine anchors on the first
+
   // Sync spine: traffic → [front spine, ordered] → [compute chain] → fan out to data nodes.
   const front = FRONT_SPINE.filter(present)
   const chain = [id("traffic-source"), ...front.map(id), ...computeTypes.map(id)].filter(Boolean) as string[]
   for (let i = 0; i < chain.length - 1; i++) link(chain[i], chain[i + 1])
+  // Additional source nodes feed the same first downstream as the primary (chain[1]).
+  if (chain.length > 1) for (const tid of trafficIds.slice(1)) link(tid, chain[1])
   const primaryCompute = computeTypes.map(id).find(Boolean) ?? id("compute")
   for (const d of dataTypes) link(primaryCompute, id(d))
   // Observability monitors compute (E8 monitoring-recovery helps uptime through failures).
@@ -345,26 +368,33 @@ export function capReplicas(nodes: readonly RefNode[], max: number): RefNode[] {
  * solution earns the cost star without forfeiting capacity. Headroom (×1.1) absorbs realistic bursts.
  */
 function leanResize(c: Challenge, nodes: readonly RefNode[], edges: readonly RefEdge[]): RefNode[] {
-  const graph = buildSimGraph(nodes, edges)
-  const result = runSimulation(graph, challengeCurve(c), undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
-  const peakIn = new Map<string, number>()
-  for (const tick of result.ticks) {
-    for (const nt of tick.nodes) peakIn.set(nt.nodeId, Math.max(peakIn.get(nt.nodeId) ?? 0, nt.incomingRps))
+  // ED5 (D74): resizing a tier changes how much it forwards (variant hit ratio), which changes the
+  // load every DOWNSTREAM tier sees — so a single pass under-provisions caches behind a re-sized CDN.
+  // Iterate to a fixed point: re-measure each node's peak incoming on the freshly-sized graph and
+  // re-size, a few times. Converges in ≤3 passes for these topologies; stable builds are no-ops.
+  let current: RefNode[] = nodes.map((n) => ({ ...n, data: { ...n.data } }))
+  for (let pass = 0; pass < 3; pass++) {
+    const result = runSimulation(buildSimGraph(current, edges), challengeCurve(c), undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
+    const peakIn = new Map<string, number>()
+    for (const tick of result.ticks) {
+      for (const nt of tick.nodes) peakIn.set(nt.nodeId, Math.max(peakIn.get(nt.nodeId) ?? 0, nt.incomingRps))
+    }
+    current = current.map((n) => {
+      if (n.data.componentCategory === "traffic") return n // the load origin — not a sized tier
+      const component = componentLibrary.getComponent(n.data.archieComponentId)
+      if (!component || component.configVariants.length === 0) return n
+      const typeId = component.typeId ?? ""
+      const load = Math.max(1, Math.ceil((peakIn.get(n.id) ?? 0) * 1.1))
+      const scalesWithReplicas = getScalingRule(n.data.componentCategory).replicaType === "full"
+      const variant = pickCheapestVariant(component as never, typeId, load, scalesWithReplicas)
+      const per = variant.maxRPS && variant.maxRPS > 0 ? variant.maxRPS : load
+      const rpsReplicas = scalesWithReplicas ? Math.max(1, Math.ceil(load / per)) : 1
+      // EN2: size for the connection pool too — a slow tier needs replicas for concurrency, not just rps.
+      const replicaCount = Math.max(rpsReplicas, concurrencyReplicas(variant as Variant, load, scalesWithReplicas))
+      return { ...n, data: { ...n.data, activeConfigVariantId: variant.id, replicaCount } }
+    })
   }
-  return nodes.map((n) => {
-    if (n.data.componentCategory === "traffic") return n // the load origin — not a sized tier
-    const component = componentLibrary.getComponent(n.data.archieComponentId)
-    if (!component || component.configVariants.length === 0) return n
-    const typeId = component.typeId ?? ""
-    const load = Math.max(1, Math.ceil((peakIn.get(n.id) ?? 0) * 1.1))
-    const scalesWithReplicas = getScalingRule(n.data.componentCategory).replicaType === "full"
-    const variant = pickCheapestVariant(component as never, typeId, load, scalesWithReplicas)
-    const per = variant.maxRPS && variant.maxRPS > 0 ? variant.maxRPS : load
-    const rpsReplicas = scalesWithReplicas ? Math.max(1, Math.ceil(load / per)) : 1
-    // EN2: size for the connection pool too — a slow tier needs replicas for concurrency, not just rps.
-    const replicaCount = Math.max(rpsReplicas, concurrencyReplicas(variant as Variant, load, scalesWithReplicas))
-    return { ...n, data: { ...n.data, activeConfigVariantId: variant.id, replicaCount } }
-  })
+  return current
 }
 
 /**

@@ -69,6 +69,17 @@ function latencyUnderLoad(baseLatencyMs: number, capacityPercent: number): numbe
 }
 
 /**
+ * ED5 (D74): the REAL cache hit ratio = the variant's headline ceiling derated by the WORKLOAD —
+ * cacheable fraction × read share (1−writePressure; writes can't be cached) × access-pattern erosion.
+ * Every factor defaults to identity, so a graph with no workload data returns the ceiling unchanged
+ * (byte-identical to pre-ED5). The headline ratio is a ceiling, never a promise.
+ */
+export function effectiveCacheHitRatio(ceiling: number, graph: Pick<SimGraph, "cacheableFraction" | "writePressure" | "cacheErosion">): number {
+  const mult = (graph.cacheableFraction ?? 1) * (1 - (graph.writePressure ?? 0)) * (graph.cacheErosion ?? 1)
+  return Math.max(0, ceiling * mult)
+}
+
+/**
  * Resolves the scheduled events active at `timeS` into per-tick overrides (Epic 16).
  * - component_failure: target node offline (sheds all traffic) — unless monitored + detected (EN7),
  *   when the blast shrinks to OBS_RESIDUAL_BLAST and the node serves the rest.
@@ -295,9 +306,12 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       baseLatency += node.queueDepth * 0.01
     }
 
-    // CDN/cache miss latency penalty (E3): add weighted miss latency on top of base.
-    if (node.missLatencyPenaltyMs && node.cacheHitRatio !== undefined && node.cacheHitRatio < 1) {
-      baseLatency += node.missLatencyPenaltyMs * (1 - node.cacheHitRatio)
+    // CDN/cache miss latency penalty (E3): add weighted miss latency on top of base. ED5: the EFFECTIVE
+    // hit ratio (workload-derated) decides the miss share — a low-cacheable/write-heavy workload pays
+    // the miss penalty far more often than the headline ceiling would suggest.
+    if (node.missLatencyPenaltyMs && node.cacheHitRatio !== undefined) {
+      const h = effectiveCacheHitRatio(node.cacheHitRatio, graph)
+      if (h < 1) baseLatency += node.missLatencyPenaltyMs * (1 - h)
     }
 
     // Serverless cold start penalty (E4): add weighted cold start latency.
@@ -318,9 +332,10 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     if (forward) {
       const outs = outAdj.get(id) ?? []
       if (outs.length > 0) {
-        // Cache/CDN hit ratio (E1/E3): only miss traffic is forwarded downstream.
-        // Hits are absorbed locally. Default: forward all served traffic (ratio undefined or 0).
-        const hitRatio = node.cacheHitRatio ?? 0
+        // Cache/CDN hit ratio (E1/E3): only miss traffic is forwarded downstream. Hits are absorbed
+        // locally. ED5: the EFFECTIVE (workload-derated) ratio decides — a poorly-cacheable workload
+        // forwards more misses to the origin. Default: forward all served traffic (ratio undefined or 0).
+        const hitRatio = node.cacheHitRatio !== undefined ? effectiveCacheHitRatio(node.cacheHitRatio, graph) : 0
         const forwarded = hitRatio > 0 ? served * (1 - hitRatio) : served
         const perOut = forwarded / outs.length
         for (const target of outs) inflow.set(target, (inflow.get(target) ?? 0) + perOut)
@@ -344,7 +359,7 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
         const node = nodeById.get(id)!
         const outs = outAdj.get(id) ?? []
         if (outs.length === 0) continue
-        const hitRatio = node.cacheHitRatio ?? 0
+        const hitRatio = node.cacheHitRatio !== undefined ? effectiveCacheHitRatio(node.cacheHitRatio, graph) : 0
         const fwd = hitRatio > 0 ? (lastServed.get(id) ?? 0) * (1 - hitRatio) : (lastServed.get(id) ?? 0)
         const perOut = fwd / outs.length
         for (const t of outs) inflow.set(t, (inflow.get(t) ?? 0) + perOut) // t is always cyclic
@@ -380,7 +395,7 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     if (!n) return 0
     const served = telemetry.get(id)?.servedRps ?? 0
     if ((outAdj.get(id)?.length ?? 0) === 0) return 0
-    const h = n.cacheHitRatio ?? 0
+    const h = n.cacheHitRatio !== undefined ? effectiveCacheHitRatio(n.cacheHitRatio, graph) : 0
     return h > 0 ? served * (1 - h) : served
   }
   const acc = new Map<string, number>()

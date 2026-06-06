@@ -84,6 +84,18 @@ export interface SimGraph {
    * → the write/read split uses the node's intrinsic writeRatio unchanged (no behavior change).
    */
   writePressure?: number
+  /**
+   * ED5 (D74): global cacheable-fraction (0–1), rps-weighted across traffic sources (default 1 per
+   * source). With writePressure + cacheErosion it derates a cache's headline hit ratio to its REAL one.
+   * Absent ⇒ 1 (no derate from cacheability).
+   */
+  cacheableFraction?: number
+  /**
+   * ED5 (D74): global access-pattern erosion (0–1), rps-weighted across traffic sources from each
+   * source's `kind` (steady 1.0, realistic 0.9, periodic 0.8, search 0.5). Long-tail/spiky patterns
+   * have poor cache locality → lower effective hit ratio. Absent ⇒ 1 (no erosion).
+   */
+  cacheErosion?: number
 }
 
 // --- Per-tick telemetry ---
