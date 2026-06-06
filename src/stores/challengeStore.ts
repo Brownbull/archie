@@ -42,8 +42,9 @@ interface ChallengeState {
   /** Mark the attempt as running; records the start-time cost/topology snapshot used for scoring. */
   startAttempt: (snapshot?: AttemptSnapshot) => void
   /** Score the finished attempt against the rubric and record best stars. topologyIssueCount is the
-   *  BLOCKING count (orphan/unreachable); advisoryTopologyCount (SPOF/LB) feeds the resilient flag. */
-  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number, canvasTypeIds?: ReadonlySet<string>, advisoryTopologyCount?: number) => StarBreakdown | null
+   *  BLOCKING count (orphan/unreachable); advisoryTopologyCount (SPOF/LB) feeds the resilient flag;
+   *  bottleneck is the most-overloaded node (LX2) for actionable failure feedback. */
+  scoreAttempt: (stats: SimulationStats, topologyIssueCount: number, totalCost: number, canvasTypeIds?: ReadonlySet<string>, advisoryTopologyCount?: number, bottleneck?: MeasuredAttempt["bottleneck"]) => StarBreakdown | null
   /** Leave challenge mode (keeps bestStars history). */
   reset: () => void
 }
@@ -68,7 +69,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     set({ attemptState: "running", lastResult: null, attemptSnapshot: snapshot ?? null })
   },
 
-  scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds, advisoryTopologyCount = 0) => {
+  scoreAttempt: (stats, topologyIssueCount, totalCost, canvasTypeIds, advisoryTopologyCount = 0, bottleneck) => {
     const challenge = get().activeChallenge
     if (!challenge) return null
     // Cost-efficiency (ISAPivot Phase 3): monthly cost ÷ requests served during the run. totalServed
@@ -90,6 +91,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
         totalCost,
         topologyIssueCount,
         costPerRequest,
+        bottleneck,
       },
       attemptState: "scored",
       bestStars: { ...get().bestStars, [challenge.id]: Math.max(prevBest, result.stars) },

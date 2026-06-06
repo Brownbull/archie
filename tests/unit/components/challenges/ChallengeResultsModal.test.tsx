@@ -88,6 +88,28 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(screen.queryByTestId("result-resilient-badge")).toBeNull()
   })
 
+  it("names the culprit tier when metrics fail (LX2)", () => {
+    useChallengeStore.setState({
+      activeChallenge: challenge, attemptState: "scored",
+      lastResult: { stars: 0, passedMetrics: false, underBudget: false, cleanTopology: true, resilient: false },
+      lastMeasured: { uptimePercent: 88, p99LatencyMs: 500, totalCost: 200, topologyIssueCount: 0, bottleneck: { typeId: "compute", capacityPercent: 1.8, failedRps: 5000 } },
+    })
+    render(<ChallengeResultsModal />)
+    const callout = screen.getByTestId("result-bottleneck")
+    expect(callout).toHaveTextContent("Compute")
+    expect(callout).toHaveTextContent("180%")
+  })
+
+  it("omits the culprit callout when metrics pass", () => {
+    useChallengeStore.setState({
+      activeChallenge: challenge, attemptState: "scored",
+      lastResult: { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true, resilient: false },
+      lastMeasured: { uptimePercent: 99.9, p99LatencyMs: 100, totalCost: 50, topologyIssueCount: 0, bottleneck: { typeId: "compute", capacityPercent: 1.8, failedRps: 5000 } },
+    })
+    render(<ChallengeResultsModal />)
+    expect(screen.queryByTestId("result-bottleneck")).toBeNull()
+  })
+
   it("shows unmet criteria for a partial result", () => {
     const result: StarBreakdown = { stars: 1, passedMetrics: true, underBudget: false, cleanTopology: false, resilient: false }
     const measured: MeasuredAttempt = { uptimePercent: 99.4, p99LatencyMs: 150, totalCost: 320, topologyIssueCount: 2 }

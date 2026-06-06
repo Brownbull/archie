@@ -248,6 +248,13 @@ export function ChallengeResultsModal() {
             label="Metrics"
             detail={metricBits.join(" · ")}
           />
+          {/* LX2 (D74): when metrics fail, name the culprit tier so the fix is obvious. */}
+          {!result.passedMetrics && measured.bottleneck && (
+            <p data-testid="result-bottleneck" className="-mt-0.5 px-3 text-[0.625rem] text-amber-400">
+              ↳ {COMPONENT_TYPES.get(measured.bottleneck.typeId)?.label ?? measured.bottleneck.typeId} peaked at{" "}
+              {Math.round(measured.bottleneck.capacityPercent * 100)}% capacity — scale it up or front it with a cache.
+            </p>
+          )}
           {challenge.requiredTypes.length > 0 && (
             <Criterion
               met={result.hasRequiredBlocks}

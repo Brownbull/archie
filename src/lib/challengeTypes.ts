@@ -222,4 +222,10 @@ export interface MeasuredAttempt {
   topologyIssueCount: number
   /** Derived cost-efficiency at score time (ISAPivot Phase 3). undefined when no requests were served. */
   costPerRequest?: number
+  /**
+   * The most-overloaded node during the run (LX2, D74) — the actionable culprit when metrics fail.
+   * `capacityPercent` is its peak load ÷ capacity (1 = at capacity, >1 = overloaded). undefined when
+   * nothing was meaningfully loaded.
+   */
+  bottleneck?: { typeId: string; capacityPercent: number; failedRps: number }
 }

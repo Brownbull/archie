@@ -53,11 +53,31 @@ export function useChallengeAutoScore(): void {
     // Node data has archieComponentId (vendor, e.g. "nginx") — we need the typeId
     // (fundamental type, e.g. "load-balancer") which is on the Component in the library.
     const canvasTypeIds = new Set<string>()
+    const typeByNodeId = new Map<string, string>()
     for (const node of archState.nodes) {
       const component = componentLibrary.getComponent(node.data.archieComponentId)
-      if (component?.typeId) canvasTypeIds.add(component.typeId)
+      if (component?.typeId) {
+        canvasTypeIds.add(component.typeId)
+        typeByNodeId.set(node.id, component.typeId)
+      }
     }
 
-    scoreAttempt(stats, blockingIssueCount, totalCost, canvasTypeIds, advisoryIssueCount)
+    // LX2 (D74): find the most-overloaded node across the run — the actionable culprit when a run
+    // fails (the iterate-coach + results modal name it instead of just "something's overloaded").
+    let bottleneck: { typeId: string; capacityPercent: number; failedRps: number } | undefined
+    let worstCap = 1 // only flag genuine overload (>100% capacity)
+    for (const tick of ticks) {
+      for (const nt of tick.nodes) {
+        if (nt.capacityPercent > worstCap) {
+          const typeId = typeByNodeId.get(nt.nodeId)
+          if (typeId) {
+            worstCap = nt.capacityPercent
+            bottleneck = { typeId, capacityPercent: nt.capacityPercent, failedRps: nt.failedRps }
+          }
+        }
+      }
+    }
+
+    scoreAttempt(stats, blockingIssueCount, totalCost, canvasTypeIds, advisoryIssueCount, bottleneck)
   }, [simStatus, attemptState])
 }

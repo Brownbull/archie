@@ -3,6 +3,7 @@ import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { hasTrafficSource } from "@/services/trafficSourceInjection"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
+import { COMPONENT_TYPES } from "@/lib/componentTypes"
 
 /**
  * Stage of the guided challenge journey (P88). The coach gives the architect ONE clear next
@@ -75,11 +76,16 @@ export function useChallengeCoach(): CoachState | null {
             detail: `p99 is over ${challenge.targetMetrics.p99LatencyMs}ms — add a cache or CDN ahead of the slow hop, or pick a lower-latency tier or vendor on the node.`,
           }
         }
+        // LX2 (D74): name the culprit tier instead of a generic "something's overloaded".
+        const bn = lastMeasured?.bottleneck
+        const bnLabel = bn ? COMPONENT_TYPES.get(bn.typeId)?.label ?? bn.typeId : null
         return {
           mode: "iterate",
           modeLabel: "Iterate",
-          headline: "It's overloaded",
-          detail: "Requests are being dropped — scale up with replicas (the −/＋ on a node) or a higher tier; a cache takes load off the database.",
+          headline: bnLabel ? `${bnLabel} is overloaded` : "It's overloaded",
+          detail: bnLabel
+            ? `Your ${bnLabel} tier peaked at ${Math.round((bn as { capacityPercent: number }).capacityPercent * 100)}% of capacity and dropped requests — scale it up (the −/＋ on that node) or pick a higher tier; a cache ahead of it takes load off.`
+            : "Requests are being dropped — scale up with replicas (the −/＋ on a node) or a higher tier; a cache takes load off the database.",
         }
       }
       if (!lastResult.underBudget) {
