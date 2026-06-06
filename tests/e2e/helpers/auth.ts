@@ -46,6 +46,27 @@ export async function loginWithTestCredentials(page: Page): Promise<void> {
 }
 
 /**
+ * Log in as the dedicated "unlocked" replay account via the dev-only "Test Login — Unlocked" button.
+ * The account is auto-created on first use (create-or-sign-in) and kept seeded with every quest
+ * complete by the unlocked-setup, so replay specs can replay any quest. Requires VITE_TEST_UNLOCKED_*.
+ */
+export async function loginWithUnlockedTestCredentials(page: Page): Promise<void> {
+  await page.goto("/login")
+  await page.waitForSelector('[data-testid="test-login-unlocked-button"]', { state: "visible", timeout: 10_000 })
+  await page.click('[data-testid="test-login-unlocked-button"]')
+
+  const errorOrToolbar = await Promise.race([
+    page.waitForSelector('[data-testid="toolbar"]', { state: "visible", timeout: 20_000 }).then(() => "toolbar" as const),
+    page
+      .waitForSelector('[data-testid="auth-error"]', { state: "visible", timeout: 20_000 })
+      .then(async (el) => `auth-error: ${await el.textContent()}` as const),
+  ])
+  if (errorOrToolbar !== "toolbar") {
+    throw new Error(`Unlocked test login failed: ${errorOrToolbar}`)
+  }
+}
+
+/**
  * Sign out from the app shell.
  */
 export async function signOut(page: Page): Promise<void> {

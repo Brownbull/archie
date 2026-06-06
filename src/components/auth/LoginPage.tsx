@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button"
 
 const isDev = import.meta.env.DEV
 const hasTestCredentials = !!import.meta.env.VITE_TEST_EMAIL
+const hasUnlockedTestCredentials = !!import.meta.env.VITE_TEST_UNLOCKED_EMAIL
 
 export function LoginPage() {
-  const { user, loading, error, signIn, signInWithTest } = useAuth()
+  const { user, loading, error, signIn, signInWithTest, signInWithUnlockedTestUser } = useAuth()
 
   if (loading) {
     return null
@@ -47,6 +48,18 @@ export function LoginPage() {
             size="lg"
           >
             Test Login (Dev Only)
+          </Button>
+        )}
+
+        {isDev && hasUnlockedTestCredentials && (
+          <Button
+            data-testid="test-login-unlocked-button"
+            onClick={signInWithUnlockedTestUser}
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            Test Login — Unlocked (Dev Only)
           </Button>
         )}
 

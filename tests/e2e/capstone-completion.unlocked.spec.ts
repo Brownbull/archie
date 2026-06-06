@@ -1,15 +1,14 @@
 import { test, expect } from "@playwright/test"
 import { join } from "node:path"
 import { waitForComponentLibrary } from "./helpers/canvas-helpers"
-import { seedUnlockedProgress, restoreEmptyProgress, seedProjectId } from "./helpers/seed-progress"
 
 /**
  * Tier-6 absurd capstone completion — REAL-UI replay (D72).
  *
- * Proves each capstone is genuinely 3★-completable in the running app, not just in the harness:
- * seed a dedicated unblocked user (all quests complete ⇒ replayable), then for each capstone open the
- * Quest Log, Replay it, IMPORT its winning reference architecture through the real Import UI, run the
- * simulation, and assert a 3★ result — screenshotting the modal as durable proof.
+ * Runs under the `desktop-unlocked` Playwright project, which uses the dedicated replay account that
+ * `unlocked-setup` keeps seeded with every quest complete — so each capstone is replayable. For each
+ * one, this opens the selector, Replays it, IMPORTS its winning reference architecture through the real
+ * Import UI, runs the simulation, asserts a 3★ result, and screenshots the modal as durable proof.
  *
  * The fixtures (`tests/e2e/fixtures/capstones/*.architecture.yaml`) are the same builds the solvability
  * harness + capstone-completion proof score; this spec confirms they clear 3★ through the production
@@ -17,31 +16,9 @@ import { seedUnlockedProgress, restoreEmptyProgress, seedProjectId } from "./hel
  */
 const SCREENSHOT_DIR = "test-results/capstone-completion"
 const FIXTURE_DIR = "tests/e2e/fixtures/capstones"
-const AUTH_FILE = "tests/e2e/.auth/user.json"
 const CAPSTONES = ["planet-scale", "thundering-herd", "heat-death", "zero-budget-hero", "the-singularity", "maxwells-demon"] as const
 
-const projectId = seedProjectId()
-
 test.describe.serial("Tier-6 capstone completion (real-UI replay)", () => {
-  test.skip(!projectId, "No VITE_FIREBASE_PROJECT_ID (.env.local) — unblocked-user seeding unavailable")
-
-  test.beforeAll(async ({ browser }) => {
-    const ctx = await browser.newContext({ storageState: AUTH_FILE })
-    const page = await ctx.newPage()
-    await page.goto("/")
-    await waitForComponentLibrary(page)
-    await seedUnlockedProgress(page, projectId as string)
-    await ctx.close()
-  })
-
-  test.afterAll(async ({ browser }) => {
-    const ctx = await browser.newContext({ storageState: AUTH_FILE })
-    const page = await ctx.newPage()
-    await page.goto("/")
-    await restoreEmptyProgress(page, projectId as string).catch(() => {})
-    await ctx.close()
-  })
-
   for (const id of CAPSTONES) {
     test(`completes "${id}" at 3★ via import + replay`, async ({ page }) => {
       test.setTimeout(120_000)

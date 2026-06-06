@@ -4,6 +4,7 @@ import {
   onAuthStateChanged,
   signInWithPopup,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   GoogleAuthProvider,
 } from "firebase/auth"
@@ -42,6 +43,8 @@ interface AuthContextValue {
   error: string | null
   signIn: () => Promise<void>
   signInWithTest: () => Promise<void>
+  /** DEV/E2E only: sign in (create on first run) the dedicated "unlocked" replay account. */
+  signInWithUnlockedTestUser: () => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -102,6 +105,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // DEV/E2E only (gated by VITE_TEST_UNLOCKED_*, absent in prod). Signs in the dedicated replay
+  // account that the E2E setup keeps seeded with every quest complete; creates it on first run so the
+  // harness is self-bootstrapping. Kept separate from the primary test user so seeding it all-complete
+  // never contaminates the normal test account's locked-progression specs.
+  const signInWithUnlockedTestUser = useCallback(async () => {
+    setError(null)
+    const email = import.meta.env.VITE_TEST_UNLOCKED_EMAIL
+    const password = import.meta.env.VITE_TEST_UNLOCKED_PASSWORD
+    if (!email || !password) {
+      setError("Unlocked test credentials not configured. Set VITE_TEST_UNLOCKED_EMAIL and VITE_TEST_UNLOCKED_PASSWORD in .env.local.")
+      return
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+    } catch (err) {
+      const code = err instanceof Error && "code" in err ? (err as { code: string }).code : ""
+      // First run: the dedicated account doesn't exist yet — create it (then it's signed in).
+      if (code === "auth/user-not-found" || code === "auth/invalid-credential") {
+        try {
+          await createUserWithEmailAndPassword(auth, email, password)
+        } catch (createErr) {
+          setError(getErrorMessage(createErr))
+        }
+      } else {
+        setError(getErrorMessage(err))
+      }
+    }
+  }, [])
+
   const signOut = useCallback(async () => {
     setError(null)
     try {
@@ -117,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const value: AuthContextValue = { user, loading, error, signIn, signInWithTest, signOut }
+  const value: AuthContextValue = { user, loading, error, signIn, signInWithTest, signInWithUnlockedTestUser, signOut }
   return createElement(AuthContext.Provider, { value }, children)
 }
 

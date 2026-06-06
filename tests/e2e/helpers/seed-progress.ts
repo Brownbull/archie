@@ -94,12 +94,7 @@ async function writeProgress(page: Page, projectId: string, completedChallenges:
   if (!result.ok) throw new Error(`seed-progress write failed: ${result.error}`)
 }
 
-/** Seed the test user's progress so EVERY quest is unlocked + replayable (all complete + max XP). */
+/** Seed the signed-in account's progress so EVERY quest is unlocked + replayable (all complete + max XP). */
 export async function seedUnlockedProgress(page: Page, projectId: string): Promise<void> {
   await writeProgress(page, projectId, allChallengeIds(), 1_000_000)
-}
-
-/** Restore the test user's progress to the empty post-reset state (clean for other specs). */
-export async function restoreEmptyProgress(page: Page, projectId: string): Promise<void> {
-  await writeProgress(page, projectId, [], 0)
 }
