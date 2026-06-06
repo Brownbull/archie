@@ -3967,3 +3967,11 @@ pickCheapestVariant/leanResize now size replicas for the connection pool (W_est 
 
 ## 2026-06-06 — PHASE 2 EN2 authoring: llm connection ceilings (645fae0)
 Authored concurrency_limit on llm-gateway variants (single-model 150 / multi-model 450 / streaming 2000). Mechanic now LIVE + behavior-shaping: rag-retrieval's build switches single-model→multi-model-router to avoid pool exhaustion; production-ai (low load) keeps single-model. Gate fires for naive single-model stacking (unit-tested). 58/58, par/golden unchanged. FINDING: the cost-optimizing builder uses streaming (50ms, low-latency) to dodge pool exhaustion, so no clearable challenge is FORCED concurrency-bound — a force-bite pool-exhaustion challenge needs a HIGH-LATENCY-ONLY component (no streaming escape). EN2 core (mechanic + builder + authoring) COMPLETE; the force-bite challenge is an optional enhancement (refined D18). Phase 2 (ED1+ED4+EN2) substantially done.
+- 2026-06-06 10:53 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-06 10:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 10:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 10:54 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 10:55 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-06-06 — EN6: cyclic-flow fixed-point (b7c3107) — closes D7
+Bounded undamped-Jacobi fixed-point for cyclic subgraphs (cap MAX_FLOW_PASSES, queueDepth reset per pass). DAG topo pass untouched (cyclic nodes only forward to cyclic nodes) → 57 byte-identical, golden/par/capstone unchanged, suite 4780. Unblocks EN3. D7 (cyclic totalServedRps overcount) RESOLVED.
