@@ -1,0 +1,42 @@
+id: lean-at-scale
+title: Lean at Scale
+brief: >-
+  The cost discipline from Unit Economics, now at a million requests a second.
+  More traffic should mean a LOWER cost-per-request, not a higher one:
+  amortize the fixed cost over the volume, serve almost everything from a fat
+  cache, and keep compute + storage to the bare cache-miss minimum. Razor-thin
+  margins at scale.
+difficulty: advanced
+budget_cap: 30000
+duration_seconds: 120
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 60, rps: 600000 }
+  - { t: 120, rps: 1000000 }
+traffic_sources:
+  - { type: web-users, rps: 1000000, kind: steady, workload: read, origin: one-region }
+required_components:
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 95
+  p99_latency_ms: 400
+  cost_per_request: 0.00002
+chaos_intensity: 1
+hints:
+  - "At 1.5M rps the fixed cost spreads over far more requests — cost-per-request should fall BELOW the Unit Economics number, not rise."
+  - "A fat, high-hit-ratio cache is the whole game: the more reads it absorbs, the fewer compute + DB replicas you pay for."
+  - "Keep compute + the database to the cache-miss remainder; cheap small variants beat big expensive ones once the cache is doing the work."
+  - "Place traffic → cache → compute → relational-db, cache replicated for the 1.5M read volume and origin sized to the misses; the amortized cache clears the cost-per-request target at ≥95% uptime, p99 ≤ 400ms."
+schema_version: 2
+track: data
+tier: 5
+requires: [unit-economics]
+unlocks: []
+min_xp: 0
+required_types: [cache]
+available_blocks: [compute, cdn, dns, load-balancer, cache, relational-db, nosql, object-storage, traffic-source]
+grants: []
+rewards:
+  xp: 1100

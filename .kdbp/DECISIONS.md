@@ -1123,3 +1123,23 @@ which ~doubles cost and made tight-budget challenges un-3★-able (budget vs red
    (scorer takes a blocking-count; synthetic-stats golden unaffected).
 
 **Status:** active.
+
+## D73 — cost_per_request challenges + unlocked-E2E CI workflow (2026-06-05)
+
+Two follow-ups unblocked by earlier work.
+
+**cost_per_request challenges (closes the D69 deferral).** The cost-aware lean reference builder (D72)
+makes cost-per-request challenges harness-verifiable, so two ship: `unit-economics` (data T4, 800k
+read, off read-aside) and `lean-at-scale` (data T5, 1M read, off unit-economics), each with a
+`cost_per_request` target between the lean build's value and the over-provisioned build's. The
+lean/cost-efficient solution clears 3★; an over-provisioned build fails the cost gate (the lesson).
+Steady traffic + moderate uptime targets (95%) keep the cost metric the binding constraint. Counts
+55→57 + golden snapshot additively extended (existing 55 byte-identical).
+
+**Unlocked-E2E CI (`.github/workflows/e2e-unlocked.yml`).** Runs the `desktop-unlocked` replay project
+against real Firebase on push to dev/main + manual dispatch. Deliberately a SEPARATE workflow from the
+deploy gate and from ci.yml — does NOT contradict D11 (full E2E stays out of the deploy gate due to
+environmental flakiness); this is a focused, deterministic capstone-replay signal. Skips gracefully if
+VITE_TEST_UNLOCKED_EMAIL isn't a repo secret.
+
+**Status:** active.

@@ -1,0 +1,41 @@
+id: unit-economics
+title: Unit Economics
+brief: >-
+  Traffic is healthy — the spreadsheet isn't. Every request costs money, and
+  finance wants the cost-per-request down. Serve the read-heavy load so cheaply
+  that the unit economics finally work: cache the hot set, size each tier to what
+  it actually needs, and stop paying for capacity you never use.
+difficulty: advanced
+budget_cap: 8000
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 480000 }
+  - { t: 90, rps: 800000 }
+traffic_sources:
+  - { type: web-users, rps: 800000, kind: steady, workload: read, origin: one-region }
+required_components:
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 95
+  p99_latency_ms: 350
+  cost_per_request: 0.00004
+chaos_intensity: 1
+hints:
+  - "Cost-per-request = monthly spend ÷ requests served. Serve more from cache and the ratio collapses."
+  - "A high cache hit-ratio means origin compute + the database see only a sliver — size them small and cheap."
+  - "Don't reach for the biggest variant of every block; pick the cheapest one that still carries its measured load."
+  - "Place traffic → cache → compute → relational-db: the cache absorbs the read bulk, so a lean compute + DB tier clears the cost-per-request target while holding p99 ≤ 350ms at ≥99% uptime."
+schema_version: 2
+track: data
+tier: 4
+requires: [read-aside]
+unlocks: []
+min_xp: 0
+required_types: [cache]
+available_blocks: [compute, cdn, dns, load-balancer, cache, relational-db, nosql, traffic-source]
+grants: []
+rewards:
+  xp: 760
