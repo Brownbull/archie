@@ -3993,3 +3993,23 @@ Bounded undamped-Jacobi fixed-point for cyclic subgraphs (cap MAX_FLOW_PASSES, q
 
 ## 2026-06-06 — ED2: fractional AZ outage (0374f65) — Phase 3 begun
 az_outage now removes ONE zone (survive at (azCount−1)/azCount) instead of blacking out a whole category. azCount from replicaCount (cap 3); effMax = effectiveMaxRps × capFactor across all branches; capFactor 1 ⇒ byte-identical. Re-tune: heat-death only — surviving capacity runs hot (ED2×ED4) → uptime 83%→93% but p99 spike → target 600→1900. Harness 3★ all 57, suite 4784. Unblocks restore-redundancy. async-backbone still unfixed (messaging carries ~0 traffic). EN6 (b7c3107) + ED2 (0374f65) done this pass.
+- 2026-06-06 12:03 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 12:04 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 12:04 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 12:04 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/monitoringFeedback.test.ts
+- 2026-06-06 12:05 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/monitoringFeedback.test.ts
+- 2026-06-06 12:08 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-06 12:08 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-06 12:09 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-06 12:09 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-06 12:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+- 2026-06-06 12:12 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+- 2026-06-06 12:14 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-06 12:15 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-06 12:15 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-06 12:16 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 12:16 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 12:19 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/rubricScorer.test.ts
+
+## 2026-06-06 — PHASE 3 COMPLETE: resilience as a real subject
+EN7 observability blast-radius (5ef6a31), restore-redundancy resilienceEarned (cdbd294), ED3 required-types-on-served-path (c021e2e). ED3 closes D76/D15: required types must be directed-reachable from traffic (async exempt via shared isOnPathExempt); builder wires non-exempt orphans (security) on-path; presence fallback keeps golden byte-identical. Harness 3-star all 57, suite 4788. Phase 3 (ED2 to EN7 to restore-redundancy to ED3) all shipped. Remaining epic: Phase 4 (ED9, EN5, ED5 once unblocked, ED6/EN4/ED8) plus the optional EN2 force-bite challenge.
