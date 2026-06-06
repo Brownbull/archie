@@ -3716,3 +3716,109 @@ EXPANSION COMPLETE (D69/D70): 41 → 55 challenges. Cost_per_request challenges 
 ## 2026-06-04 19:48 — PUSH dev -> main
 CI: all passed (deploy-production success, run 26986303396)
 DEPLOYMENTS: P131 (challenge expansion batch 2 — Tier 6 + 9 challenges; expansion 41→55 COMPLETE)
+- 2026-06-05 08:31 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 08:32 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-05 08:32 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 08:34 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 08:38 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 08:41 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_challenge-buildability-ceiling.md
+- 2026-06-05 08:41 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/MEMORY.md
+- 2026-06-05 08:42 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/50-planet-scale.yaml
+- 2026-06-05 08:42 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/50-planet-scale.yaml
+- 2026-06-05 08:42 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/51-thundering-herd.yaml
+- 2026-06-05 08:42 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/51-thundering-herd.yaml
+- 2026-06-05 08:42 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/52-heat-death.yaml
+- 2026-06-05 08:42 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/54-the-singularity.yaml
+- 2026-06-05 08:43 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/54-the-singularity.yaml
+- 2026-06-05 08:43 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/55-maxwells-demon.yaml
+- 2026-06-05 08:43 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-05 08:45 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-05 08:45 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-05 08:46 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-05 08:46 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-05 08:46 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-05 08:46 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-05 08:47 | Write | /home/khujta/projects/bmad/archie/src/lib/challengeBudget.ts
+- 2026-06-05 08:47 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-05 08:48 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeEditor.tsx
+- 2026-06-05 08:48 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/challengeBudget.test.ts
+- 2026-06-05 08:49 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-05 08:49 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-05 08:49 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-05 08:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/schemas/challengeSchema.test.ts
+- 2026-06-05 08:51 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 08:52 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 08:52 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 08:54 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-05 09:01 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-05 09:04 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 09:05 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 09:05 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-05 09:46 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_probe.test.ts
+- 2026-06-05 09:55 | Edit | /home/khujta/projects/bmad/archie/src/engine/topologyChecker.ts
+- 2026-06-05 09:55 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-05 09:55 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-05 09:55 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-05 09:56 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-05 09:56 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 09:56 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 09:56 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 09:57 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-05 09:57 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-05 09:57 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-05 09:57 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-05 09:57 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-05 09:57 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-05 09:58 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 09:58 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 09:59 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-05 09:59 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeAutoScore.test.tsx
+- 2026-06-05 10:01 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:01 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/solvability.test.ts
+- 2026-06-05 10:05 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:05 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:06 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:08 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:08 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:08 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:09 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:13 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:13 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:13 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:13 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:14 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:14 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 10:14 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 10:16 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 10:16 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 10:16 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 10:17 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 10:17 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/capstone-completion.test.ts
+- 2026-06-05 10:18 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 10:18 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 10:18 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-05 10:20 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+
+## 2026-06-05 — [feat] all 55 challenges 3★-completable (D71, D72)
+FINDINGS: lint 0 err (9 low warnings, false-positive object-injection) · types ✅ · tests ✅ 4759 · shape 2 low (ChallengeEditor 414, referenceSolution 483 — accepted) · structure 1 medium → resolved (added tests/**/fixtures/** pattern)
+ACTIONS: update-structure (fixtures pattern) · accept (shape low)
+DECISIONS: +D71 (buildability ceiling: capped harness + MAX_BUILDABLE_PEAK_RPS creator/schema gate + 5 capstones re-tuned 1.2–1.8M) · +D72 (topology star = well-formed not redundant; Resilient badge; lean+wired try-both reference builder; all 55 @ 3★)
+PROOF: docs/quality-reports/capstone-completion-proof.md (6 capstones @ 3★) + tests/e2e/fixtures/capstones/*.architecture.yaml
+- 2026-06-05 11:30 | Write | /home/khujta/projects/bmad/archie/tests/e2e/helpers/seed-progress.ts
+- 2026-06-05 11:33 | Write | /home/khujta/projects/bmad/archie/tests/e2e/helpers/seed-progress.ts
+- 2026-06-05 11:35 | Write | /home/khujta/projects/bmad/archie/tests/e2e/capstone-completion.spec.ts
+- 2026-06-05 21:11 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/capstone-completion.spec.ts
+- 2026-06-05 21:15 | Edit | /home/khujta/projects/bmad/archie/test-results/INDEX.md
+
+## 2026-06-05 — [test] capstone real-UI replay E2E (D72)
+E2E: 7/7 passed (~2.1m) — all 6 Tier-6 capstones replay to 3★ in the real app (seed unblocked user → import winning fixture → run → assert 3 of 3 stars → screenshot)
+PROOF: test-results/capstone-completion/*.png (6 modal screenshots) + INDEX.md row
+NOTE: seed via browser Firestore :commit + REQUEST_TIME transform (web API key referrer-restricted; rules pin updatedAt==request.time)
+
+## 2026-06-05 21:25 — PUSH dev -> main
+CI: all passed (deploy-production success, run 27048555282)
+PROMOTION: N/A (direct dev → main)
+DEPLOYMENTS: P132 (D71 buildability + D72 3★ star-model + capstone real-UI replay E2E)
