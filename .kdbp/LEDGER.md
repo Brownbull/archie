@@ -3930,3 +3930,20 @@ PENDING: runtime journey evidence (fail-a-challenge: culprit + par + free first 
 
 ## 2026-06-06 — PHASE 2 (2/3): ED1/EN1 + ED4/LX4 shipped (214a2d3)
 Path-sum end-to-end latency + M/M/1 queueing curve. Re-tune: planet-scale p99 400→1030, thundering-herd 350→1050; 4 par flips (all still 3★). Harness 3★ all 57, golden no-op, capstones green, suite 4775. EN2 (concurrency, XL) remains for its own pass. DECISIONS D78.
+- 2026-06-06 09:21 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 09:21 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 09:21 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 09:21 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-06 09:22 | Edit | /home/khujta/projects/bmad/archie/src/lib/constants.ts
+- 2026-06-06 09:22 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 09:22 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 09:22 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 09:22 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 09:23 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 09:23 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 09:23 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 09:23 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 09:24 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-06-06 — PHASE 2 EN2 part A: concurrency mechanic (f6a13aa)
+Connection-pool model (Little's law) behind undefined-no-op: schema concurrency_limit + MAX_CONCURRENCY, SimNode.concurrencyLimit (replica-scaled), NodeTelemetry.rejectedRps, the gate in process() (W_queue = bare curve latency), QUEUEING_LATENCY_EPS floor. No variant authors a limit yet → gate is a no-op → harness 3★ all 57 byte-identical, suite 4778. Part B (author limits on reachable variants + concurrency-aware lean builder + a pool-exhaustion challenge + re-tune) remains — the data-heavy lesson-landing pass.
