@@ -4093,3 +4093,21 @@ Builder now adds generic compute only when no compute-category type is required 
 
 ## 2026-06-06 — ED5 RESOLVED (D16 unblocked): dynamic cache hit-ratio from workload
 The traffic source is now the workload descriptor. effectiveCacheHitRatio = ceiling × (1−writePressure) × cacheableFraction × erosion(kind) — write-pressure (writes uncacheable), cacheable-fraction (new per-source field), access-pattern erosion (steady 1→search 0.6). Fixed the D16 root cause (builder never plumbed workload → writePressure defaulted 0.5): builder now emits one traffic node PER source (faithful blend for multi-source), leanResize iterates to a fixed point (downstream load shifts when a tier resizes). Re-calibration: only 3/59 moved — edge-resilience uptime 99→98, planet-scale 1.8M→900k + the-singularity 1.2M→600k (ED5 revealed their un-cacheable write load exceeded the buildable ceiling). Golden unchanged (sim-independent), par regenerated, harness 3★ all 59, suite 4806 (f8649d8). cacheable_fraction field shipped but unused → D20 follow-up (dedicated uncacheable-workload challenge + live-canvas seeding). Phase 4 now: EN5 + ED9 + ED5 all landed; remaining = ED6/EN4/ED8 (XL consistency/CAP).
+- 2026-06-06 15:44 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 15:44 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-06 15:44 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-06 15:44 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-06 15:47 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-06 15:47 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-06 15:47 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-06 15:47 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAttemptPersistence.ts
+- 2026-06-06 15:48 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficNodeControls.tsx
+- 2026-06-06 15:48 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficNodeControls.tsx
+- 2026-06-06 15:48 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficNodeControls.tsx
+- 2026-06-06 15:49 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/60-personalized-feed.yaml
+- 2026-06-06 15:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/challengeStore.test.ts
+- 2026-06-06 15:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-economics.test.ts
+- 2026-06-06 15:52 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-economics.test.ts
+
+## 2026-06-06 — D20 RESOLVED: challenge workload authoritative + lock-until-3★ gate
+The live sim used the player's editable traffic node for workload (write-pressure/erosion/cacheable), diverging from the harness + leaving cacheable_fraction unused. Now: workloadBlend(sources) → ChallengeStartButton overrides the canvas workload with the challenge's blend while bestStars<3 (live==harness, ungameable); TrafficNodeControls locks (dimmed + badge) until 3★; once cleared the node unlocks for sandbox + lastRecordable only persists a post-clear run if it re-earns 3★. New challenge personalized-feed (data T5, 30%-cacheable — first to exercise cacheable_fraction; size the $3630 origin for the real load). Counts 59→60, golden/par additive, harness 3★ all 60, suite 4811. PHASE 4 nearly complete: EN5, ED9, ED5, D20 all shipped — only ED6/EN4/ED8 (XL consistency/CAP) remains.
