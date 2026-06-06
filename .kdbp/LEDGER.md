@@ -3822,3 +3822,21 @@ NOTE: seed via browser Firestore :commit + REQUEST_TIME transform (web API key r
 CI: all passed (deploy-production success, run 27048555282)
 PROMOTION: N/A (direct dev → main)
 DEPLOYMENTS: P132 (D71 buildability + D72 3★ star-model + capstone real-UI replay E2E)
+- 2026-06-05 21:30 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-05 21:30 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-05 21:31 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-05 21:31 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-05 21:31 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/LoginPage.tsx
+- 2026-06-05 21:31 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/LoginPage.tsx
+- 2026-06-05 21:31 | Edit | /home/khujta/projects/bmad/archie/.env.example
+- 2026-06-05 21:32 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/auth.ts
+- 2026-06-05 21:32 | Write | /home/khujta/projects/bmad/archie/tests/e2e/unlocked-setup.ts
+- 2026-06-05 21:33 | Edit | /home/khujta/projects/bmad/archie/playwright.config.ts
+- 2026-06-05 21:33 | Edit | /home/khujta/projects/bmad/archie/playwright.config.ts
+- 2026-06-05 21:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/capstone-completion.unlocked.spec.ts
+- 2026-06-05 21:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/seed-progress.ts
+
+## 2026-06-05 22:05 — PUSH dev -> main
+CI: all passed (deploy-production success, run 27049137017)
+PROMOTION: N/A (direct dev → main)
+DEPLOYMENTS: P133 (dedicated unlocked replay account E2E — D72)
