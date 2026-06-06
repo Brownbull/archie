@@ -75,6 +75,21 @@ describe("challengeStore (Epic 16)", () => {
     expect(s().scoreAttempt(stats(100, 50), 0, 100)).toBeNull()
   })
 
+  it("D20: lastRecordable — pre-3★ always recordable; post-3★ only a re-earned 3★ counts", () => {
+    s().selectChallenge(challenge)
+    s().scoreAttempt(stats(99.5, 150), 2, 500) // 1★, not yet cleared
+    expect(s().lastRecordable).toBe(true) // pre-3★ climb is always recorded
+    s().selectChallenge(challenge)
+    s().scoreAttempt(stats(100, 50), 0, 100) // 3★ — challenge cleared (unlocks)
+    expect(s().lastRecordable).toBe(true)
+    s().selectChallenge(challenge) // post-clear sandbox tinker that REGRESSES
+    s().scoreAttempt(stats(99.5, 150), 2, 500) // 1★ after unlock
+    expect(s().lastRecordable).toBe(false) // not re-earned 3★ → not recorded
+    s().selectChallenge(challenge) // post-clear run that re-earns 3★
+    s().scoreAttempt(stats(100, 50), 0, 80)
+    expect(s().lastRecordable).toBe(true) // a fresh 3★ clear is recorded
+  })
+
   it("startAttempt is a no-op from 'scored' — a retry must go through selectChallenge first", () => {
     s().selectChallenge(challenge)
     s().startAttempt()

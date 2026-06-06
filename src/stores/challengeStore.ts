@@ -37,6 +37,11 @@ interface ChallengeState {
   attemptSnapshot: AttemptSnapshot | null
   /** Best stars earned per challenge id (persists across attempts within the session). */
   bestStars: Record<string, number>
+  /** D20 (D74): whether the just-scored attempt should be PERSISTED. Pre-3★ every attempt is recorded
+   *  (the climb). Once a challenge is 3★ the traffic node unlocks for sandbox experimentation, and a
+   *  subsequent run is recorded only if it RE-EARNS 3★ (an improvement-worthy clear) — a worse tinker
+   *  doesn't pollute history or look like a regression. */
+  lastRecordable: boolean
   /** Enter challenge mode with a challenge — clears any prior result, ready to build. */
   selectChallenge: (challenge: Challenge) => void
   /** Mark the attempt as running; records the start-time cost/topology snapshot used for scoring. */
@@ -57,6 +62,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   lastMeasured: null,
   attemptSnapshot: null,
   bestStars: {} as Record<string, number>,
+  lastRecordable: true,
 
   selectChallenge: (challenge) => {
     set({ activeChallenge: challenge, attemptState: "building", lastResult: null, lastMeasured: null, attemptSnapshot: null })
@@ -84,8 +90,11 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     const topologyGraph = get().attemptSnapshot?.topologyGraph
     const result = evaluateAttempt(stats, challenge, topologyIssueCount, effectiveCost, canvasTypeIds, costPerRequest, topologyGraph, advisoryTopologyCount)
     const prevBest = get().bestStars[challenge.id] ?? 0
+    // D20: pre-3★ record every attempt (the climb); once unlocked (prevBest 3) only a re-earned 3★ counts.
+    const recordable = prevBest < 3 || result.stars === 3
     set({
       lastResult: result,
+      lastRecordable: recordable,
       lastMeasured: {
         uptimePercent: stats.uptimePercent,
         p99LatencyMs: stats.p99LatencyMs,

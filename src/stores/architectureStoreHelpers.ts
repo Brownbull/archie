@@ -536,6 +536,30 @@ export function cacheErosionForKind(kind: string | undefined): number {
 }
 
 /**
+ * ED5/D20 (D74): the rps-weighted workload blend of a challenge's traffic sources — the SAME quantities
+ * buildSimGraph derives from the canvas, computed straight from the authored sources. Used to make the
+ * challenge's demand authoritative in the LIVE sim (a locked challenge overrides the player's traffic
+ * node so the cache/DB derating matches the harness). Empty/zero sources ⇒ {} (no override).
+ */
+export function workloadBlend(
+  sources: ReadonlyArray<{ rps: number; workload?: string; kind?: string; cacheableFraction?: number }>,
+): { writePressure?: number; cacheableFraction?: number; cacheErosion?: number } {
+  let weightedWrite = 0
+  let weightedCacheable = 0
+  let weightedErosion = 0
+  let total = 0
+  for (const s of sources) {
+    if (s.rps <= 0) continue
+    weightedWrite += s.rps * (s.workload === "write" ? 1 : s.workload === "read" ? 0 : 0.5)
+    weightedCacheable += s.rps * (s.cacheableFraction ?? 1)
+    weightedErosion += s.rps * cacheErosionForKind(s.kind)
+    total += s.rps
+  }
+  if (total <= 0) return {}
+  return { writePressure: weightedWrite / total, cacheableFraction: weightedCacheable / total, cacheErosion: weightedErosion / total }
+}
+
+/**
  * Builds the immutable SimGraph the simulation engine runs over (Epic 15).
  * Each node's effective capacity (maxRPS scaled by replicas) + base latency come from getNodeCost.
  * effectiveMaxRps 0 means "unknown/uncapped" (variant has no maxRPS authored).

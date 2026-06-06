@@ -21,8 +21,11 @@ export function useAttemptPersistence(): void {
   useEffect(() => {
     if (attemptState !== "scored" || !lastResult) return
     if (recordedRef.current === lastResult) return // this scored attempt was already persisted
-    const { activeChallenge, lastMeasured } = useChallengeStore.getState()
+    const { activeChallenge, lastMeasured, lastRecordable } = useChallengeStore.getState()
     if (!activeChallenge || !lastMeasured || !userId) return
+    // D20 (D74): once a challenge is 3★ its traffic node unlocks for experimentation; only a run that
+    // RE-EARNS 3★ is persisted — a worse post-clear tinker doesn't get recorded.
+    if (!lastRecordable) { recordedRef.current = lastResult; return }
     recordedRef.current = lastResult
     void useAttemptsStore.getState().recordAttempt({
       userId,

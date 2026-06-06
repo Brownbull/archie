@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
-import { getNodeCost, computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { getNodeCost, computeTotalArchitectureCost, workloadBlend, cacheErosionForKind } from "@/stores/architectureStoreHelpers"
 
 const mockGetComponent = vi.fn()
 vi.mock("@/services/componentLibrary", () => ({
@@ -138,5 +138,30 @@ describe("computeTotalArchitectureCost", () => {
       { data: { archieComponentId: "nonexistent", activeConfigVariantId: "default" } },
     ]
     expect(computeTotalArchitectureCost(nodes)).toBe(0)
+  })
+})
+
+describe("workloadBlend (ED5/D20, D74)", () => {
+  it("empty / zero-rps sources ⇒ no override", () => {
+    expect(workloadBlend([])).toEqual({})
+    expect(workloadBlend([{ rps: 0, workload: "write" }])).toEqual({})
+  })
+
+  it("rps-weights write-pressure, cacheable-fraction, and access-pattern erosion", () => {
+    // 3000 read (wp 0, cacheable 0.3, steady erosion 1) + 1000 write (wp 1, cacheable default 1, steady 1)
+    const b = workloadBlend([
+      { rps: 3000, workload: "read", kind: "steady", cacheableFraction: 0.3 },
+      { rps: 1000, workload: "write", kind: "steady" },
+    ])
+    expect(b.writePressure).toBeCloseTo(0.25, 6) // (3000·0 + 1000·1)/4000
+    expect(b.cacheableFraction).toBeCloseTo((3000 * 0.3 + 1000 * 1) / 4000, 6) // 0.475
+    expect(b.cacheErosion).toBeCloseTo(1, 6) // both steady
+  })
+
+  it("access-pattern erosion: steady 1 → realistic 0.95 → periodic 0.9 → search 0.6", () => {
+    expect(cacheErosionForKind("steady")).toBe(1)
+    expect(cacheErosionForKind("realistic")).toBe(0.95)
+    expect(cacheErosionForKind("search")).toBe(0.6)
+    expect(cacheErosionForKind(undefined)).toBe(1)
   })
 })

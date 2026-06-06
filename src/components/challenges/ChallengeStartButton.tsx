@@ -2,7 +2,7 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph, computeTotalArchitectureCost, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, computeTotalArchitectureCost, buildTrafficCurveFromSpecs, workloadBlend } from "@/stores/architectureStoreHelpers"
 import { countTopologyIssues } from "@/engine/topologyChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 
@@ -20,6 +20,7 @@ export function ChallengeStartButton() {
   const simStatus = useSimulationStore((s) => s.status)
   const startSim = useSimulationStore((s) => s.start)
   const nodeCount = useArchitectureStore((s) => s.nodes.length)
+  const bestStars = useChallengeStore((s) => s.bestStars)
 
   if (!inChallenge || !challenge || attemptState !== "building" || simStatus !== "idle" || nodeCount === 0) {
     return null
@@ -27,7 +28,16 @@ export function ChallengeStartButton() {
 
   const onStart = () => {
     const { nodes, edges, topologyIssues } = useArchitectureStore.getState()
-    const graph = buildSimGraph(nodes, edges)
+    // D20 (D74): until the player 3★s this challenge, its authored workload is AUTHORITATIVE — override
+    // the canvas-derived write-pressure / cacheable-fraction / access-pattern erosion with the challenge's
+    // own blend so the cache/DB derating matches the harness (the demand is the fixed problem statement;
+    // it can't be gamed by editing the traffic node). Once 3★ is earned the node unlocks → canvas wins.
+    const baseGraph = buildSimGraph(nodes, edges)
+    const locked = (bestStars[challenge.id] ?? 0) < 3
+    const graph =
+      locked && challenge.trafficSources && challenge.trafficSources.length > 0
+        ? { ...baseGraph, ...workloadBlend(challenge.trafficSources) }
+        : baseGraph
     // Freeze the structural graph (node-id→TYPE-id + edges) for required_topology grading (D66) —
     // same start-time discipline as cost/topology. typeId resolves vendor componentId → fundamental type.
     const typeByNodeId = new Map<string, string>()

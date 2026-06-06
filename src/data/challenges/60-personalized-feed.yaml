@@ -1,0 +1,40 @@
+id: personalized-feed
+title: The Personalized Feed
+brief: >-
+  Every user sees a different home feed — ranked, personalized, freshly assembled.
+  You'll reach for a cache like always, but here it lies: only a sliver of these
+  requests are actually cacheable, so a 90%-hit cache behaves like a 25%-hit one.
+  Don't trust the sticker hit-ratio — size the origin for the traffic that really
+  reaches it, because most of it will.
+difficulty: advanced
+budget_cap: 4000
+duration_seconds: 90
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 45, rps: 40000 }
+  - { t: 90, rps: 80000 }
+traffic_sources:
+  - { type: web-users, rps: 80000, kind: realistic, workload: read, origin: one-region, cacheable_fraction: 0.3 }
+required_components:
+  - compute
+  - caching
+  - data-storage
+target_metrics:
+  uptime_percent: 97
+  p99_latency_ms: 400
+chaos_intensity: 1
+hints:
+  - "A cache's headline hit-ratio is a CEILING, not a promise. Personalized feeds are ~30% cacheable, so a 90%-hit cache really absorbs ~27% — the origin still sees the other ~73%."
+  - "Don't size compute + the database for the cache-miss trickle you'd expect from a 90% cache. Size them for the real post-cache load (most of 80k), or they'll shed under the spike."
+  - "The cache is still worth adding (it shaves the cacheable slice + cuts latency), but it can't rescue an undersized origin here — the lesson is to size for the workload you actually have."
+schema_version: 2
+track: data
+tier: 5
+requires: [read-aside]
+unlocks: []
+min_xp: 0
+required_types: [cache]
+available_blocks: [traffic-source, compute, load-balancer, cache, cdn, relational-db, nosql]
+grants: []
+rewards:
+  xp: 900

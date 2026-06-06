@@ -175,6 +175,10 @@
     "cost": 390,
     "nodes": 3
   },
+  "personalized-feed": {
+    "cost": 3630,
+    "nodes": 4
+  },
   "planet-scale": {
     "cost": 8440,
     "nodes": 10

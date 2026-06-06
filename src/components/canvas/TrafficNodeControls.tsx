@@ -1,4 +1,5 @@
 import { memo } from "react"
+import { Lock } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -7,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { useArchitectureStore, type ArchieNodeData } from "@/stores/architectureStore"
+import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { TRAFFIC_RPS_STEPS } from "@/lib/constants"
 import { trafficKindEnvelope, type TrafficKind } from "@/engine/trafficPatterns"
 import { formatRpsCompact } from "@/lib/formatStats"
@@ -59,6 +61,11 @@ function TrafficNodeControlsBase({ nodeId, data }: TrafficNodeControlsProps) {
   const setNodeWorkload = useArchitectureStore((s) => s.setNodeWorkload)
   const setNodeOrigin = useArchitectureStore((s) => s.setNodeOrigin)
 
+  // D20 (D74): the demand is the challenge's fixed problem statement until the player 3★s it — then the
+  // node unlocks for sandbox experimentation. While locked, the controls are disabled (the sim uses the
+  // challenge's authored workload regardless, so editing here would only mislead).
+  const locked = useChallengeStore((s) => isChallengeMode(s) && (s.bestStars[s.activeChallenge?.id ?? ""] ?? 0) < 3)
+
   const rps = data.trafficRps ?? FIRST_STEP
   const kind = (data.trafficKind ?? "steady") as TrafficKind
   const workload = (data.trafficWorkload ?? "mixed") as ChallengeTrafficWorkload
@@ -71,6 +78,13 @@ function TrafficNodeControlsBase({ nodeId, data }: TrafficNodeControlsProps) {
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
+      {locked && (
+        <div data-testid="traffic-locked-badge" className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[0.5625rem] leading-tight text-amber-300">
+          <Lock className="h-2.5 w-2.5 shrink-0" />
+          <span>Demand fixed by the challenge — reach 3★ to experiment</span>
+        </div>
+      )}
+      <div className={locked ? "pointer-events-none flex flex-col gap-1 opacity-50" : "flex flex-col gap-1"} aria-disabled={locked}>
       <div className="flex items-stretch gap-1.5">
         {/* Peak-RPS stepper — snaps through TRAFFIC_RPS_STEPS (3k → 10M) */}
         <div
@@ -145,6 +159,7 @@ function TrafficNodeControlsBase({ nodeId, data }: TrafficNodeControlsProps) {
         {kind === "steady"
           ? `${formatRpsCompact(rps)} steady`
           : `~${formatRpsCompact(env.min)}–${formatRpsCompact(env.peak)} · avg ~${formatRpsCompact(env.avg)}`}
+      </div>
       </div>
     </div>
   )
