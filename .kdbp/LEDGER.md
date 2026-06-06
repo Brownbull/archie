@@ -4071,3 +4071,25 @@ Opt-in `autoscale` variant flag → cost INTEGRATES over the load curve (mean ac
 
 ## 2026-06-06 — D19 RESOLVED: ED9 lands in-game (burst-economics)
 Builder now adds generic compute only when no compute-category type is required (byte-identical for all 58 — they list compute in required_components). New challenge burst-economics (serverless-only, spiky 5k→50k): autoscale integrated $41 clears the $50 budget; a static fleet ($80) blows it. Counts 58→59, golden/par additive, harness 3★ all 59, suite 4801. Phase 4 now: EN5 (full) + ED9 (full, mechanic+challenge). Pushed P136 (EN5+ED9 mechanic); burst-economics rides next push.
+- 2026-06-06 13:49 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-06 13:49 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-06 13:50 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-06 13:51 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:51 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:51 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 13:52 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 13:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 13:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 13:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 13:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-06 13:57 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 13:57 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 13:57 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 14:05 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 14:06 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 14:07 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 14:13 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+- 2026-06-06 14:13 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/simulationEngine.test.ts
+
+## 2026-06-06 — ED5 RESOLVED (D16 unblocked): dynamic cache hit-ratio from workload
+The traffic source is now the workload descriptor. effectiveCacheHitRatio = ceiling × (1−writePressure) × cacheableFraction × erosion(kind) — write-pressure (writes uncacheable), cacheable-fraction (new per-source field), access-pattern erosion (steady 1→search 0.6). Fixed the D16 root cause (builder never plumbed workload → writePressure defaulted 0.5): builder now emits one traffic node PER source (faithful blend for multi-source), leanResize iterates to a fixed point (downstream load shifts when a tier resizes). Re-calibration: only 3/59 moved — edge-resilience uptime 99→98, planet-scale 1.8M→900k + the-singularity 1.2M→600k (ED5 revealed their un-cacheable write load exceeded the buildable ceiling). Golden unchanged (sim-independent), par regenerated, harness 3★ all 59, suite 4806 (f8649d8). cacheable_fraction field shipped but unused → D20 follow-up (dedicated uncacheable-workload challenge + live-canvas seeding). Phase 4 now: EN5 + ED9 + ED5 all landed; remaining = ED6/EN4/ED8 (XL consistency/CAP).
