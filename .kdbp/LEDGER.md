@@ -3840,3 +3840,17 @@ DEPLOYMENTS: P132 (D71 buildability + D72 3★ star-model + capstone real-UI rep
 CI: all passed (deploy-production success, run 27049137017)
 PROMOTION: N/A (direct dev → main)
 DEPLOYMENTS: P133 (dedicated unlocked replay account E2E — D72)
+- 2026-06-05 21:53 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/56-unit-economics.yaml
+- 2026-06-05 21:53 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/57-lean-at-scale.yaml
+- 2026-06-05 21:55 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 21:56 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-05 21:57 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/57-lean-at-scale.yaml
+- 2026-06-05 21:57 | Write | /home/khujta/projects/bmad/archie/src/data/challenges/57-lean-at-scale.yaml
+- 2026-06-05 21:58 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/56-unit-economics.yaml
+- 2026-06-05 21:58 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/57-lean-at-scale.yaml
+- 2026-06-05 21:59 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/57-lean-at-scale.yaml
+- 2026-06-05 22:00 | Write | /home/khujta/projects/bmad/archie/.github/workflows/e2e-unlocked.yml
+
+## 2026-06-05 22:35 — PUSH dev -> main
+CI: deploy-production success (run 27049566432); e2e-unlocked workflow success (skipped — VITE_TEST_UNLOCKED_* secrets not yet configured)
+DEPLOYMENTS: P134 (D73 — cost_per_request challenges + unlocked-E2E CI workflow)
