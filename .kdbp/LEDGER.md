@@ -4415,3 +4415,17 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P149
 Ships Fluidity P3a (33cb4bc): inspector + on-node declutter — strip "Inspector" label (block name is the title), remove Code/Details/Metrics/Data section-nav, labeled identity rows (Vendor/Tier/Cost), shortened on-node lock notice. Recorded D82 (one shared disclosure tier — progression-driven in quests, manual in free mode → Phase 3c) + D83 (Test Conditions = failures only, drop demand scenarios → Phase 3b). D23 logged for dormant connection-inspection + the 3 touched section-nav specs. Next: Phase 3b (drop demand scenarios + verify failures).
+- 2026-06-07 15:11 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TestConditionsPanel.tsx
+- 2026-06-07 15:11 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TestConditionsPanel.tsx
+- 2026-06-07 15:11 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TestConditionsPanel.tsx
+- 2026-06-07 15:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlExporter-failure.test.ts
+- 2026-06-07 15:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/TestConditionsPanel.test.tsx
+- 2026-06-07 15:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/TestConditionsPanel.test.tsx
+- 2026-06-07 15:16 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/TestConditionsPanel.test.tsx
+
+## 2026-06-07 14:55 — PUSH dev -> main (P150)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P150
+Ships Fluidity P3b (be6c924): Test Conditions = failures only — demand scenarios retired (UI + 6 YAMLs + ScenarioSelector + cascade), failures kept + verified. Suite 4826 green. Phase 3 progress: 3a (inspector declutter) + 3b (Test Conditions trim) shipped; 3c (progression-driven disclosure tier + tooltip journeys, per D82) remains — the big cross-cutting piece, awaiting the user's go-ahead to plan/build. D23 tracks the dormant desktop specs touched by 3a/3b.
