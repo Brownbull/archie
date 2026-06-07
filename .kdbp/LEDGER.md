@@ -4315,3 +4315,14 @@ HTML_ARTIFACT: none
 - 2026-06-07 12:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
 - 2026-06-07 12:30 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/metric-filter-and-recommendations.spec.ts
 - 2026-06-07 12:30 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/metric-filter-and-recommendations.spec.ts
+- 2026-06-07 12:33 | Write | /tmp/fluidity-p1-msg.txt
+
+## 2026-06-07 12:25 — [d1238e8] feat(ux): Fluidity P1 — block tunes, panel teaches
+Phase 1 of the Fluidity plan. The canvas block is now the single tuning surface: added NodeConfigSelect (config-tier picker) next to the vendor switch on ArchieNode, both D20-gated for a locked traffic source. The inspector (ComponentDetail) is read-only learning — removed ComponentSwapper + ConfigSelector + the inspector TrafficNodeControls; InspectorPanel drops the swap/variant handlers; the economics cost-delta still updates live (reads the store regardless of edit origin). Connectors were already read-only → consistent panel=read / block=tune. Tests: new NodeConfigSelect unit test + ComponentDetail read-only contract; 12 desktop-project E2E specs + the shared config-recalc helper redirected from inspector tuners to the on-node controls (tsc-validated + reviewed; the desktop E2E project is NOT CI-gated and NOT runnable in this env, so NOT runtime-verified — flagged for a desktop-E2E validation pass). Verified CI-safe: no *.unlocked (CI-gated) spec touches the removed inspector testids. Full unit/integration suite green, tsc + lint clean. PLAN Phase 1 Exec + Commit ticked (Review/Push pending).
+
+## 2026-06-07 16:40 — PUSH dev -> main (P144)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay (3m57s) + Deploy Production (52s) both green
+PROMOTION: N/A
+DEPLOYMENTS: P144
+Ships Fluidity P1 (d1238e8): block tunes / panel teaches. Also carries the P143 bookkeeping commit 6981bad onto main. PLAN Phase 1 Exec+Commit+Push ✅ (Review pending — the desktop-E2E redirects are flagged for a runtime validation pass when that env is available).
