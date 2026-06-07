@@ -22,8 +22,8 @@ of asking the player to reconcile knobs scattered across canvas, inspector, and 
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | One tuning surface (block tunes, panel teaches) | Block is the complete control set (vendor + config-variant + replicas + traffic); the right-panel inspector becomes read-only learning. De-duplicate the canvas<->inspector tuners. | ent | high | ✅ | ⬜ | ✅ | ✅ |
-| 2 | Declutter the score footer in place | Footer keeps tier + budget + aggregate grade + the single weakest category + a "more" that opens the existing overlay; the 7 inline category bars move into the overlay. | ent | med | ✅ | ⬜ | ✅ | ✅ |
+| 1 | One tuning surface (block tunes, panel teaches) | Block is the complete control set (vendor + config-variant + replicas + traffic); the right-panel inspector becomes read-only learning. De-duplicate the canvas<->inspector tuners. | ent | high | ✅ | ✅ | ✅ | ✅ |
+| 2 | Declutter the score footer in place | Footer keeps tier + budget + aggregate grade + the single weakest category + a "more" that opens the existing overlay; the 7 inline category bars move into the overlay. | ent | med | ✅ | ✅ | ✅ | ✅ |
 | 3 | Knowledge propagation + progressive unlock journey (deferred) | Evolve inspector depth from manual experience-level into a challenge-progression gate (keep a manual override) + section-unlock narrative + tooltips; bottom performance stays ungated. | scale | high | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec is written by /gabe-execute: ⬜ not started, 🔄 in progress, ✅ complete -->

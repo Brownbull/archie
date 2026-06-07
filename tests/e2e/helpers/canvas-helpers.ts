@@ -1,6 +1,35 @@
 import { type Page, expect } from "@playwright/test"
 
 /**
+ * Seed the persisted experience level to "advanced" BEFORE the app loads (D22). The default is
+ * "beginner", which hides the inspector's progressive-disclosure sections (gains/costs/metrics/code)
+ * and gates the toolbox — so specs that assert those sections must run at advanced. Merges into the
+ * existing `archie-preferences` localStorage (preserving tourSeen) on every navigation, mirroring the
+ * tourSeen seed in unlocked-setup. Call in beforeEach BEFORE page.goto().
+ */
+export async function useAdvancedLevel(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    // Fresh test state: clear any autosaved canvas so each test starts empty (the desktop project reuses
+    // one storageState, so a prior test's placed-then-autosaved nodes would otherwise leak in).
+    try {
+      localStorage.removeItem("archie-canvas-autosave")
+    } catch {
+      /* ignore */
+    }
+    const KEY = "archie-preferences"
+    let parsed: { state?: Record<string, unknown>; version?: number } = {}
+    try {
+      const raw = localStorage.getItem(KEY)
+      if (raw) parsed = JSON.parse(raw)
+    } catch {
+      parsed = {}
+    }
+    const state = { ...(parsed.state ?? {}), experienceLevel: "advanced", tourSeen: true }
+    localStorage.setItem(KEY, JSON.stringify({ state, version: parsed.version ?? 0 }))
+  })
+}
+
+/**
  * Wait for the component library to finish loading.
  * Returns true if components were loaded, false if empty state.
  */
