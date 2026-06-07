@@ -4340,3 +4340,16 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P145
 Ships Fluidity P2 (28408c2): score-footer declutter in place. Carries the P144 bookkeeping 257e62e onto main. PLAN Phase 2 Exec+Commit+Push ✅ (Review pending — folded into PENDING D21 desktop-E2E validation pass). Fluidity Phases 1+2 shipped; Phase 3 (knowledge propagation + progressive unlock journey) remains DEFERRED per the user.
+- 2026-06-07 13:07 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 13:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/vendor-links.spec.ts
+- 2026-06-07 13:16 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-types.spec.ts
+
+## 2026-06-07 13:25 — [f1d0712] test(e2e): D21 validation pass — P1 redirects validated + fixed
+Ran D21 against the isolated desktop E2E project (runnable in isolation; the earlier 545 failures were contention). Fixed 3 real Phase-1 redirect bugs: inspector-and-config helper invented-testid (add-to-canvas-node-express → add-type-compute), vendor-links DOM-hack swap → native Playwright click on archie-node-provider, component-types placement via hidden toolbox card → add-type-cdn. Confirmed passing: AC-2 config dropdown, decision-support + component-types in-node provider swap, vendor-links EXISTING vendors. Remaining desktop failures are PRE-EXISTING rot (verified: pre-Phase-1 spec failed AC-1/AC-4/delete identically) — beginner-level default hiding disclosure sections, toolbox add-to-canvas/type-group structure, collapse/delete, new-vendor seed drift — tracked in PENDING D22 (desktop E2E rehab) + the P2 scoring-dashboard footer rework. PENDING D21 resolved. PLAN Fluidity P1+P2 Review ticked → both phases COMPLETE (Exec+Review+Commit+Push all ✅). CI unaffected (vitest + desktop-unlocked).
+
+## 2026-06-07 13:28 — PUSH dev -> main (P146)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P146
+Ships the D21 validation-pass fixes (f1d0712). Carries the P145 bookkeeping 431c04f onto main. Fluidity P1+P2 COMPLETE; remaining desktop-E2E rehab tracked in PENDING D22.
