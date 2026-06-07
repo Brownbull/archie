@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { getPanelGuide, visiblePoints, type PanelGuide } from "@/lib/panelGuides"
+import { getPanelGuide, visiblePoints, FULL_JOURNEY, type PanelGuide } from "@/lib/panelGuides"
 
 const ALL_IDS = ["toolbox", "inspector", "optimize", "tier"]
 
@@ -74,6 +74,29 @@ describe("panelGuides (P89/Phase B)", () => {
     expect(i).toBeLessThanOrEqual(a)
     // Advanced sees every point.
     expect(a).toBe(g.points.length)
+  })
+
+  it("the full journey is a curated cross-region walk anchored to real testids", () => {
+    expect(FULL_JOURNEY.length).toBeGreaterThanOrEqual(6)
+    // Opens with a centered intro (no anchor), then walks each region.
+    expect(FULL_JOURNEY[0]?.selector).toBeUndefined()
+    const selectors = FULL_JOURNEY.map((s) => s.selector ?? "").join(" ")
+    for (const anchor of [
+      "toolbox",
+      "canvas",
+      "archie-node-provider", // on-block tuning (tier-gated → DOM-filtered when locked)
+      "inspector-panel",
+      "test-conditions",
+      "dashboard",
+      "tier-badge",
+    ]) {
+      expect(selectors).toContain(anchor)
+    }
+    for (const s of FULL_JOURNEY) {
+      expect(s.title.length).toBeGreaterThan(0)
+      expect(s.body.length).toBeGreaterThan(0)
+      if (s.selector !== undefined) expect(s.selector).toMatch(/data-testid/)
+    }
   })
 
   it("a point with no minLevel always shows (even at beginner)", () => {

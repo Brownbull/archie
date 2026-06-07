@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { usePreferencesStore } from "@/stores/preferencesStore"
+import { useTourStore } from "@/stores/tourStore"
 
 describe("SettingsMenu", () => {
   beforeEach(() => {
@@ -115,5 +116,18 @@ describe("SettingsMenu", () => {
     await user.click(screen.getByTestId("settings-menu-trigger"))
     await user.click(screen.getByTestId("icon-set-official"))
     expect(usePreferencesStore.getState().iconSet).toBe("official")
+  })
+
+  it("'Take the full tour' starts the cross-region journey (P3)", async () => {
+    useTourStore.setState({ steps: null })
+    const user = userEvent.setup()
+    render(<SettingsMenu />)
+    await user.click(screen.getByTestId("settings-menu-trigger"))
+    await user.click(screen.getByTestId("full-tour"))
+    const steps = useTourStore.getState().steps
+    expect(steps).not.toBeNull()
+    // The launcher filters to on-screen anchors; in jsdom only the anchorless intro resolves, so the
+    // journey starts with it. (Region coverage of FULL_JOURNEY is asserted in panelGuides.test.)
+    expect(steps?.[0]?.title).toBe("The full tour")
   })
 })

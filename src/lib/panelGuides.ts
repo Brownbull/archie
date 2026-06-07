@@ -104,6 +104,23 @@ const GUIDES: PanelGuide[] = [
   },
 ]
 
+/**
+ * Fluidity P3: the bespoke cross-region "full journey" — one curated walkthrough from picking blocks
+ * to reading the score, launchable from Settings ("Take the full tour"). The launcher filters steps to
+ * those whose anchor is on screen, so it's tier-aware: locked on-block tuning + an unselected inspector
+ * are skipped automatically, and a beginner sees a shorter lap than an advanced player.
+ */
+export const FULL_JOURNEY: TourStep[] = [
+  { title: "The full tour", body: "A quick guided lap of Archie — from picking blocks to reading your score. Anything you haven't unlocked or opened yet is skipped automatically." },
+  { title: "1 · Pick your blocks", body: "Everything starts here. Drag a building block onto the canvas, or click its +. Each block is a TYPE — you choose the exact vendor on the block itself.", selector: '[data-testid="toolbox"]' },
+  { title: "2 · Build on the canvas", body: "Drop blocks here and wire them together by dragging from a block's side handles. This is your architecture.", selector: '[data-testid="canvas"]' },
+  { title: "3 · Tune on the block", body: "Tune each block right here — vendor, configuration tier, replicas. In quests these reveal as you progress; in free mode they're all available.", selector: '[data-testid="archie-node-provider"]' },
+  { title: "4 · Learn in the right panel", body: "Select a block and this panel explains it — what it is, its trade-offs, metrics and cost. It's read-only: tuning stays on the block.", selector: '[data-testid="inspector-panel"]' },
+  { title: "5 · Stress-test it", body: "Inject a failure here, then run the simulation to see how your design holds up. Demand itself is set on the traffic-source block.", selector: '[data-testid="test-conditions"]' },
+  { title: "6 · Read your score", body: "The bottom bar scores your architecture live — tier, budget, and your weakest category. Open it for the full per-category breakdown.", selector: '[data-testid="dashboard"]' },
+  { title: "7 · Climb the tiers", body: "Your architecture maturity tier rises as you cover more concerns. Click it to see what the next tier needs.", selector: '[data-testid="tier-badge"]' },
+]
+
 // Map keeps the lookup clear of object-injection lint; unknown ids resolve to undefined.
 const GUIDE_MAP = new Map<string, PanelGuide>(GUIDES.map((g) => [g.id, g]))
 

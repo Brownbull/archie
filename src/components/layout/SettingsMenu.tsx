@@ -13,6 +13,8 @@ import {
 import { usePreferencesStore, type FontFamily, type IconSet } from "@/stores/preferencesStore"
 import type { ExperienceLevel } from "@/lib/componentTypes"
 import { useShortcutsDialog } from "@/components/help/shortcutsDialogStore"
+import { useTourStore } from "@/stores/tourStore"
+import { FULL_JOURNEY } from "@/lib/panelGuides"
 
 export function SettingsMenu() {
   const theme = usePreferencesStore((s) => s.theme)
@@ -26,6 +28,15 @@ export function SettingsMenu() {
   const setExperienceLevel = usePreferencesStore((s) => s.setExperienceLevel)
   const setIconSet = usePreferencesStore((s) => s.setIconSet)
   const setTourSeen = usePreferencesStore((s) => s.setTourSeen)
+  const startTour = useTourStore((s) => s.start)
+
+  // Full cross-region tour — walk only the steps whose anchor is currently on screen, so locked
+  // on-block tuning + an unselected inspector are skipped (tier/state-aware). Falls back to the full
+  // list if nothing resolves (e.g. launched before the app shell mounts).
+  const startFullJourney = () => {
+    const present = FULL_JOURNEY.filter((s) => !s.selector || document.querySelector(s.selector) != null)
+    startTour(present.length > 0 ? present : FULL_JOURNEY)
+  }
 
   return (
     <DropdownMenu>
@@ -142,6 +153,9 @@ export function SettingsMenu() {
 
         <DropdownMenuSeparator />
 
+        <DropdownMenuItem data-testid="full-tour" onSelect={startFullJourney}>
+          Take the full tour
+        </DropdownMenuItem>
         <DropdownMenuItem data-testid="restart-tour" onSelect={() => setTourSeen(false)}>
           Restart tour
         </DropdownMenuItem>
