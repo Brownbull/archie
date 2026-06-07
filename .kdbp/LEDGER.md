@@ -4453,3 +4453,14 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P152
 Ships Fluidity P3c-1b: vendor swap + replica stepper now disclose progressively in quests (intermediate+), free mode always shows them. Vendor → static label when gated; replicas → hidden at beginner quests (verified 1-replica-solvable). Suite 4833 green. Phase 3 status: 3a/3b/3c-1/3c-1b shipped. NEXT (user-approved): 3c-2 tooltip journeys — rebuild the STALE inspector panelGuide (still refs the removed component-swapper/config-selector) + a progression-aware journey.
+- 2026-06-07 17:55 | Edit | /home/khujta/projects/bmad/archie/src/lib/panelGuides.ts
+- 2026-06-07 17:55 | Edit | /home/khujta/projects/bmad/archie/src/lib/panelGuides.ts
+- 2026-06-07 17:55 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/GuidedTour.tsx
+- 2026-06-07 17:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/panelGuides.test.ts
+
+## 2026-06-07 16:05 — PUSH dev -> main (P153)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P153
+Ships Fluidity P3c-2 (ccaf856): tooltip journeys retuned to the current app (read-only inspector + tune-on-block, tier-aware via DOM-presence; toolbox + first-run tour de-staled). COMPLETES FLUIDITY PHASE 3 — 3a (inspector declutter, P149), 3b (Test Conditions = failures, P150), 3c-1/1b (progressive config/vendor/replica disclosure, P151/P152), 3c-2 (tooltip journeys, P153). PLAN Phase 3 ticked ✅✅✅✅. Whole Fluidity epic (P1+P2+P3) now shipped. Optional remaining: a bespoke cross-region full-journey tour. Dormant desktop-spec rehab tracked in D23.
