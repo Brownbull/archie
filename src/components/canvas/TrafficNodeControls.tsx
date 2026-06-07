@@ -79,9 +79,9 @@ function TrafficNodeControlsBase({ nodeId, data }: TrafficNodeControlsProps) {
       onPointerDown={(e) => e.stopPropagation()}
     >
       {locked && (
-        <div data-testid="traffic-locked-badge" className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[0.5625rem] leading-tight text-amber-300">
+        <div data-testid="traffic-locked-badge" className="flex items-center gap-1 rounded bg-amber-500/10 px-1.5 py-0.5 text-[0.5625rem] font-medium leading-tight text-amber-300" title="Demand is fixed by the challenge — reach 3★ to experiment freely">
           <Lock className="h-2.5 w-2.5 shrink-0" />
-          <span>Demand fixed by the challenge — reach 3★ to experiment</span>
+          <span>Reach 3★ to unlock</span>
         </div>
       )}
       <div className={locked ? "pointer-events-none flex flex-col gap-1 opacity-50" : "flex flex-col gap-1"} aria-disabled={locked}>

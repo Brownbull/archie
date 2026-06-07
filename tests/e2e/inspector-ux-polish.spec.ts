@@ -139,23 +139,9 @@ test.describe("Inspector UX Polish E2E (Story 4-6)", () => {
     await page.screenshot({ path: `${SCREENSHOT_DIR}/06-overlay-closed-via-escape.png`, fullPage: true })
   })
 
-  // -------------------------------------------------------------------------
-  // AC-6: Section nav (Code / Details / Metrics) visible for node selection
-  // -------------------------------------------------------------------------
-  test("AC-6: section nav buttons visible in inspector header for node selection", async ({ page }) => {
-    const hasComponents = await setupInspector(page)
-    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
-
-    const sectionNav = page.locator('[data-testid="inspector-section-nav"]')
-    await expect(sectionNav).toBeVisible()
-
-    // All three section anchor buttons must be present
-    await expect(sectionNav.getByText("Code")).toBeVisible()
-    await expect(sectionNav.getByText("Details")).toBeVisible()
-    await expect(sectionNav.getByText("Metrics")).toBeVisible()
-
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/07-section-nav-visible.png`, fullPage: true })
-  })
+  // AC-6 (Section nav) removed in Fluidity P3 — the Code/Details/Metrics/Data jump-tabs were deleted
+  // (they pointed at gated-empty sections at most experience levels). No replacement test: the sections
+  // themselves are covered by data-context.spec / inspector-and-config.spec.
 
   // -------------------------------------------------------------------------
   // AC-7: Width persists when switching selected node

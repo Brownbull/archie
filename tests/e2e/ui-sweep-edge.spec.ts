@@ -106,8 +106,10 @@ test.describe("UI sweep — edge cases & polish", () => {
     await page.locator('[data-testid="archie-node"]').first().click()
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 
-    for (const [label, file] of [["Metrics", "08-inspector-metrics"], ["Data", "09-inspector-data"]] as const) {
-      await page.locator('[data-testid="inspector-section-nav"]').getByText(label, { exact: true }).click()
+    // P3: section-nav removed — scroll each section into view directly (best-effort; sections are level
+    // gated). The real assertion below is that the inspector never overflows horizontally.
+    for (const [testid, file] of [["disclosure-metrics", "08-inspector-metrics"], ["data-context-section-trigger", "09-inspector-data"]] as const) {
+      await page.locator(`[data-testid="${testid}"]`).scrollIntoViewIfNeeded().catch(() => {})
       await page.waitForTimeout(400) // smooth scroll settle
       await page.screenshot({ path: `${SCREENSHOT_DIR}/${file}.png`, fullPage: true })
     }

@@ -82,8 +82,9 @@ export function InspectorPanel() {
       data-testid="inspector-panel"
       className="flex h-full flex-col"
     >
-      <div className="flex items-center justify-between border-b border-archie-border px-2 py-1.5">
-        <span className="text-xs font-medium text-text-primary">Inspector</span>
+      {/* Fluidity P3: no "Inspector" label — the selected block's own name (inspector-heading, below) is
+          the title. The header bar carries only the panel-size controls. */}
+      <div className="flex items-center justify-end border-b border-archie-border px-2 py-1.5">
         <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"
@@ -120,27 +121,8 @@ export function InspectorPanel() {
           </Button>
         </div>
       </div>
-      {selectedNodeId && !selectedEdgeId && (
-        <div
-          data-testid="inspector-section-nav"
-          className="flex gap-1 border-b border-archie-border px-2 py-1"
-        >
-          {(["code", "details", "metrics", "data"] as const).map((section) => (
-            <button
-              key={section}
-              type="button"
-              className="rounded px-1.5 py-0.5 text-[0.625rem] text-text-secondary hover:bg-surface hover:text-text-primary"
-              onClick={() => {
-                contentRef.current
-                  ?.querySelector(`[data-section="${section}"]`)
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
-              }}
-            >
-              {section.charAt(0).toUpperCase() + section.slice(1)}
-            </button>
-          ))}
-        </div>
-      )}
+      {/* Fluidity P3: removed the Code/Details/Metrics/Data section-nav — at most levels those sections
+          are gated/empty so the tabs jumped to nothing. The sections themselves remain in the scroll. */}
       <div ref={contentRef} data-testid="inspector-content" className="flex-1 overflow-hidden">
         {selectedEdgeId ? (
           <ConnectionDetail edgeId={selectedEdgeId} />

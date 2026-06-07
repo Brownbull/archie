@@ -18,7 +18,6 @@ import { DataContextPanel } from "@/components/inspector/DataContextPanel"
 import { DataSourceNote } from "@/components/common/DataSourceNote"
 import { BlockConceptLoop } from "@/components/common/BlockConceptLoop"
 import { PanelInfoButton } from "@/components/help/PanelInfoButton"
-import { formatRps, formatLatencyMs } from "@/lib/formatStats"
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
 import { InspectorDisclosure } from "@/components/inspector/InspectorDisclosure"
 import { ChevronDown, ChevronRight, ExternalLink, Trash2 } from "lucide-react"
@@ -209,7 +208,9 @@ export function ComponentDetail({
               )}
             </div>
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[0.6875rem] text-text-secondary">
+          {/* Fluidity P3: a labeled identity block (one fact per line) instead of one crammed row.
+              Throughput + latency now live only in the Economics section below (was duplicated here). */}
+          <div className="mt-1.5 space-y-1 text-[0.6875rem]">
             {categoryMeta && (
               <Badge
                 variant="outline"
@@ -219,31 +220,41 @@ export function ComponentDetail({
                 {categoryMeta.label}
               </Badge>
             )}
-            {/* Vendor lives here now that the heading is the logical type. */}
-            {typeLabel && <span data-testid="inspector-summary-provider" className="font-medium text-text-primary">{component.name}</span>}
-            {component.vendorUrl && (
-              <a
-                href={component.vendorUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                data-testid="inspector-vendor-link"
-                className="inline-flex items-center gap-0.5 text-blue-400 hover:text-blue-300"
-                title={`Visit ${component.name}`}
-              >
-                <ExternalLink className="h-2.5 w-2.5" />
-              </a>
+            {/* Vendor row — the chosen provider now that the heading is the logical type. */}
+            {typeLabel && (
+              <div className="flex items-center gap-1.5">
+                <span className="w-14 shrink-0 text-text-secondary">Vendor</span>
+                <span data-testid="inspector-summary-provider" className="font-medium text-text-primary">
+                  {component.name}
+                </span>
+                {component.vendorUrl && (
+                  <a
+                    href={component.vendorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="inspector-vendor-link"
+                    className="inline-flex items-center gap-0.5 text-blue-400 hover:text-blue-300"
+                    title={`Visit ${component.name}`}
+                  >
+                    <ExternalLink className="h-2.5 w-2.5" />
+                  </a>
+                )}
+              </div>
             )}
-            {activeVariant?.name && <span data-testid="inspector-summary-variant">{activeVariant.name}</span>}
-            <span data-testid="inspector-summary-cost" className="font-medium text-emerald-400">
-              {currentEconomics.monthlyCost === 0 ? "Free" : `$${currentEconomics.monthlyCost}/mo`}
-            </span>
-            {/* Throughput + latency alongside cost, so the summary carries all three at a glance. */}
-            {formatRps(currentEconomics.maxRPS) && (
-              <span data-testid="inspector-summary-rps">{formatRps(currentEconomics.maxRPS)}</span>
+            {activeVariant?.name && (
+              <div className="flex items-center gap-1.5">
+                <span className="w-14 shrink-0 text-text-secondary">Tier</span>
+                <span data-testid="inspector-summary-variant" className="text-text-primary">
+                  {activeVariant.name}
+                </span>
+              </div>
             )}
-            {formatLatencyMs(currentEconomics.baseLatencyMs) && (
-              <span data-testid="inspector-summary-latency">{formatLatencyMs(currentEconomics.baseLatencyMs)}</span>
-            )}
+            <div className="flex items-center gap-1.5">
+              <span className="w-14 shrink-0 text-text-secondary">Cost</span>
+              <span data-testid="inspector-summary-cost" className="font-medium text-emerald-400">
+                {currentEconomics.monthlyCost === 0 ? "Free" : `$${currentEconomics.monthlyCost}/mo`}
+              </span>
+            </div>
           </div>
         </div>
 

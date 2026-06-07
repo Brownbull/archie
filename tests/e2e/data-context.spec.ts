@@ -17,14 +17,13 @@ const SCREENSHOT_DIR = "test-results/data-context"
  * Data Context collapsible is expanded.
  */
 async function navigateToDataSection(page: Page): Promise<void> {
-  const sectionNav = page.locator('[data-testid="inspector-section-nav"]')
-  await expect(sectionNav).toBeVisible({ timeout: 3_000 })
-  await sectionNav.locator("button").filter({ hasText: "Data" }).click()
-  // Collapsible defaults to open, but click trigger if panel isn't visible
+  // P3: the inspector section-nav was removed — scroll to + open the Data Context disclosure directly.
+  const trigger = page.locator('[data-testid="data-context-section-trigger"]')
+  await trigger.scrollIntoViewIfNeeded()
+  await expect(trigger).toBeVisible({ timeout: 3_000 })
   const panel = page.locator('[data-testid="data-context-panel"]')
-  const isVisible = await panel.isVisible()
-  if (!isVisible) {
-    await page.locator('[data-testid="data-context-section-trigger"]').click()
+  if (!(await panel.isVisible())) {
+    await trigger.click()
     await expect(panel).toBeVisible({ timeout: 3_000 })
   }
 }

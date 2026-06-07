@@ -271,58 +271,17 @@ describe("InspectorPanel", () => {
     })
   })
 
-  describe("section anchor navigation (AC-6)", () => {
-    it("renders section nav when node is selected", () => {
+  describe("section nav removed (Fluidity P3)", () => {
+    it("no longer renders the Code/Details/Metrics/Data section nav", () => {
       useUiStore.setState({ selectedNodeId: "node-1" })
       useArchitectureStore.setState({ nodes: [mockNode] })
       mockGetComponentById.mockReturnValue(mockComponent)
 
       render(<InspectorPanel />)
-      expect(screen.getByTestId("inspector-section-nav")).toBeInTheDocument()
-    })
-
-    it("section nav has Code, Details, Metrics buttons", () => {
-      useUiStore.setState({ selectedNodeId: "node-1" })
-      useArchitectureStore.setState({ nodes: [mockNode] })
-      mockGetComponentById.mockReturnValue(mockComponent)
-
-      render(<InspectorPanel />)
-      expect(screen.getByText("Code")).toBeInTheDocument()
-      expect(screen.getByText("Details")).toBeInTheDocument()
-      expect(screen.getByText("Metrics")).toBeInTheDocument()
-    })
-
-    it("does not render section nav when edge is selected", () => {
-      useUiStore.setState({ selectedEdgeId: "edge-1", selectedNodeId: null })
-      useArchitectureStore.setState({ nodes: [mockNode], edges: [] })
-
-      render(<InspectorPanel />)
+      // P3: the section-nav was removed — the sections live in the scroll, not behind jump-tabs that
+      // pointed at gated-empty content at most experience levels.
       expect(screen.queryByTestId("inspector-section-nav")).not.toBeInTheDocument()
-    })
-
-    it("clicking section button calls scrollIntoView scoped to panel container (AC-ARCH-PATTERN-5)", () => {
-      useUiStore.setState({ selectedNodeId: "node-1" })
-      useArchitectureStore.setState({ nodes: [mockNode] })
-      mockGetComponentById.mockReturnValue(mockComponent)
-
-      render(<InspectorPanel />)
-
-      // Inject mock section element inside the panel's own content container
-      // so ref-scoped querySelector finds it (not document-global)
-      const contentContainer = screen.getByTestId("inspector-content")
-      const mockSection = document.createElement("div")
-      mockSection.setAttribute("data-section", "metrics")
-      mockSection.scrollIntoView = vi.fn()
-      contentContainer.appendChild(mockSection)
-
-      fireEvent.click(screen.getByText("Metrics"))
-
-      expect(mockSection.scrollIntoView).toHaveBeenCalledWith({
-        behavior: "smooth",
-        block: "start",
-      })
-
-      contentContainer.removeChild(mockSection)
+      expect(screen.queryByText("Code")).not.toBeInTheDocument()
     })
   })
 
