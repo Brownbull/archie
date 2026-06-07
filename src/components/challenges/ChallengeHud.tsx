@@ -15,13 +15,15 @@ export function ChallengeHud() {
   const challenge = useChallengeStore((s) => s.activeChallenge)
   const reset = useChallengeStore((s) => s.reset)
   const nodes = useArchitectureStore((s) => s.nodes)
+  const edges = useArchitectureStore((s) => s.edges)
   const [minimized, setMinimized] = useState(false)
   const [confirmExit, setConfirmExit] = useState(false)
 
   if (!challenge) return null
 
   const placed = new Set(nodes.map((n) => n.data.componentCategory))
-  const totalCost = computeTotalArchitectureCost(nodes)
+  // D74: on-path cost — the HUD budget readout excludes disconnected blocks, matching the scored cost.
+  const totalCost = computeTotalArchitectureCost(nodes, edges)
   const pct = challenge.budgetCap > 0 ? Math.min(100, (totalCost / challenge.budgetCap) * 100) : 0
   const overBudget = totalCost > challenge.budgetCap
   const budgetTier = overBudget ? "over" : pct >= 80 ? "warn" : "ok"

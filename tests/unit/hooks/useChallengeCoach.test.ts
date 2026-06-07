@@ -100,6 +100,20 @@ describe("useChallengeCoach (P88)", () => {
       expect(r.current?.detail).toContain("80.0%") // D74: shows measured-vs-target contrast
     })
 
+    it("addresses cost-per-request WITH the contrast when that's the only miss (SLOs all held)", () => {
+      // D74: a cost-efficiency miss is its own failure mode — must not fall through to "overloaded".
+      useChallengeStore.setState({
+        activeChallenge: makeChallenge({ targetMetrics: { uptimePercent: 99, p99LatencyMs: 200, costPerRequest: 0.5 } }),
+        attemptState: "scored",
+        lastResult: result({ stars: 0, passedMetrics: false }),
+        lastMeasured: measured({ uptimePercent: 100, p99LatencyMs: 50, costPerRequest: 0.9 }),
+      })
+      const { result: r } = renderHook(() => useChallengeCoach())
+      expect(r.current?.mode).toBe("iterate")
+      expect(r.current?.headline).toBe("Lower cost-per-request")
+      expect(r.current?.detail).toContain("0.9000") // measured-vs-target contrast
+    })
+
     it("cut latency when only p99 missed the target", () => {
       scoreWith({ stars: 0, passedMetrics: false }, { uptimePercent: 100, p99LatencyMs: 500 })
       const { result: r } = renderHook(() => useChallengeCoach())

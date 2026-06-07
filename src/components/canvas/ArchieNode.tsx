@@ -147,6 +147,16 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   const needsLB = useArchitectureStore((s) =>
     (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
   )
+  // Connectivity status (D74) — a node disconnected from the request path is dead weight: it no longer
+  // bills toward the budget star and never participates in the sim. Surfacing it on the node itself (not
+  // just the results modal) makes "I disconnected this and forgot" obvious at a glance. orphan = no edges
+  // at all; unreachable = wired into a stranded subgraph the traffic can't reach.
+  const topologyStatus = useArchitectureStore((s) => {
+    const issues = s.topologyIssuesByNodeId.get(id) ?? []
+    if (issues.some((iss) => iss.issueType === "orphan")) return "orphan"
+    if (issues.some((iss) => iss.issueType === "unreachable")) return "unreachable"
+    return "healthy"
+  })
   // "N backends" — only meaningful on a load-balancer-capable node; count its downstream targets.
   const backendCount = useArchitectureStore((s) =>
     scalingRule.actsAsLoadBalancer ? s.edges.filter((e) => e.source === id).length : 0,
@@ -216,6 +226,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   return (
     <div
       data-testid="archie-node"
+      data-topology-status={topologyStatus}
       data-compat-dimmed={isDimmed || undefined}
       data-compat-highlighted={isHighlighted || undefined}
       className={`group relative rounded-md border bg-panel shadow-sm transition-all duration-200 ${
@@ -240,6 +251,19 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       <NodeActionToolbar nodeId={id} />
 
       <ConstraintViolationBadge violationCount={violationCount} tooltipText={tooltipText} />
+
+      {topologyStatus !== "healthy" && (
+        <span
+          data-testid="node-topology-status"
+          data-status={topologyStatus}
+          title={topologyStatus === "orphan"
+            ? "Disconnected — no edges. It won't run or count toward cost until you wire it into the path."
+            : "Unreachable — stranded in a subgraph the traffic source can't reach. It won't run or count toward cost."}
+          className="absolute -top-2 left-2 z-10 rounded-full bg-red-500/90 px-1.5 py-0.5 text-[0.5625rem] font-bold text-white shadow"
+        >
+          {topologyStatus === "orphan" ? "disconnected" : "unreachable"}
+        </span>
+      )}
 
       {/* Save-as-default button (top-right, inside the card). Only for typed blocks — it persists
           a per-user provider+tier default for this block type. Hidden for pre-P5 typeless blocks. */}

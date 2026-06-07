@@ -1,0 +1,75 @@
+schema_version: 4.0.0
+name: production-ai — reference solution (D71 capstone proof)
+nodes:
+  - id: n-compute
+    component_id: node-express
+    config_variant_id: single-process
+    position:
+      x: 0
+      'y': 0
+    replicas: 1
+  - id: n-observability
+    component_id: prometheus
+    config_variant_id: standalone
+    position:
+      x: 220
+      'y': 0
+    replicas: 1
+  - id: n-llm-gateway
+    component_id: llm-gateway
+    config_variant_id: single-model
+    position:
+      x: 440
+      'y': 0
+    replicas: 2
+  - id: n-cache
+    component_id: redis
+    config_variant_id: standalone
+    position:
+      x: 660
+      'y': 0
+    replicas: 1
+  - id: n-cdn
+    component_id: cloudflare-cdn
+    config_variant_id: static-caching
+    position:
+      x: 880
+      'y': 0
+    replicas: 1
+  - id: n-traffic-0
+    component_id: web-users
+    config_variant_id: heavy
+    position:
+      x: 1100
+      'y': 0
+    replicas: 1
+    traffic_rps: 2000
+    traffic_workload: read
+  - id: n-traffic-1
+    component_id: web-users
+    config_variant_id: heavy
+    position:
+      x: 0
+      'y': 180
+    replicas: 1
+    traffic_rps: 1500
+    traffic_workload: read
+edges:
+  - id: e0
+    source_node_id: n-traffic-0
+    target_node_id: n-cdn
+  - id: e1
+    source_node_id: n-cdn
+    target_node_id: n-cache
+  - id: e2
+    source_node_id: n-cache
+    target_node_id: n-compute
+  - id: e3
+    source_node_id: n-compute
+    target_node_id: n-llm-gateway
+  - id: e4
+    source_node_id: n-traffic-1
+    target_node_id: n-cdn
+  - id: e5
+    source_node_id: n-compute
+    target_node_id: n-observability

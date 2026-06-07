@@ -141,6 +141,21 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(screen.getByTestId("challenge-results")).toHaveTextContent("2 disconnected nodes")
   })
 
+  it("renders 'unmeasured' (not 'Infinityms') for a consistency target with nothing to measure (D74)", () => {
+    const consistencyChallenge: Challenge = { ...challenge, consistencyTargetMs: 100 }
+    const result: StarBreakdown = { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true, resilient: false }
+    // No maxStalenessMs ⇒ the chip receives Infinity; it must read "unmeasured" in red, never "Infinityms".
+    const measured: MeasuredAttempt = { uptimePercent: 100, p99LatencyMs: 50, totalCost: 80, topologyIssueCount: 0 }
+    useChallengeStore.setState({ activeChallenge: consistencyChallenge, attemptState: "scored", lastResult: result, lastMeasured: measured })
+    render(<ChallengeResultsModal />)
+    const chip = document.querySelector('[data-metric-type="consistency"]')
+    expect(chip).not.toBeNull()
+    expect(chip?.textContent).toContain("unmeasured")
+    expect(chip?.textContent).not.toContain("Infinity")
+    expect(chip?.getAttribute("data-unmeasured")).toBe("true")
+    expect(chip?.getAttribute("data-pass")).toBe("false")
+  })
+
   it("shows the Resilient bonus badge when the build has no SPOF (D72)", () => {
     const result: StarBreakdown = { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true, resilient: true }
     const measured: MeasuredAttempt = { uptimePercent: 100, p99LatencyMs: 40, totalCost: 60, topologyIssueCount: 0 }

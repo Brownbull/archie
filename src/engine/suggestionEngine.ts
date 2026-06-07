@@ -104,7 +104,10 @@ function statsFor(
 ): { stats: SimulationStats; cost: number } {
   const graph = buildSimGraph(nodes, input.edges)
   const result = runSimulation(graph, input.curve, undefined, input.durationS, input.scheduledEvents)
-  return { stats: computeSimStats(result.ticks, result.ticks.length - 1), cost: computeTotalArchitectureCost(nodes) }
+  // D74: pass edges so a disconnected block doesn't bill — keeps the advisory cost-delta ranking in
+  // lockstep with the scorer (which also excludes off-path nodes), so suggestions never rank by a cost
+  // that counts capacity the sim treats as inert.
+  return { stats: computeSimStats(result.ticks, result.ticks.length - 1), cost: computeTotalArchitectureCost(nodes, input.edges) }
 }
 
 function nodeName(archieComponentId: string): string {

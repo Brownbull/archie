@@ -20,6 +20,11 @@ describe("metricTone (D74) — green pass / amber near / red fail", () => {
     expect(metricTone(95, 99, false, 1)).toEqual({ cls: "text-amber-400", pass: false }) // 95 ≥ 99×0.9=89.1
     expect(metricTone(70, 99, false, 1)).toEqual({ cls: "text-red-400", pass: false }) // 70 < 89.1
   })
+  it("non-finite measured (unmeasured factor, e.g. staleness with no read DB) ⇒ red fail", () => {
+    // The consistency chip passes Infinity when there's nothing on the path to measure staleness — it must
+    // never read as a pass (you can't claim a bound you never produced) and is rendered as "unmeasured".
+    expect(metricTone(Infinity, 100, true, 0)).toEqual({ cls: "text-red-400", pass: false })
+  })
   it("tone is computed AFTER rounding to display precision (no contradictory color)", () => {
     // 300.4 rounds to 300 at 0 digits → reads as pass, never red-but-shows-300
     expect(metricTone(300.4, 300, true, 0).pass).toBe(true)

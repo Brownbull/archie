@@ -75,6 +75,8 @@ export function useChallengeCoach(): CoachState | null {
         const p95Miss = t.p95LatencyMs !== undefined && lastMeasured.p95LatencyMs !== undefined && lastMeasured.p95LatencyMs > t.p95LatencyMs
         const consistencyMiss = challenge.consistencyTargetMs !== undefined
           && (lastMeasured.maxStalenessMs === undefined || lastMeasured.maxStalenessMs > challenge.consistencyTargetMs)
+        const costPerReqMiss = t.costPerRequest !== undefined
+          && (lastMeasured.costPerRequest === undefined || lastMeasured.costPerRequest > t.costPerRequest)
 
         if ((p99Miss || p95Miss) && !uptimeMiss) {
           const got = p99Miss ? Math.round(lastMeasured.p99LatencyMs) : Math.round(lastMeasured.p95LatencyMs!)
@@ -95,6 +97,19 @@ export function useChallengeCoach(): CoachState | null {
             detail: staleness === undefined
               ? `This challenge has a read-staleness budget of ${challenge.consistencyTargetMs}ms, but your build has no read-replicated database on the path. Add one and pick a synchronous / low-lag variant.`
               : `Read staleness hit ${Math.round(staleness)}ms — you're aiming for ≤ ${challenge.consistencyTargetMs}ms. Switch to a synchronous / low-replication-lag database variant (costs more, keeps reads fresh).`,
+          }
+        }
+        // D74: a cost-efficiency miss is its OWN failure mode (the build holds the SLOs but spends too much
+        // per request) — give it the same measured-vs-target contrast, not a misleading "overloaded" note.
+        if (costPerReqMiss && !uptimeMiss && !p99Miss && !p95Miss && !consistencyMiss) {
+          const got = lastMeasured.costPerRequest
+          return {
+            mode: "iterate",
+            modeLabel: "Iterate",
+            headline: "Lower cost-per-request",
+            detail: got === undefined
+              ? `Cost-per-request is over the ${t.costPerRequest} $/M-req target — swap a node to a cheaper vendor or lower tier, or raise the cache hit-ratio so fewer requests reach the expensive origin.`
+              : `Cost-per-request came in at ${got.toFixed(4)} $/M-req — you're aiming for ≤ ${t.costPerRequest}. Swap a node to a cheaper vendor or lower tier, or front it with a cache/CDN so fewer requests hit the costly origin.`,
           }
         }
         // LX2 (D74): name the culprit tier + the uptime contrast instead of a generic "something's overloaded".

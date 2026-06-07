@@ -42,6 +42,7 @@ export function SimulationStatsSidePanel() {
   const durationS = useSimulationStore((s) => s.durationS)
   const tickState = useSimulationStore(getCurrentTickState)
   const nodes = useArchitectureStore((s) => s.nodes)
+  const edges = useArchitectureStore((s) => s.edges)
   const activeScenarioId = useArchitectureStore((s) => s.activeScenarioId)
   const activeFailureScenarioId = useArchitectureStore((s) => s.activeFailureScenarioId)
   const budgetCap = useChallengeStore((s) => s.activeChallenge?.budgetCap ?? null)
@@ -49,7 +50,9 @@ export function SimulationStatsSidePanel() {
   const [metric, setMetric] = useState<BlockMetric>("rps")
 
   const stats = useMemo(() => computeSimStats(ticks, currentTick), [ticks, currentTick])
-  const monthlyCost = useMemo(() => computeTotalArchitectureCost(nodes), [nodes])
+  // D74: on-path cost — the live cost readout must match the scored cost (disconnected blocks excluded),
+  // so a player who disconnects a block sees the cost drop here too, not a figure that still counts it.
+  const monthlyCost = useMemo(() => computeTotalArchitectureCost(nodes, edges), [nodes, edges])
   const nameById = useMemo(
     () => new Map(nodes.map((n) => [n.id, n.data.componentName])),
     [nodes],

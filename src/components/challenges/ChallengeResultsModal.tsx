@@ -120,10 +120,18 @@ function MetricChip({ type, label, measured, target, unit, goodWhenLower, digits
   type: string; label: string; measured: number; target: number; unit: string; goodWhenLower: boolean; digits: number
 }) {
   const tone = metricTone(measured, target, goodWhenLower, digits)
+  // A non-finite measured value means the factor was never produced (e.g. staleness with no read-replicated
+  // DB on the path ⇒ Infinity). Render "unmeasured" with a why-tooltip instead of the raw "Infinityms" string,
+  // and keep it red (metricTone already fails Infinity) — you can't claim a bound you never measured (D74).
+  const unmeasured = !Number.isFinite(measured)
+  const measuredLabel = unmeasured ? "unmeasured" : `${measured.toFixed(digits)}${unit}`
+  const title = unmeasured
+    ? `${label} is unmeasured — your build has no read-replicated database on the served path, so it can't produce a ${label} bound. Add one (a synchronous / low-lag variant) to measure it. Target ≤ ${target}${unit}.`
+    : `measured ${measured.toFixed(digits)}${unit} vs target ${target}${unit}`
   return (
-    <span data-metric-type={type} data-pass={tone.pass} className="whitespace-nowrap" title={`measured ${measured.toFixed(digits)}${unit} vs target ${target}${unit}`}>
+    <span data-metric-type={type} data-pass={tone.pass} data-unmeasured={unmeasured || undefined} className="whitespace-nowrap" title={title}>
       <span className="text-text-secondary">{label} </span>
-      <span className={`font-semibold ${tone.cls}`}>{measured.toFixed(digits)}{unit}</span>
+      <span className={`font-semibold ${tone.cls}`}>{measuredLabel}</span>
       <span className="text-text-secondary">/{target}{unit}</span>
     </span>
   )

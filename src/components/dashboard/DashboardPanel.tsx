@@ -16,9 +16,11 @@ import { AlertTriangle, Maximize2 } from "lucide-react"
 
 export function DashboardPanel() {
   const nodes = useArchitectureStore((s) => s.nodes)
+  const edges = useArchitectureStore((s) => s.edges)
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
   const constraintViolationCount = useArchitectureStore((s) => s.constraintViolations).length
-  const totalCost = useMemo(() => computeTotalArchitectureCost(nodes), [nodes])
+  // D74: on-path cost — a placed-then-disconnected block shouldn't inflate the preview budget either.
+  const totalCost = useMemo(() => computeTotalArchitectureCost(nodes, edges), [nodes, edges])
   const {
     categoryScores,
     aggregateScore,
