@@ -4222,3 +4222,29 @@ CI: ✅ E2E unlocked replay (3m35s) + Deploy Production (59s) both green — the
 PROMOTION: N/A
 DEPLOYMENTS: P141
 Ships the D74 trilogy: WS1 (ec476c1) on-path cost so a disconnected block no longer bills the budget star + WS2 (28846ff) measured-vs-target chips + green/amber/red coloring + WS3 (da1e1f4) on-canvas disconnect badge, edges threaded into all 4 remaining cost readouts, Infinity→"unmeasured" chip, cost-per-request coach branch, and a data-driven tier-3+tier-4 disconnect E2E. Suite 4836.
+- 2026-06-07 11:07 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-07 11:07 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/Toolbar.tsx
+- 2026-06-07 11:07 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-07 11:07 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-07 11:09 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationBar.tsx
+- 2026-06-07 11:09 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/PlaybackControls.tsx
+- 2026-06-07 11:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/Toolbar.test.tsx
+- 2026-06-07 11:10 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/Toolbar.test.tsx
+- 2026-06-07 11:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/Toolbar.test.tsx
+- 2026-06-07 11:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/simulation/SimulationBar.test.tsx
+- 2026-06-07 11:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/simulation/SimulationBar.test.tsx
+- 2026-06-07 11:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-07 11:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-07 11:12 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-07 11:13 | Write | /home/khujta/projects/bmad/archie/tests/e2e/quest-switch.unlocked.spec.ts
+- 2026-06-07 11:16 | Write | /tmp/nav-commit-msg.txt
+
+## 2026-06-07 11:16 — [a481438] feat(navigation): switch quests from the title + close nav dead-ends
+Navigation/UX gap fixes from a workflow audit (user request). (1) The active-quest toolbar title is now a switch-quest button → opens the quest menu (questLogOpen tree) so you can jump quests mid-flight without exiting to Free Mode (the Build menu is hidden + the Quest toggle is a no-op while in a quest). Submitted runs stay persisted (attempts + best-stars/XP); the in-progress build is discarded on switch (tree start flow confirms canvas clear). (2) Results modal: 0★ runs get a neutral "Quest menu" button (result-quest-menu) opening the tree — no more close→exit→reopen dead-end; >0★ keeps the gold Next Quest CTA (shared openQuestMenu handler). (3) SimulationBar sim-close labeled "Exit"; replay control gains a visible "Replay" label when done (icon-only during live playback). Tests: Toolbar + SimulationBar + ResultsModal unit + new quest-switch.unlocked.spec.ts E2E (proves the title opens the menu mid-quest). Full suite 4843, tsc + lint clean. Audit confirmed start/exit/repeat-sim + free↔quest toggles already had affordances (no gap).
+
+## 2026-06-07 15:21 — PUSH dev -> main (P142)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay (3m37s) + Deploy Production (48s) both green
+PROMOTION: N/A
+DEPLOYMENTS: P142
+Ships navigation/UX gap fixes (a481438): switch-quest title → quest menu mid-flight, 0★ results Quest-menu button, labeled sim Exit + done-state Replay. Also carries the P141 bookkeeping commit ab1b42a onto main. Suite 4843, CI green.
