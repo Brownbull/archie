@@ -1,0 +1,21 @@
+schema_version: 4.0.0
+name: connection-inspection — minimal 2-node, 1-edge build (D23)
+nodes:
+  - id: n-a
+    component_id: node-express
+    config_variant_id: single-process
+    position:
+      x: 0
+      'y': 0
+    replicas: 1
+  - id: n-b
+    component_id: node-express
+    config_variant_id: single-process
+    position:
+      x: 280
+      'y': 0
+    replicas: 1
+edges:
+  - id: e0
+    source_node_id: n-a
+    target_node_id: n-b

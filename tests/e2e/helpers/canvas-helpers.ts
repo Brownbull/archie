@@ -168,32 +168,28 @@ export async function expandInspectorSection(page: Page, testId: string): Promis
 }
 
 /**
- * Place two components on the canvas using drag-and-drop.
- * Drops the first card at 30% canvas width and the second at 70%.
- * Returns the number of nodes placed (0 if fewer than 2 component cards available).
+ * Place two components on the canvas at distinct positions (30% / 65% width), ready to connect.
+ * D23: drops two known base components via the drop event directly (dragComponentToCanvas takes a
+ * componentId and a position) — the toolbox redesign removed the `component-card-*` grid from the
+ * default view, so reading card ids from the DOM no longer works. Returns the number of nodes placed.
  */
 export async function placeTwoComponents(page: Page): Promise<number> {
   const canvasPanel = page.locator('[data-testid="canvas-panel"]')
   const canvasBounds = await canvasPanel.boundingBox()
   if (!canvasBounds) throw new Error("canvas-panel not found")
 
-  const cards = page.locator('[data-testid^="component-card-"]')
-  if ((await cards.count()) < 2) return 0
-
-  const firstTestId = await cards.nth(0).getAttribute("data-testid")
   await dragComponentToCanvas(
     page,
-    firstTestId!.replace("component-card-", ""),
+    "node-express",
     canvasBounds.x + canvasBounds.width * 0.3,
     canvasBounds.y + canvasBounds.height / 2,
   )
   await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
 
-  const secondTestId = await cards.nth(1).getAttribute("data-testid")
   await dragComponentToCanvas(
     page,
-    secondTestId!.replace("component-card-", ""),
-    canvasBounds.x + canvasBounds.width * 0.7,
+    "postgresql",
+    canvasBounds.x + canvasBounds.width * 0.65,
     canvasBounds.y + canvasBounds.height / 2,
   )
   await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
