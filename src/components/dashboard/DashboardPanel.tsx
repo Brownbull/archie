@@ -35,6 +35,16 @@ export function DashboardPanel() {
     [categoryScores],
   )
 
+  // Fluidity P2 (D80): the footer shows only the WEAKEST category inline — the single most actionable
+  // "where to improve next" signal — instead of cramming all 7 bars into a 100px strip. The full
+  // per-category breakdown lives one click away in the expand overlay.
+  const weakest = useMemo(() => {
+    if (categoriesWithData.length === 0) return null
+    const lowest = categoriesWithData.reduce((min, cs) => (cs.score < min.score ? cs : min), categoriesWithData[0])
+    const meta = CATEGORY_LOOKUP.get(lowest.categoryId)
+    return meta ? { cs: lowest, meta } : null
+  }, [categoriesWithData])
+
   const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
   const [overlayInitialSection, setOverlayInitialSection] = useState<"pathway" | null>(null)
@@ -77,33 +87,32 @@ export function DashboardPanel() {
 
           <div className="self-stretch border-r border-archie-border" />
 
-          <div className="flex flex-1 items-center overflow-x-auto px-2">
-            {categoriesWithData.map((cs) => {
-              const catMeta = CATEGORY_LOOKUP.get(cs.categoryId)
-              if (!catMeta) return null
-
-              return (
+          <div data-testid="dashboard-weakest" className="flex flex-1 items-center gap-1.5 overflow-hidden px-2">
+            {weakest && (
+              <>
+                <span className="shrink-0 text-[0.625rem] font-medium uppercase tracking-wide text-text-secondary/70">
+                  Weakest
+                </span>
                 <CategoryInfoPopup
-                  key={cs.categoryId}
-                  category={componentLibrary.getMetricCategory(cs.categoryId)}
-                  score={cs.score}
-                  open={infoCategoryId === cs.categoryId}
+                  category={componentLibrary.getMetricCategory(weakest.cs.categoryId)}
+                  score={weakest.cs.score}
+                  open={infoCategoryId === weakest.cs.categoryId}
                   onOpenChange={(open) =>
-                    setInfoCategoryId(open ? cs.categoryId : null)
+                    setInfoCategoryId(open ? weakest.cs.categoryId : null)
                   }
                 >
                   <CategoryBar
-                    categoryId={cs.categoryId}
-                    shortName={catMeta.shortName}
-                    iconName={catMeta.iconName}
-                    categoryColor={catMeta.color}
-                    score={cs.score}
-                    weight={weightProfile[cs.categoryId]}
-                    onClick={() => setInfoCategoryId(cs.categoryId)}
+                    categoryId={weakest.cs.categoryId}
+                    shortName={weakest.meta.shortName}
+                    iconName={weakest.meta.iconName}
+                    categoryColor={weakest.meta.color}
+                    score={weakest.cs.score}
+                    weight={weightProfile[weakest.cs.categoryId]}
+                    onClick={() => setInfoCategoryId(weakest.cs.categoryId)}
                   />
                 </CategoryInfoPopup>
-              )
-            })}
+              </>
+            )}
           </div>
 
           <div className="self-stretch border-r border-archie-border" />
@@ -119,15 +128,18 @@ export function DashboardPanel() {
             </span>
           )}
 
+          {/* The "more" affordance (D80): opens the full per-category breakdown overlay. Labeled with the
+              category count so it's clear the rest of the scores live behind it. */}
           <Button
             data-testid="dashboard-expand-button"
             variant="ghost"
             size="sm"
-            className="mx-1 shrink-0"
+            className="mx-1 shrink-0 gap-1 text-xs"
             onClick={() => setIsOverlayOpen(true)}
-            aria-label="Expand dashboard"
+            aria-label="Open the full score breakdown"
           >
             <Maximize2 className="h-3.5 w-3.5" />
+            All {categoriesWithData.length}
           </Button>
         </>
       )}

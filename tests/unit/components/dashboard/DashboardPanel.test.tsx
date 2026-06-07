@@ -169,16 +169,16 @@ describe("DashboardPanel", () => {
       ],
     ])
 
-    it("renders category bars for categories with data", () => {
-      mockPopulatedStore(metrics)
+    it("renders only the WEAKEST category bar inline (D80) — the rest live in the expand overlay", () => {
+      mockPopulatedStore(metrics) // performance=(8+6)/2=7 (weakest), reliability=9
       render(<DashboardPanel />)
 
-      expect(
-        screen.getByTestId("category-bar-performance"),
-      ).toBeInTheDocument()
-      expect(
-        screen.getByTestId("category-bar-reliability"),
-      ).toBeInTheDocument()
+      // The single weakest category is shown inline under a "Weakest" label (the actionable signal)…
+      expect(screen.getByTestId("dashboard-weakest")).toBeInTheDocument()
+      expect(screen.getByText("Weakest")).toBeInTheDocument()
+      expect(screen.getByTestId("category-bar-performance")).toBeInTheDocument()
+      // …the stronger category is NOT crammed into the footer — it's one click away in the overlay.
+      expect(screen.queryByTestId("category-bar-reliability")).not.toBeInTheDocument()
     })
 
     it("does not render bars for categories without data", () => {
