@@ -29,6 +29,7 @@ import { TrafficNodeControls } from "@/components/canvas/TrafficNodeControls"
 import { formatRps } from "@/lib/formatStats"
 import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
 import { NodeConfigSelect } from "@/components/canvas/NodeConfigSelect"
+import { useDisclosureTier } from "@/hooks/useDisclosureTier"
 import { Gauge } from "lucide-react"
 
 const PORT_HEIGHT_PX = 20
@@ -148,6 +149,8 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // D20: a challenge traffic source is the fixed problem statement until 3★ — gate the in-node vendor
   // switcher too (the demand controls already lock in TrafficNodeControls), so it can't be swapped while locked.
   const trafficLocked = useChallengeStore((st) => isChallengeMode(st) && (st.bestStars[st.activeChallenge?.id ?? ""] ?? 0) < 3)
+  // Fluidity P3c (D84): vendor/config/replica controls disclose progressively in quests.
+  const { showOnNodeConfig } = useDisclosureTier()
   const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)
   const needsLB = useArchitectureStore((s) =>
     (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
@@ -356,7 +359,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
         >
           {isTraffic ? (
             <TrafficNodeControls nodeId={id} data={data} />
-          ) : scalingRule.scalable ? (
+          ) : scalingRule.scalable && showOnNodeConfig ? (
             <div
               className="flex items-center overflow-hidden rounded border border-archie-border bg-surface"
               onClick={(e) => e.stopPropagation()}

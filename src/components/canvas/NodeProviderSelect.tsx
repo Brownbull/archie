@@ -9,6 +9,7 @@ import {
 import { componentLibrary } from "@/services/componentLibrary"
 import { providersForComponent } from "@/lib/componentTypes"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useDisclosureTier } from "@/hooks/useDisclosureTier"
 import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { formatVariantStats } from "@/lib/formatStats"
 import type { ComponentCategoryId } from "@/lib/constants"
@@ -35,6 +36,7 @@ interface NodeProviderSelectProps {
  */
 function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: NodeProviderSelectProps) {
   const swapNodeComponent = useArchitectureStore((s) => s.swapNodeComponent)
+  const { showOnNodeConfig } = useDisclosureTier()
   const component = componentLibrary.getComponent(componentId)
   const name = component?.name ?? componentId
 
@@ -43,8 +45,10 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
     [component],
   )
 
-  // Single (or no) provider → just show the vendor + variant, no dropdown.
-  if (providers.length <= 1) {
+  // Single (or no) provider → just the vendor + variant label, no dropdown. Fluidity P3c (D84): the
+  // vendor swap also discloses progressively in quests — when gated, fall back to the same static label
+  // (the vendor stays visible, just not changeable). Always interactive in free mode.
+  if (providers.length <= 1 || !showOnNodeConfig) {
     return (
       <div data-testid="archie-node-variant" className="flex items-center gap-1.5 px-3 pb-0.5">
         <ComponentIcon componentId={componentId} category={category} className="h-4 w-4 shrink-0" />
