@@ -182,14 +182,29 @@ describe("simulateTick — routing + capacity", () => {
     })
   })
 
-  describe("fractional AZ outage (ED2)", () => {
-    it("a node serves its surviving AZ fraction during an az_outage (was 0 pre-D74)", () => {
+  describe("fractional AZ outage (ED2) + cascade (EN3)", () => {
+    it("a partial-AZ survivor serves cf/retryMultiplier — the EN3 thundering-herd crowds the survivor", () => {
       const g: SimGraph = { nodes: [node("c", 1000)], edges: [] }
       const ov = { offlineNodeIds: new Set<string>(), latencyMultipliers: new Map<string, number>(), capacityFactors: new Map([["c", 2 / 3]]) }
       const t = tel(simulateTick(g, 0, 900, ov), "c")
-      expect(t.servedRps).toBeCloseTo(667, 0) // 1000 × 0.667 surviving capacity (was fully offline → 0)
-      expect(t.failedRps).toBeCloseTo(233, 0)
-      expect(t.overloaded).toBe(true) // 900 incoming > 667 surviving
+      // ED2: survives at 2/3 (was 0 pre-D74). EN3 (unmonitored ⇒ ÷2 retry overhead): 0.667/2 ⇒ 1/3 served.
+      expect(t.servedRps).toBeCloseTo(1000 / 3, 0)
+      expect(t.overloaded).toBe(true)
+    })
+
+    it("a breaker neighbor (observability) DAMPS the cascade — the survivor keeps far more capacity", () => {
+      const g: SimGraph = { nodes: [node("c", 1000)], edges: [] }
+      const base = { offlineNodeIds: new Set<string>(), latencyMultipliers: new Map<string, number>(), capacityFactors: new Map([["c", 2 / 3]]) }
+      const undamped = tel(simulateTick(g, 0, 900, base), "c").servedRps // ÷2 ⇒ 333
+      const damped = tel(simulateTick(g, 0, 900, { ...base, breakerNodeIds: new Set(["c"]) }), "c").servedRps // ÷1.1 ⇒ 606
+      expect(damped).toBeGreaterThan(undamped)
+      expect(damped).toBeCloseTo((1000 * (2 / 3)) / 1.1, 0) // ~606 — observability contains the blast
+    })
+
+    it("EN3 only crowds PARTIAL survivors — a fully-offline (cf 0) or healthy (cf 1) node is unaffected", () => {
+      const g: SimGraph = { nodes: [node("c", 1000)], edges: [] }
+      const healthy = tel(simulateTick(g, 0, 900), "c").servedRps
+      expect(healthy).toBe(900) // no outage ⇒ no cascade ⇒ byte-identical
     })
 
     it("capacityFactor 0 (single-AZ) is fully offline", () => {

@@ -135,6 +135,9 @@ export interface NodeTelemetry {
    *  write-pressure + a bounded replica fan-out. Only emitted for write/read-split nodes; feeds the
    *  consistency scoring gate. Absent on tiers with no replication-lag model. */
   stalenessMs?: number
+  /** Retry load (rps) re-offered to this node by downstream sheds during an outage (EN3, D74) — the
+   *  thundering-herd amplification. 0/absent outside an active cascade. */
+  retriedRps?: number
 }
 
 export interface TickState {
@@ -189,4 +192,10 @@ export interface TickOverrides {
    * (and the two existing test fixtures) keep compiling; absent ⇒ full capacity (1).
    */
   capacityFactors?: Map<string, number>
+  /**
+   * EN3 (D74): node ids that DAMP retry amplification — they sit next to a breaker (monitoring or
+   * rate-limiter), so when traffic downstream of them sheds, the re-offered retry uses the damped
+   * multiplier instead of the full one. Absent ⇒ no damping anywhere.
+   */
+  breakerNodeIds?: Set<string>
 }

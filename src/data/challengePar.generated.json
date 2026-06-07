@@ -68,7 +68,7 @@
     "nodes": 3
   },
   "observe-to-recover": {
-    "cost": 40,
+    "cost": 280,
     "nodes": 3
   },
   "polyglot-persistence": {

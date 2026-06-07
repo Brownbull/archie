@@ -519,3 +519,12 @@ export const OBS_RESIDUAL_BLAST = 0.6
 // makes any target unbeatable). staleness = lag × (1 + effWriteRatio×REPLICA_LAG_WRITE_K) × (1 + log2(replicas)).
 export const DEFAULT_REPLICATION_LAG_MS = 50
 export const REPLICA_LAG_WRITE_K = 4
+
+// EN3 (D74): cascading failure / retry amplification. During an OUTAGE, a partially-degraded surviving
+// tier is crowded by retried (timed-out) requests — thundering-herd — so its effective capacity for fresh
+// requests drops by the retry multiplier. A breaker neighbor (observability) damps it, containing the
+// blast. Modeled as a further capacity-factor cut on survivors (conserving — normal shed accounting, no
+// double-counted losses): retries make a partial outage worse exactly where redundancy was meant to save
+// you, and observability earns its keep twice (EN7 detection + EN3 damping).
+export const RETRY_MULTIPLIER = 2
+export const RETRY_DAMPED_MULTIPLIER = 1.1

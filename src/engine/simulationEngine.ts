@@ -1,4 +1,4 @@
-import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, MAX_FLOW_PASSES, FLOW_EPSILON, OBS_DETECT_DELAY_S, OBS_RESIDUAL_BLAST, DEFAULT_REPLICATION_LAG_MS, REPLICA_LAG_WRITE_K, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
+import { SIM_TICKS, SIM_DEFAULT_DURATION_S, LATENCY_QUEUE_FLOOR_RHO, LATENCY_QUEUE_RHO_CAP, INTER_NODE_RTT_MS, QUEUEING_LATENCY_EPS, MAX_FLOW_PASSES, FLOW_EPSILON, OBS_DETECT_DELAY_S, OBS_RESIDUAL_BLAST, DEFAULT_REPLICATION_LAG_MS, REPLICA_LAG_WRITE_K, RETRY_MULTIPLIER, RETRY_DAMPED_MULTIPLIER, DEFAULT_SIM_TARGET_RPS } from "@/lib/constants"
 import type {
   SimGraph,
   SimNode,
@@ -149,7 +149,11 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
       }
     }
   }
-  return { offlineNodeIds, latencyMultipliers, capacityFactors }
+  // EN3 (D74): nodes that DAMP retry amplification — observability-adjacent (the EN7 monitored set acts as
+  // the breaker). The cascade itself is applied in simulateTick on the surviving capacity (it needs the
+  // live load to matter), so computeOverrides keeps returning the BASE ED2/EN7 fractions unchanged.
+  const breakerNodeIds = monitoredNodes
+  return { offlineNodeIds, latencyMultipliers, capacityFactors, breakerNodeIds }
 }
 
 /**
@@ -229,7 +233,15 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
     // ED2 (D74): az_outage scales effective capacity to the surviving fraction (capFactor). capFactor ≤ 0
     // (single-AZ node) — or a partial AZ hit on an UNCAPPED node (no rated capacity to fractionally keep)
     // — is treated as fully offline. Otherwise effMax = effectiveMaxRps × capFactor (capFactor 1 ⇒ unchanged).
-    const capFactor = overrides?.capacityFactors?.get(id) ?? 1
+    const baseCapFactor = overrides?.capacityFactors?.get(id) ?? 1
+    // EN3 (D74): cascading failure. A PARTIALLY-degraded survivor (0 < cf < 1, i.e. it lost some capacity
+    // to an outage) is crowded by retried timeouts (thundering-herd), so its effective capacity for fresh
+    // requests drops by the retry multiplier — making the partial outage worse exactly where redundancy
+    // was meant to save you. A breaker neighbor (observability) damps the multiplier, containing the blast.
+    // Conserving: a capacity cut feeding the normal shed accounting, never a double-counted loss.
+    const capFactor = baseCapFactor > 0 && baseCapFactor < 1
+      ? baseCapFactor / ((overrides?.breakerNodeIds?.has(id) ?? false) ? RETRY_DAMPED_MULTIPLIER : RETRY_MULTIPLIER)
+      : baseCapFactor
     const offline = (overrides?.offlineNodeIds.has(id) ?? false) || capFactor <= 0 || (node.effectiveMaxRps === 0 && capFactor < 1)
     const latMult = overrides?.latencyMultipliers.get(id) ?? 1
     const capped = node.effectiveMaxRps > 0

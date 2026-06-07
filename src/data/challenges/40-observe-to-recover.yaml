@@ -1,31 +1,32 @@
 id: observe-to-recover
 title: Observe to Recover
 brief: >-
-  Your compute node will suffer a 30-second outage mid-run. With observability
-  connected, the failure recovers 33% faster (~20s instead of 30s). Without
-  monitoring, you lose too much uptime to pass. Monitoring is not decorative —
-  it actively shortens your downtime.
+  A zone fails mid-run, knocking out part of your compute tier. The danger isn't
+  just the lost zone — it's the thundering-herd: timed-out requests retry against
+  the surviving zones and pile on, dragging healthy capacity down with the dead.
+  Observability is the brake: it detects the failure fast (shrinking the blast)
+  AND damps the retry storm, so your survivors hold. Skip it and the cascade
+  pushes you under the uptime line.
 difficulty: intermediate
-budget_cap: 200
+budget_cap: 600
 duration_seconds: 90
 traffic_curve:
-  - { t: 0, rps: 500 }
-  - { t: 90, rps: 500 }
+  - { t: 0, rps: 15000 }
+  - { t: 90, rps: 15000 }
 traffic_sources:
-  - { type: web-users, rps: 500, kind: steady, workload: mixed, origin: one-region }
+  - { type: web-users, rps: 15000, kind: steady, workload: mixed, origin: one-region }
 required_components:
   - compute
   - monitoring
 target_metrics:
-  uptime_percent: 80
-  p99_latency_ms: 400
-  p95_latency_ms: 280
+  uptime_percent: 85
+  p99_latency_ms: 800
 scheduled_events:
-  - { t: 30, type: component_failure, target: compute, durationS: 30 }
+  - { t: 30, type: az_outage, target: compute, durationS: 30 }
 hints:
-  - "The core problem is a 30-second compute failure at t=30s. Observability actively speeds recovery from 30s to 20s. Without it you fail the 80% uptime target."
-  - "Wire observability to compute. The failure recovers 10 seconds faster with monitoring (20s vs 30s), saving downtime and keeping you at the 80% uptime threshold."
-  - "Place compute with observability connected. At t=30s the 30s failure is detected and recovered in 20s instead, leaving you at exactly 80% uptime (72s up / 90s), meeting the target and staying under 200 budget."
+  - "A 30s zone outage hits compute at t=30s. Spread compute across zones (more replicas → more AZs) so a lost zone leaves survivors instead of a total blackout."
+  - "Observability is not decorative. It DETECTS the failure within seconds (shrinking the blast radius) and DAMPS retry amplification — without it, retried timeouts crowd your surviving zones and uptime falls below the 85% line."
+  - "Wire observability to compute, size compute across ≥3 zones, and the surviving capacity (detected + breaker-damped) clears the 85% uptime line through the outage. Drop observability and the thundering-herd drops you to ~82% — a fail."
 schema_version: 2
 track: reliability
 tier: 2
