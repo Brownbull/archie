@@ -148,7 +148,10 @@ export async function selectNodeOnCanvas(
 ): Promise<void> {
   const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
   await expect(node).toBeVisible()
-  await node.click()
+  // Click the node's top-left header (stripe/icon area), NOT the center — the center now carries the
+  // on-node vendor/config dropdowns (Fluidity P1). Clicking one opens a Radix listbox whose overlay
+  // then blocks every subsequent inspector/canvas click.
+  await node.click({ position: { x: 12, y: 6 } })
   await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 }
 

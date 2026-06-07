@@ -4,22 +4,26 @@ import { waitForComponentLibrary } from "./helpers/canvas-helpers"
 const SCREENSHOT_DIR = "test-results/component-types"
 
 test.describe("Component model: type → provider → tier (P5)", () => {
-  test("toolbox is organized by fundamental type, with multiple providers per type", async ({ page }) => {
+  test("toolbox is organized by fundamental type, each type grouping its providers", async ({ page }) => {
     await page.goto("/")
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // The CDN type groups its providers (Cloudflare + Fastly) under one section.
-    const cdnGroup = page.locator('[data-testid="type-group-cdn"]')
-    await expect(cdnGroup).toBeVisible({ timeout: 10_000 })
-    await expect(cdnGroup.getByText("CDN", { exact: true })).toBeVisible()
-    await expect(page.locator('[data-testid="component-card-cloudflare-cdn"]')).toBeVisible()
-    await expect(page.locator('[data-testid="component-card-fastly-cdn"]')).toBeVisible()
+    // D22: the toolbox lists logical TYPES as blocks (`type-block-{typeId}`, the "+" is `add-type-{typeId}`).
+    // Each block's hover popup enumerates the providers that share that type — the P5 type → provider model.
+    // (The old per-provider `component-card-*`/`type-group-*` grid is no longer the default toolbox view.)
+    const cdnBlock = page.locator('[data-testid="type-block-cdn"]')
+    await expect(cdnBlock).toBeVisible({ timeout: 10_000 })
+    await cdnBlock.hover()
+    // The CDN type groups multiple providers (Cloudflare + Fastly).
+    await expect(cdnBlock).toContainText("Cloudflare CDN")
+    await expect(cdnBlock).toContainText("Fastly CDN")
 
-    // The Cache type collapses the old redis/redis-cache duplication + Memcached under one type.
-    const cacheGroup = page.locator('[data-testid="type-group-cache"]')
-    await expect(cacheGroup).toBeVisible()
-    await expect(page.locator('[data-testid="component-card-memcached"]')).toBeVisible()
+    // The Cache type groups its providers (Redis + Memcached) under one block.
+    const cacheBlock = page.locator('[data-testid="type-block-cache"]')
+    await expect(cacheBlock).toBeVisible()
+    await cacheBlock.hover()
+    await expect(cacheBlock).toContainText("Memcached")
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-toolbox-by-type.png`, fullPage: true })
   })
