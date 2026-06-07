@@ -4443,3 +4443,13 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P151
 Ships Fluidity P3c-1: progressive on-node config disclosure in quests via the new useDisclosureTier hook (D84). The disclosure tier = experienceLevel (manual free / challenge difficulty in quests); config-tier picker hidden at beginner quests, shown intermediate+, always shown in free mode. UI-only (solvability harness unaffected). Suite 4830 green. Phase 3 status: 3a (inspector declutter), 3b (Test Conditions = failures), 3c-1 (config disclosure) shipped. 3c-2 (tooltip journeys — incl. rebuilding the stale post-P1 inspector guide; optionally vendor/replica gating) awaits user go-ahead. FOUND: the inspector panelGuide still anchors to the removed component-swapper/config-selector (stale guidance) — must fix in 3c-2.
+- 2026-06-07 17:42 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/NodeProviderSelect.tsx
+- 2026-06-07 17:42 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/NodeProviderSelect.tsx
+- 2026-06-07 17:44 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/NodeProviderSelect.test.tsx
+
+## 2026-06-07 15:45 — PUSH dev -> main (P152)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P152
+Ships Fluidity P3c-1b: vendor swap + replica stepper now disclose progressively in quests (intermediate+), free mode always shows them. Vendor → static label when gated; replicas → hidden at beginner quests (verified 1-replica-solvable). Suite 4833 green. Phase 3 status: 3a/3b/3c-1/3c-1b shipped. NEXT (user-approved): 3c-2 tooltip journeys — rebuild the STALE inspector panelGuide (still refs the removed component-swapper/config-selector) + a progression-aware journey.
