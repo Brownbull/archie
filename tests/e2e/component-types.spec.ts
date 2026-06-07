@@ -29,8 +29,8 @@ test.describe("Component model: type → provider → tier (P5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place a Cloudflare CDN node.
-    await page.locator('[data-testid="add-to-canvas-cloudflare-cdn"]').click()
+    // Place a CDN node via its type block (CDN has multiple providers → the on-node provider picker renders).
+    await page.locator('[data-testid="add-type-cdn"]').click()
     await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
 
     // Fluidity P1: the provider picker lives ON the canvas block now (`archie-node-provider`), and

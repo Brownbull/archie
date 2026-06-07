@@ -20,28 +20,17 @@ const VENDORS_TO_TEST: VendorCheck[] = [
 ]
 
 async function swapVendorViaDOM(page: import("@playwright/test").Page, vendorName: string): Promise<void> {
-  // Open the Select dropdown via DOM events (bypasses overlay pointer interception).
-  // Fluidity P1: the provider picker is on the canvas block now — `archie-node-provider` IS the
-  // Radix combobox trigger (not a nested button inside an inspector swapper).
-  await page.evaluate(() => {
-    const trigger = document.querySelector('[data-testid="archie-node-provider"]') as HTMLElement
-    if (!trigger) return
-    trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }))
-    trigger.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, cancelable: true }))
-    trigger.click()
-  })
-  await page.waitForTimeout(600)
+  // Fluidity P1: the provider picker is on the canvas block now — `archie-node-provider` IS the Radix
+  // combobox trigger. A native Playwright click opens it reliably (the node isn't behind an overlay, so
+  // the old DOM-event hack is unnecessary and silently no-op'd on Radix).
+  const trigger = page.locator('[data-testid="archie-node-provider"]')
+  await expect(trigger).toBeVisible({ timeout: 3_000 })
+  await trigger.click()
 
-  // Now the listbox should be open — use Playwright to click the option (it's rendered in a portal above overlays)
   const listbox = page.locator("[role='listbox']")
-  const isOpen = await listbox.isVisible().catch(() => false)
-  if (!isOpen) return
-
-  const option = listbox.locator(`[role="option"]`).filter({ hasText: vendorName })
-  if (await option.first().isVisible().catch(() => false)) {
-    await option.first().click()
-    await page.waitForTimeout(500)
-  }
+  await expect(listbox).toBeVisible({ timeout: 3_000 })
+  await listbox.locator('[role="option"]').filter({ hasText: vendorName }).first().click()
+  await page.waitForTimeout(300)
 }
 
 test.describe("Vendor source links — 3 new + 2 existing vendors", () => {

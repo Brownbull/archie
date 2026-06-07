@@ -16,7 +16,9 @@ const SCREENSHOT_DIR = "test-results/inspector-and-config"
  * Returns the placed node locator and its on-node config trigger.
  */
 async function placeMultiVariantComponent(page: Page) {
-  await page.locator('[data-testid="add-to-canvas-node-express"]').click()
+  // The toolbox lists logical TYPES via `add-type-{typeId}`; compute's default vendor (Node.js + Express)
+  // is multi-tier (Single Process / Cluster Mode), so the on-node config picker renders.
+  await page.locator('[data-testid="add-type-compute"]').click()
   await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
   const node = page.locator('[data-testid="archie-node"]').first()
   const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
