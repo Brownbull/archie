@@ -141,23 +141,20 @@ test.describe("Visual audit", () => {
     await expect(page.locator('[data-testid="run-simulation"]')).toHaveCount(0, { timeout: 5_000 })
   })
 
-  test("traffic config is mirrored in the inspector (ISAPivot)", async ({ page }) => {
+  test("traffic config lives on the canvas block (Fluidity P1)", async ({ page }) => {
     await ready(page)
     await addComponentToCanvas(page, 0) // Traffic Source
     const node = page.locator('[data-testid="archie-node"]').first()
     await page.waitForTimeout(300)
-    // Select via the node header (top edge) — the control rows below stop propagation.
-    await node.click({ position: { x: 40, y: 12 } })
-    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 
-    // NEW behaviour: the inspector mirrors the on-node traffic config (D63 — editable in both).
-    const inspectorTraffic = page.getByTestId("inspector-traffic-config")
-    await expect(inspectorTraffic).toBeVisible()
-    await expect(inspectorTraffic.getByTestId("traffic-workload-select")).toBeVisible()
-    await expect(inspectorTraffic.getByTestId("traffic-origin-select")).toBeVisible()
-    await expect(inspectorTraffic.getByTestId("rps-stepper-value")).toContainText("peak")
-    await expect(inspectorTraffic.getByTestId("traffic-envelope")).toBeVisible()
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/18-inspector-traffic-config.png`, fullPage: true })
+    // Fluidity P1: per-node tuning moved off the inspector onto the BLOCK. The inspector is
+    // read-only and no longer renders `inspector-traffic-config`, so verify + screenshot the
+    // on-node traffic controls (TrafficNodeControls) instead of the old inspector mirror.
+    await expect(node.getByTestId("traffic-workload-select")).toBeVisible()
+    await expect(node.getByTestId("traffic-origin-select")).toBeVisible()
+    await expect(node.getByTestId("rps-stepper-value")).toContainText("peak")
+    await expect(node.getByTestId("traffic-envelope")).toBeVisible()
+    await node.screenshot({ path: `${SCREENSHOT_DIR}/18-inspector-traffic-config.png` })
   })
 
   test("inspector panel", async ({ page }) => {

@@ -18,12 +18,6 @@ function NodeInspectorContent({ nodeId }: { nodeId: string }) {
   const selectedNode = useArchitectureStore(
     useShallow((s) => s.nodes.find((n) => n.id === nodeId)),
   )
-  const updateNodeConfigVariant = useArchitectureStore(
-    (s) => s.updateNodeConfigVariant,
-  )
-  const swapNodeComponent = useArchitectureStore(
-    (s) => s.swapNodeComponent,
-  )
 
   const { getComponentById } = useLibrary()
 
@@ -32,21 +26,12 @@ function NodeInspectorContent({ nodeId }: { nodeId: string }) {
   const component = getComponentById(selectedNode.data.archieComponentId)
   if (!component) return null
 
-  const handleVariantChange = (variantId: string) => {
-    updateNodeConfigVariant(nodeId, variantId)
-  }
-
-  const handleSwapComponent = (newComponentId: string) => {
-    swapNodeComponent(nodeId, newComponentId)
-  }
-
+  // Fluidity P1: the inspector is read-only — tuning (vendor / tier / replicas / traffic) lives on the
+  // canvas block now, so no swap/variant handlers are wired here.
   return (
     <ComponentDetail
       component={component}
       activeVariantId={selectedNode.data.activeConfigVariantId}
-      onVariantChange={handleVariantChange}
-      currentCategory={component.category}
-      onSwapComponent={handleSwapComponent}
       nodeId={nodeId}
     />
   )

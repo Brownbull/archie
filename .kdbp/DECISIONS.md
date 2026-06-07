@@ -1248,3 +1248,24 @@ cheaper lean wins) — all still 3★. Harness 3★ all 57, golden no-op, capsto
 component YAMLs; its own focused pass (the playbook's strict (1)→(4) authoring order).
 
 **Status:** ED1/EN1 + ED4/LX4 accepted + shipped. Phase 2 is 2/3 (EN2 remains).
+
+## D79 — Fluidity: block tunes, panel teaches (2026-06-07)
+
+**Decision:** The canvas block is the SINGLE tuning surface (vendor + config-variant + replicas + traffic). The right-panel inspector becomes read-only learning/inspection.
+**Rationale:** Today vendor + traffic are editable in BOTH the block AND the inspector, while config-variant is inspector-only and replicas are canvas-only — so neither surface is a complete control set and the player must bounce between them to fully tune one node. The user prefers configuring on the blocks; connectors are already read-only, so this makes blocks consistent (panel = read/understand, block = tune).
+**Alternatives considered:** (a) panel-tunes-block-glances — rejected, user prefers the block; (b) de-dup-but-keep-both — rejected, still two tuning surfaces (the friction we're removing).
+**Status:** accepted
+
+## D80 — Fluidity: declutter the static-score footer in place (2026-06-07)
+
+**Decision:** Keep the dashboard footer always-visible but slim it — tier + budget + aggregate grade + the single WEAKEST category inline + a "more" affordance that opens the existing full overlay; the 7 inline category bars (horizontal-scroll cram in a 100px strip) move into the overlay.
+**Rationale:** The score is design-coaching that should stay glanceable, but the 7-bar cram is the clutter the user feels. Slimming in place keeps the score present without hiding it behind a button.
+**Alternative considered:** demote-to-Scores-button (collapse footer to a pill + button) — rejected for now; the user wanted the score to stay visible, just decluttered.
+**Status:** accepted
+
+## D81 — Fluidity per-phase tiers + supersede Learning-Fidelity (2026-06-07)
+
+**Decision:** Phase 1 (one tuning surface) = enterprise; Phase 2 (declutter footer) = enterprise; Phase 3 (knowledge propagation + progressive unlock journey) = scale, DEFERRED. The prior "Learning-Fidelity Redesign" plan is archived as completed (shipped P135–P143).
+**Reason:** P1/P2 are user-facing refactors touching shared, tested components (enterprise: full coverage + careful migration, not throwaway). P3 is a cross-cutting progression/onboarding system (scale) and is explicitly deferred per the user ("later").
+**Review trigger:** revisit P3 once P1/P2 land and the read-only inspector + decluttered footer are validated in use.
+**Status:** accepted

@@ -1,19 +1,14 @@
 import { useState, useMemo, useCallback } from "react"
 import type { Component, MetricValue } from "@/types"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
-import { providersForComponent, COMPONENT_TYPES, levelRank } from "@/lib/componentTypes"
-import { useLibrary } from "@/hooks/useLibrary"
+import { COMPONENT_TYPES, levelRank } from "@/lib/componentTypes"
 import { useArchitectureStore } from "@/stores/architectureStore"
-import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { computeRecommendations } from "@/engine/recommendationEngine"
 import { getNodeCost } from "@/stores/architectureStoreHelpers"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { ComponentSwapper } from "@/components/inspector/ComponentSwapper"
-import { TrafficNodeControls } from "@/components/canvas/TrafficNodeControls"
-import { ConfigSelector } from "@/components/inspector/ConfigSelector"
 import { EconomicsSection } from "@/components/inspector/EconomicsSection"
 import { MetricCard } from "@/components/inspector/MetricCard"
 import { MetricFilter } from "@/components/inspector/MetricFilter"
@@ -31,23 +26,19 @@ import { ChevronDown, ChevronRight, ExternalLink, Trash2 } from "lucide-react"
 interface ComponentDetailProps {
   component: Component
   activeVariantId: string
-  onVariantChange: (variantId: string) => void
-  currentCategory: string
-  onSwapComponent: (newComponentId: string) => void
   nodeId?: string
+  // Fluidity P1: tuning moved to the canvas block; the inspector is read-only learning/inspection.
+  // These remain as optional/ignored props so existing callers keep type-checking during the migration.
+  onVariantChange?: (variantId: string) => void
+  currentCategory?: string
+  onSwapComponent?: (newComponentId: string) => void
 }
 
 export function ComponentDetail({
   component,
   activeVariantId,
-  onVariantChange,
-  onSwapComponent,
   nodeId,
 }: ComponentDetailProps) {
-  // P5: alternatives are same-TYPE providers (e.g. Redis ↔ Memcached), not just same category.
-  // providersForComponent falls back to same-category when the component has no typeId (pre-seed).
-  const { components } = useLibrary()
-  const alternatives = providersForComponent(component, components)
 
   // Progressive disclosure by experience level (P89/Phase C). Beginners get the decision-relevant
   // essentials (what it is, swap/tier, cost·RPS·latency); trade-offs (description, gains, costs,
@@ -77,18 +68,7 @@ export function ComponentDetail({
   const trafficRps = useArchitectureStore(
     (s) => (nodeId ? s.nodes.find((n) => n.id === nodeId)?.data.trafficRps : undefined),
   )
-  const trafficNodeData = useArchitectureStore(
-    (s) => (nodeId ? s.nodes.find((n) => n.id === nodeId)?.data : undefined),
-  )
   const removeNode = useArchitectureStore((s) => s.removeNode)
-
-  // D20: a challenge's traffic source is the FIXED problem statement until the player 3★s it — then it
-  // unlocks for sandbox experimentation. The demand controls (rps/workload/origin) already gate inside
-  // TrafficNodeControls; here we gate the OTHER two traffic-source editors the inspector exposes — the
-  // provider swap and the config-variant picker — so "you can't change the traffic source while locked"
-  // holds on every surface, not just the steppers. (Non-traffic blocks are always the player's to tune.)
-  const trafficLocked = useChallengeStore((s) => isChallengeMode(s) && (s.bestStars[s.activeChallenge?.id ?? ""] ?? 0) < 3)
-  const lockTrafficEdits = !!nodeId && component.category === "traffic" && trafficLocked
 
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
@@ -284,39 +264,9 @@ export function ComponentDetail({
             The longer description is one click away in the "What it is" disclosure below. */}
         <p data-testid="inspector-headline" className="text-xs leading-snug text-text-primary">{component.is}</p>
 
-        {/* Pick a vendor → then a configuration tier. Scores below update as you change these.
-            Hidden for a challenge-locked traffic source (D20): its vendor/variant are fixed by the
-            challenge until 3★, same as the demand controls below. */}
-        {!lockTrafficEdits && (
-          <>
-            <ComponentSwapper
-              currentComponentId={component.id}
-              alternatives={alternatives}
-              onSwapComponent={onSwapComponent}
-              label="Provider"
-            />
-
-            <Separator />
-
-            {/* Config Selector */}
-            {component.configVariants.length > 0 && (
-              <ConfigSelector
-                variants={component.configVariants}
-                activeVariantId={activeVariantId}
-                onVariantChange={onVariantChange}
-              />
-            )}
-          </>
-        )}
-
-        {/* Traffic configuration (ISAPivot) — peak RPS / kind / workload / origin for a traffic source.
-            Mirrors the on-node controls (D63: editable in inspector AND on the block). */}
-        {nodeId && component.category === "traffic" && trafficNodeData && (
-          <div className="px-3 pt-1" data-testid="inspector-traffic-config">
-            <div className="mb-1 text-[0.6875rem] font-semibold text-text-secondary">Traffic configuration</div>
-            <TrafficNodeControls nodeId={nodeId} data={trafficNodeData} />
-          </div>
-        )}
+        {/* Fluidity P1 — the inspector is read-only learning/inspection. Vendor, config tier, replicas
+            and traffic are all tuned on the canvas block now (one tuning surface); the economics below
+            still reflect those changes live (it reads the store regardless of where the edit happened). */}
 
         {/* Economics (Epic 13 Phase 4) */}
         <EconomicsSection current={currentEconomics} previous={previousEconomics} />

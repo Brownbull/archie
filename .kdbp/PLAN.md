@@ -5,165 +5,83 @@
 
 ## Goal
 
-Learning-Fidelity Redesign — make Archie's simulation, scoring, and lesson-loop teach real,
-transferable system design instead of rewarding harness-gaming. Full A→D epic from the 3-perspective
-roast (`docs/quality-reports/learning-fidelity-roast.md`, 22 gaps): tie scoring to behavior not
-block-presence (A), make the engine physics honest — additive latency, queueing curves, concurrency
-(B), make resilience a real, rewarded subject — AZ fault isolation, cascading failure, observability
-that earns its keep (C), and add the missing dimensions — consistency/CAP, elasticity/autoscaling,
-usage-based cost, multi-region replication lag (D).
+Fluidity — UX consolidation: make Archie feel fluid by collapsing the "tune from multiple perspectives"
+friction into one clear surface per job. The block becomes the single tuning surface, the right panel
+becomes read-only learning, and the static-score footer declutters in place — so the app flows instead
+of asking the player to reconcile knobs scattered across canvas, inspector, and footer.
 
 ## Context
 
 - **Maturity:** enterprise
 - **Domain:** Software architecture visualization and design tool (react, typescript, vite, react-flow)
-- **Created:** 2026-06-05
-- **Last Updated:** 2026-06-05
-- **Source of truth:** `docs/quality-reports/learning-fidelity-roast.md` (gap IDs ED*/EN*/LX*)
+- **Created:** 2026-06-07
+- **Last Updated:** 2026-06-07
+- **Supersedes:** Learning-Fidelity Redesign (completed/shipped P135–P143) -> .kdbp/archive/completed_PLAN_2026-06-07_learning-fidelity-redesign.md
 
 ## Phases
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Behavior-tied scoring + lesson-loop quick wins (Option A) | Score on behavior not presence + fix the learner loop. ED3 required_types must be ON the served path (removing it changes the score; model rate-limiter/auth effects); ED7 cost_per_request → $/million-req at peak rps + re-tune 2 cost challenges; LX1 free first hint per challenge; LX2 name the top overloaded node in iterate-coach + results modal; LX3 show reference "par" cost/nodes after 3★. NO engine re-calibration ripple. | ent | med | 🔄 | ⬜ | ⬜ | ⬜ |
-| 2 | Core engine fidelity — latency, utilization, concurrency (Option B) | Honest physics. ED1/EN1 end-to-end latency = SUM along the served path (+ inter-node RTT), cache hits short-circuit; ED4/LX4 replace flat-then-linear latencyUnderLoad with a queueing curve (latency → ∞ as ρ→1) so headroom is real + the gauge teaches; EN2 add a concurrency/queue model (per-variant concurrency limit; latency↔queue-depth via Little's law) so saturation = latency AND connection rejection. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
-| 3 | Resilience as a real subject (Option C) | Make resilience possible + rewarded. ED2 AZ attribute per node; az_outage removes a FRACTION (1/AZ) of a category so spreading survives; EN3 cascading failure — shed propagates upstream as timeouts + retry amplification; EN7 observability earns its keep (faster detect → earlier circuit-break → smaller blast radius, replacing the magic 33%); restore no-SPOF redundancy to scoring (topology-star contributor or resilience metric, reversing the D72 demotion now that it's mechanically meaningful). Needs EN6 (cyclic-flow solve) first. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
-| 4 | New dimensions — consistency, elasticity, usage-cost (Option D) | The 10x-breadth tier, à-la-carte sub-slices. ED5 dynamic cache hit-ratio (variant ceiling × cacheable-fraction × (1−write-pressure)); ED9 autoscaling (replicas track load, cost integrates over the curve); EN5 usage-based cost (per-request + per-GB cross-region transfer); ED6/EN4/ED8 multi-region latency + replication lag/staleness + a NEW consistency/CAP scoring dimension + challenge family; EN6 fixed-point cyclic-flow solve (closes PENDING D7, unblocks EN3). | scale | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 1 | One tuning surface (block tunes, panel teaches) | Block is the complete control set (vendor + config-variant + replicas + traffic); the right-panel inspector becomes read-only learning. De-duplicate the canvas<->inspector tuners. | ent | high | 🔄 | ⬜ | ⬜ | ⬜ |
+| 2 | Declutter the score footer in place | Footer keeps tier + budget + aggregate grade + the single weakest category + a "more" that opens the existing overlay; the 7 inline category bars move into the overlay. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Knowledge propagation + progressive unlock journey (deferred) | Evolve inspector depth from manual experience-level into a challenge-progression gate (keep a manual override) + section-unlock narrative + tooltips; bottom performance stays ungated. | scale | high | ⬜ | ⬜ | ⬜ | ⬜ |
 
-<!-- Exec: ⬜ not started, 🔄 in progress, ✅ complete. Review/Commit/Push auto-ticked by the gates. -->
-<!-- A phase is complete when all four columns are ✅. /gabe-next routes by column state. -->
+<!-- Exec is written by /gabe-execute: ⬜ not started, 🔄 in progress, ✅ complete -->
+<!-- Review/Commit/Push auto-ticked by /gabe-review, /gabe-commit, /gabe-push -->
+<!-- A phase is complete when all four status columns are ✅ -->
 
 ## Phase Details
 
-### Phase 1 — Behavior-tied scoring + lesson-loop quick wins (Option A)
+### Phase 1 — One tuning surface (block tunes, panel teaches)
+- **Types:** user-facing, client-state
+- **Tier:** ent
+- **Prototype:** no
+- **Sections considered:** Core, Client-state
+- **Trade-offs accepted:** See DECISIONS.md D79, D81
+- **Scope:** add a compact config-variant (tier) picker to the canvas node (ArchieNode) next to the vendor switch so the block is the complete control set; remove ComponentSwapper + ConfigSelector + the inspector copy of TrafficNodeControls from ComponentDetail so the right panel is read-only learning (heading / concept / what-it-is / economics / gains-costs / recommendations / metrics / data-context); verify the economics cost-delta still shows when tuning on the canvas with the panel open (it reacts to store changes regardless of edit origin); the D20 traffic lock already lives on the canvas controls. Move the component-swapper / config-selector / inspector-traffic-config assertions onto the canvas-node tests; redirect inspector-driven E2E (component-swapping, inspector-and-config) to drive the block.
+- **Exit:** exactly one tuning surface (canvas), inspector read-only, full unit+integration suite + E2E green, traffic lock holds, tidy compact node layout.
 
-```yaml
-phase: 1
-types: [user-facing, scoring]
-phase_tier: ent
-prototype: false
-dim_overrides: []
-sections_considered: [Core, UserFacing]
-suppressed_dims_count: 0
-decisions_entry: D75
-```
+### Phase 2 — Declutter the score footer in place
+- **Types:** user-facing
+- **Tier:** ent
+- **Prototype:** no
+- **Trade-offs accepted:** See DECISIONS.md D80, D81
+- **Scope:** DashboardPanel keeps tier + budget + aggregate grade + the single weakest category inline + a "more"/expand that opens the existing DashboardOverlay; the full 7-category breakdown moves into the overlay.
+- **Exit:** footer fits without horizontal scroll, full breakdown one click away, tests updated.
 
-- **Gaps:** ED3, ED7, LX1, LX2, LX3.
-- **Why first:** highest learning-value per effort, zero engine re-calibration, directly closes the
-  "gaming the harness" hole + the onboarding cliff. Shippable standalone (Part A).
-- **Key files:** `src/engine/rubricScorer.ts`, `src/hooks/useChallengeCoach.ts`,
-  `src/components/challenges/{ChallengeResultsModal,HintPanel}.tsx`, `src/stores/userProgressStore.ts`,
-  `src/data/challenges/{56-unit-economics,57-lean-at-scale}.yaml`.
-- **Exit:** harness still 3★ all 57; cost-challenge targets re-expressed in the real unit; a stuck
-  beginner can reach the first hint for free; a failed run names the culprit tier.
-
-### Phase 2 — Core engine fidelity (Option B)
-
-```yaml
-phase: 2
-types: [engine, simulation]
-phase_tier: ent
-prototype: false
-dim_overrides: []
-sections_considered: [Core, Performance]
-suppressed_dims_count: 0
-decisions_entry: D75
-```
-
-- **Gaps:** ED1/EN1, ED4/LX4, EN2.
-- **Key files:** `src/engine/simulationEngine.ts`, `src/lib/simulationStats.ts`,
-  `src/lib/constants.ts` (LATENCY_LOAD_K + concurrency consts), `referenceSolution.ts` (concurrency-aware
-  sizing), the golden snapshot + capstone fixtures.
-- **Exit (re-calibration tax — see D75):** re-tune all 57 p99 targets, regenerate golden + fixtures,
-  harness 3★ all 57, capstone E2E green.
-
-### Phase 3 — Resilience as a real subject (Option C)
-
-```yaml
-phase: 3
-types: [engine, simulation, scoring]
-phase_tier: ent
-prototype: false
-dim_overrides: []
-sections_considered: [Core, Reliability]
-suppressed_dims_count: 0
-decisions_entry: D75
-```
-
-- **Gaps:** ED2, EN3, EN7 (+ restore redundancy to scoring). Do the three together — they reinforce.
-- **Sequence note:** land EN6 (cyclic-flow solve, Phase 4) BEFORE EN3 retries, or pull EN6 forward into
-  this phase.
-- **Key files:** `src/engine/{simulationEngine,topologyChecker,rubricScorer}.ts`,
-  `src/lib/challengeTypes.ts`.
-- **Exit:** re-tune outage challenges (chaos-day, async-backbone, heat-death, fortress, zone-*),
-  regenerate golden + fixtures, harness 3★ all 57.
-
-### Phase 4 — New dimensions (Option D)
-
-```yaml
-phase: 4
-types: [engine, scoring, data, architecture]
-phase_tier: scale
-prototype: false
-dim_overrides: []
-sections_considered: [Core, Data, Architecture]
-suppressed_dims_count: 0
-decisions_entry: D75
-```
-
-- **Gaps:** ED5/EN-cache, ED9, EN5, ED6/EN4/ED8, EN6. Treat each as an independent sub-slice.
-- **Biggest single lift:** ED8 consistency/CAP dimension (new scoring axis + challenge family).
-- **Key files:** `src/schemas/challengeSchema.ts`, `src/lib/challengeTypes.ts`,
-  `src/engine/{simulationEngine,rubricScorer}.ts`, `src/lib/simulationStats.ts`,
-  `src/stores/architectureStoreHelpers.ts`, `src/components/challenges/ChallengeResultsModal.tsx`,
-  new challenge YAMLs.
-- **Exit per sub-slice:** new metric wired schema→sim→rubric→results modal, additive/defaulted so
-  existing challenges score identically, re-tune + regenerate as needed.
+### Phase 3 — Knowledge propagation + progressive unlock journey (DEFERRED)
+- **Types:** user-facing
+- **Tier:** scale
+- **Prototype:** no
+- **Trade-offs accepted:** See DECISIONS.md D81
+- **Scope:** evolve the inspector's experience-level disclosure into a challenge-progression gate (keep a manual override), add the section-unlock narrative + tooltips across blocks -> right-panel sections -> bottom performance; right-panel depth tied to challenge progression, bottom performance stays ungated. Keep Phases 1-2 compatible. Explicitly deferred per the user ("later").
 
 ## Current Phase
 
-Phase 1: Behavior-tied scoring + lesson-loop quick wins (Option A)
+Phase 1: One tuning surface (block tunes, panel teaches)
 
 ## Dependencies
 
-- Phase 3 (EN3 cascading retries) depends on Phase 4's EN6 (cyclic-flow solve) — either pull EN6 into
-  Phase 3 or do EN6 first.
-- Phases 2, 3, 4 each depend on the shared re-calibration loop (D75): the solvability harness + lean
-  builder must stay green (all 57 @ 3★) as the exit gate.
-- Phase 1 has no engine dependency — ship it first, standalone.
+- Phase 2 is surface-independent of Phase 1 but sequenced after it to keep one UX-consolidation thread.
+- Phase 3 depends on Phase 1 — it drives the right-panel section model Phase 1 establishes (read-only learning layer).
 
 ## Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| Engine changes (P2/3/4) ripple into re-tuning all 57 challenges + golden + fixtures | high | D75: the solvability harness + cost-aware lean builder automate re-tuning; "harness 3★ all 57 + golden + fixtures regenerated" is the standard phase exit. Re-roast to confirm exploits shrink. |
-| Latency/utilization rewrite (P2) silently changes every challenge's difficulty | high | Re-tune p99 targets from the harness; golden snapshot catches unintended scoring drift; capstone E2E is the real-app backstop. |
-| Restoring redundancy to the star (P3) re-opens the budget-vs-redundancy tension (the D72 problem) | med | Only restore it AFTER ED2 makes redundancy mechanically meaningful + cheap (fractional AZ outage); re-verify tight-budget challenges stay 3★-able. |
-| Phase 4 consistency/CAP is XL + a brand-new scoring axis | med | Sub-slice it; ship dynamic-cache / autoscaling / usage-cost first; gate the consistency dimension behind its own challenge family so existing challenges are untouched. |
-| Scope creep — "full redesign" is large | med | Three review gates (Part A = P1, Part B = P2+3, Part C = P4); stop + re-roast between parts; each phase independently shippable. |
+| Node real-estate: vendor + config + replicas + traffic crowd the block | medium | Compact dropdown row under the vendor switch; verify layout at advanced experience level |
+| Test/E2E churn moving tuners off the inspector | medium | Move assertions to canvas-node tests + redirect inspector E2E to the block in the same change |
+| Cost-delta UX regressing when tuning moves to the canvas | low | Delta reads store changes regardless of edit origin — verify with the panel open |
 
 ## Notes
 
-- **Guiding principle (D74):** score on behavior, not block-presence. The reference builder's own
-  exploits are the canary — re-roast after each phase to confirm they shrink.
-- **Re-calibration strategy (D75):** standard exit for engine phases = re-tune all 57 + regenerate
-  golden + regenerate capstone fixtures + harness 3★, driven by the existing solvability harness.
-- **Recommended split:** Part A = Phase 1 (standalone, low-risk). Part B = Phases 2+3 (fidelity core).
-  Part C = Phase 4 (new dimensions). Review between parts.
-- **Out of scope / deferred lever:** the capstone scale-buff (restore original 4–10M rps) is unrelated
-  to learning fidelity and stays deferred unless explicitly revived.
+Locked design decisions (D79 block-tunes-panel-teaches, D80 declutter-footer-in-place) were chosen with the user. Phase 3 explicitly deferred ("later"). Connectors are already read-only, so the end state is consistent: panel = read/understand, block = tune.
 
 ## Review Artifacts
 
-- HTML review artifact: `docs/gabe/plans/2026-06-05-learning-fidelity-redesign/index.html`
-- Canonical source: `.kdbp/PLAN.md`, `.kdbp/DECISIONS.md`, `.kdbp/LEDGER.md`; gap detail in
-  `docs/quality-reports/learning-fidelity-roast.md`
+- HTML review artifact: none — proceeding directly to Phase 1 execution
+- Canonical source: `.kdbp/PLAN.md`, `.kdbp/DECISIONS.md`, `.kdbp/LEDGER.md`
 
 ## Runtime Evidence Checkpoints
 
-- **Phase 1 (LX1/LX2/LX3, user-facing):** run the app, fail a challenge, confirm the results modal +
-  iterate-coach name the culprit node + show "par"; confirm a 0-star account can reveal the first hint
-  free. Capture screenshots to `test-results/learning-fidelity-p1/`.
-- **Phases 2–4 (engine):** the capstone replay E2E (`desktop-unlocked` project) is the real-app gate —
-  must stay green after each engine change; add targeted specs per new metric (latency-sum,
-  queueing-curve, AZ-fraction survival, consistency).
+- Phase 1 (user-facing): a desktop-unlocked / canvas E2E that tunes vendor + config-variant on the block and asserts the inspector exposes no editable controls; artifacts to test-results/.

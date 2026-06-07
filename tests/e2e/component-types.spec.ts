@@ -29,15 +29,16 @@ test.describe("Component model: type → provider → tier (P5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place a Cloudflare CDN node and select it.
+    // Place a Cloudflare CDN node.
     await page.locator('[data-testid="add-to-canvas-cloudflare-cdn"]').click()
-    await page.locator('[data-testid="archie-node"]').first().click()
-    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
 
-    // The provider picker renders only when the type has ≥2 providers (CDN has Cloudflare + Fastly).
-    const swapper = page.locator('[data-testid="component-swapper"]')
-    await expect(swapper).toBeVisible()
-    await expect(swapper.getByText("Provider", { exact: true })).toBeVisible()
+    // Fluidity P1: the provider picker lives ON the canvas block now (`archie-node-provider`), and
+    // renders only when the type has ≥2 providers (CDN has Cloudflare + Fastly). There is no
+    // "Provider" label any more, so that assertion is dropped.
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const provider = node.locator('[data-testid="archie-node-provider"]')
+    await expect(provider).toBeVisible()
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-provider-picker.png`, fullPage: true })
   })

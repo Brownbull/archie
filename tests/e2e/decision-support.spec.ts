@@ -14,13 +14,16 @@ test.describe("Decision support", () => {
     await page.locator('[data-testid="search-input"]').fill("PostgreSQL")
     await page.waitForTimeout(300)
     await addComponentToCanvas(page, 0)
+    // Open the read-only inspector — the before/after delta indicators still render there.
     await page.locator('[data-testid="archie-node"]').first().click()
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 
-    const swapper = page.locator('[data-testid="component-swapper"]')
-    test.skip(!(await swapper.isVisible().catch(() => false)), "no same-type providers to swap")
+    // Fluidity P1: the provider swap is driven on the canvas block now (`archie-node-provider`).
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const provider = node.locator('[data-testid="archie-node-provider"]')
+    test.skip(!(await provider.isVisible().catch(() => false)), "no same-type providers to swap")
 
-    await swapper.locator('[role="combobox"]').click()
+    await provider.click()
     await page.getByRole("option", { name: /MySQL/i }).click()
     await page.waitForTimeout(500)
 

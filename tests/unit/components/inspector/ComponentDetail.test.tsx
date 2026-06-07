@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Component } from "@/types"
 import { useArchitectureStore } from "@/stores/architectureStore"
-import { useChallengeStore } from "@/stores/challengeStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 
 // Mock useLibrary hook. P5: ComponentDetail derives provider alternatives from `components`
@@ -58,19 +57,6 @@ const mockComponent: Component = {
       ],
     },
   ],
-}
-
-const componentWithNoVariants: Component = {
-  id: "simple",
-  name: "Simple Component",
-  category: "compute",
-  description: "A simple component",
-  is: "A simple test component",
-  gain: ["Fast"],
-  cost: ["Limited"],
-  tags: [],
-  baseMetrics: [],
-  configVariants: [],
 }
 
 // Shared props for all renders
@@ -190,17 +176,8 @@ describe("ComponentDetail", () => {
     expect(screen.getByText("Complex configuration")).toBeInTheDocument()
   })
 
-  it("renders ConfigSelector when variants exist", () => {
+  it("does NOT render the config-tier selector (Fluidity P1 — tuning moved to the canvas block)", () => {
     renderDefault()
-    expect(screen.getByTestId("config-selector")).toBeInTheDocument()
-  })
-
-  it("hides ConfigSelector when no variants", () => {
-    renderDefault({
-      component: componentWithNoVariants,
-      activeVariantId: "",
-      currentCategory: "compute",
-    })
     expect(screen.queryByTestId("config-selector")).not.toBeInTheDocument()
   })
 
@@ -253,16 +230,10 @@ describe("ComponentDetail", () => {
     expect(screen.queryByText("Compute")).not.toBeInTheDocument()
   })
 
-  // ComponentSwapper integration tests
-  it("renders ComponentSwapper when multiple components in category", () => {
+  // Fluidity P1 — the inspector is read-only; vendor swap lives on the canvas block now.
+  it("does NOT render the vendor swapper even when alternatives exist (read-only inspector)", () => {
     mockLibraryComponents = multipleComponentsInCategory
     mockGetComponentsByCategory.mockReturnValue(multipleComponentsInCategory)
-    renderDefault()
-    expect(screen.getByTestId("component-swapper")).toBeInTheDocument()
-  })
-
-  it("does not render ComponentSwapper when single component in category", () => {
-    mockGetComponentsByCategory.mockReturnValue([mockComponent])
     renderDefault()
     expect(screen.queryByTestId("component-swapper")).not.toBeInTheDocument()
   })
@@ -541,7 +512,7 @@ describe("ComponentDetail", () => {
     })
   })
 
-  describe("D20 — a challenge-locked traffic source is fixed until 3★", () => {
+  describe("read-only inspector (Fluidity P1) — no tuning controls", () => {
     const trafficComponent: Component = {
       id: "web-users",
       name: "Web Users",
@@ -560,51 +531,23 @@ describe("ComponentDetail", () => {
     const trafficAlt: Component = { ...trafficComponent, id: "api-clients", name: "API Clients" }
 
     beforeEach(() => {
-      // Two traffic providers + variants → the swapper + config WOULD show when unlocked.
-      mockLibraryComponents = [trafficComponent, trafficAlt]
+      mockLibraryComponents = [trafficComponent, trafficAlt] // alternatives exist → a swapper WOULD show if the panel still tuned
       useArchitectureStore.setState({
         nodes: [{ id: "t1", type: "archie", position: { x: 0, y: 0 }, data: { componentCategory: "traffic", archieComponentId: "web-users", trafficRps: 800 } }] as never,
       })
     })
     afterEach(() => {
-      useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", bestStars: {} })
       useArchitectureStore.setState({ nodes: [] as never })
     })
 
-    function renderTraffic() {
-      return render(
-        <ComponentDetail
-          component={trafficComponent}
-          activeVariantId="heavy"
-          onVariantChange={vi.fn()}
-          currentCategory="traffic"
-          onSwapComponent={vi.fn()}
-          nodeId="t1"
-        />,
-      )
-    }
-
-    it("hides the Provider swap + Config variant while locked (<3★) — only the locked demand controls remain", () => {
-      useChallengeStore.setState({ activeChallenge: { id: "llm-service", title: "LLM Service" } as never, attemptState: "building", bestStars: {} })
-      renderTraffic()
+    it("renders no vendor swap, config tier, or traffic-config controls — even for a traffic source with alternatives", () => {
+      // Tuning (vendor / tier / replicas / traffic) lives on the canvas block now; the D20 traffic lock is
+      // enforced there. The inspector only teaches — the vendor stays VISIBLE (read-only) in the heading.
+      render(<ComponentDetail component={trafficComponent} activeVariantId="heavy" nodeId="t1" />)
       expect(screen.queryByTestId("component-swapper")).not.toBeInTheDocument()
       expect(screen.queryByTestId("config-selector")).not.toBeInTheDocument()
-      expect(screen.getByTestId("traffic-locked-badge")).toBeInTheDocument() // demand controls present but locked
-    })
-
-    it("unlocks the Provider swap + Config variant once the challenge is 3★ (sandbox)", () => {
-      useChallengeStore.setState({ activeChallenge: { id: "llm-service", title: "LLM Service" } as never, attemptState: "building", bestStars: { "llm-service": 3 } })
-      renderTraffic()
-      expect(screen.getByTestId("component-swapper")).toBeInTheDocument()
-      expect(screen.getByTestId("config-selector")).toBeInTheDocument()
-      expect(screen.queryByTestId("traffic-locked-badge")).not.toBeInTheDocument()
-    })
-
-    it("leaves the traffic source fully editable in free mode (no active challenge)", () => {
-      useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", bestStars: {} })
-      renderTraffic()
-      expect(screen.getByTestId("component-swapper")).toBeInTheDocument()
-      expect(screen.getByTestId("config-selector")).toBeInTheDocument()
+      expect(screen.queryByTestId("inspector-traffic-config")).not.toBeInTheDocument()
+      expect(screen.getByTestId("inspector-heading")).toBeInTheDocument()
     })
   })
 })

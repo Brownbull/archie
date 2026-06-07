@@ -203,17 +203,17 @@ export async function connectNodes(
 }
 
 /**
- * Trigger recalculation by changing a node's config variant in the inspector.
- * This populates computedMetrics and edgeHeatmapStatus on connections.
+ * Trigger recalculation by changing a node's config variant ON THE BLOCK (Fluidity P1 — config tier
+ * is tuned on the canvas node now, not the inspector). Populates computedMetrics + edge heatmaps.
  */
 export async function triggerRecalcViaConfigChange(
   page: Page,
   nodeIndex = 0,
 ): Promise<void> {
-  await page.locator('[data-testid="archie-node"]').nth(nodeIndex).click()
-  await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+  const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
+  await node.click()
 
-  const configTrigger = page.locator('[data-testid="config-selector"] button[role="combobox"]')
+  const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
   await expect(configTrigger).toBeVisible({ timeout: 3_000 })
   await configTrigger.click()
 

@@ -16,22 +16,28 @@ async function placeComponent(page: Page, buttonIndex = 0) {
 }
 
 /**
- * Trigger recalculation for a node by changing its config variant in the inspector.
+ * Trigger recalculation for a node by changing its config variant ON THE BLOCK.
  *
  * addNode() does NOT call triggerRecalculation(), so computedMetrics stays empty
  * after placement. Changing the config variant triggers the full pipeline:
  * updateNodeConfigVariant → triggerRecalculation → computedMetrics populated.
+ *
+ * Fluidity P1: the config-tier picker moved off the inspector onto the canvas node
+ * (`archie-node-config-trigger`) and only renders for MULTI-VARIANT providers. Mirrors
+ * the redirected `triggerRecalcViaConfigChange` in helpers/canvas-helpers.ts.
  */
 async function triggerRecalcViaConfigChange(page: Page, nodeIndex = 0) {
-  // Select the node (opens inspector)
-  await page.locator('[data-testid="archie-node"]').nth(nodeIndex).click()
-  await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+  const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
+  // Click the node (opens the read-only inspector; harmless, not required to reach the dropdown).
+  await node.click()
 
-  // Open config variant dropdown (Radix Select combobox)
-  const configTrigger = page.locator(
-    '[data-testid="config-selector"] button[role="combobox"]',
-  )
-  await expect(configTrigger).toBeVisible({ timeout: 3_000 })
+  // Open the on-node config variant dropdown (Radix Select combobox).
+  const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
+  if (!(await configTrigger.isVisible().catch(() => false))) {
+    // Single-variant provider — no on-node config picker; recalculation won't trigger this way.
+    await page.waitForTimeout(500)
+    return
+  }
   await configTrigger.click()
 
   // Wait for the dropdown to open (Radix portals to body)

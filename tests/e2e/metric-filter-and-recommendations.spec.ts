@@ -69,9 +69,12 @@ test.describe("Metric Filter & Variant Recommendations E2E (Story 4-2b)", () => 
     const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
     await expect(inspectorPanel).toBeVisible()
 
-    // Recommendations require component with weak metrics (<5) and 2+ variants
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    test.skip(!(await configSelector.isVisible()), "Single-variant component")
+    // Recommendations require a component with weak metrics (<5) and 2+ variants. Fluidity P1: the
+    // config picker is on the canvas block now — `archie-node-config-trigger` renders only for
+    // multi-variant providers, so its presence is the multi-variant guard.
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
+    test.skip(!(await configTrigger.isVisible().catch(() => false)), "Single-variant component")
 
     const recsSection = page.locator('[data-testid="recommendations-section"]')
     const recsVisible = await recsSection.isVisible().catch(() => false)
@@ -119,10 +122,11 @@ test.describe("Metric Filter & Variant Recommendations E2E (Story 4-2b)", () => 
     const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
     await expect(inspectorPanel).toBeVisible()
 
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    test.skip(!(await configSelector.isVisible()), "Single-variant component")
+    // Fluidity P1: drive variant changes from the on-node config trigger (multi-variant only).
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const triggerButton = node.locator('[data-testid="archie-node-config-trigger"]')
+    test.skip(!(await triggerButton.isVisible().catch(() => false)), "Single-variant component")
 
-    const triggerButton = configSelector.locator("button").first()
     await triggerButton.click()
     const selectContent = page.locator("[role=listbox]")
     await expect(selectContent).toBeVisible({ timeout: 3_000 })

@@ -127,12 +127,14 @@ test.describe("Economics Full Journey E2E", () => {
       })
     }
 
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    const selectorVisible = await configSelector.isVisible().catch(() => false)
+    // Fluidity P1: config tier is tuned on the canvas block now — `archie-node-config-trigger`
+    // renders only for multi-variant providers, preserving the original conditional intent.
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
+    const selectorVisible = await configTrigger.isVisible().catch(() => false)
 
     if (selectorVisible) {
-      const trigger = configSelector.locator("button").first()
-      await trigger.click()
+      await configTrigger.click()
       await page.waitForTimeout(300)
 
       const options = page.locator('[role="option"]')

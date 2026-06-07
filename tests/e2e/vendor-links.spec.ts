@@ -20,9 +20,11 @@ const VENDORS_TO_TEST: VendorCheck[] = [
 ]
 
 async function swapVendorViaDOM(page: import("@playwright/test").Page, vendorName: string): Promise<void> {
-  // Open the Select dropdown via DOM events (bypasses overlay pointer interception)
+  // Open the Select dropdown via DOM events (bypasses overlay pointer interception).
+  // Fluidity P1: the provider picker is on the canvas block now — `archie-node-provider` IS the
+  // Radix combobox trigger (not a nested button inside an inspector swapper).
   await page.evaluate(() => {
-    const trigger = document.querySelector('[data-testid="component-swapper"] button[role="combobox"]') as HTMLElement
+    const trigger = document.querySelector('[data-testid="archie-node-provider"]') as HTMLElement
     if (!trigger) return
     trigger.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }))
     trigger.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, cancelable: true }))

@@ -204,11 +204,13 @@ test.describe("Connection Inspection E2E (Story 4-3)", () => {
     await addComponentToCanvas(page, 0)
     await addComponentToCanvas(page, 1)
 
-    // Select the first node — ComponentDetail should show
+    // Select the first node — ComponentDetail should show. Fluidity P1: the inspector is read-only
+    // now (no config-selector) — use the component-detail heading (`inspector-heading`) as the
+    // "component inspector is showing" marker.
     const firstNode = page.locator('[data-testid="archie-node"]').first()
     await firstNode.click()
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
-    await expect(page.locator('[data-testid="config-selector"]')).toBeVisible({ timeout: 3_000 })
+    await expect(page.locator('[data-testid="inspector-heading"]')).toBeVisible({ timeout: 3_000 })
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/06-node-selected-component-detail.png`,
@@ -230,17 +232,18 @@ test.describe("Connection Inspection E2E (Story 4-3)", () => {
     await edges.first().click({ force: true })
 
     await expect(page.locator('[data-testid="connection-detail"]')).toBeVisible({ timeout: 5_000 })
-    // ComponentDetail elements should NOT be visible (mutually exclusive)
-    await expect(page.locator('[data-testid="config-selector"]')).not.toBeVisible()
+    // ComponentDetail should NOT be visible (mutually exclusive). Fluidity P1: use the
+    // component-detail heading (`inspector-heading`) as the marker (no config-selector any more).
+    await expect(page.locator('[data-testid="inspector-heading"]')).not.toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/07-edge-selected-connection-detail.png`,
       fullPage: true,
     })
 
-    // Click back on a node — ComponentDetail should return
+    // Click back on a node — ComponentDetail should return (read-only heading marker, Fluidity P1).
     await firstNode.click()
-    await expect(page.locator('[data-testid="config-selector"]')).toBeVisible({ timeout: 5_000 })
+    await expect(page.locator('[data-testid="inspector-heading"]')).toBeVisible({ timeout: 5_000 })
     await expect(page.locator('[data-testid="connection-detail"]')).not.toBeVisible()
 
     await page.screenshot({

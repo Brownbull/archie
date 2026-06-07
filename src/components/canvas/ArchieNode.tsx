@@ -28,6 +28,7 @@ import { TypeIcon } from "@/components/common/TypeIcon"
 import { TrafficNodeControls } from "@/components/canvas/TrafficNodeControls"
 import { formatRps } from "@/lib/formatStats"
 import { NodeProviderSelect } from "@/components/canvas/NodeProviderSelect"
+import { NodeConfigSelect } from "@/components/canvas/NodeConfigSelect"
 import { Gauge } from "lucide-react"
 
 const PORT_HEIGHT_PX = 20
@@ -323,6 +324,12 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
             <span className="whitespace-nowrap text-[0.625rem] text-text-secondary">{nodeSubtitle}</span>
           </div>
         )
+      )}
+
+      {/* Config-tier picker on the block (Fluidity P1) — the second half of the single tuning surface,
+          alongside the vendor switch. Hidden for a challenge-locked traffic source (same D20 gate). */}
+      {typeInfo.typeId && !(isTraffic && trafficLocked) && (
+        <NodeConfigSelect nodeId={id} componentId={data.archieComponentId} activeVariantId={data.activeConfigVariantId} />
       )}
 
       {/* A traffic source is a load origin, not infrastructure — its cost/latency/throughput stats

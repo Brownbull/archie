@@ -77,29 +77,10 @@ test.describe("Inspector Responsiveness E2E", () => {
     const inspector = page.locator('[data-testid="inspector"]')
     await expect(inspector).toHaveCSS("width", "300px")
 
-    // Component Type selector should be horizontally contained
-    const componentSwapper = page.locator('[data-testid="component-swapper"]')
-    if (await componentSwapper.isVisible()) {
-      await componentSwapper.scrollIntoViewIfNeeded()
-      const trigger = componentSwapper.locator("button").first()
-      await expect(trigger).toBeVisible()
-      expect(
-        await isHorizontallyContained(inspector, trigger),
-        "Component Type dropdown should fit within 300px inspector",
-      ).toBe(true)
-    }
-
-    // Configuration selector should be horizontally contained
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    if (await configSelector.isVisible()) {
-      await configSelector.scrollIntoViewIfNeeded()
-      const trigger = configSelector.locator("button").first()
-      await expect(trigger).toBeVisible()
-      expect(
-        await isHorizontallyContained(inspector, trigger),
-        "Configuration dropdown should fit within 300px inspector",
-      ).toBe(true)
-    }
+    // Fluidity P1: the provider/config dropdowns moved OFF the inspector onto the canvas block, so
+    // there is no longer a swapper/config control inside the 300px aside to bound. The remaining
+    // inspector-width regression coverage (metric bars, gains/costs wrapping) lives in the other
+    // tests in this file. The dropdown-fit assertions are dropped here.
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-default-selects-fit.png`, fullPage: true })
   })
@@ -212,16 +193,8 @@ test.describe("Inspector Responsiveness E2E", () => {
     const inspector = page.locator('[data-testid="inspector"]')
     await expect(inspector).toHaveCSS("width", "500px")
 
-    // Check selects fit
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    if (await configSelector.isVisible()) {
-      await configSelector.scrollIntoViewIfNeeded()
-      const trigger = configSelector.locator("button").first()
-      expect(
-        await isHorizontallyContained(inspector, trigger),
-        "Config dropdown should fit within 500px inspector",
-      ).toBe(true)
-    }
+    // Fluidity P1: the config dropdown is on the canvas block now, not inside the inspector aside,
+    // so the in-panel config-fit check is dropped. Metric-bar consistency below still applies.
 
     // Scroll to metrics and check bar widths
     const metricsHeading = page.locator('[data-testid="inspector-panel"] h3', { hasText: "Metrics" })
@@ -245,16 +218,9 @@ test.describe("Inspector Responsiveness E2E", () => {
     const overlay = page.locator('[data-testid="inspector-overlay"]')
     await overlay.waitFor({ state: "visible", timeout: 3_000 })
 
-    // Check selects within overlay
-    const configSelector = overlay.locator('[data-testid="config-selector"]')
-    if (await configSelector.isVisible()) {
-      await configSelector.scrollIntoViewIfNeeded()
-      const trigger = configSelector.locator("button").first()
-      expect(
-        await isHorizontallyContained(overlay, trigger),
-        "Config dropdown should fit within overlay",
-      ).toBe(true)
-    }
+    // Fluidity P1: the config dropdown is on the canvas BLOCK now, not inside the inspector overlay,
+    // so an overlay-scoped config-fit check no longer makes sense (the control isn't in the overlay).
+    // The overlay-content regression coverage now rests on the metric-bar consistency check below.
 
     // Scroll to metrics and check bar consistency
     const metricsHeading = overlay.locator("h3", { hasText: "Metrics" })

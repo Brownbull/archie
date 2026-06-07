@@ -37,6 +37,11 @@ async function selectNodeOnCanvas(
 /**
  * Find the index of an Add to Canvas button whose component belongs to a
  * multi-member category. Returns -1 if none found. Leaves canvas clean.
+ *
+ * Fluidity P1: the provider swap moved onto the canvas block — a multi-provider
+ * type renders the `archie-node-provider` dropdown ON the node (single-provider
+ * types render only the static `archie-node-variant` label). Detect swappability
+ * by the presence of that on-node trigger; no inspector selection required.
  */
 async function findSwappableComponentIndex(
   page: import("@playwright/test").Page,
@@ -50,8 +55,9 @@ async function findSwappableComponentIndex(
 
     let isSwappable = false
     try {
-      await selectNodeOnCanvas(page, 0)
-      isSwappable = await page.locator('[data-testid="component-swapper"]').isVisible()
+      const node = page.locator('[data-testid="archie-node"]').first()
+      await expect(node).toBeVisible()
+      isSwappable = await node.locator('[data-testid="archie-node-provider"]').isVisible()
     } finally {
       // Ensure cleanup even on assertion failure
       const remaining = await page.locator('[data-testid="archie-node"]').count()
@@ -68,17 +74,19 @@ async function findSwappableComponentIndex(
 }
 
 /**
- * Perform a component swap via the ComponentSwapper dropdown.
- * Opens dropdown, selects the first option that doesn't match currentName, closes.
- * Returns the name of the component that was selected.
+ * Perform a provider swap via the on-node provider dropdown (Fluidity P1 — the
+ * vendor picker lives on the canvas block now, not the inspector).
+ * Opens the node's `archie-node-provider` trigger, selects the first option that
+ * doesn't match currentName, closes. Returns the name of the provider selected.
  */
 async function performSwap(
   page: import("@playwright/test").Page,
   currentName: string,
 ): Promise<string> {
-  const swapper = page.locator('[data-testid="component-swapper"]')
-  await expect(swapper).toBeVisible()
-  await swapper.locator("button").first().click()
+  const node = page.locator('[data-testid="archie-node"]').first()
+  const provider = node.locator('[data-testid="archie-node-provider"]')
+  await expect(provider).toBeVisible()
+  await provider.click()
 
   const listbox = page.locator("[role=listbox]")
   await expect(listbox).toBeVisible({ timeout: 3_000 })
@@ -137,14 +145,13 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     test.skip(idx === -1, "Skipped: no swappable components found")
 
     await addComponentToCanvas(page, idx)
-    await selectNodeOnCanvas(page, 0)
 
-    const swapper = page.locator('[data-testid="component-swapper"]')
-    await expect(swapper).toBeVisible()
-    // P5: the swapper now picks among same-TYPE providers and is labelled "Provider".
-    await expect(swapper.locator("label")).toContainText("Provider")
+    // Fluidity P1: provider swap lives on the canvas block now. The on-node `archie-node-provider`
+    // trigger renders for multi-provider types (no "Provider" label any more — dropped that assertion).
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const trigger = node.locator('[data-testid="archie-node-provider"]')
+    await expect(trigger).toBeVisible()
 
-    const trigger = swapper.locator("button").first()
     const triggerText = await trigger.textContent()
     expect(triggerText!.trim().length).toBeGreaterThan(0)
 
@@ -169,9 +176,12 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     for (let i = 0; i < btnCount; i++) {
       await addBtns.nth(i).click()
       await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
-      await selectNodeOnCanvas(page, 0)
 
-      if (!(await page.locator('[data-testid="component-swapper"]').isVisible())) {
+      // Fluidity P1: a single-provider type renders NO on-node provider dropdown (just the static
+      // `archie-node-variant` label) — absence of `archie-node-provider` marks a single-member type.
+      const node = page.locator('[data-testid="archie-node"]').first()
+      await expect(node).toBeVisible()
+      if (!(await node.locator('[data-testid="archie-node-provider"]').isVisible())) {
         found = true
         await page.screenshot({ path: `${SCREENSHOT_DIR}/02-swapper-hidden-single-member.png`, fullPage: true })
         break
@@ -239,11 +249,20 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     test.skip(idx === -1, "Skipped: no swappable components found")
 
     await addComponentToCanvas(page, idx)
+    // Open the read-only inspector so the metric bars render (the bars still live there).
     await selectNodeOnCanvas(page, 0)
 
+    // Fluidity P1: config tier is tuned on the canvas block now. The on-node `archie-node-config-trigger`
+    // renders only for multi-variant providers — a swappable (multi-provider) type isn't guaranteed
+    // multi-variant, so skip if there's no on-node config picker to inspect.
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
+    test.skip(
+      !(await configTrigger.isVisible().catch(() => false)),
+      "Skipped: swappable component is single-variant — no on-node config picker",
+    )
+
     // Capture original config variant list
-    const configTrigger = page.locator('[data-testid="config-selector"] button').first()
-    await expect(configTrigger).toBeVisible()
     await configTrigger.click()
     const configListbox = page.locator("[role=listbox]")
     await expect(configListbox).toBeVisible({ timeout: 3_000 })
@@ -263,25 +282,30 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/05-before-swap-config-metrics.png`, fullPage: true })
 
-    // Perform swap
-    const swapperValue = (await page.locator('[data-testid="component-swapper"] button').first().textContent())!.trim()
+    // Perform swap via the on-node provider dropdown.
+    const swapperValue = (await node.locator('[data-testid="archie-node-provider"]').textContent())!.trim()
     await performSwap(page, swapperValue)
 
-    // Config variant should have non-empty value
-    const newVariant = await configTrigger.textContent()
-    expect(newVariant!.trim().length).toBeGreaterThan(0)
+    // After a swap the (possibly new) provider may be single-variant — re-resolve the on-node
+    // config trigger and only assert variant-list divergence when one is still present.
+    const configTriggerAfter = node.locator('[data-testid="archie-node-config-trigger"]')
+    if (await configTriggerAfter.isVisible().catch(() => false)) {
+      // Config variant should have non-empty value
+      const newVariant = await configTriggerAfter.textContent()
+      expect(newVariant!.trim().length).toBeGreaterThan(0)
 
-    // Config variants list should differ after swap
-    await configTrigger.click()
-    const newConfigListbox = page.locator("[role=listbox]")
-    await expect(newConfigListbox).toBeVisible({ timeout: 3_000 })
-    const newConfigNames: string[] = []
-    const newOptions = newConfigListbox.locator("[role=option]")
-    for (let i = 0; i < await newOptions.count(); i++) {
-      newConfigNames.push((await newOptions.nth(i).textContent())?.trim() ?? "")
+      // Config variants list should differ after swap
+      await configTriggerAfter.click()
+      const newConfigListbox = page.locator("[role=listbox]")
+      await expect(newConfigListbox).toBeVisible({ timeout: 3_000 })
+      const newConfigNames: string[] = []
+      const newOptions = newConfigListbox.locator("[role=option]")
+      for (let i = 0; i < await newOptions.count(); i++) {
+        newConfigNames.push((await newOptions.nth(i).textContent())?.trim() ?? "")
+      }
+      expect(newConfigNames).not.toEqual(origConfigNames)
+      await page.keyboard.press("Escape")
     }
-    expect(newConfigNames).not.toEqual(origConfigNames)
-    await page.keyboard.press("Escape")
 
     // Metrics should have changed
     const newFills: string[] = []
@@ -302,12 +326,13 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     test.skip(idx === -1, "Skipped: no swappable components found")
 
     await addComponentToCanvas(page, idx)
-    await selectNodeOnCanvas(page, 0)
 
     const rfNode = page.locator(".react-flow__node").first()
     const transformBefore = await rfNode.evaluate((el) => getComputedStyle(el).transform)
 
-    const currentValue = (await page.locator('[data-testid="component-swapper"] button').first().textContent())!.trim()
+    // Fluidity P1: read the current provider off the on-node dropdown, then swap on the block.
+    const node = page.locator('[data-testid="archie-node"]').first()
+    const currentValue = (await node.locator('[data-testid="archie-node-provider"]').textContent())!.trim()
     await performSwap(page, currentValue)
     await page.waitForTimeout(TRANSITION_WAIT)
 

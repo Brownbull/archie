@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test"
+import { test, expect, type Page } from "@playwright/test"
 import {
   waitForComponentLibrary,
   addComponentToCanvas,
@@ -7,6 +7,21 @@ import {
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/inspector-and-config"
+
+/**
+ * Fluidity P1: the config-tier picker moved onto the canvas block and only renders for
+ * MULTI-VARIANT providers (`archie-node-config-trigger`). To exercise config behaviour
+ * deterministically, place a known multi-variant compute provider (Node.js + Express has
+ * Single Process + Cluster Mode tiers) instead of relying on the first toolbox block.
+ * Returns the placed node locator and its on-node config trigger.
+ */
+async function placeMultiVariantComponent(page: Page) {
+  await page.locator('[data-testid="add-to-canvas-node-express"]').click()
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
+  const node = page.locator('[data-testid="archie-node"]').first()
+  const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
+  return { node, configTrigger }
+}
 
 test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
   test("AC-1: click component node opens inspector with detail card", async ({ page }) => {
@@ -67,18 +82,14 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place a component and select it
-    await addComponentToCanvas(page)
-    await selectNodeOnCanvas(page)
+    // Place a multi-variant component (config tier is on the block now — Fluidity P1).
+    const { configTrigger } = await placeMultiVariantComponent(page)
 
-    // Config selector should be visible
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    await expect(configSelector).toBeVisible()
+    // On-node config trigger should be visible (multi-variant provider).
+    await expect(configTrigger).toBeVisible()
 
     // Verify dropdown trigger shows the current variant name (non-empty text)
-    const triggerButton = configSelector.locator("button").first()
-    await expect(triggerButton).toBeVisible()
-    const currentVariantText = await triggerButton.textContent()
+    const currentVariantText = await configTrigger.textContent()
     expect(currentVariantText!.trim().length).toBeGreaterThan(0)
 
     await page.screenshot({
@@ -87,7 +98,7 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     })
 
     // Open the dropdown to see all variants
-    await triggerButton.click()
+    await configTrigger.click()
 
     // Wait for dropdown content to appear (radix select renders in a portal)
     const selectContent = page.locator("[role=listbox]")
@@ -113,17 +124,16 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place a component and select it
-    await addComponentToCanvas(page)
+    // Place a multi-variant component, then open the read-only inspector for the metric bars.
+    const { configTrigger } = await placeMultiVariantComponent(page)
     await selectNodeOnCanvas(page)
     // Metrics live in a collapse-by-default disclosure (P3) — expand to read the bars.
     await expandInspectorSection(page, "disclosure-metrics")
 
-    // Verify config selector exists with more than 1 variant
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    await expect(configSelector).toBeVisible()
+    // Fluidity P1: config tier is tuned on the canvas block now — drive the on-node trigger.
+    await expect(configTrigger).toBeVisible()
 
-    const triggerButton = configSelector.locator("button").first()
+    const triggerButton = configTrigger
     const initialVariantText = await triggerButton.textContent()
 
     // Open dropdown
@@ -198,8 +208,8 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place and select a component to open inspector
-    await addComponentToCanvas(page)
+    // Place a multi-variant component (so the on-node config trigger is present) and open inspector.
+    const { configTrigger } = await placeMultiVariantComponent(page)
     await selectNodeOnCanvas(page)
 
     const inspector = page.locator('[data-testid="inspector"]')
@@ -230,9 +240,11 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Inspector should be back to 300px
     await expect(inspector).toHaveCSS("width", "300px")
 
-    // Full content should be visible again
+    // Full content should be visible again. Fluidity P1: the inspector is read-only now (no
+    // config-selector); assert the read-only summary is back, plus the on-node config trigger.
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible()
-    await expect(page.locator('[data-testid="config-selector"]')).toBeVisible()
+    await expect(page.locator('[data-testid="inspector-summary-provider"]')).toBeVisible()
+    await expect(configTrigger).toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/06-inspector-expanded-300px.png`,
@@ -408,8 +420,10 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
     await expect(page.locator('[data-testid="connection-detail"]')).toBeVisible({ timeout: 3_000 })
 
-    // Component-specific elements should NOT be visible (mutually exclusive selection)
-    await expect(page.locator('[data-testid="config-selector"]')).not.toBeVisible()
+    // Component-specific inspector content should NOT be visible (mutually exclusive selection).
+    // Fluidity P1: the inspector no longer carries the config-selector — use the component-detail
+    // heading (`inspector-heading`) as the "component inspector is showing" marker instead.
+    await expect(page.locator('[data-testid="inspector-heading"]')).not.toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/10-edge-click-shows-connection-inspector.png`,
@@ -540,14 +554,13 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place a component and open the inspector
-    await addComponentToCanvas(page)
+    // Place a multi-variant component and open the read-only inspector for the code snippet.
+    const { configTrigger } = await placeMultiVariantComponent(page)
     await selectNodeOnCanvas(page)
 
-    // Open the config dropdown
-    const configSelector = page.locator('[data-testid="config-selector"]')
-    await expect(configSelector).toBeVisible()
-    const triggerButton = configSelector.locator("button").first()
+    // Fluidity P1: the config dropdown is on the canvas block now.
+    await expect(configTrigger).toBeVisible()
+    const triggerButton = configTrigger
 
     // Expand the collapse-by-default "Code example" disclosure before reading the snippet.
     await page.locator('[data-testid="disclosure-code"]').click()

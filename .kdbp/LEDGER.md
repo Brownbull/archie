@@ -4264,3 +4264,54 @@ CI: ✅ E2E unlocked replay (3m45s) + Deploy Production (49s) both green
 PROMOTION: N/A
 DEPLOYMENTS: P143
 Ships the D20 traffic-lock-gap fix (3e3f65d): traffic-source vendor swap + config variant now gated on canvas + inspector while a challenge is unsolved. Also carries the P142 navigation bookkeeping commit 546b987 onto main. Suite 4846, CI green.
+
+## 2026-06-07 11:50 — PLAN COMPLETED: Learning-Fidelity Redesign
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-06-07_learning-fidelity-redesign.md
+PHASES COMPLETED: 4 of 4 (shipped P135–P143; behavior-tied scoring, engine fidelity, resilience, new dimensions)
+
+## 2026-06-07 11:50 — PLAN CREATED: Fluidity — UX consolidation
+PHASES: 3 | COMPLEXITY: high | MATURITY: enterprise
+TIERS: ent × 2, scale × 1 | PROTOTYPES: 0
+DECISIONS: D79 → D81 (block-tunes-panel-teaches; declutter-footer-in-place; per-phase tiers + supersede)
+HTML_ARTIFACT: none
+- 2026-06-07 12:04 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/NodeConfigSelect.tsx
+- 2026-06-07 12:07 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 12:07 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 12:08 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 12:08 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 12:08 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 12:08 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/InspectorPanel.tsx
+- 2026-06-07 12:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-07 12:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-07 12:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-07 12:11 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-07 12:12 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-07 12:14 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/NodeConfigSelect.test.tsx
+- 2026-06-07 12:20 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 12:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-07 12:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-07 12:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-07 12:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-07 12:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-07 12:25 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 12:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-types.spec.ts
+- 2026-06-07 12:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+- 2026-06-07 12:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+- 2026-06-07 12:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+- 2026-06-07 12:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+- 2026-06-07 12:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-07 12:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-07 12:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-07 12:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/vendor-links.spec.ts
+- 2026-06-07 12:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/economics-full-journey.spec.ts
+- 2026-06-07 12:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 12:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/visual-audit.spec.ts
+- 2026-06-07 12:30 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/metric-filter-and-recommendations.spec.ts
+- 2026-06-07 12:30 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/metric-filter-and-recommendations.spec.ts
