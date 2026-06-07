@@ -4326,3 +4326,17 @@ CI: ✅ E2E unlocked replay (3m57s) + Deploy Production (52s) both green
 PROMOTION: N/A
 DEPLOYMENTS: P144
 Ships Fluidity P1 (d1238e8): block tunes / panel teaches. Also carries the P143 bookkeeping commit 6981bad onto main. PLAN Phase 1 Exec+Commit+Push ✅ (Review pending — the desktop-E2E redirects are flagged for a runtime validation pass when that env is available).
+- 2026-06-07 12:41 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-07 12:42 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-07 12:42 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-07 12:43 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/DashboardPanel.test.tsx
+
+## 2026-06-07 12:55 — [28408c2] feat(ux): Fluidity P2 — declutter the score footer in place
+D80: the dashboard footer now shows tier + budget + aggregate grade + the SINGLE weakest category (the actionable "improve next" signal, testid dashboard-weakest) + an "All N" expand button that opens the existing DashboardOverlay for the full per-category breakdown — instead of cramming all 7 category bars into a 100px strip (overflow-x-auto). DashboardPanel test updated to the weakest-only inline contract; full suite green (4845), tsc + lint clean. Follow-up logged as PENDING D21: scoring-dashboard.spec (desktop project, not CI-gated/runnable here) asserts the full footer category-bar set across ~10 tests → rework in a desktop-E2E validation pass (footer=weakest; full set via overlay-category-* in the overlay), batched with the Phase-1 inspector→canvas redirect validation. PLAN Phase 2 Exec+Commit ticked.
+
+## 2026-06-07 12:58 — PUSH dev -> main (P145)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P145
+Ships Fluidity P2 (28408c2): score-footer declutter in place. Carries the P144 bookkeeping 257e62e onto main. PLAN Phase 2 Exec+Commit+Push ✅ (Review pending — folded into PENDING D21 desktop-E2E validation pass). Fluidity Phases 1+2 shipped; Phase 3 (knowledge propagation + progressive unlock journey) remains DEFERRED per the user.
