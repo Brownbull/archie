@@ -4373,3 +4373,29 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P147
 Ships D22 rehab part 1 (3c386f8): scoring-dashboard validated green on desktop + reusable useAdvancedLevel/add-type helpers + the missed Fluidity P1+P2 Review ticks. PENDING D22 stays OPEN with a PROGRESS note: residual = inspector-and-config (auto-select-on-placement breaks AC-1; disclosure/collapse; advanced-seed not resolving gating in practice), component-types type-group testid rename, vendor-links new-vendor Firestore seed drift — deep pre-existing app-evolution rot on a dormant non-CI suite, low ROI. Carries P146 bookkeeping 74ef258 onto main.
+- 2026-06-07 14:02 | Write | /home/khujta/projects/bmad/archie/tests/e2e/_probe-level.spec.ts
+- 2026-06-07 14:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:04 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:04 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 14:14 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:14 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 14:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-types.spec.ts
+- 2026-06-07 14:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/vendor-links.spec.ts
+- 2026-06-07 14:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/vendor-links.spec.ts
+
+## 2026-06-07 14:05 — PUSH dev -> main (P148)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P148
+Ships D22 rehab completion (a13a469): inspector-and-config (13/0), component-types (recreated vs type-block-*), vendor-links (seed-drift-resilient, all 5 verify). Root causes fixed: the default beginner level hid inspector disclosures (advanced-level seed works — probed); selectNodeOnCanvas clicked the node center where the Fluidity-P1 on-node dropdowns now sit, opening a Radix overlay that blocked subsequent clicks (the dominant cascade) → now clicks the header; toolbox redesign moved providers from component-card grid into type-block hover lists; new vendors were seeded after all (earlier failures were the DOM-hack swap). PENDING D22 RESOLVED — the whole dormant desktop suite's Fluidity-related rot is now repaired. Carries P147 bookkeeping 53581d2 onto main.
