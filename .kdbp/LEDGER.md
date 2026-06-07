@@ -4464,3 +4464,20 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P153
 Ships Fluidity P3c-2 (ccaf856): tooltip journeys retuned to the current app (read-only inspector + tune-on-block, tier-aware via DOM-presence; toolbox + first-run tour de-staled). COMPLETES FLUIDITY PHASE 3 — 3a (inspector declutter, P149), 3b (Test Conditions = failures, P150), 3c-1/1b (progressive config/vendor/replica disclosure, P151/P152), 3c-2 (tooltip journeys, P153). PLAN Phase 3 ticked ✅✅✅✅. Whole Fluidity epic (P1+P2+P3) now shipped. Optional remaining: a bespoke cross-region full-journey tour. Dormant desktop-spec rehab tracked in D23.
+- 2026-06-07 18:20 | Edit | /home/khujta/projects/bmad/archie/src/lib/panelGuides.ts
+- 2026-06-07 18:21 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-07 18:21 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-07 18:21 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-07 18:21 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/panelGuides.test.ts
+- 2026-06-07 18:21 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/panelGuides.test.ts
+- 2026-06-07 18:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/SettingsMenu.test.tsx
+- 2026-06-07 18:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/SettingsMenu.test.tsx
+- 2026-06-07 18:23 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/SettingsMenu.test.tsx
+- 2026-06-07 18:26 | Write | /home/khujta/projects/bmad/archie/tests/e2e/full-journey-tour.spec.ts
+
+## 2026-06-07 16:25 — PUSH dev -> main (P154)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P154
+Ships Fluidity P3c-3 (d98d5bf): the bespoke "full tour" — Settings launcher + FULL_JOURNEY cross-region steps, tier/state-aware (DOM-presence filtered) + a desktop smoke spec. Fluidity epic fully shipped (P1+P2+P3 + the optional full-journey tour). NEXT (user-approved): D23 desktop-suite rehab — connection-inspection (pre-existing edge-creation + pane-deselect rot), the demand-scenario specs referencing the retired selector, and the 3 section-nav specs.
