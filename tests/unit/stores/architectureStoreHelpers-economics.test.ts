@@ -141,6 +141,31 @@ describe("computeTotalArchitectureCost", () => {
   })
 })
 
+describe("on-path cost — disconnected nodes don't bill (D74)", () => {
+  beforeEach(() => {
+    mockGetComponent.mockReset()
+    // every node id resolves to a $50/mo component (variant "v")
+    mockGetComponent.mockReturnValue(makeComponent([{ id: "v", monthlyCost: 50, maxRPS: 1000, baseLatencyMs: 5 }]))
+  })
+  const nodes = [
+    { id: "traffic", data: { archieComponentId: "c", activeConfigVariantId: "v", componentCategory: "traffic" as const } },
+    { id: "compute", data: { archieComponentId: "c", activeConfigVariantId: "v", componentCategory: "compute" as const } },
+    { id: "db", data: { archieComponentId: "c", activeConfigVariantId: "v", componentCategory: "data-storage" as const } }, // DISCONNECTED
+  ]
+  const edges = [{ source: "traffic", target: "compute" }] // db has no edge
+
+  it("WITHOUT edges, every node bills (legacy — byte-identical)", () => {
+    expect(computeTotalArchitectureCost(nodes)).toBe(150) // 3 × $50
+  })
+  it("WITH edges, the disconnected db is excluded — only on-path nodes bill", () => {
+    expect(computeTotalArchitectureCost(nodes, edges)).toBe(100) // traffic + compute reachable; db dropped
+  })
+  it("a fully-wired build is byte-identical with or without the edges filter", () => {
+    const wired = [...edges, { source: "compute", target: "db" }]
+    expect(computeTotalArchitectureCost(nodes, wired)).toBe(computeTotalArchitectureCost(nodes)) // 150 both
+  })
+})
+
 describe("workloadBlend (ED5/D20, D74)", () => {
   it("empty / zero-rps sources ⇒ no override", () => {
     expect(workloadBlend([])).toEqual({})

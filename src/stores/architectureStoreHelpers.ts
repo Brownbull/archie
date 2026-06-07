@@ -470,11 +470,49 @@ export function buildTrafficCurveFromSources(
   return buildTrafficCurveFromSpecs(specs, durationS, points)
 }
 
+/**
+ * On-path reachability (D74): the set of node ids reachable from the traffic sources through the directed
+ * edges — mirrors the sim's inflow seeding (findEntryNodes) + the rubric's requiredTypesOnServedPath: seed
+ * from in-degree-0 traffic nodes when any exist, else all in-degree-0 nodes; BFS forward. A placed-then-
+ * disconnected block is NOT reachable, so the cost helpers can exclude it from the bill (it's already inert
+ * in the sim — zero inflow — so it shouldn't cost the player the budget star either).
+ */
+function reachableNodeIds(
+  nodes: ReadonlyArray<{ id: string; data: { componentCategory?: ComponentCategoryId } }>,
+  edges: ReadonlyArray<{ source: string; target: string }>,
+): Set<string> {
+  const ids = new Set(nodes.map((n) => n.id))
+  const indeg = new Map<string, number>(nodes.map((n) => [n.id, 0]))
+  const outAdj = new Map<string, string[]>()
+  for (const e of edges) {
+    if (!ids.has(e.source) || !ids.has(e.target)) continue
+    outAdj.set(e.source, [...(outAdj.get(e.source) ?? []), e.target])
+    indeg.set(e.target, (indeg.get(e.target) ?? 0) + 1)
+  }
+  const entries = nodes.filter((n) => (indeg.get(n.id) ?? 0) === 0)
+  const trafficEntries = entries.filter((n) => n.data.componentCategory === "traffic").map((n) => n.id)
+  const seeds = trafficEntries.length > 0 ? trafficEntries : entries.map((n) => n.id)
+  const reachable = new Set<string>()
+  const queue = [...seeds]
+  while (queue.length > 0) {
+    const id = queue.shift()!
+    if (reachable.has(id)) continue
+    reachable.add(id)
+    for (const t of outAdj.get(id) ?? []) if (!reachable.has(t)) queue.push(t)
+  }
+  return reachable
+}
+
 export function computeTotalArchitectureCost(
-  nodes: ReadonlyArray<{ data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number } }>,
+  nodes: ReadonlyArray<{ id?: string; data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number; componentCategory?: ComponentCategoryId } }>,
+  // D74: when edges are given, charge ONLY for nodes on the served path — a disconnected block is inert in
+  // the sim, so it shouldn't cost the player the budget star either. Omitted ⇒ every node counts (byte-identical).
+  edges?: ReadonlyArray<{ source: string; target: string }>,
 ): number {
+  const onPath = edges ? reachableNodeIds(nodes.filter((n): n is typeof n & { id: string } => n.id !== undefined), edges) : undefined
   let total = 0
   for (const node of nodes) {
+    if (onPath && node.id !== undefined && !onPath.has(node.id)) continue
     const { monthlyCost } = getNodeCost(
       node.data.archieComponentId,
       node.data.activeConfigVariantId,
@@ -496,14 +534,19 @@ export function computeTotalArchitectureCost(
  * Idle leading ticks (totalServed 0) are skipped so the curve's ramp doesn't fake an elasticity discount.
  */
 export function computeIntegratedArchitectureCost(
-  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number } }>,
+  nodes: ReadonlyArray<{ id: string; data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number; componentCategory?: ComponentCategoryId } }>,
   ticks: readonly TickState[],
+  // D74: like computeTotalArchitectureCost — when edges are given, only on-path nodes bill (disconnected
+  // static/autoscale tiers excluded). Omitted ⇒ every node counts.
+  edges?: ReadonlyArray<{ source: string; target: string }>,
 ): number {
   const cost = (n: { data: { archieComponentId: string; activeConfigVariantId: string; replicaCount?: number; trafficRps?: number } }) =>
     getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps)
-  if (!nodes.some((n) => cost(n).autoscale)) return computeTotalArchitectureCost(nodes)
+  if (!nodes.some((n) => cost(n).autoscale)) return computeTotalArchitectureCost(nodes, edges)
+  const onPath = edges ? reachableNodeIds(nodes, edges) : undefined
   let total = 0
   for (const node of nodes) {
+    if (onPath && !onPath.has(node.id)) continue
     const c = cost(node)
     if (c.monthlyCost === undefined) continue
     const R = Math.max(1, node.data.replicaCount ?? 1)

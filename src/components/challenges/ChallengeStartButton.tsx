@@ -55,7 +55,7 @@ export function ChallengeStartButton() {
     // into blocking (orphan/unreachable → gates the well-formed star) + advisory (SPOF/LB → resilient).
     const topo = countTopologyIssues(topologyIssues)
     startAttempt({
-      totalCost: computeTotalArchitectureCost(nodes),
+      totalCost: computeTotalArchitectureCost(nodes, edges), // D74: on-path only — a disconnected block doesn't bill
       topologyIssueCount: topo.blocking,
       topologyAdvisoryCount: topo.advisory,
       topologyGraph: { typeByNodeId, edges: typedEdges },

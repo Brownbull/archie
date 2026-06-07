@@ -485,8 +485,9 @@ export function scoreBuild(c: Challenge, nodes: readonly RefNode[], edges: reado
   // Match the app's useChallengeAutoScore split so the harness scores identically to the real game.
   const { blocking, advisory } = countTopologyIssues(topologyIssues)
   // ED9 (D74): integrate cost over the curve so autoscale tiers bill mean-active, not flat. No autoscale
-  // node ⇒ exactly computeTotalArchitectureCost (the 57 byte-identical).
-  const totalCost = computeIntegratedArchitectureCost(nodes, result.ticks)
+  // node ⇒ exactly computeTotalArchitectureCost. D74 on-path: pass edges so a disconnected block doesn't
+  // bill (matches the live app's ChallengeStartButton/useChallengeAutoScore — no harness/app drift).
+  const totalCost = computeIntegratedArchitectureCost(nodes, result.ticks, edges)
   const canvasTypeIds = new Set<string>()
   const typeByNodeId = new Map<string, string>()
   const cdnHitByNodeId = new Map<string, number>()

@@ -41,9 +41,10 @@ export function useChallengeAutoScore(): void {
     // it can't use the start-time snapshot — integrate over the ticks. Non-autoscale builds keep the
     // frozen snapshot cost (the D72 mid-run-edit guard), so the 57 are byte-identical.
     const hasAutoscale = archState.nodes.some((n) => getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps).autoscale === true)
+    // D74: on-path cost — a disconnected block is inert in the sim, so it shouldn't bill against budget either.
     const totalCost = hasAutoscale
-      ? computeIntegratedArchitectureCost(archState.nodes, ticks)
-      : (attemptSnapshot?.totalCost ?? computeTotalArchitectureCost(archState.nodes))
+      ? computeIntegratedArchitectureCost(archState.nodes, ticks, archState.edges)
+      : (attemptSnapshot?.totalCost ?? computeTotalArchitectureCost(archState.nodes, archState.edges))
 
     // Topology scoring (D72): only BLOCKING issues (orphan/unreachable — a structurally broken graph)
     // gate the well-formed star. SPOF (missing-hop) + replicas-without-LB are ADVISORY: they coach
