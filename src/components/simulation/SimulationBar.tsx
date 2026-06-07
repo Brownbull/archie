@@ -20,14 +20,16 @@ export function SimulationBar() {
     <div data-testid="simulation-bar" className="border-t border-archie-border bg-panel px-3 py-2">
       <div className="flex items-center justify-between pb-1">
         <SimulationStatsPanel />
+        {/* Explicit, labeled "exit simulation" — clears the sim and returns to editing (the Run button
+            reappears). Labeled rather than a bare X so "get out of the simulation" is obvious. */}
         <button
           type="button"
           data-testid="sim-close"
-          aria-label="Close simulation"
+          aria-label="Exit simulation"
           onClick={() => reset()}
-          className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-surface hover:text-text-primary"
+          className="flex items-center gap-1 rounded px-2 py-0.5 text-[0.6875rem] font-medium text-text-secondary hover:bg-surface hover:text-text-primary"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-3.5 w-3.5" /> Exit
         </button>
       </div>
       <div className="h-14 w-full overflow-hidden rounded bg-surface/40">

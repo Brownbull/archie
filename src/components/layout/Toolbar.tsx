@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { ExperienceLevelControl } from "@/components/layout/ExperienceLevelControl"
 import { AppMenuBar } from "@/components/layout/AppMenuBar"
@@ -41,9 +42,21 @@ export function Toolbar() {
 
       {activeChallenge && attemptState !== "idle" && (
         <div data-testid="challenge-active-indicator" className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-          <span className="rounded-full bg-blue-500/20 px-3 py-0.5 text-xs font-semibold text-blue-300">
+          {/* The quest title is the switch-quest affordance: clicking it opens the quest menu (same tree
+              the Quest Mode toggle opens) so you can jump to another quest mid-flight without first
+              exiting to Free Mode. Submitted runs are already persisted; the in-progress build is
+              discarded on switch (the tree's start flow confirms the canvas clear). */}
+          <button
+            type="button"
+            data-testid="switch-quest"
+            onClick={() => setQuestLogOpen(true)}
+            title="Switch quest — open the quest menu"
+            aria-label={`Active quest: ${activeChallenge.title}. Open the quest menu to switch.`}
+            className="group flex items-center gap-1 rounded-full bg-blue-500/20 px-3 py-0.5 text-xs font-semibold text-blue-300 transition-colors hover:bg-blue-500/30 hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50"
+          >
             {activeChallenge.title}
-          </span>
+            <ChevronDown className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
+          </button>
           <span className="text-[0.625rem] text-text-secondary">
             {attemptState === "building" ? "Building…" : attemptState === "running" ? "Running…" : attemptState === "scored" ? "Scored" : ""}
           </span>

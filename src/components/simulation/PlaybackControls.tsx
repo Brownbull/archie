@@ -39,9 +39,12 @@ export function PlaybackControls() {
         data-testid="playback-replay"
         aria-label="Replay from start"
         onClick={() => replay()}
-        className="flex h-6 w-6 items-center justify-center rounded text-text-secondary hover:bg-surface hover:text-text-primary"
+        className={`flex items-center gap-1 rounded text-text-secondary hover:bg-surface hover:text-text-primary ${status === "done" ? "px-1.5 py-0.5 text-[0.625rem] font-medium" : "h-6 w-6 justify-center"}`}
       >
         <RotateCcw className="h-3.5 w-3.5" />
+        {/* Surface the label once the run finishes — "repeat the simulation" becomes explicit at the
+            moment it's wanted, while staying a compact icon during live playback. */}
+        {status === "done" && <span>Replay</span>}
       </button>
 
       <input

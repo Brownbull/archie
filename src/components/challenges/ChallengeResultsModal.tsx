@@ -227,6 +227,14 @@ export function ChallengeResultsModal() {
     // Only clear the challenge's scored state → back to building mode.
     selectChallenge(challenge)
   }
+  // Open the quest menu (the tree the Quest Mode toggle opens) so the player can jump to ANOTHER quest
+  // straight from the result — available at every star count, so a failed (0★) run isn't a dead-end
+  // that forces close → exit → reopen.
+  const openQuestMenu = () => {
+    selectChallenge(challenge) // clear the scored state back to building before leaving the modal
+    useUiStore.getState().setChallengesOpen(false)
+    useUiStore.getState().setQuestLogOpen(true)
+  }
 
   const xpPerStar = challenge.rewards?.xp ? Math.ceil(challenge.rewards.xp / 3) : 0
 
@@ -400,19 +408,20 @@ export function ChallengeResultsModal() {
           <Button data-testid="result-retry" variant="outline" size="sm" onClick={onRetry}>
             Adjust &amp; retry
           </Button>
-          {result.stars > 0 && (
+          {result.stars > 0 ? (
             <Button
               data-testid="result-next-quest"
               size="sm"
               className="gap-1.5 bg-[#c9a961] text-[#1a1410] hover:bg-[#d4b872] font-bold"
-              onClick={() => {
-                selectChallenge(challenge)
-                useUiStore.getState().setChallengesOpen(false)
-                // Open the Quest Log (journey tree) to pick the next quest.
-                useUiStore.getState().setQuestLogOpen(true)
-              }}
+              onClick={openQuestMenu}
             >
               <Map className="h-3.5 w-3.5" /> Next Quest
+            </Button>
+          ) : (
+            // 0★ is not a dead-end: still offer a path to the quest menu so the player can switch quests
+            // without close → exit → reopen (the asymmetry the nav audit flagged).
+            <Button data-testid="result-quest-menu" variant="outline" size="sm" className="gap-1.5" onClick={openQuestMenu}>
+              <Map className="h-3.5 w-3.5" /> Quest menu
             </Button>
           )}
         </DialogFooter>

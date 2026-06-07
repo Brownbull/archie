@@ -25,6 +25,17 @@ function setRunning() {
   })
 }
 
+function setDone() {
+  useSimulationStore.setState({
+    status: "done",
+    isPlaying: false,
+    currentTick: 1,
+    speed: 1,
+    ticks: [frame(0, 50, 50, 0), frame(1, 100, 80, 20)],
+    entryNodeIds: ["in"],
+  })
+}
+
 describe("SimulationBar (Epic 15)", () => {
   beforeEach(() => {
     vi.useFakeTimers()
@@ -78,6 +89,28 @@ describe("SimulationBar (Epic 15)", () => {
     render(<SimulationBar />)
     fireEvent.click(screen.getByTestId("sim-close"))
     expect(s().status).toBe("idle")
+  })
+
+  it("labels the exit control 'Exit' so getting out of the simulation is explicit", () => {
+    setRunning()
+    render(<SimulationBar />)
+    expect(screen.getByTestId("sim-close")).toHaveTextContent("Exit")
+  })
+
+  it("surfaces a labeled 'Replay' on the replay control once the run is done", () => {
+    setDone()
+    render(<SimulationBar />)
+    const replay = screen.getByTestId("playback-replay")
+    expect(replay).toHaveTextContent("Replay")
+    fireEvent.click(replay)
+    expect(s().currentTick).toBe(0)
+    expect(s().status).toBe("running")
+  })
+
+  it("keeps the replay control icon-only (no label) during live playback", () => {
+    setRunning()
+    render(<SimulationBar />)
+    expect(screen.getByTestId("playback-replay")).not.toHaveTextContent("Replay")
   })
 
   it("shows the failed-request uptime drop in stats", () => {

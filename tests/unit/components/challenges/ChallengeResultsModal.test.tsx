@@ -30,6 +30,7 @@ import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsM
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useUiStore } from "@/stores/uiStore"
 
 const challenge: Challenge = {
   id: "c1", title: "HA Service", brief: "b", difficulty: "beginner", budgetCap: 100, durationSeconds: 60,
@@ -48,6 +49,7 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, bestStars: {} })
     useSimulationStore.getState().reset()
     useArchitectureStore.setState({ nodes: [], topologyIssues: [], topologyIssuesByNodeId: new Map() })
+    useUiStore.setState({ questLogOpen: false, challengesOpen: false })
   })
   afterEach(() => useSimulationStore.getState().reset())
 
@@ -154,6 +156,25 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(chip?.textContent).not.toContain("Infinity")
     expect(chip?.getAttribute("data-unmeasured")).toBe("true")
     expect(chip?.getAttribute("data-pass")).toBe("false")
+  })
+
+  it("offers a Quest menu button at 0★ (failed run is not a dead-end) that opens the quest tree", () => {
+    const result: StarBreakdown = { stars: 0, passedMetrics: false, underBudget: false, cleanTopology: false, resilient: false }
+    const measured: MeasuredAttempt = { uptimePercent: 70, p99LatencyMs: 600, totalCost: 200, topologyIssueCount: 0 }
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", lastResult: result, lastMeasured: measured })
+    render(<ChallengeResultsModal />)
+    expect(screen.queryByTestId("result-next-quest")).not.toBeInTheDocument() // gold CTA hidden at 0★
+    fireEvent.click(screen.getByTestId("result-quest-menu"))
+    expect(useUiStore.getState().questLogOpen).toBe(true)
+  })
+
+  it("shows the gold Next Quest CTA (not the neutral Quest menu) when stars > 0", () => {
+    const result: StarBreakdown = { stars: 2, passedMetrics: true, underBudget: true, cleanTopology: false, resilient: false }
+    const measured: MeasuredAttempt = { uptimePercent: 100, p99LatencyMs: 50, totalCost: 60, topologyIssueCount: 1 }
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", lastResult: result, lastMeasured: measured })
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("result-next-quest")).toBeInTheDocument()
+    expect(screen.queryByTestId("result-quest-menu")).not.toBeInTheDocument()
   })
 
   it("shows the Resilient bonus badge when the build has no SPOF (D72)", () => {

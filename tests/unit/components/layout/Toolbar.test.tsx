@@ -4,6 +4,8 @@ import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router-dom"
 import { Toolbar } from "@/components/layout/Toolbar"
 import { useUiStore } from "@/stores/uiStore"
+import { useChallengeStore } from "@/stores/challengeStore"
+import type { Challenge } from "@/lib/challengeTypes"
 import { TOOLBAR_HEIGHT } from "@/lib/constants"
 
 const mockSignOut = vi.fn()
@@ -32,7 +34,8 @@ function renderToolbar() {
 describe("Toolbar", () => {
   beforeEach(() => {
     vi.resetAllMocks()
-    useUiStore.setState({ promptOpen: false, challengesOpen: false, resetCanvasOpen: false })
+    useUiStore.setState({ promptOpen: false, challengesOpen: false, resetCanvasOpen: false, questLogOpen: false })
+    useChallengeStore.setState({ activeChallenge: null, attemptState: "idle" })
     mockUseAuth.mockReturnValue({
       user: { uid: "123", displayName: "Test User" },
       loading: false,
@@ -101,5 +104,24 @@ describe("Toolbar", () => {
     await user.click(screen.getByTestId("menu-build"))
     await user.click(await screen.findByTestId("menu-ai-prompt"))
     expect(await screen.findByTestId("prompt-template-dialog")).toBeInTheDocument()
+  })
+
+  it("exposes the active quest title as a clickable switch-quest button that opens the quest menu", async () => {
+    const user = userEvent.setup()
+    useChallengeStore.setState({
+      activeChallenge: { id: "edge-delivery", title: "Edge Delivery" } as unknown as Challenge,
+      attemptState: "building",
+    })
+    renderToolbar()
+    const switchBtn = screen.getByTestId("switch-quest")
+    expect(switchBtn).toHaveTextContent("Edge Delivery")
+    expect(useUiStore.getState().questLogOpen).toBe(false)
+    await user.click(switchBtn)
+    expect(useUiStore.getState().questLogOpen).toBe(true) // opens the quest menu so you can switch quests mid-flight
+  })
+
+  it("shows no switch-quest button outside an active quest (idle)", () => {
+    renderToolbar()
+    expect(screen.queryByTestId("switch-quest")).not.toBeInTheDocument()
   })
 })
