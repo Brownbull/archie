@@ -4,6 +4,7 @@ import type { NodeProps } from "@xyflow/react"
 import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_MIN_WIDTH, NODE_MAX_WIDTH, MIN_REPLICAS, MAX_REPLICAS, getScalingRule, type ComponentCategoryId } from "@/lib/constants"
 import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { NodeActionToolbar } from "@/components/canvas/NodeActionToolbar"
@@ -143,6 +144,9 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
   // Traffic sources aren't "scaled" with replicas — instead the stepper sets their emitted rps
   // (data.trafficRps, the source's peak; legacy nodes fall back to the TRAFFIC_RPS_STEPS index).
   const isTraffic = data.componentCategory === "traffic"
+  // D20: a challenge traffic source is the fixed problem statement until 3★ — gate the in-node vendor
+  // switcher too (the demand controls already lock in TrafficNodeControls), so it can't be swapped while locked.
+  const trafficLocked = useChallengeStore((st) => isChallengeMode(st) && (st.bestStars[st.activeChallenge?.id ?? ""] ?? 0) < 3)
   const setNodeReplicaCount = useArchitectureStore((s) => s.setNodeReplicaCount)
   const needsLB = useArchitectureStore((s) =>
     (s.topologyIssuesByNodeId.get(id) ?? []).some((iss) => iss.issueType === "replicas-without-lb"),
@@ -301,7 +305,7 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
 
       {/* Vendor switcher in the diagram — swap provider + compare cost/rps/latency inline.
           Falls back to a static vendor label for single-provider types. */}
-      {typeInfo.typeId ? (
+      {typeInfo.typeId && !(isTraffic && trafficLocked) ? (
         <NodeProviderSelect
           nodeId={id}
           componentId={data.archieComponentId}

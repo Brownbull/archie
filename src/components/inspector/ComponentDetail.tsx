@@ -4,6 +4,7 @@ import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { providersForComponent, COMPONENT_TYPES, levelRank } from "@/lib/componentTypes"
 import { useLibrary } from "@/hooks/useLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { computeRecommendations } from "@/engine/recommendationEngine"
 import { getNodeCost } from "@/stores/architectureStoreHelpers"
@@ -80,6 +81,14 @@ export function ComponentDetail({
     (s) => (nodeId ? s.nodes.find((n) => n.id === nodeId)?.data : undefined),
   )
   const removeNode = useArchitectureStore((s) => s.removeNode)
+
+  // D20: a challenge's traffic source is the FIXED problem statement until the player 3★s it — then it
+  // unlocks for sandbox experimentation. The demand controls (rps/workload/origin) already gate inside
+  // TrafficNodeControls; here we gate the OTHER two traffic-source editors the inspector exposes — the
+  // provider swap and the config-variant picker — so "you can't change the traffic source while locked"
+  // holds on every surface, not just the steppers. (Non-traffic blocks are always the player's to tune.)
+  const trafficLocked = useChallengeStore((s) => isChallengeMode(s) && (s.bestStars[s.activeChallenge?.id ?? ""] ?? 0) < 3)
+  const lockTrafficEdits = !!nodeId && component.category === "traffic" && trafficLocked
 
   const activeVariant = component.configVariants.find(
     (v) => v.id === activeVariantId,
@@ -275,23 +284,29 @@ export function ComponentDetail({
             The longer description is one click away in the "What it is" disclosure below. */}
         <p data-testid="inspector-headline" className="text-xs leading-snug text-text-primary">{component.is}</p>
 
-        {/* Pick a vendor → then a configuration tier. Scores below update as you change these. */}
-        <ComponentSwapper
-          currentComponentId={component.id}
-          alternatives={alternatives}
-          onSwapComponent={onSwapComponent}
-          label="Provider"
-        />
+        {/* Pick a vendor → then a configuration tier. Scores below update as you change these.
+            Hidden for a challenge-locked traffic source (D20): its vendor/variant are fixed by the
+            challenge until 3★, same as the demand controls below. */}
+        {!lockTrafficEdits && (
+          <>
+            <ComponentSwapper
+              currentComponentId={component.id}
+              alternatives={alternatives}
+              onSwapComponent={onSwapComponent}
+              label="Provider"
+            />
 
-        <Separator />
+            <Separator />
 
-        {/* Config Selector */}
-        {component.configVariants.length > 0 && (
-          <ConfigSelector
-            variants={component.configVariants}
-            activeVariantId={activeVariantId}
-            onVariantChange={onVariantChange}
-          />
+            {/* Config Selector */}
+            {component.configVariants.length > 0 && (
+              <ConfigSelector
+                variants={component.configVariants}
+                activeVariantId={activeVariantId}
+                onVariantChange={onVariantChange}
+              />
+            )}
+          </>
         )}
 
         {/* Traffic configuration (ISAPivot) — peak RPS / kind / workload / origin for a traffic source.

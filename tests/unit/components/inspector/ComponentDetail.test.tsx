@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import type { Component } from "@/types"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useChallengeStore } from "@/stores/challengeStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 
 // Mock useLibrary hook. P5: ComponentDetail derives provider alternatives from `components`
@@ -537,6 +538,73 @@ describe("ComponentDetail", () => {
       renderDefault()
       expect(screen.getByTestId("disclosure-gains")).toBeInTheDocument()
       expect(screen.queryByTestId("inspector-level-hint")).toBeNull()
+    })
+  })
+
+  describe("D20 — a challenge-locked traffic source is fixed until 3★", () => {
+    const trafficComponent: Component = {
+      id: "web-users",
+      name: "Web Users",
+      category: "traffic",
+      description: "Simulated end-user request load",
+      is: "The request load your design must survive",
+      gain: ["Drives the simulation"],
+      cost: ["Fixed by the challenge"],
+      tags: [],
+      baseMetrics: [],
+      configVariants: [
+        { id: "light", name: "Light", metrics: [] },
+        { id: "heavy", name: "Heavy", metrics: [] },
+      ],
+    }
+    const trafficAlt: Component = { ...trafficComponent, id: "api-clients", name: "API Clients" }
+
+    beforeEach(() => {
+      // Two traffic providers + variants → the swapper + config WOULD show when unlocked.
+      mockLibraryComponents = [trafficComponent, trafficAlt]
+      useArchitectureStore.setState({
+        nodes: [{ id: "t1", type: "archie", position: { x: 0, y: 0 }, data: { componentCategory: "traffic", archieComponentId: "web-users", trafficRps: 800 } }] as never,
+      })
+    })
+    afterEach(() => {
+      useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", bestStars: {} })
+      useArchitectureStore.setState({ nodes: [] as never })
+    })
+
+    function renderTraffic() {
+      return render(
+        <ComponentDetail
+          component={trafficComponent}
+          activeVariantId="heavy"
+          onVariantChange={vi.fn()}
+          currentCategory="traffic"
+          onSwapComponent={vi.fn()}
+          nodeId="t1"
+        />,
+      )
+    }
+
+    it("hides the Provider swap + Config variant while locked (<3★) — only the locked demand controls remain", () => {
+      useChallengeStore.setState({ activeChallenge: { id: "llm-service", title: "LLM Service" } as never, attemptState: "building", bestStars: {} })
+      renderTraffic()
+      expect(screen.queryByTestId("component-swapper")).not.toBeInTheDocument()
+      expect(screen.queryByTestId("config-selector")).not.toBeInTheDocument()
+      expect(screen.getByTestId("traffic-locked-badge")).toBeInTheDocument() // demand controls present but locked
+    })
+
+    it("unlocks the Provider swap + Config variant once the challenge is 3★ (sandbox)", () => {
+      useChallengeStore.setState({ activeChallenge: { id: "llm-service", title: "LLM Service" } as never, attemptState: "building", bestStars: { "llm-service": 3 } })
+      renderTraffic()
+      expect(screen.getByTestId("component-swapper")).toBeInTheDocument()
+      expect(screen.getByTestId("config-selector")).toBeInTheDocument()
+      expect(screen.queryByTestId("traffic-locked-badge")).not.toBeInTheDocument()
+    })
+
+    it("leaves the traffic source fully editable in free mode (no active challenge)", () => {
+      useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", bestStars: {} })
+      renderTraffic()
+      expect(screen.getByTestId("component-swapper")).toBeInTheDocument()
+      expect(screen.getByTestId("config-selector")).toBeInTheDocument()
     })
   })
 })
