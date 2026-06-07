@@ -1,15 +1,14 @@
 import { useState } from "react"
 import { Minus, Maximize2 } from "lucide-react"
 import { useSimulationStore } from "@/stores/simulationStore"
-import { ScenarioSelector } from "@/components/canvas/ScenarioSelector"
 import { FailureSelector } from "@/components/canvas/FailureSelector"
 import { Z_INDEX } from "@/lib/constants"
 
 /**
- * Top-right "Test conditions" rail: the demand-scenario and failure selectors (plus their active
- * banners) stacked in a single flex column so they never overlap — replacing the previous fragile
- * absolute-offset positioning. Hidden during a simulation, where the live STATS panel owns this
- * rail (the selectors are disabled mid-run anyway).
+ * Top-right "Test conditions" rail: the failure-injection selector (plus its active banner).
+ * Fluidity P3b (D83): the demand-scenario selector was retired — the traffic-source tier + pattern +
+ * workload + origin controls already cover demand, so only failure injection adds unique value here.
+ * Hidden during a simulation, where the live STATS panel owns this rail.
  */
 export function TestConditionsPanel() {
   const simIdle = useSimulationStore((s) => s.status === "idle")
@@ -24,7 +23,7 @@ export function TestConditionsPanel() {
       <div className="flex items-center justify-between">
         <span
           data-testid="test-conditions-label"
-          title="Set the demand scenario and/or a failure to inject, then Run Simulation."
+          title="Optionally inject a failure to stress-test resilience, then Run Simulation. (Demand is set on the traffic-source block.)"
           className="text-[0.5625rem] font-semibold uppercase tracking-wide text-text-secondary/80"
         >
           Test conditions
@@ -40,12 +39,7 @@ export function TestConditionsPanel() {
           {collapsed ? <Maximize2 className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
         </button>
       </div>
-      {!collapsed && (
-        <>
-          <ScenarioSelector />
-          <FailureSelector />
-        </>
-      )}
+      {!collapsed && <FailureSelector />}
     </div>
   )
 }

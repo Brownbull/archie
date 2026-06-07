@@ -471,59 +471,6 @@ describe("FailurePresetYamlSchema (snake_case transform)", () => {
   })
 })
 
-// --- Scenario YAML Files Validation ---
-
-describe("Scenario YAML files validation", () => {
-  const scenarioDir = join(__dirname, "../../../src/data/scenarios")
-  const expectedFiles = [
-    "traffic-peak.yaml",
-    "cost-optimized.yaml",
-    "security-first.yaml",
-    "startup-mvp.yaml",
-    "enterprise-production.yaml",
-    "high-availability.yaml",
-  ]
-
-  for (const filename of expectedFiles) {
-    it(`${filename} passes schema validation`, () => {
-      const content = readFileSync(join(scenarioDir, filename), "utf-8")
-      const parsed = load(content) as Record<string, unknown>
-      const result = ScenarioPresetYamlSchema.safeParse(parsed)
-      expect(result.success).toBe(true)
-    })
-  }
-
-  it("all 6 presets have unique IDs", () => {
-    const ids = expectedFiles.map((f) => {
-      const content = readFileSync(join(scenarioDir, f), "utf-8")
-      const parsed = load(content) as Record<string, unknown>
-      return parsed.id as string
-    })
-    expect(new Set(ids).size).toBe(6)
-  })
-
-  it("each preset has all 5 demand variables in profile", () => {
-    for (const filename of expectedFiles) {
-      const content = readFileSync(join(scenarioDir, filename), "utf-8")
-      const parsed = load(content) as Record<string, unknown>
-      const result = ScenarioPresetYamlSchema.safeParse(parsed)
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(Object.keys(result.data.demandProfile)).toHaveLength(5)
-      }
-    }
-  })
-
-  it("each preset id matches its filename", () => {
-    for (const filename of expectedFiles) {
-      const content = readFileSync(join(scenarioDir, filename), "utf-8")
-      const parsed = load(content) as Record<string, unknown>
-      const expectedId = filename.replace(".yaml", "")
-      expect(parsed.id).toBe(expectedId)
-    }
-  })
-})
-
 // --- Failure YAML Files Validation (Story 9-7 AC-1) ---
 
 describe("Failure YAML files validation (AC-1)", () => {

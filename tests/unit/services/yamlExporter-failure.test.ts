@@ -29,12 +29,13 @@ describe("yamlExporter/importer — failure scenario round-trip (AC-6)", () => {
     }
   })
 
-  it("round-trip preserves both demand + failure scenario IDs", () => {
-    const yaml = exportArchitecture(nodes, edges, undefined, undefined, undefined, "traffic-peak", "failure-database")
+  it("round-trip preserves the failure scenario ID", () => {
+    // D83: demand scenarios were retired (demand is set on the traffic-source block), so only the
+    // failure ID round-trips now. An unknown/absent demand scenario id imports back as undefined.
+    const yaml = exportArchitecture(nodes, edges, undefined, undefined, undefined, undefined, "failure-database")
     const result = importYamlString(yaml)
     expect(result.success).toBe(true)
     if (result.success) {
-      expect(result.architecture.activeScenarioId).toBe("traffic-peak")
       expect(result.architecture.activeFailureScenarioId).toBe("failure-database")
     }
   })
