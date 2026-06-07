@@ -4429,3 +4429,17 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P150
 Ships Fluidity P3b (be6c924): Test Conditions = failures only — demand scenarios retired (UI + 6 YAMLs + ScenarioSelector + cascade), failures kept + verified. Suite 4826 green. Phase 3 progress: 3a (inspector declutter) + 3b (Test Conditions trim) shipped; 3c (progression-driven disclosure tier + tooltip journeys, per D82) remains — the big cross-cutting piece, awaiting the user's go-ahead to plan/build. D23 tracks the dormant desktop specs touched by 3a/3b.
+- 2026-06-07 16:30 | Write | /home/khujta/projects/bmad/archie/src/hooks/useDisclosureTier.ts
+- 2026-06-07 16:30 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/NodeConfigSelect.tsx
+- 2026-06-07 16:30 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/NodeConfigSelect.tsx
+- 2026-06-07 16:31 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useDisclosureTier.test.ts
+- 2026-06-07 16:32 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/NodeConfigSelect.test.tsx
+- 2026-06-07 16:32 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/NodeConfigSelect.test.tsx
+- 2026-06-07 16:32 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/NodeConfigSelect.test.tsx
+
+## 2026-06-07 15:20 — PUSH dev -> main (P151)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P151
+Ships Fluidity P3c-1: progressive on-node config disclosure in quests via the new useDisclosureTier hook (D84). The disclosure tier = experienceLevel (manual free / challenge difficulty in quests); config-tier picker hidden at beginner quests, shown intermediate+, always shown in free mode. UI-only (solvability harness unaffected). Suite 4830 green. Phase 3 status: 3a (inspector declutter), 3b (Test Conditions = failures), 3c-1 (config disclosure) shipped. 3c-2 (tooltip journeys — incl. rebuilding the stale post-P1 inspector guide; optionally vendor/replica gating) awaits user go-ahead. FOUND: the inspector panelGuide still anchors to the removed component-swapper/config-selector (stale guidance) — must fix in 3c-2.
