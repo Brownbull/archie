@@ -4248,3 +4248,19 @@ CI: ✅ E2E unlocked replay (3m37s) + Deploy Production (48s) both green
 PROMOTION: N/A
 DEPLOYMENTS: P142
 Ships navigation/UX gap fixes (a481438): switch-quest title → quest menu mid-flight, 0★ results Quest-menu button, labeled sim Exit + done-state Replay. Also carries the P141 bookkeeping commit ab1b42a onto main. Suite 4843, CI green.
+- 2026-06-07 11:32 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 11:32 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 11:32 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 11:33 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-07 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/ComponentDetail.test.tsx
+- 2026-06-07 11:37 | Write | /tmp/d20-fix-msg.txt
+
+## 2026-06-07 11:38 — [3e3f65d] fix(challenges): close the D20 traffic-lock gap (vendor + config)
+Bug (user-reported): the LLM-service challenge's traffic source was still editable while unsolved. Root cause: D20 locked the traffic DEMAND controls (rps/workload/origin/pattern) in TrafficNodeControls — those gate correctly on both canvas + inspector and bestStars hydrates from the cloud — but the traffic source ALSO exposes a vendor swap + config-variant picker on the canvas node (NodeProviderSelect) and in the inspector (ComponentSwapper + ConfigSelector), and those were never included in the lock. The D20 tests only covered the demand steppers, so the gap slipped through. Fix: a shared lock predicate (isChallengeMode && bestStars[challenge] < 3) now also suppresses the vendor swap + config variant for a traffic source on BOTH surfaces (canvas shows a static vendor label; inspector hides Provider+Config); demand controls keep their lock badge. At 3★ (sandbox) + free mode all editable again; non-traffic blocks unaffected. Tests: ComponentDetail D20 block (locked hides both + badge; 3★ unlocks; free editable). Suite 4846. Clarification: a challenge already 3★'d unlocks its traffic source by design (post-clear sandbox) — intended, not a bug.
+
+## 2026-06-07 15:42 — PUSH dev -> main (P143)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay (3m45s) + Deploy Production (49s) both green
+PROMOTION: N/A
+DEPLOYMENTS: P143
+Ships the D20 traffic-lock-gap fix (3e3f65d): traffic-source vendor swap + config variant now gated on canvas + inspector while a challenge is unsolved. Also carries the P142 navigation bookkeeping commit 546b987 onto main. Suite 4846, CI green.
