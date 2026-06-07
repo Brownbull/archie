@@ -1269,3 +1269,17 @@ component YAMLs; its own focused pass (the playbook's strict (1)→(4) authoring
 **Reason:** P1/P2 are user-facing refactors touching shared, tested components (enterprise: full coverage + careful migration, not throwaway). P3 is a cross-cutting progression/onboarding system (scale) and is explicitly deferred per the user ("later").
 **Review trigger:** revisit P3 once P1/P2 land and the read-only inspector + decluttered footer are validated in use.
 **Status:** accepted
+
+## D82 — Fluidity P3: one shared "disclosure tier" (progression-driven in quests, manual in free mode) (2026-06-07)
+
+**Decision:** Unify on a single "disclosure tier" that gates block configs + inspector sections. In QUEST mode the tier is driven by quest progression (reveal controls/sections in stages — essentials early, config tier + trade-offs + metrics later / at 3★). In FREE mode the manual Beginner/Intermediate/Expert control sets the tier and everything for that level is shown. Both feed the SAME gating logic (the existing showTradeoffs/showTechnical + new on-node gates), so there's one code path, not two.
+**Rationale:** The user wants quests to disclose configs "little by little" like they already do for blocks, while free mode stays fully open. Today quest disclosure is binary (traffic locks until 3★; blocks via tech-tree) and the experience level only gates the inspector/toolbox/dashboard — NOT the on-node controls. One shared tier avoids a second parallel gating system.
+**Alternatives considered:** (a) quest difficulty fixes the tier for its duration — simpler but no within-quest growth; (b) keep manual level everywhere + only add tooltip journeys — smallest, but quests wouldn't progressively reveal configs. Both rejected per the user.
+**Status:** accepted — implement in Phase 3c (after 3b).
+
+## D83 — Fluidity P3: Test Conditions = failures only (drop demand scenarios) (2026-06-07)
+
+**Decision:** Remove the demand-scenario presets (Startup MVP, Cost-Optimized, Enterprise Production, High Availability, Security First, Traffic Peak) from the Test Conditions panel — they're now covered by the traffic-source tier + pattern + workload + origin controls (+ the dashboard weight sliders for scoring focus). Keep the 6 failure injections (single-node, database, data-corruption, network-partition, region-outage, traffic-spike) and re-verify each still works after the simulation changes. The `activeScenarioId` field/plumbing stays inert for round-trip compat of saved canvases (avoids a destructive YAML-schema migration); only the UI selector + the demand preset data are retired.
+**Rationale:** The demand scenarios duplicate the on-block traffic controls; the failures test resilience the traffic source can't. "Leave only what adds value."
+**Alternatives considered:** keep 1-2 curated load profiles (rejected — fully redundant); keep all + just fix (rejected — keeps the redundancy). 
+**Status:** accepted — implement in Phase 3b.

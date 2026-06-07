@@ -4399,3 +4399,19 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P148
 Ships D22 rehab completion (a13a469): inspector-and-config (13/0), component-types (recreated vs type-block-*), vendor-links (seed-drift-resilient, all 5 verify). Root causes fixed: the default beginner level hid inspector disclosures (advanced-level seed works — probed); selectNodeOnCanvas clicked the node center where the Fluidity-P1 on-node dropdowns now sit, opening a Radix overlay that blocked subsequent clicks (the dominant cascade) → now clicks the header; toolbox redesign moved providers from component-card grid into type-block hover lists; new vendors were seeded after all (earlier failures were the DOM-hack swap). PENDING D22 RESOLVED — the whole dormant desktop suite's Fluidity-related rot is now repaired. Carries P147 bookkeeping 53581d2 onto main.
+- 2026-06-07 14:53 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/InspectorPanel.tsx
+- 2026-06-07 14:53 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/InspectorPanel.tsx
+- 2026-06-07 14:54 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 14:55 | Edit | /home/khujta/projects/bmad/archie/src/components/inspector/ComponentDetail.tsx
+- 2026-06-07 14:55 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficNodeControls.tsx
+- 2026-06-07 14:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/inspector/InspectorPanel.test.tsx
+- 2026-06-07 14:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/data-context.spec.ts
+- 2026-06-07 14:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-07 14:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+
+## 2026-06-07 14:35 — PUSH dev -> main (P149)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P149
+Ships Fluidity P3a (33cb4bc): inspector + on-node declutter — strip "Inspector" label (block name is the title), remove Code/Details/Metrics/Data section-nav, labeled identity rows (Vendor/Tier/Cost), shortened on-node lock notice. Recorded D82 (one shared disclosure tier — progression-driven in quests, manual in free mode → Phase 3c) + D83 (Test Conditions = failures only, drop demand scenarios → Phase 3b). D23 logged for dormant connection-inspection + the 3 touched section-nav specs. Next: Phase 3b (drop demand scenarios + verify failures).
