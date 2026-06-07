@@ -65,27 +65,49 @@ export function useChallengeCoach(): CoachState | null {
           detail: "Experiment: swap a vendor on a node (the in-node dropdown) and see if you can hold the targets for less money.",
         }
       }
-      if (!lastResult.passedMetrics) {
-        const latencyMiss = lastMeasured ? lastMeasured.p99LatencyMs > challenge.targetMetrics.p99LatencyMs : false
-        const uptimeMiss = lastMeasured ? lastMeasured.uptimePercent < challenge.targetMetrics.uptimePercent : false
-        if (latencyMiss && !uptimeMiss) {
+      if (!lastResult.passedMetrics && lastMeasured) {
+        // D74: name the failing factor WITH the contrast — "you came in at X, aim for Y" — so the miss is
+        // concrete (the user's gripe: a bare "latency" note with no numbers). Latency & consistency get
+        // their own actionable coaching; otherwise it's a capacity/uptime shortfall (named culprit tier).
+        const t = challenge.targetMetrics
+        const uptimeMiss = lastMeasured.uptimePercent < t.uptimePercent
+        const p99Miss = lastMeasured.p99LatencyMs > t.p99LatencyMs
+        const p95Miss = t.p95LatencyMs !== undefined && lastMeasured.p95LatencyMs !== undefined && lastMeasured.p95LatencyMs > t.p95LatencyMs
+        const consistencyMiss = challenge.consistencyTargetMs !== undefined
+          && (lastMeasured.maxStalenessMs === undefined || lastMeasured.maxStalenessMs > challenge.consistencyTargetMs)
+
+        if ((p99Miss || p95Miss) && !uptimeMiss) {
+          const got = p99Miss ? Math.round(lastMeasured.p99LatencyMs) : Math.round(lastMeasured.p95LatencyMs!)
+          const aim = p99Miss ? t.p99LatencyMs : t.p95LatencyMs!
           return {
             mode: "iterate",
             modeLabel: "Iterate",
             headline: "Cut the latency",
-            detail: `p99 is over ${challenge.targetMetrics.p99LatencyMs}ms — add a cache or CDN ahead of the slow hop, or pick a lower-latency tier or vendor on the node.`,
+            detail: `${p99Miss ? "p99" : "p95"} came in at ${got}ms — you're aiming for ≤ ${aim}ms. Pick a lower-latency tier or vendor on the slow node (e.g. a faster model), or add a cache/CDN ahead of it.`,
           }
         }
-        // LX2 (D74): name the culprit tier instead of a generic "something's overloaded".
-        const bn = lastMeasured?.bottleneck
+        if (consistencyMiss && !uptimeMiss) {
+          const staleness = lastMeasured.maxStalenessMs
+          return {
+            mode: "iterate",
+            modeLabel: "Iterate",
+            headline: "Fresher reads needed",
+            detail: staleness === undefined
+              ? `This challenge has a read-staleness budget of ${challenge.consistencyTargetMs}ms, but your build has no read-replicated database on the path. Add one and pick a synchronous / low-lag variant.`
+              : `Read staleness hit ${Math.round(staleness)}ms — you're aiming for ≤ ${challenge.consistencyTargetMs}ms. Switch to a synchronous / low-replication-lag database variant (costs more, keeps reads fresh).`,
+          }
+        }
+        // LX2 (D74): name the culprit tier + the uptime contrast instead of a generic "something's overloaded".
+        const bn = lastMeasured.bottleneck
         const bnLabel = bn ? COMPONENT_TYPES.get(bn.typeId)?.label ?? bn.typeId : null
+        const uptimeContrast = uptimeMiss ? `Uptime came in at ${lastMeasured.uptimePercent.toFixed(1)}% — you're aiming for ≥ ${t.uptimePercent}%. ` : ""
         return {
           mode: "iterate",
           modeLabel: "Iterate",
-          headline: bnLabel ? `${bnLabel} is overloaded` : "It's overloaded",
+          headline: bnLabel ? `${bnLabel} is overloaded` : uptimeMiss ? "Uptime is too low" : "It's overloaded",
           detail: bnLabel
-            ? `Your ${bnLabel} tier peaked at ${Math.round((bn as { capacityPercent: number }).capacityPercent * 100)}% of capacity and dropped requests — scale it up (the −/＋ on that node) or pick a higher tier; a cache ahead of it takes load off.`
-            : "Requests are being dropped — scale up with replicas (the −/＋ on a node) or a higher tier; a cache takes load off the database.",
+            ? `${uptimeContrast}Your ${bnLabel} tier peaked at ${Math.round((bn as { capacityPercent: number }).capacityPercent * 100)}% of capacity and dropped requests — scale it up (the −/＋ on that node) or pick a higher tier; a cache ahead of it takes load off.`
+            : `${uptimeContrast}Requests are being dropped — scale up with replicas (the −/＋ on a node) or a higher tier; a cache takes load off the database.`,
         }
       }
       if (!lastResult.underBudget) {

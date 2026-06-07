@@ -92,11 +92,12 @@ describe("useChallengeCoach (P88)", () => {
       })
     }
 
-    it("overloaded when uptime missed the target", () => {
+    it("names the uptime miss WITH the contrast when uptime missed (no bottleneck)", () => {
       scoreWith({ stars: 0, passedMetrics: false }, { uptimePercent: 80 })
       const { result: r } = renderHook(() => useChallengeCoach())
       expect(r.current?.mode).toBe("iterate")
-      expect(r.current?.headline).toBe("It's overloaded")
+      expect(r.current?.headline).toBe("Uptime is too low")
+      expect(r.current?.detail).toContain("80.0%") // D74: shows measured-vs-target contrast
     })
 
     it("cut latency when only p99 missed the target", () => {

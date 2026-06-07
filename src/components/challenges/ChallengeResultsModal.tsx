@@ -1,5 +1,6 @@
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, type ReactNode } from "react"
 import { Check, X as XIcon, Map, ShieldCheck } from "lucide-react"
+import { metricTone } from "@/lib/metricTone"
 import {
   Dialog,
   DialogContent,
@@ -99,15 +100,32 @@ function AnimatedStar({ earned, isNew, index }: { earned: boolean; isNew: boolea
   )
 }
 
-function Criterion({ met, label, detail }: { met: boolean; label: string; detail: string }) {
+function Criterion({ met, label, detail }: { met: boolean; label: string; detail: ReactNode }) {
+  // A plain-string detail keeps the old met/red coloring; a ReactNode detail (the colored metric chips,
+  // the colored budget figure) brings its OWN per-value color, so don't override it.
+  const stringDetail = typeof detail === "string"
   return (
     <div data-testid={`result-${label.toLowerCase().replace(/\s+/g, "-")}`} data-met={met || undefined} className="flex items-center justify-between gap-3 rounded-md border border-archie-border bg-surface px-3 py-1.5">
       <div className="flex items-center gap-2">
         {met ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <XIcon className="h-3.5 w-3.5 text-red-400" />}
         <span className="text-xs text-text-primary">{label}</span>
       </div>
-      <span className={`text-[0.625rem] ${met ? "text-text-secondary" : "text-red-400"}`}>{detail}</span>
+      <span className={`text-[0.625rem] ${stringDetail ? (met ? "text-text-secondary" : "text-red-400") : ""}`}>{detail}</span>
     </div>
+  )
+}
+
+/** A measured-vs-target metric, colored by metricTone (green pass / amber near / red fail). D74. */
+function MetricChip({ type, label, measured, target, unit, goodWhenLower, digits }: {
+  type: string; label: string; measured: number; target: number; unit: string; goodWhenLower: boolean; digits: number
+}) {
+  const tone = metricTone(measured, target, goodWhenLower, digits)
+  return (
+    <span data-metric-type={type} data-pass={tone.pass} className="whitespace-nowrap" title={`measured ${measured.toFixed(digits)}${unit} vs target ${target}${unit}`}>
+      <span className="text-text-secondary">{label} </span>
+      <span className={`font-semibold ${tone.cls}`}>{measured.toFixed(digits)}{unit}</span>
+      <span className="text-text-secondary">/{target}{unit}</span>
+    </span>
   )
 }
 
@@ -208,19 +226,27 @@ export function ChallengeResultsModal() {
   // clear from a wasteful one (the "mastered" coach says "spend less"; this gives the target).
   const par = getChallengePar(challenge.id)
 
-  // Metrics detail (ISAPivot Phase 3): uptime + p99 always; p95 + cost/req only when authored as targets.
+  // Metrics detail (D74): every target is shown as a measured-vs-target chip, colored by metricTone
+  // (green pass / amber within 10% / red fail) — uptime + p99 always; p95, cost/req, and consistency
+  // only when authored. So a failing run shows EXACTLY which factor missed and by how much.
   const tm = challenge.targetMetrics
-  const metricBits = [
-    `uptime ${measured.uptimePercent.toFixed(1)}%/${tm.uptimePercent}%`,
-    `p99 ${Math.round(measured.p99LatencyMs)}/${tm.p99LatencyMs}ms`,
+  const metricChips: Array<{ type: string; label: string; measured: number; target: number; unit: string; goodWhenLower: boolean; digits: number }> = [
+    { type: "uptime", label: "uptime", measured: measured.uptimePercent, target: tm.uptimePercent, unit: "%", goodWhenLower: false, digits: 1 },
+    { type: "p99", label: "p99", measured: measured.p99LatencyMs, target: tm.p99LatencyMs, unit: "ms", goodWhenLower: true, digits: 0 },
   ]
   if (tm.p95LatencyMs !== undefined && measured.p95LatencyMs !== undefined) {
-    metricBits.push(`p95 ${Math.round(measured.p95LatencyMs)}/${tm.p95LatencyMs}ms`)
+    metricChips.push({ type: "p95", label: "p95", measured: measured.p95LatencyMs, target: tm.p95LatencyMs, unit: "ms", goodWhenLower: true, digits: 0 })
   }
   if (tm.costPerRequest !== undefined && measured.costPerRequest !== undefined) {
     // ED7 (D74): $ per MILLION requests at peak demand — a real, transferable cost-efficiency unit.
-    metricBits.push(`$/M-req ${measured.costPerRequest.toFixed(4)}/${tm.costPerRequest}`)
+    metricChips.push({ type: "cost", label: "$/M-req", measured: measured.costPerRequest, target: tm.costPerRequest, unit: "", goodWhenLower: true, digits: 4 })
   }
+  if (challenge.consistencyTargetMs !== undefined) {
+    // EN4/ED8 (D74): worst read staleness vs the consistency budget. Unmeasured (no write/read DB on
+    // the path) ⇒ Infinity ⇒ shows red — you can't claim a staleness bound you never produced.
+    metricChips.push({ type: "consistency", label: "staleness", measured: measured.maxStalenessMs ?? Infinity, target: challenge.consistencyTargetMs, unit: "ms", goodWhenLower: true, digits: 0 })
+  }
+  const budgetTone = metricTone(measured.totalCost, challenge.budgetCap, true, 0)
 
   return (
     <Dialog open onOpenChange={(next) => !next && onClose()}>
@@ -252,7 +278,13 @@ export function ChallengeResultsModal() {
           <Criterion
             met={result.passedMetrics}
             label="Metrics"
-            detail={metricBits.join(" · ")}
+            detail={
+              <span className="flex flex-wrap justify-end gap-x-2 gap-y-0.5">
+                {metricChips.map((m) => (
+                  <MetricChip key={m.type} {...m} />
+                ))}
+              </span>
+            }
           />
           {/* LX2 (D74): when metrics fail, name the culprit tier so the fix is obvious. */}
           {!result.passedMetrics && measured.bottleneck && (
@@ -282,7 +314,12 @@ export function ChallengeResultsModal() {
           <Criterion
             met={result.underBudget}
             label="Under budget"
-            detail={`$${measured.totalCost} of $${challenge.budgetCap}/mo`}
+            detail={
+              <span data-metric-type="budget" data-pass={budgetTone.pass} className="whitespace-nowrap">
+                <span className={`font-semibold ${budgetTone.cls}`}>${measured.totalCost}</span>
+                <span className="text-text-secondary"> of ${challenge.budgetCap}/mo</span>
+              </span>
+            }
           />
           <Criterion
             met={result.cleanTopology}
