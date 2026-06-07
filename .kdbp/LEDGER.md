@@ -4353,3 +4353,23 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P146
 Ships the D21 validation-pass fixes (f1d0712). Carries the P145 bookkeeping 431c04f onto main. Fluidity P1+P2 COMPLETE; remaining desktop-E2E rehab tracked in PENDING D22.
+- 2026-06-07 13:31 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 13:31 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:31 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:33 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 13:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:42 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:45 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-07 13:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 13:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-07 13:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+
+## 2026-06-07 13:50 — PUSH dev -> main (P147)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P147
+Ships D22 rehab part 1 (3c386f8): scoring-dashboard validated green on desktop + reusable useAdvancedLevel/add-type helpers + the missed Fluidity P1+P2 Review ticks. PENDING D22 stays OPEN with a PROGRESS note: residual = inspector-and-config (auto-select-on-placement breaks AC-1; disclosure/collapse; advanced-seed not resolving gating in practice), component-types type-group testid rename, vendor-links new-vendor Firestore seed drift — deep pre-existing app-evolution rot on a dormant non-CI suite, low ROI. Carries P146 bookkeeping 74ef258 onto main.
