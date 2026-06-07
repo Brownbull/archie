@@ -4481,3 +4481,17 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P154
 Ships Fluidity P3c-3 (d98d5bf): the bespoke "full tour" — Settings launcher + FULL_JOURNEY cross-region steps, tier/state-aware (DOM-presence filtered) + a desktop smoke spec. Fluidity epic fully shipped (P1+P2+P3 + the optional full-journey tour). NEXT (user-approved): D23 desktop-suite rehab — connection-inspection (pre-existing edge-creation + pane-deselect rot), the demand-scenario specs referencing the retired selector, and the 3 section-nav specs.
+- 2026-06-07 18:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 18:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+- 2026-06-07 18:43 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/connection/two-node-edge.architecture.yaml
+- 2026-06-07 18:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+- 2026-06-07 18:44 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+- 2026-06-07 18:44 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+- 2026-06-07 18:45 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/connection-inspection.spec.ts
+
+## 2026-06-07 16:55 — PUSH dev -> main (P155)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay + Deploy Production both green
+PROMOTION: N/A
+DEPLOYMENTS: P155
+Ships D23a (8abe23b): connection-inspection rehabbed via fixture import (8/0) + placeTwoComponents card-rot fix. PENDING D23 refined: connection-inspection RESOLVED; remaining = connection-wiring/port-edge-creation (React Flow handle-drag, their subject, unreliable in Playwright), section-nav specs (11 pass/7 fail — need the D22 playbook), demand-scenario specs (demand-simulation 6 refs heavy + 4 specs 1-2 refs) referencing the retired scenario-selector. CI unaffected (desktop, non-CI-gated).
