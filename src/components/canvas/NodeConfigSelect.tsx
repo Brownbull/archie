@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useDisclosureTier } from "@/hooks/useDisclosureTier"
 import { formatVariantStats } from "@/lib/formatStats"
 
 interface NodeConfigSelectProps {
@@ -26,11 +27,16 @@ interface NodeConfigSelectProps {
  */
 function NodeConfigSelectBase({ nodeId, componentId, activeVariantId }: NodeConfigSelectProps) {
   const updateNodeConfigVariant = useArchitectureStore((s) => s.updateNodeConfigVariant)
+  const { showOnNodeConfig } = useDisclosureTier()
   const component = componentLibrary.getComponent(componentId)
   const variants = useMemo(() => component?.configVariants ?? [], [component])
 
   // Single (or no) tier → nothing to pick; the vendor row already shows the variant name.
   if (variants.length <= 1) return null
+
+  // Fluidity P3c (D84): config-tier tuning discloses progressively in quests — hidden at beginner
+  // quests, revealed at intermediate+. Always shown in free mode. UI-only (solvability unaffected).
+  if (!showOnNodeConfig) return null
 
   const active = variants.find((v) => v.id === activeVariantId) ?? variants[0]
 

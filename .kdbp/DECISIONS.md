@@ -1283,3 +1283,11 @@ component YAMLs; its own focused pass (the playbook's strict (1)→(4) authoring
 **Rationale:** The demand scenarios duplicate the on-block traffic controls; the failures test resilience the traffic source can't. "Leave only what adds value."
 **Alternatives considered:** keep 1-2 curated load profiles (rejected — fully redundant); keep all + just fix (rejected — keeps the redundancy). 
 **Status:** accepted — implement in Phase 3b.
+
+## D84 — Fluidity P3c-1: disclosure tier = experienceLevel; on-node config discloses in quests (UI-only) (2026-06-07)
+
+**Decision:** The "disclosure tier" IS `experienceLevel` — manual in free mode, auto-set to the challenge's difficulty in quest mode (already wired: selecting a quest calls setExperienceLevel(c.difficulty)). A new `useDisclosureTier()` hook centralizes the policy and exposes `showOnNodeConfig = !isQuest || levelRank(tier) >= intermediate`. NodeConfigSelect (the on-node config-tier picker) is gated by it: hidden in beginner-difficulty quests, shown at intermediate+; ALWAYS shown in free mode ("all options available").
+**Rationale:** "Disclose the configurations little by little throughout the quests" like blocks already disclose, while free mode stays fully open (D82). Reusing experienceLevel (already difficulty-driven in quests) avoids a parallel tier system.
+**Safety:** The gate is UI-only — it never touches the simulation or the reference-solution harness, so the 3★ solvability check is unaffected. Only what a player can manually tune is gated, and beginner challenges 3★ on default configs.
+**Scope:** 3c-1 gates the config-tier picker only. Deferred: gating vendor swap + replicas (pending whether players need them per-challenge), refining the right-panel trim, and the tooltip journeys (the inspector panelGuide is STALE post-Phase-1 — it still references the removed component-swapper/config-selector — and must be rebuilt in 3c-2). Optionally hide the manual level control in quests for a hard gate (currently a soft default the player can raise).
+**Status:** accepted — 3c-1 implemented.
