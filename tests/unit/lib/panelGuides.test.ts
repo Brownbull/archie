@@ -32,12 +32,11 @@ describe("panelGuides (P89/Phase B)", () => {
   it("the inspector tour is comprehensive — walks every major section", () => {
     const g = getPanelGuide("inspector") as PanelGuide
     const selectors = (g.tour ?? []).map((s) => s.selector ?? "").join(" ")
-    // Not just the headline two — it should cover swap, tier, economics, code, gains, costs,
-    // recommendations, metrics, data context and remove.
+    // Fluidity P3c: the inspector is read-only learning — tuning moved to the on-node controls, so the
+    // tour points at the block for tuning (archie-node-provider) + walks the learning sections.
     expect((g.tour ?? []).length).toBeGreaterThanOrEqual(10)
     for (const anchor of [
-      "component-swapper",
-      "config-selector",
+      "archie-node-provider",
       "economics-section",
       "disclosure-code",
       "disclosure-gains",
@@ -47,6 +46,9 @@ describe("panelGuides (P89/Phase B)", () => {
     ]) {
       expect(selectors).toContain(anchor)
     }
+    // The removed Phase-1 tuners must NOT reappear in the guide.
+    expect(selectors).not.toContain("component-swapper")
+    expect(selectors).not.toContain("config-selector")
   })
 
   it("the toolbox + optimize tours cover their tabs/sections", () => {

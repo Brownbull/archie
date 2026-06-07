@@ -31,8 +31,8 @@ const STEPS: TourStep[] = [
   },
   {
     title: "Stress-test it",
-    body: "Pick a demand Scenario or inject a Failure up here, then Run Simulation to watch traffic flow and see where it breaks.",
-    selector: '[data-testid="scenario-selector"]',
+    body: "Inject a Failure up here (a node down, a DB outage, a region loss…), then Run Simulation to watch traffic flow and see where it breaks. Demand itself you set on the traffic-source block.",
+    selector: '[data-testid="test-conditions"]',
   },
   {
     title: "Score & challenge",
