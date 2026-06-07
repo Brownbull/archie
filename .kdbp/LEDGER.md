@@ -4177,3 +4177,48 @@ The XL finale. Cross-region RTT (category-based, authored-only — 7 existing mu
 
 ## 2026-06-06 — EN3 cascading failure + D17 observe-to-recover revived (last roast gap closed)
 EN3: a partially-degraded outage survivor (0<cf<1) is crowded by retried timeouts (thundering-herd) — effective capacity ÷RETRY_MULTIPLIER (2×), damped to 1.1× when observability-adjacent (breakerNodeIds = EN7 monitored set). Applied in simulateTick on live capacity (only bites under load); conserving (capacity cut → normal shed accounting, no double-count); computeOverrides returns base ED2/EN7 fractions → 48 non-outage byte-identical. Observability now earns its keep twice (EN7 detection + EN3 damping). D17: observe-to-recover's inert component_failure (category-string target) + stale 33%-faster brief → redesigned around a real az_outage on multi-AZ compute (15k rps): WITH obs uptime 98 (3★), WITHOUT ~82 < 85 line (cascade fails it) — lesson bites. All 61 still 3★, golden unchanged, only observe-to-recover par moved, suite 4822 (e3d2661). EN3 was the last unshipped roast gap — the Learning-Fidelity roast is now fully answered. Backlog remaining: D18 (EN2 force-bite), quorum-call (2nd consistency), D11/D12 (E2E flake / loadAttempts scale), aislop knip debt.
+- 2026-06-06 22:56 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 22:57 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-06 22:57 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeStartButton.tsx
+- 2026-06-06 22:57 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeAutoScore.ts
+- 2026-06-06 22:58 | Edit | /home/khujta/projects/bmad/archie/tests/integration/challenges/referenceSolution.ts
+- 2026-06-06 22:59 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStoreHelpers-economics.test.ts
+- 2026-06-06 23:01 | Write | /home/khujta/projects/bmad/archie/src/lib/metricTone.ts
+- 2026-06-06 23:01 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-06 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-06 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-06 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-06 23:02 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-06 23:04 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-06 23:04 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/metricTone.test.ts
+- 2026-06-06 23:06 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeCoach.test.ts
+- 2026-06-07 00:25 | Write | /home/khujta/projects/bmad/archie/tests/e2e/challenge-disconnect-budget.unlocked.spec.ts
+- 2026-06-07 00:51 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-disconnect-budget.unlocked.spec.ts
+- 2026-06-07 00:51 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-disconnect-budget.unlocked.spec.ts
+- 2026-06-07 00:52 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-disconnect-budget.unlocked.spec.ts
+- 2026-06-07 00:54 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-disconnect-budget.unlocked.spec.ts
+- 2026-06-07 00:54 | Edit | /home/khujta/projects/bmad/archie/src/engine/suggestionEngine.ts
+- 2026-06-07 00:55 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-07 00:55 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-07 00:55 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-07 00:55 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-07 00:56 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-07 00:56 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-07 00:56 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-07 00:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/lib/metricTone.test.ts
+- 2026-06-07 00:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useChallengeCoach.test.ts
+- 2026-06-07 00:58 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-07 01:01 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/e2e-fixtures.test.ts
+- 2026-06-07 01:03 | Write | /home/khujta/projects/bmad/archie/tests/e2e/challenge-disconnect-budget.unlocked.spec.ts
+- 2026-06-07 01:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-disconnect-budget.unlocked.spec.ts
+- 2026-06-07 10:34 | Write | /tmp/d74-ws3-commit-msg.txt
+
+## 2026-06-07 — D74 WS3: disconnect E2E + on-canvas orphan flag + cost/coach follow-ups (da1e1f4)
+Closes the user's "disconnect a block and the sim still counts it" worry through the real UI and extends WS1/WS2. WS3a: ArchieNode shows a red "disconnected"/"unreachable" badge (node-topology-status, driven by topologyIssuesByNodeId orphan/unreachable). Review-driven follow-ups (from a 4-lens adversarial-review workflow, 9 confirmed findings): threaded edges into the 4 remaining cost readouts (SimulationStatsSidePanel live cost, DashboardPanel + ChallengeHud preview, suggestionEngine candidate ranking) so an off-path node bills NOWHERE, not just the scored budget (WS1 covered scoring only); MetricChip renders "unmeasured" (red + why-tooltip) instead of "Infinityms" for an unmeasured consistency target; useChallengeCoach gains a cost-per-request miss branch with measured-vs-target contrast (honors the "any factor out of range" promise). WS3b: data-driven desktop-unlocked E2E (challenge-disconnect-budget.unlocked.spec.ts) over tier-3 edge-delivery (orphan compute, delete e2) + tier-4 production-ai/LLM (orphan observability, delete e5 — the adjacent-edge that's reliably click-selectable) — import 3★ → run → delete a paid leaf's edge → re-run asserts budget DROPS, Well-formed fails, canvas badge appears; fixtures (re)generated + asserted-3★ by e2e-fixtures.test.ts. Commit gate: lint warnings-only, tsc clean, suite 4836 pass, 3× low well-doc drift (G1/G2/G4 stubs) accepted. E2E verified locally (tier-3+tier-4 green; the local desktop project has unrelated seed/env failures, desktop-unlocked clean). NOT a Phase-1 task (D74 follow-up) — PLAN Commit column intentionally not auto-ticked.
+
+## 2026-06-07 14:41 — PUSH dev -> main (P141)
+PR: — (direct dev→main)
+CI: ✅ E2E unlocked replay (3m35s) + Deploy Production (59s) both green — the new tier-3+tier-4 disconnect spec validated in CI
+PROMOTION: N/A
+DEPLOYMENTS: P141
+Ships the D74 trilogy: WS1 (ec476c1) on-path cost so a disconnected block no longer bills the budget star + WS2 (28846ff) measured-vs-target chips + green/amber/red coloring + WS3 (da1e1f4) on-canvas disconnect badge, edges threaded into all 4 remaining cost readouts, Infinity→"unmeasured" chip, cost-per-request coach branch, and a data-driven tier-3+tier-4 disconnect E2E. Suite 4836.
