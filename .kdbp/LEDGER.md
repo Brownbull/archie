@@ -4583,3 +4583,27 @@ CI-safe: .unlocked specs import only waitForComponentLibrary (unchanged).
 SWEEP SURFACED (out of D23 scope → new item): priority-scoring, constraint-guardrails (weight-slider
    level-gating), status-dot-and-swap-popover (connectNodes handle-drag) + likely object-toolbars/
    ui-sweep/flow-particles/component-swapping/density — same rot patterns, ~15 dormant fails.
+- 2026-06-07 22:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:49 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:49 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:49 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:52 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:56 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:57 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/priority-scoring.spec.ts
+- 2026-06-07 22:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/constraint-guardrails.spec.ts
+- 2026-06-07 22:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/constraint-guardrails.spec.ts
+- 2026-06-07 22:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/constraint-guardrails.spec.ts
+- 2026-06-07 23:01 | Write | /home/khujta/projects/bmad/archie/tests/e2e/density.spec.ts
+
+## 2026-06-07 — [1cf75c6] test(e2e): rehab D24 Bucket A — weight/constraint/density gating (D24a)
+FINDINGS: 0 critical (3 specs, test-only; priority-scoring 10/10, constraint-guardrails 2/2, density 2/2)
+ACTIONS: committed — useAdvancedLevel (weights/constraints/disclosures are level-gated + in overlay),
+         File-menu export, default weight_profile seed for import-validation mutators, metric-rich node
+         (postgresql) for score/violation diversity, idempotent openWeightSliders, type-block palette,
+         AC-5 zeroes a present category + asserts change (old toBeLessThan was semantically wrong).
+D24 REMAINING: Bucket B (~9) — connectNodes/heatmap-edge specs (flow-particles-and-legend,
+         status-dot AC-STATUS-1/2/3 + AC-SWAP-3, object-toolbars) → fixture-import/connectPortHandles.
+CI-safe: helpers unchanged this batch; .unlocked specs unaffected.
