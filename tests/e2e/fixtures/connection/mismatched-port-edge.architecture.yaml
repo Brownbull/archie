@@ -1,0 +1,22 @@
+schema_version: 4.0.0
+name: port-edge-creation — mismatched http-out → db-in (D23)
+nodes:
+  - id: n-app
+    component_id: node-express
+    config_variant_id: single-process
+    position:
+      x: 0
+      'y': 0
+    replicas: 1
+  - id: n-db
+    component_id: postgresql
+    position:
+      x: 320
+      'y': 0
+    replicas: 1
+edges:
+  - id: e0
+    source_node_id: n-app
+    target_node_id: n-db
+    source_handle_id: http-out
+    target_handle_id: db-in

@@ -1,133 +1,63 @@
 import { test, expect } from "@playwright/test"
-import { waitForComponentLibrary, dragComponentToCanvas, connectNodes } from "./helpers/canvas-helpers"
+import { waitForComponentLibrary } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/port-edge-creation"
 
-async function connectPortHandles(
-  page: import("@playwright/test").Page,
-  sourceHandleTestId: string,
-  targetHandleTestId: string,
-): Promise<void> {
-  const sourceHandle = page.locator(`[data-testid="${sourceHandleTestId}"]`)
-  const targetHandle = page.locator(`[data-testid="${targetHandleTestId}"]`)
+/**
+ * Port-compatible edge RENDERING (Epic 12, Phase 3).
+ *
+ * D23: React Flow's connection handle-drag (mouse-down on a source port handle, drag to a target
+ * handle, mouse-up) does not reliably create an edge under headless Playwright — the synthetic
+ * pointer stream never triggers RF's onConnect. So the drag GESTURE that computes port
+ * compatibility is exercised at the store level instead:
+ *   - tests/unit/stores/architectureStore-ports.test.ts
+ *       · "detects port type mismatch between http-out and db-in"      (mismatch path)
+ *       · "marks compatible port connection (db-out → db-in) ...".     (compatible path)
+ *       · "stores null handle IDs when no handles provided"            (generic-handle path)
+ *   - tests/unit/engine/portCompatibilityChecker.test.ts               (the rule itself)
+ *
+ * What E2E uniquely owns is the import → hydrate → RENDER pipeline: yamlImporter recomputes
+ * isPortMismatch from the stored handle IDs (yamlImporter.ts:412-423) and ArchieEdge renders the
+ * ConnectionWarning from edge data. We drive that with authored fixtures (the same reliable path
+ * the CI-gated specs use) rather than a drag we can't perform.
+ */
 
-  const sourceBox = await sourceHandle.boundingBox()
-  const targetBox = await targetHandle.boundingBox()
-  if (!sourceBox || !targetBox) throw new Error("Port handle bounding boxes not found")
-
-  const srcX = sourceBox.x + sourceBox.width / 2
-  const srcY = sourceBox.y + sourceBox.height / 2
-  const tgtX = targetBox.x + targetBox.width / 2
-  const tgtY = targetBox.y + targetBox.height / 2
-
-  await page.mouse.move(srcX, srcY)
-  await page.mouse.down()
-  await page.mouse.move((srcX + tgtX) / 2, (srcY + tgtY) / 2, { steps: 5 })
-  await page.mouse.move(tgtX, tgtY, { steps: 5 })
-  await page.mouse.up()
-}
+const COMPATIBLE_FIXTURE = "tests/e2e/fixtures/connection/compatible-port-edge.architecture.yaml"
+const MISMATCH_FIXTURE = "tests/e2e/fixtures/connection/mismatched-port-edge.architecture.yaml"
+const PLAIN_FIXTURE = "tests/e2e/fixtures/connection/two-node-edge.architecture.yaml"
 
 test.describe("Port-Compatible Edge Creation (Epic 12, Phase 3)", () => {
-  test("compatible port connection (db-out → db-in) creates edge without warning", async ({ page }) => {
+  test("compatible port connection (db-out → db-in) renders an edge without a warning", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator('[data-testid="canvas-panel"]')).toBeVisible({ timeout: 15_000 })
     const hasComponents = await waitForComponentLibrary(page)
-    if (!hasComponents) {
-      test.skip()
-      return
-    }
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const canvasPanel = page.locator('[data-testid="canvas-panel"]')
-    const canvasBounds = await canvasPanel.boundingBox()
-    if (!canvasBounds) throw new Error("canvas-panel not found")
+    await page.locator('[data-testid="import-file-input"]').setInputFiles(COMPATIBLE_FIXTURE)
 
-    await dragComponentToCanvas(
-      page, "node-express",
-      canvasBounds.x + canvasBounds.width * 0.25,
-      canvasBounds.y + canvasBounds.height * 0.4,
-    )
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
-
-    await dragComponentToCanvas(
-      page, "postgresql",
-      canvasBounds.x + canvasBounds.width * 0.65,
-      canvasBounds.y + canvasBounds.height * 0.4,
-    )
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
-
-    await page.screenshot({
-      path: `${SCREENSHOT_DIR}/01-two-nodes-placed.png`,
-      fullPage: true,
-    })
-
-    const anyPortHandle = page.locator('[data-testid^="port-handle-"]').first()
-    try {
-      await anyPortHandle.waitFor({ state: "attached", timeout: 5_000 })
-    } catch {
-      test.skip()
-      return
-    }
-
-    const sourcePort = page.locator('[data-testid="port-handle-db-out"]').first()
-    const targetPort = page.locator('[data-testid="port-handle-db-in"]').first()
-    await expect(sourcePort).toBeAttached({ timeout: 3_000 })
-    await expect(targetPort).toBeAttached({ timeout: 3_000 })
-
-    await connectPortHandles(page, "port-handle-db-out", "port-handle-db-in")
-    await page.waitForTimeout(500)
+    const edges = page.locator('[data-testid="archie-edge"]')
+    await expect(edges).toHaveCount(1, { timeout: 15_000 })
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/02-compatible-edge-created.png`,
       fullPage: true,
     })
 
-    const edges = page.locator('[data-testid="archie-edge"]')
-    await expect(edges).toHaveCount(1, { timeout: 3_000 })
-
+    // Compatible database port pair → no mismatch, no incompatibility warning.
     const warning = page.locator('[data-testid="connection-warning"]')
     await expect(warning).toHaveCount(0)
   })
 
-  test("mismatched port connection (http-out → db-in) shows port mismatch warning", async ({ page }) => {
+  test("mismatched port connection (http-out → db-in) renders a port mismatch warning", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator('[data-testid="canvas-panel"]')).toBeVisible({ timeout: 15_000 })
     const hasComponents = await waitForComponentLibrary(page)
-    if (!hasComponents) {
-      test.skip()
-      return
-    }
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const canvasPanel = page.locator('[data-testid="canvas-panel"]')
-    const canvasBounds = await canvasPanel.boundingBox()
-    if (!canvasBounds) throw new Error("canvas-panel not found")
+    await page.locator('[data-testid="import-file-input"]').setInputFiles(MISMATCH_FIXTURE)
 
-    await dragComponentToCanvas(
-      page, "node-express",
-      canvasBounds.x + canvasBounds.width * 0.25,
-      canvasBounds.y + canvasBounds.height * 0.4,
-    )
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
-
-    await dragComponentToCanvas(
-      page, "postgresql",
-      canvasBounds.x + canvasBounds.width * 0.65,
-      canvasBounds.y + canvasBounds.height * 0.4,
-    )
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
-
-    const sourcePort = page.locator('[data-testid="port-handle-http-out"]').first()
-    const targetPort = page.locator('[data-testid="port-handle-db-in"]').first()
-
-    try {
-      await sourcePort.waitFor({ state: "attached", timeout: 5_000 })
-      await targetPort.waitFor({ state: "attached", timeout: 5_000 })
-    } catch {
-      test.skip()
-      return
-    }
-
-    await connectPortHandles(page, "port-handle-http-out", "port-handle-db-in")
-    await page.waitForTimeout(500)
+    const edges = page.locator('[data-testid="archie-edge"]')
+    await expect(edges).toHaveCount(1, { timeout: 15_000 })
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/03-mismatched-edge-warning.png`,
@@ -141,47 +71,22 @@ test.describe("Port-Compatible Edge Creation (Epic 12, Phase 3)", () => {
     await expect(portMismatch).toHaveCount(1)
   })
 
-  test("edge creation via generic handles stores null handle IDs", async ({ page }) => {
+  test("edge with no port handles still renders (generic/legacy connection)", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator('[data-testid="canvas-panel"]')).toBeVisible({ timeout: 15_000 })
     const hasComponents = await waitForComponentLibrary(page)
-    if (!hasComponents) {
-      test.skip()
-      return
-    }
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const canvasPanel = page.locator('[data-testid="canvas-panel"]')
-    const canvasBounds = await canvasPanel.boundingBox()
-    if (!canvasBounds) throw new Error("canvas-panel not found")
+    // The plain fixture omits handle IDs entirely. The importer resolves a default port pair; the
+    // null-handle-storage path (when no ports resolve) is asserted in architectureStore-ports.test.ts.
+    await page.locator('[data-testid="import-file-input"]').setInputFiles(PLAIN_FIXTURE)
 
-    await dragComponentToCanvas(
-      page, "node-express",
-      canvasBounds.x + canvasBounds.width * 0.25,
-      canvasBounds.y + canvasBounds.height * 0.4,
-    )
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
-
-    await dragComponentToCanvas(
-      page, "postgresql",
-      canvasBounds.x + canvasBounds.width * 0.65,
-      canvasBounds.y + canvasBounds.height * 0.4,
-    )
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
-
-    await page.screenshot({
-      path: `${SCREENSHOT_DIR}/04-two-nodes-before-connect.png`,
-      fullPage: true,
-    })
-
-    await connectNodes(page, 0, 1)
-    await page.waitForTimeout(500)
+    const edges = page.locator('[data-testid="archie-edge"]')
+    await expect(edges).toHaveCount(1, { timeout: 15_000 })
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/05-edge-created-generic-handles.png`,
       fullPage: true,
     })
-
-    const edges = page.locator('[data-testid="archie-edge"]')
-    await expect(edges).toHaveCount(1, { timeout: 3_000 })
   })
 })
