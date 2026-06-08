@@ -239,7 +239,9 @@ export async function triggerRecalcViaConfigChange(
   nodeIndex = 0,
 ): Promise<void> {
   const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
-  await node.click()
+  // Select via the top-left header, NOT the center — the center carries the on-node vendor/config
+  // dropdowns; a center click opens one whose listbox overlay then intercepts the config-trigger click.
+  await node.click({ position: { x: 12, y: 6 } })
 
   const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
   await expect(configTrigger).toBeVisible({ timeout: 3_000 })
@@ -298,6 +300,31 @@ export async function dragComponentToCanvas(
     },
     { compId: componentId, x: targetX, y: targetY },
   )
+}
+
+/**
+ * Place a known component at a fractional canvas position via the drop event (D23). Use this when a
+ * test needs a node at a SPECIFIC, predictable spot — e.g. clear of the top-left build-health panel,
+ * or two nodes at distinct positions. The "+" add-type buttons drop at a default location that can
+ * land under the HUD panels (intercepting later clicks) and can be occluded in a filtered toolbox.
+ * Asserts the node count incremented by one.
+ */
+export async function placeComponentAt(
+  page: Page,
+  componentId: string,
+  fractionX: number,
+  fractionY: number,
+): Promise<void> {
+  const canvasBounds = await page.locator('[data-testid="canvas-panel"]').boundingBox()
+  if (!canvasBounds) throw new Error("canvas-panel not found")
+  const before = await page.locator('[data-testid="archie-node"]').count()
+  await dragComponentToCanvas(
+    page,
+    componentId,
+    canvasBounds.x + canvasBounds.width * fractionX,
+    canvasBounds.y + canvasBounds.height * fractionY,
+  )
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(before + 1, { timeout: 5_000 })
 }
 
 /**

@@ -167,7 +167,8 @@ test.describe("Data Context E2E (Story 7-4)", () => {
     await page.locator('[data-testid="canvas-panel"]').click({ position: { x: 10, y: 10 } })
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeHidden({ timeout: 3_000 })
 
-    // Export architecture
+    // Export architecture — Export now lives inside the File menu (D23), so open it first.
+    await page.getByTestId("menu-file").click()
     const exportButton = page.locator('[data-testid="export-button"]')
     await expect(exportButton).toBeEnabled({ timeout: 5_000 })
 

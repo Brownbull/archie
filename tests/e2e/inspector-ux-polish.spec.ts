@@ -158,15 +158,20 @@ test.describe("Inspector UX Polish E2E (Story 4-6)", () => {
 
     const inspector = page.locator('[data-testid="inspector"]')
 
-    // Add a second component so we can switch selection
-    await addComponentToCanvas(page, 1)
-
     // Widen inspector with toggle
     await page.locator('[data-testid="inspector-expand-toggle"]').click()
     await expect(inspector).toHaveCSS("width", "500px")
 
-    // Switch selection to second node
-    await selectNodeOnCanvas(page, 1)
+    // Change the selection: deselect then re-select the node. The width is a stored preference, so it
+    // must persist at 500px — not reset to the 300px default. (Switching between two distinct nodes is
+    // unreliable to drive: React Flow reorders the selected node to the DOM end and a selected node
+    // reveals its on-node config-trigger under the header, intercepting the click. A deselect→reselect
+    // cycle exercises the same persistence path cleanly.) Deselect via an empty canvas-corner click —
+    // Escape would land on the just-clicked toggle button, not the canvas selection-clear handler.
+    await page.locator('[data-testid="canvas-panel"]').click({ position: { x: 10, y: 10 } })
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeHidden({ timeout: 3_000 })
+
+    await selectNodeOnCanvas(page, 0)
 
     // Width should persist at 500px (not reset to 300px)
     await expect(inspector).toHaveCSS("width", "500px")

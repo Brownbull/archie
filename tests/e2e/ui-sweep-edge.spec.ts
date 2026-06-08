@@ -1,5 +1,5 @@
 import { test, expect, type Locator } from "@playwright/test"
-import { waitForComponentLibrary, addComponentToCanvas, useAdvancedLevel } from "./helpers/canvas-helpers"
+import { waitForComponentLibrary, addComponentToCanvas, placeComponentAt, useAdvancedLevel } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/ui-sweep-edge"
 
@@ -46,11 +46,10 @@ test.describe("UI sweep — edge cases & polish", () => {
   test("long component name — no overflow in node + inspector", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
-    // Narrow to the longest-named component, then add it.
-    await page.locator('[data-testid="search-input"]').fill("Serverless Compute")
-    await page.waitForTimeout(250)
-    await addComponentToCanvas(page, 0)
-    await page.locator('[data-testid="archie-node"]').first().click()
+    // Place the longest-named component (Spark Structured Streaming) at a clear canvas spot, then
+    // select it via the top-left header (the center carries the on-node dropdowns).
+    await placeComponentAt(page, "spark-streaming", 0.5, 0.5)
+    await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
     const inspector = page.locator('[data-testid="inspector-panel"]')
     await expect(inspector).toBeVisible({ timeout: 5_000 })
 
@@ -98,8 +97,9 @@ test.describe("UI sweep — edge cases & polish", () => {
     await page.locator('[data-testid="theme-option-light"]').click()
     await page.keyboard.press("Escape") // close the menu
     await page.waitForTimeout(300)
-    await addComponentToCanvas(page, 0)
-    await addComponentToCanvas(page, 1)
+    // Drop two nodes at distinct positions clear of the top-left HUD panels.
+    await placeComponentAt(page, "node-express", 0.4, 0.45)
+    await placeComponentAt(page, "postgresql", 0.7, 0.55)
     await page.waitForTimeout(300)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/06-light-theme.png`, fullPage: true })
   })
@@ -125,14 +125,25 @@ test.describe("UI sweep — edge cases & polish", () => {
     expect(overflow, "inspector sections must not cause horizontal page overflow").toBeLessThanOrEqual(1)
   })
 
-  test("import dialog — renders without clipping", async ({ page }) => {
+  test("import affordance — File menu renders without clipping", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
-    await page.locator('[data-testid="import-button"]').click()
-    // The import surface (dialog or file picker host) should appear.
-    const fileInput = page.locator('[data-testid="import-file-input"]')
-    await fileInput.waitFor({ state: "attached", timeout: 5_000 }).catch(() => {})
-    await page.waitForTimeout(300)
+    // Import moved into the File menu (D23). Open it and verify the Import item renders within the
+    // viewport (don't click it — menu-import fires the native file picker, which hangs Playwright).
+    await page.getByTestId("menu-file").click()
+    const menu = page.locator('[data-testid="menu-file-content"]')
+    await expect(menu).toBeVisible({ timeout: 5_000 })
+    await expect(page.getByTestId("menu-import")).toBeVisible()
+    // The hidden file input (the import target setInputFiles drives) is always mounted.
+    await expect(page.locator('[data-testid="import-file-input"]')).toBeAttached()
+
+    const box = await menu.boundingBox()
+    const vp = page.viewportSize()
+    if (box && vp) {
+      expect(box.x + box.width, "File menu must not clip off the right edge").toBeLessThanOrEqual(vp.width + 1)
+      expect(box.x, "File menu must not clip off the left edge").toBeGreaterThanOrEqual(-1)
+    }
+    await page.waitForTimeout(200)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/07-import-dialog.png`, fullPage: true })
   })
 })
