@@ -1,8 +1,9 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
   waitForComponentLibrary,
-  addComponentToCanvas,
+  dragComponentToCanvas,
   triggerRecalcViaConfigChange,
+  useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 import * as path from "path"
 import * as fs from "fs"
@@ -14,11 +15,16 @@ const SCREENSHOT_BASE = "test-results/priority-scoring"
 const ALL_CATEGORY_IDS = METRIC_CATEGORIES.map((c) => c.id)
 
 /**
- * Place a component and trigger recalculation to populate computedMetrics.
+ * Place a metric-rich component (PostgreSQL — spans performance/reliability/scalability/cost/ops) and
+ * trigger recalculation. A category-diverse node is required so that reweighting a single category
+ * actually moves the weighted aggregate (the first type-block, a Traffic Source, has too few metrics).
  */
-async function addComponentWithMetrics(page: Page, buttonIndex = 0) {
-  await addComponentToCanvas(page, buttonIndex)
-  await triggerRecalcViaConfigChange(page, buttonIndex)
+async function addComponentWithMetrics(page: Page) {
+  const cb = await page.locator('[data-testid="canvas-panel"]').boundingBox()
+  if (!cb) throw new Error("canvas-panel not found")
+  await dragComponentToCanvas(page, "postgresql", cb.x + cb.width * 0.5, cb.y + cb.height * 0.45)
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
+  await triggerRecalcViaConfigChange(page, 0)
 }
 
 /**
@@ -35,10 +41,14 @@ async function openDashboardOverlay(page: Page) {
  * Expand the weight sliders collapsible in the DashboardOverlay.
  */
 async function openWeightSliders(page: Page) {
+  const section = page.locator('[data-testid="weight-sliders-section"]')
+  // Idempotent — the Radix overlay keeps its weightsOpen state across close/reopen within a test, so a
+  // blind toggle.click() on an already-open section would collapse it.
+  if (await section.isVisible().catch(() => false)) return
   const toggle = page.locator('[data-testid="weight-sliders-toggle"]')
   await expect(toggle).toBeVisible()
   await toggle.click()
-  await expect(page.locator('[data-testid="weight-sliders-section"]')).toBeVisible({ timeout: 3_000 })
+  await expect(section).toBeVisible({ timeout: 3_000 })
 }
 
 /**
@@ -82,6 +92,8 @@ async function exportMutateAndReimport(
   tempPath: string,
   mutator: (doc: Record<string, unknown>) => void,
 ): Promise<void> {
+  // Export lives in the File menu now (D23) — open it to reach the button.
+  await page.getByTestId("menu-file").click()
   const exportButton = page.locator('[data-testid="export-button"]')
   await expect(exportButton).toBeEnabled({ timeout: 5_000 })
   const [download] = await Promise.all([
@@ -96,6 +108,11 @@ async function exportMutateAndReimport(
     throw new Error("Exported YAML did not parse to an object")
   }
   const doc = parsed as Record<string, unknown>
+  // The exporter omits weight_profile when all weights are default (1.0), so seed a full default
+  // profile first — the mutators then tweak a single category to exercise import validation.
+  if (doc["weight_profile"] === undefined || doc["weight_profile"] === null) {
+    doc["weight_profile"] = Object.fromEntries(ALL_CATEGORY_IDS.map((id) => [id, 1]))
+  }
   mutator(doc)
   fs.writeFileSync(tempPath, dump(doc))
 
@@ -107,6 +124,11 @@ async function exportMutateAndReimport(
 }
 
 test.describe("Priority Scoring E2E (Story 5-5)", () => {
+  // D24: Priority Weights render at intermediate+ level and live in the DashboardOverlay — seed advanced.
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
   test("AC-1: adjusting a weight slider changes the aggregate score", async ({ page }) => {
     await page.goto("/")
 
@@ -234,6 +256,8 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     await expect(page.locator('[data-testid="dashboard-overlay"]')).toBeHidden({ timeout: 3_000 })
 
     // Export architecture — capture download
+    // Export lives in the File menu now (D23) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
     const exportButton = page.locator('[data-testid="export-button"]')
     await expect(exportButton).toBeEnabled({ timeout: 5_000 })
 
@@ -253,10 +277,8 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     const libraryReadyForImport = await waitForComponentLibrary(page)
     test.skip(!libraryReadyForImport, "Skipped: Firestore has no seeded component data after reimport")
 
-    // Import the exported YAML
-    const importButton = page.locator('[data-testid="import-button"]')
-    await expect(importButton).toBeVisible()
-
+    // Import the exported YAML — the hidden import-file-input is always mounted (import is a File-menu
+    // item now, no standalone import-button).
     const fileInput = page.locator('[data-testid="import-file-input"]')
     await fileInput.setInputFiles(downloadPath)
 
@@ -309,6 +331,8 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     // First: place and export with default weights to get a valid v1-like YAML
     await addComponentWithMetrics(page)
 
+    // Export lives in the File menu now (D23) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
     const exportButton = page.locator('[data-testid="export-button"]')
     await expect(exportButton).toBeEnabled({ timeout: 5_000 })
 
@@ -504,19 +528,22 @@ test.describe("Priority Scoring E2E (Story 5-5)", () => {
     const initialScore = await readAggregateScore(page)
     expect(initialScore).toBeGreaterThan(0)
 
-    const tempPath = path.join(SCREENSHOT_BASE, "td-5-5c-ac5-zero-score-impact", "zero-security.yaml")
+    // Zero a category the placed component actually scores in (PostgreSQL has scalability, not
+    // security) — otherwise the weight change is a no-op. Excluding an active category shifts the
+    // weighted aggregate; the direction depends on whether that category was above/below the node's
+    // mean, so assert the score CHANGES (exclusion has an effect), not a fixed direction.
+    const tempPath = path.join(SCREENSHOT_BASE, "td-5-5c-ac5-zero-score-impact", "zero-scalability.yaml")
     await exportMutateAndReimport(page, tempPath, (doc) => {
       const wp = doc["weight_profile"] as Record<string, number>
-      wp["security"] = 0
+      wp["scalability"] = 0
     })
 
     // Wait for import to complete
     await expect(page.locator('[data-testid="archie-node"]').first()).toBeVisible({ timeout: 10_000 })
     await page.waitForTimeout(500)
 
-    // Score should decrease — zeroing a positive-weight category can only reduce or hold the aggregate
-    const zeroSecurityScore = await readAggregateScore(page)
-    expect(zeroSecurityScore).toBeLessThan(initialScore)
+    const zeroScalabilityScore = await readAggregateScore(page)
+    expect(zeroScalabilityScore).not.toBe(initialScore)
 
     await page.screenshot({
       path: `${SCREENSHOT_BASE}/td-5-5c-ac5-zero-score-impact/09-zero-weight-score-impact.png`,

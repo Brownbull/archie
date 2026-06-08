@@ -1,27 +1,32 @@
 import { test, expect } from "@playwright/test"
-import { waitForComponentLibrary, addComponentToCanvas } from "./helpers/canvas-helpers"
+import { waitForComponentLibrary, dragComponentToCanvas, useAdvancedLevel } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/density"
 
 test.describe("Information density (P3)", () => {
-  test("palette: compact cards with price + collapsible categories", async ({ page }) => {
+  // D24: the inspector's verbose disclosures are level-gated → seed advanced.
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
+  test("palette: compact type blocks + collapsible categories", async ({ page }) => {
     await page.goto("/")
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const cards = page.locator('[data-testid^="component-card-"]')
-    const before = await cards.count()
+    // The toolbox lists compact TYPE blocks grouped by category (the per-component card grid +
+    // inline cost-range were replaced by the type-block redesign — D23/expanded-content).
+    const typeBlocks = page.locator('[data-testid^="add-type-"]')
+    const before = await typeBlocks.count()
     expect(before).toBeGreaterThan(0)
-    // Compact row surfaces a price range inline (detail is hover-revealed).
-    await expect(page.locator('[data-testid^="cost-range-"]').first()).toBeVisible()
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-compact-palette.png`, fullPage: true })
 
-    // Collapse the first category → its cards disappear, fewer cards overall.
+    // Collapse the first category → its type blocks disappear, fewer blocks overall.
     const firstToggle = page.locator('[data-testid^="category-toggle-"]').first()
     await expect(firstToggle).toHaveAttribute("aria-expanded", "true")
     await firstToggle.click()
     await expect(firstToggle).toHaveAttribute("aria-expanded", "false")
-    await expect(cards).not.toHaveCount(before)
+    await expect(typeBlocks).not.toHaveCount(before)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-category-collapsed.png`, fullPage: true })
   })
 
@@ -30,8 +35,13 @@ test.describe("Information density (P3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    await addComponentToCanvas(page, 0)
-    await page.locator('[data-testid="archie-node"]').first().click()
+    // Place a metric-rich component so the gains/costs disclosure renders, then select via the
+    // top-left header (the center carries the on-node dropdowns).
+    const cb = await page.locator('[data-testid="canvas-panel"]').boundingBox()
+    if (!cb) throw new Error("canvas-panel not found")
+    await dragComponentToCanvas(page, "postgresql", cb.x + cb.width * 0.5, cb.y + cb.height * 0.45)
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
+    await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 
     // Inspector header now offers a Remove action (consistency with the on-object toolbar).

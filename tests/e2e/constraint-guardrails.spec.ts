@@ -1,8 +1,9 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
   waitForComponentLibrary,
-  addComponentToCanvas,
+  dragComponentToCanvas,
   triggerRecalcViaConfigChange,
+  useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 import * as path from "path"
 import * as fs from "fs"
@@ -11,11 +12,16 @@ import { load } from "js-yaml"
 const SCREENSHOT_DIR = "test-results/constraint-guardrails"
 
 /**
- * Place a component and trigger recalculation to populate computedMetrics.
+ * Place a metric-rich component (PostgreSQL — has a performance metric, so a "performance gte 10"
+ * constraint reliably violates) and trigger recalculation. The first type-block (Traffic Source) lacks
+ * the categories these constraints target.
  */
-async function addComponentWithMetrics(page: Page, buttonIndex = 0) {
-  await addComponentToCanvas(page, buttonIndex)
-  await triggerRecalcViaConfigChange(page, buttonIndex)
+async function addComponentWithMetrics(page: Page) {
+  const cb = await page.locator('[data-testid="canvas-panel"]').boundingBox()
+  if (!cb) throw new Error("canvas-panel not found")
+  await dragComponentToCanvas(page, "postgresql", cb.x + cb.width * 0.5, cb.y + cb.height * 0.45)
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
+  await triggerRecalcViaConfigChange(page, 0)
 }
 
 /**
@@ -79,6 +85,11 @@ async function addConstraint(
 }
 
 test.describe("Constraint Guardrails E2E (Story 6-5)", () => {
+  // D24: Constraint Guardrails render at the Advanced level only (DashboardOverlay showConstraints).
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
   test("AC-1/AC-2/AC-3: add constraint, click violation navigates, remove clears badges", async ({
     page,
   }) => {
@@ -88,7 +99,7 @@ test.describe("Constraint Guardrails E2E (Story 6-5)", () => {
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
     // Place a component with computed metrics (needed for constraint evaluation)
-    await addComponentWithMetrics(page, 0)
+    await addComponentWithMetrics(page)
 
     // Open overlay → constraint panel
     await openDashboardOverlay(page)
@@ -185,7 +196,7 @@ test.describe("Constraint Guardrails E2E (Story 6-5)", () => {
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
     // Place a component with computed metrics
-    await addComponentWithMetrics(page, 0)
+    await addComponentWithMetrics(page)
 
     // Open overlay → constraint panel → add two constraints
     await openDashboardOverlay(page)
@@ -204,7 +215,8 @@ test.describe("Constraint Guardrails E2E (Story 6-5)", () => {
       timeout: 3_000,
     })
 
-    // Export architecture
+    // Export architecture — the export button lives in the File menu now (D23).
+    await page.getByTestId("menu-file").click()
     const exportButton = page.locator('[data-testid="export-button"]')
     await expect(exportButton).toBeEnabled({ timeout: 5_000 })
     const tempDir = path.join(SCREENSHOT_DIR, "ac4-roundtrip")
