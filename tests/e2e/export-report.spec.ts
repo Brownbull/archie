@@ -205,7 +205,9 @@ test.describe("Export Report E2E (Story 10-4)", () => {
     })
   })
 
-  test("AC-5/V3: scenario impact section appears in report when scenario active", async ({ page }) => {
+  // D83: demand scenarios retired — the report's demand-scenario-impact section no longer applies.
+  // Skipped pending a rewrite around failure scenarios only. See PENDING D23.
+  test.skip("AC-5/V3: scenario impact section appears in report when scenario active", async ({ page }) => {
     test.setTimeout(90_000)
     await page.goto("/")
 

@@ -68,10 +68,9 @@ test.describe("UI layout — controls are well-distributed & non-overlapping", (
     await page.screenshot({ path: `${SCREENSHOT_DIR}/03-inspector-open-top-row.png`, fullPage: true })
 
     const overlayBox = await box(page.locator('[data-testid="overlay-selector"] >> div').first())
-    const scenarioBox = await box(page.locator('[data-testid="scenario-selector"]'))
     const failureBox = await box(page.locator('[data-testid="failure-selector"]'))
 
-    expect(overlaps(overlayBox, scenarioBox), "Overlay toolbar overlaps the scenario selector").toBe(false)
+    // D83: the demand scenario-selector was retired; only the failure selector remains in this rail.
     expect(overlaps(overlayBox, failureBox), "Overlay toolbar overlaps the failure selector").toBe(false)
   })
 

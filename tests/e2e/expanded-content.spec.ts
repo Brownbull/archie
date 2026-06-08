@@ -460,7 +460,9 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
   })
 
   // --- AC-4 + AC-5: Demand/Failure Scenario Interaction ---
-  test("AC-4/AC-5: demand and failure scenarios affect new components (V6 directional)", async ({
+  // D83: demand scenarios retired; this test is entangled with the removed demand-scenario selector —
+  // skipped pending a decouple-from-demand rewrite (the failure half is unit-covered). See PENDING D23.
+  test.skip("AC-4/AC-5: demand and failure scenarios affect new components (V6 directional)", async ({
     page,
   }) => {
     test.setTimeout(90_000)

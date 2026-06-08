@@ -350,7 +350,8 @@ test.describe("Canvas Enhancements E2E (Story 10-3)", () => {
     })
   })
 
-  test("AC-4: demand scenario changes inline metric values; deselect reverts", async ({ page }) => {
+  // D83: demand scenarios retired (demand is set on the traffic-source block) — obsolete. See PENDING D23.
+  test.skip("AC-4: demand scenario changes inline metric values; deselect reverts", async ({ page }) => {
     test.setTimeout(60_000)
     await page.goto("/")
 
