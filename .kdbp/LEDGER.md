@@ -4495,3 +4495,22 @@ CI: ✅ E2E unlocked replay + Deploy Production both green
 PROMOTION: N/A
 DEPLOYMENTS: P155
 Ships D23a (8abe23b): connection-inspection rehabbed via fixture import (8/0) + placeTwoComponents card-rot fix. PENDING D23 refined: connection-inspection RESOLVED; remaining = connection-wiring/port-edge-creation (React Flow handle-drag, their subject, unreliable in Playwright), section-nav specs (11 pass/7 fail — need the D22 playbook), demand-scenario specs (demand-simulation 6 refs heavy + 4 specs 1-2 refs) referencing the retired scenario-selector. CI unaffected (desktop, non-CI-gated).
+- 2026-06-07 19:57 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/data-context.spec.ts
+- 2026-06-07 19:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/data-context.spec.ts
+- 2026-06-07 19:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-07 19:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-07 19:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 19:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 20:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/demand-simulation.spec.ts
+- 2026-06-07 20:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/demand-simulation.spec.ts
+- 2026-06-07 20:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-enhancements.spec.ts
+- 2026-06-07 20:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 20:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/export-report.spec.ts
+- 2026-06-07 20:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-layout.spec.ts
+
+## 2026-06-07 17:30 — PUSH dev -> main (P156)
+PR: — (direct dev→main; 2 commits: 2691176 section-nav gating, d4f9d7f demand-scenario retirement)
+CI: watching (desktop-spec changes only — vitest + desktop-unlocked unaffected)
+PROMOTION: N/A
+DEPLOYMENTS: P156
+D23 progress: connection-inspection RESOLVED (P155), section-nav gating fixed (12/6), demand-scenario tests RETIRED (D83). Per the user's "retire obsolete demand-scenario tests only, then stop" decision, STOPPING here. PENDING D23 finalized with the remaining tail: 6 individual section-nav issues + ~8 unrelated dormant failures + the connection-wiring/port-edge-creation handle-drag blocker + the demand-simulation Failure-describe decouple rewrite.
