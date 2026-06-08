@@ -360,11 +360,11 @@ test.describe.skip("Demand Simulation E2E (Story 9-5)", () => {
 })
 
 // --- Failure Scenario E2E (Story 9-7) ---
-// D23: failures are KEPT (D83), but these E2E tests are entangled with the retired demand-scenario
-// stacking + YAML round-trip — skipped pending a decouple-from-demand rewrite. The failure-modifier
-// engine path itself stays covered by architectureStoreHelpers-failure + yamlExporter-failure units.
-test.describe.skip("Failure Scenario E2E (Story 9-7)", () => {
-  test("AC-2/AC-4: failure selector, banner, stacking with demand, deselection restore", async ({
+// D23d: failures are KEPT (D83); decoupled from the retired demand scenarios — these tests now drive
+// the failure selector ALONE (no demand stacking, no demand round-trip). The failure-modifier engine
+// path stays unit-covered (architectureStoreHelpers-failure + yamlExporter-failure).
+test.describe("Failure Scenario E2E (Story 9-7)", () => {
+  test("AC-2/AC-4: failure selector, banner, metric impact, deselection restores baseline", async ({
     page,
   }) => {
     test.setTimeout(60_000)
@@ -392,7 +392,7 @@ test.describe.skip("Failure Scenario E2E (Story 9-7)", () => {
     )
     await page.waitForTimeout(500)
 
-    // --- AC-2: Failure dropdown visible, shows 6 presets + "No Failure" ---
+    // --- AC-2: Failure selector is present (the demand selector is gone — D83) ---
     const failureSelector = page.locator('[data-testid="failure-selector"]')
     await expect(failureSelector).toBeVisible({ timeout: 5_000 })
 
@@ -408,12 +408,12 @@ test.describe.skip("Failure Scenario E2E (Story 9-7)", () => {
     // Select "Database Failure" — targets data-durability, read-latency, write-throughput
     await selectFailureScenario(page, "Database Failure")
 
-    // Failure banner should appear (red-themed, distinct from demand yellow)
+    // Failure banner should appear (red-themed)
     const failureBanner = page.locator('[data-testid="failure-banner"]')
     await expect(failureBanner).toBeVisible({ timeout: 3_000 })
     await expect(failureBanner).toContainText("Failure: Database Failure")
 
-    // Poll for failure scenario to affect metrics
+    // Failure injection must shift the architecture's metrics (score or heatmap).
     await expect.poll(
       async () => {
         const score = await getDashboardScore(page)
@@ -429,60 +429,26 @@ test.describe.skip("Failure Scenario E2E (Story 9-7)", () => {
       fullPage: true,
     })
 
-    // --- AC-4: Stack demand + failure simultaneously ---
-    // Capture failure-only score BEFORE adding demand (review fix #6: was reading stacked state twice)
-    const failureOnlyScore = await getDashboardScore(page)
-
-    await selectScenario(page, "Traffic Peak")
-
-    // Both banners should be visible
-    const demandBanner = page.locator('[data-testid="scenario-banner"]')
-    await expect(demandBanner).toBeVisible({ timeout: 3_000 })
-    await expect(failureBanner).toBeVisible({ timeout: 3_000 })
-
-    // Both selectors visible simultaneously
-    await expect(page.locator('[data-testid="scenario-selector"]')).toBeVisible()
-    await expect(failureSelector).toBeVisible()
-
-    // Wait for stacked recalculation to settle
-    await page.waitForTimeout(500)
-    const stackedScore = await getDashboardScore(page)
-
-    // Stacked score should be <= failure-only score (demand adds more pressure)
-    if (failureOnlyScore !== null && stackedScore !== null) {
-      expect(stackedScore).toBeLessThanOrEqual(failureOnlyScore)
-    }
-
-    await page.screenshot({
-      path: `${SCREENSHOT_DIR}/08-demand-plus-failure-stacked.png`,
-      fullPage: true,
-    })
-
-    // --- Deselection: remove failure, demand remains ---
+    // --- AC-4: Deselecting the failure restores the baseline ---
     await selectFailureScenario(page, "No Failure")
     await expect(failureBanner).toBeHidden({ timeout: 3_000 })
-    // Demand banner should still be visible
-    await expect(demandBanner).toBeVisible()
 
-    // Remove demand too — full restore
-    await selectScenario(page, "No Scenario")
-    await expect(demandBanner).toBeHidden({ timeout: 3_000 })
-
-    // Baseline should be restored
     if (baselineScore !== null) {
       await expect.poll(
         () => getDashboardScore(page),
-        { timeout: 5_000, message: "Dashboard score should revert to baseline after clearing both" },
+        { timeout: 5_000, message: "Dashboard score should revert to baseline after clearing the failure" },
       ).toBe(baselineScore)
     }
+    const restoredPostgres = await getNodeHeatmapStatus(page, "PostgreSQL")
+    expect(restoredPostgres).toBe(baselinePostgres)
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/09-both-cleared-restored.png`,
+      path: `${SCREENSHOT_DIR}/09-failure-cleared-restored.png`,
       fullPage: true,
     })
   })
 
-  test("AC-6: YAML round-trip preserves failure scenario", async ({ page }) => {
+  test("AC-6: YAML round-trip preserves the failure scenario", async ({ page }) => {
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -501,14 +467,12 @@ test.describe.skip("Failure Scenario E2E (Story 9-7)", () => {
     await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
     await triggerRecalcViaConfigChange(page, 0)
 
-    // Select both demand and failure scenarios
-    await selectScenario(page, "Traffic Peak")
+    // Select a failure scenario (no demand — decoupled)
     await selectFailureScenario(page, "Single Node Failure")
-
-    await expect(page.locator('[data-testid="scenario-banner"]')).toBeVisible({ timeout: 3_000 })
     await expect(page.locator('[data-testid="failure-banner"]')).toBeVisible({ timeout: 3_000 })
 
-    // Export
+    // Export — the export button lives inside the File menu now (D23).
+    await page.getByTestId("menu-file").click()
     const exportButton = page.locator('[data-testid="export-button"]')
     await expect(exportButton).toBeEnabled({ timeout: 5_000 })
 
@@ -522,9 +486,8 @@ test.describe.skip("Failure Scenario E2E (Story 9-7)", () => {
     ])
     await download.saveAs(tempPath)
 
-    // Verify YAML contains both scenario IDs
+    // Verify YAML contains the failure scenario id
     const yamlContent = fs.readFileSync(tempPath, "utf-8")
-    expect(yamlContent).toContain("active_scenario_id: traffic-peak")
     expect(yamlContent).toContain("active_failure_scenario_id: failure-single-node")
 
     // Fresh page — import
@@ -538,20 +501,11 @@ test.describe.skip("Failure Scenario E2E (Story 9-7)", () => {
     await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 10_000 })
     await page.waitForTimeout(800)
 
-    // Verify demand scenario restored
-    const scenarioTrigger = page
-      .locator('[data-testid="scenario-selector"]')
-      .locator('button[role="combobox"]')
-    await expect(scenarioTrigger).toContainText("Traffic Peak", { timeout: 5_000 })
-
     // Verify failure scenario restored
     const failureTrigger = page
       .locator('[data-testid="failure-selector"]')
       .locator('button[role="combobox"]')
     await expect(failureTrigger).toContainText("Single Node Failure", { timeout: 5_000 })
-
-    // Both banners visible
-    await expect(page.locator('[data-testid="scenario-banner"]')).toBeVisible({ timeout: 3_000 })
     await expect(page.locator('[data-testid="failure-banner"]')).toBeVisible({ timeout: 3_000 })
 
     await page.screenshot({
