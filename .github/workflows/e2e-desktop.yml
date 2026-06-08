@@ -1,0 +1,85 @@
+name: E2E (desktop — informational)
+
+# Runs the full `desktop` Playwright project against REAL Firebase, using the primary test account.
+# INFORMATIONAL ONLY (for now): triggered on push to dev/main, NOT a required status check and NOT a
+# deploy gate. Its job is to surface desktop-suite rot as it lands (the toolbox / Phase-2 / level-gating
+# churn that silently rotted ~23 specs before the D23/D24 rehab) without blocking merges on E2E flake.
+#
+# The desktop project is self-authenticating via the dev-only Test Login button — but the app still
+# needs Firebase config to boot (src/lib/firebase.ts throws if it's missing) and loads its component
+# library from the seeded Firestore, so the same VITE_FIREBASE_* + VITE_TEST_EMAIL/PASSWORD secrets as
+# e2e-unlocked.yml are required (NOT the VITE_TEST_UNLOCKED_* account). Skips gracefully if unset.
+#
+# Next step (separate, deliberate): once these runs are reliably green, promote a curated @smoke subset
+# to a REQUIRED check. Until then this stays purely informational.
+
+on:
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+concurrency:
+  group: e2e-desktop-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e-desktop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VITE_TEST_EMAIL: ${{ secrets.VITE_TEST_EMAIL }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check secrets configured
+        id: guard
+        run: |
+          if [ -z "$VITE_TEST_EMAIL" ]; then
+            echo "::notice::VITE_TEST_EMAIL secret not set — skipping desktop E2E."
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Playwright (chromium)
+        if: steps.guard.outputs.configured == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Write .env.local from secrets
+        if: steps.guard.outputs.configured == 'true'
+        run: |
+          cat > .env.local <<EOF
+          VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_TEST_EMAIL=${{ secrets.VITE_TEST_EMAIL }}
+          VITE_TEST_PASSWORD=${{ secrets.VITE_TEST_PASSWORD }}
+          EOF
+
+      - name: Run desktop E2E
+        if: steps.guard.outputs.configured == 'true'
+        # --workers=4 overrides the config's CI default of 1 (the desktop project shares only a stateless
+        # vite server + a read-only storageState; per-test localStorage is isolated), keeping the full
+        # suite under the 30-min cap. Real pass/fail status is reported — a red run is the rot signal —
+        # but this workflow is not a required check, so it never blocks a merge.
+        run: npx playwright test --project=desktop --workers=4
+
+      - name: Upload Playwright artifacts
+        if: ${{ failure() && steps.guard.outputs.configured == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-desktop
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

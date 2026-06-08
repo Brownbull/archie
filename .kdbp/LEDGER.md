@@ -4628,3 +4628,14 @@ ACTIONS: committed — fixture-import (two-node-edge) for edge-dependent setups;
          header-click {12,6}; edge toolbar fixture-import.
 D24 COMPLETE: Bucket A (14) [1cf75c6] + Bucket B (9) [797c25e] — all 6 specs green, 32/32 combined.
 CI-safe: helpers/fixtures unchanged in B (reused two-node-edge); .unlocked specs unaffected.
+- 2026-06-07 23:39 | Write | /home/khujta/projects/bmad/archie/.github/workflows/e2e-desktop.yml
+
+## 2026-06-07 — ci: add e2e-desktop.yml (informational, push-only)
+ADDED: .github/workflows/e2e-desktop.yml — runs the full `desktop` Playwright project on push to
+       dev/main (+ workflow_dispatch), --workers=4, 30-min cap. Mirrors e2e-unlocked.yml secrets
+       (VITE_FIREBASE_* + VITE_TEST_EMAIL/PASSWORD; firebase.ts throws without config, components load
+       from seeded Firestore) MINUS the unlocked account. Guards/skips if VITE_TEST_EMAIL unset.
+NON-GATING: not a required check, not a deploy gate — surfaces desktop-suite rot without blocking merges.
+NEXT: promote a curated @smoke subset to a REQUIRED check once runs are reliably green.
+NOTE: activates on next push; D23+D24 rehabbed the swept specs but the full project (~61 specs) may
+      still surface failures in un-swept specs — that's the intended informational signal.
