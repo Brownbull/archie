@@ -4514,3 +4514,72 @@ CI: watching (desktop-spec changes only — vitest + desktop-unlocked unaffected
 PROMOTION: N/A
 DEPLOYMENTS: P156
 D23 progress: connection-inspection RESOLVED (P155), section-nav gating fixed (12/6), demand-scenario tests RETIRED (D83). Per the user's "retire obsolete demand-scenario tests only, then stop" decision, STOPPING here. PENDING D23 finalized with the remaining tail: 6 individual section-nav issues + ~8 unrelated dormant failures + the connection-wiring/port-edge-creation handle-drag blocker + the demand-simulation Failure-describe decouple rewrite.
+- 2026-06-07 20:58 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/connection/compatible-port-edge.architecture.yaml
+- 2026-06-07 20:58 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/connection/mismatched-port-edge.architecture.yaml
+- 2026-06-07 20:58 | Write | /home/khujta/projects/bmad/archie/tests/e2e/port-edge-creation.spec.ts
+- 2026-06-07 20:59 | Write | /home/khujta/projects/bmad/archie/tests/e2e/connection-wiring.spec.ts
+
+## 2026-06-07 — [d38b761] test(e2e): rehab connection-wiring + port-edge-creation (D23a)
+FINDINGS: 0 critical (test-only: 2 specs + 2 fixtures; build/unit unaffected, tsc -b excludes e2e)
+ACTIONS: committed — 10/10 green on --project=desktop
+NOTE: handle-drag (page.mouse onConnect) unreliable in headless Playwright → fixture-import
+      render/select/delete/cascade; drag gesture covered by architectureStore-ports.test.ts
+- 2026-06-07 21:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 21:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 21:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/data-context.spec.ts
+- 2026-06-07 21:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 21:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 21:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-07 21:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-07 21:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-07 21:10 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep-edge.spec.ts
+- 2026-06-07 21:12 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 21:16 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 21:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 21:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 21:20 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+- 2026-06-07 21:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-ux-polish.spec.ts
+
+## 2026-06-07 — [075f218] test(e2e): fix group-B section-nav specs (D23b)
+FINDINGS: 0 critical (test-only: 3 specs + 1 helper change; 18/18 green on --project=desktop)
+ACTIONS: committed — File-menu export/import, placeComponentAt panel-clear helper, header-click select
+NOTE: triggerRecalcViaConfigChange now header-clicks (avoids on-node dropdown intercept); broad
+      desktop sweep pending to confirm the 14 helper consumers are unaffected
+- 2026-06-07 21:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/export-report.spec.ts
+- 2026-06-07 21:30 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/export-report.spec.ts
+- 2026-06-07 21:33 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 21:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-enhancements.spec.ts
+- 2026-06-07 21:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-enhancements.spec.ts
+- 2026-06-07 21:35 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:41 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 21:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:51 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:51 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:51 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:54 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 21:55 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-07 22:01 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 22:01 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/export-report.spec.ts
+- 2026-06-07 22:07 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-07 22:07 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/export-report.spec.ts
+
+## 2026-06-07 — [e6e0a94] test(e2e): rehab group-C dormant specs (D23c)
+FINDINGS: 0 critical (3 specs + canvas-helpers; canvas-enh 3/3, expanded-content 3/3+2skip, export-report 3/3+1skip)
+ACTIONS: committed — keyboard config-open (minimap-proof), File-menu report, blueprint advanced-drawer,
+         level-gated weights→useAdvancedLevel, overlay-category-* (Phase 2), placeability over card enum
+NOTE: triggerRecalcViaConfigChange now keyboard-opens (focus+Enter) — broad sweep next to confirm its
+      14 consumers (esp. data-context group-B) are unaffected
+- 2026-06-07 22:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/demand-simulation.spec.ts
+
+## 2026-06-07 — [1c9ea20] test(e2e): decouple Failure Scenario E2E from demand (D23d)
+FINDINGS: 0 critical (Failure 2/2 green; Demand describe stays skipped — obsolete per D83)
+ACTIONS: committed — failure-only AC-2/AC-4 (no demand stacking) + AC-6 round-trip (File-menu export)
+D23 COMPLETE: groups (i) section-nav [d38b761/075f218], (ii) canvas-enh/expanded/export [e6e0a94],
+              (iii) connection-wiring/port-edge [d38b761], (iv) demand-sim Failure [1c9ea20] — all resolved.
+CI-safe: .unlocked specs import only waitForComponentLibrary (unchanged).
+SWEEP SURFACED (out of D23 scope → new item): priority-scoring, constraint-guardrails (weight-slider
+   level-gating), status-dot-and-swap-popover (connectNodes handle-drag) + likely object-toolbars/
+   ui-sweep/flow-particles/component-swapping/density — same rot patterns, ~15 dormant fails.
