@@ -239,15 +239,18 @@ export async function triggerRecalcViaConfigChange(
   nodeIndex = 0,
 ): Promise<void> {
   const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
-  // Select via the top-left header, NOT the center — the center carries the on-node vendor/config
-  // dropdowns; a center click opens one whose listbox overlay then intercepts the config-trigger click.
-  await node.click({ position: { x: 12, y: 6 } })
-
   const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
   await expect(configTrigger).toBeVisible({ timeout: 3_000 })
-  await configTrigger.click()
+  // Open the tier dropdown via keyboard (focus + Enter) rather than a pointer click. focus() bypasses
+  // hit-testing, so it works even when the trigger sits under the React Flow minimap (a bottom-right
+  // Panel with a high z-index that selection does NOT lift a node above), and it doesn't open the
+  // inspector / shift the canvas the way a node-body click does. Radix Select opens on Enter when
+  // focused. (Trigger renders only on multi-variant nodes — pick a component with >1 config tier.)
+  await configTrigger.focus()
+  await page.keyboard.press("Enter")
 
-  await page.locator('[role="listbox"]').waitFor({ state: "visible", timeout: 3_000 })
+  const listbox = page.locator('[role="listbox"]')
+  await listbox.waitFor({ state: "visible", timeout: 3_000 })
 
   const unchecked = page.locator('[role="option"][data-state="unchecked"]')
   if ((await unchecked.count()) > 0) {

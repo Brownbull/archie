@@ -5,6 +5,7 @@ import {
   dragComponentToCanvas,
   triggerRecalcViaConfigChange,
   openDashboardOverlay,
+  useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/expanded-content"
@@ -144,6 +145,14 @@ async function loadBlueprintByName(page: Page, name: string, canvasHasNodes: boo
   const card = page.locator('[data-testid="blueprint-card"]').filter({
     has: page.locator('[data-testid="blueprint-card-name"]', { hasText: name }),
   })
+  // BlueprintTab level-gates the list: above-level blueprints (e.g. the AI/advanced ones) collapse
+  // into a "More advanced blueprints" drawer. If the named card isn't in the in-level list, open it.
+  if ((await card.count()) === 0) {
+    const advToggle = page.locator('[data-testid="advanced-blueprints-toggle"]')
+    if (await advToggle.isVisible().catch(() => false)) {
+      await advToggle.click()
+    }
+  }
   await expect(card).toBeVisible({ timeout: 5_000 })
   await card.locator('[data-testid="blueprint-load-button"]').click()
 
@@ -176,14 +185,16 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // --- AC-1: All 18 components visible ---
+    // --- AC-1: the 18-component library instantiates (the 8 new Epic-11 components) ---
+    // The toolbox redesign replaced the per-component card grid with type blocks (a component is
+    // reached by dropping its type block, then switching vendor on the node), so component breadth is
+    // no longer enumerable as `component-card-*`. Verify the 8 new Epic-11 components against the data
+    // layer by instantiating each — a truer check that they exist and hydrate. (Library load count is
+    // unit-covered in the componentLibrary tests.)
+    const canvasPanel = page.locator('[data-testid="canvas-panel"]')
+    const canvasBounds = await canvasPanel.boundingBox()
+    test.skip(!canvasBounds, "Canvas panel not found")
 
-    // Count all component cards in DOM (includes scrolled-out-of-view cards)
-    const componentCards = page.locator('[data-testid^="component-card-"]')
-    const totalComponents = await componentCards.count()
-    expect(totalComponents, "Should have at least 18 components in the library").toBeGreaterThanOrEqual(EXPECTED_TOTAL_COMPONENTS)
-
-    // Verify the 8 new Epic 11 components exist by data-testid
     const newComponentIds = [
       "llm-gateway",
       "vector-db",
@@ -194,50 +205,34 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
       "data-lake",
       "siem",
     ]
-    for (const compId of newComponentIds) {
-      const card = page.locator(`[data-testid="component-card-${compId}"]`)
-      // scrollIntoViewIfNeeded makes cards below the fold visible
-      await card.scrollIntoViewIfNeeded()
-      await expect(card, `New component "${compId}" should exist in toolbox`).toBeVisible({ timeout: 3_000 })
+    for (let i = 0; i < newComponentIds.length; i++) {
+      await dragComponentToCanvas(
+        page,
+        newComponentIds[i],
+        canvasBounds!.x + canvasBounds!.width * (0.15 + 0.09 * i),
+        canvasBounds!.y + canvasBounds!.height * (0.3 + 0.13 * (i % 3)),
+      )
+      await expect(
+        page.locator('[data-testid="archie-node"]'),
+        `New component "${newComponentIds[i]}" should instantiate on the canvas`,
+      ).toHaveCount(i + 1, { timeout: 5_000 })
     }
-
-    // Verify categories exist (at least 6 from the component data)
-    const categories = page.locator('[data-testid^="category-"]')
-    const categoryCount = await categories.count()
-    expect(categoryCount, "Should have at least 6 component categories").toBeGreaterThanOrEqual(6)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/01-toolbox-18-components.png`,
       fullPage: true,
     })
 
-    // Place one new component to verify drag-and-drop works
-    const canvasPanel = page.locator('[data-testid="canvas-panel"]')
-    const canvasBounds = await canvasPanel.boundingBox()
-    test.skip(!canvasBounds, "Canvas panel not found")
-
-    await addComponentWithMetrics(
-      page,
-      "llm-gateway",
-      canvasBounds!.x + canvasBounds!.width * 0.5,
-      canvasBounds!.y + canvasBounds!.height * 0.5,
-      1,
-    )
-
-    await page.screenshot({
-      path: `${SCREENSHOT_DIR}/02-new-component-placed.png`,
-      fullPage: true,
-    })
-
     // --- AC-2: Load AI Agent Orchestration blueprint ---
-    // Canvas has 1 node → confirmation dialog will appear
+    // Canvas has nodes (the 8 placed above) → confirmation dialog will appear (replace).
     await loadBlueprintByName(page, "AI Agent Orchestration", true)
 
-    // Blueprint defines 5 nodes and 6 edges
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(5, { timeout: 10_000 })
+    // Blueprint defines 5 nodes + 6 edges; loading prepends a default Traffic Source wired to the entry
+    // (BlueprintTab.withEntryTrafficSource), so the canvas shows 6 nodes and 7 edges.
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(6, { timeout: 10_000 })
 
     const edgeCount = await page.locator('[data-testid="archie-edge"]').count()
-    expect(edgeCount, "AI Agent Orchestration should have 6 connections").toBe(6)
+    expect(edgeCount, "AI Agent Orchestration + entry traffic source should have 7 connections").toBe(7)
 
     // Wait for recalculation to settle
     await page.waitForTimeout(800)
@@ -245,7 +240,8 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
     // V6: Verify inline metrics on blueprint nodes — content correctness, not just presence
     const nodes = page.locator('[data-testid="archie-node"]')
     let nodesWithValidMetrics = 0
-    for (let i = 0; i < 5; i++) {
+    const nodeTotal = await nodes.count()
+    for (let i = 0; i < nodeTotal; i++) {
       const node = nodes.nth(i)
       const bars = node.locator('[data-testid="inline-metric-bar"]')
       const barCount = await bars.count()
@@ -259,17 +255,18 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
           expect(Number.isFinite(numericValue), `Node ${i} bar ${j} should be finite`).toBe(true)
           expect(numericValue).toBeGreaterThanOrEqual(0)
 
-          // V6: verify aria-label has format "{abbreviation}: {value}"
+          // V6: verify aria-label has format "{abbreviation}: {value}" — value may be a star rating
+          // like "5/5" (the inline bars now render score-out-of-5).
           const ariaLabel = await meter.getAttribute("aria-label")
           expect(ariaLabel, `Node ${i} bar ${j} should have aria-label`).not.toBeNull()
-          expect(ariaLabel).toMatch(/^\w+: \d+(\.\d+)?$/)
+          expect(ariaLabel).toMatch(/^\w+: \d+(\.\d+)?(\/\d+)?$/)
         }
         nodesWithValidMetrics++
       }
     }
     expect(
       nodesWithValidMetrics,
-      "At least 3 of 5 blueprint nodes should have 2 valid inline metric bars",
+      "At least 3 blueprint nodes should have 2 valid inline metric bars",
     ).toBeGreaterThanOrEqual(3)
 
     await page.screenshot({
@@ -281,6 +278,8 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
   // --- AC-3: Cost-Efficiency Metric Visible ---
   test("AC-3: cost-efficiency metric visible with weight=1.0 (V6 semantic)", async ({ page }) => {
     test.setTimeout(60_000)
+    // The Priority Weights sliders live in the DashboardOverlay and only render at intermediate+ level.
+    await useAdvancedLevel(page)
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -343,13 +342,15 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
     expect(costValue!).toBeGreaterThanOrEqual(1)
     expect(costValue!).toBeLessThanOrEqual(10)
 
-    // V6: verify dashboard includes cost-efficiency category bar
+    // V6: verify dashboard includes the cost-efficiency category. Phase 2 moved the per-category bars
+    // into the overlay as `overlay-category-*` cards (the old `category-bar-*` footer bars are gone).
     await openDashboardOverlay(page)
-    const costBar = page.locator('[data-testid="category-bar-cost-efficiency"]')
-    await expect(costBar, "Dashboard should show cost-efficiency category bar").toBeVisible({ timeout: 3_000 })
-    const costBarValue = await costBar.getAttribute("aria-valuenow")
-    expect(costBarValue, "Cost-efficiency bar should have a numeric value").not.toBeNull()
-    expect(parseFloat(costBarValue!)).toBeGreaterThanOrEqual(1)
+    const costCard = page.locator('[data-testid="overlay-category-cost-efficiency"]')
+    await expect(costCard, "Dashboard should show the cost-efficiency category").toBeVisible({ timeout: 3_000 })
+    // The card's top-row shows the numeric score in a font-semibold span (the only such span in the card).
+    const scoreText = await costCard.locator("span.font-semibold").first().textContent()
+    const costScore = parseFloat(scoreText ?? "")
+    expect(costScore, "Cost-efficiency should have a numeric score >= 1").toBeGreaterThanOrEqual(1)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/04-cost-efficiency-visible.png`,
@@ -358,7 +359,12 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
   })
 
   // --- TD-11-6a: Category Browsing via Search Filter ---
-  test("TD-11-6a: category filter via search shows correct components (V6 semantic)", async ({
+  // D23: obsolete UI. The toolbox redesign replaced the per-component card grid with type blocks, so
+  // search now filters TYPE blocks, not `component-card-*` — component-level search filtering (assert
+  // prometheus+siem under "monitoring") is no longer an exposed affordance. The underlying
+  // searchComponents matching (name/category/tags) is unit-covered. Skipped, not deleted, so the intent
+  // is recoverable if a component-level browse view returns.
+  test.skip("TD-11-6a: category filter via search shows correct components (V6 semantic)", async ({
     page,
   }) => {
     test.setTimeout(30_000)

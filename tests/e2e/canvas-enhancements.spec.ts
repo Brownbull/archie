@@ -5,6 +5,7 @@ import {
   dragComponentToCanvas,
   triggerRecalcViaConfigChange,
   openDashboardOverlay,
+  useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/canvas-enhancements"
@@ -194,6 +195,8 @@ test.describe("Canvas Enhancements E2E (Story 10-3)", () => {
 
   test("AC-2: weight change swaps displayed metric categories (V6 semantic)", async ({ page }) => {
     test.setTimeout(60_000)
+    // The Priority Weights sliders live in the DashboardOverlay and only render at intermediate+ level.
+    await useAdvancedLevel(page)
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)

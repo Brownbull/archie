@@ -51,8 +51,10 @@ test.describe("Export Report E2E (Story 10-4)", () => {
     await page.goto("/")
     await expect(page.locator('[data-testid="toolbar"]')).toBeVisible({ timeout: 15_000 })
 
-    // Empty canvas → report button must be disabled
+    // Empty canvas → report button must be disabled. The export report button lives inside the File
+    // menu now (D23), so open it to reach the button.
     const reportButton = page.getByTestId("export-report-button")
+    await page.getByTestId("menu-file").click()
     await expect(reportButton).toBeVisible()
     await expect(reportButton).toBeDisabled()
 
@@ -60,6 +62,7 @@ test.describe("Export Report E2E (Story 10-4)", () => {
       path: `${SCREENSHOT_DIR}/01-report-button-disabled-empty.png`,
       fullPage: true,
     })
+    await page.keyboard.press("Escape") // close the menu before placing components
 
     // Add 3 components to enable the button
     const hasComponents = await waitForComponentLibrary(page)
@@ -73,7 +76,8 @@ test.describe("Export Report E2E (Story 10-4)", () => {
     await addComponentWithMetrics(page, "redis", canvasBounds!.x + canvasBounds!.width * 0.5, canvasBounds!.y + canvasBounds!.height * 0.5, 2)
     await addComponentWithMetrics(page, "nginx", canvasBounds!.x + canvasBounds!.width * 0.8, canvasBounds!.y + canvasBounds!.height * 0.5, 3)
 
-    // Report button should now be enabled
+    // Report button should now be enabled (reopen the File menu to check).
+    await page.getByTestId("menu-file").click()
     await expect(reportButton).toBeEnabled({ timeout: 5_000 })
 
     await page.screenshot({
@@ -100,6 +104,8 @@ test.describe("Export Report E2E (Story 10-4)", () => {
 
     await page.waitForTimeout(500) // recalculation settling
 
+    // Export report lives in the File menu now (D23) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
     const reportButton = page.getByTestId("export-report-button")
     await expect(reportButton).toBeEnabled({ timeout: 5_000 })
 
@@ -152,6 +158,8 @@ test.describe("Export Report E2E (Story 10-4)", () => {
 
     await page.waitForTimeout(500)
 
+    // Export report lives in the File menu now (D23) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
     const reportButton = page.getByTestId("export-report-button")
     await expect(reportButton).toBeEnabled({ timeout: 5_000 })
 
@@ -226,6 +234,8 @@ test.describe("Export Report E2E (Story 10-4)", () => {
     await page.waitForTimeout(500)
 
     // --- First: export WITHOUT scenario → verify "no scenario" text ---
+    // Export report lives in the File menu now (D23) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
     const reportButton = page.getByTestId("export-report-button")
     await expect(reportButton).toBeEnabled({ timeout: 5_000 })
 
