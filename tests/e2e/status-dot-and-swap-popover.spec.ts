@@ -2,11 +2,11 @@ import { test, expect, type Page } from "@playwright/test"
 import {
   waitForComponentLibrary,
   placeTwoComponents,
-  connectNodes,
   triggerRecalcViaConfigChange,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/status-dot-and-swap-popover"
+const EDGE_FIXTURE = "tests/e2e/fixtures/connection/two-node-edge.architecture.yaml"
 
 async function focusCanvas(page: Page): Promise<void> {
   await page.locator('[data-testid="canvas-panel"]').click({ position: { x: 10, y: 10 }, force: true })
@@ -17,11 +17,10 @@ async function toggleHeatmap(page: Page): Promise<void> {
 }
 
 async function setupConnectedCanvas(page: Page): Promise<boolean> {
-  const placed = await placeTwoComponents(page)
-  if (placed < 2) return false
-
-  await connectNodes(page, 0, 1)
-  await expect(page.locator(".react-flow__edge")).toHaveCount(1, { timeout: 5_000 })
+  // D24b: import a 2-node/1-edge build instead of React Flow's unreliable connection handle-drag.
+  // loadArchitecture renders the edge; the recalc populates the connection-health status dots.
+  await page.locator('[data-testid="import-file-input"]').setInputFiles(EDGE_FIXTURE)
+  await expect(page.locator(".react-flow__edge")).toHaveCount(1, { timeout: 15_000 })
 
   await triggerRecalcViaConfigChange(page, 0)
   await page.waitForTimeout(500)
@@ -224,7 +223,9 @@ test.describe("Status Dot & Swap Popover E2E (Phase 5)", () => {
     const isVisible = await swapPopover.isVisible().catch(() => false)
     test.skip(!isVisible, "Skipped: no swap alternatives available")
 
-    await page.keyboard.press("Escape")
+    // Press Escape ON the canvas panel — that's where the keydown handler that calls clearSwapTarget
+    // lives (CanvasView). A bare page.keyboard.press would land on the swap button, not the container.
+    await page.locator('[data-testid="canvas-panel"]').press("Escape")
     await page.waitForTimeout(300)
 
     await expect(swapPopover).not.toBeVisible()

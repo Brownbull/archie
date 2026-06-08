@@ -1,12 +1,12 @@
 import { test, expect, type Page } from "@playwright/test"
 import {
   waitForComponentLibrary,
-  placeTwoComponents,
-  connectNodes,
+  placeComponentAt,
   triggerRecalcViaConfigChange,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/flow-particles-and-legend"
+const EDGE_FIXTURE = "tests/e2e/fixtures/connection/two-node-edge.architecture.yaml"
 
 /**
  * Focus the canvas panel (tabIndex={-1}) so keyboard events are dispatched to it.
@@ -23,26 +23,25 @@ async function toggleHeatmap(page: Page): Promise<void> {
 }
 
 /**
- * Place two components, connect them, trigger recalculation, and deselect.
- * Waits for at least one flow particle to appear (assertion-based wait).
- * Returns true if setup succeeded (edge created with particles).
+ * Seed a traffic-bearing 2-node / 1-edge build and wait for flow particles.
+ * D24b: import the fixture instead of React Flow's connection handle-drag (connectNodes is unreliable
+ * in Playwright). loadArchitecture renders the edge AND auto-recalculates, so the edge heatmap +
+ * particles populate. Returns true once a particle is attached.
  */
 async function setupConnectedCanvas(page: Page): Promise<boolean> {
-  const placed = await placeTwoComponents(page)
-  if (placed < 2) return false
+  await page.locator('[data-testid="import-file-input"]').setInputFiles(EDGE_FIXTURE)
+  await expect(page.locator(".react-flow__edge")).toHaveCount(1, { timeout: 15_000 })
 
-  await connectNodes(page, 0, 1)
-  await expect(page.locator(".react-flow__edge")).toHaveCount(1, { timeout: 5_000 })
-
+  // Recalc the source node so the edge heatmap (which gates the particles) is populated.
   await triggerRecalcViaConfigChange(page, 0)
 
-  // Assertion-based wait: particle must appear after recalc (replaces bare waitForTimeout)
-  await page.locator('[data-testid^="flow-particle-"]').first().waitFor({
+  // Assertion-based wait: particle must appear after recalc.
+  await page.locator('[data-testid^="edge-particles-"] circle').first().waitFor({
     state: "attached",
-    timeout: 3_000,
+    timeout: 5_000,
   })
 
-  // Deselect node — click empty canvas pane area
+  // Deselect — click empty canvas pane area
   await page.locator(".react-flow__pane").click({ position: { x: 50, y: 50 } })
   await page.waitForTimeout(300)
   return true
@@ -147,16 +146,13 @@ test.describe("Flow Particles & Canvas Legend E2E (Story 4-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place only one component — no connection, no particles
-    const addBtn = page.locator('[data-testid^="add-to-canvas-"]').first()
-    await expect(addBtn).toBeVisible()
-    await addBtn.click()
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
+    // Place only one component — no connection, no particles.
+    await placeComponentAt(page, "node-express", 0.5, 0.45)
 
     await page.waitForTimeout(300)
 
     // Heatmap is ON — but no edges means no particles
-    await expect(page.locator('[data-testid^="flow-particle-"]')).toHaveCount(0)
+    await expect(page.locator('[data-testid^="edge-particles-"] circle')).toHaveCount(0)
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/08-no-particles-no-edge.png`, fullPage: true })
   })
@@ -170,7 +166,7 @@ test.describe("Flow Particles & Canvas Legend E2E (Story 4-5)", () => {
     const ready = await setupConnectedCanvas(page)
     test.skip(!ready, "Skipped: Need at least 2 components in the library")
 
-    const particles = page.locator('[data-testid^="flow-particle-"]')
+    const particles = page.locator('[data-testid^="edge-particles-"] circle')
 
     // Particles must exist before we toggle (validates setup, prevents trivial pass)
     expect(await particles.count()).toBeGreaterThan(0)
@@ -199,7 +195,7 @@ test.describe("Flow Particles & Canvas Legend E2E (Story 4-5)", () => {
     const ready = await setupConnectedCanvas(page)
     test.skip(!ready, "Skipped: Need at least 2 components in the library")
 
-    const particles = page.locator('[data-testid^="flow-particle-"]')
+    const particles = page.locator('[data-testid^="edge-particles-"] circle')
     const initialCount = await particles.count()
     expect(initialCount).toBeGreaterThan(0)
 
@@ -249,7 +245,7 @@ test.describe("Flow Particles & Canvas Legend E2E (Story 4-5)", () => {
     await page.waitForTimeout(300)
 
     await expect(page.locator('[data-testid="canvas-legend"]')).toHaveCount(0)
-    await expect(page.locator('[data-testid^="flow-particle-"]')).toHaveCount(0)
+    await expect(page.locator('[data-testid^="edge-particles-"] circle')).toHaveCount(0)
     await expect(page.locator(".react-flow__edge")).toHaveCount(1)
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/14-phase2-heatmap-off.png`, fullPage: true })
