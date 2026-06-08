@@ -4607,3 +4607,24 @@ ACTIONS: committed — useAdvancedLevel (weights/constraints/disclosures are lev
 D24 REMAINING: Bucket B (~9) — connectNodes/heatmap-edge specs (flow-particles-and-legend,
          status-dot AC-STATUS-1/2/3 + AC-SWAP-3, object-toolbars) → fixture-import/connectPortHandles.
 CI-safe: helpers unchanged this batch; .unlocked specs unaffected.
+- 2026-06-07 23:14 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/connection/traffic-flow-2node.architecture.yaml
+- 2026-06-07 23:14 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/flow-particles-and-legend.spec.ts
+- 2026-06-07 23:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/flow-particles-and-legend.spec.ts
+- 2026-06-07 23:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/flow-particles-and-legend.spec.ts
+- 2026-06-07 23:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/flow-particles-and-legend.spec.ts
+- 2026-06-07 23:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/flow-particles-and-legend.spec.ts
+- 2026-06-07 23:20 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/status-dot-and-swap-popover.spec.ts
+- 2026-06-07 23:20 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/status-dot-and-swap-popover.spec.ts
+- 2026-06-07 23:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/status-dot-and-swap-popover.spec.ts
+- 2026-06-07 23:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/object-toolbars.spec.ts
+- 2026-06-07 23:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/object-toolbars.spec.ts
+- 2026-06-07 23:24 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/object-toolbars.spec.ts
+
+## 2026-06-07 — [797c25e] test(e2e): rehab D24 Bucket B — edge/heatmap off connectNodes (D24b)
+FINDINGS: 0 critical (3 specs, test-only; flow-particles 9/9, status-dot 9/9, object-toolbars 2/2)
+ACTIONS: committed — fixture-import (two-node-edge) for edge-dependent setups; flow-particle-* selector
+         was STALE → edge-particles-* circles (AC-PARTICLE-1 was a false pass); AC-SWAP-3 Escape pressed
+         ON canvas-panel (app already handles it via CanvasView keydown→clearSwapTarget); node toolbar
+         header-click {12,6}; edge toolbar fixture-import.
+D24 COMPLETE: Bucket A (14) [1cf75c6] + Bucket B (9) [797c25e] — all 6 specs green, 32/32 combined.
+CI-safe: helpers/fixtures unchanged in B (reused two-node-edge); .unlocked specs unaffected.
