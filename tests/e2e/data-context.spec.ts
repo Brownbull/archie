@@ -5,6 +5,7 @@ import {
   selectNodeOnCanvas,
   placeTwoComponents,
   triggerRecalcViaConfigChange,
+  useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 import * as path from "path"
 import * as fs from "fs"
@@ -54,6 +55,11 @@ async function addDataContextItem(
 
 // All tests are AUTHENTICATED — auth pre-loaded from global storageState (see global-setup.ts).
 test.describe("Data Context E2E (Story 7-4)", () => {
+  // D23: the Data Context section is advanced-gated — run at advanced so the disclosure renders.
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
   test("AC-1/AC-3: add data item, see fit indicator, expand explanation", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator('[data-testid="toolbox-panel"]')).toBeVisible({ timeout: 15_000 })

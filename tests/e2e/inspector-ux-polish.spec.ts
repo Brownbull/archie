@@ -3,6 +3,7 @@ import {
   waitForComponentLibrary,
   addComponentToCanvas,
   selectNodeOnCanvas,
+  useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/inspector-ux-polish"
@@ -21,6 +22,11 @@ async function setupInspector(page: import("@playwright/test").Page): Promise<bo
 }
 
 test.describe("Inspector UX Polish E2E (Story 4-6)", () => {
+  // D23: advanced level + clean canvas (so gated inspector sections render and no autosave leaks in).
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
   // -------------------------------------------------------------------------
   // AC-1: Expand toggle — 300px <-> 500px
   // -------------------------------------------------------------------------

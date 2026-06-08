@@ -1,5 +1,5 @@
 import { test, expect, type Locator } from "@playwright/test"
-import { waitForComponentLibrary, addComponentToCanvas } from "./helpers/canvas-helpers"
+import { waitForComponentLibrary, addComponentToCanvas, useAdvancedLevel } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/ui-sweep-edge"
 
@@ -15,6 +15,11 @@ async function width(loc: Locator): Promise<number> {
 // asserts the cheap invariants (no horizontal page overflow, panels stay in-viewport).
 
 test.describe("UI sweep — edge cases & polish", () => {
+  // D23: advanced level so the inspector's Metrics/Data sections render (they're advanced-gated).
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
   test("empty canvas — pristine first-load state", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
