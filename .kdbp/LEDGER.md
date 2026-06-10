@@ -4809,3 +4809,9 @@ GATES: npm run build exit 0 · unit 4881/4881 · solvability 62/62 3★ · valid
 EDITS (8 prereq edges + 1 tier bump, cascade-aware): always-on/four-front-war +cache-the-hot-path · worker-fleet +async-pipeline · api-gateway +auth-101 · checkout-flow +add-a-database · cold-start-spike +serverless-burst · defense-in-depth +observe-baseline · burst-absorber +worker-fleet + tier 2→4. CASCADES (no direct edit): chaos-day→heat-death/maxwells-demon (via always-on→cache), foundations-mastery (via worker-fleet→async-pipeline→message-queue). four-front-war relational-db via cache-the-hot-path→add-a-database.
 RESULT: 21→0 unreachable-required-type (UNLOCK-ORDERING COMPLETE). REQ check folded into validateTechTree → challengeLoader ===[] is the permanent gate. PAL 73→53 accepted+tracked (D90: teach-by-using for built-ins; only user-clones intersect).
 DECISIONS: D90 (palette-gap policy: hard-gate REQ, accept+track PAL).
+
+## 2026-06-10 04:20 — PUSH dev -> main (Phase 2 S4+S5 unlock-ordering)
+PR: — (direct dev→main, trunk-based)
+CI: deploy-production ✅ success
+DEPLOYMENTS: P160
+SCOPE: S4+S5 unlock-ordering (21→0 REQ violations) + traces. 4 commits fd9142a..1b9023d. TREE CHANGED → D28 reset now applicable (deferred to owner trigger; existing progress still resolves, unlockedBlocks unchanged).
