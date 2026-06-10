@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react"
-import { Layers } from "lucide-react"
+import { Layers, Lock } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -36,7 +36,20 @@ function NodeConfigSelectBase({ nodeId, componentId, activeVariantId }: NodeConf
 
   // Fluidity P3c (D84): config-tier tuning discloses progressively in quests — hidden at beginner
   // quests, revealed at intermediate+. Always shown in free mode. UI-only (solvability unaffected).
-  if (!showOnNodeConfig) return null
+  // P1/T7: render a compact locked hint instead of disappearing — players read the missing control
+  // as a bug ("I cannot modify any option on the blocks. Is that expected?").
+  if (!showOnNodeConfig) {
+    return (
+      <div
+        data-testid="archie-node-config-locked"
+        className="nodrag flex items-center gap-1.5 px-3 pb-1 text-[0.6875rem] text-text-secondary/60"
+        title="Configuration tiers unlock in intermediate quests — or switch to Free mode to tune everything"
+      >
+        <Lock className="h-3 w-3 shrink-0" aria-hidden />
+        <span className="whitespace-nowrap">Tuning unlocks later</span>
+      </div>
+    )
+  }
 
   const active = variants.find((v) => v.id === activeVariantId) ?? variants[0]
 

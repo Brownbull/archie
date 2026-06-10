@@ -47,19 +47,22 @@ describe("NodeConfigSelect (Fluidity P1 — config tier on the canvas block)", (
     expect(screen.getByTestId("archie-node-config-trigger")).toHaveTextContent("Alpha")
   })
 
-  it("P3c: hides the tier picker in a beginner-difficulty quest, reveals it at intermediate+", () => {
+  it("P3c: gates the tier picker in a beginner-difficulty quest behind a locked hint, reveals it at intermediate+", () => {
     mockGetComponent.mockReturnValue(comp([{ id: "a", name: "Alpha" }, { id: "b", name: "Beta" }]))
-    // In a quest, experienceLevel tracks the challenge difficulty. At beginner the config tier is gated…
+    // In a quest, experienceLevel tracks the challenge difficulty. At beginner the config tier is gated —
+    // P1/T7: a compact locked hint renders instead of nothing (a vanished control read as a bug).
     useChallengeStore.setState({ activeChallenge: { id: "c1" } as unknown as Challenge })
     usePreferencesStore.setState({ experienceLevel: "beginner" })
-    const { container, rerender } = render(
+    const { rerender } = render(
       <NodeConfigSelect nodeId="n1" componentId="node-express" activeVariantId="a" />,
     )
-    expect(container).toBeEmptyDOMElement()
+    expect(screen.queryByTestId("archie-node-config-trigger")).not.toBeInTheDocument()
+    expect(screen.getByTestId("archie-node-config-locked")).toHaveTextContent("Tuning unlocks later")
 
     // …and revealed once the quest difficulty (or the player) reaches intermediate.
     usePreferencesStore.setState({ experienceLevel: "intermediate" })
     rerender(<NodeConfigSelect nodeId="n1" componentId="node-express" activeVariantId="a" />)
     expect(screen.getByTestId("archie-node-config-trigger")).toBeInTheDocument()
+    expect(screen.queryByTestId("archie-node-config-locked")).not.toBeInTheDocument()
   })
 })

@@ -1,3 +1,4 @@
+import { Lock } from "lucide-react"
 import { memo, useMemo } from "react"
 import {
   Select,
@@ -48,13 +49,20 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
   // Single (or no) provider → just the vendor + variant label, no dropdown. Fluidity P3c (D84): the
   // vendor swap also discloses progressively in quests — when gated, fall back to the same static label
   // (the vendor stays visible, just not changeable). Always interactive in free mode.
+  // P1/T7: when the GATE (not provider count) is the reason, say so — players asked "is this broken?"
+  const gated = providers.length > 1 && !showOnNodeConfig
   if (providers.length <= 1 || !showOnNodeConfig) {
     return (
-      <div data-testid="archie-node-variant" className="flex items-center gap-1.5 px-3 pb-0.5">
+      <div
+        data-testid="archie-node-variant"
+        className="flex items-center gap-1.5 px-3 pb-0.5"
+        title={gated ? "Vendor choice unlocks in intermediate quests — or switch to Free mode to tune everything" : undefined}
+      >
         <ComponentIcon componentId={componentId} category={category} className="h-4 w-4 shrink-0" />
         <span className="whitespace-nowrap text-[0.75rem] text-text-secondary">
           {name}{variantName ? ` · ${variantName}` : ""}
         </span>
+        {gated && <Lock data-testid="archie-node-vendor-locked" className="h-3 w-3 shrink-0 text-text-secondary/60" aria-hidden />}
       </div>
     )
   }
