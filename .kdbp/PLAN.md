@@ -210,7 +210,7 @@ decisions_entry: D86
 
 ## Current Phase
 
-Phase 1: Trust & friction fixes
+Phase 2: Progression & grading integrity
 
 ## Dependencies
 
