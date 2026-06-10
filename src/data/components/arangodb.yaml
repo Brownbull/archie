@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: single-server
     name: Single Server
+    description: >-
+      Single ArangoDB server: documents, graphs, and search in one engine — one box covers three database shapes for prototyping and modest loads.
+    docs_url: https://docs.arangodb.com/stable/
     monthly_cost: 60
     max_rps: 5000
     base_latency_ms: 6
@@ -85,6 +88,9 @@ config_variants:
           - Open-source core with no per-query fees
   - id: cluster
     name: Cluster (Sharded)
+    description: >-
+      Sharded ArangoDB: the multi-model engine scaled out to 3x throughput. Graph traversals that cross shards pay a network tax — keep hot graphs co-located.
+    docs_url: https://docs.arangodb.com/stable/deploy/cluster/
     monthly_cost: 220
     max_rps: 16000
     base_latency_ms: 12

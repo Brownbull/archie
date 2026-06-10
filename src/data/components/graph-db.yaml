@@ -46,6 +46,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    description: >-
+      A single graph database node: traversals beat relational joins for connected data, at a small-instance ceiling. Where every graph story starts.
+    docs_url: https://en.wikipedia.org/wiki/Graph_database
     monthly_cost: 40
     max_rps: 1000
     base_latency_ms: 10
@@ -111,6 +114,9 @@ config_variants:
       graph-size: "Limited to single-machine memory and disk; practical ceiling around 10B nodes"
   - id: distributed-cluster
     name: Distributed Cluster
+    description: >-
+      A distributed graph cluster: 5x the traversal throughput with partitioned storage. Partitioning a graph well is the hard part — edges love crossing shards.
+    docs_url: https://en.wikipedia.org/wiki/Graph_partition
     monthly_cost: 200
     max_rps: 5000
     base_latency_ms: 5
@@ -179,6 +185,9 @@ config_variants:
       graph-size: "Scales to billions of nodes across cluster; limited by partitioning strategy"
   - id: managed-cloud
     name: Managed Cloud Service
+    description: >-
+      Managed graph service: the highest ceiling with none of the cluster ops. The premium is the point — graphs are notoriously fiddly to operate.
+    docs_url: https://en.wikipedia.org/wiki/Graph_database
     monthly_cost: 350
     max_rps: 10000
     base_latency_ms: 8

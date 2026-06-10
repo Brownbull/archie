@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Cloud SQL standard: managed Postgres/MySQL with backups and patching handled. One zone, one primary — maintenance windows are real.
+    docs_url: https://cloud.google.com/sql/docs
     monthly_cost: 95
     max_rps: 4000
     base_latency_ms: 12
@@ -94,6 +97,9 @@ config_variants:
           - Regional persistent disk replicates blocks across zones underneath the instance
   - id: ha-replica
     name: HA Replica
+    description: >-
+      Cloud SQL HA: a synchronous standby in another zone fails over automatically, with twice the read throughput. Roughly double the bill for the nines.
+    docs_url: https://cloud.google.com/sql/docs/mysql/high-availability
     monthly_cost: 200
     max_rps: 8000
     base_latency_ms: 8

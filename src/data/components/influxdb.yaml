@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: oss
     name: Open Source (Single Node)
+    description: >-
+      Single-node InfluxDB: purpose-built time-series ingest that swallows 50k points/sec on one box — far beyond any row store. Retention policies keep disk in check.
+    docs_url: https://docs.influxdata.com/influxdb/v2/
     monthly_cost: 30
     max_rps: 50000
     base_latency_ms: 6
@@ -86,6 +89,9 @@ config_variants:
           - Retention policies drop old data
   - id: cloud
     name: Cloud (Clustered)
+    description: >-
+      InfluxDB Cloud: clustered ingest at 120k/sec with storage tiering handled. The managed step up when one node's disk or ceiling taps out.
+    docs_url: https://docs.influxdata.com/influxdb3/cloud-serverless/
     monthly_cost: 130
     max_rps: 120000
     base_latency_ms: 8

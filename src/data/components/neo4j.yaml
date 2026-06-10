@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: community-self-hosted
     name: Community (Self-Hosted)
+    description: >-
+      Self-hosted Neo4j Community: the reference graph database, free to run. Single instance, modest ceiling — relationship queries stay fast where joins would die.
+    docs_url: https://neo4j.com/docs/
     monthly_cost: 35
     max_rps: 1500
     base_latency_ms: 8
@@ -107,6 +110,9 @@ config_variants:
           - Community edition has no license fee
   - id: aura-managed
     name: AuraDB (Managed)
+    description: >-
+      Neo4j AuraDB: the managed tier with failover and 6x the ceiling. Graph infrastructure as a line item instead of a pager duty.
+    docs_url: https://neo4j.com/docs/aura/
     monthly_cost: 320
     max_rps: 10000
     base_latency_ms: 6

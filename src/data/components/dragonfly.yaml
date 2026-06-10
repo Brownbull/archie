@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Dragonfly: a Redis-compatible engine rebuilt multithreaded — one node does the work of several Redis processes, same commands, same clients.
+    docs_url: https://www.dragonflydb.io/docs
     monthly_cost: 45
     max_rps: 60000
     base_latency_ms: 1
@@ -97,6 +100,9 @@ config_variants:
           - Fork-less point-in-time snapshotting persists data without stalling the write path
   - id: scaled
     name: Scaled
+    description: >-
+      Scaled Dragonfly: vertical headroom most caches need a cluster for — 200k rps and a 92% hit ratio on one logical instance, no slot management.
+    docs_url: https://www.dragonflydb.io/docs/managing-dragonfly/operator/dragonfly-configuration
     monthly_cost: 100
     max_rps: 200000
     base_latency_ms: 0.5

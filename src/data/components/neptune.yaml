@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: provisioned
     name: Provisioned
+    description: >-
+      Provisioned Neptune: AWS-managed graph with steady capacity and replicas. Predictable performance, billed around the clock.
+    docs_url: https://docs.aws.amazon.com/neptune/latest/userguide/intro.html
     monthly_cost: 240
     max_rps: 6000
     base_latency_ms: 7
@@ -84,6 +87,9 @@ config_variants:
           - One store for multiple graph models
   - id: serverless
     name: Serverless
+    description: >-
+      Neptune Serverless: graph capacity that follows demand — half the price for spiky or exploratory workloads, with a lower ceiling and warm-up wobble.
+    docs_url: https://docs.aws.amazon.com/neptune/latest/userguide/neptune-serverless.html
     monthly_cost: 110
     max_rps: 4500
     base_latency_ms: 11

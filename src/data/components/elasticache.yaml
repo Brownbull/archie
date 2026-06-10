@@ -44,6 +44,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      ElastiCache standard: managed Redis with AWS handling patching and failover wiring. The convenience markup over self-hosted Redis is the whole trade.
+    docs_url: https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/WhatIs.html
     monthly_cost: 55
     max_rps: 45000
     base_latency_ms: 1
@@ -98,6 +101,9 @@ config_variants:
           - As an in-memory store, un-snapshotted recent writes are not guaranteed to survive a crash
   - id: clustered
     name: Clustered
+    description: >-
+      Clustered ElastiCache: sharded managed Redis with a 150k ceiling and a better hit ratio from more memory. Scaling events are AWS's problem, not yours.
+    docs_url: https://docs.aws.amazon.com/AmazonElastiCache/latest/dg/Clusters.html
     monthly_cost: 130
     max_rps: 150000
     base_latency_ms: 0.5

@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: regional
     name: Single Region
+    description: >-
+      Single-region CockroachDB: serializable SQL that survives node loss without manual failover. You trade some raw speed for never doing failover drills.
+    docs_url: https://www.cockroachlabs.com/docs/stable/
     monthly_cost: 120
     max_rps: 8000
     base_latency_ms: 6
@@ -88,6 +91,9 @@ config_variants:
           - Load-based rebalancing spreads hot ranges
   - id: multi-region
     name: Multi-Region (Survivable)
+    description: >-
+      Multi-region CockroachDB: survives a REGION loss with consistent SQL — the strongest survivability in the catalog. Consensus across regions puts real milliseconds on every write.
+    docs_url: https://www.cockroachlabs.com/docs/stable/multiregion-overview
     monthly_cost: 380
     max_rps: 14000
     base_latency_ms: 22

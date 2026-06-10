@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: simple-cache
     name: Single Node
+    description: >-
+      One memcached node: the simplest possible cache — multithreaded, sub-millisecond, dirt cheap. No persistence, no replication; a restart is a cold cache.
+    docs_url: https://memcached.org/about
     monthly_cost: 10
     max_rps: 60000
     base_latency_ms: 0.3
@@ -81,6 +84,9 @@ config_variants:
           - Commodity RAM is the only meaningful resource
   - id: multi-node
     name: Multi-Node Pool
+    description: >-
+      A memcached pool: clients hash keys across nodes for a 250k-rps class ceiling. Losing a node just cools its slice of the cache — nothing to fail over.
+    docs_url: https://github.com/memcached/memcached/wiki/Overview
     monthly_cost: 50
     max_rps: 250000
     base_latency_ms: 0.4

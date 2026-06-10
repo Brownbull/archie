@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    description: >-
+      Single-node VictoriaMetrics: the efficiency champion — 70k/sec ingest with famously low RAM and disk. A drop-in Prometheus remote storage.
+    docs_url: https://docs.victoriametrics.com/
     monthly_cost: 65
     max_rps: 70000
     base_latency_ms: 3
@@ -92,6 +95,9 @@ config_variants:
           - Periodic vmbackup snapshots to object storage protect against volume failure
   - id: cluster
     name: Cluster
+    description: >-
+      VictoriaMetrics cluster: ingest, storage, and query split into scalable parts — 200k/sec class metrics with the same frugal footprint per point.
+    docs_url: https://docs.victoriametrics.com/cluster-victoriametrics/
     monthly_cost: 150
     max_rps: 200000
     base_latency_ms: 2

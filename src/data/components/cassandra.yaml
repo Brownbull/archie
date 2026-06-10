@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: single-dc
     name: Single DC
+    description: >-
+      Cassandra in one datacenter: masterless, write-anywhere availability with tunable consistency. Data modeling is query-first — design tables for how you read.
+    docs_url: https://cassandra.apache.org/doc/latest/
     monthly_cost: 70
     max_rps: 15000
     base_latency_ms: 10
@@ -93,6 +96,9 @@ config_variants:
           - Hinted handoff and read repair reconcile replicas that missed a write
   - id: multi-dc
     name: Multi DC
+    description: >-
+      Multi-DC Cassandra: rings in each region keep serving through a regional loss, with nearly 3x the throughput. Cross-DC consistency is yours to tune per query.
+    docs_url: https://cassandra.apache.org/doc/latest/cassandra/architecture/dynamo.html
     monthly_cost: 180
     max_rps: 40000
     base_latency_ms: 8
