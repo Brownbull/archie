@@ -4877,3 +4877,31 @@ TIER: ent | SLICES: 8/8 (S1–S8, commits 878d3a1→87a0478) + runtime evidence
 RUNTIME EVIDENCE: npm run test:e2e (full suite — Chromium, local vite shell vs seeded Firestore + unlocked replay account): 212 passed / 26 pre-existing skips in 14.7m, INCLUDING tests/e2e/feedback-phase2.unlocked.spec.ts — (1) edge-delivery quest with the mismatched-handle reference build scores EXACTLY 2★ (Well-formed green, "Ports compatible" row explains the loss); (2) observe-to-recover timeline shows the az_outage marker red → amber at detection. Artifacts: test-results/feedback-phase2/01..03*.png. Fixtures generated + 3★-asserted by e2e-fixtures.test.ts (observe-to-recover added; mismatched variant = same build + http-out→auth-in handles on e2 — sim routes by node ids, so the ONLY scoring delta is the D87 gate).
 GATES: unit 4901/4901 · solvability 62/62 3★ · golden byte-identical · validateTechTree ===[] · full E2E 212/212
 NOTE: the full-suite E2E pass doubles as a regression sweep over every Phase 2 change (gating UI, toolbox locks, retargeted events, timeline markers). Next: /gabe-review → /gabe-commit → /gabe-push (D28 progress-reset decision rides the next deploy; the unlocked E2E account self-reseeds via unlocked-setup, so the carve-out is inherently safe there).
+- 2026-06-10 06:01 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 06:01 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 06:02 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 06:02 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 06:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 06:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 06:02 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 06:03 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-10 06:03 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-10 06:04 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-questBan.test.ts
+
+## 2026-06-10 06:08 — PHASE 2 REVIEW: Progression & grading integrity
+VERDICT: APPROVE (after fixes — provisional verdict was FIX_BEFORE_PUSH)
+FINDINGS: 5 confirmed by adversarial review wf_5bde295b-1e6 (0 critical, 2 high, 2 medium, 1 low) — ALL FIXED in 6f8ddc5; 2 dismissed (chaos-scaled hint accurate as experienced; coach selector perf negligible)
+  HIGH: banned type reachable via Quick-Swap (SwapPopover/swapNodeComponent unguarded) → store chokepoint + popover filter
+  HIGH: banned type reachable via pathway ghost-place → forbidden filter at the suggestions source + addNode guard
+  MEDIUM: zero-match events drew phantom timeline markers + false coach text → emit only when hit.length>0
+  MEDIUM: rag-retrieval spoiler hint promised 98% uptime post-D91-re-tune (target 78) → rewritten
+  LOW: TickOverrides JSDoc stranded by the S8 type insertion → re-attached
+COVERAGE: HIGH — every source change carries tests (unit 4910/4910, +9 review-fix tests); full E2E 212/212; runtime journey artifacts test-results/feedback-phase2/
+CONFIDENCE: 91/100 (2 HIGH found-and-fixed on HOT-churn files; deductions restored by fixes + new regression tests)
+DEFERRED: none new (D26/D27/D28 untouched by this diff — no escalation)
+ALIGNMENT: ALIGNED (all 50 phase files on D89's 8-slice scope)
+TIER: ent | DRIFT: none
+TICK: ✅ Phase 2 Review (Commit ✅ — every slice + fixes committed through the gate)
+NOTE: the review paid for itself — the Swap bypass was deterministic on data-pipeline (relational-db one
+swap from the canonical S3 node, silent 0★). Chokepoint design: the ban now lives in the STORE, so any
+future placement path inherits it.
