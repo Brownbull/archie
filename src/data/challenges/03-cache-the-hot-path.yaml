@@ -27,7 +27,7 @@ hints:
   - "The read-heavy workload at 280 RPS makes latency tight — the core problem is avoiding database saturation on repeated reads."
   - "Insert a cache tier between compute and database; read hits bypass the database, and cache misses flow downstream."
   - "Size the cache and database so that at peak (280 RPS), the cache absorbs most read traffic and the database stays under 100% capacity."
-  - "Place traffic → compute → cache → database, with cache sized large enough to handle the read footprint and database sized to handle writes plus uncached reads; both must stay under 100% at 280 RPS."
+  - "Place traffic → compute → cache → database, with the cache absorbing the read footprint and the database sized for the cache-miss reads (the workload is pure reads — no writes to plan for). Both stay under 100% at 280 RPS; a lean build runs about $80 of the $220 budget."
 schema_version: 2
 track: data
 tier: 2

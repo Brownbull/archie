@@ -28,7 +28,7 @@ scheduled_events:
 hints:
   - "The core problem is credential-stuffing attack spiking to 4000 rps at t=45s during a 1.5x auth latency spike. Rate limiting and auth are the required tiers."
   - "Place rate limiter before auth to shed attack traffic. Observability monitors the chain. The rate limiter caps abuse before it reaches auth/compute. Avoid cache (forbidden)."
-  - "Build: traffic-source → rate-limiter (1200 rps cap) → auth → compute → observability. At t=45s, rate limiter sheds the 3000+ rps attack while legitimate 1000 rps flows through. Observability tracks attack pattern, keeping p99 under 300ms and p95 under 200ms within 1200 budget."
+  - "Build: traffic-source → rate-limiter (1200 rps cap) → auth → compute → observability. At t=45s the rate limiter sheds the 3000+ rps attack while legitimate 1000 rps flows through. Measured through the grader: p99 about 260ms, p95 about 185ms, roughly $330 of the $1200 budget."
 forbidden_types: [cache]
 chaos_intensity: 2
 schema_version: 2

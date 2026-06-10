@@ -26,7 +26,7 @@ target_metrics:
   p95_latency_ms: 200
 hints:
   - "The spiky write traffic (peaking at 1000 RPS) must be decoupled from the database — add a messaging queue to buffer writes and let the database catch up asynchronously."
-  - "Traffic pattern peaks 3 times; provision for the highest peak (1000 RPS) since the queue cannot carry requests backward across time."
+  - "Traffic arrives in waves with the tallest crest at the end (1000 RPS); provision for that final peak, since the queue cannot carry requests backward across time."
   - "Route compute → message queue → worker → database; the worker drains the queue and owns the database writes, so neither queue nor database saturates at the 1000 RPS peak and p99 stays under 300 ms."
   - "Place traffic → compute → message queue → worker → database; size compute for 1000 RPS write ingestion, the queue to accept all 1000 RPS without blocking, and the worker pool to drain it into the database without saturation."
 schema_version: 2

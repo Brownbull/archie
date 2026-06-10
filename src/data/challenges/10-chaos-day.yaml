@@ -35,7 +35,7 @@ hints:
   - "Each outage takes a whole tier offline; you can't prevent dropped requests during windows, so over-provision every surviving tier for non-outage periods."
   - "When compute goes down, cache+data-storage absorb the load; when data-storage goes down, cache absorbs all reads. Size survivors to handle peak at ~90% load."
   - "Use messaging as async buffer for writes during outages so they don't pile up; observability monitors without adding load."
-  - "CDN → load-balancer → 14 compute replicas → cache → relational-db + message-queue for async writes, observability as leaf. Cache needs ~2000 RPS capacity for compute-outage window; this design clears 70% uptime while staying under budget."
+  - "CDN → load-balancer → compute (2+ replicas) → cache → relational-db, plus message-queue for async writes and observability as a leaf. The cache carries reads through the compute outage. Measured through the grader: about 92% uptime vs the 70% target, roughly $160 of the $1800 budget."
 schema_version: 2
 track: reliability
 tier: 5

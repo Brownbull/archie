@@ -30,7 +30,7 @@ scheduled_events:
 hints:
   - "The core problem is surviving simultaneous AZ failure and latency spike at 3500 rps while staying under 99% uptime and 180ms p95 — your edge tiers must absorb traffic when compute drops."
   - "Place a CDN as your front layer to cache static assets; add an API gateway to route traffic and a cache layer in front of compute to serve stale reads when the backend is slow or down."
-  - "Size the cache with enough memory to hold your working set and configure stale-while-revalidate so during the 60s AZ outage (t=60-120) and 30s latency spike (t=90-120) you can serve reads from cache."
+  - "Pick a cache variant with a high built-in hit ratio and give it replicas — during the 60s AZ outage (t=60-120) and the 30s latency spike (t=90-120), cached reads are what keep answers flowing while compute struggles."
   - "Wire traffic through CDN for static assets, then API gateway routing dynamic requests to cache layer; if cache misses, requests hit compute through a load balancer with 2-3 replicas handling 3500 rps peak."
   - "Deploy CDN and API gateway in multi-AZ; size cache with 2-3 replicas for 3500 rps peak and stale-read service during both outage and spike; size compute replicas to split traffic; use only required blocks avoiding forbidden types."
 chaos_intensity: 2.5

@@ -34,7 +34,7 @@ hints:
   - "Core problem: 4000 rps peak + 45s auth latency spike + 105s AZ outage. Rate limit cuts flood, cache/CDN bypass compute during crises, SIEM/observability track it all."
   - "Use CDN + cache on read path so they serve traffic during outages. Rate limit to ~2500 rps. During 45s auth spike, cached reads stay fast. During 105s AZ loss, CDN/cache hold the line while compute recovers."
   - "Full path: traffic → CDN → cache → rate-limiter (2500-3000 rps) → auth (2+ AZs) → compute (2-3 per AZ) → DB. Wire auth to security/observability async. During 45s spike, cache serves hits. During 105s outage, CDN/cache serve all traffic. p99 <300ms."
-  - "Topology: traffic → CDN (5-10min TTL) → cache (1-2min) → rate-limiter (drop >2500 rps) → auth (2-3/AZ) → compute (2-3/AZ) → DB. Auth → security/observability async. t=45s: cache serves reads. t=105s: CDN/cache serve traffic. Hit rate >60%/70%. SIEM flags attack."
+  - "Full solve: traffic → CDN → cache → rate-limiter → auth → compute; SIEM + observability async off auth. The CDN/cache variants' built-in hit ratios carry reads through the 105s outage — pick the caching tiers, there are no TTL knobs to tune. Measured: ~99.6% uptime, roughly $270 of $3000."
 chaos_intensity: 2.5
 schema_version: 2
 track: security
