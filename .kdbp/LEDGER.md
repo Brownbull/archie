@@ -4792,3 +4792,20 @@ CI: deploy-production ✅ success
 PROMOTION: N/A (single-env chain)
 DEPLOYMENTS: P159
 SCOPE: S2 pathway filter + S3 closure validator + KDBP bookkeeping (4 commits 878d3a1..fd9142a). No tree change → no reset (D28 tied to S4/S5).
+- 2026-06-10 03:59 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/unlockOrdering.baseline.test.ts
+
+## 2026-06-10 — [c908545] feat(challenges): unlock-ordering batch A (D89) — Phase 2 Slice 4/8 (batch A)
+FINDINGS: 0 (clean — eslint 0, build green, full suite 4881/4881)
+GATES: npm run build exit 0 · unit 4881/4881 (270 files) · solvability 62/62 3★ (requires-edges don't touch reference builds) · validateTechTree ===[] (no new cycles, struct=0) · baseline snapshot updated 21→13 REQ
+EDITS (5 prereq edges, cascade-aware): planet-scale +edge-delivery (cdn+dns via edge-balance→dns-routing) · edge-cache-ratio +edge-delivery (cdn) · edge-economics +edge-delivery (cdn) · edge-resilience +cache-the-hot-path (cache) · the-long-tail +cache-the-hot-path+edge-delivery (cache+cdn). thundering-herd cascaded (requires edge-resilience) — no direct edit.
+RESULT: 8 REQ violations resolved across 6 challenges (21→13 REQ / 18→12 ch; 85→73 PAL). Granters all upstream (no cycle): edge-delivery T3, dns-routing T1, cache-the-hot-path T2.
+REMAINING (S5 batch B — 13 REQ / 12 ch): always-on, api-gateway, burst-absorber, chaos-day, checkout-flow, cold-start-spike, defense-in-depth, foundations-mastery, four-front-war(×2), heat-death, maxwells-demon, worker-fleet.
+- 2026-06-10 04:07 | Edit | /home/khujta/projects/bmad/archie/src/engine/techTree.ts
+- 2026-06-10 04:08 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/unlockOrdering.baseline.test.ts
+
+## 2026-06-10 — [efb043a] feat(challenges): unlock-ordering batch B — REQ gate CLOSED (D89/D90) — Phase 2 Slice 5/8
+FINDINGS: 0 (clean — eslint 0, build green, full suite 4881/4881)
+GATES: npm run build exit 0 · unit 4881/4881 · solvability 62/62 3★ · validateTechTree ===[] (REQ gate folded in, no leak) · baseline REQ=[] + PAL snapshot 53
+EDITS (8 prereq edges + 1 tier bump, cascade-aware): always-on/four-front-war +cache-the-hot-path · worker-fleet +async-pipeline · api-gateway +auth-101 · checkout-flow +add-a-database · cold-start-spike +serverless-burst · defense-in-depth +observe-baseline · burst-absorber +worker-fleet + tier 2→4. CASCADES (no direct edit): chaos-day→heat-death/maxwells-demon (via always-on→cache), foundations-mastery (via worker-fleet→async-pipeline→message-queue). four-front-war relational-db via cache-the-hot-path→add-a-database.
+RESULT: 21→0 unreachable-required-type (UNLOCK-ORDERING COMPLETE). REQ check folded into validateTechTree → challengeLoader ===[] is the permanent gate. PAL 73→53 accepted+tracked (D90: teach-by-using for built-ins; only user-clones intersect).
+DECISIONS: D90 (palette-gap policy: hard-gate REQ, accept+track PAL).
