@@ -4917,3 +4917,11 @@ SCOPE: Phase 2 tail (S6b, S7, S8) + runtime evidence + review fixes — 12 commi
 CI: deploy-production ✅ success
 DEPLOYMENTS: P162
 SCOPE: PROGRESS_GENERATION 2→3 (userProgressStore + e2e seeder lockstep). Reset rationale: Phase 2's structural tree change is live; owner re-tests progression from scratch; Phase 3 (briefs/hints/descriptions/calibration) changes content quality, not structure — no second reset anticipated. PENDING D28 → resolved.
+
+## 2026-06-10 — PHASE 3 S0 COMPLETE: contracts pinned (D93)
+SCOPE: brief classification (18 pure + 17 mixed + 26 context, batch lists A/B/C) · discipline ladder (4-tier/track, top=full clear, =12 new PNGs + aiml rename, tech-tree completedCount basis) · calibration table (10 variant rows, before→after, harness-exposure noted). PLAN Phase 3 Exec → 🔄.
+
+## 2026-06-10 — [61eadd6] feat(components): RPS calibration (D93) — Phase 3 S2/10
+GATES: solvability 62/62 3★ · par regenerated (8 rows) · full suite 4910/4910 · build exit 0 · eslint clean on changed lines (1 pre-existing unused-import error predates S2)
+EDITS: 9 calibration values across 6 component YAMLs per D93 Table 3, ONE deviation — sync-replica stays 12000 (citus lift alone fixes the inversion; see D93 amendment). referenceSolution fallback now consistency-aware (preferLowLag → lowest-lag on no-fit) — root-caused strong-or-stale's pre-calibration pass as a fallback accident.
+NOTE: values reach prod ONLY via the single S9 reseed (S1 tolerant reader must deploy first). Wave 1 remaining: S1 (schema+UI+reader deploy — the reseed gate), S3 (18 binding briefs), S5 (ladder surgery), S6 (12 icons + toast).
