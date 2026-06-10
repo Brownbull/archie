@@ -196,7 +196,15 @@ export interface TechTreeResult {
 
 /** A structural problem found while validating a set of challenges as a tech tree. */
 export interface TechTreeIssue {
-  kind: "duplicate-id" | "unknown-requires" | "unknown-unlocks" | "cycle"
+  kind:
+    | "duplicate-id"
+    | "unknown-requires"
+    | "unknown-unlocks"
+    | "cycle"
+    // S3 (D89): closure-reachability — a required type / palette block that no challenge in the
+    // challenge's requires-closure (nor the challenge itself, nor BASE_UNLOCKED_BLOCKS) grants.
+    | "unreachable-required-type"
+    | "ungrantable-available-block"
   /** Challenge id the issue is attached to. */
   challengeId: string
   /** Human-readable detail (e.g. the missing ref id, or the cycle path). */

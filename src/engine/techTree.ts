@@ -83,6 +83,101 @@ export function validateTechTree(challenges: readonly Challenge[]): TechTreeIssu
   return issues
 }
 
+/**
+ * S3 (D89): UNLOCK-ORDERING validation, separate from the structural `validateTechTree` (which stays
+ * the load-bearing `=== []` CI gate). A challenge's required_types and available_blocks must each be
+ * GRANTABLE — present in BASE_UNLOCKED_BLOCKS, granted by the challenge itself (teach-by-using), or
+ * granted by some challenge in its transitive requires-closure. A block that is none of these is an
+ * unlock-ordering violation: the progression demands/offers it before any path provides it (a free-build
+ * dead-end after S2's filter, and a palette gap for user-cloned challenges under D45-AC2).
+ *
+ * Kept separate (not folded into validateTechTree) until the content batches S4/S5 drive the count to
+ * zero — at which point the `=== []` assertion can migrate here as the permanent regression net.
+ * Runs only on the SOUND subgraph (skips nodes implicated in a cycle or with unknown requires) so the
+ * closure walk can't recurse forever or report noise atop a structural break already flagged elsewhere.
+ */
+export function findUnlockOrderingIssues(challenges: readonly Challenge[]): TechTreeIssue[] {
+  const ids = new Set(challenges.map((c) => c.id))
+  const tainted = new Set<string>()
+  for (const i of findRequiresCycles(challenges, ids)) tainted.add(i.challengeId)
+  for (const c of challenges) {
+    if (c.requires.some((r) => !ids.has(r))) tainted.add(c.id)
+  }
+  return findUnreachableBlocks(challenges, ids, BASE_UNLOCKED_BLOCKS, tainted)
+}
+
+/**
+ * For each challenge, the set of component-type blocks GRANTABLE by the time it is reached:
+ * BASE_UNLOCKED_BLOCKS ∪ the challenge's own grants (teach-by-using) ∪ the grantable set of every
+ * challenge in its transitive `requires` closure. Memoized DFS; an in-progress guard makes the walk
+ * terminate on a `requires` cycle (those nodes are reported + skipped by the caller anyway).
+ */
+function grantableClosure(
+  challenges: readonly Challenge[],
+  ids: ReadonlySet<string>,
+  baseBlocks: readonly string[],
+): Map<string, Set<string>> {
+  const byId = new Map(challenges.map((c) => [c.id, c]))
+  const memo = new Map<string, Set<string>>()
+  const inProgress = new Set<string>()
+
+  const compute = (id: string): Set<string> => {
+    const cached = memo.get(id)
+    if (cached) return cached
+    if (inProgress.has(id)) return new Set(baseBlocks) // cycle guard — don't recurse into a back-edge
+    inProgress.add(id)
+    const acc = new Set<string>(baseBlocks)
+    const c = byId.get(id)
+    if (c) {
+      for (const g of c.grants) acc.add(g)
+      for (const r of c.requires) {
+        if (!ids.has(r)) continue // dangling requires — reported separately, treated as no grants
+        for (const b of compute(r)) acc.add(b)
+      }
+    }
+    inProgress.delete(id)
+    memo.set(id, acc)
+    return acc
+  }
+
+  for (const c of challenges) compute(c.id)
+  return memo
+}
+
+/**
+ * Emits an `unreachable-required-type` per required type, and an `ungrantable-available-block` per
+ * palette block, that is not in the challenge's grantable closure. `skip` holds nodes already broken
+ * by a cycle / unknown-requires (excluded so the report reflects only the sound subgraph). Block ids
+ * are sorted for deterministic output.
+ */
+function findUnreachableBlocks(
+  challenges: readonly Challenge[],
+  ids: ReadonlySet<string>,
+  baseBlocks: readonly string[],
+  skip: ReadonlySet<string>,
+): TechTreeIssue[] {
+  const issues: TechTreeIssue[] = []
+  const grantable = grantableClosure(challenges, ids, baseBlocks)
+  for (const c of challenges) {
+    if (skip.has(c.id)) continue
+    const reachable = grantable.get(c.id) ?? new Set(baseBlocks)
+    for (const t of [...c.requiredTypes].sort()) {
+      if (!reachable.has(t)) {
+        issues.push({ kind: "unreachable-required-type", challengeId: c.id, detail: `required type "${t}" is not grantable via the requires-closure` })
+      }
+    }
+    // An empty palette means "full toolbox" (no restriction) — nothing to reach for.
+    if (c.availableBlocks.length > 0) {
+      for (const b of [...c.availableBlocks].sort()) {
+        if (!reachable.has(b)) {
+          issues.push({ kind: "ungrantable-available-block", challengeId: c.id, detail: `available block "${b}" is not grantable via the requires-closure` })
+        }
+      }
+    }
+  }
+  return issues
+}
+
 /** DFS over the `requires` graph (edge: challenge → each prerequisite), reporting back-edges as cycles. */
 function findRequiresCycles(challenges: readonly Challenge[], ids: ReadonlySet<string>): TechTreeIssue[] {
   const issues: TechTreeIssue[] = []

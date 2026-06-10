@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { resolveTechTree, validateTechTree } from "@/engine/techTree"
+import { resolveTechTree, validateTechTree, findUnlockOrderingIssues } from "@/engine/techTree"
 import type { Challenge } from "@/lib/challengeTypes"
 
 // Minimal Challenge factory — only the fields the tech-tree resolver/validator read matter here.
@@ -104,5 +104,77 @@ describe("validateTechTree", () => {
     ]
     const issues = validateTechTree(cyclic)
     expect(issues.some((i) => i.kind === "cycle")).toBe(true)
+  })
+})
+
+describe("findUnlockOrderingIssues (S3 / D89 — closure reachability)", () => {
+  it("returns [] when every required type / palette block is base, self-granted, or prereq-granted", () => {
+    const tree = [
+      ch({ id: "root", grants: ["cache"], requiredTypes: ["compute"], availableBlocks: ["traffic-source", "compute"] }),
+      ch({ id: "child", requires: ["root"], requiredTypes: ["cache"], availableBlocks: ["cache", "compute"] }),
+    ]
+    expect(findUnlockOrderingIssues(tree)).toEqual([])
+  })
+
+  it("a required type granted by a prerequisite is reachable", () => {
+    const tree = [
+      ch({ id: "root", grants: ["relational-db"] }),
+      ch({ id: "child", requires: ["root"], requiredTypes: ["relational-db"] }),
+    ]
+    expect(findUnlockOrderingIssues(tree)).toEqual([])
+  })
+
+  it("a self-granted required type (teach-by-using) is reachable — NOT flagged", () => {
+    const tree = [ch({ id: "solo", grants: ["message-queue"], requiredTypes: ["message-queue"], availableBlocks: ["compute", "message-queue"] })]
+    expect(findUnlockOrderingIssues(tree)).toEqual([])
+  })
+
+  it("flags a required type that no challenge in the closure grants", () => {
+    const tree = [
+      ch({ id: "root", grants: [] }),
+      ch({ id: "child", requires: ["root"], requiredTypes: ["cdn"] }),
+    ]
+    const issues = findUnlockOrderingIssues(tree)
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({ kind: "unreachable-required-type", challengeId: "child" })
+    expect(issues[0].detail).toContain("cdn")
+  })
+
+  it("base blocks (compute / traffic-source) are always grantable", () => {
+    const tree = [ch({ id: "solo", requiredTypes: ["compute", "traffic-source"], availableBlocks: ["compute", "traffic-source"] })]
+    expect(findUnlockOrderingIssues(tree)).toEqual([])
+  })
+
+  it("flags an available block not grantable via the closure (palette offers a never-granted block)", () => {
+    const tree = [ch({ id: "solo", availableBlocks: ["compute", "nosql"] })]
+    const issues = findUnlockOrderingIssues(tree)
+    expect(issues).toHaveLength(1)
+    expect(issues[0]).toMatchObject({ kind: "ungrantable-available-block", challengeId: "solo" })
+    expect(issues[0].detail).toContain("nosql")
+  })
+
+  it("an empty available_blocks means full toolbox — no palette check", () => {
+    const tree = [ch({ id: "solo", availableBlocks: [], requiredTypes: ["compute"] })]
+    expect(findUnlockOrderingIssues(tree)).toEqual([])
+  })
+
+  it("terminates on a requires cycle and skips the cycle-reported node (no closure noise atop a structural break)", () => {
+    const tree = [
+      ch({ id: "a", requires: ["b"], requiredTypes: ["cdn"] }),
+      ch({ id: "b", requires: ["a"], requiredTypes: [] }),
+    ]
+    const issues = findUnlockOrderingIssues(tree)
+    expect(issues.filter((i) => i.challengeId === "a")).toEqual([]) // "a" is the cycle-reported node → skipped
+  })
+
+  it("skips a node whose requires reference an unknown challenge", () => {
+    const tree = [ch({ id: "orphan", requires: ["does-not-exist"], requiredTypes: ["cdn"] })]
+    expect(findUnlockOrderingIssues(tree)).toEqual([])
+  })
+
+  it("sorts emitted block ids deterministically within a challenge", () => {
+    const tree = [ch({ id: "solo", requiredTypes: ["zeta", "alpha"] })]
+    const reqs = findUnlockOrderingIssues(tree).filter((i) => i.kind === "unreachable-required-type")
+    expect(reqs.map((i) => i.detail.match(/"([^"]+)"/)?.[1])).toEqual(["alpha", "zeta"])
   })
 })
