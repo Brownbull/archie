@@ -34,9 +34,18 @@ export interface UserProgress {
    * truth) — there is no separate spent counter.
    */
   hintsUnlocked: Readonly<Record<string, number>>
+  /**
+   * Expert currency (Phase 4, D94): earned by single-attribute traffic breaks (+ resilience extras,
+   * P4-S7); spent on the per-quest required-blocks filter. NEVER part of the hint-star pool.
+   */
+  expertCurrency: number
+  /** Per-challenge record of which break attributes have been collected (rps/kind/workload/origin). */
+  breaksByChallenge: Readonly<Record<string, Partial<Record<"rps" | "kind" | "workload" | "origin", true>>>>
+  /** Challenges whose "show required blocks" filter has been purchased (1 expert unit each). */
+  requiredFilterUnlocked: Readonly<Record<string, true>>
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, generation: PROGRESS_GENERATION }
 
 /** Total stars earned across challenges (sum of per-challenge bests — the ratings, unchanged by spending). */
 export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): number {
@@ -83,6 +92,14 @@ interface UserProgressState extends UserProgress {
    * spendable balance is < 1). Persists optimistically.
    */
   unlockHint: (userId: string, challengeId: string, ladderLength: number) => Promise<boolean>
+  /**
+   * Collect a single-attribute break (Phase 4, D94): idempotent per challenge+attribute — the first
+   * collection earns 1 expert-currency unit and records the attribute; repeats return false. Persists
+   * optimistically (merge).
+   */
+  collectBreak: (userId: string, challengeId: string, attribute: "rps" | "kind" | "workload" | "origin") => Promise<boolean>
+  /** Spend 1 expert unit to unlock a quest's required-blocks filter. False when broke or already owned. */
+  unlockRequiredFilter: (userId: string, challengeId: string) => Promise<boolean>
   reset: () => void
 }
 
@@ -108,7 +125,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
         if (storedGen < PROGRESS_GENERATION) {
           // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
           // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
-          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, generation: PROGRESS_GENERATION }
+          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, generation: PROGRESS_GENERATION }
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
@@ -125,6 +142,9 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           bestStarsCloud: (data.bestStarsCloud as Record<string, number>) ?? {},
           equippedAvatar: (data.equippedAvatar as string) ?? null,
           hintsUnlocked: (data.hintsUnlocked as Record<string, number>) ?? {},
+          expertCurrency: (data.expertCurrency as number) ?? 0,
+          breaksByChallenge: (data.breaksByChallenge as UserProgress["breaksByChallenge"]) ?? {},
+          requiredFilterUnlocked: (data.requiredFilterUnlocked as Record<string, true>) ?? {},
           generation: storedGen,
           loading: false,
         })
@@ -207,6 +227,50 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     } catch (err) {
       if (import.meta.env.DEV) console.error("Failed to save equipped avatar:", err)
     }
+  },
+
+  collectBreak: async (userId, challengeId, attribute) => {
+    if (!userId || !challengeId) return false
+    const state = get()
+    const record = state.breaksByChallenge[challengeId] ?? {}
+    if (record[attribute]) return false // this attribute's break already collected for this quest
+
+    const newBreaks = { ...state.breaksByChallenge, [challengeId]: { ...record, [attribute]: true as const } }
+    const newCurrency = state.expertCurrency + 1
+    set({ breaksByChallenge: newBreaks, expertCurrency: newCurrency, error: null })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        { breaksByChallenge: newBreaks, expertCurrency: newCurrency, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save collected break:", err)
+      set({ error: "Could not save your break." })
+    }
+    return true
+  },
+
+  unlockRequiredFilter: async (userId, challengeId) => {
+    if (!userId || !challengeId) return false
+    const state = get()
+    if (state.requiredFilterUnlocked[challengeId]) return false // already owned for this quest
+    if (state.expertCurrency < 1) return false // nothing to spend
+
+    const newUnlocked = { ...state.requiredFilterUnlocked, [challengeId]: true as const }
+    const newCurrency = state.expertCurrency - 1
+    set({ requiredFilterUnlocked: newUnlocked, expertCurrency: newCurrency, error: null })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        { requiredFilterUnlocked: newUnlocked, expertCurrency: newCurrency, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save filter unlock:", err)
+      set({ error: "Could not save your filter unlock." })
+    }
+    return true
   },
 
   reset: () => set({ ...EMPTY_PROGRESS, loading: false, error: null, lastAward: null }),

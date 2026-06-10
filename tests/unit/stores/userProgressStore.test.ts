@@ -150,3 +150,122 @@ describe("loadProgress — Phase 6 generation reset (D65)", () => {
     expect(mockSetDoc).not.toHaveBeenCalled()
   })
 })
+
+describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
+  const base = {
+    trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {},
+    expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {},
+    generation: PROGRESS_GENERATION, error: null, loading: false, lastAward: null,
+  }
+  beforeEach(() => {
+    mockSetDoc.mockReset().mockResolvedValue(undefined as never)
+    useUserProgressStore.setState({ ...base })
+  })
+
+  it("collectBreak awards 1 expert unit, records the attribute, and persists with the generation stamp", async () => {
+    const ok = await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
+    expect(ok).toBe(true)
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1)
+    expect(s.breaksByChallenge.c1).toEqual({ rps: true })
+    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 1, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
+  })
+
+  it("collectBreak is idempotent per attribute — a repeat is a no-op (no currency, no write)", async () => {
+    await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
+    mockSetDoc.mockClear()
+    const again = await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
+    expect(again).toBe(false)
+    expect(useUserProgressStore.getState().expertCurrency).toBe(1)
+    expect(mockSetDoc).not.toHaveBeenCalled()
+  })
+
+  it("distinct attributes on one challenge each pay out — the natural cap is 4", async () => {
+    const s = () => useUserProgressStore.getState()
+    for (const attr of ["rps", "kind", "workload", "origin"] as const) {
+      expect(await s().collectBreak("u1", "c1", attr)).toBe(true)
+    }
+    expect(s().expertCurrency).toBe(4)
+    expect(s().breaksByChallenge.c1).toEqual({ rps: true, kind: true, workload: true, origin: true })
+  })
+
+  it("expert currency NEVER feeds the hint-star pool (D94 invariant)", async () => {
+    useUserProgressStore.setState({ bestStarsCloud: { c1: 3 }, hintsUnlocked: { c1: 1 } })
+    const before = spendableStars(useUserProgressStore.getState())
+    await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
+    await useUserProgressStore.getState().collectBreak("u1", "c1", "kind")
+    expect(spendableStars(useUserProgressStore.getState())).toBe(before)
+  })
+
+  it("collectBreak guards empty ids", async () => {
+    expect(await useUserProgressStore.getState().collectBreak("", "c1", "rps")).toBe(false)
+    expect(await useUserProgressStore.getState().collectBreak("u1", "", "rps")).toBe(false)
+    expect(mockSetDoc).not.toHaveBeenCalled()
+  })
+
+  it("unlockRequiredFilter spends exactly 1 unit and records the challenge", async () => {
+    useUserProgressStore.setState({ expertCurrency: 2 })
+    const ok = await useUserProgressStore.getState().unlockRequiredFilter("u1", "c1")
+    expect(ok).toBe(true)
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1)
+    expect(s.requiredFilterUnlocked.c1).toBe(true)
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 1, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
+  })
+
+  it("unlockRequiredFilter is a no-op when already owned (never double-charges)", async () => {
+    useUserProgressStore.setState({ expertCurrency: 2, requiredFilterUnlocked: { c1: true } })
+    expect(await useUserProgressStore.getState().unlockRequiredFilter("u1", "c1")).toBe(false)
+    expect(useUserProgressStore.getState().expertCurrency).toBe(2)
+    expect(mockSetDoc).not.toHaveBeenCalled()
+  })
+
+  it("unlockRequiredFilter is a no-op at 0 balance", async () => {
+    expect(await useUserProgressStore.getState().unlockRequiredFilter("u1", "c1")).toBe(false)
+    expect(useUserProgressStore.getState().requiredFilterUnlocked.c1).toBeUndefined()
+    expect(mockSetDoc).not.toHaveBeenCalled()
+  })
+
+  it("optimistic spend rolls visible state forward even if the write later fails (error surfaced)", async () => {
+    useUserProgressStore.setState({ expertCurrency: 1 })
+    mockSetDoc.mockRejectedValueOnce(new Error("offline") as never)
+    const ok = await useUserProgressStore.getState().unlockRequiredFilter("u1", "c1")
+    expect(ok).toBe(true) // optimistic, same contract as unlockHint
+    expect(useUserProgressStore.getState().error).toBe("Could not save your filter unlock.")
+  })
+
+  it("collectBreak write failure surfaces the error but keeps the optimistic award (same contract)", async () => {
+    mockSetDoc.mockRejectedValueOnce(new Error("offline") as never)
+    const ok = await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
+    expect(ok).toBe(true)
+    expect(useUserProgressStore.getState().expertCurrency).toBe(1)
+    expect(useUserProgressStore.getState().error).toBe("Could not save your break.")
+  })
+
+  it("generation wipe zeroes the expert economy alongside stars and hints", async () => {
+    mockGetDoc.mockReset().mockResolvedValue(snapshot({
+      generation: 1, expertCurrency: 3, breaksByChallenge: { a: { rps: true } }, requiredFilterUnlocked: { a: true },
+    }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(0)
+    expect(s.breaksByChallenge).toEqual({})
+    expect(s.requiredFilterUnlocked).toEqual({})
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {} })
+  })
+
+  it("loadProgress reads the expert fields from a current-generation doc", async () => {
+    mockGetDoc.mockReset().mockResolvedValue(snapshot({
+      generation: PROGRESS_GENERATION, expertCurrency: 2,
+      breaksByChallenge: { a: { rps: true, kind: true } }, requiredFilterUnlocked: { b: true },
+    }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(2)
+    expect(s.breaksByChallenge).toEqual({ a: { rps: true, kind: true } })
+    expect(s.requiredFilterUnlocked).toEqual({ b: true })
+  })
+})
