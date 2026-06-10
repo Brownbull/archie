@@ -72,8 +72,8 @@
     "nodes": 3
   },
   "polyglot-persistence": {
-    "cost": 140,
-    "nodes": 5
+    "cost": 158,
+    "nodes": 6
   },
   "rate-limit": {
     "cost": 85,

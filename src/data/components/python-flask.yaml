@@ -171,3 +171,6 @@ ports:
   - id: monitor-out
     type: monitor
     direction: out
+  - id: stream-out
+    type: stream
+    direction: out
