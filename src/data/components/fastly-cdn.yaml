@@ -38,6 +38,9 @@ base_metrics:
 config_variants:
   - id: edge-caching
     name: Edge Caching
+    description: >-
+      Fastly edge caching: instant purges and real-time config make it the cache for fast-changing content, with a huge request ceiling for the price.
+    docs_url: https://www.fastly.com/documentation/guides/getting-started/
     monthly_cost: 20
     max_rps: 150000
     base_latency_ms: 15
@@ -82,6 +85,9 @@ config_variants:
           - Stale-while-revalidate shields users from origin blips
   - id: compute-edge
     name: Compute@Edge
+    description: >-
+      Fastly Compute: WebAssembly at the edge with the family's lowest latency and a 400k-rps class ceiling. You're writing deployed edge software now, not just cache rules.
+    docs_url: https://www.fastly.com/documentation/guides/compute/
     monthly_cost: 60
     max_rps: 400000
     base_latency_ms: 8

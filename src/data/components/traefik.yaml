@@ -38,6 +38,9 @@ base_metrics:
 config_variants:
   - id: edge-router
     name: Edge Router
+    description: >-
+      Traefik as an edge router: auto-discovers services and wires routes from labels — the low-config front door for container platforms.
+    docs_url: https://doc.traefik.io/traefik/
     monthly_cost: 15
     max_rps: 30000
     base_latency_ms: 1
@@ -82,6 +85,9 @@ config_variants:
           - Free community edition covers core HTTP, TCP, and TLS routing
   - id: load-balancer
     name: Load Balancer
+    description: >-
+      Traefik load balancing: the same dynamic discovery spread across replicas, with a much higher ceiling. Config stays declarative while the fleet grows.
+    docs_url: https://doc.traefik.io/traefik/routing/services/
     monthly_cost: 30
     max_rps: 80000
     base_latency_ms: 1

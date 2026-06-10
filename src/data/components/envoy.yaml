@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: edge
     name: Edge / Standalone
+    description: >-
+      Standalone Envoy at the edge: modern L7 proxy with first-class observability and retries. More tunable than nginx, more to learn.
+    docs_url: https://www.envoyproxy.io/docs/envoy/latest/
     monthly_cost: 30
     max_rps: 40000
     base_latency_ms: 2
@@ -88,6 +91,9 @@ config_variants:
           - No control plane needed for one node
   - id: service-mesh
     name: Service Mesh (Sidecar)
+    description: >-
+      Envoy as mesh sidecars: every service gets uniform retries, mTLS, and telemetry — and every hop pays the sidecar tax. Buy it for fleet-wide control, not throughput.
+    docs_url: https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/intro/terminology
     monthly_cost: 120
     max_rps: 30000
     base_latency_ms: 4

@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Azure CDN Standard: Microsoft's edge with solid latency and Azure-native integration. Pricier than the independents at the same job.
+    docs_url: https://learn.microsoft.com/en-us/azure/cdn/cdn-overview
     monthly_cost: 55
     max_rps: 180000
     base_latency_ms: 5
@@ -83,6 +86,9 @@ config_variants:
           - Standard SKU avoids the higher rules-engine and WAF costs of Premium
   - id: premium
     name: Premium
+    description: >-
+      Azure CDN Premium: advanced rules engine and the family's fastest edge. The premium is real — pay it when the rules engine or compliance posture matters.
+    docs_url: https://learn.microsoft.com/en-us/azure/cdn/cdn-features
     monthly_cost: 120
     max_rps: 250000
     base_latency_ms: 3

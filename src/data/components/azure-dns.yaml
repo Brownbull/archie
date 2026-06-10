@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Azure DNS: fast anycast resolution managed inside Azure. Resolution only — steering and failover live elsewhere.
+    docs_url: https://learn.microsoft.com/en-us/azure/dns/dns-overview
     monthly_cost: 8
     max_rps: 150000
     base_latency_ms: 1
@@ -83,6 +86,9 @@ config_variants:
           - Public zones avoid the per-VNet-link charge that private zones incur
   - id: private-zones
     name: Private Zones
+    description: >-
+      Azure DNS with Private Zones: the same resolution plus internal names for VNet-only services — the piece that keeps private architectures addressable.
+    docs_url: https://learn.microsoft.com/en-us/azure/dns/private-dns-overview
     monthly_cost: 15
     max_rps: 150000
     base_latency_ms: 1

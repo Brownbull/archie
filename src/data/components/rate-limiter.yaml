@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: token-bucket
     name: Token Bucket (Bursty)
+    description: >-
+      Token-bucket limiting: legitimate bursts pass while sustained abuse is shed — the forgiving default for user-facing APIs.
+    docs_url: https://en.wikipedia.org/wiki/Token_bucket
     monthly_cost: 10
     max_rps: 50000
     base_latency_ms: 1
@@ -82,6 +85,9 @@ config_variants:
           - Generous to legitimate spikes
   - id: sliding-window
     name: Sliding Window (Strict)
+    description: >-
+      Sliding-window limiting: a strict, smooth cap with no burst allowance. Pick it when the protected tier genuinely cannot absorb spikes.
+    docs_url: https://en.wikipedia.org/wiki/Rate_limiting
     monthly_cost: 14
     max_rps: 35000
     base_latency_ms: 2

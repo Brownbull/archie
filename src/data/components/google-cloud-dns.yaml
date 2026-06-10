@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Cloud DNS: Google's anycast resolvers at the lowest price in the catalog. Plain, reliable name resolution.
+    docs_url: https://cloud.google.com/dns/docs/overview
     monthly_cost: 3
     max_rps: 60000
     base_latency_ms: 2
@@ -83,6 +86,9 @@ config_variants:
           - No charge for serving DNSSEC-signed responses on Standard zones
   - id: premium
     name: Premium
+    description: >-
+      Cloud DNS premium: faster answers, higher query ceiling, and routing policies — the upgrade when DNS becomes part of your traffic strategy instead of a lookup table.
+    docs_url: https://cloud.google.com/dns/docs/policies-overview
     monthly_cost: 12
     max_rps: 80000
     base_latency_ms: 1

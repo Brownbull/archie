@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: simple
     name: Simple Routing
+    description: >-
+      Route 53 simple routing: dependable AWS-native DNS that points names at endpoints. Cheap and boring in the best way.
+    docs_url: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/Welcome.html
     monthly_cost: 5
     max_rps: 90000
     base_latency_ms: 15
@@ -76,6 +79,9 @@ config_variants:
           - Alias queries to AWS targets are free
   - id: latency-routing
     name: Latency / Failover Routing
+    description: >-
+      Route 53 latency + failover routing: answers steer each user to the fastest healthy region — the DNS half of a multi-region story. Health checks are what you're really paying for.
+    docs_url: https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy.html
     monthly_cost: 18
     max_rps: 70000
     base_latency_ms: 14

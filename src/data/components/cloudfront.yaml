@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard Caching
+    description: >-
+      CloudFront caching at AWS edge locations: 85% of requests never reach the origin, with the usual AWS billing and tooling. The default when the stack already lives on AWS.
+    docs_url: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html
     monthly_cost: 30
     max_rps: 50000
     base_latency_ms: 15
@@ -79,6 +82,9 @@ config_variants:
           - Pay only for edge egress and requests
   - id: edge-functions
     name: With Edge Functions
+    description: >-
+      CloudFront with Lambda@Edge: run code at the edge for auth, rewrites, and personalization. Each invocation adds latency and the bill more than doubles — use where edge logic earns it.
+    docs_url: https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-at-the-edge.html
     monthly_cost: 70
     max_rps: 40000
     base_latency_ms: 20

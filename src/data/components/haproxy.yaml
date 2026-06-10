@@ -38,6 +38,9 @@ base_metrics:
 config_variants:
   - id: tcp-l4
     name: TCP (Layer 4)
+    description: >-
+      HAProxy in TCP mode: Layer-4 forwarding at wire speed — the highest self-hosted ceiling here. It never sees HTTP, so no path routing or header logic.
+    docs_url: https://docs.haproxy.org/
     monthly_cost: 12
     max_rps: 60000
     base_latency_ms: 1
@@ -87,6 +90,9 @@ config_variants:
           - leastconn spreads load evenly across healthy backends
   - id: http-l7
     name: HTTP (Layer 7)
+    description: >-
+      HAProxy in HTTP mode: full Layer-7 routing, rewrites, and stickiness for a modest throughput haircut versus TCP mode. The battle-tested self-hosted default.
+    docs_url: https://docs.haproxy.org/
     monthly_cost: 20
     max_rps: 45000
     base_latency_ms: 2
