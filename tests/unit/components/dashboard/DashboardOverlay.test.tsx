@@ -193,6 +193,41 @@ describe("DashboardOverlay", () => {
 
   // --- Story 5-3: Priority Weights section ---
 
+  // P1/T4 footer deep-link: initialCategory opens the category's info popup on open.
+  it("initialCategory opens with that category's info popup open", async () => {
+    const metricsMap = new Map([
+      ["n1", makeMetrics("n1", 7)],
+      ["n2", makeMetrics("n2", 5)],
+    ])
+    mockUseArchitectureStore.mockImplementation((selector) =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (selector as (s: any) => any)({
+        computedMetrics: metricsMap,
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        setWeightProfile: vi.fn(),
+        setWeightAndRecalculate: vi.fn(),
+        constraints: [],
+        constraintViolations: [],
+        nodes: [
+          { id: "n1", data: { componentName: "PostgreSQL", archieComponentId: "pg", activeConfigVariantId: "default", componentCategory: "data-storage" } },
+        ],
+      }),
+    )
+
+    const { componentLibrary } = await import("@/services/componentLibrary")
+    vi.mocked(componentLibrary.getMetricCategory).mockReturnValue({
+      id: "performance", name: "Performance", description: "How fast it responds",
+      whyItMatters: "Slow apps lose users", scoreInterpretations: [],
+    } as unknown as ReturnType<typeof componentLibrary.getMetricCategory>)
+
+    render(<DashboardOverlay open={true} onOpenChange={vi.fn()} initialCategory="performance" />)
+    const card = await screen.findByTestId("overlay-category-performance")
+    // The deep-linked category's info popover is OPEN (Radix marks its trigger data-state="open");
+    // the un-linked category stays closed.
+    await vi.waitFor(() => expect(card).toHaveAttribute("data-state", "open"))
+    expect(screen.getByTestId("overlay-category-reliability")).not.toHaveAttribute("data-state", "open")
+  })
+
   describe("priority weights section (AC-ARCH-PATTERN-5)", () => {
     it("renders weight sliders toggle", () => {
       mockUseArchitectureStore.mockImplementation((selector) =>

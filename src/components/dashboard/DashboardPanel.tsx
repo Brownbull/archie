@@ -2,13 +2,11 @@ import { useCallback, useMemo, useState } from "react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { type MetricCategoryId } from "@/lib/constants"
 import { CATEGORY_LOOKUP } from "@/lib/categoryLookup"
-import { componentLibrary } from "@/services/componentLibrary"
 import { useDashboardWeights } from "@/hooks/useDashboardWeights"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
 import { AggregateScore } from "@/components/dashboard/AggregateScore"
 import { BudgetHud } from "@/components/dashboard/BudgetHud"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
-import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
 import { DashboardOverlay } from "@/components/dashboard/DashboardOverlay"
 import { TierBadge } from "@/components/dashboard/TierBadge"
 import { Button } from "@/components/ui/button"
@@ -45,18 +43,29 @@ export function DashboardPanel() {
     return meta ? { cs: lowest, meta } : null
   }, [categoriesWithData])
 
-  const [infoCategoryId, setInfoCategoryId] = useState<MetricCategoryId | null>(null)
   const [isOverlayOpen, setIsOverlayOpen] = useState(false)
   const [overlayInitialSection, setOverlayInitialSection] = useState<"pathway" | null>(null)
+  // Deep-link target for the overlay's per-category breakdown (P1/T4): clicking the weakest bar in
+  // the footer opens the overlay scrolled to that category with its info popup open — the trace the
+  // footer itself can't carry.
+  const [overlayInitialCategory, setOverlayInitialCategory] = useState<MetricCategoryId | null>(null)
 
   const handleOpenPathway = useCallback(() => {
     setOverlayInitialSection("pathway")
     setIsOverlayOpen(true)
   }, [])
 
+  const handleOpenCategory = useCallback((categoryId: MetricCategoryId) => {
+    setOverlayInitialCategory(categoryId)
+    setIsOverlayOpen(true)
+  }, [])
+
   const handleOverlayOpenChange = useCallback((o: boolean) => {
     setIsOverlayOpen(o)
-    if (!o) setOverlayInitialSection(null)
+    if (!o) {
+      setOverlayInitialSection(null)
+      setOverlayInitialCategory(null)
+    }
   }, [])
 
   const isEmpty = computedMetrics.size === 0
@@ -80,10 +89,19 @@ export function DashboardPanel() {
         </p>
       ) : (
         <>
-          <AggregateScore
-            score={weightedAggregateScore}
-            balancedScore={isNonDefaultWeights ? aggregateScore : undefined}
-          />
+          {/* Clicking the score opens the full breakdown — the footer's most prominent element was inert. */}
+          <button
+            type="button"
+            data-testid="aggregate-score-button"
+            className="shrink-0 rounded hover:bg-muted/50"
+            onClick={() => setIsOverlayOpen(true)}
+            aria-label="Open the full score breakdown"
+          >
+            <AggregateScore
+              score={weightedAggregateScore}
+              balancedScore={isNonDefaultWeights ? aggregateScore : undefined}
+            />
+          </button>
 
           <div className="self-stretch border-r border-archie-border" />
 
@@ -93,24 +111,15 @@ export function DashboardPanel() {
                 <span className="shrink-0 text-[0.625rem] font-medium uppercase tracking-wide text-text-secondary/70">
                   Weakest
                 </span>
-                <CategoryInfoPopup
-                  category={componentLibrary.getMetricCategory(weakest.cs.categoryId)}
+                <CategoryBar
+                  categoryId={weakest.cs.categoryId}
+                  shortName={weakest.meta.shortName}
+                  iconName={weakest.meta.iconName}
+                  categoryColor={weakest.meta.color}
                   score={weakest.cs.score}
-                  open={infoCategoryId === weakest.cs.categoryId}
-                  onOpenChange={(open) =>
-                    setInfoCategoryId(open ? weakest.cs.categoryId : null)
-                  }
-                >
-                  <CategoryBar
-                    categoryId={weakest.cs.categoryId}
-                    shortName={weakest.meta.shortName}
-                    iconName={weakest.meta.iconName}
-                    categoryColor={weakest.meta.color}
-                    score={weakest.cs.score}
-                    weight={weightProfile[weakest.cs.categoryId]}
-                    onClick={() => setInfoCategoryId(weakest.cs.categoryId)}
-                  />
-                </CategoryInfoPopup>
+                  weight={weightProfile[weakest.cs.categoryId]}
+                  onClick={() => handleOpenCategory(weakest.cs.categoryId)}
+                />
               </>
             )}
           </div>
@@ -148,6 +157,7 @@ export function DashboardPanel() {
         open={isOverlayOpen}
         onOpenChange={handleOverlayOpenChange}
         initialSection={overlayInitialSection}
+        initialCategory={overlayInitialCategory}
       />
     </div>
   )

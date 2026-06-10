@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel"
 import { DEFAULT_WEIGHT_PROFILE } from "@/lib/constants"
 
@@ -179,6 +180,27 @@ describe("DashboardPanel", () => {
       expect(screen.getByTestId("category-bar-performance")).toBeInTheDocument()
       // …the stronger category is NOT crammed into the footer — it's one click away in the overlay.
       expect(screen.queryByTestId("category-bar-reliability")).not.toBeInTheDocument()
+    })
+
+    // P1/T4: the footer's weakest bar deep-links into the overlay's per-category breakdown (the old
+    // CategoryInfoPopup wrapper was dead code — CategoryBar dropped its onClick + trigger props).
+    it("clicking the weakest bar opens the overlay deep-linked to that category", async () => {
+      const user = userEvent.setup()
+      mockPopulatedStore(metrics)
+      render(<DashboardPanel />)
+
+      await user.click(screen.getByTestId("category-bar-performance"))
+      expect(await screen.findByTestId("dashboard-overlay")).toBeInTheDocument()
+      expect(screen.getByTestId("overlay-category-performance")).toBeInTheDocument()
+    })
+
+    it("clicking the aggregate score opens the overlay", async () => {
+      const user = userEvent.setup()
+      mockPopulatedStore(metrics)
+      render(<DashboardPanel />)
+
+      await user.click(screen.getByTestId("aggregate-score-button"))
+      expect(await screen.findByTestId("dashboard-overlay")).toBeInTheDocument()
     })
 
     it("does not render bars for categories without data", () => {

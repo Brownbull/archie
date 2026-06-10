@@ -45,6 +45,26 @@ describe("CategoryBar (star-based)", () => {
     expect(screen.getByText("What affects this:")).toBeInTheDocument()
   })
 
+  // P1/T4: the onClick prop was declared but silently dropped — the footer's deep-link could never
+  // fire. With onClick the caller owns the interaction; the internal popover must NOT also open.
+  it("calls onClick instead of opening the internal popover when onClick is provided", async () => {
+    const user = userEvent.setup()
+    let clicks = 0
+    render(<CategoryBar {...defaultProps} onClick={() => { clicks++ }} />)
+    await user.click(screen.getByTestId("category-bar-performance"))
+    expect(clicks).toBe(1)
+    expect(screen.queryByTestId("metric-popover-performance")).not.toBeInTheDocument()
+  })
+
+  it("fires onClick from the keyboard (Enter)", async () => {
+    const user = userEvent.setup()
+    let clicks = 0
+    render(<CategoryBar {...defaultProps} onClick={() => { clicks++ }} />)
+    screen.getByTestId("category-bar-performance").focus()
+    await user.keyboard("{Enter}")
+    expect(clicks).toBe(1)
+  })
+
   it("renders weight badge when weight differs from 1.0", () => {
     render(<CategoryBar {...defaultProps} weight={0.5} />)
     expect(screen.getByTestId("weight-badge-performance")).toHaveTextContent("0.5x")

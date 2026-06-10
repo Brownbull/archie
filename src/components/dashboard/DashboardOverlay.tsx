@@ -36,9 +36,11 @@ interface DashboardOverlayProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   initialSection?: "pathway" | null
+  /** Deep-link (P1/T4): open scrolled to this category's card with its info popup open. */
+  initialCategory?: MetricCategoryId | null
 }
 
-export function DashboardOverlay({ open, onOpenChange, initialSection }: DashboardOverlayProps) {
+export function DashboardOverlay({ open, onOpenChange, initialSection, initialCategory }: DashboardOverlayProps) {
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
   const nodes = useArchitectureStore(useShallow((s) => s.nodes))
   const {
@@ -60,6 +62,7 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
   const [constraintsOpen, setConstraintsOpen] = useState(false)
   const [pathwayOpen, setPathwayOpen] = useState(false)
   const pathwayRef = useRef<HTMLDivElement>(null)
+  const initialCategoryRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) {
@@ -75,7 +78,18 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
         })
       })
     }
-  }, [open, initialSection])
+    if (initialCategory) {
+      // Footer deep-link: surface the clicked category's trace (info popup + per-component breakdown).
+      // Double rAF: open the popup AFTER the dialog's focus-trap settles — opening synchronously gets
+      // the popover immediately dismissed by the dialog's autofocus (Radix DismissableLayer).
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setInfoCategoryId(initialCategory)
+          initialCategoryRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+        })
+      })
+    }
+  }, [open, initialSection, initialCategory])
 
   const breakdowns = useMemo(
     () =>
@@ -242,6 +256,7 @@ export function DashboardOverlay({ open, onOpenChange, initialSection }: Dashboa
                   }
                 >
                   <div
+                    ref={cs.categoryId === initialCategory ? initialCategoryRef : undefined}
                     data-testid={`overlay-category-${cs.categoryId}`}
                     className="cursor-pointer rounded-lg border border-archie-border p-3 hover:bg-muted/30"
                     onClick={() => setInfoCategoryId(cs.categoryId)}

@@ -40,6 +40,7 @@ export function CategoryBar({
   categoryColor,
   score,
   weight,
+  onClick,
 }: CategoryBarProps) {
   const stars = scoreToStars(score)
   const widthPercent = scoreToStarPercent(score)
@@ -48,49 +49,58 @@ export function CategoryBar({
   const info = METRIC_INFO[categoryId]
   const [popoverOpen, setPopoverOpen] = useState(false)
 
+  const bar = (
+    <div
+      data-testid={`category-bar-${categoryId}`}
+      role="meter"
+      aria-valuenow={score}
+      aria-valuemin={0}
+      aria-valuemax={10}
+      aria-label={shortName}
+      className="flex min-w-[120px] flex-1 cursor-pointer flex-col justify-center gap-1 rounded px-2 hover:bg-muted/50"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick() } } : undefined}
+    >
+      <div className="flex items-center gap-1.5">
+        {IconComponent && (
+          <IconComponent className="h-3.5 w-3.5 shrink-0" style={{ color: categoryColor }} />
+        )}
+        <span className="truncate text-xs text-text-secondary">{shortName}</span>
+        <span className="ml-auto shrink-0">
+          <StarDisplay count={stars} />
+        </span>
+        {weight !== undefined && weight !== 1.0 && (
+          <span
+            data-testid={`weight-badge-${categoryId}`}
+            className="shrink-0 rounded bg-primary/15 px-1 text-[0.625rem] font-medium text-primary"
+          >
+            {weight.toFixed(1)}x
+          </span>
+        )}
+      </div>
+      <div className="h-1.5 w-full rounded-full bg-muted">
+        <div
+          data-testid={`category-bar-fill-${categoryId}`}
+          className="h-full rounded-full"
+          style={{
+            width: `${widthPercent}%`,
+            backgroundColor: color,
+            transition: "width 300ms ease, background-color 300ms ease",
+          }}
+        />
+      </div>
+    </div>
+  )
+
+  // With an onClick the caller owns the interaction (e.g. the footer deep-links into the overlay's
+  // per-component breakdown) — don't ALSO open the generic internal popover. Without one, the bar
+  // keeps its self-contained info popover (StackCard et al).
+  if (onClick) return bar
+
   return (
     <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-      <PopoverTrigger asChild>
-        <div
-          data-testid={`category-bar-${categoryId}`}
-          role="meter"
-          aria-valuenow={score}
-          aria-valuemin={0}
-          aria-valuemax={10}
-          aria-label={shortName}
-          className="flex min-w-[120px] flex-1 cursor-pointer flex-col justify-center gap-1 rounded px-2 hover:bg-muted/50"
-          tabIndex={0}
-        >
-          <div className="flex items-center gap-1.5">
-            {IconComponent && (
-              <IconComponent className="h-3.5 w-3.5 shrink-0" style={{ color: categoryColor }} />
-            )}
-            <span className="truncate text-xs text-text-secondary">{shortName}</span>
-            <span className="ml-auto shrink-0">
-              <StarDisplay count={stars} />
-            </span>
-            {weight !== undefined && weight !== 1.0 && (
-              <span
-                data-testid={`weight-badge-${categoryId}`}
-                className="shrink-0 rounded bg-primary/15 px-1 text-[0.625rem] font-medium text-primary"
-              >
-                {weight.toFixed(1)}x
-              </span>
-            )}
-          </div>
-          <div className="h-1.5 w-full rounded-full bg-muted">
-            <div
-              data-testid={`category-bar-fill-${categoryId}`}
-              className="h-full rounded-full"
-              style={{
-                width: `${widthPercent}%`,
-                backgroundColor: color,
-                transition: "width 300ms ease, background-color 300ms ease",
-              }}
-            />
-          </div>
-        </div>
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{bar}</PopoverTrigger>
       {info && (
         <PopoverContent side="top" className="w-64 p-3" data-testid={`metric-popover-${categoryId}`}>
           <h4 className="text-sm font-bold text-text-primary">{info.name}</h4>
