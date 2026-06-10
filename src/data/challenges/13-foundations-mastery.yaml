@@ -38,7 +38,7 @@ requires: [worker-fleet, cache-the-hot-path]
 unlocks: []
 min_xp: 10520
 required_types: [load-balancer, cache, message-queue]
-available_blocks: [traffic-source, compute, load-balancer, serverless, worker, message-queue, cache, relational-db]
+available_blocks: [traffic-source, compute, load-balancer, serverless, worker, message-queue, cache]
 grants: []
 rewards:
   xp: 1600

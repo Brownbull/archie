@@ -37,7 +37,7 @@ requires: [polyglot-persistence]
 unlocks: []
 min_xp: 5138
 required_types: [nosql]
-available_blocks: [traffic-source, compute, relational-db, nosql, cache, message-queue, load-balancer]
+available_blocks: [traffic-source, compute, nosql, cache, message-queue, load-balancer]
 grants: []
 rewards:
   xp: 960

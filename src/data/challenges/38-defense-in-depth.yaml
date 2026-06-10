@@ -40,7 +40,7 @@ requires: [siem-audit]
 unlocks: [fortress]
 min_xp: 5138
 required_types: [auth, rate-limiter, security, observability]
-available_blocks: [traffic-source, compute, auth, rate-limiter, security, observability, load-balancer, cache]
+available_blocks: [traffic-source, compute, auth, rate-limiter, security, observability, load-balancer]
 grants: []
 rewards:
   xp: 960

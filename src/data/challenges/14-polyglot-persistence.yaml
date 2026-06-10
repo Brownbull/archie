@@ -25,16 +25,15 @@ target_metrics:
 hints:
   - "Different data shapes demand different databases — structured data thrives in SQL, documents in NoSQL; cache shields all reads so no DB is hammered directly."
   - "Route reads through cache first; structured queries hit relational-db and documents hit nosql, both cached on warm hits; writes bypass cache and go direct to the appropriate DB."
-  - "Avoid object-storage (forbidden); use relational-db for transactions and nosql for schema-free documents; size cache replicas to hit 80%+ for 1200 RPS so DB load stays below saturation."
-  - "traffic-source → compute → cache; compute routes reads to cache, cache hits return directly, misses fetch from relational-db (structured) or nosql (documents); writes go direct to correct DB; use 2-3 compute + 1-2 cache replicas for p99 250ms and p95 180ms at 1200 RPS."
-forbidden_types: [object-storage]
+  - "Blobs belong in object storage — cheap, durable, and off the hot read path; keep relational-db for transactions and nosql for schema-free documents; size cache replicas to hit 80%+ for 1200 RPS so DB load stays below saturation."
+  - "traffic-source → compute → cache; compute routes reads to cache, cache hits return directly, misses fetch from relational-db (structured) or nosql (documents); blobs land in object-storage off the cached path; use 2-3 compute + 1-2 cache replicas for p99 250ms and p95 180ms at 1200 RPS."
 schema_version: 2
 track: data
 tier: 3
 requires: [cache-the-hot-path]
 unlocks: [search-at-scale, write-storm]
 min_xp: 1976
-required_types: [relational-db, nosql, cache]
+required_types: [relational-db, nosql, cache, object-storage]
 available_blocks: [compute, relational-db, nosql, cache, object-storage, traffic-source]
 grants: [nosql]
 rewards:

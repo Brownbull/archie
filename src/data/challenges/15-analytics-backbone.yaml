@@ -1,9 +1,9 @@
 id: analytics-backbone
 title: Analytics Backbone
 brief: >-
-  Capstone: build a multi-modal data layer — relational for transactions,
-  time-series for metrics, graph for relationships, and vectors for semantic
-  search. Serve analytics queries under latency while the ingest stream
+  Capstone: build a multi-modal data layer — time-series for metrics, graph
+  for relationships, and vectors for semantic search; SQL can't carry this
+  one. Serve analytics queries under latency while the ingest stream
   continues.
 difficulty: advanced
 budget_cap: 3000
@@ -39,7 +39,7 @@ requires: [search-at-scale]
 unlocks: []
 min_xp: 10520
 required_types: [time-series-db, graph-db, vector-store]
-available_blocks: [compute, relational-db, time-series-db, graph-db, vector-store, cache, traffic-source]
+available_blocks: [compute, time-series-db, graph-db, vector-store, cache, traffic-source]
 grants: [graph-db, time-series-db, vector-store]
 rewards:
   xp: 1600
