@@ -49,6 +49,7 @@ import type { TopologyIssue } from "@/engine/topologyChecker"
 import type { RecalculatedMetrics } from "@/engine/recalculator"
 import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import type { TierResult } from "@/lib/tierDefinitions"
+import { useChallengeStore } from "@/stores/challengeStore"
 
 export interface ArchieNodeData extends Record<string, unknown> {
   archieComponentId: string
@@ -177,6 +178,18 @@ function _evaluateTopology(
   set: (partial: Partial<ArchitectureState>) => void,
 ): void {
   set(evaluateTopology(get().nodes, get().edges))
+}
+
+/**
+ * S6b follow-up (Phase 2 review): no canvas-MUTATING path may place a quest-banned type. The toolbox
+ * card lock covers add/drag from the palette; this chokepoint covers everything else — Quick-Swap,
+ * pathway ghost place, radial add, smart add. A banned block on the canvas is a silent hard 0★
+ * (rubricScorer forbidden gate), so blocking here with a toast IS the player-facing lesson.
+ */
+function blockedByQuestBan(typeId: string | undefined): boolean {
+  if (!typeId) return false
+  const c = useChallengeStore.getState().activeChallenge
+  return !!c?.forbiddenTypes?.includes(typeId)
 }
 
 export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
@@ -338,6 +351,10 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     }
     const requested = componentLibrary.getComponent(addId)
     if (!requested) return
+    if (blockedByQuestBan(requested.typeId)) {
+      toast.warning("That block is banned in this quest — placing it would score 0★.")
+      return
+    }
 
     // Apply the user's saved default (provider + variant) for this block TYPE, if any. Future
     // adds only — never retroactive. Validate against the library so a stale saved provider/variant
@@ -418,6 +435,11 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
     const node = get().nodes.find((n) => n.id === nodeId)
     if (!node || node.data.archieComponentId === newComponentId) return
+
+    if (blockedByQuestBan(newComponent.typeId)) {
+      toast.warning("That block is banned in this quest — swapping to it would score 0★.")
+      return
+    }
 
     // ISAPivot one-per-type hard-gate (D63): block swapping a traffic node to a type already placed.
     if (wouldDuplicateTrafficType(get().nodes, nodeId, newComponentId)) {

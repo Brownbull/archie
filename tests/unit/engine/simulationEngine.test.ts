@@ -622,3 +622,20 @@ describe("tick event emission for observe-to-recover (S8 / D89)", () => {
     expect(tel(plain, "c1").monitored).toBeUndefined()
   })
 })
+
+describe("zero-match events emit no event state (review fix — no phantom markers)", () => {
+  it("an active event whose target matches no node produces no activeEvents and no frame events", () => {
+    const onlyCompute: SimNode[] = [node("c1", 1000, { category: "compute" })]
+    // Target a category absent from the build (a partial build missing the event's tier).
+    const ev: ScheduledEvent[] = [{ t: 0, type: "latency_spike", target: "auth-security", multiplier: 3, durationS: 60 }]
+    expect(computeOverrides(onlyCompute, ev, 5).activeEvents).toBeUndefined()
+    const result = runSimulation({ nodes: onlyCompute, edges: [] }, [{ t: 0, rps: 100 }], 5, 60, ev)
+    expect(result.ticks.every((f) => f.events === undefined)).toBe(true)
+  })
+
+  it("component_failure and az_outage with no matching nodes are equally silent", () => {
+    const onlyCompute: SimNode[] = [node("c1", 1000, { category: "compute" })]
+    expect(computeOverrides(onlyCompute, [{ t: 0, type: "component_failure", target: "data-storage", durationS: 60 }], 5).activeEvents).toBeUndefined()
+    expect(computeOverrides(onlyCompute, [{ t: 0, type: "az_outage", target: "data-storage", durationS: 60 }], 5).activeEvents).toBeUndefined()
+  })
+})

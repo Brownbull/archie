@@ -5,6 +5,7 @@ import { computePathwaySuggestions, type PathwaySuggestion } from "@/engine/path
 import { computeCategoryScores } from "@/engine/dashboardCalculator"
 import { DEFAULT_TIER_DEFINITIONS } from "@/lib/tierDefinitions"
 import { useUserProgressStore } from "@/stores/userProgressStore"
+import { useChallengeStore } from "@/stores/challengeStore"
 import { resolveTechTree } from "@/engine/techTree"
 import { getAllChallenges } from "@/services/challengeLoader"
 
@@ -44,6 +45,10 @@ export function usePathwaySuggestions(): PathwaySuggestionsResult {
     () => resolveTechTree(getAllChallenges(), completedChallenges).unlockedBlocks,
     [completedChallenges],
   )
+  // Phase 2 review follow-up: pathway suggestions feed the canvas GHOST nodes too, which render in
+  // quest mode (only the toolbox panel hides) — a banned-type ghost would be a one-click silent 0★.
+  // Raw array selector (stable reference) so the memo below doesn't churn.
+  const forbiddenTypes = useChallengeStore((s) => s.activeChallenge?.forbiddenTypes)
 
   // AC-ARCH-PATTERN-1: useMemo over computePathwaySuggestions — no debounce, no worker
   return useMemo(() => {
@@ -64,8 +69,10 @@ export function usePathwaySuggestions(): PathwaySuggestionsResult {
     // S2 (D89): keep only blocks the player has unlocked via the tech tree; legacy components with no
     // typeId always pass (they predate the tech tree, so gating them out would be a silent regression).
     // Single chokepoint — useGhostNodes and the toolbox panel both consume these suggestions, so neither
-    // can surface a locked block's one-click Add.
-    const unlockedComponents = allComponents.filter((c) => !c.typeId || unlockedBlocks.has(c.typeId))
+    // can surface a locked block's one-click Add. Quest-banned types are dropped too (review follow-up).
+    const unlockedComponents = allComponents.filter(
+      (c) => !c.typeId || (unlockedBlocks.has(c.typeId) && !forbiddenTypes?.includes(c.typeId)),
+    )
     if (unlockedComponents.length === 0) return EMPTY_RESULT
 
     // Task 1.5: Find next tier requirements
@@ -113,5 +120,5 @@ export function usePathwaySuggestions(): PathwaySuggestionsResult {
     }
     // Store contract: Zustand must replace Map references (not mutate in-place)
     // for computedMetrics and dataContextItems — shallow equality drives re-render
-  }, [currentTier, weightProfile, constraints, dataContextItems, nodes, computedMetrics, unlockedBlocks])
+  }, [currentTier, weightProfile, constraints, dataContextItems, nodes, computedMetrics, unlockedBlocks, forbiddenTypes])
 }

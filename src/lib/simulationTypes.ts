@@ -194,7 +194,6 @@ export interface ScheduledEvent {
   multiplier?: number
 }
 
-/** Per-tick simulation overrides derived from the scheduled events active at that tick. */
 /**
  * S8 (D89): a scheduled event ACTIVE this tick, in presentational form — what the timeline markers and
  * the coach narrate. Pure surfacing of state computeOverrides already derives; zero effect on routing.
@@ -209,6 +208,7 @@ export interface TickEventState {
   detected: boolean
 }
 
+/** Per-tick simulation overrides derived from the scheduled events active at that tick. */
 export interface TickOverrides {
   offlineNodeIds: Set<string>
   latencyMultipliers: Map<string, number>

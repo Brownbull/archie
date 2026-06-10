@@ -32,7 +32,7 @@ hints:
   - "Deploy a cache upstream of the vector store to absorb repeated semantic queries. With ~80-85% hit ratio, only 15-20% of 2000 rps misses reach the store."
   - "When the vector store fails at t=75s for 30s, your fallback is the search engine (keyword-based retrieval) plus the cache for served-from-cache hits. Ensure the cache is warm before the failure."
   - "Use traffic-source → load-balancer → compute → cache → vector-store, with search-engine as fallback and llm-gateway to merge context. Avoid relational-db."
-  - "Deploy 2-3 compute instances behind LB. Cache (3-4GB, 85% hit) means vector-store sees ~300 rps. At t=75s, search-engine takes over for cache misses. Achieves 98% uptime, p99≤350ms, p95≤220ms."
+  - "Deploy 2-3 compute instances behind LB. Cache (3-4GB, 85% hit) means vector-store sees ~300 rps. At t=75s, search-engine takes over for cache misses. Achieves ≥78% uptime (the 30s vector-store outage is the unavoidable hit — everything else must serve cleanly), p99≤350ms, p95≤220ms."
 forbidden_types: [relational-db]
 schema_version: 2
 track: aiml

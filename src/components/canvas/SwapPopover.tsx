@@ -2,6 +2,7 @@ import { memo, useMemo } from "react"
 import { ArrowRightLeft } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { useChallengeStore } from "@/stores/challengeStore"
 import { componentLibrary } from "@/services/componentLibrary"
 import { Z_INDEX } from "@/lib/constants"
 
@@ -9,6 +10,10 @@ function SwapPopoverComponent() {
 	const swapTarget = useUiStore((s) => s.swapTargetNodeId)
 	const clearSwapTarget = useUiStore((s) => s.clearSwapTarget)
 	const swapNodeComponent = useArchitectureStore((s) => s.swapNodeComponent)
+	// S6b follow-up (Phase 2 review): same-category alternatives can cross a quest's forbidden_types
+	// line (relational-db and object-storage are both data-storage) — don't OFFER a banned swap. The
+	// store's swapNodeComponent guard is the hard gate; this keeps the option out of the menu.
+	const forbiddenTypes = useChallengeStore((s) => s.activeChallenge?.forbiddenTypes)
 
 	const node = useArchitectureStore((s) =>
 		swapTarget ? s.nodes.find((n) => n.id === swapTarget) : undefined,
@@ -19,7 +24,8 @@ function SwapPopoverComponent() {
 		return componentLibrary
 			.getComponentsByCategory(node.data.componentCategory)
 			.filter((c) => c.id !== node.data.archieComponentId && c.configVariants.length > 0)
-	}, [node])
+			.filter((c) => !c.typeId || !forbiddenTypes?.includes(c.typeId))
+	}, [node, forbiddenTypes])
 
 	if (!swapTarget || !node || alternatives.length === 0) return null
 

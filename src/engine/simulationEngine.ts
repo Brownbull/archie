@@ -145,8 +145,9 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
           hit.push(n.id)
         }
       }
-      // Spikes have no EN7 mitigation — `detected` is always false for them.
-      activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: false })
+      // Spikes have no EN7 mitigation — `detected` is always false for them. Zero-match events emit
+      // NOTHING (review fix): a marker for an event that hit no node would be a phantom failure.
+      if (hit.length > 0) activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: false })
       continue
     }
     if (e.type === "component_failure") {
@@ -165,7 +166,7 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
           anyMitigated = true
         }
       }
-      activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: anyMitigated })
+      if (hit.length > 0) activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: anyMitigated })
     } else if (e.type === "az_outage") {
       const monitored = monitoredCategories.has(e.target)
       const severity = monitored && timeS - e.t >= OBS_DETECT_DELAY_S ? OBS_RESIDUAL_BLAST : 1
@@ -180,7 +181,7 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
         const lost = (1 / az) * severity
         capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * (1 - lost))
       }
-      activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: monitored && severity < 1 })
+      if (hit.length > 0) activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: monitored && severity < 1 })
     }
   }
   // EN3 (D74): nodes that DAMP retry amplification — observability-adjacent (the EN7 monitored set acts as

@@ -496,3 +496,28 @@ describe("usePathwaySuggestions", () => {
     })
   })
 })
+
+describe("quest forbidden-type filter (Phase 2 review follow-up — ghosts must not offer a banned add)", () => {
+  it("drops a suggestion whose typeId is quest-banned even when unlocked", async () => {
+    const { useChallengeStore } = await import("@/stores/challengeStore")
+    const banned = makeComponent({
+      id: "comp-db-banned", name: "Banned SQL", category: "data-storage", typeId: "relational-db",
+      metrics: [makeMetric("performance", 8), makeMetric("reliability", 8)],
+    })
+    mockUseUserProgressStore.mockImplementation((sel: unknown) =>
+      (sel as (s: { completedChallenges: readonly string[] }) => unknown)({ completedChallenges: [] }),
+    )
+    mockResolveTechTree.mockReturnValue({ nodes: new Map(), ordered: [], unlockedBlocks: new Set(["relational-db"]) })
+    useChallengeStore.setState({ activeChallenge: { id: "c1", forbiddenTypes: ["relational-db"] } as never })
+    mockStore({
+      currentTier: makeTierResult({ tierIndex: 0, isMaxTier: false }),
+      nodes: [{ id: "n1", data: { archieComponentId: "comp-x", componentCategory: "compute" } }],
+    })
+    mockGetAllComponents.mockReturnValue([banned])
+    const { usePathwaySuggestions } = await import("@/hooks/usePathwaySuggestions")
+
+    const { result } = renderHook(() => usePathwaySuggestions())
+    expect(result.current.suggestions.find((s) => s.componentId === "comp-db-banned")).toBeUndefined()
+    useChallengeStore.setState({ activeChallenge: null })
+  })
+})
