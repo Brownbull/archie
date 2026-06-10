@@ -1427,3 +1427,51 @@ unavoidable mismatch (Phase 1 port-coverage work makes this unlikely).
 
 **Status:** active
 **Review trigger:** if S2's calibration can't hold 62/62 3★ within the D71 ceiling, revisit the relational-floor lift (the one change that moves harness builds); if S8's authoring quality drifts, sample-review per batch before the reseed.
+
+## D93 — Phase 3 S0 contracts: brief classification, discipline ladder, calibration table (2026-06-10)
+
+The three pinned tables everything in D92's Wave 1+ builds on. Sources: design workflow wf_d7a83f1f-dd8 surface maps, verified against src; owner forks locked in D92.
+
+### Table 1 — Brief classification (supersedes PLAN's "39"; owner scope = ALL 35 uniform)
+
+61 briefs: **18 pure-instruction** (full rewrite, binding for the exit criterion) + **17 mixed** (light pass) + **26 already context-style** (untouched). Template: 53-zero-budget-hero. Cap 600 chars; the hook must land in the first ~130 chars (ChallengeSelector line-clamp-2); ChallengeHud shows the full brief.
+
+- **S3 batch A (pure, foundations/early-data, 8):** 01-first-service, 02-add-a-database, 03-cache-the-hot-path, 05-scale-out, 06-async-pipeline, 16-dns-routing, 17-edge-balance, 24-observe-baseline
+- **S3 batch B (pure, edge/security/gateway, 10):** 04-edge-delivery, 18-api-gateway, 25-zone-replica, 26-auth-101, 27-rate-limit, 28-siem-audit, 30-llm-service, 41-checkout-flow, 42-read-aside, 47-fan-it-out
+- **S4 batch C (mixed, 17):** 07, 09, 11, 12, 13, 14, 15, 19, 20, 21, 22, 23, 31, 32, 33, 38, 45
+- Per-file gate: brief nouns consistent with required_types/forbidden_types/required_topology/target_metrics (no machine guard exists — manual checklist; 9 forbidden_types files are the hot spots: 13,15,31,32,35,38,41,43,44). Optional narrow keyword guard in challengeConfigConsistency.test for those 9.
+
+### Table 2 — Discipline-level ladder (uniform 4-tier/track; top tier = full track clear)
+
+Threshold basis: per-track tech-tree completedCount (the SAME basis MasteryProfilePanel's DisciplineRow uses — the S6 unlock toast must compute it identically, NOT from global XP).
+
+| Track | Quests | Ladder | Existing PNGs | New PNGs |
+|-------|--------|--------|---------------|----------|
+| foundations | 11 | 3/5/7/11 | 3,5,7 | **11** |
+| data | 15 | 3/5/7/15 | 3,5,7 | **15** |
+| edge | 8 | 2/4/6/8 | 4,6 | **2, 8** |
+| realtime | 7 | 2/4/6/7 | 4,6 | **2, 7** |
+| reliability | 10 | 2/4/6/10 | 4,6 | **2, 10** |
+| security | 5 | 2/3/4/5 | 3,5 | **2, 4** |
+| aiml | 5 | 2/3/4/5 | 2 (+4→**renamed 5**) | **3, 4** |
+
+= 28 slots − 16 existing (incl. the aiml-4→aiml-5 rename) = **exactly 12 new PNGs** — the PLAN contract reconciles. Style: PixelLab Config C (64×64, black outline, detailed shading, transparent bg, D38); T8's deterministic-recolor fallback applies if the API is flaky. S6 adds the missing ladder⟷glob lockstep test.
+
+### Table 3 — RPS calibration targets (relative realism; acceptance = solvability 62/62 3★ + par regen + D71 ceiling)
+
+| Variant | max_rps before → after | $/mo | Rationale |
+|---------|------------------------|------|-----------|
+| postgresql.single-node | 500 → 1500 | 45 | implausible floor vs every other family |
+| mysql.single-node | 600 → 1500 | 40 | same floor lift |
+| postgresql.synchronous-replica | 12000 → 9000 | 380 | strong-consistency single-writer must not out-throughput sharded |
+| postgresql.citus-distributed | 10000 → 16000 | 350 | sharded variant leads (horizontal-scalability=8) — fixes the inversion |
+| aws-aurora.serverless-v2 | 9000 → 6000 | 90 | breaks cheapest-per-rps + near-top-ceiling dominance; serverless wins economics on spiky load, pays in peak |
+| firestore.standard | 3000 → 8000 | 40 | same-price 6.7× gap vs dynamo reads as a data error |
+| firestore.scaled | 10000 → 20000 | 100 | scaled tier tracks the same compression |
+| dynamodb.on-demand | 20000 → 14000 | 40 | gap lands ~1.7×; DynamoDB stays the throughput leader |
+| timescaledb.single-node | 25000 → 55000 | 45 | TSDB internal ordering: timescale ≥ influx (50k/$30); victoria stays family leader |
+| timescaledb.clustered | 70000 → 130000 | — | clustered tracks the same ordering (influx 120k, victoria 200k) |
+
+Cross-family TSDB-over-relational spread KEPT (the teaching point). Harness exposure: relational-db default=postgresql → **postgres/mysql edits move harness builds** (the S2 gates are the acceptance bar); TSDB default=influxdb and nosql default=mongodb are untouched → those rows are harness-inert. Live app reads Firestore → values reach prod only via the SINGLE combined S9 reseed (after the S1 tolerant reader deploys), both Firebase projects.
+
+**Status:** active
