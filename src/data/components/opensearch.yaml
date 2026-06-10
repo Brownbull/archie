@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      OpenSearch standard: the Apache-licensed search fork, AWS-managed at a friendly entry price. Modest ceiling out of the box.
+    docs_url: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/what-is.html
     monthly_cost: 55
     max_rps: 3000
     base_latency_ms: 22
@@ -94,6 +97,9 @@ config_variants:
           - Bundled OpenSearch Dashboards covers observability but rolling upgrades are operator-driven
   - id: optimized
     name: Optimized
+    description: >-
+      Optimized OpenSearch: better instances and tuned storage close most of the gap to Elasticsearch at 2.5x the family's base ceiling.
+    docs_url: https://docs.aws.amazon.com/opensearch-service/latest/developerguide/bp.html
     monthly_cost: 120
     max_rps: 8000
     base_latency_ms: 15

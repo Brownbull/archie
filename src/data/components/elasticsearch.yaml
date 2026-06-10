@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: self-hosted
     name: Self-Hosted Cluster
+    description: >-
+      Self-hosted Elasticsearch: the full-text standard with aggregations and relevance tuning. Cluster sizing, shards, and JVM care are your job.
+    docs_url: https://www.elastic.co/docs/solutions/search
     monthly_cost: 90
     max_rps: 6000
     base_latency_ms: 12
@@ -82,6 +85,9 @@ config_variants:
           - One cluster serves many indices
   - id: managed
     name: Managed (Elastic Cloud)
+    description: >-
+      Elastic Cloud: the same engine with upgrades, snapshots, and scaling handled — 50% more throughput for roughly double the cost of running it yourself.
+    docs_url: https://www.elastic.co/docs/deploy-manage/deploy/elastic-cloud
     monthly_cost: 200
     max_rps: 9000
     base_latency_ms: 9

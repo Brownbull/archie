@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Cloudflare R2: S3-compatible storage with ZERO egress fees — the bill that usually ambushes object storage simply isn't there. Ceilings are modest.
+    docs_url: https://developers.cloudflare.com/r2/
     monthly_cost: 10
     max_rps: 8000
     base_latency_ms: 12
@@ -84,6 +87,9 @@ config_variants:
           - Class A and B operation fees are the only usage charges beyond storage
   - id: enterprise
     name: Enterprise
+    description: >-
+      R2 enterprise: the same zero-egress model with nearly twice the throughput and faster reads. Heavy egress workloads save the most here.
+    docs_url: https://developers.cloudflare.com/r2/pricing/
     monthly_cost: 25
     max_rps: 15000
     base_latency_ms: 8

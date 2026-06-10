@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Typesense: open-source instant search tuned for low-latency suggestions. Single node, honest ceiling, tiny ops footprint.
+    docs_url: https://typesense.org/docs/
     monthly_cost: 35
     max_rps: 3000
     base_latency_ms: 15
@@ -94,6 +97,9 @@ config_variants:
           - API-key bootstrapping is the only required security setup
   - id: ha-cluster
     name: HA Cluster
+    description: >-
+      Typesense HA cluster: Raft-replicated nodes keep search answering through instance loss, with 2.5x the throughput.
+    docs_url: https://typesense.org/docs/guide/high-availability.html
     monthly_cost: 80
     max_rps: 8000
     base_latency_ms: 10

@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: hot
     name: Hot
+    description: >-
+      Azure Blob hot tier: frequently accessed objects with the family's best latency and a solid request ceiling. The Azure-native default for live assets.
+    docs_url: https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction
     monthly_cost: 22
     max_rps: 12000
     base_latency_ms: 14
@@ -84,6 +87,9 @@ config_variants:
           - Lifecycle policies can later demote idle blobs to cheaper tiers
   - id: cool
     name: Cool
+    description: >-
+      Azure Blob cool tier: half-price storage for data read occasionally. Reads cost more and run slower — right for backups, wrong for the hot path.
+    docs_url: https://learn.microsoft.com/en-us/azure/storage/blobs/access-tiers-overview
     monthly_cost: 10
     max_rps: 5000
     base_latency_ms: 25

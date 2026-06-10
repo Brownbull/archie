@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard (Hot)
+    description: >-
+      GCS Standard: hot object storage on Google's backbone with strong read-after-write consistency. The serving tier for frequently accessed blobs.
+    docs_url: https://cloud.google.com/storage/docs/introduction
     monthly_cost: 25
     max_rps: 5000
     base_latency_ms: 30
@@ -82,6 +85,9 @@ config_variants:
           - Global namespace per bucket
   - id: nearline-coldline
     name: Nearline / Coldline (Archival)
+    description: >-
+      GCS Nearline/Coldline: a quarter of the price for data you rarely touch — backups, archives, compliance trails. Retrieval fees and slow first reads are the deal.
+    docs_url: https://cloud.google.com/storage/docs/storage-classes
     monthly_cost: 6
     max_rps: 2000
     base_latency_ms: 120

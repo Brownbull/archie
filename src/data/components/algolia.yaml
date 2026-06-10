@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Algolia: search-as-a-service with the fastest queries in the catalog — instant-search UX without owning an index. Records and operations are the billing meter.
+    docs_url: https://www.algolia.com/doc/
     monthly_cost: 50
     max_rps: 8000
     base_latency_ms: 5
@@ -80,6 +83,9 @@ config_variants:
           - Relevance tuned via dashboard/config
   - id: pro
     name: Pro (Replicas + Analytics)
+    description: >-
+      Algolia Pro: replicas for custom rankings, analytics, and A/B testing on top of the same speed. The tier where search becomes a product lever.
+    docs_url: https://www.algolia.com/doc/guides/managing-results/refine-results/sorting/
     monthly_cost: 180
     max_rps: 12000
     base_latency_ms: 4

@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      S3 Standard: eleven-nines durable object storage, the default home for blobs and static assets. Per-request latency is tens of milliseconds — storage, not a database.
+    docs_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
     monthly_cost: 25
     max_rps: 5500
     base_latency_ms: 40
@@ -81,6 +84,9 @@ config_variants:
           - Throughput scales by key-prefix sharding
   - id: intelligent-tiering
     name: Intelligent-Tiering
+    description: >-
+      S3 Intelligent-Tiering: objects migrate to cheaper tiers as they cool, trimming the bill automatically. Slightly slower first-byte on resurrected cold objects.
+    docs_url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/intelligent-tiering.html
     monthly_cost: 18
     max_rps: 5500
     base_latency_ms: 45

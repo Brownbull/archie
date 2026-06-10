@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    description: >-
+      Single-node MinIO: S3-compatible storage on your own box — local-speed reads, full API compatibility, no cloud bill. One disk's durability.
+    docs_url: https://min.io/docs/minio/linux/index.html
     monthly_cost: 20
     max_rps: 6000
     base_latency_ms: 5
@@ -80,6 +83,9 @@ config_variants:
           - Backups must be arranged separately
   - id: distributed
     name: Distributed (Erasure Coded)
+    description: >-
+      Distributed MinIO with erasure coding: objects survive disk and node loss across the pool, with twice the throughput. You run the fleet.
+    docs_url: https://min.io/docs/minio/linux/operations/concepts/erasure-coding.html
     monthly_cost: 110
     max_rps: 14000
     base_latency_ms: 7

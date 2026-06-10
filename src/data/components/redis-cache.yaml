@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: simple-cache
     name: Simple Key-Value Cache
+    description: >-
+      A simple key-value cache: one node shaving database reads at sub-millisecond speed. The first performance dollar most architectures should spend.
+    docs_url: https://redis.io/docs/latest/develop/get-started/
     monthly_cost: 15
     max_rps: 50000
     base_latency_ms: 0.5
@@ -93,6 +96,9 @@ config_variants:
           - TTL-based expiry can serve stale data near expiration boundary
   - id: distributed-cache
     name: Distributed Cache
+    description: >-
+      A distributed cache: sharded nodes lift the ceiling to 200k rps for fleet-wide hot data. Consistent hashing keeps key placement stable as nodes come and go.
+    docs_url: https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/
     monthly_cost: 90
     max_rps: 200000
     base_latency_ms: 0.5
