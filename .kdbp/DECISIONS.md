@@ -1478,3 +1478,28 @@ Cross-family TSDB-over-relational spread KEPT (the teaching point). Harness expo
 
 ### D93 amendment (S2 outcome, 2026-06-10)
 Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-replica stays 12000** (not →9000). The citus lift to 16000 alone fixes the inversion (sharded leads); nerfing sync below the DB-tier load broke strong-or-stale (the only consistency_target_ms challenge). Root cause found during S2: strong-or-stale passed PRE-calibration by accident — nothing fit its >12k DB load, and the max-throughput FALLBACK happened to be the low-lag sync variant. Fix: the reference builder's fallback is now consistency-aware (preferLowLag → lowest-replication-lag variant when nothing covers the load — what a freshness-challenge player does). Harness 62/62 3★; par regenerated (9 rows moved incl. strong-or-stale, data-pipeline, rag-retrieval).
+
+## D94 — Phase 4 (Break-it loop & expert currency) design lock + 7-slice decomposition (2026-06-10)
+
+**Source of truth:** feedback20260609.md lines 19 (the post-3★ invitation), 33-55 (single-attribute breaks, popup + reset flow, per-attribute tracking, resilience extras, quest-log surfacing), 95-99 (toolbox realism + the REVISED currency: break-stars do NOT join the hint pool — they earn the same EXPERT CURRENCY as resilience extras, spent on the required-blocks filter). PLAN Phase 4 row + D86. Tier: scale.
+
+**Core definitions (defaults chosen for momentum — tunable data, revisit before P4-S7):**
+1. **A "break"** = a post-3★ run on the SAME quest where basePass FAILS (uptime or latency targets missed) AND exactly ONE traffic attribute differs from the challenge's authored spec. The four attributes: `rps` (peak), `kind` (shape), `workload` (read/write/mixed), `origin` (one/multi-region). Multi-source challenges: across ALL sources combined, exactly one attribute on exactly one source differs.
+2. **Detection seam:** canvas traffic nodes carry trafficRps/Kind/Workload/Origin; the challenge's trafficSources spec is the default. Pure helper `detectSingleAttributeBreak(nodes, challenge, breakdown)` → `"rps" | "kind" | "workload" | "origin" | null`.
+3. **Earning:** 1 expert-currency unit per attribute-break per challenge (max 4/challenge) + 1 per cleared resilience condition on the curated extras. NOT stars; never feeds the hint pool.
+4. **Spending:** "Show required blocks" filter = 1 unit, per-quest unlock, persistent.
+5. **Persistence:** userProgress doc gains `expertCurrency: number`, `breaksByChallenge: Record<challengeId, {rps?, kind?, workload?, origin?: true}>`, `requiredFilterUnlocked: Record<challengeId, true>`. Firestore rules allowlist must extend → rules deploy (try the authenticated firebase CLI; else owner-manual per D9).
+
+**7 slices (scale tier, ≤12 files each):**
+- **P4-S1 — Break-detection engine:** the pure detector + per-attribute dedup + challenge-default comparison; attempt-flow integration point (post-3★ replays only); unit-heavy. No UI.
+- **P4-S2 — Expert currency + persistence:** userProgressStore fields + award/spend actions (atomic, idempotent per attribute) + Firestore rules extension + deploy; tests incl. the generation-reset interaction (currency wipes with generation like everything else).
+- **P4-S3 — The loop UX:** results-modal "Now break it" invitation at 3★ (quest mode) · break popup ("Broke it with RPS — try another attribute?" → [try it] resets traffic to the authored default / [keep playing]) · coach narration; E2E journey (3★ → raise rps → break popup → reset → break via origin).
+- **P4-S4 — Test-conditions gating + highlighting:** FailureSelector locked until 3★ on the active quest; post-3★, precompute which conditions break the current build (sim per condition off the live graph) and glow them.
+- **P4-S5 — Toolbox realism:** quest palettes show ALL unlocked blocks (feeds the S6b `not-in-palette` gray lock already built into TypeBlockCard — the enum slot was reserved for exactly this) + the required-blocks filter toggle, purchasable (P4-S2 spend) and persistent per quest.
+- **P4-S6 — Quest-log surfacing:** extra-challenge corner indicator · break-currency count with a distinct icon/color (NOT a star) · discipline color legend under the Quest Log title · extra-challenge details in the right panel.
+- **P4-S7 — Resilience extra-challenges:** curate 2-3 quests with per-condition resilience targets (`resilience_conditions` schema field, additive) → currency on clear; harness extension proves each curated extra is clearable; evidence.
+
+**Sequencing:** S1 → S2 → S3 (the flagship loop, pilot-ready) · S4, S5, S6 parallel after S2 · S7 last (schema + content + harness). Invariants: golden + 62/62 3★ untouched (the loop runs POST-scoring on replays; detection reads, never writes, the rubric); the S6b lock vocabulary is reused, not duplicated.
+
+**Status:** active
+**Review trigger:** earn/spend rates after the first owner playtest of the loop; the resilience-extra catalog before P4-S7 authoring.
