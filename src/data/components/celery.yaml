@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: prefork
     name: Prefork (Processes)
+    description: >-
+      Celery prefork workers: one process per task, the safe default for CPU-bound jobs. Process overhead caps throughput around 2k tasks/sec per node.
+    docs_url: https://docs.celeryq.dev/en/stable/userguide/workers.html
     monthly_cost: 20
     max_rps: 2000
     base_latency_ms: 30
@@ -85,6 +88,9 @@ config_variants:
           - Reuses your broker (Redis/RabbitMQ)
   - id: gevent
     name: Gevent (I/O-Bound)
+    description: >-
+      Celery on gevent: cooperative greenlets push I/O-bound throughput 3x past prefork. Wrong for CPU-heavy tasks — one hot loop starves the rest.
+    docs_url: https://docs.celeryq.dev/en/stable/userguide/concurrency/eventlet.html
     monthly_cost: 35
     max_rps: 6000
     base_latency_ms: 18

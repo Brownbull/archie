@@ -46,6 +46,9 @@ base_metrics:
 config_variants:
   - id: standalone
     name: Standalone
+    description: >-
+      One Redis process: sub-millisecond reads for pennies. No failover — if it dies, the cache (and its hit ratio) goes with it until it restarts cold.
+    docs_url: https://redis.io/docs/latest/operate/oss_and_stack/management/
     monthly_cost: 15
     max_rps: 50000
     base_latency_ms: 0.5
@@ -94,6 +97,9 @@ config_variants:
           - Scaling requires migration to Cluster variant
   - id: sentinel
     name: Sentinel HA
+    description: >-
+      Redis with Sentinel: same speed and capacity, plus automatic failover to a replica. You pay for the standby — buying uptime, not throughput.
+    docs_url: https://redis.io/docs/latest/operate/oss_and_stack/management/sentinel/
     monthly_cost: 60
     max_rps: 50000
     base_latency_ms: 0.5
@@ -143,6 +149,9 @@ config_variants:
           - Dataset size still bounded by single node RAM
   - id: cluster
     name: Redis Cluster
+    description: >-
+      Redis Cluster shards keys across nodes: 4x the throughput ceiling for hot caches that outgrow one box. Multi-key operations get awkward across slots.
+    docs_url: https://redis.io/docs/latest/operate/oss_and_stack/management/scaling/
     monthly_cost: 120
     max_rps: 200000
     base_latency_ms: 0.5

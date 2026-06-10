@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: replica-set
     name: Replica Set
+    description: >-
+      MongoDB replica set: documents with automatic failover and distributed writes at a friendly price. The default NoSQL pick until volume demands sharding.
+    docs_url: https://www.mongodb.com/docs/manual/replication/
     monthly_cost: 60
     max_rps: 9000
     base_latency_ms: 5
@@ -90,6 +93,9 @@ config_variants:
           - Sharding needed for write scale-out
   - id: sharded
     name: Sharded Cluster
+    description: >-
+      Sharded MongoDB: collections split across shards for 3x+ the write ceiling. Shard-key choice is destiny — a bad one hotspots a single shard.
+    docs_url: https://www.mongodb.com/docs/manual/sharding/
     monthly_cost: 220
     max_rps: 30000
     base_latency_ms: 7

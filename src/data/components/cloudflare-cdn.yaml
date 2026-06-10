@@ -38,6 +38,9 @@ base_metrics:
 config_variants:
   - id: static-caching
     name: Static Asset Caching
+    description: >-
+      Cloudflare's free tier caches static assets at the edge with a 90% hit ratio — origin traffic drops to a trickle for cacheable content. Dynamic requests pass straight through.
+    docs_url: https://developers.cloudflare.com/cache/
     monthly_cost: 0
     max_rps: 100000
     base_latency_ms: 20
@@ -92,6 +95,9 @@ config_variants:
           - 99.99% SLA backed by distributed edge infrastructure
   - id: full-site
     name: Full-Site Acceleration
+    description: >-
+      Full-site acceleration: dynamic content rides Cloudflare's backbone too, halving edge latency and raising the ceiling 5x. Cache-control discipline matters — a bad rule caches the wrong thing.
+    docs_url: https://developers.cloudflare.com/speed/
     monthly_cost: 25
     max_rps: 500000
     base_latency_ms: 10

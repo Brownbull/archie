@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: single-process
     name: Single Process
+    description: >-
+      One Node process: a single event loop's worth of throughput. Cheap and simple — CPU-bound work or 1k+ rps means it's time to scale.
+    docs_url: https://expressjs.com/en/advanced/best-practice-performance.html
     monthly_cost: 20
     max_rps: 1000
     base_latency_ms: 15
@@ -91,6 +94,9 @@ config_variants:
           - Multi-core hardware is underutilized without clustering
   - id: cluster-mode
     name: Cluster Mode
+    description: >-
+      Node cluster mode forks a worker per core: 4x the single-process ceiling on one box, no code changes. Past this, scale horizontally with replicas.
+    docs_url: https://nodejs.org/api/cluster.html
     monthly_cost: 40
     max_rps: 4000
     base_latency_ms: 15

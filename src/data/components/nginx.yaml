@@ -38,6 +38,9 @@ base_metrics:
 config_variants:
   - id: reverse-proxy
     name: Reverse Proxy
+    description: >-
+      nginx as a reverse proxy: a hardened, microsecond-overhead front door for one upstream pool. The budget pick when you just need clean routing.
+    docs_url: https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/
     monthly_cost: 10
     max_rps: 30000
     base_latency_ms: 1
@@ -91,6 +94,9 @@ config_variants:
           - Memory per connection is minimal compared to thread-per-connection servers
   - id: load-balancer
     name: Load Balancer
+    description: >-
+      nginx load balancing: spreads traffic across replicas with health checks, at a higher connection ceiling than the plain proxy. Still one box — give it redundancy at serious scale.
+    docs_url: https://docs.nginx.com/nginx/admin-guide/load-balancer/http-load-balancer/
     monthly_cost: 25
     max_rps: 50000
     base_latency_ms: 1

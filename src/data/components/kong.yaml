@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: oss
     name: Open Source (Self-Hosted)
+    description: >-
+      Self-hosted Kong: routing, rate limiting, and auth plugins at the gateway for the price of running it yourself. You own upgrades and tuning.
+    docs_url: https://docs.konghq.com/gateway/latest/
     monthly_cost: 30
     max_rps: 20000
     base_latency_ms: 4
@@ -81,6 +84,9 @@ config_variants:
           - Scales horizontally on commodity nodes
   - id: enterprise
     name: Enterprise / Managed
+    description: >-
+      Managed Kong: the same gateway with support, enterprise plugins, and a higher ceiling — trading 4x the cost for not being paged about your own gateway.
+    docs_url: https://docs.konghq.com/gateway/latest/plan-and-deploy/
     monthly_cost: 120
     max_rps: 28000
     base_latency_ms: 5

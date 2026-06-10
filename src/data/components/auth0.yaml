@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Managed authentication: tokens, sessions, and social login without owning the security surface. Every authenticated request pays the ~120ms verification toll.
+    docs_url: https://auth0.com/docs
     monthly_cost: 35
     max_rps: 3000
     base_latency_ms: 120
@@ -80,6 +83,9 @@ config_variants:
           - Free tier covers small apps
   - id: enterprise
     name: Enterprise (SSO + MFA)
+    description: >-
+      Auth0 with SSO and MFA: the compliance tier — enterprise federation and stronger factors, with more headroom and slightly faster verification. Priced like the checkbox it is.
+    docs_url: https://auth0.com/docs/authenticate/enterprise-connections
     monthly_cost: 130
     max_rps: 5000
     base_latency_ms: 110

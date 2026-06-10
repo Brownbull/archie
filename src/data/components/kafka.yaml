@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: single-broker
     name: Single Broker
+    description: >-
+      A single Kafka broker: a durable, replayable log for event streams — already faster than a classic queue, but one disk and no replication safety.
+    docs_url: https://kafka.apache.org/documentation/
     monthly_cost: 80
     max_rps: 20000
     base_latency_ms: 5
@@ -92,6 +95,9 @@ config_variants:
           - Migration to multi-broker requires topic reconfiguration
   - id: multi-broker
     name: Multi-Broker Cluster
+    description: >-
+      Multi-broker Kafka: partitions spread across the cluster for 100k-rps class streaming with replication. The ops bill is real — this is infrastructure, not a sidecar.
+    docs_url: https://kafka.apache.org/documentation/#replication
     monthly_cost: 250
     max_rps: 100000
     base_latency_ms: 5

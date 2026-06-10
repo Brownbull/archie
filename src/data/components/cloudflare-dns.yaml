@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard (Anycast)
+    description: >-
+      Anycast DNS, free: queries answer from the nearest edge worldwide. Resolution only — it points traffic, it doesn't balance it.
+    docs_url: https://developers.cloudflare.com/dns/
     monthly_cost: 0
     max_rps: 100000
     base_latency_ms: 12
@@ -77,6 +80,9 @@ config_variants:
           - Proxying reuses the existing edge network
   - id: steering
     name: With Traffic Steering
+    description: >-
+      DNS with traffic steering: health-aware, geo-aware answers route users to the best origin — the building block for multi-region failover. Slightly slower answers; well worth it when regions differ.
+    docs_url: https://developers.cloudflare.com/load-balancing/
     monthly_cost: 25
     max_rps: 80000
     base_latency_ms: 15

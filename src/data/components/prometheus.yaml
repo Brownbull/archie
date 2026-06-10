@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: standalone
     name: Standalone
+    description: >-
+      One Prometheus server scraping your fleet: metrics, alerting, and the detection signal that shrinks failure blast radius. Retention and cardinality live on one box.
+    docs_url: https://prometheus.io/docs/introduction/overview/
     monthly_cost: 20
     max_rps: 10000
     base_latency_ms: 2
@@ -97,6 +100,9 @@ config_variants:
           - Grafana integration is a separate service but well-documented
   - id: federated
     name: Federated
+    description: >-
+      Federated Prometheus: per-zone servers roll up to a global view, scaling scrape volume 5x and keeping monitoring alive when a zone isn't. More moving parts to keep healthy.
+    docs_url: https://prometheus.io/docs/prometheus/latest/federation/
     monthly_cost: 80
     max_rps: 50000
     base_latency_ms: 5
