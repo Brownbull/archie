@@ -4737,3 +4737,18 @@ NOTE: simulationLaunch.ts extraction is a clean dedup across 3 consumers (no new
 - 2026-06-10 02:13 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
 - 2026-06-10 02:15 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/f234e320-5dfc-4415-92dc-4281f932e0af/workflows/scripts/slice1-review-wf_9fb46750-4a6.js
 - 2026-06-10 02:15 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/f234e320-5dfc-4415-92dc-4281f932e0af/workflows/scripts/slice1-review-wf_9fb46750-4a6.js
+
+## 2026-06-10 — [878d3a1] feat(challenges): port-mismatch gate costs the well-formed star (D87) — Phase 2 Slice 1/8
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low) — modal 441 lines (pre-existing >400); D27 deferred matches simulationLaunch.ts (the advisory filed for this work)
+ACTIONS: shape:accept · deferred:skip
+GATES: eslint clean (10 changed files; project-wide pre-existing issues untouched) · npm run build (tsc -b + vite) exit 0 · unit 4865/4865 · solvability 62/62 3★ · golden byte-identical
+VERIFY: Slice-1 adversarial review wf_e5c28763-e91 → ADVISORY (0 confirmed defects; 1 unreachable latent asymmetry → PENDING D27)
+SCOPE: 6 src + 4 test (port gate: snapshot plumbing + rubric fold + results-modal port row) + D89 (Phase 2 design lock) + Phase-1-review-close bookkeeping (PLAN P1 Review ✅) + Phase 2 Exec → 🔄
+NOTE: global-on per D89; reference RefEdges have no port handles so the gate is inert on the harness; sandbox stays WARN (launchSandboxRun never snapshots the count)
+
+## 2026-06-10 02:39 — PUSH dev -> main
+PR: — (direct dev→main, trunk-based production env per PUSH.md)
+CI: deploy-production ✅ success · e2e-unlocked ⏳ · e2e-desktop (informational) ⏳
+PROMOTION: N/A (single-env chain)
+DEPLOYMENTS: P158 (added row to .kdbp/DEPLOYMENTS.md)
+SCOPE: Phase 1 COMPLETE (9/9 fixes deployed) + Phase 2 Slice 1 (port gate) rides along. 13 commits.

@@ -25,7 +25,7 @@ expert currency, and open new challenge formats (brownfield, progressive chains)
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Trust & friction fixes | Fix everything that lies to the player: polyglot config contradiction (D88) + challenge-config validation, compute stream-out ports, save-default traffic leak, CategoryBar dead onClick, data-pipeline hints, Rerun button, gating discoverability, web-users icon. | ent | med | ✅ | ✅ | ✅ | ⬜ |
+| 1 | Trust & friction fixes | Fix everything that lies to the player: polyglot config contradiction (D88) + challenge-config validation, compute stream-out ports, save-default traffic leak, CategoryBar dead onClick, data-pipeline hints, Rerun button, gating discoverability, web-users icon. | ent | med | ✅ | ✅ | ✅ | ✅ |
 | 2 | Progression & grading integrity | Unlock-ordering restructure (21 hard violations) + tech-tree validator, pathway tech-tree filter, port enforcement star gate (D87), explicit banned-block display, Observe-to-Recover visibility, quest-mode CTA gating. | ent | high | 🔄 | ⬜ | ⬜ | ⬜ |
 | 3 | Teaching quality | 39 context-style brief rewrites + hint-ladder pass, per-tier descriptions + docs links (schema + 240 variants + reseed), RPS calibration (4 outliers), discipline icons + unlock toasts. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Break-it loop & expert currency | Post-3★ "now break it": single-attribute break detection + tracking, expert currency (earn: traffic-breaks + resilience; spend: required-blocks filter), test-conditions lock/highlight, resilience extra-challenges, quest-log surfacing, toolbox realism. | scale | high | ⬜ | ⬜ | ⬜ | ⬜ |
