@@ -144,6 +144,9 @@ export interface NodeTelemetry {
   /** Retry load (rps) re-offered to this node by downstream sheds during an outage (EN3, D74) — the
    *  thundering-herd amplification. 0/absent outside an active cascade. */
   retriedRps?: number
+  /** S8 (D89): true when this node is monitor-adjacent (the EN7 observability set) — drives the
+   *  monitored-node badge so the observe mechanic is visible without paid hints. Optional + additive. */
+  monitored?: boolean
 }
 
 export interface TickState {
@@ -164,6 +167,9 @@ export interface TickState {
   pathLatencyMs?: number
   /** Worst single-hop node latency this tick (the pre-ED1 system-latency metric), kept for telemetry. */
   worstHopLatencyMs?: number
+  /** S8 (D89): scheduled events active this tick — feeds the timeline's failure/detection markers and
+   *  the coach's live narration. Optional + additive (absent on event-free ticks and legacy fixtures). */
+  events?: TickEventState[]
 }
 
 export interface SimulationResult {
@@ -189,9 +195,25 @@ export interface ScheduledEvent {
 }
 
 /** Per-tick simulation overrides derived from the scheduled events active at that tick. */
+/**
+ * S8 (D89): a scheduled event ACTIVE this tick, in presentational form — what the timeline markers and
+ * the coach narrate. Pure surfacing of state computeOverrides already derives; zero effect on routing.
+ */
+export interface TickEventState {
+  type: "component_failure" | "az_outage" | "latency_spike"
+  /** The authored target (node id, category, or fundamental type). */
+  target: string
+  /** Node ids the event hit this tick (post id∪category∪type matching, D91). */
+  nodeIds: string[]
+  /** EN7: true once a monitored target's detection delay elapsed — the blast is mitigated. */
+  detected: boolean
+}
+
 export interface TickOverrides {
   offlineNodeIds: Set<string>
   latencyMultipliers: Map<string, number>
+  /** S8 (D89): the events active this tick, for timeline markers / coach narration. Optional + additive. */
+  activeEvents?: TickEventState[]
   /**
    * ED2 (D74): per-node surviving capacity FRACTION during an az_outage — `(azCount−1)/azCount`. A node
    * spread across 3 AZs survives at 0.667; a single-AZ node at 0. Optional so legacy override literals

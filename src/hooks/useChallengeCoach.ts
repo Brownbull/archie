@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useSimulationStore } from "@/stores/simulationStore"
 import { hasTrafficSource } from "@/services/trafficSourceInjection"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
@@ -41,12 +42,28 @@ export function useChallengeCoach(): CoachState | null {
   const lastMeasured = useChallengeStore((s) => s.lastMeasured)
   const nodes = useArchitectureStore((s) => s.nodes)
   const topologyIssues = useArchitectureStore((s) => s.topologyIssues)
+  // S8 (D89): narrate the CURRENT tick's scheduled event for free — the observe mechanic shouldn't
+  // need a paid hint to be understood. Selector returns the events array (or undefined) so the hook
+  // only re-renders when the active-event state actually changes, not on every tick.
+  const liveEvents = useSimulationStore((s) => s.ticks[s.currentTick]?.events)
 
   return useMemo<CoachState | null>(() => {
     if (!challenge) return null
 
     // 1. RUNNING — nothing to do but read the live signal.
     if (attemptState === "running") {
+      const ev = liveEvents?.[0]
+      if (ev) {
+        const what = ev.type === "latency_spike" ? "latency spike" : ev.type === "az_outage" ? "zone outage" : "failure"
+        return {
+          mode: "watch",
+          modeLabel: "Running",
+          headline: ev.detected ? "Detected — blast contained" : `A ${what} is hitting ${ev.target}`,
+          detail: ev.detected
+            ? `Your monitoring detected the ${ev.target} ${what} and shrank its blast — watch the timeline's marker turn amber and served traffic recover.`
+            : `Watch the timeline's red marker and the failed (red) band${ev.type === "latency_spike" ? " — latency climbs while the spike lasts" : " — unmonitored failures run their full course; observability would detect and contain them"}.`,
+        }
+      }
       return {
         mode: "watch",
         modeLabel: "Running",
@@ -182,5 +199,5 @@ export function useChallengeCoach(): CoachState | null {
       headline: "Run the simulation",
       detail: "Looks wired up! Hit Run Simulation to push traffic through and earn your stars.",
     }
-  }, [challenge, attemptState, lastResult, lastMeasured, nodes, topologyIssues])
+  }, [challenge, attemptState, lastResult, lastMeasured, nodes, topologyIssues, liveEvents])
 }

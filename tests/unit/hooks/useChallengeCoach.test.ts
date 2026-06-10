@@ -148,3 +148,38 @@ describe("useChallengeCoach (P88)", () => {
     expect(r.current?.headline).toContain("Three stars")
   })
 })
+
+describe("live event narration while running (S8 / D89 — free observe coaching)", () => {
+  const tick = (events?: import("@/lib/simulationTypes").TickEventState[]) => ({
+    tick: 0, targetRps: 100, nodes: [], totalServedRps: 100, totalFailedRps: 0,
+    ...(events ? { events } : {}),
+  })
+
+  it("narrates an undetected failure hitting its target", async () => {
+    const { useSimulationStore } = await import("@/stores/simulationStore")
+    useChallengeStore.setState({ activeChallenge: makeChallenge(), attemptState: "running" })
+    useSimulationStore.setState({ ticks: [tick([{ type: "component_failure", target: "data-storage", nodeIds: ["db"], detected: false }])], currentTick: 0 })
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toBe("A failure is hitting data-storage")
+    expect(r.current?.detail).toContain("observability would detect")
+    useSimulationStore.getState().reset()
+  })
+
+  it("celebrates detection — the observe mechanic teaching itself", async () => {
+    const { useSimulationStore } = await import("@/stores/simulationStore")
+    useChallengeStore.setState({ activeChallenge: makeChallenge(), attemptState: "running" })
+    useSimulationStore.setState({ ticks: [tick([{ type: "az_outage", target: "compute", nodeIds: ["c1"], detected: true }])], currentTick: 0 })
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toBe("Detected — blast contained")
+    expect(r.current?.detail).toContain("amber")
+    useSimulationStore.getState().reset()
+  })
+
+  it("falls back to the generic watch line on event-free ticks", async () => {
+    const { useSimulationStore } = await import("@/stores/simulationStore")
+    useSimulationStore.getState().reset()
+    useChallengeStore.setState({ activeChallenge: makeChallenge(), attemptState: "running" })
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toBe("Watch the live stats")
+  })
+})

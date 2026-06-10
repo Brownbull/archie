@@ -572,3 +572,53 @@ describe("scheduled-event retargeting by category/type (S7 / D89, D91)", () => {
     expect(ov.capacityFactors?.get("c1")).toBeLessThan(1)
   })
 })
+
+describe("tick event emission for observe-to-recover (S8 / D89)", () => {
+  const evNodes: SimNode[] = [
+    node("c1", 100, { category: "compute" }),
+    node("mon", 100, { category: "monitoring" }),
+  ]
+  const failure: ScheduledEvent[] = [{ t: 30, type: "component_failure", target: "compute", durationS: 20 }]
+
+  it("computeOverrides reports the active event with its hit nodes; absent outside the window", () => {
+    expect(computeOverrides(evNodes, failure, 10).activeEvents).toBeUndefined() // before
+    const during = computeOverrides(evNodes, failure, 35)
+    expect(during.activeEvents).toHaveLength(1)
+    expect(during.activeEvents?.[0]).toMatchObject({ type: "component_failure", target: "compute", detected: false })
+    expect(during.activeEvents?.[0].nodeIds).toEqual(["c1"])
+    expect(computeOverrides(evNodes, failure, 55).activeEvents).toBeUndefined() // after
+  })
+
+  it("detected flips true once a monitored target passes the detection delay", () => {
+    const edges = [edge("c1", "mon")]
+    const early = computeOverrides(evNodes, failure, 31, edges) // 1s in — pre-detection
+    expect(early.activeEvents?.[0].detected).toBe(false)
+    const later = computeOverrides(evNodes, failure, 45, edges) // past OBS_DETECT_DELAY_S
+    expect(later.activeEvents?.[0].detected).toBe(true)
+  })
+
+  it("runSimulation carries events on frames inside the window only (identity elsewhere)", () => {
+    const graph: SimGraph = { nodes: [node("c1", 1000, { category: "compute" })], edges: [] }
+    const curve = [{ t: 0, rps: 100 }, { t: 90, rps: 100 }]
+    const result = runSimulation(graph, curve, 10, 90, [{ t: 30, type: "latency_spike", target: "compute", multiplier: 2, durationS: 20 }])
+    const withEvents = result.ticks.filter((f) => f.events?.length)
+    expect(withEvents.length).toBeGreaterThan(0)
+    for (const f of withEvents) {
+      const t = (f.tick / 9) * 90
+      expect(t).toBeGreaterThanOrEqual(30)
+      expect(t).toBeLessThan(50)
+      expect(f.events?.[0].type).toBe("latency_spike")
+    }
+    expect(result.ticks[0].events).toBeUndefined() // event-free frame stays legacy-shaped
+  })
+
+  it("telemetry flags monitor-adjacent nodes (monitored) only while overrides are in play", () => {
+    const graph: SimGraph = { nodes: evNodes, edges: [edge("c1", "mon")] }
+    const ov = computeOverrides(evNodes, failure, 35, graph.edges)
+    const state = simulateTick(graph, 0, 100, ov)
+    expect(tel(state, "c1").monitored).toBe(true)
+    expect(tel(state, "mon").monitored).toBeUndefined() // the monitor itself isn't "monitored"
+    const plain = simulateTick(graph, 0, 100) // no overrides → no flag (legacy identity)
+    expect(tel(plain, "c1").monitored).toBeUndefined()
+  })
+})

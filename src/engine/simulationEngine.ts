@@ -4,6 +4,7 @@ import type {
   SimNode,
   TrafficCurve,
   TickState,
+  TickEventState,
   NodeTelemetry,
   SimulationResult,
   ScheduledEvent,
@@ -125,6 +126,9 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
   // id-equality is kept for back-compat with literal-id imports/tests.
   const matchesTarget = (n: SimNode, target: string): boolean =>
     n.id === target || n.category === target || n.typeId === target
+  // S8 (D89): surface each active event for the timeline/coach — pure presentation of the state
+  // computed below (no routing effect). `detected` = a monitored target past the detection delay.
+  const activeEvents: TickEventState[] = []
   for (const e of events) {
     // EN7 (D74): failures now run their FULL authored duration (no magic early recovery). Observability
     // instead shrinks the BLAST: a monitored failure is full-blast for OBS_DETECT_DELAY_S (detection lag),
@@ -134,40 +138,56 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
     if (e.type === "latency_spike") {
       // 3e: scale the spike INTENSITY (not the raw multiplier) so chaos 0 ⇒ inert (×1), not ×0.
       const effective = 1 + ((e.multiplier ?? 3) - 1) * chaosIntensity
+      const hit: string[] = []
       for (const n of nodes) {
-        if (matchesTarget(n, e.target)) latencyMultipliers.set(n.id, (latencyMultipliers.get(n.id) ?? 1) * effective)
+        if (matchesTarget(n, e.target)) {
+          latencyMultipliers.set(n.id, (latencyMultipliers.get(n.id) ?? 1) * effective)
+          hit.push(n.id)
+        }
       }
+      // Spikes have no EN7 mitigation — `detected` is always false for them.
+      activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: false })
       continue
     }
     if (e.type === "component_failure") {
       // Base blast = the whole matching node. severity 1 ⇒ fully offline (as pre-D74 for the common
       // unmonitored case); mitigated ⇒ the node serves (1−severity). Monitoring is judged PER NODE.
+      const hit: string[] = []
+      let anyMitigated = false
       for (const n of nodes) {
         if (!matchesTarget(n, e.target)) continue
+        hit.push(n.id)
         const monitored = monitoredNodes.has(n.id)
         const severity = monitored && timeS - e.t >= OBS_DETECT_DELAY_S ? OBS_RESIDUAL_BLAST : 1
         if (severity >= 1) offlineNodeIds.add(n.id)
-        else capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * (1 - severity))
+        else {
+          capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * (1 - severity))
+          anyMitigated = true
+        }
       }
+      activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: anyMitigated })
     } else if (e.type === "az_outage") {
       const monitored = monitoredCategories.has(e.target)
       const severity = monitored && timeS - e.t >= OBS_DETECT_DELAY_S ? OBS_RESIDUAL_BLAST : 1
       // ED2 (D74): an az_outage removes ONE availability zone (base blast 1/azCount), so a node spread
       // across azCount AZs survives at (azCount−1)/azCount. EN7: observability shrinks even that blast
       // to (1/azCount)×severity after detection — a monitored, well-spread tier barely notices.
+      const hit: string[] = []
       for (const n of nodes) {
         if (n.category !== e.target) continue
+        hit.push(n.id)
         const az = n.azCount ?? 1
         const lost = (1 / az) * severity
         capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * (1 - lost))
       }
+      activeEvents.push({ type: e.type, target: e.target, nodeIds: hit, detected: monitored && severity < 1 })
     }
   }
   // EN3 (D74): nodes that DAMP retry amplification — observability-adjacent (the EN7 monitored set acts as
   // the breaker). The cascade itself is applied in simulateTick on the surviving capacity (it needs the
   // live load to matter), so computeOverrides keeps returning the BASE ED2/EN7 fractions unchanged.
   const breakerNodeIds = monitoredNodes
-  return { offlineNodeIds, latencyMultipliers, capacityFactors, breakerNodeIds }
+  return { offlineNodeIds, latencyMultipliers, capacityFactors, breakerNodeIds, ...(activeEvents.length > 0 ? { activeEvents } : {}) }
 }
 
 /**
@@ -379,6 +399,9 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
       latencyMs: baseLatency * latMult,
       capacityPercent,
       overloaded: (offline ? incoming > 0 : capped && incoming > effMax) || rejected > 0,
+      // S8 (D89): badge monitor-adjacent nodes (the EN7 set, already computed as breakerNodeIds) so
+      // the observe mechanic is visible. Only emitted when true — absent ⇒ legacy-identical frames.
+      ...(overrides?.breakerNodeIds?.has(id) ? { monitored: true } : {}),
     })
     if (forward) {
       const outs = outAdj.get(id) ?? []
@@ -498,7 +521,10 @@ export function runSimulation(
     const targetRps = interpolateRps(curve, t)
     // Empty events → undefined overrides → simulateTick behaves exactly as pre-Epic-16 (no regression).
     const overrides = scheduledEvents.length > 0 ? computeOverrides(graph.nodes, scheduledEvents, t, graph.edges, chaosIntensity) : undefined
-    frames.push(simulateTick(graph, i, targetRps, overrides))
+    const frame = simulateTick(graph, i, targetRps, overrides)
+    // S8 (D89): carry the tick's active events on the frame — the timeline's failure/detection
+    // markers and the coach's live narration read them. Absent on event-free ticks (identity).
+    frames.push(overrides?.activeEvents?.length ? { ...frame, events: overrides.activeEvents } : frame)
   }
   return { ticks: frames, entryNodeIds: findEntryNodes(graph) }
 }
