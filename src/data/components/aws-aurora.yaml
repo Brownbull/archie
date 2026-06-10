@@ -130,7 +130,7 @@ config_variants:
   - id: serverless-v2
     name: Serverless v2 (Auto-Scaling)
     monthly_cost: 90
-    max_rps: 9000
+    max_rps: 6000
     base_latency_ms: 8
     write_ratio: 0.3
     write_distribution: primary

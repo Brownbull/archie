@@ -47,7 +47,7 @@ config_variants:
   - id: single-node
     name: Single Node
     monthly_cost: 40
-    max_rps: 600
+    max_rps: 1500
     base_latency_ms: 4
     write_ratio: 0.3
     write_distribution: primary

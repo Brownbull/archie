@@ -24,7 +24,7 @@
     "nodes": 3
   },
   "async-pipeline": {
-    "cost": 190,
+    "cost": 115,
     "nodes": 4
   },
   "burst-absorber": {
@@ -32,7 +32,7 @@
     "nodes": 4
   },
   "cache-or-crash": {
-    "cost": 155,
+    "cost": 80,
     "nodes": 4
   },
   "checkout-flow": {
@@ -104,7 +104,7 @@
     "nodes": 4
   },
   "always-on": {
-    "cost": 205,
+    "cost": 130,
     "nodes": 6
   },
   "analytics-backbone": {
@@ -124,7 +124,7 @@
     "nodes": 3
   },
   "chaos-day": {
-    "cost": 235,
+    "cost": 160,
     "nodes": 8
   },
   "defense-in-depth": {
@@ -144,7 +144,7 @@
     "nodes": 4
   },
   "follow-the-sun": {
-    "cost": 150,
+    "cost": 75,
     "nodes": 7
   },
   "fortress": {
@@ -176,7 +176,7 @@
     "nodes": 3
   },
   "personalized-feed": {
-    "cost": 3630,
+    "cost": 2580,
     "nodes": 4
   },
   "planet-scale": {
@@ -236,11 +236,11 @@
     "nodes": 3
   },
   "zero-budget-hero": {
-    "cost": 175,
+    "cost": 100,
     "nodes": 4
   },
   "zone-failure": {
-    "cost": 205,
+    "cost": 130,
     "nodes": 6
   }
 }

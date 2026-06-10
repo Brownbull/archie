@@ -45,7 +45,7 @@ config_variants:
   - id: standard
     name: Standard
     monthly_cost: 40
-    max_rps: 3000
+    max_rps: 8000
     base_latency_ms: 14
     write_ratio: 0.3
     write_distribution: sharded
@@ -95,7 +95,7 @@ config_variants:
   - id: scaled
     name: Scaled
     monthly_cost: 100
-    max_rps: 10000
+    max_rps: 20000
     base_latency_ms: 10
     write_ratio: 0.3
     write_distribution: sharded

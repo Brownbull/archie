@@ -1475,3 +1475,6 @@ Threshold basis: per-track tech-tree completedCount (the SAME basis MasteryProfi
 Cross-family TSDB-over-relational spread KEPT (the teaching point). Harness exposure: relational-db default=postgresql → **postgres/mysql edits move harness builds** (the S2 gates are the acceptance bar); TSDB default=influxdb and nosql default=mongodb are untouched → those rows are harness-inert. Live app reads Firestore → values reach prod only via the SINGLE combined S9 reseed (after the S1 tolerant reader deploys), both Firebase projects.
 
 **Status:** active
+
+### D93 amendment (S2 outcome, 2026-06-10)
+Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-replica stays 12000** (not →9000). The citus lift to 16000 alone fixes the inversion (sharded leads); nerfing sync below the DB-tier load broke strong-or-stale (the only consistency_target_ms challenge). Root cause found during S2: strong-or-stale passed PRE-calibration by accident — nothing fit its >12k DB load, and the max-throughput FALLBACK happened to be the low-lag sync variant. Fix: the reference builder's fallback is now consistency-aware (preferLowLag → lowest-replication-lag variant when nothing covers the load — what a freshness-challenge player does). Harness 62/62 3★; par regenerated (9 rows moved incl. strong-or-stale, data-pipeline, rag-retrieval).

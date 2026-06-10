@@ -48,7 +48,7 @@ config_variants:
   - id: on-demand
     name: On-Demand
     monthly_cost: 40
-    max_rps: 20000
+    max_rps: 14000
     base_latency_ms: 4
     write_ratio: 0.3
     write_distribution: sharded

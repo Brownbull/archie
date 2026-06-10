@@ -47,7 +47,7 @@ config_variants:
   - id: single-node
     name: Single Node
     monthly_cost: 45
-    max_rps: 500
+    max_rps: 1500
     base_latency_ms: 5
     write_ratio: 0.3
     write_distribution: primary
@@ -146,7 +146,7 @@ config_variants:
   - id: citus-distributed
     name: Citus Distributed
     monthly_cost: 350
-    max_rps: 10000
+    max_rps: 16000
     base_latency_ms: 8
     write_ratio: 0.3
     write_distribution: primary

@@ -48,7 +48,7 @@ config_variants:
   - id: single-node
     name: Single Node
     monthly_cost: 45
-    max_rps: 25000
+    max_rps: 55000
     base_latency_ms: 6
     metrics:
       - id: write-throughput
@@ -86,7 +86,7 @@ config_variants:
   - id: multi-node
     name: Multi-Node / Cloud
     monthly_cost: 160
-    max_rps: 70000
+    max_rps: 130000
     base_latency_ms: 8
     metrics:
       - id: write-throughput

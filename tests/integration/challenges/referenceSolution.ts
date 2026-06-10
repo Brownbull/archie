@@ -164,6 +164,18 @@ function pickCheapestVariant(component: { configVariants: Variant[] }, typeId: s
   const cost = (v: Variant) => (v.monthlyCost ?? 0) * replicasFor(v)
   const affordable = variants.filter(fits)
   if (affordable.length > 0) return affordable.reduce((best, v) => (cost(v) < cost(best) ? v : best))
+  // Consistency-targeted fallback (S2/D93): when nothing covers the load, a freshness challenge's
+  // player still picks the LOWEST-LAG variant and eats the shed — staleness, not throughput, is the
+  // binding gate. (Pre-calibration this happened by accident: the strong variant was also the
+  // max-throughput fallback; the citus lift exposed it.) Only strong-or-stale sets consistencyTargetMs.
+  if (preferLowLag) {
+    const withLag = variants.filter((v) => v.replicationLagMs !== undefined)
+    if (withLag.length > 0) {
+      const minLag = Math.min(...withLag.map((v) => v.replicationLagMs ?? Infinity))
+      return withLag.filter((v) => (v.replicationLagMs ?? Infinity) === minLag)
+        .reduce((best, v) => ((v.maxRPS ?? 0) > (best.maxRPS ?? 0) ? v : best))
+    }
+  }
   return variants.reduce((best, v) => ((v.maxRPS ?? 0) > (best.maxRPS ?? 0) ? v : best), variants[0])
 }
 
