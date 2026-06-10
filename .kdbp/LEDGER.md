@@ -4989,3 +4989,11 @@ REMAINING: ~147 variants / ~96 files in ≤12-file batches (inventory recipe: gr
 SCOPE: 10 batches, ~214 variants across 114 component files — EVERY config variant now carries a ≤240-char trade-off description + https-only docs_url. Batches: calibrated DBs → reference-build twelve → edge/LB → messaging/streaming → data stores → storage/search → AI/vector/serverless → security/payments → observability/frameworks → realtime/traffic/data-eng.
 GATES: per batch componentDataQuality strict parse + solvability 62/62 3★ · final full suite 4928/4928 (274 files).
 NEXT: S9 — the ONE combined reseed (S2 calibration values + S8 descriptions) on BOTH Firebase projects (prod + test, per the vendor-links seed-drift lesson), reader live since P163; then Phase-3 runtime evidence (tier dropdown + inspector screenshots; reseeded data read by the deployed reader) → Exec ✅. D29 hint audit remains open.
+
+## 2026-06-10 15:51 — PUSH dev -> main (S8 complete) + S9 dry-run validated
+CI: deploy-production ✅ | DEPLOYMENTS: P166
+S9 STATUS: payload READY + dry-run valid ("Dry run complete — all files valid", 114 components / 12 stacks / blueprints). BLOCKED on GOOGLE_APPLICATION_CREDENTIALS (no service-account JSON in this env — the P1 reseed's key is not on disk). OWNER RUNBOOK:
+  1. PROD:  GOOGLE_APPLICATION_CREDENTIALS=/path/to/prod-adminsdk.json npm run seed:firestore
+  2. TEST:  GOOGLE_APPLICATION_CREDENTIALS=/path/to/test-adminsdk.json npm run seed:firestore   (both projects — the vendor-links seed-drift lesson)
+  3. Then runtime evidence: tier dropdown + inspector show description/docs link from the reseeded data (feedback-phase3 spec or manual screenshots) → Phase 3 Exec ✅.
+READER SAFETY: tolerant reader live since P163 (P5 trap closed) — the reseed cannot empty the library on any deployed client.
