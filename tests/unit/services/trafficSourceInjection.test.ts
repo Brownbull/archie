@@ -138,3 +138,25 @@ describe("trafficSourceInjection", () => {
     expect(wouldDuplicateTrafficType(nodes, "b", "dns")).toBe(false) // non-traffic target
   })
 })
+
+describe("plannedTrafficReset (P4-S3 / D94)", () => {
+  const traffic = (id: string) => ({ id, data: { componentCategory: "traffic" } })
+  const compute = (id: string) => ({ id, data: { componentCategory: "compute" } })
+  const source = (rps: number) => ({ type: "web-users", rps, kind: "steady", workload: "read", origin: "one-region" }) as never
+
+  it("pairs sources to traffic nodes positionally, skipping non-traffic nodes", async () => {
+    const { plannedTrafficReset } = await import("@/services/trafficSourceInjection")
+    const updates = plannedTrafficReset([compute("c"), traffic("t1"), traffic("t2")], [source(800), source(2000)])
+    expect(updates).toEqual([
+      { nodeId: "t1", rps: 800, kind: "steady", workload: "read", origin: "one-region" },
+      { nodeId: "t2", rps: 2000, kind: "steady", workload: "read", origin: "one-region" },
+    ])
+  })
+
+  it("is defensive on count mismatch: unmatched sources skipped, extra nodes untouched", async () => {
+    const { plannedTrafficReset } = await import("@/services/trafficSourceInjection")
+    expect(plannedTrafficReset([traffic("t1")], [source(800), source(2000)])).toHaveLength(1)
+    expect(plannedTrafficReset([traffic("t1"), traffic("t2")], [source(800)])).toHaveLength(1)
+    expect(plannedTrafficReset([], [source(800)])).toEqual([])
+  })
+})

@@ -11,6 +11,7 @@ import { CANVAS_FIT_PADDING } from "@/lib/constants"
 // context; it has its own unit test + E2E, so stub it here to keep CanvasView isolated.
 vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
 vi.mock("@/hooks/useProgressPersistence", () => ({ useProgressPersistence: () => undefined }))
+vi.mock("@/hooks/useBreakCollection", () => ({ useBreakCollection: () => null }))
 vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => null }))
 
 const mockScreenToFlowPosition = vi.fn((pos: { x: number; y: number }) => pos)

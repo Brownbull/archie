@@ -31,6 +31,7 @@ nodes:
     replicas: 1
     traffic_rps: 800
     traffic_workload: read
+    traffic_kind: realistic
 edges:
   - id: e0
     source_node_id: n-traffic-0

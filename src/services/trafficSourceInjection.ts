@@ -178,6 +178,36 @@ export function makeChallengeTrafficNodes(challenge: {
   return single ? [single] : []
 }
 
+/** One traffic node's dial values to restore (the break-it loop's reset action, D94 P4-S3). */
+export interface TrafficResetUpdate {
+  nodeId: string
+  rps: number
+  kind: TrafficKind
+  workload: ChallengeTrafficWorkload
+  origin: ChallengeTrafficOrigin
+}
+
+/**
+ * The per-node updates that restore the canvas traffic dials to the authored challenge spec — the
+ * break popup's "[reset & try another]" action (D94 P4-S3). Pairing is positional: the break popup
+ * only renders when the node count matches the spec (a structural edit is never a clean break), so
+ * pairing source i with traffic node i restores the authored multiset exactly. Defensive on
+ * mismatch: unmatched sources are skipped, extra nodes are left untouched.
+ */
+export function plannedTrafficReset(
+  nodes: ReadonlyArray<{ id: string; data?: { componentCategory?: string } }>,
+  sources: readonly ChallengeTrafficSource[],
+): TrafficResetUpdate[] {
+  const traffic = nodes.filter((n) => n.data?.componentCategory === TRAFFIC_CATEGORY)
+  const updates: TrafficResetUpdate[] = []
+  sources.forEach((s, i) => {
+    const node = traffic[i]
+    if (!node) return
+    updates.push({ nodeId: node.id, rps: s.rps, kind: s.kind, workload: s.workload, origin: s.origin })
+  })
+  return updates
+}
+
 function entryInPort(componentId: string): string | null {
   const ports = componentLibrary.getComponent(componentId)?.ports ?? []
   const port = ports.find((p) => p.direction === "in" && p.type === "http") ?? ports.find((p) => p.direction === "in")

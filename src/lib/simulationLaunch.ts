@@ -40,8 +40,17 @@ export function launchChallengeAttempt(challenge: Challenge): void {
   // the canvas-derived write-pressure / cacheable-fraction / access-pattern erosion with the challenge's
   // own blend so the cache/DB derating matches the harness (the demand is the fixed problem statement;
   // it can't be gamed by editing the traffic node). Once 3★ is earned the node unlocks → canvas wins.
-  const baseGraph = buildSimGraph(nodes, edges, crossRegionSimOpts(challenge))
   const locked = (bestStars[challenge.id] ?? 0) < 3
+  // D94 (P4-S3): the break-it loop's cross-region seam — post-3★ the canvas origin dial wins (the
+  // player flips one-region → multi-region to break the build); the RTT stays authored (no canvas
+  // knob for it). Pre-3★ both come from the authored sources, exactly as before.
+  const simOpts = locked
+    ? crossRegionSimOpts(challenge)
+    : {
+        crossRegionRttMs: challenge.crossRegionRttMs,
+        multiRegion: nodes.some((n) => n.data.componentCategory === "traffic" && n.data.trafficOrigin === "multi-region"),
+      }
+  const baseGraph = buildSimGraph(nodes, edges, simOpts)
   const graph =
     locked && challenge.trafficSources && challenge.trafficSources.length > 0
       ? { ...baseGraph, ...workloadBlend(challenge.trafficSources) }
@@ -74,10 +83,15 @@ export function launchChallengeAttempt(challenge: Challenge): void {
   }) // building → running BEFORE the sim, so a single-tick run is still scored
   // ISAPivot (D63): when the challenge declares typed trafficSources, derive the load from them
   // (peak-anchored, summed) — they OVERRIDE the legacy trafficCurve. Otherwise use trafficCurve.
-  const curve =
+  // D94 (P4-S3): post-3★ the canvas dials DRIVE the load — the break-it loop's seam: the player
+  // changes one traffic attribute and the re-run actually feels it. Falls back to the authored
+  // demand when the canvas has no rate-bearing source (e.g. the traffic node was deleted).
+  const canvasCurve = locked ? [] : buildTrafficCurveFromSources(nodes, challenge.durationSeconds)
+  const authoredCurve =
     challenge.trafficSources && challenge.trafficSources.length > 0
       ? buildTrafficCurveFromSpecs(challenge.trafficSources, challenge.durationSeconds)
       : challenge.trafficCurve
+  const curve = canvasCurve.length > 0 ? canvasCurve : authoredCurve
   // Pass the challenge's authored duration so the curve + scheduled events map over the
   // intended window (not the engine's default 90s), plus its chaos intensity (3e; undefined ⇒ 1).
   useSimulationStore

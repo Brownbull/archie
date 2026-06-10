@@ -65,7 +65,7 @@ export interface RefNode {
   id: string
   type: "archie"
   position: { x: number; y: number }
-  data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount: number; trafficRps?: number; trafficWorkload?: string; trafficKind?: string; cacheableFraction?: number }
+  data: { archieComponentId: string; activeConfigVariantId: string; componentCategory: ComponentCategoryId; replicaCount: number; trafficRps?: number; trafficWorkload?: string; trafficKind?: string; trafficOrigin?: string; cacheableFraction?: number }
 }
 
 export interface RefEdge {
@@ -316,6 +316,7 @@ export function buildSolution(c: Challenge): { nodes: RefNode[]; edges: RefEdge[
       if (!tn) return
       tn.data.trafficWorkload = s.workload
       tn.data.trafficKind = s.kind
+      tn.data.trafficOrigin = s.origin
       if (s.cacheableFraction !== undefined) tn.data.cacheableFraction = s.cacheableFraction
       nodes.push(tn)
       trafficIds.push(tn.id)
@@ -588,6 +589,8 @@ export function toArchitectureFixture(c: Challenge, nodes: readonly RefNode[], e
       replicas: n.data.replicaCount,
       ...(n.data.trafficRps !== undefined ? { traffic_rps: n.data.trafficRps } : {}),
       ...(n.data.trafficWorkload ? { traffic_workload: n.data.trafficWorkload } : {}),
+      ...(n.data.trafficKind && n.data.trafficKind !== "steady" ? { traffic_kind: n.data.trafficKind } : {}),
+      ...(n.data.trafficOrigin && n.data.trafficOrigin !== "one-region" ? { traffic_origin: n.data.trafficOrigin } : {}),
     })),
     edges: edges.map((e) => ({ id: e.id, source_node_id: e.source, target_node_id: e.target })),
   }

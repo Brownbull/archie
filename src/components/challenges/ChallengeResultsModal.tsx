@@ -19,6 +19,10 @@ import { useChallengeSuggestion } from "@/hooks/useChallengeSuggestion"
 import { useAttemptPersistence } from "@/hooks/useAttemptPersistence"
 import { useProgressPersistence } from "@/hooks/useProgressPersistence"
 import { useAttemptComparison } from "@/hooks/useAttemptComparison"
+import { useBreakCollection } from "@/hooks/useBreakCollection"
+import { useArchitectureStore } from "@/stores/architectureStore"
+import { plannedTrafficReset } from "@/services/trafficSourceInjection"
+import { BreakItPanel } from "@/components/challenges/BreakItPanel"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 import { DeltaChip } from "@/components/challenges/DeltaChip"
 import { CHALLENGE_TRACKS, rankForXp, MASTERY_RANKS, RANK_XP_THRESHOLDS } from "@/lib/challengeTracks"
@@ -194,6 +198,7 @@ export function ChallengeResultsModal() {
   useProgressPersistence()
 
   const suggestion = useChallengeSuggestion()
+  const breakOutcome = useBreakCollection()
   const lastAward = useUserProgressStore((s) => s.lastAward)
 
   const attemptState = useChallengeStore((s) => s.attemptState)
@@ -235,6 +240,19 @@ export function ChallengeResultsModal() {
     useUiStore.getState().setChallengesOpen(false)
     useUiStore.getState().setQuestLogOpen(true)
   }
+  // Break-it loop (P4-S3, D94): restore every traffic dial to the authored spec, then re-enter build
+  // mode — the player picks the NEXT attribute to deviate and re-runs. Positional pairing is safe
+  // here: the panel only offers this when the break matched the spec's node count.
+  const onResetDials = () => {
+    const arch = useArchitectureStore.getState()
+    for (const u of plannedTrafficReset(arch.nodes, challenge.trafficSources ?? [])) {
+      arch.setNodeTrafficRps(u.nodeId, u.rps)
+      arch.setNodeTrafficKind(u.nodeId, u.kind)
+      arch.setNodeWorkload(u.nodeId, u.workload)
+      arch.setNodeOrigin(u.nodeId, u.origin)
+    }
+    onRetry()
+  }
 
   const xpPerStar = challenge.rewards?.xp ? Math.ceil(challenge.rewards.xp / 3) : 0
 
@@ -270,7 +288,9 @@ export function ChallengeResultsModal() {
         <DialogHeader className="text-center">
           <DialogTitle>{challenge.title}</DialogTitle>
           <DialogDescription>
-            {result.stars > 0 ? "Challenge passed" : "Targets not met — adjust and retry"}
+            {breakOutcome
+              ? "Broken on purpose — that's the lesson"
+              : result.stars > 0 ? "Challenge passed" : "Targets not met — adjust and retry"}
           </DialogDescription>
         </DialogHeader>
 
@@ -385,6 +405,9 @@ export function ChallengeResultsModal() {
             </div>
           )}
         </div>
+
+        {/* Break-it loop (P4-S3, D94): the 3★ invitation / the collected-break celebration. */}
+        <BreakItPanel challenge={challenge} stars={result.stars} outcome={breakOutcome} onResetDials={onResetDials} />
 
         {/* LX3 (D74): lean-reference benchmark — a concrete "par" so 3★ isn't the end of the lesson. */}
         {par && (

@@ -25,6 +25,9 @@ vi.mock("@/hooks/useProgressPersistence", () => ({ useProgressPersistence: () =>
 // Attempt comparison reads auth + the attempts store; control it directly (own unit test covers logic).
 let mockPriorBest: import("@/schemas/attemptSchema").AttemptRecord | null = null
 vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => mockPriorBest }))
+// Break-it loop (P4-S3): the collector has its own unit test; control the outcome directly here.
+let mockBreakOutcome: import("@/hooks/useBreakCollection").BreakOutcome | null = null
+vi.mock("@/hooks/useBreakCollection", () => ({ useBreakCollection: () => mockBreakOutcome }))
 
 import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -46,6 +49,7 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
   beforeEach(() => {
     mockSuggestion = null
     mockPriorBest = null
+    mockBreakOutcome = null
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, bestStars: {} })
     useSimulationStore.getState().reset()
     useArchitectureStore.setState({ nodes: [], topologyIssues: [], topologyIssuesByNodeId: new Map() })
@@ -283,5 +287,103 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     // Sim data is PRESERVED so the player can inspect the run
     expect(useSimulationStore.getState().status).toBe("done")
     expect(useSimulationStore.getState().ticks).toHaveLength(1)
+  })
+})
+
+describe("break-it loop panel (P4-S3 / D94)", () => {
+  const sources = [{ type: "web-users", rps: 800, kind: "steady", workload: "read", origin: "one-region" }] as never
+  const breakable = { ...challenge, trafficSources: sources } as typeof challenge
+  const threeStars = {
+    lastResult: { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true },
+    lastMeasured: { uptimePercent: 100, p99LatencyMs: 40, totalCost: 60, topologyIssueCount: 0 },
+  }
+  const trafficNode = (over: Record<string, unknown> = {}) => ({
+    id: "t1", type: "archie-component", position: { x: 0, y: 0 },
+    data: {
+      archieComponentId: "web-users", activeConfigVariantId: "moderate", componentName: "Web Users",
+      componentCategory: "traffic", replicaCount: 1,
+      trafficRps: 9000, trafficKind: "steady", trafficWorkload: "read", trafficOrigin: "one-region", ...over,
+    },
+  })
+
+  beforeEach(async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ breaksByChallenge: {} })
+  })
+
+  it("invites the break at 3★ on a quest with authored traffic (all four dials listed)", () => {
+    useChallengeStore.setState({ activeChallenge: breakable, attemptState: "scored", ...threeStars } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("break-invite")).toBeInTheDocument()
+    expect(screen.getByTestId("break-invite")).toHaveTextContent("0/4 collected")
+    for (const a of ["rps", "kind", "workload", "origin"]) {
+      expect(screen.getByTestId(`break-attr-${a}`)).toBeInTheDocument()
+    }
+  })
+
+  it("no invite on legacy curve-only quests, sub-3★ runs, or once all four are collected", async () => {
+    // Legacy quest (no trafficSources)
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", ...threeStars } as never)
+    const { unmount } = render(<ChallengeResultsModal />)
+    expect(screen.queryByTestId("break-invite")).toBeNull()
+    unmount()
+    // All four collected
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ breaksByChallenge: { c1: { rps: true, kind: true, workload: true, origin: true } } })
+    useChallengeStore.setState({ activeChallenge: breakable, attemptState: "scored", ...threeStars } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.queryByTestId("break-invite")).toBeNull()
+  })
+
+  it("celebrates a fresh break with the +1 Expert payout and reframes the header", () => {
+    mockBreakOutcome = { attribute: "rps", fresh: true, remaining: ["kind", "workload", "origin"] }
+    useChallengeStore.setState({
+      activeChallenge: breakable, attemptState: "scored",
+      lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
+      lastMeasured: { uptimePercent: 80, p99LatencyMs: 400, totalCost: 60, topologyIssueCount: 0 },
+    } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("break-collected")).toHaveTextContent("Broke it with Peak RPS!")
+    expect(screen.getByTestId("break-payout")).toHaveTextContent("+1 Expert")
+    expect(screen.getByTestId("challenge-results")).toHaveTextContent("Broken on purpose")
+    expect(screen.getByTestId("break-reset")).toBeInTheDocument()
+  })
+
+  it("a repeat break says 'already collected' and never re-pays", () => {
+    mockBreakOutcome = { attribute: "kind", fresh: false, remaining: ["workload"] }
+    useChallengeStore.setState({
+      activeChallenge: breakable, attemptState: "scored",
+      lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
+      lastMeasured: { uptimePercent: 80, p99LatencyMs: 400, totalCost: 60, topologyIssueCount: 0 },
+    } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("break-payout")).toHaveTextContent("already collected")
+  })
+
+  it("the final break drops the reset CTA — the boundary is fully mapped", () => {
+    mockBreakOutcome = { attribute: "origin", fresh: true, remaining: [] }
+    useChallengeStore.setState({
+      activeChallenge: breakable, attemptState: "scored",
+      lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
+      lastMeasured: { uptimePercent: 80, p99LatencyMs: 400, totalCost: 60, topologyIssueCount: 0 },
+    } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("break-collected")).toHaveTextContent("entire failure boundary")
+    expect(screen.queryByTestId("break-reset")).toBeNull()
+  })
+
+  it("Reset dials restores the authored traffic spec and re-enters build mode", () => {
+    mockBreakOutcome = { attribute: "rps", fresh: true, remaining: ["kind", "workload", "origin"] }
+    useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000 })] as never })
+    useChallengeStore.setState({
+      activeChallenge: breakable, attemptState: "scored",
+      lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
+      lastMeasured: { uptimePercent: 80, p99LatencyMs: 400, totalCost: 60, topologyIssueCount: 0 },
+    } as never)
+    render(<ChallengeResultsModal />)
+    fireEvent.click(screen.getByTestId("break-reset"))
+    const node = useArchitectureStore.getState().nodes.find((n) => n.id === "t1")
+    expect(node?.data).toMatchObject({ trafficRps: 800, trafficKind: "steady", trafficWorkload: "read", trafficOrigin: "one-region" })
+    expect(cs().attemptState).toBe("building")
   })
 })

@@ -2,7 +2,9 @@ import { useMemo } from "react"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
+import { useUserProgressStore } from "@/stores/userProgressStore"
 import { hasTrafficSource } from "@/services/trafficSourceInjection"
+import { detectSingleAttributeBreak, remainingBreakAttributes } from "@/engine/breakDetection"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 
@@ -42,6 +44,10 @@ export function useChallengeCoach(): CoachState | null {
   const lastMeasured = useChallengeStore((s) => s.lastMeasured)
   const nodes = useArchitectureStore((s) => s.nodes)
   const topologyIssues = useArchitectureStore((s) => s.topologyIssues)
+  // Break-it loop (P4-S3, D94): session bestStars gates the post-3★ break narration; the durable
+  // breaks record drives the "N dials left" framing.
+  const sessionBest = useChallengeStore((s) => s.bestStars[s.activeChallenge?.id ?? ""] ?? 0)
+  const breaksRecord = useUserProgressStore((s) => s.breaksByChallenge[challenge?.id ?? ""])
   // S8 (D89): narrate the CURRENT tick's scheduled event for free — the observe mechanic shouldn't
   // need a paid hint to be understood. Selector returns the events array (or undefined) so the hook
   // only re-renders when the active-event state actually changes, not on every tick.
@@ -75,11 +81,38 @@ export function useChallengeCoach(): CoachState | null {
     // 2. SCORED — coach the next improvement, or celebrate a perfect run.
     if (attemptState === "scored" && lastResult) {
       if (lastResult.stars >= 3) {
+        // Break-it loop (P4-S3, D94): once the dials unlock, the next lesson is finding the failure
+        // boundary — invite the break instead of the generic vendor-swap experiment.
+        const remaining = remainingBreakAttributes(breaksRecord)
+        if (challenge.trafficSources?.length && remaining.length > 0) {
+          return {
+            mode: "mastered",
+            modeLabel: "Mastered",
+            headline: "Three stars — now break it!",
+            detail: `The traffic dials just unlocked. Change ONE (${remaining.join(", ")}) and re-run — each dial that fells your build pays an Expert point.`,
+          }
+        }
         return {
           mode: "mastered",
           modeLabel: "Mastered",
           headline: "Three stars — nailed it!",
           detail: "Experiment: swap a vendor on a node (the in-node dropdown) and see if you can hold the targets for less money.",
+        }
+      }
+      // Break-it loop (P4-S3, D94): a deliberate post-3★ break is a SUCCESS, not a regression — don't
+      // coach "fix the latency" on a build the player just felled on purpose.
+      if (sessionBest >= 3) {
+        const broke = detectSingleAttributeBreak(nodes, challenge, lastResult)
+        if (broke) {
+          const remaining = remainingBreakAttributes({ ...breaksRecord, [broke]: true })
+          return {
+            mode: "mastered",
+            modeLabel: "Broke it",
+            headline: `You broke it — ${broke} found the boundary`,
+            detail: remaining.length > 0
+              ? `That's the point: you now know where this build fails. Reset the dials (results panel) and try another: ${remaining.join(", ")}.`
+              : "All four dials collected — you've mapped this build's entire failure boundary.",
+          }
         }
       }
       if (!lastResult.passedMetrics && lastMeasured) {
@@ -199,5 +232,5 @@ export function useChallengeCoach(): CoachState | null {
       headline: "Run the simulation",
       detail: "Looks wired up! Hit Run Simulation to push traffic through and earn your stars.",
     }
-  }, [challenge, attemptState, lastResult, lastMeasured, nodes, topologyIssues, liveEvents])
+  }, [challenge, attemptState, lastResult, lastMeasured, nodes, topologyIssues, liveEvents, sessionBest, breaksRecord])
 }

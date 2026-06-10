@@ -183,3 +183,71 @@ describe("live event narration while running (S8 / D89 — free observe coaching
     expect(r.current?.headline).toBe("Watch the live stats")
   })
 })
+
+describe("break-it loop narration (P4-S3 / D94)", () => {
+  const trafficSources = [{ type: "web-users", rps: 1000, kind: "steady", workload: "mixed", origin: "one-region" }] as never
+  const trafficNode = (over: Record<string, unknown> = {}) => ({
+    id: "t1",
+    data: { componentCategory: "traffic", trafficRps: 1000, trafficKind: "steady", trafficWorkload: "mixed", trafficOrigin: "one-region", ...over },
+  })
+
+  beforeEach(async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ breaksByChallenge: {} })
+  })
+
+  it("3★ on a quest with authored traffic invites the break instead of the vendor-swap experiment", () => {
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({ trafficSources }),
+      attemptState: "scored",
+      lastResult: result({ stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true }),
+      bestStars: { c1: 3 },
+    })
+    setNodes([trafficNode() as never])
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toBe("Three stars — now break it!")
+    expect(r.current?.detail).toContain("rps, kind, workload, origin")
+  })
+
+  it("3★ keeps the classic celebration when all four breaks are already collected", async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ breaksByChallenge: { c1: { rps: true, kind: true, workload: true, origin: true } } })
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({ trafficSources }),
+      attemptState: "scored",
+      lastResult: result({ stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true }),
+      bestStars: { c1: 3 },
+    })
+    setNodes([trafficNode() as never])
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toBe("Three stars — nailed it!")
+  })
+
+  it("a deliberate post-3★ single-dial break is celebrated, not coached as a failure", () => {
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({ trafficSources }),
+      attemptState: "scored",
+      lastResult: result({ stars: 0, passedMetrics: false }),
+      lastMeasured: measured({ uptimePercent: 80 }),
+      bestStars: { c1: 3 },
+    })
+    setNodes([trafficNode({ trafficRps: 9000 }) as never])
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.modeLabel).toBe("Broke it")
+    expect(r.current?.headline).toContain("rps")
+    expect(r.current?.detail).toContain("kind, workload, origin")
+  })
+
+  it("a pre-3★ failed run still gets iterate coaching even if traffic deviates (imports can't fake breaks)", () => {
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({ trafficSources }),
+      attemptState: "scored",
+      lastResult: result({ stars: 0, passedMetrics: false }),
+      lastMeasured: measured({ uptimePercent: 80 }),
+      bestStars: {},
+    })
+    setNodes([trafficNode({ trafficRps: 9000 }) as never])
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.mode).toBe("iterate")
+  })
+})

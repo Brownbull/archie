@@ -45,6 +45,7 @@ nodes:
     replicas: 1
     traffic_rps: 2000
     traffic_workload: read
+    traffic_kind: realistic
   - id: n-traffic-1
     component_id: web-users
     config_variant_id: heavy
@@ -54,6 +55,7 @@ nodes:
     replicas: 1
     traffic_rps: 1500
     traffic_workload: read
+    traffic_kind: realistic
 edges:
   - id: e0
     source_node_id: n-traffic-0
