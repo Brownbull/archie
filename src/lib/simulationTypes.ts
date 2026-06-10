@@ -20,6 +20,12 @@ export type FailureMode = "shed" | "queue" | "crash"
 export interface SimNode {
   id: string
   category: ComponentCategoryId
+  /**
+   * Fundamental TYPE id (P5 model), when the source component declares one. S7 (D89): scheduled
+   * events match targets by id OR category OR type, so an authored `target: relational-db` hits the
+   * live node whose id is a crypto UUID. Optional + additive (absent ⇒ id/category matching only).
+   */
+  typeId?: string
   /** Effective max requests/sec (0 = unknown/uncapped → treated as no limit). */
   effectiveMaxRps: number
   /** Unscaled variant maxRPS (before replica multiplication). Used for write-primary bottleneck (E2). */

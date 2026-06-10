@@ -521,3 +521,54 @@ describe("cross-region RTT + replication-lag staleness (ED6/EN4, D74)", () => {
     expect(tel(simulateTick({ nodes: [asyncDb], edges: [], writePressure: 0.3 }, 0, 2000), "db").stalenessMs).toBeCloseTo(50 * 2.2 * 3, 1)
   })
 })
+
+describe("scheduled-event retargeting by category/type (S7 / D89, D91)", () => {
+  // Live canvas node ids are crypto UUIDs — authored targets name a category or fundamental type.
+  const uuidNodes: SimNode[] = [
+    node("9f3a-uuid-compute", 100, { category: "compute" }),
+    node("17bc-uuid-compute2", 100, { category: "compute" }),
+    node("44de-uuid-db", 100, { category: "data-storage", typeId: "relational-db" }),
+    node("a1ff-uuid-nosql", 100, { category: "data-storage", typeId: "nosql" }),
+  ]
+
+  it("latency_spike targeting a CATEGORY fires on every matching UUID-id node (was silently inert)", () => {
+    const ov = computeOverrides(uuidNodes, [{ t: 0, type: "latency_spike", target: "compute", multiplier: 4 }], 5)
+    expect(ov.latencyMultipliers.get("9f3a-uuid-compute")).toBe(4)
+    expect(ov.latencyMultipliers.get("17bc-uuid-compute2")).toBe(4)
+    expect(ov.latencyMultipliers.has("44de-uuid-db")).toBe(false) // different category — untouched
+  })
+
+  it("latency_spike targeting a fundamental TYPE hits only that type (write-storm-brownout's relational-db)", () => {
+    const ov = computeOverrides(uuidNodes, [{ t: 0, type: "latency_spike", target: "relational-db", multiplier: 4 }], 5)
+    expect(ov.latencyMultipliers.get("44de-uuid-db")).toBe(4)
+    expect(ov.latencyMultipliers.has("a1ff-uuid-nosql")).toBe(false) // same category, different type
+  })
+
+  it("component_failure targeting a CATEGORY offlines every matching node", () => {
+    const ov = computeOverrides(uuidNodes, [{ t: 0, type: "component_failure", target: "data-storage", durationS: 30 }], 5)
+    expect(ov.offlineNodeIds.has("44de-uuid-db")).toBe(true)
+    expect(ov.offlineNodeIds.has("a1ff-uuid-nosql")).toBe(true)
+    expect(ov.offlineNodeIds.has("9f3a-uuid-compute")).toBe(false)
+  })
+
+  it("id-equality matching is preserved (harness/import back-compat)", () => {
+    const literal: SimNode[] = [node("app", 100, { category: "compute" })]
+    const ov = computeOverrides(literal, [{ t: 0, type: "component_failure", target: "app", durationS: 30 }], 5)
+    expect(ov.offlineNodeIds.has("app")).toBe(true)
+  })
+
+  it("component_failure monitoring is judged PER NODE: the monitored copy mitigates, the unmonitored dies", () => {
+    const nodes2: SimNode[] = [
+      node("c1", 100, { category: "compute" }),
+      node("c2", 100, { category: "compute" }),
+      node("mon", 100, { category: "monitoring" }),
+    ]
+    const edges = [edge("c1", "mon")] // only c1 is monitor-adjacent
+    // past the detection delay: monitored c1 keeps (1−OBS_RESIDUAL_BLAST) capacity, c2 is fully offline
+    const ov = computeOverrides(nodes2, [{ t: 0, type: "component_failure", target: "compute", durationS: 60 }], 30, edges)
+    expect(ov.offlineNodeIds.has("c2")).toBe(true)
+    expect(ov.offlineNodeIds.has("c1")).toBe(false)
+    expect(ov.capacityFactors?.get("c1")).toBeGreaterThan(0)
+    expect(ov.capacityFactors?.get("c1")).toBeLessThan(1)
+  })
+})

@@ -22,7 +22,7 @@ required_components:
   - data-storage
   - search
 target_metrics:
-  uptime_percent: 98
+  uptime_percent: 78
   p99_latency_ms: 350
   p95_latency_ms: 220
 scheduled_events:

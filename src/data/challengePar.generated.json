@@ -44,7 +44,7 @@
     "nodes": 3
   },
   "data-pipeline": {
-    "cost": 380,
+    "cost": 490,
     "nodes": 5
   },
   "edge-balance": {
@@ -188,7 +188,7 @@
     "nodes": 7
   },
   "rag-retrieval": {
-    "cost": 250,
+    "cost": 555,
     "nodes": 7
   },
   "realtime-live": {

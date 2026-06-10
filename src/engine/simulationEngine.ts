@@ -118,6 +118,13 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
   const offlineNodeIds = new Set<string>()
   const latencyMultipliers = new Map<string, number>()
   const capacityFactors = new Map<string, number>() // ED2/EN7: per-node surviving fraction during a failure
+  // S7 (D89): an event target names a node id, a CATEGORY, or a fundamental TYPE. Authored challenges
+  // say `target: compute` / `target: relational-db`; live canvas node ids are crypto UUIDs, so pure
+  // id-matching made component_failure / latency_spike silently inert (everywhere — the harness's
+  // RefNode ids are `n-*` prefixed too). Matching by id ∪ category ∪ typeId makes the events FIRE;
+  // id-equality is kept for back-compat with literal-id imports/tests.
+  const matchesTarget = (n: SimNode, target: string): boolean =>
+    n.id === target || n.category === target || n.typeId === target
   for (const e of events) {
     // EN7 (D74): failures now run their FULL authored duration (no magic early recovery). Observability
     // instead shrinks the BLAST: a monitored failure is full-blast for OBS_DETECT_DELAY_S (detection lag),
@@ -127,17 +134,24 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
     if (e.type === "latency_spike") {
       // 3e: scale the spike INTENSITY (not the raw multiplier) so chaos 0 ⇒ inert (×1), not ×0.
       const effective = 1 + ((e.multiplier ?? 3) - 1) * chaosIntensity
-      latencyMultipliers.set(e.target, (latencyMultipliers.get(e.target) ?? 1) * effective)
+      for (const n of nodes) {
+        if (matchesTarget(n, e.target)) latencyMultipliers.set(n.id, (latencyMultipliers.get(n.id) ?? 1) * effective)
+      }
       continue
     }
-    const monitored = e.type === "component_failure" ? monitoredNodes.has(e.target) : monitoredCategories.has(e.target)
-    const severity = monitored && timeS - e.t >= OBS_DETECT_DELAY_S ? OBS_RESIDUAL_BLAST : 1
     if (e.type === "component_failure") {
-      // Base blast = the whole node. severity 1 ⇒ fully offline (byte-identical to pre-D74 for the
-      // common unmonitored case); mitigated ⇒ the node serves (1−severity) of its capacity.
-      if (severity >= 1) offlineNodeIds.add(e.target)
-      else capacityFactors.set(e.target, (capacityFactors.get(e.target) ?? 1) * (1 - severity))
+      // Base blast = the whole matching node. severity 1 ⇒ fully offline (as pre-D74 for the common
+      // unmonitored case); mitigated ⇒ the node serves (1−severity). Monitoring is judged PER NODE.
+      for (const n of nodes) {
+        if (!matchesTarget(n, e.target)) continue
+        const monitored = monitoredNodes.has(n.id)
+        const severity = monitored && timeS - e.t >= OBS_DETECT_DELAY_S ? OBS_RESIDUAL_BLAST : 1
+        if (severity >= 1) offlineNodeIds.add(n.id)
+        else capacityFactors.set(n.id, (capacityFactors.get(n.id) ?? 1) * (1 - severity))
+      }
     } else if (e.type === "az_outage") {
+      const monitored = monitoredCategories.has(e.target)
+      const severity = monitored && timeS - e.t >= OBS_DETECT_DELAY_S ? OBS_RESIDUAL_BLAST : 1
       // ED2 (D74): an az_outage removes ONE availability zone (base blast 1/azCount), so a node spread
       // across azCount AZs survives at (azCount−1)/azCount. EN7: observability shrinks even that blast
       // to (1/azCount)×severity after detection — a monitored, well-spread tier barely notices.

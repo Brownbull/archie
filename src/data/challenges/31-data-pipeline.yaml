@@ -23,13 +23,13 @@ target_metrics:
   p99_latency_ms: 400
   p95_latency_ms: 260
 scheduled_events:
-  - { t: 60, type: latency_spike, target: compute, multiplier: 4, durationS: 20 }
+  - { t: 60, type: latency_spike, target: compute, multiplier: 1.5, durationS: 20 }
 hints:
   - "This is an async pipeline problem: ingest must not block; a message queue decouples traffic from ETL compute so you can buffer the burst."
   - "Place the message queue between your ingestion compute and the ETL tier: compute accepts writes fast and publishes to the queue; ETL drains it at its own pace while the LLM gateway handles embeddings on a separate branch."
   - "The default tiers can't hit the targets: Batch ETL tops out at 100 rps and the Single-Model LLM proxy adds 500 ms per call. Switch the ETL to Micro-Batch and the LLM gateway to Streaming before you reach for more replicas."
   - "Wire traffic → compute → message queue → ETL → object storage, plus compute → LLM gateway for the embedding calls. Every link in that chain is port-compatible — if you see a port warning, re-check which ports you connected."
-  - "Full solve: 2x compute (any framework), RabbitMQ Single Node, 2x ETL on Micro-Batch, object storage, LLM gateway on Streaming — roughly $400 of the $1500 budget. Measured through the grader: 100% uptime, p95 about 120 ms against the 260 ms target."
+  - "Full solve: 2x compute (any framework), RabbitMQ Single Node, 2x ETL on Micro-Batch, object storage, LLM gateway on Streaming — roughly $500 of the $1500 budget. Measured through the grader: 100% uptime, p95 about 235 ms against the 260 ms target — the t=60s compute latency spike is what eats the margin."
 forbidden_types: [relational-db]
 chaos_intensity: 2
 schema_version: 2

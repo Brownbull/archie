@@ -656,9 +656,13 @@ export function buildSimGraph(
 
   const simNodes: SimNode[] = nodes.map((n) => {
     const cost = getNodeCost(n.data.archieComponentId, n.data.activeConfigVariantId, n.data.replicaCount ?? 1, n.data.trafficRps)
+    // S7 (D89): carry the fundamental type so scheduled events can retarget by type (live canvas
+    // node ids are UUIDs — an authored `target: relational-db` must still find its node).
+    const typeId = componentLibrary.getComponent(n.data.archieComponentId)?.typeId
     return {
       id: n.id,
       category: n.data.componentCategory,
+      ...(typeId ? { typeId } : {}),
       effectiveMaxRps: cost.maxRPS ?? 0,
       baseMaxRps: cost.baseMaxRPS,
       baseLatencyMs: cost.baseLatencyMs ?? 0,

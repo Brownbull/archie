@@ -1387,3 +1387,23 @@ unavoidable mismatch (Phase 1 port-coverage work makes this unlikely).
 **Review trigger:** if user-clone palette coherence matters (community sharing / MVP 4), trim built-in palettes to grantable-only OR add prereq edges so every offered block is grantable. The 53-gap snapshot is the worklist.
 
 **Status:** active
+
+## D91 — scheduled_events retarget: match by id ∪ category ∪ type; component_failure fails ALL matching nodes (2026-06-10)
+
+**Context (the latent LEDGER "D25" finding, promoted):** `component_failure` and `latency_spike` matched event targets against NODE IDS only. Authored targets name categories/types (`compute`, `auth-security`, `data-storage`, `relational-db`), live canvas ids are crypto UUIDs, and harness RefNode ids are `n-*`-prefixed — so these 9 events across 8 challenges fired NOWHERE. Only `az_outage` (category-matched) was live.
+
+**Decision:**
+1. **Matching = id ∪ category ∪ typeId.** `SimNode` gains optional `typeId` (populated by buildSimGraph from the component library) so `target: relational-db` (a type, not a category) resolves. Id-equality kept for literal-id back-compat.
+2. **`component_failure` applies to EVERY matching node**, with monitoring judged PER NODE (a monitor-adjacent copy mitigates to the residual blast; an unmonitored one dies). Rationale: the authored targets are tier-level ("the data-storage layer fails") — and `az_outage` is already the partial/zonal event that rewards redundancy (resilienceEarned). Duplicating a tier does NOT dodge a category-targeted failure; observability is the counter-tool.
+3. **`latency_spike` multiplies every matching node** (concurrent spikes still stack).
+
+**Chaos re-tune (harness named the list — 3 of 8 spike challenges fell below 3★):**
+- data-pipeline: multiplier 4→1.5 (chaos 2 ⇒ effective ×2; was ×7 ⇒ p99 1161/400). Now p99 236/400, p95 236/260. Hint grader-claims updated (120→235 ms; $400→$500 — lean par 380→490).
+- defense-in-depth: multiplier 3→1.25 (effective ×1.5; was ×5 ⇒ p99 868/300). Now p99 261/300, p95 187/200. Hint "3x"→"1.5x".
+- rag-retrieval: uptime target 98→78 — a 30s full storage outage on a 150s run caps uptime ≈79.5%; the authored 98 was NEVER achievable (the event was inert when authored). Now 79.5/78, barely-solvable (D69 ethos). Lean par 250→555.
+- The other 5 (stream-processor, write-storm-brownout, edge-resilience, fortress, maxwells-demon) absorb their now-live events at 3★ unchanged.
+
+**Live==harness restored:** events fire identically in live play and the harness; challengePar regenerated.
+
+**Status:** active
+**Review trigger:** Phase 4's break-it loop (per-condition resilience targets) and Phase 5's per-block failure conditions build on this targeting; revisit ALL-matching vs single-node kill if a challenge wants "one replica dies" semantics (that's az_outage's lane today).
