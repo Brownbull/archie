@@ -4925,3 +4925,14 @@ SCOPE: brief classification (18 pure + 17 mixed + 26 context, batch lists A/B/C)
 GATES: solvability 62/62 3★ · par regenerated (8 rows) · full suite 4910/4910 · build exit 0 · eslint clean on changed lines (1 pre-existing unused-import error predates S2)
 EDITS: 9 calibration values across 6 component YAMLs per D93 Table 3, ONE deviation — sync-replica stays 12000 (citus lift alone fixes the inversion; see D93 amendment). referenceSolution fallback now consistency-aware (preferLowLag → lowest-lag on no-fit) — root-caused strong-or-stale's pre-calibration pass as a fallback accident.
 NOTE: values reach prod ONLY via the single S9 reseed (S1 tolerant reader must deploy first). Wave 1 remaining: S1 (schema+UI+reader deploy — the reseed gate), S3 (18 binding briefs), S5 (ladder surgery), S6 (12 icons + toast).
+- 2026-06-10 11:50 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-10 11:50 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-10 11:50 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-10 11:50 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+- 2026-06-10 11:50 | Edit | /home/khujta/projects/bmad/archie/src/schemas/componentSchema.ts
+
+## 2026-06-10 11:59 — [d601bad] feat(schema): tier descriptions + tolerant variant reader (D92) — Phase 3 S1/10 + PUSH
+CI: deploy-production ✅ success | DEPLOYMENTS: P163
+GATES: full suite 4917/4917 (+7: forward-compat unknown-variant-key, https rejections, transform, dropdown subrow, inspector link attrs) · build exit 0 · eslint clean
+KEY: runtime ConfigVariantSchema no longer .strict() — the P5-class trap that would have EMPTIED the library on reseed is closed; the deployed reader now tolerates the Phase-3 fields. RESEED GATE OPEN (S9 waits only on S8 authoring + S7 numeric pass).
+WAVE 1 REMAINING: S3 (18 binding briefs), S5 (ladder surgery), S6 (12 icons + toast).
