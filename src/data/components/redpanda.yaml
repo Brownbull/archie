@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: self-hosted
     name: Self-Hosted
+    description: >-
+      Self-hosted Redpanda: Kafka-API streaming in one C++ binary — no JVM, no ZooKeeper, the highest ceiling in the family. You operate it.
+    docs_url: https://docs.redpanda.com/current/get-started/intro-to-events/
     monthly_cost: 90
     max_rps: 200000
     base_latency_ms: 4
@@ -80,6 +83,9 @@ config_variants:
           - No JVM GC pauses on the hot path
   - id: cloud
     name: Redpanda Cloud
+    description: >-
+      Redpanda Cloud: the same engine, managed. The premium buys you out of cluster ops at a modest throughput haircut.
+    docs_url: https://docs.redpanda.com/redpanda-cloud/home/
     monthly_cost: 220
     max_rps: 150000
     base_latency_ms: 6

@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard (Global)
+    description: >-
+      Pub/Sub global: planet-spanning fan-out with massive ceilings and zero broker ops. Per-message latency is tens of milliseconds — built for scale, not speed.
+    docs_url: https://cloud.google.com/pubsub/docs/overview
     monthly_cost: 60
     max_rps: 100000
     base_latency_ms: 20
@@ -82,6 +85,9 @@ config_variants:
           - Parallel delivery to many subscribers
   - id: lite
     name: Pub/Sub Lite (Zonal)
+    description: >-
+      Pub/Sub Lite: the zonal, provisioned-capacity discount — a third of the price for single-region pipelines that can plan ahead. Capacity is yours to size.
+    docs_url: https://cloud.google.com/pubsub/docs/choosing-pubsub-or-lite
     monthly_cost: 18
     max_rps: 40000
     base_latency_ms: 25

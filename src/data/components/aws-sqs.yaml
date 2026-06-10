@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard-queue
     name: Standard Queue
+    description: >-
+      SQS standard: a near-bottomless managed queue for pennies — at-least-once delivery, best-effort ordering. Build consumers idempotent and it scales further than you will.
+    docs_url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html
     monthly_cost: 5
     max_rps: 100000
     base_latency_ms: 10
@@ -82,6 +85,9 @@ config_variants:
           - Free tier covers low volumes entirely
   - id: fifo-queue
     name: FIFO Queue
+    description: >-
+      SQS FIFO: exactly-once, strictly ordered — and the ordering guarantee caps throughput at a fraction of standard. Pay it only where order is correctness.
+    docs_url: https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-fifo-queues.html
     monthly_cost: 15
     max_rps: 3000
     base_latency_ms: 12

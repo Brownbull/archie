@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Sidekiq: threaded background jobs for Ruby on Redis — the Rails-world default. Solid mid-range throughput per node.
+    docs_url: https://github.com/sidekiq/sidekiq/wiki
     monthly_cost: 40
     max_rps: 4000
     base_latency_ms: 20
@@ -87,6 +90,9 @@ config_variants:
           - High threads-per-process density means fewer worker processes for a given job rate
   - id: enterprise
     name: Enterprise
+    description: >-
+      Sidekiq Enterprise: rate limiting, unique jobs, batches, and 2.5x the throughput — the paid tier that hardens jobs into infrastructure.
+    docs_url: https://sidekiq.org/products/enterprise.html
     monthly_cost: 90
     max_rps: 10000
     base_latency_ms: 15

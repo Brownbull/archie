@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: micro-batch
     name: Micro-Batch
+    description: >-
+      Spark micro-batching: huge throughput in sub-second batches that add ~800ms of latency. The analytics workhorse — wrong tool when freshness is the feature.
+    docs_url: https://spark.apache.org/docs/latest/streaming-programming-guide.html
     monthly_cost: 150
     max_rps: 200000
     base_latency_ms: 800
@@ -81,6 +84,9 @@ config_variants:
           - Tunable down to a few hundred ms
   - id: continuous
     name: Continuous (Low-Latency)
+    description: >-
+      Spark continuous mode: ~10x lower latency than micro-batch with at-least-once semantics and a reduced ceiling. The compromise when you're already a Spark shop.
+    docs_url: https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html#continuous-processing
     monthly_cost: 220
     max_rps: 140000
     base_latency_ms: 80

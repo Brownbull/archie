@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: on-demand
     name: On-Demand
+    description: >-
+      Kinesis on-demand: streaming ingest that scales itself — no shard math, billed per use. Higher per-record latency and cost than well-sized shards.
+    docs_url: https://docs.aws.amazon.com/streams/latest/dev/introduction.html
     monthly_cost: 70
     max_rps: 40000
     base_latency_ms: 70
@@ -86,6 +89,9 @@ config_variants:
           - Lambda and Firehose consumers scale alongside the stream
   - id: provisioned
     name: Provisioned Shards
+    description: >-
+      Provisioned Kinesis shards: more than twice the ceiling at better unit cost — if you size the shards right. Hot partitions throttle; resharding is on you.
+    docs_url: https://docs.aws.amazon.com/streams/latest/dev/amazon-kinesis-streams.html
     monthly_cost: 150
     max_rps: 100000
     base_latency_ms: 60

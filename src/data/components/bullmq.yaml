@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: single-worker
     name: Single Worker
+    description: >-
+      BullMQ on one worker: Redis-backed jobs for Node with retries and scheduling, nearly free. One process drains the queue — fine until volume says otherwise.
+    docs_url: https://docs.bullmq.io/
     monthly_cost: 15
     max_rps: 3000
     base_latency_ms: 20
@@ -82,6 +85,9 @@ config_variants:
           - No broker or managed-queue fees
   - id: scaled
     name: Scaled (Worker Pool)
+    description: >-
+      BullMQ worker pool: horizontal workers drain in parallel for 4x the throughput. Redis becomes the shared bottleneck to watch.
+    docs_url: https://docs.bullmq.io/guide/parallelism-and-concurrency
     monthly_cost: 45
     max_rps: 12000
     base_latency_ms: 14

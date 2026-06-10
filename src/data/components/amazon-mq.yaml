@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: single-instance
     name: Single Instance
+    description: >-
+      Managed ActiveMQ/RabbitMQ on one instance: protocol-compatible lift-and-shift for existing brokers. One box, broker semantics, AWS runs it.
+    docs_url: https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/welcome.html
     monthly_cost: 50
     max_rps: 6000
     base_latency_ms: 6
@@ -83,6 +86,9 @@ config_variants:
           - Recovery restarts the broker on new hardware
   - id: active-standby
     name: Active/Standby (HA)
+    description: >-
+      Amazon MQ active/standby: a hot spare takes over on failure, with a bit more throughput. Failover costs a brief pause — and double-ish the bill.
+    docs_url: https://docs.aws.amazon.com/amazon-mq/latest/developer-guide/active-standby-broker-deployment.html
     monthly_cost: 110
     max_rps: 9000
     base_latency_ms: 8

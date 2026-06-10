@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standalone
     name: Standalone Cluster
+    description: >-
+      Self-managed Flink: true event-at-a-time processing with exactly-once state at six-figure rps. The most capable engine here — and the most demanding to operate.
+    docs_url: https://nightlies.apache.org/flink/flink-docs-stable/
     monthly_cost: 120
     max_rps: 120000
     base_latency_ms: 15
@@ -82,6 +85,9 @@ config_variants:
           - Cluster scaling and savepoint management
   - id: managed
     name: Managed (Cloud)
+    description: >-
+      Managed Flink: the same engine with checkpointing and scaling handled for you. The 2.5x price is the ops team you didn't hire.
+    docs_url: https://nightlies.apache.org/flink/flink-docs-stable/docs/deployment/overview/
     monthly_cost: 300
     max_rps: 200000
     base_latency_ms: 12

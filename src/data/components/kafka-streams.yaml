@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Kafka Streams: stream processing as a library inside your JVM service — no separate cluster, state lives in Kafka. Scales with your app instances.
+    docs_url: https://kafka.apache.org/documentation/streams/
     monthly_cost: 60
     max_rps: 30000
     base_latency_ms: 5
@@ -87,6 +90,9 @@ config_variants:
           - Co-locating processing with the app avoids a standalone compute fleet for a moderate event rate
   - id: scaled
     name: Scaled
+    description: >-
+      Kafka Streams scaled out: more instances, repartitioned state, 2.5x the ceiling. Rebalances pause processing — size partitions with that in mind.
+    docs_url: https://kafka.apache.org/documentation/streams/architecture
     monthly_cost: 120
     max_rps: 80000
     base_latency_ms: 4

@@ -38,6 +38,9 @@ base_metrics:
 config_variants:
   - id: single-server
     name: Single Server
+    description: >-
+      One WebSocket server: persistent connections, instant push, simple to run. Connection state pins clients to this box — restarts disconnect everyone.
+    docs_url: https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API
     monthly_cost: 25
     max_rps: 5000
     base_latency_ms: 2
@@ -91,6 +94,9 @@ config_variants:
           - Load balancer not needed — single server handles all connections
   - id: clustered
     name: Clustered with Redis Pub/Sub
+    description: >-
+      Clustered WebSockets over Redis pub/sub: any node reaches any client, 10x the connection ceiling, rolling restarts stop hurting. Redis becomes the broadcast backbone.
+    docs_url: https://socket.io/docs/v4/redis-adapter/
     monthly_cost: 80
     max_rps: 50000
     base_latency_ms: 2
