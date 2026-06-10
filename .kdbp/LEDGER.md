@@ -4639,3 +4639,18 @@ NON-GATING: not a required check, not a deploy gate — surfaces desktop-suite r
 NEXT: promote a curated @smoke subset to a REQUIRED check once runs are reliably green.
 NOTE: activates on next push; D23+D24 rehabbed the swept specs but the full project (~61 specs) may
       still surface failures in un-swept specs — that's the intended informational signal.
+- 2026-06-09 17:24 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:24 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:24 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:24 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:24 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:24 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:24 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:25 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:25 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-09 17:25 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+
+## 2026-06-09 — PLAN COMPLETED: Fluidity — UX consolidation
+ARCHIVE: .kdbp/archive/completed_PLAN_2026-06-09_fluidity-ux-consolidation.md
+PHASES COMPLETED: 3 of 3 (incl. the optional cross-region full tour, P3c-3/P154)
+NOTE: shipped P144–P154; follow-on D23/D24 desktop-E2E rehab resolved, riding the next push (P157).
