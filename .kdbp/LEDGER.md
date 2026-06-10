@@ -4980,3 +4980,7 @@ PHASE 3 REMAINING: S8 (240-variant tier authoring — the heavyweight content ba
 
 ## 2026-06-10 15:25 — PUSH dev -> main (Phase 3 S6)
 CI: deploy-production ✅ | DEPLOYMENTS: P165
+
+## 2026-06-10 — S8 batches 1+2 (D93) — Phase 3 tier authoring underway
+DONE: 40 variants / 18 files (batch 1: the 6 calibrated DB families, 15 variants — descriptions written against the S2-calibrated trade-offs; batch 2: the reference-build twelve, 25 variants). Gates per batch: componentDataQuality strict parse + solvability 62/62 3★.
+REMAINING: ~147 variants / ~96 files in ≤12-file batches (inventory recipe: grep config_variants blocks lacking docs_url). All local-only until the single S9 reseed (reader live since P163).
