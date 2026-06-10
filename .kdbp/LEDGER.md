@@ -4969,3 +4969,11 @@ PHASE 3 REMAINING: S6 (12 discipline icons + unlock toast), S8 (240-variant tier
 ## 2026-06-10 15:11 — PUSH dev -> main (Phase 3 S3+S4+S5 content)
 CI: deploy-production ✅ success | DEPLOYMENTS: P164
 SCOPE: 4 commits d601bad..2294e29 — 35 scenario briefs + 7 hint fixes + traces. No tree/schema change (S1 reader already live via P163); no reset needed.
+- 2026-06-10 15:17 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/masteryAvatars-disciplines.test.ts
+- 2026-06-10 15:18 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useProgressPersistence.test.ts
+
+## 2026-06-10 — feat(progression): discipline ladder + toast (D93) — Phase 3 S6/10
+GATES: full suite 4928/4928 (+11: lockstep 8 + toast 3) · build exit 0 · eslint clean
+ASSETS: 12 new PNGs via deterministic recolor (PixelLab erroring — T8 precedent; early=muted, top=gold-ascended hue shift, outlines/alpha preserved) + aiml-4→5 git mv. 28 total = 4/track ✓ D93 Table 2.
+CODE: useProgressPersistence discipline-unlock toast (per-track tech-tree completedCount basis, first-clear only) + masteryAvatars-disciplines lockstep test (the ladder⟷glob guard that didn't exist).
+PHASE 3 REMAINING: S8 (240-variant tier authoring — the heavyweight content batch; fan-out when spend headroom returns, or manual batches) → S9 (single combined reseed + runtime evidence). D29 long-tail hint audit open.
