@@ -4815,3 +4815,57 @@ PR: — (direct dev→main, trunk-based)
 CI: deploy-production ✅ success
 DEPLOYMENTS: P160
 SCOPE: S4+S5 unlock-ordering (21→0 REQ violations) + traces. 4 commits fd9142a..1b9023d. TREE CHANGED → D28 reset now applicable (deferred to owner trigger; existing progress still resolves, unlockedBlocks unchanged).
+- 2026-06-10 04:21 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-10 04:21 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-10 04:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/DashboardPanel.test.tsx
+- 2026-06-10 04:25 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/DashboardPanel.test.tsx
+- 2026-06-10 04:25 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/DashboardPanel.test.tsx
+
+## 2026-06-10 — feat(dashboard): quest-mode footer gating + budget dedupe (D89) — Phase 2 Slice 6a
+GATES: eslint 0 errors (1 pre-existing object-injection warning) · npm run build exit 0 · DashboardPanel 17/17
+SCOPE: DashboardPanel gates TierBadge + footer BudgetHud (+ divider) on !isChallengeMode (narrow selector). Dedupes the double budget readout (footer vs ChallengeHud cap+bar) the 2026-06-09 playtest flagged. Metric breakdown stays in both modes. S6b (3-distinct locked-block toolbox) remains.
+- 2026-06-10 04:44 | Edit | /home/khujta/projects/bmad/archie/src/lib/componentTypes.ts
+- 2026-06-10 04:44 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-10 04:44 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-10 04:45 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/TypeBlockCard.tsx
+- 2026-06-10 04:45 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 04:45 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 04:45 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 04:45 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+
+## 2026-06-10 — feat(toolbox): banned blocks shown-but-locked (D89) — Phase 2 Slice 6b (S6 COMPLETE)
+GATES: eslint 0 errors · npm run build exit 0 · full suite 4886/4886 (+3 S6b tests) · ComponentTab 20/20 + levels 5/5
+SCOPE: BlockLockReason enum + labels (componentTypes.ts) · TypeBlockCard lockReason prop (red Ban for banned / gray Lock for not-in-palette; draggable=false + preventDefault, Add disabled, aria-disabled, red accent bar) · ComponentTab retains banned types past the category+palette filters + lockReasonFor classifier. not-in-palette reserved for Phase 4 show-all-unlocked. S6 = S6a (footer gating, 73b4268) + S6b — COMPLETE.
+- 2026-06-10 04:52 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-10 04:52 | Edit | /home/khujta/projects/bmad/archie/src/stores/architectureStoreHelpers.ts
+- 2026-06-10 04:53 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+
+## 2026-06-10 — [4480b4e] feat(engine): scheduled events fire live — retarget + chaos re-tune (D91) — Phase 2 Slice 7/8
+GATES: eslint 0 errors · build exit 0 · engine 74/74 (+5 retarget) · monitoringFeedback 4/4 · integration 154/154 (solvability 62/62 3★, par regenerated) 
+KEY FINDING: events fired NOWHERE pre-S7 — not live (UUID ids) and NOT in the harness either (RefNode ids are n-*-prefixed). All 9 component_failure/latency_spike events across 8 challenges were inert; az_outage (category-matched) was the only live event type.
+SCOPE: matchesTarget = id ∪ category ∪ typeId (SimNode.typeId additive, from buildSimGraph) · component_failure per-node with per-node monitoring · re-tune: data-pipeline ×4→×1.5 + hint claims (p95 120→235, $400→$500), defense-in-depth ×3→×1.25 + hint 3x→1.5x, rag-retrieval uptime 98→78 (authored target never achievable — event inert when authored) · challengePar regen (data-pipeline 380→490, rag 250→555) · PENDING D25 → resolved.
+- 2026-06-10 05:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-10 05:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-10 05:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationTypes.ts
+- 2026-06-10 05:05 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 05:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 05:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 05:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 05:06 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 05:07 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 05:07 | Edit | /home/khujta/projects/bmad/archie/src/engine/simulationEngine.ts
+- 2026-06-10 05:07 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationTimeline.tsx
+- 2026-06-10 05:07 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-10 05:08 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-10 05:08 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-10 05:09 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/simulation/SimulationTimeline.test.tsx
+
+## 2026-06-10 05:12 — [87a0478] feat(simulation): Observe-to-Recover visible (D89) — Phase 2 Slice 8/8
+GATES: eslint 0 errors · build exit 0 · FULL SUITE 4901/4901 (271 files) · engine 78/78 · timeline 3/3 (new spec) · coach 15/15 (+3)
+SCOPE: TickEventState + TickState.events + NodeTelemetry.monitored (all additive identity) · computeOverrides emits activeEvents (type/target/hit-nodes/detected) · runSimulation attaches to frames · SimulationTimeline marker band (red undetected → amber detected, <title> tooltip — in-SVG text would distort under preserveAspectRatio=none) · useChallengeCoach narrates the live event free (undetected → detection flip). Stats-panel monitored badge deferred (telemetry emitted; UI consumer is cheap follow-up).
+
+## 2026-06-10 05:12 — PHASE 2 EXEC: code complete — 8/8 slices (Exec stays 🔄 pending runtime evidence)
+SLICES: S1 port gate [878d3a1, deployed] · S2 pathway filter [670056d, deployed] · S3 closure validator [72b14a2, deployed] · S4 batch A [c908545, deployed] · S5 batch B [efb043a, deployed] · S6a footer gating [73b4268, deployed] · S6b banned-block toolbox [4b15a6d] · S7 retarget+re-tune [4480b4e] · S8 observe visibility [87a0478]
+GATES: full suite 4901/4901 · solvability 62/62 3★ · golden byte-identical · validateTechTree ===[] (REQ gate permanent)
+RUNTIME EVIDENCE PENDING (the PLAN checkpoint before Exec ✅): desktop E2E — (1) a quest attempt with a mismatched edge loses the topology star + the results modal shows the "Ports compatible" row; (2) 40-observe-to-recover timeline shows the red→amber detection marker mid-run. Author tests/e2e/feedback-phase2.spec.ts (pattern: feedback-phase1.spec.ts — local vite no-Firebase-env shell vs seeded Firestore, --project=desktop), artifacts → test-results/feedback-phase2/.
+DECISIONS: D89 (8-slice design lock) · D90 (palette-gap policy) · D91 (event retarget + re-tune). PENDING: D25 resolved; D26/D27/D28 open (D28 fires when S4/S5's tree change next deploys — bump PROGRESS_GENERATION, exempt the E2E account).
