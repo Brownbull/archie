@@ -4936,3 +4936,8 @@ CI: deploy-production ✅ success | DEPLOYMENTS: P163
 GATES: full suite 4917/4917 (+7: forward-compat unknown-variant-key, https rejections, transform, dropdown subrow, inspector link attrs) · build exit 0 · eslint clean
 KEY: runtime ConfigVariantSchema no longer .strict() — the P5-class trap that would have EMPTIED the library on reseed is closed; the deployed reader now tolerates the Phase-3 fields. RESEED GATE OPEN (S9 waits only on S8 authoring + S7 numeric pass).
 WAVE 1 REMAINING: S3 (18 binding briefs), S5 (ladder surgery), S6 (12 icons + toast).
+
+## 2026-06-10 — feat(challenges): 18 binding brief rewrites (D93) — Phase 3 S3/10
+GATES: loader+consistency+solvability 79/79 · full suite 4917/4917 · 18/18 passed adversarial verification (wf_e850bba5-7a2, 36 agents) · all ≤600 chars, hooks ≤130
+SCOPE: batches A+B converted to context style; 1 hint amendment (edge-delivery); scale-out star-label corrected to the D72 well-formed criterion. EXIT CRITERION "0 instruction-style briefs" SATISFIED.
+S5 PICKUP (verifier-surfaced pre-existing ladder nits, untouched per hint economy): cache-the-hot-path hint 4 says "writes plus uncached reads" on a pure-read workload · async-pipeline hint 2 "peaks 3 times" vs the 2-crest curve · scale-out hint 2 "topology is invalid" predates D72 (advisory now).
