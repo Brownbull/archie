@@ -1,0 +1,55 @@
+schema_version: 4.0.0
+name: P1/T9 — canonical async pipeline, every edge port-compatible (post stream-out audit)
+# traffic →(http)→ compute →(stream)→ queue →(stream)→ worker →(db)→ database
+# Before P1/T2 the compute→queue and queue→db legs were FORCED mismatches (no stream-out on
+# compute/traffic; worker missing from the async-pipeline palette). This build must render with
+# ZERO connection warnings.
+nodes:
+  - id: n-traffic
+    component_id: web-users
+    config_variant_id: heavy
+    position: { x: 0, 'y': 0 }
+    replicas: 1
+    traffic_rps: 800
+    traffic_workload: write
+  - id: n-compute
+    component_id: node-express
+    config_variant_id: single-process
+    position: { x: 260, 'y': 0 }
+    replicas: 1
+  - id: n-queue
+    component_id: rabbitmq
+    config_variant_id: single-node
+    position: { x: 520, 'y': 0 }
+    replicas: 1
+  - id: n-worker
+    component_id: celery
+    config_variant_id: prefork
+    position: { x: 780, 'y': 0 }
+    replicas: 1
+  - id: n-db
+    component_id: postgresql
+    config_variant_id: single-node
+    position: { x: 1040, 'y': 0 }
+    replicas: 1
+edges:
+  - id: e0
+    source_node_id: n-traffic
+    target_node_id: n-compute
+    source_handle_id: http-out
+    target_handle_id: http-in
+  - id: e1
+    source_node_id: n-compute
+    target_node_id: n-queue
+    source_handle_id: stream-out
+    target_handle_id: stream-in
+  - id: e2
+    source_node_id: n-queue
+    target_node_id: n-worker
+    source_handle_id: stream-out
+    target_handle_id: stream-in
+  - id: e3
+    source_node_id: n-worker
+    target_node_id: n-db
+    source_handle_id: db-out
+    target_handle_id: db-in
