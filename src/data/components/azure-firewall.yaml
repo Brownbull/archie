@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Azure Firewall standard: managed L3-L7 filtering with threat-intel feeds for VNet perimeters. Azure-native policy plumbing.
+    docs_url: https://learn.microsoft.com/en-us/azure/firewall/overview
     monthly_cost: 30
     max_rps: 220000
     base_latency_ms: 2
@@ -86,6 +89,9 @@ config_variants:
           - Always-on managed instances incur baseline cost regardless of throughput
   - id: premium
     name: Premium
+    description: >-
+      Azure Firewall premium: TLS inspection and IDPS at nearly twice the throughput — the regulated-industry tier.
+    docs_url: https://learn.microsoft.com/en-us/azure/firewall/premium-features
     monthly_cost: 80
     max_rps: 400000
     base_latency_ms: 1

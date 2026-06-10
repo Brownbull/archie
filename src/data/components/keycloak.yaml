@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: single
     name: Single Instance
+    description: >-
+      One Keycloak instance: self-hosted identity — SSO, OIDC, user federation — for the cost of a small VM. Sessions live on this box.
+    docs_url: https://www.keycloak.org/documentation
     monthly_cost: 25
     max_rps: 2000
     base_latency_ms: 40
@@ -80,6 +83,9 @@ config_variants:
           - HA needs clustering (next tier)
   - id: clustered
     name: Clustered (HA)
+    description: >-
+      Clustered Keycloak: replicated sessions and 3x the auth throughput. Login keeps working when a node doesn't.
+    docs_url: https://www.keycloak.org/server/configuration-production
     monthly_cost: 90
     max_rps: 6000
     base_latency_ms: 35

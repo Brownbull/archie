@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: hosted-checkout
     name: Hosted Checkout
+    description: >-
+      Stripe hosted checkout: the payment page lives on Stripe — minimal integration, minimal PCI scope. Conversion flows leave your domain.
+    docs_url: https://docs.stripe.com/payments/checkout
     monthly_cost: 0
     max_rps: 200
     base_latency_ms: 250
@@ -95,6 +98,9 @@ config_variants:
           - Stripe hosts the UI, retries, and localization
   - id: payment-intents
     name: Payment Intents API
+    description: >-
+      Stripe Payment Intents: payments embedded in your own flow with full control of the UX, at 2.5x the request ceiling. More integration, more PCI surface.
+    docs_url: https://docs.stripe.com/payments/payment-intents
     monthly_cost: 0
     max_rps: 500
     base_latency_ms: 200

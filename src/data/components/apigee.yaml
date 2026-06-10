@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Apigee standard: Google's API management — keys, quotas, analytics, monetization hooks — at a six-figure rps ceiling.
+    docs_url: https://cloud.google.com/apigee/docs
     monthly_cost: 60
     max_rps: 160000
     base_latency_ms: 6
@@ -87,6 +90,9 @@ config_variants:
           - Response caching reduces billable backend calls on repeat requests
   - id: enterprise
     name: Enterprise
+    description: >-
+      Apigee enterprise: nearly double the ceiling plus hybrid deployment and stronger isolation. API governance at organization scale.
+    docs_url: https://cloud.google.com/apigee/docs/api-platform/get-started/what-apigee
     monthly_cost: 150
     max_rps: 300000
     base_latency_ms: 4

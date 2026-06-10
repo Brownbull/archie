@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: on-premise
     name: On-Premise (ELK/Splunk)
+    description: >-
+      On-prem SIEM (ELK/Splunk-style): your logs, your hardware, your queries. Ingest ceilings and storage growth are yours to manage too.
+    docs_url: https://en.wikipedia.org/wiki/Security_information_and_event_management
     monthly_cost: 150
     max_rps: 5000
     base_latency_ms: 10
@@ -103,6 +106,9 @@ config_variants:
       retention-period: "Limited by local storage capacity; tiering to cold storage extends retention"
   - id: cloud-native
     name: Cloud-Native SIEM
+    description: >-
+      Cloud-native SIEM: elastic ingest at 100k eps with detection content maintained by the vendor. Billed by data volume — log discipline is cost discipline.
+    docs_url: https://en.wikipedia.org/wiki/Security_information_and_event_management
     monthly_cost: 300
     max_rps: 100000
     base_latency_ms: 3
@@ -159,6 +165,9 @@ config_variants:
       retention-period: "Long-term retention via integrated cold storage (S3, Azure Blob) at low cost"
   - id: hybrid
     name: Hybrid SIEM + SOAR
+    description: >-
+      Hybrid SIEM + SOAR: detection plus automated response playbooks — alerts that act, not just page. The integration work is the real price.
+    docs_url: https://en.wikipedia.org/wiki/SOAR_(security)
     monthly_cost: 250
     max_rps: 50000
     base_latency_ms: 5

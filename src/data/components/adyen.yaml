@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Online (Checkout API)
+    description: >-
+      Adyen Checkout API: one integration, global acquiring and local payment methods. The enterprise single-stack for online payments.
+    docs_url: https://docs.adyen.com/online-payments/
     monthly_cost: 0
     max_rps: 3000
     base_latency_ms: 260
@@ -88,6 +91,9 @@ config_variants:
           - Tokenized flows avoid extra hops
   - id: unified-commerce
     name: Unified Commerce (+ POS)
+    description: >-
+      Adyen Unified Commerce: online and in-store flow through one platform — omnichannel reconciliation built in, for a platform fee.
+    docs_url: https://docs.adyen.com/point-of-sale/
     monthly_cost: 60
     max_rps: 2500
     base_latency_ms: 320

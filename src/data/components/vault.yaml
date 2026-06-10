@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: self-hosted
     name: Self-Hosted (HA Raft)
+    description: >-
+      Self-hosted Vault with Raft: secrets, dynamic credentials, and encryption-as-a-service under your control. Unsealing and upgrades are on you.
+    docs_url: https://developer.hashicorp.com/vault/docs
     monthly_cost: 60
     max_rps: 5000
     base_latency_ms: 6
@@ -80,6 +83,9 @@ config_variants:
           - Upgrades and backups are your job
   - id: hcp-vault
     name: HCP Vault (Managed)
+    description: >-
+      HCP Vault: the managed cluster — HashiCorp runs the consensus, you consume the API. Trades a slight latency bump for never owning an unseal ceremony.
+    docs_url: https://developer.hashicorp.com/hcp/docs/vault
     monthly_cost: 200
     max_rps: 6000
     base_latency_ms: 9

@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: http-api
     name: HTTP API
+    description: >-
+      API Gateway HTTP APIs: the lean, cheap front door for Lambda and HTTP backends — a third the price of REST APIs for most routes.
+    docs_url: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html
     monthly_cost: 15
     max_rps: 10000
     base_latency_ms: 12
@@ -80,6 +83,9 @@ config_variants:
           - No per-request VM warm-up
   - id: rest-api
     name: REST API (+ Cache)
+    description: >-
+      API Gateway REST APIs: request validation, transformations, and response caching built in. Heavier and pricier — pay for features you actually use.
+    docs_url: https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-rest-api.html
     monthly_cost: 50
     max_rps: 8000
     base_latency_ms: 18

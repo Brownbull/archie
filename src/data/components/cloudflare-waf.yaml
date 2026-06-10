@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Managed Ruleset
+    description: >-
+      Cloudflare's managed ruleset: edge filtering before traffic ever reaches you, tuned by the network that sees a fifth of the web.
+    docs_url: https://developers.cloudflare.com/waf/
     monthly_cost: 20
     max_rps: 50000
     base_latency_ms: 4
@@ -81,6 +84,9 @@ config_variants:
           - Flat tier covers managed rules
   - id: bot-and-rate
     name: Managed + Bot / Rate Limiting
+    description: >-
+      Cloudflare WAF with bot management and rate limiting: scripted abuse and scrapers get scored and shed at the edge. Inspection adds a couple of milliseconds.
+    docs_url: https://developers.cloudflare.com/bots/
     monthly_cost: 75
     max_rps: 45000
     base_latency_ms: 6

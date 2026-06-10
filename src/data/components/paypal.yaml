@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: paypal-checkout
     name: PayPal Checkout
+    description: >-
+      PayPal Checkout: the buyer-recognition button — wallets convert users who'd abandon a card form. Redirect latency is the toll.
+    docs_url: https://developer.paypal.com/docs/checkout/
     monthly_cost: 0
     max_rps: 1500
     base_latency_ms: 400
@@ -87,6 +90,9 @@ config_variants:
           - Conversion benefit usually outweighs it
   - id: braintree-direct
     name: Braintree (Direct API)
+    description: >-
+      Braintree direct API: PayPal's gateway with card-field control, faster auths, and a higher ceiling — the developer-grade tier of the PayPal family.
+    docs_url: https://developer.paypal.com/braintree/docs
     monthly_cost: 0
     max_rps: 2500
     base_latency_ms: 280

@@ -46,6 +46,9 @@ base_metrics:
 config_variants:
   - id: direct-integration
     name: Direct PSP Integration
+    description: >-
+      Direct PSP integration: one processor, straightforward flow. Provider latency (~200ms) and a low ceiling are inherent — payments are slow by design.
+    docs_url: https://en.wikipedia.org/wiki/Payment_gateway
     monthly_cost: 0
     max_rps: 100
     base_latency_ms: 200
@@ -101,6 +104,9 @@ config_variants:
       payment-method: "Supports cards and digital wallets through Stripe's built-in methods"
   - id: payment-orchestrator
     name: Payment Orchestrator
+    description: >-
+      A payment orchestrator: routes across processors with retry and failover — a declined-by-outage sale gets a second chance. 5x the ceiling of a direct hookup.
+    docs_url: https://en.wikipedia.org/wiki/Payment_orchestration
     monthly_cost: 50
     max_rps: 500
     base_latency_ms: 150
@@ -168,6 +174,9 @@ config_variants:
       payment-method: "Broadest method coverage by routing to the PSP that supports each method"
   - id: recurring-billing
     name: Recurring Billing Engine
+    description: >-
+      A recurring-billing engine: subscriptions, dunning, and proration handled — revenue logic you'd rather not hand-roll on cron jobs.
+    docs_url: https://en.wikipedia.org/wiki/Subscription_business_model
     monthly_cost: 30
     max_rps: 200
     base_latency_ms: 180
