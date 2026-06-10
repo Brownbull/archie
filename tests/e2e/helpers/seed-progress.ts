@@ -16,7 +16,7 @@ import type { Page } from "@playwright/test"
  */
 
 const TRACKS = ["foundations", "data", "edge", "realtime", "reliability", "security", "aiml"] as const
-const PROGRESS_GENERATION = 2 // must equal userProgressStore.PROGRESS_GENERATION or the reader wipes it
+const PROGRESS_GENERATION = 3 // must equal userProgressStore.PROGRESS_GENERATION or the reader wipes it
 const ALLOWED_KEYS = ["trackXp", "completedChallenges", "bestStarsCloud", "equippedAvatar", "hintsUnlocked", "generation"] as const
 
 function loadEnv(): Record<string, string> {

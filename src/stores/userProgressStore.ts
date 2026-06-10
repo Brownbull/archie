@@ -8,12 +8,18 @@ let loadSeq = 0
 
 /**
  * Progress generation (ISAPivot Phase 6, D65). Bumped to force a ONE-TIME, all-user reset to ground
- * zero after the ISAPivot challenge rebalance + hint economy — so the harder, recast challenges are
- * fair for everyone and the spendable-star pool starts clean. A user whose stored `generation` is
- * below this is wiped + re-stamped on their next load (idempotent: it runs once, then they're current).
+ * zero after a tree/balance change that invalidates existing progress. A user whose stored
+ * `generation` is below this is wiped + re-stamped on their next load (idempotent: it runs once,
+ * then they're current).
  * Generation 1 = pre-ISAPivot (the implicit default for legacy docs that predate the field).
+ * Generation 2 = ISAPivot challenge rebalance + hint economy.
+ * Generation 3 = Quest Integrity Phase 2 (D28/D89): unlock-ordering restructure (13 new prereq
+ *   edges, burst-absorber re-tiered), port-enforcement star gate, scheduled events firing live +
+ *   chaos re-tune — old completions reflect a progression that no longer exists, so everyone
+ *   re-climbs the corrected tree. The E2E unlocked account is exempt in effect: unlocked-setup
+ *   re-seeds it with the CURRENT generation on every run (see tests/e2e/helpers/seed-progress.ts).
  */
-export const PROGRESS_GENERATION = 2
+export const PROGRESS_GENERATION = 3
 
 export interface UserProgress {
   trackXp: Readonly<Record<string, number>>
