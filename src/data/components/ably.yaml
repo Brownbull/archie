@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard (Single Region)
+    description: >-
+      Ably single-region: managed realtime pub/sub with delivery guarantees most DIY WebSocket stacks never reach.
+    docs_url: https://ably.com/docs
     monthly_cost: 30
     max_rps: 12000
     base_latency_ms: 25
@@ -79,6 +82,9 @@ config_variants:
           - Free tier covers small workloads
   - id: global-multi-region
     name: Global (Multi-Region)
+    description: >-
+      Ably global: messages route via the nearest of many regions — lower worldwide latency, 3x the ceiling, and regional failover built in.
+    docs_url: https://ably.com/docs/platform/architecture
     monthly_cost: 120
     max_rps: 40000
     base_latency_ms: 18

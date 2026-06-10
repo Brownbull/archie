@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard-jvm
     name: Standard JVM
+    description: >-
+      Spring Boot on the JVM: the enterprise Java workhorse — huge ecosystem, strong throughput once the JIT warms up. Memory-hungry by nature.
+    docs_url: https://docs.spring.io/spring-boot/index.html
     monthly_cost: 60
     max_rps: 20000
     base_latency_ms: 8
@@ -91,6 +94,9 @@ config_variants:
           - Cold start pays a JIT/warm-up penalty
   - id: native-graalvm
     name: Native (GraalVM)
+    description: >-
+      Spring Boot compiled with GraalVM: instant startup and a fraction of the memory, slightly ahead on throughput. Reflection-heavy libraries need coaxing.
+    docs_url: https://docs.spring.io/spring-boot/reference/packaging/native-image/index.html
     monthly_cost: 45
     max_rps: 22000
     base_latency_ms: 6

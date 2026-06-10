@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: puma-threaded
     name: Puma (Threaded)
+    description: >-
+      Rails on threaded Puma: convention-over-configuration productivity with a modest single-node ceiling. The GVL keeps threads honest.
+    docs_url: https://guides.rubyonrails.org/tuning_performance_for_deployment.html
     monthly_cost: 30
     max_rps: 2000
     base_latency_ms: 22
@@ -84,6 +87,9 @@ config_variants:
           - YJIT narrows the gap on hot code paths
   - id: horizontal-pods
     name: Horizontally Scaled
+    description: >-
+      Rails scaled horizontally: more pods behind a balancer, 5x the throughput, same conventions. The database usually becomes the next conversation.
+    docs_url: https://guides.rubyonrails.org/tuning_performance_for_deployment.html
     monthly_cost: 80
     max_rps: 10000
     base_latency_ms: 20

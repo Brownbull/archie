@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Pushpin: a proxy that turns plain HTTP backends into realtime push (SSE/WebSocket) — your API stays request/response, clients get streams.
+    docs_url: https://pushpin.org/docs/
     monthly_cost: 50
     max_rps: 6000
     base_latency_ms: 5
@@ -82,6 +85,9 @@ config_variants:
           - Connection offload means backend capacity is sized for publish rate, not for held sockets
   - id: scaled
     name: Scaled
+    description: >-
+      Scaled Pushpin: multiple instances fan streams out at 2.5x the ceiling, keeping the realtime layer stateless in front of boring backends.
+    docs_url: https://pushpin.org/docs/usage/
     monthly_cost: 100
     max_rps: 15000
     base_latency_ms: 4

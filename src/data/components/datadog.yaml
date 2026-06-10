@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: apm
     name: APM + Metrics
+    description: >-
+      Datadog APM + metrics: traces and dashboards with near-zero agent overhead. The meter runs on hosts and spans — watch cardinality.
+    docs_url: https://docs.datadoghq.com/tracing/
     monthly_cost: 80
     max_rps: 50000
     base_latency_ms: 2
@@ -80,6 +83,9 @@ config_variants:
           - Agent auto-discovers and instruments services
   - id: full-stack
     name: Full-Stack (Logs + APM + Metrics)
+    description: >-
+      Full-stack Datadog: logs, APM, and metrics correlated in one place — the one-pane story. The bill scales with everything you send it.
+    docs_url: https://docs.datadoghq.com/getting_started/
     monthly_cost: 200
     max_rps: 100000
     base_latency_ms: 3

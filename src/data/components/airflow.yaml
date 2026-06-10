@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: self-managed
     name: Self-Managed (CeleryExecutor)
+    description: >-
+      Self-managed Airflow: the DAG-orchestration standard on your own metal — scheduler care, worker sizing, and upgrades included in the (low) price.
+    docs_url: https://airflow.apache.org/docs/
     monthly_cost: 90
     max_rps: 200
     base_latency_ms: 1000
@@ -93,6 +96,9 @@ config_variants:
           - Idle workers can be scaled down between schedules
   - id: managed-mwaa
     name: Managed (MWAA / Composer)
+    description: >-
+      Managed Airflow (MWAA/Composer): the same DAGs with the scheduler babysat for you, at roughly 4x the cost. Version lag is the quiet trade.
+    docs_url: https://docs.aws.amazon.com/mwaa/latest/userguide/what-is-mwaa.html
     monthly_cost: 350
     max_rps: 400
     base_latency_ms: 800

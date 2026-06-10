@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Phoenix on the BEAM: lightweight processes give millions of cheap connections and 4ms responses out of the box.
+    docs_url: https://hexdocs.pm/phoenix/overview.html
     monthly_cost: 60
     max_rps: 8000
     base_latency_ms: 4
@@ -82,6 +85,9 @@ config_variants:
           - High socket density per node means fewer instances for a given connection target
   - id: clustered
     name: Clustered
+    description: >-
+      Clustered Phoenix: BEAM nodes mesh natively — PubSub and presence span machines with almost no extra plumbing. 2.5x the ceiling.
+    docs_url: https://hexdocs.pm/phoenix/clustering.html
     monthly_cost: 120
     max_rps: 20000
     base_latency_ms: 3

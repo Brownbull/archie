@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: moderate
     name: Moderate (~3k rps)
+    description: >-
+      A moderate web audience: ~3k requests per second at peak — a busy product, not a viral one. The baseline your architecture must serve cleanly.
+    docs_url: https://en.wikipedia.org/wiki/Web_traffic
     monthly_cost: 0
     max_rps: 3000
     base_latency_ms: 0
@@ -80,6 +83,9 @@ config_variants:
           - No extreme spikes at this tier
   - id: heavy
     name: Heavy (~30k rps)
+    description: >-
+      A heavy web audience: ~30k rps at peak — launch-day, prime-time traffic. Every tier's ceiling gets interrogated.
+    docs_url: https://en.wikipedia.org/wiki/Web_traffic
     monthly_cost: 0
     max_rps: 30000
     base_latency_ms: 0

@@ -39,6 +39,9 @@ base_metrics:
 config_variants:
   - id: public-channels
     name: Public Channels
+    description: >-
+      Pusher public channels: drop-in realtime events with the gentlest learning curve in the category. Connection counts are the billing axis.
+    docs_url: https://pusher.com/docs/channels/
     monthly_cost: 49
     max_rps: 10000
     base_latency_ms: 30
@@ -86,6 +89,9 @@ config_variants:
           - Persistent connections avoid repeated handshakes
   - id: presence-channels
     name: Presence + Private Channels
+    description: >-
+      Pusher presence + private channels: auth-gated rooms with who's-online state — the chat/collab tier, at twice the ceiling.
+    docs_url: https://pusher.com/docs/channels/using_channels/presence-channels/
     monthly_cost: 99
     max_rps: 20000
     base_latency_ms: 35

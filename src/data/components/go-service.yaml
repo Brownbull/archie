@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: single-binary
     name: Single Instance
+    description: >-
+      A Go service in one binary: 20k rps from a single small instance — goroutines make concurrency nearly free. Deploys are a file copy.
+    docs_url: https://go.dev/doc/
     monthly_cost: 20
     max_rps: 20000
     base_latency_ms: 3
@@ -86,6 +89,9 @@ config_variants:
           - Efficient GC tuned for low pause times
   - id: horizontal-pods
     name: Horizontally Scaled
+    description: >-
+      Go scaled horizontally: stateless binaries multiply to a 100k-rps ceiling without drama. The cheapest six-figure throughput in the catalog.
+    docs_url: https://go.dev/doc/effective_go
     monthly_cost: 70
     max_rps: 100000
     base_latency_ms: 4

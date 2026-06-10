@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: steady
     name: Steady (~1k rps)
+    description: >-
+      Steady API consumers: ~1k rps of machine-to-machine calls — disciplined, retry-capable, contract-bound.
+    docs_url: https://en.wikipedia.org/wiki/API
     monthly_cost: 0
     max_rps: 1000
     base_latency_ms: 0
@@ -78,6 +81,9 @@ config_variants:
           - Predictable batch windows
   - id: burst
     name: Burst (~12k rps)
+    description: >-
+      Bursting API consumers: ~12k rps when batch jobs and integrations all fire at once. Machines don't ramp politely.
+    docs_url: https://en.wikipedia.org/wiki/Rate_limiting
     monthly_cost: 0
     max_rps: 12000
     base_latency_ms: 0

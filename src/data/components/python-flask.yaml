@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: wsgi-gunicorn
     name: WSGI (Gunicorn)
+    description: >-
+      Flask on Gunicorn: the micro-framework classic — simple, explicit, synchronous. Fine until concurrency outgrows worker counts.
+    docs_url: https://flask.palletsprojects.com/en/stable/deploying/gunicorn/
     monthly_cost: 18
     max_rps: 1800
     base_latency_ms: 22
@@ -90,6 +93,9 @@ config_variants:
           - You only pay for the extensions you actually add
   - id: gevent-async
     name: Gevent (Async Workers)
+    description: >-
+      Flask on gevent workers: greenlets make blocking I/O cooperative for ~3x the throughput without rewriting the app. CPU-bound paths gain nothing.
+    docs_url: https://flask.palletsprojects.com/en/stable/deploying/gunicorn/
     monthly_cost: 38
     max_rps: 5000
     base_latency_ms: 16

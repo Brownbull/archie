@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: uvicorn
     name: Uvicorn (Single Process)
+    description: >-
+      FastAPI on a single Uvicorn process: async-first Python with type-driven validation — the quickest path from idea to fast API.
+    docs_url: https://fastapi.tiangolo.com/deployment/server-workers/
     monthly_cost: 22
     max_rps: 7000
     base_latency_ms: 12
@@ -90,6 +93,9 @@ config_variants:
           - CPU-bound handlers block the loop — offload them
   - id: gunicorn-uvicorn
     name: Gunicorn + Uvicorn Workers
+    description: >-
+      FastAPI under Gunicorn with Uvicorn workers: a process per core takes the same app to 18k rps. The standard production layout.
+    docs_url: https://fastapi.tiangolo.com/deployment/server-workers/
     monthly_cost: 45
     max_rps: 18000
     base_latency_ms: 10

@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: dbt-core
     name: dbt Core (Self-Run)
+    description: >-
+      dbt Core: SQL transformations as version-controlled, tested models — run from your own scheduler for nearly nothing.
+    docs_url: https://docs.getdbt.com/docs/introduction
     monthly_cost: 10
     max_rps: 200
     base_latency_ms: 5000
@@ -84,6 +87,9 @@ config_variants:
           - Self-host CI for runs and docs
   - id: dbt-cloud
     name: dbt Cloud (Managed)
+    description: >-
+      dbt Cloud: scheduling, CI, lineage, and an IDE around the same models. You're paying for the workflow, not the transforms.
+    docs_url: https://docs.getdbt.com/docs/cloud/about-cloud/dbt-cloud-features
     monthly_cost: 100
     max_rps: 300
     base_latency_ms: 4000

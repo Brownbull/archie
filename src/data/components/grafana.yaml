@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: self-hosted
     name: Self-Hosted (LGTM)
+    description: >-
+      Self-hosted Grafana LGTM: dashboards, logs, traces, and metrics on open source — maximum control, your storage to scale.
+    docs_url: https://grafana.com/docs/grafana/latest/
     monthly_cost: 50
     max_rps: 4000
     base_latency_ms: 40
@@ -85,6 +88,9 @@ config_variants:
           - Capacity planning for ingest spikes
   - id: cloud
     name: Grafana Cloud
+    description: >-
+      Grafana Cloud: the LGTM stack managed, with a generous free tier and 2x the query headroom. Observability without running observability.
+    docs_url: https://grafana.com/docs/grafana-cloud/
     monthly_cost: 150
     max_rps: 9000
     base_latency_ms: 30

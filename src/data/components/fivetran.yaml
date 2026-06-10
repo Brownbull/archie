@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Fivetran standard: managed connectors land SaaS and database data in your warehouse on sync schedules. Billed by monthly active rows — growth shows up on the invoice.
+    docs_url: https://fivetran.com/docs/getting-started
     monthly_cost: 120
     max_rps: 400
     base_latency_ms: 6000
@@ -81,6 +84,9 @@ config_variants:
           - No engineering time on connectors
   - id: enterprise
     name: Enterprise (High-Frequency)
+    description: >-
+      Fivetran enterprise: high-frequency syncs halve data latency for the pipelines that feed near-real-time decisions. Premium rows, premium price.
+    docs_url: https://fivetran.com/docs/core-concepts/sync-modes
     monthly_cost: 400
     max_rps: 700
     base_latency_ms: 3000

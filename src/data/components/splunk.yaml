@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: enterprise-self-hosted
     name: Splunk Enterprise (Self-Hosted)
+    description: >-
+      Self-hosted Splunk Enterprise: the search-anything log platform behind your firewall. License plus the indexer fleet — powerful and priced like it.
+    docs_url: https://docs.splunk.com/Documentation/Splunk
     monthly_cost: 400
     max_rps: 50000
     base_latency_ms: 5
@@ -93,6 +96,9 @@ config_variants:
           - Cost control requires filtering and routing data before indexing
   - id: splunk-cloud
     name: Splunk Cloud (Managed)
+    description: >-
+      Splunk Cloud: the same SPL power at 3x the ingest with the fleet managed. Among the priciest lines in observability — compliance shops pay it.
+    docs_url: https://docs.splunk.com/Documentation/SplunkCloud
     monthly_cost: 700
     max_rps: 150000
     base_latency_ms: 3

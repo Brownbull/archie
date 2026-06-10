@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      ASP.NET Core on the CLR: top-tier throughput per core with a mature toolchain. The sleeper pick in raw benchmark tables.
+    docs_url: https://learn.microsoft.com/en-us/aspnet/core/
     monthly_cost: 45
     max_rps: 30000
     base_latency_ms: 5
@@ -88,6 +91,9 @@ config_variants:
           - GC tuned for server throughput
   - id: native-aot
     name: Native AOT
+    description: >-
+      ASP.NET Core Native AOT: ahead-of-time compilation for fast cold starts and a smaller footprint — at the cost of some dynamic features.
+    docs_url: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/native-aot
     monthly_cost: 35
     max_rps: 32000
     base_latency_ms: 4

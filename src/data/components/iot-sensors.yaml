@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: fleet
     name: Fleet (~5k rps)
+    description: >-
+      A sensor fleet: ~5k rps of small, relentless writes. Devices don't browse — they report, forever, mostly uncacheable.
+    docs_url: https://en.wikipedia.org/wiki/Internet_of_things
     monthly_cost: 0
     max_rps: 5000
     base_latency_ms: 0
@@ -80,6 +83,9 @@ config_variants:
           - Steady aggregate by design
   - id: large-fleet
     name: Large Fleet (~50k rps)
+    description: >-
+      A large sensor fleet: ~50k rps of telemetry. Ingest-first architecture or bust — nothing about this traffic is cacheable.
+    docs_url: https://en.wikipedia.org/wiki/Telemetry
     monthly_cost: 0
     max_rps: 50000
     base_latency_ms: 0

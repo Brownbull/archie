@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: steady
     name: Steady (~2k rps)
+    description: >-
+      A steady mobile base: ~2k rps of app traffic — chattier sessions, tolerant of brief latency, unforgiving of errors.
+    docs_url: https://en.wikipedia.org/wiki/Mobile_app
     monthly_cost: 0
     max_rps: 2000
     base_latency_ms: 0
@@ -78,6 +81,9 @@ config_variants:
           - Retry storms after connectivity blips
   - id: peak
     name: Peak (~20k rps)
+    description: >-
+      Peak mobile load: ~20k rps — a push notification just landed and everyone opened the app at once.
+    docs_url: https://en.wikipedia.org/wiki/Push_technology
     monthly_cost: 0
     max_rps: 20000
     base_latency_ms: 0
