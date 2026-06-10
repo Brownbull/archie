@@ -2,10 +2,7 @@ import { Play } from "lucide-react"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
-import { buildSimGraph, totalTrafficSourceRps, scaleTrafficCurveToPeak, buildTrafficCurveFromSources, hasTrafficKind } from "@/stores/architectureStoreHelpers"
-import { defaultTrafficCurve } from "@/engine/simulationEngine"
-import { getScenarioPreset } from "@/services/scenarioLoader"
-import { SIM_DEFAULT_DURATION_S } from "@/lib/constants"
+import { launchSandboxRun } from "@/lib/simulationLaunch"
 
 /**
  * "Run Simulation" trigger (Epic 15 Phase 5). Builds the SimGraph from the current canvas,
@@ -15,29 +12,12 @@ import { SIM_DEFAULT_DURATION_S } from "@/lib/constants"
  */
 export function RunSimulationButton() {
   const status = useSimulationStore((s) => s.status)
-  const start = useSimulationStore((s) => s.start)
   const nodeCount = useArchitectureStore((s) => s.nodes.length)
   const inChallenge = useChallengeStore(isChallengeMode)
 
   if (status !== "idle" || nodeCount === 0 || inChallenge) return null
 
-  const onRun = () => {
-    const { nodes, edges, activeScenarioId } = useArchitectureStore.getState()
-    const graph = buildSimGraph(nodes, edges)
-    const sourceTotal = totalTrafficSourceRps(nodes)
-    // Curve precedence: an active demand Scenario shapes it (scaled to the source volume); else a
-    // Traffic Source's own kind (realistic/periodic/search) drives the shape; else the default ramp.
-    const scenarioCurve = activeScenarioId ? getScenarioPreset(activeScenarioId)?.trafficCurve : undefined
-    let curve
-    if (scenarioCurve) {
-      curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(scenarioCurve, sourceTotal) : scenarioCurve
-    } else if (hasTrafficKind(nodes)) {
-      curve = buildTrafficCurveFromSources(nodes, SIM_DEFAULT_DURATION_S)
-    } else {
-      curve = sourceTotal > 0 ? scaleTrafficCurveToPeak(defaultTrafficCurve(), sourceTotal) : defaultTrafficCurve()
-    }
-    start(graph, curve)
-  }
+  const onRun = () => launchSandboxRun()
 
   return (
     <button
