@@ -4785,3 +4785,10 @@ ENUMERATION (the S4/S5 worklist) — 21 hard `unreachable-required-type` violati
 FIX APPROACH (S4/S5): add a granting challenge into each violator's requires-closure (e.g. planet-scale ← edge-delivery for cdn/dns; *-cache ← cache-the-hot-path). Re-run solvability harness (must stay all-3★) + validateTechTree (no new cycles) after every YAML edit; snapshot shrinks to [] then folds into the validateTechTree gate.
 - 2026-06-10 03:53 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_progress-reset-e2e-carveout.md
 - 2026-06-10 03:53 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/MEMORY.md
+
+## 2026-06-10 03:56 — PUSH dev -> main (Phase 2 S2+S3)
+PR: — (direct dev→main, trunk-based)
+CI: deploy-production ✅ success
+PROMOTION: N/A (single-env chain)
+DEPLOYMENTS: P159
+SCOPE: S2 pathway filter + S3 closure validator + KDBP bookkeeping (4 commits 878d3a1..fd9142a). No tree change → no reset (D28 tied to S4/S5).
