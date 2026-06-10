@@ -9,6 +9,7 @@ import { BudgetHud } from "@/components/dashboard/BudgetHud"
 import { CategoryBar } from "@/components/dashboard/CategoryBar"
 import { DashboardOverlay } from "@/components/dashboard/DashboardOverlay"
 import { TierBadge } from "@/components/dashboard/TierBadge"
+import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle, Maximize2 } from "lucide-react"
 
@@ -70,6 +71,13 @@ export function DashboardPanel() {
 
   const isEmpty = computedMetrics.size === 0
 
+  // S6 (D89): during a quest the footer's free-build chrome is noise. Hide the mastery TierBadge
+  // (+ its pathway CTA) and the footer BudgetHud — the budget already lives in ChallengeHud's cap+bar,
+  // so the footer copy is the double-readout the 2026-06-09 playtest flagged. The generic metric
+  // breakdown stays (it's architecture-quality feedback, useful in both modes). Narrow selector so
+  // attemptState/bestStars churn never re-renders the footer.
+  const inChallenge = useChallengeStore(isChallengeMode)
+
   return (
     <div
       data-testid="dashboard-panel"
@@ -77,11 +85,15 @@ export function DashboardPanel() {
       aria-label="Architecture scoring dashboard"
       className="flex h-full items-center"
     >
-      <TierBadge onOpenPathway={handleOpenPathway} />
+      {!inChallenge && (
+        <>
+          <TierBadge onOpenPathway={handleOpenPathway} />
 
-      <BudgetHud totalCost={totalCost} nodeCount={nodes.length} />
+          <BudgetHud totalCost={totalCost} nodeCount={nodes.length} />
 
-      <div className="self-stretch border-r border-archie-border" />
+          <div className="self-stretch border-r border-archie-border" />
+        </>
+      )}
 
       {isEmpty ? (
         <p className="w-full text-center text-sm text-text-secondary">

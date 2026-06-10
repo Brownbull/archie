@@ -1,7 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { DashboardPanel } from "@/components/dashboard/DashboardPanel"
+import { useChallengeStore } from "@/stores/challengeStore"
+import type { Challenge } from "@/lib/challengeTypes"
 import { DEFAULT_WEIGHT_PROFILE } from "@/lib/constants"
 
 // Mock architectureStore -- selector pattern (component calls useArchitectureStore(selector))
@@ -14,6 +16,8 @@ vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
     getMetricCategory: vi.fn(() => undefined),
     getAllMetricCategories: vi.fn(() => []),
+    // computeTotalArchitectureCost looks up each node's component; undefined → skipped (cost 0).
+    getComponent: vi.fn(() => undefined),
   },
 }))
 
@@ -316,5 +320,45 @@ describe("DashboardPanel", () => {
     render(<DashboardPanel />)
 
     expect(screen.getByTestId("dashboard-panel")).toBeInTheDocument()
+  })
+})
+
+describe("quest-mode footer gating (S6 / D89)", () => {
+  const metrics = new Map([
+    ["node-1", makeNode("node-1", [makeMetric({ id: "latency", category: "performance", numericValue: 8 })])],
+  ])
+  // BudgetHud renders only when nodeCount > 0 — seed a node so its presence/absence is meaningful.
+  function mockStoreWithNodes() {
+    mockUseArchitectureStore.mockImplementation((selector: unknown) => {
+      const state = {
+        computedMetrics: metrics,
+        currentTier: null,
+        nodes: [{ id: "node-1", data: { archieComponentId: "x", componentCategory: "compute" } }],
+        edges: [],
+        weightProfile: { ...DEFAULT_WEIGHT_PROFILE },
+        constraints: [],
+        constraintViolations: [],
+      }
+      return (selector as (s: typeof state) => unknown)(state)
+    })
+  }
+  afterEach(() => useChallengeStore.setState({ activeChallenge: null }))
+
+  it("shows the TierBadge + footer BudgetHud in free build", () => {
+    useChallengeStore.setState({ activeChallenge: null })
+    mockStoreWithNodes()
+    render(<DashboardPanel />)
+    expect(screen.getByTestId("tier-badge")).toBeInTheDocument()
+    expect(screen.getByTestId("budget-hud")).toBeInTheDocument()
+  })
+
+  it("hides the TierBadge + footer BudgetHud during a quest (dedupes the budget vs ChallengeHud)", () => {
+    useChallengeStore.setState({ activeChallenge: { id: "c1" } as Challenge })
+    mockStoreWithNodes()
+    render(<DashboardPanel />)
+    expect(screen.queryByTestId("tier-badge")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("budget-hud")).not.toBeInTheDocument()
+    // the generic metric breakdown still renders — architecture-quality feedback in both modes
+    expect(screen.getByTestId("dashboard-weakest")).toBeInTheDocument()
   })
 })
