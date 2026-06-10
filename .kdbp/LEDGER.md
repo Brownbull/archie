@@ -4941,3 +4941,27 @@ WAVE 1 REMAINING: S3 (18 binding briefs), S5 (ladder surgery), S6 (12 icons + to
 GATES: loader+consistency+solvability 79/79 · full suite 4917/4917 · 18/18 passed adversarial verification (wf_e850bba5-7a2, 36 agents) · all ≤600 chars, hooks ≤130
 SCOPE: batches A+B converted to context style; 1 hint amendment (edge-delivery); scale-out star-label corrected to the D72 well-formed criterion. EXIT CRITERION "0 instruction-style briefs" SATISFIED.
 S5 PICKUP (verifier-surfaced pre-existing ladder nits, untouched per hint economy): cache-the-hot-path hint 4 says "writes plus uncached reads" on a pure-read workload · async-pipeline hint 2 "peaks 3 times" vs the 2-crest curve · scale-out hint 2 "topology is invalid" predates D72 (advisory now).
+- 2026-06-10 12:32 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/11-serverless-burst.yaml
+- 2026-06-10 12:32 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/09-always-on.yaml
+- 2026-06-10 12:32 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/07-search-at-scale.yaml
+- 2026-06-10 12:32 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/12-worker-fleet.yaml
+- 2026-06-10 12:33 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/14-polyglot-persistence.yaml
+- 2026-06-10 12:33 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/19-edge-resilience.yaml
+- 2026-06-10 12:33 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/13-foundations-mastery.yaml
+- 2026-06-10 12:34 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/15-analytics-backbone.yaml
+- 2026-06-10 12:35 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/21-stream-processor.yaml
+- 2026-06-10 12:35 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/23-async-backbone.yaml
+- 2026-06-10 12:35 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/20-event-stream.yaml
+- 2026-06-10 12:36 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/22-realtime-live.yaml
+- 2026-06-10 12:36 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/32-rag-retrieval.yaml
+- 2026-06-10 12:37 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/33-production-ai.yaml
+- 2026-06-10 12:37 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/45-follow-the-sun.yaml
+- 2026-06-10 12:38 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/38-defense-in-depth.yaml
+- 2026-06-10 12:38 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/31-data-pipeline.yaml
+
+## 2026-06-10 — [S4+S5] mixed briefs + hint surgery (D93) — Phase 3 S4 + S5/S7-named
+S4 [5982414]: 17/17 mixed briefs passed adversarial verification (light pass; hint economy untouched). ALL 35 non-context briefs now scenario-style — the brief surface is COMPLETE.
+S5: 7 surgical hint fixes vs ground truth (pure-read claim, 2-crest curve, pre-D72 wording, cap-vs-cost conflation, brittle 14-replicas, fortress dead TTL knobs + phantom DB tier, edge-resilience SWR knobs). Hint counts unchanged.
+GATES: loader+consistency+solvability 79/79 · full suite 4917/4917.
+SPEND-LIMIT CASUALTY: the 25-agent hint verification fan-out died mid-run (wf_e1c2e854-8ac) — long-tail measured-claim audit deferred as PENDING D29.
+PHASE 3 REMAINING: S6 (12 discipline icons + unlock toast), S8 (240-variant tier authoring, <12-file batches), S9 (the ONE combined reseed — gate already open via P163 — + runtime evidence).
