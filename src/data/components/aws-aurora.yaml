@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: provisioned
     name: Provisioned
+    description: >-
+      Always-on provisioned Aurora: the highest steady throughput of the family and predictable latency — billed 24/7 whether traffic shows up or not.
+    docs_url: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_AuroraOverview.html
     monthly_cost: 200
     max_rps: 12000
     base_latency_ms: 5
@@ -87,6 +90,9 @@ config_variants:
           - Reader endpoint balances read traffic
   - id: synchronous-multi-az
     name: Synchronous Multi-AZ (Strong Reads)
+    description: >-
+      Multi-AZ Aurora with synchronous commit: survives a zone loss without losing a write. The premium price buys durability, not speed — peak throughput trails provisioned.
+    docs_url: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/Concepts.AuroraHighAvailability.html
     monthly_cost: 320
     max_rps: 10000
     base_latency_ms: 7
@@ -129,6 +135,9 @@ config_variants:
           - Single writer still funnels all mutations
   - id: serverless-v2
     name: Serverless v2 (Auto-Scaling)
+    description: >-
+      Aurora Serverless v2 scales capacity with demand: spiky or low-baseline workloads bill near their average, not their peak. The trade: a lower peak ceiling than a provisioned writer.
+    docs_url: https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/aurora-serverless-v2.html
     monthly_cost: 90
     max_rps: 6000
     base_latency_ms: 8

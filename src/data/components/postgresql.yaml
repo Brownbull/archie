@@ -46,6 +46,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    description: >-
+      One Postgres box: cheap, simple, fully consistent — and a single point of failure with a hard write ceiling. The right start until traffic or uptime says otherwise.
+    docs_url: https://www.postgresql.org/docs/current/admin.html
     monthly_cost: 45
     max_rps: 1500
     base_latency_ms: 5
@@ -94,6 +97,9 @@ config_variants:
           - Migration to distributed variant requires significant schema changes
   - id: primary-replica
     name: Primary-Replica
+    description: >-
+      A primary for writes with an async read replica: reads scale and survive a replica loss, but replicated reads can serve slightly stale data and writes still bottleneck on one node.
+    docs_url: https://www.postgresql.org/docs/current/warm-standby.html
     monthly_cost: 120
     max_rps: 2000
     base_latency_ms: 3
@@ -145,6 +151,9 @@ config_variants:
           - Read/write split requires application-level routing logic
   - id: citus-distributed
     name: Citus Distributed
+    description: >-
+      Postgres sharded across nodes with Citus: the throughput leader — writes spread over shards. Costs more, adds rebalancing/operational complexity, and cross-shard queries lose some SQL convenience.
+    docs_url: https://www.citusdata.com/
     monthly_cost: 350
     max_rps: 16000
     base_latency_ms: 8
@@ -192,6 +201,9 @@ config_variants:
           - Rebalancing shards requires careful planning to avoid downtime
   - id: synchronous-replica
     name: Synchronous Replica (Strong Reads)
+    description: >-
+      Synchronous replication: every write lands on the replica before acking, so reads are never stale. You pay the most per request and give up peak throughput for that freshness guarantee.
+    docs_url: https://www.postgresql.org/docs/current/warm-standby.html#SYNCHRONOUS-REPLICATION
     monthly_cost: 380
     max_rps: 12000
     base_latency_ms: 9

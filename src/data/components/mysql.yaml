@@ -46,6 +46,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    description: >-
+      A single MySQL instance: the classic cheap default. Fine for modest traffic; no failover, and writes cap out early as load grows.
+    docs_url: https://dev.mysql.com/doc/refman/8.0/en/
     monthly_cost: 40
     max_rps: 1500
     base_latency_ms: 4
@@ -88,6 +91,9 @@ config_variants:
           - Free engine; cost is just the compute/storage
   - id: primary-replica
     name: Primary + Replica
+    description: >-
+      Primary-replica MySQL: async replicas take the read load while one primary owns writes. Reads may lag the primary briefly; write throughput is unchanged.
+    docs_url: https://dev.mysql.com/doc/refman/8.0/en/replication.html
     monthly_cost: 120
     max_rps: 2000
     base_latency_ms: 5

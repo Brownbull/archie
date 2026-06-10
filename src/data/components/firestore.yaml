@@ -44,6 +44,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard
+    description: >-
+      Firestore on demand: zero-ops document store with live sync, billed per operation. Comfortable mid-range throughput — simple to run, never the raw-speed pick.
+    docs_url: https://firebase.google.com/docs/firestore
     monthly_cost: 40
     max_rps: 8000
     base_latency_ms: 14
@@ -94,6 +97,9 @@ config_variants:
           - Google-managed point-in-time recovery restores the database to a prior timestamp
   - id: scaled
     name: Scaled
+    description: >-
+      Firestore at allocated scale: the same zero-ops model with throughput headroom for production traffic. You pay for the allocation; hot document/index patterns still need care.
+    docs_url: https://firebase.google.com/docs/firestore/best-practices
     monthly_cost: 100
     max_rps: 20000
     base_latency_ms: 10

@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    description: >-
+      Single-node TimescaleDB: Postgres with time-series superpowers — columnar compression and fast append-only ingest far beyond an OLTP row store, while keeping full SQL.
+    docs_url: https://docs.tigerdata.com/
     monthly_cost: 45
     max_rps: 55000
     base_latency_ms: 6
@@ -85,6 +88,9 @@ config_variants:
           - Old chunks compressed automatically
   - id: multi-node
     name: Multi-Node / Cloud
+    description: >-
+      Clustered TimescaleDB: ingest spread across nodes for serious metric volumes. More boxes to run; queries that span chunks pay coordination overhead.
+    docs_url: https://docs.tigerdata.com/self-hosted/latest/multinode-timescaledb/
     monthly_cost: 160
     max_rps: 130000
     base_latency_ms: 8

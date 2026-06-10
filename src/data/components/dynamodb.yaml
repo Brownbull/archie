@@ -47,6 +47,9 @@ base_metrics:
 config_variants:
   - id: on-demand
     name: On-Demand
+    description: >-
+      DynamoDB on-demand: pay-per-request key-value with single-digit-ms reads and no capacity planning. Bursts are absorbed automatically; sustained heavy traffic costs more than provisioned.
+    docs_url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadWriteCapacityMode.html
     monthly_cost: 40
     max_rps: 14000
     base_latency_ms: 4
@@ -86,6 +89,9 @@ config_variants:
           - More expensive per unit at steady high load
   - id: provisioned
     name: Provisioned (+ Auto-Scaling)
+    description: >-
+      Provisioned DynamoDB: reserved read/write capacity at the family's best price-per-request and its highest ceiling. You forecast the load — under-provision and requests throttle.
+    docs_url: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ProvisionedThroughput.html
     monthly_cost: 90
     max_rps: 40000
     base_latency_ms: 3
