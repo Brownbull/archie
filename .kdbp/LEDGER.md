@@ -4912,3 +4912,8 @@ CI: deploy-production ✅ success · e2e-unlocked ⏳ (now includes feedback-pha
 DEPLOYMENTS: P161
 PROMOTION: N/A (single-env chain)
 SCOPE: Phase 2 tail (S6b, S7, S8) + runtime evidence + review fixes — 12 commits. Phase 2 all four gates ✅.
+
+## 2026-06-10 06:22 — PUSH dev -> main (D28 progress reset)
+CI: deploy-production ✅ success
+DEPLOYMENTS: P162
+SCOPE: PROGRESS_GENERATION 2→3 (userProgressStore + e2e seeder lockstep). Reset rationale: Phase 2's structural tree change is live; owner re-tests progression from scratch; Phase 3 (briefs/hints/descriptions/calibration) changes content quality, not structure — no second reset anticipated. PENDING D28 → resolved.
