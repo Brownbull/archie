@@ -4752,3 +4752,36 @@ CI: deploy-production ✅ success · e2e-unlocked ⏳ · e2e-desktop (informatio
 PROMOTION: N/A (single-env chain)
 DEPLOYMENTS: P158 (added row to .kdbp/DEPLOYMENTS.md)
 SCOPE: Phase 1 COMPLETE (9/9 fixes deployed) + Phase 2 Slice 1 (port gate) rides along. 13 commits.
+- 2026-06-10 02:43 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 02:43 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 02:43 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 02:43 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 02:43 | Edit | /home/khujta/projects/bmad/archie/src/hooks/usePathwaySuggestions.ts
+- 2026-06-10 02:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/usePathwaySuggestions.test.ts
+- 2026-06-10 02:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/usePathwaySuggestions.test.ts
+- 2026-06-10 02:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/usePathwaySuggestions.test.ts
+
+## 2026-06-10 — [670056d] feat(pathway): gate free-build suggestions by the unlocked tech tree (D89) — Phase 2 Slice 2/8
+FINDINGS: 0 (clean — eslint 0, build green, no shape/deferred/doc-drift hits)
+GATES: eslint clean (2 files) · npm run build (tsc -b + vite) exit 0 · hook 13/13 · pathwayEngine golden 17/17 byte-identical · consumers 36/36 (useGhostNodes, PathwayGuidancePanel, ComponentTab×2)
+SCOPE: usePathwaySuggestions.ts filters allComponents by resolveTechTree(...).unlockedBlocks (own useMemo keyed on completedChallenges) + early-return when empty; legacy typeId-less comps always pass. Single chokepoint → ghosts + toolbox both gated. Engine untouched (pure). Owner decision D89: minimal DROP. Empty-state "unlock more blocks" hint deferred to fast-follow per the minimal-DROP call.
+- 2026-06-10 02:58 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-10 02:58 | Edit | /home/khujta/projects/bmad/archie/src/engine/techTree.ts
+- 2026-06-10 02:58 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/_techtree-enumerate.tmp.test.ts
+- 2026-06-10 03:01 | Edit | /home/khujta/projects/bmad/archie/src/engine/techTree.ts
+- 2026-06-10 03:02 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/techTree.test.ts
+- 2026-06-10 03:03 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/unlockOrdering.baseline.test.ts
+
+## 2026-06-10 — [72b14a2] feat(techtree): closure-reachability validator (D89) — Phase 2 Slice 3/8
+FINDINGS: 0 (clean — eslint 0, tsc -b green: TechTreeIssue.kind union widening broke no exhaustive consumer)
+GATES: eslint clean (4 files) · npm run build (tsc -b + vite) exit 0 · techTree 20/20 (10 new validator) · baseline 3/3 (snapshot written) · challengeLoader 13/13 (validateTechTree still ===[])
+DESIGN: findUnlockOrderingIssues kept SEPARATE from validateTechTree (which challengeLoader.test asserts ===[]) so S3 ships green decoupled from the content fixes; baseline snapshot is the worklist + drift net. grantable(C) = BASE ∪ self-grants ∪ prereq-closure grants (teach-by-using legitimate; 24 self-granters NOT flagged).
+ENUMERATION (the S4/S5 worklist) — 21 hard `unreachable-required-type` violations across 18 challenges:
+  always-on:cache · api-gateway:auth · burst-absorber:worker · chaos-day:cache · checkout-flow:relational-db ·
+  cold-start-spike:serverless · defense-in-depth:observability · edge-cache-ratio:cdn · edge-economics:cdn ·
+  edge-resilience:cache · foundations-mastery:message-queue · four-front-war:cache+relational-db · heat-death:cache ·
+  maxwells-demon:cache · planet-scale:cdn+dns · the-long-tail:cache+cdn · thundering-herd:cache · worker-fleet:message-queue
+  PLUS 85 softer `ungrantable-available-block` palette gaps (many resolve as a side effect of the REQ prereq edges).
+FIX APPROACH (S4/S5): add a granting challenge into each violator's requires-closure (e.g. planet-scale ← edge-delivery for cdn/dns; *-cache ← cache-the-hot-path). Re-run solvability harness (must stay all-3★) + validateTechTree (no new cycles) after every YAML edit; snapshot shrinks to [] then folds into the validateTechTree gate.
+- 2026-06-10 03:53 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_progress-reset-e2e-carveout.md
+- 2026-06-10 03:53 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/MEMORY.md
