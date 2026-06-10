@@ -4984,3 +4984,8 @@ CI: deploy-production ✅ | DEPLOYMENTS: P165
 ## 2026-06-10 — S8 batches 1+2 (D93) — Phase 3 tier authoring underway
 DONE: 40 variants / 18 files (batch 1: the 6 calibrated DB families, 15 variants — descriptions written against the S2-calibrated trade-offs; batch 2: the reference-build twelve, 25 variants). Gates per batch: componentDataQuality strict parse + solvability 62/62 3★.
 REMAINING: ~147 variants / ~96 files in ≤12-file batches (inventory recipe: grep config_variants blocks lacking docs_url). All local-only until the single S9 reseed (reader live since P163).
+
+## 2026-06-10 — S8 COMPLETE: tier-description authoring done (D93) — Phase 3 S8/10
+SCOPE: 10 batches, ~214 variants across 114 component files — EVERY config variant now carries a ≤240-char trade-off description + https-only docs_url. Batches: calibrated DBs → reference-build twelve → edge/LB → messaging/streaming → data stores → storage/search → AI/vector/serverless → security/payments → observability/frameworks → realtime/traffic/data-eng.
+GATES: per batch componentDataQuality strict parse + solvability 62/62 3★ · final full suite 4928/4928 (274 files).
+NEXT: S9 — the ONE combined reseed (S2 calibration values + S8 descriptions) on BOTH Firebase projects (prod + test, per the vendor-links seed-drift lesson), reader live since P163; then Phase-3 runtime evidence (tier dropdown + inspector screenshots; reseeded data read by the deployed reader) → Exec ✅. D29 hint audit remains open.
