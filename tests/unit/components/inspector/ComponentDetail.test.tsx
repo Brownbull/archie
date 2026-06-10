@@ -551,3 +551,52 @@ describe("ComponentDetail", () => {
     })
   })
 })
+
+describe("Tier description + docs link (Phase 3 S1 / D92)", () => {
+  const describedComponent: Component = {
+    ...mockComponent,
+    configVariants: [
+      {
+        id: "standard",
+        name: "Standard",
+        metrics: [],
+        description: "Single node — cheap, no failover; fine for dev workloads.",
+        docsUrl: "https://example.com/postgres/standard",
+      },
+    ],
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks()
+    mockGetComponentsByCategory.mockReturnValue([mockComponent])
+    mockLibraryComponents = [mockComponent]
+    usePreferencesStore.setState({ experienceLevel: "advanced" })
+  })
+
+  function renderTier(component: Component) {
+    return render(
+      <ComponentDetail
+        component={component}
+        activeVariantId="standard"
+        onVariantChange={vi.fn()}
+        currentCategory="data-storage"
+        onSwapComponent={vi.fn()}
+      />,
+    )
+  }
+
+  it("renders the active tier's description and an https docs link with safe anchor attrs", () => {
+    renderTier(describedComponent)
+    expect(screen.getByTestId("inspector-tier-description")).toHaveTextContent("Single node — cheap, no failover")
+    const link = screen.getByTestId("inspector-tier-docs-link")
+    expect(link).toHaveAttribute("href", "https://example.com/postgres/standard")
+    expect(link).toHaveAttribute("target", "_blank")
+    expect(link).toHaveAttribute("rel", "noopener noreferrer")
+  })
+
+  it("omits both when the variant predates the Phase-3 reseed (fields absent)", () => {
+    renderTier(mockComponent) // its variants carry no description/docsUrl
+    expect(screen.queryByTestId("inspector-tier-description")).not.toBeInTheDocument()
+    expect(screen.queryByTestId("inspector-tier-docs-link")).not.toBeInTheDocument()
+  })
+})

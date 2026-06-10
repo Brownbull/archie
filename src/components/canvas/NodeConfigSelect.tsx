@@ -76,9 +76,22 @@ function NodeConfigSelectBase({ nodeId, componentId, activeVariantId }: NodeConf
             const stats = formatVariantStats(v)
             return (
               <SelectItem key={v.id} value={v.id} className="py-1 text-[0.75rem]">
-                <span className="flex w-full items-center justify-between gap-3">
-                  <span>{v.name}</span>
-                  {stats && <span className="shrink-0 text-[0.625rem] text-text-secondary">{stats}</span>}
+                <span className="flex w-full flex-col gap-0.5">
+                  <span className="flex w-full items-center justify-between gap-3">
+                    <span>{v.name}</span>
+                    {stats && <span className="shrink-0 text-[0.625rem] text-text-secondary">{stats}</span>}
+                  </span>
+                  {/* Phase 3 S1 (D92): what the tier MEANS — text only; a link inside a Radix Select
+                      option would break onValueChange/keyboard nav (the docs link lives in the
+                      inspector's Tier row instead). Absent until the Phase-3 reseed authors it. */}
+                  {v.description && (
+                    <span
+                      data-testid={`variant-description-${v.id}`}
+                      className="max-w-[18rem] whitespace-normal text-[0.625rem] leading-snug text-text-secondary/80"
+                    >
+                      {v.description}
+                    </span>
+                  )}
                 </span>
               </SelectItem>
             )

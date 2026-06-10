@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { NodeConfigSelect } from "@/components/canvas/NodeConfigSelect"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
@@ -11,7 +12,7 @@ vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: { getComponent: (id: string) => mockGetComponent(id) },
 }))
 
-const comp = (variants: { id: string; name: string }[]) => ({
+const comp = (variants: { id: string; name: string; description?: string }[]) => ({
   id: "node-express",
   name: "Node.js + Express",
   category: "compute",
@@ -64,5 +65,19 @@ describe("NodeConfigSelect (Fluidity P1 — config tier on the canvas block)", (
     rerender(<NodeConfigSelect nodeId="n1" componentId="node-express" activeVariantId="a" />)
     expect(screen.getByTestId("archie-node-config-trigger")).toBeInTheDocument()
     expect(screen.queryByTestId("archie-node-config-locked")).not.toBeInTheDocument()
+  })
+})
+
+describe("tier descriptions in the dropdown (Phase 3 S1 / D92)", () => {
+  it("renders a variant's description subrow when authored, omits it when absent", async () => {
+    const user = userEvent.setup()
+    mockGetComponent.mockReturnValue(comp([
+      { id: "a", name: "Alpha", description: "Cheap single node — no failover." },
+      { id: "b", name: "Beta" }, // pre-reseed variant: no description
+    ]))
+    render(<NodeConfigSelect nodeId="n1" componentId="node-express" activeVariantId="a" />)
+    await user.click(screen.getByTestId("archie-node-config-trigger"))
+    expect(screen.getByTestId("variant-description-a")).toHaveTextContent("Cheap single node — no failover.")
+    expect(screen.queryByTestId("variant-description-b")).not.toBeInTheDocument()
   })
 })

@@ -242,11 +242,31 @@ export function ComponentDetail({
               </div>
             )}
             {activeVariant?.name && (
-              <div className="flex items-center gap-1.5">
-                <span className="w-14 shrink-0 text-text-secondary">Tier</span>
-                <span data-testid="inspector-summary-variant" className="text-text-primary">
-                  {activeVariant.name}
-                </span>
+              <div className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-14 shrink-0 text-text-secondary">Tier</span>
+                  <span data-testid="inspector-summary-variant" className="text-text-primary">
+                    {activeVariant.name}
+                  </span>
+                  {/* Phase 3 S1 (D92): vendor docs for THIS tier — https-only enforced at the schema. */}
+                  {activeVariant.docsUrl && (
+                    <a
+                      href={activeVariant.docsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      data-testid="inspector-tier-docs-link"
+                      className="inline-flex items-center gap-0.5 text-blue-400 hover:text-blue-300"
+                      title={`${activeVariant.name} docs`}
+                    >
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  )}
+                </div>
+                {activeVariant.description && (
+                  <p data-testid="inspector-tier-description" className="pl-[3.875rem] text-[0.6875rem] leading-snug text-text-secondary">
+                    {activeVariant.description}
+                  </p>
+                )}
               </div>
             )}
             <div className="flex items-center gap-1.5">

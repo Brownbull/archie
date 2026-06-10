@@ -38,6 +38,13 @@ export const MAX_LATENCY_MS = 60_000
 // EN2 (D74): per-replica concurrency ceiling (in-flight request slots). Bounds X_cap so a near-zero
 // latency can't produce an unbounded throughput allowance.
 export const MAX_CONCURRENCY = 1_000_000
+// Phase 3 S1 (D92/D93): tier-description cap — one or two sentences in the config dropdown/inspector.
+export const MAX_VARIANT_DESCRIPTION_LENGTH = 240
+
+/** https-only external link (security rule: no http://, no javascript: URIs reach an href). */
+export const HttpsUrlSchema = z.string().url().max(500).refine((u) => u.startsWith("https://"), {
+  message: "must be an https:// URL",
+})
 
 export const ConfigVariantSchema = z.object({
   id: z.string().min(1),
@@ -65,7 +72,17 @@ export const ConfigVariantSchema = z.object({
   /** EN4 (D74): read-replica replication lag (ms). A synchronous/strong variant sets a low value (reads
    *  are fresh); an async read-replica a high one. Feeds the consistency staleness model. */
   replicationLagMs: z.number().min(0).max(60_000).optional(),
-}).strict()
+  /** Phase 3 S1 (D92): what this tier MEANS — the trade-off in one or two sentences, shown in the
+   *  config dropdown + inspector Tier row. Optional: absent on docs seeded before the Phase-3 reseed. */
+  description: z.string().min(1).max(MAX_VARIANT_DESCRIPTION_LENGTH).optional(),
+  /** Phase 3 S1 (D92): vendor docs link for this tier. https-only (security rule). */
+  docsUrl: HttpsUrlSchema.optional(),
+})
+  // Phase 3 S1 (D92) — the P5-class trap fix: the RUNTIME variant reader is NOT .strict() (mirrors
+  // the top-level D14 rationale). The nested .strict() here is what would have made a reseed carrying
+  // NEW variant fields drop EVERY component on already-deployed readers (the variant array fails →
+  // the doc fails → empty library). Unknown keys are now stripped; the YAML authoring schema below
+  // stays .strict() so typos are still caught at seed time.
 
 export const ConnectionPropertiesSchema = z.object({
   protocol: z.string().min(1).max(MAX_PROTOCOL_LENGTH),
@@ -130,6 +147,8 @@ const ConfigVariantYamlSchema = z.object({
   concurrency_limit: z.number().min(0).max(MAX_CONCURRENCY).optional(),
   autoscale: z.boolean().optional(),
   replication_lag_ms: z.number().min(0).max(60_000).optional(),
+  description: z.string().min(1).max(MAX_VARIANT_DESCRIPTION_LENGTH).optional(),
+  docs_url: HttpsUrlSchema.optional(),
 }).strict().transform((data) => ({
   id: data.id,
   name: data.name,
@@ -149,6 +168,8 @@ const ConfigVariantYamlSchema = z.object({
   concurrencyLimit: data.concurrency_limit,
   autoscale: data.autoscale,
   replicationLagMs: data.replication_lag_ms,
+  description: data.description,
+  docsUrl: data.docs_url,
 }))
 
 const ConnectionPropertiesYamlSchema = z.object({
@@ -168,7 +189,8 @@ export const ComponentYamlSchema = z.object({
   name: z.string().min(1),
   category: z.string().min(1),
   type_id: z.string().min(1).optional(),
-  vendor_url: z.string().url().optional(),
+  // Phase 3 S1: hardened to https-only (audited: every authored vendor_url is already https).
+  vendor_url: HttpsUrlSchema.optional(),
   description: z.string().min(1),
   is: z.string().min(1),
   gain: z.array(z.string()).min(1),
