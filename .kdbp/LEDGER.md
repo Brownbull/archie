@@ -4654,3 +4654,10 @@ NOTE: activates on next push; D23+D24 rehabbed the swept specs but the full proj
 ARCHIVE: .kdbp/archive/completed_PLAN_2026-06-09_fluidity-ux-consolidation.md
 PHASES COMPLETED: 3 of 3 (incl. the optional cross-region full tour, P3c-3/P154)
 NOTE: shipped P144–P154; follow-on D23/D24 desktop-E2E rehab resolved, riding the next push (P157).
+
+## 2026-06-09 21:00 — PUSH dev -> main
+PR: — (direct dev→main, per PUSH.md production env)
+CI: deploy-production ✅ · e2e-unlocked ⏳ running · e2e-desktop (maiden, informational) ⏳ running at 75s cap
+PROMOTION: N/A (single-env chain)
+DEPLOYMENTS: P157  (added row to .kdbp/DEPLOYMENTS.md)
+NOTE: origin/dev fast-forwarded e20e43a..b58b1b6 (was 139 behind — stale since 2026-06-04, never the target).

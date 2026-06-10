@@ -1291,3 +1291,11 @@ component YAMLs; its own focused pass (the playbook's strict (1)→(4) authoring
 **Safety:** The gate is UI-only — it never touches the simulation or the reference-solution harness, so the 3★ solvability check is unaffected. Only what a player can manually tune is gated, and beginner challenges 3★ on default configs.
 **Scope:** 3c-1 gated the config-tier picker; 3c-1b extends the SAME gate to the vendor swap (NodeProviderSelect falls back to its static vendor label when gated) and the replica stepper (ArchieNode). The replica gate is verified solvability-safe: all 6 beginner-difficulty challenges peak at ≤600 RPS, well under a single default compute's 1000 maxRPS, so 1 replica suffices — no beginner quest needs manual scaling. Deferred to 3c-2: rebuild the STALE inspector panelGuide (still references the removed component-swapper/config-selector) + the progression-aware tooltip journey. Optionally hide the manual level control in quests for a hard gate (currently a soft default the player can raise).
 **Status:** accepted — 3c-1 implemented.
+
+## D85 — Desktop E2E CI is informational-first; @smoke promotion gated on green runs (2026-06-09) [operational]
+
+**Decision:** The full `desktop` Playwright project runs in CI as a push-only, NON-GATING workflow (e2e-desktop.yml, added c88d649): push to dev/main + manual dispatch, --workers=4, 30-min cap, artifacts on failure, graceful skip without secrets. It is deliberately NOT a required check and NOT a deploy gate. Promotion path: once informational runs are reliably green, curate an @smoke subset and promote ONLY that subset to a required status check.
+**Rationale:** ~522 desktop test cases silently rotted (~23 dormant failures, D23/D24) because nothing ran them. A full-suite required gate would block merges on E2E flake and train ignore-and-rerun behavior; informational-first stops the silent rot at zero merge risk, and the later @smoke gate adds teeth only where stability is proven.
+**Alternatives considered:** (a) full suite as required check — rejected: flake-blocking on 522 cases; (b) no CI at all — rejected: that's how the rot happened.
+**Review trigger:** after the first few informational runs — if reliably green, schedule the @smoke curation + required-check promotion.
+**Status:** active,operational
