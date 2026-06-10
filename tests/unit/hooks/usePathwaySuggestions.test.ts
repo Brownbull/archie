@@ -18,11 +18,22 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
+// S2 (D89): the hook now gates suggestions by the player's unlocked-block set. Mock the progress
+// store + tech-tree resolver so unlockedBlocks is deterministic; getAllChallenges is mocked away
+// (the mocked resolveTechTree ignores its challenge arg).
+vi.mock("@/stores/userProgressStore", () => ({ useUserProgressStore: vi.fn() }))
+vi.mock("@/engine/techTree", () => ({ resolveTechTree: vi.fn() }))
+vi.mock("@/services/challengeLoader", () => ({ getAllChallenges: vi.fn(() => []) }))
+
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { componentLibrary } from "@/services/componentLibrary"
+import { useUserProgressStore } from "@/stores/userProgressStore"
+import { resolveTechTree } from "@/engine/techTree"
 
 const mockUseArchitectureStore = vi.mocked(useArchitectureStore)
 const mockGetAllComponents = vi.mocked(componentLibrary.getAllComponents)
+const mockUseUserProgressStore = vi.mocked(useUserProgressStore)
+const mockResolveTechTree = vi.mocked(resolveTechTree)
 
 // --- Test Helpers ---
 
@@ -123,6 +134,13 @@ describe("usePathwaySuggestions", () => {
   beforeEach(() => {
     vi.resetAllMocks()
     mockGetAllComponents.mockReturnValue([])
+    // Defaults (reset by vi.resetAllMocks above): empty progress + empty unlocked set. With an empty
+    // unlocked set, every typeId-LESS component still passes the filter (`!c.typeId`), so the legacy
+    // tests below are unaffected; typeId'd components require an explicit unlock per-test.
+    mockUseUserProgressStore.mockImplementation((sel: unknown) =>
+      (sel as (s: { completedChallenges: readonly string[] }) => unknown)({ completedChallenges: [] }),
+    )
+    mockResolveTechTree.mockReturnValue({ nodes: new Map(), ordered: [], unlockedBlocks: new Set<string>() })
   })
 
   // Dynamic import required: vi.mock hoists above static imports, but the mock
@@ -427,5 +445,54 @@ describe("usePathwaySuggestions", () => {
 
     const dbSuggestion = result.current.suggestions.find((s) => s.componentId === "comp-db-1")
     expect(dbSuggestion).toBeUndefined()
+  })
+
+  describe("tech-tree unlock filter (S2 / D89 — drop locked)", () => {
+    const baseStore = {
+      currentTier: makeTierResult({ tierIndex: 0, isMaxTier: false }),
+      nodes: [{ id: "n1", data: { archieComponentId: "comp-x", componentCategory: "compute" } }],
+    }
+
+    it("drops a suggestion whose typeId is not yet unlocked (no unplaceable Add reaches ghosts/toolbox)", async () => {
+      const lockedDb = makeComponent({
+        id: "comp-db-locked", name: "Locked NoSQL", category: "data-storage", typeId: "nosql",
+        metrics: [makeMetric("performance", 8), makeMetric("reliability", 8)],
+      })
+      mockResolveTechTree.mockReturnValue({ nodes: new Map(), ordered: [], unlockedBlocks: new Set(["compute"]) }) // nosql NOT unlocked
+      mockStore(baseStore)
+      mockGetAllComponents.mockReturnValue([lockedDb])
+      const usePathwaySuggestions = await importHook()
+
+      const { result } = renderHook(() => usePathwaySuggestions())
+      expect(result.current.suggestions.find((s) => s.componentId === "comp-db-locked")).toBeUndefined()
+    })
+
+    it("keeps a suggestion whose typeId IS unlocked", async () => {
+      const unlockedDb = makeComponent({
+        id: "comp-db-unlocked", name: "Unlocked SQL", category: "data-storage", typeId: "relational-db",
+        metrics: [makeMetric("performance", 6), makeMetric("reliability", 8)],
+      })
+      mockResolveTechTree.mockReturnValue({ nodes: new Map(), ordered: [], unlockedBlocks: new Set(["relational-db"]) })
+      mockStore(baseStore)
+      mockGetAllComponents.mockReturnValue([unlockedDb])
+      const usePathwaySuggestions = await importHook()
+
+      const { result } = renderHook(() => usePathwaySuggestions())
+      expect(result.current.suggestions.find((s) => s.componentId === "comp-db-unlocked")).toBeDefined()
+    })
+
+    it("always keeps legacy components with no typeId, even when nothing is unlocked", async () => {
+      const legacy = makeComponent({
+        id: "comp-legacy", name: "Legacy DB", category: "data-storage", // no typeId
+        metrics: [makeMetric("performance", 7), makeMetric("reliability", 7)],
+      })
+      mockResolveTechTree.mockReturnValue({ nodes: new Map(), ordered: [], unlockedBlocks: new Set<string>() })
+      mockStore(baseStore)
+      mockGetAllComponents.mockReturnValue([legacy])
+      const usePathwaySuggestions = await importHook()
+
+      const { result } = renderHook(() => usePathwaySuggestions())
+      expect(result.current.suggestions.find((s) => s.componentId === "comp-legacy")).toBeDefined()
+    })
   })
 })

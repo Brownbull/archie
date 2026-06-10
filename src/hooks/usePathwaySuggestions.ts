@@ -4,6 +4,9 @@ import { componentLibrary } from "@/services/componentLibrary"
 import { computePathwaySuggestions, type PathwaySuggestion } from "@/engine/pathwayEngine"
 import { computeCategoryScores } from "@/engine/dashboardCalculator"
 import { DEFAULT_TIER_DEFINITIONS } from "@/lib/tierDefinitions"
+import { useUserProgressStore } from "@/stores/userProgressStore"
+import { resolveTechTree } from "@/engine/techTree"
+import { getAllChallenges } from "@/services/challengeLoader"
 
 export interface PathwaySuggestionsResult {
   suggestions: PathwaySuggestion[]
@@ -32,6 +35,16 @@ export function usePathwaySuggestions(): PathwaySuggestionsResult {
   const nodes = useArchitectureStore((s) => s.nodes)
   const computedMetrics = useArchitectureStore((s) => s.computedMetrics)
 
+  // S2 (D89): the player's unlocked-block set gates free-build pathway suggestions — a suggestion for a
+  // not-yet-earned block would offer a one-click "Add" of an unplaceable component. Owner decision:
+  // minimal DROP (locked blocks simply don't appear), not badge+CTA. Derived in its OWN useMemo keyed on
+  // completedChallenges alone so it doesn't recompute on every canvas edit.
+  const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
+  const unlockedBlocks = useMemo(
+    () => resolveTechTree(getAllChallenges(), completedChallenges).unlockedBlocks,
+    [completedChallenges],
+  )
+
   // AC-ARCH-PATTERN-1: useMemo over computePathwaySuggestions — no debounce, no worker
   return useMemo(() => {
     // AC-4 / Task 2.1: No tier evaluation (no components on canvas)
@@ -47,6 +60,13 @@ export function usePathwaySuggestions(): PathwaySuggestionsResult {
 
     // Task 2.3: componentLibrary not initialized
     if (allComponents.length === 0) return EMPTY_RESULT
+
+    // S2 (D89): keep only blocks the player has unlocked via the tech tree; legacy components with no
+    // typeId always pass (they predate the tech tree, so gating them out would be a silent regression).
+    // Single chokepoint — useGhostNodes and the toolbox panel both consume these suggestions, so neither
+    // can surface a locked block's one-click Add.
+    const unlockedComponents = allComponents.filter((c) => !c.typeId || unlockedBlocks.has(c.typeId))
+    if (unlockedComponents.length === 0) return EMPTY_RESULT
 
     // Task 1.5: Find next tier requirements
     const nextTierDef = DEFAULT_TIER_DEFINITIONS.find(
@@ -75,7 +95,7 @@ export function usePathwaySuggestions(): PathwaySuggestionsResult {
     // Task 1.6: Call engine
     const suggestions = computePathwaySuggestions(
       nextTierDef.requirements,
-      allComponents,
+      unlockedComponents,
       existingNodeCategories,
       existingNodeComponentIds,
       weightProfile,
@@ -93,5 +113,5 @@ export function usePathwaySuggestions(): PathwaySuggestionsResult {
     }
     // Store contract: Zustand must replace Map references (not mutate in-place)
     // for computedMetrics and dataContextItems — shallow equality drives re-render
-  }, [currentTier, weightProfile, constraints, dataContextItems, nodes, computedMetrics])
+  }, [currentTier, weightProfile, constraints, dataContextItems, nodes, computedMetrics, unlockedBlocks])
 }
