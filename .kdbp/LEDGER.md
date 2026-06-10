@@ -4997,3 +4997,9 @@ S9 STATUS: payload READY + dry-run valid ("Dry run complete — all files valid"
   2. TEST:  GOOGLE_APPLICATION_CREDENTIALS=/path/to/test-adminsdk.json npm run seed:firestore   (both projects — the vendor-links seed-drift lesson)
   3. Then runtime evidence: tier dropdown + inspector show description/docs link from the reseeded data (feedback-phase3 spec or manual screenshots) → Phase 3 Exec ✅.
 READER SAFETY: tolerant reader live since P163 (P5 trap closed) — the reseed cannot empty the library on any deployed client.
+- 2026-06-10 16:06 | Write | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase3.unlocked.spec.ts
+
+## 2026-06-10 — D29 RESOLVED + Phase-3 evidence spec prepped
+D29: inline audit of the 18 long-tail hint files vs harness ground truth — 12 hints fixed (dead knobs: kafka partitions / cache GB / mongo shards; wrong CDN ratio 85→90; replica prescriptions grounded in lean builds; checkout-flow's 11-payments-replicas lesson now taught), 6 files verified accurate. Ladder-depth normalization deliberately deferred (optional polish).
+EVIDENCE: tests/e2e/feedback-phase3.unlocked.spec.ts — reseed-gated (skips until the TEST project reseed, then activates): dropdown description subrows + inspector Tier description/https-link, screenshots to test-results/feedback-phase3/.
+PHASE 3 NOW: code/content 100% done. ONE step left: the owner-run S9 reseed (runbook P166) → spec turns green → Exec ✅ → review/commit/push.
