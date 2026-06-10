@@ -1,9 +1,11 @@
 id: fan-it-out
 title: Fan It Out
 brief: >-
-  One box can't take this. Put a load balancer in front of every compute node
-  and make it fan out to at least three of them. This grades the WIRING — a
-  balancer that only feeds one replica doesn't count as horizontal scale.
+  Launch night. Traffic is climbing toward 4,000 requests a second and your lone box is already
+  wheezing. The last crew's answer was to rack four more servers — they sat idle while the first
+  one melted, because nothing routed work their way. Capacity you can't reach is capacity you
+  don't have. This run grades the wiring, not the rack count. Hold p99 under 250ms while the wave
+  crests.
 difficulty: advanced
 budget_cap: 1200
 duration_seconds: 90

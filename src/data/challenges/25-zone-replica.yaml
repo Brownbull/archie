@@ -1,9 +1,11 @@
 id: zone-replica
 title: Zone Replica
 brief: >-
-  Spread replicas across availability zones. Observability tracks each zone
-  independently so you see which zone is hot. Keep latency flat even as traffic
-  doubles — the load balancer should spread requests evenly.
+  Last quarter a sibling team put every replica in one zone — then the zone had a bad afternoon.
+  Today your service launches, and traffic doubles mid-run. The mandate: no single zone carries
+  the whole show, latency stays flat through the doubling, and if one zone runs hot, you know
+  before your users do. Spreading the fleet is the easy half; proving it's actually balanced is
+  the job.
 difficulty: intermediate
 budget_cap: 700
 duration_seconds: 90

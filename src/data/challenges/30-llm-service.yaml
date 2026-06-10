@@ -1,9 +1,12 @@
 id: llm-service
 title: LLM Service
 brief: >-
-  Wire compute to an LLM gateway and serve inference requests. The gateway
-  handles model routing; you keep latency low by caching repeated queries
-  and the DB persists conversation state.
+  Your AI assistant just went live, and suddenly every request waits on the slowest, priciest
+  thing you've ever put behind an API: the model itself. Clients hit you at 600 req/s expecting
+  answers in half a second, and inference alone eats most of that. Two mercies: plenty of prompts
+  are near-identical repeats, and every conversation needs its history remembered between turns.
+  Hold 97% uptime and p99 under 500ms — without making the model think twice about the same
+  question.
 difficulty: intermediate
 budget_cap: 800
 duration_seconds: 90

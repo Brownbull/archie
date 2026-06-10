@@ -1,9 +1,11 @@
 id: auth-101
 title: Identify Yourself
 brief: >-
-  Add an auth tier upstream of compute. Every request must be authenticated
-  before it reaches the backend. Handle login load under budget — auth adds
-  latency, so keep the total p99 in check.
+  Someone scraped your entire API overnight. Turns out any request from anywhere sailed straight
+  to the backend — no questions asked. That ends today: every request must prove who it's from
+  before the backend ever sees it. The catch is that checking credentials isn't free; it adds
+  delay to every single call, and your latency bar doesn't get any slack for it. 600 requests a
+  second are on their way. Greet each one with 'and you are?'
 difficulty: beginner
 budget_cap: 200
 duration_seconds: 60

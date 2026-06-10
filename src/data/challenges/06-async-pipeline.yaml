@@ -1,9 +1,11 @@
 id: async-pipeline
 title: Async Pipeline
 brief: >-
-  Spiky write traffic is stressing the system. Your design must include a
-  messaging tier on the write path. Size every tier so that even at the peaks of
-  the up-and-down traffic curve no node is pushed past its capacity.
+  Voting night, live on air. Every time the host opens the lines, a wall of writes crashes in —
+  then a lull, then a bigger wall. Your database shrugs at the average but gags on the crests.
+  Viewers will forgive a tally that runs a beat behind; they won't forgive a vote button that dies
+  mid-surge. The final wave is the tallest of the night, and you can't borrow capacity from the
+  quiet stretches — build for the crest, not the average.
 difficulty: intermediate
 budget_cap: 500
 duration_seconds: 90

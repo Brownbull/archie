@@ -1,9 +1,10 @@
 id: siem-audit
 title: Audit Trail
 brief: >-
-  Wire a SIEM to watch login patterns. The security tier flags anomalies in
-  real time while the observability stack records the full audit trail. Keep
-  the added monitoring from tanking your p99 under normal traffic.
+  Someone quietly tested stolen passwords against your login page for three weeks. Nobody noticed
+  — the auditors did, and they're back in ninety days. This time every sign-in gets watched for
+  odd patterns and every auth event lands in a record nobody can lose. The catch: 1000 rps of real
+  users are on the site the whole time, and surveillance that slows them down fails the audit too.
 difficulty: intermediate
 budget_cap: 800
 duration_seconds: 120

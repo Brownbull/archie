@@ -1,9 +1,11 @@
 id: api-gateway
 title: API Gateway
 brief: >-
-  Front your compute with an API gateway for request validation, routing, and
-  auth enforcement. The gateway sits between the CDN and compute — keep the
-  total p99 under 250 ms while handling authenticated traffic at scale.
+  Launch day for your public API: partners are wiring up integrations and traffic is climbing
+  toward 2,000 requests a second. Every call must prove who it's from and pass validation before
+  it ever touches real business logic — and right now your compute is doing all that bouncer work
+  itself, which the latency graphs make painfully clear. Hold p99 under 250 ms with 99% uptime,
+  and let nothing unauthenticated through.
 difficulty: advanced
 budget_cap: 1500
 duration_seconds: 120

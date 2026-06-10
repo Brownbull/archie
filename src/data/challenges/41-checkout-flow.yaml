@@ -1,10 +1,11 @@
 id: checkout-flow
 title: Checkout Flow
 brief: >-
-  Build a checkout pipeline: traffic enters through a load balancer, hits
-  compute for cart logic, processes payment through the payment gateway, and
-  persists the order in a database. The payment gateway adds latency — keep
-  the total p99 under the target while handling peak checkout traffic.
+  Checkout is where the store actually makes money, and tonight it's getting slammed — traffic
+  climbing tenfold into the peak. The catch: the payment processor takes its sweet time on every
+  transaction, each order is unique — nothing can be served twice — and every one has to be
+  remembered. Shoppers ditch carts the moment the spinner lingers; the rest of the flow has to win
+  back the time the processor burns. Lose the latency bar, lose the sale.
 difficulty: intermediate
 budget_cap: 600
 duration_seconds: 90

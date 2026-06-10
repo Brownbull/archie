@@ -1,9 +1,10 @@
 id: dns-routing
 title: DNS Routing
 brief: >-
-  Traffic enters your system through DNS. Route it properly to a compute
-  endpoint — the first step in controlling how the world reaches your service.
-  Keep resolution fast and the service responsive.
+  You shipped your first service; now you've bought it a proper domain. One problem: typing the
+  name gets a blank stare. The internet trades in addresses, not names, and nothing yet translates
+  yours. Every single request begins with that lookup — if it's slow or down, nothing else
+  matters. Point the name at your machine and keep 500 requests a second flowing.
 difficulty: beginner
 budget_cap: 100
 duration_seconds: 60

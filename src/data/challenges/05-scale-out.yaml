@@ -1,10 +1,11 @@
 id: scale-out
 title: Scale Out
 brief: >-
-  One compute instance can't take this load. Scale the compute tier horizontally
-  with replicas — but stateless replicas need a load balancer upstream or the
-  topology checker will flag them. Earn the clean-topology star by wiring it
-  correctly, and keep p99 down under heavy traffic.
+  One server got you this far. It won't get you through tonight: traffic is climbing toward 1,500
+  requests a second, and the lone box under the app will be gasping long before the peak. No
+  machine you can buy swallows that load alone — it has to be spread. Hold p99 under 250 ms while
+  the surge builds, and keep the wiring tight: the well-formed star goes to builds with nothing
+  stranded or unreachable.
 difficulty: intermediate
 budget_cap: 600
 duration_seconds: 90

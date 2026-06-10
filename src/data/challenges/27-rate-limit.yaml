@@ -1,9 +1,11 @@
 id: rate-limit
 title: Quota Keeper
 brief: >-
-  Place a rate limiter on the auth tier. A flood of junk-auth requests arrives
-  mid-challenge — the limiter should absorb the abuse while legitimate traffic
-  stays within its p99 budget.
+  Credential-stuffing bots have found your login page. Mid-run the junk sign-ins surge — stolen
+  password lists sprayed at your auth flow by something that never sleeps. Real web users and API
+  clients still need in, and their latency budget doesn't care that you're under attack. Let the
+  flood through and everyone queues behind the bots; the garbage has to be turned away before it
+  gets that deep. Hold steady until the attack burns itself out.
 difficulty: intermediate
 budget_cap: 400
 duration_seconds: 90

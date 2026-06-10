@@ -1,9 +1,10 @@
 id: first-service
 title: First Service
 brief: >-
-  Stand up a single compute service for a low-traffic internal tool. Keep it
-  cheap and keep it up. This is the smallest possible architecture — one node
-  that answers requests.
+  The team's internal dashboard runs on Dave's laptop, and Dave leaves for vacation Friday. The
+  whole office hits it through the day — modest traffic, but people notice when it's down. Find it
+  a real home before he closes the lid: something that stays up, stays under the $80 budget, and
+  doesn't need Dave. The smallest architecture that counts is the one that's actually running.
 difficulty: beginner
 budget_cap: 80
 duration_seconds: 60

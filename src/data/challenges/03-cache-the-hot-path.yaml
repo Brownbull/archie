@@ -1,9 +1,11 @@
 id: cache-the-hot-path
 title: Cache the Hot Path
 brief: >-
-  Reads are hammering your database and p99 latency is creeping up. Add a
-  caching tier in front of the data store so repeat reads are served fast.
-  Hit the tighter latency target without blowing the budget.
+  Same handful of pages, requested thousands of times a minute — and your database dutifully
+  recomputes every answer from scratch. p99 is creeping up, users are noticing, and the data store
+  is sweating over reads that haven't changed since the last request. Making the database repeat
+  itself is the real waste here. Find a way to stop answering the same question twice, hold the
+  tighter latency bar at peak, and do it without blowing the budget.
 difficulty: beginner
 budget_cap: 220
 duration_seconds: 75

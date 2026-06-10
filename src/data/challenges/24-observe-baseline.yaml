@@ -1,10 +1,11 @@
 id: observe-baseline
 title: Observe Baseline
 brief: >-
-  A service with no observability is a black box. Add monitoring to a running
-  compute + DB stack so you can watch request rates, error rates, and latency
-  in real time. The challenge: keep the added observability tier from pushing
-  you over budget.
+  Your sensor fleet fires 400 requests a second at a service you cannot see inside. It's up —
+  probably. Error rate? Latency? Shrug. Last week's incident was reported by a customer before
+  anyone in-house noticed, and the boss now wants numbers, not vibes. The catch: the budget barely
+  covers what's already running, so whatever gives you eyes on this thing has to travel light.
+  Hold 95% uptime and keep responses quick while you turn the black box into glass.
 difficulty: beginner
 budget_cap: 150
 duration_seconds: 60

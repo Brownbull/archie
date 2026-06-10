@@ -1,9 +1,11 @@
 id: edge-delivery
 title: Edge Delivery
 brief: >-
-  Traffic is climbing. Your design must front the compute tier with a
-  delivery/network (CDN/edge) tier as its entry point. Hold a tight latency
-  target at higher volume by keeping every tier on the path under capacity.
+  The launch landed. Traffic is climbing toward 800 requests a second, and every request knocks on
+  the same front door. Connections pile up at the entrance before your servers even get a vote.
+  The latency bar is unforgiving — p99 under 200 ms, p95 under 140 — and at 98% uptime, any tier
+  that saturates on the path takes you down with it. Clear the entrance, and keep everything
+  behind it under capacity.
 difficulty: intermediate
 budget_cap: 350
 duration_seconds: 90
@@ -24,7 +26,7 @@ hints:
   - "At 800 RPS the core problem is entry-point bottleneck — you must place a CDN or edge tier as the first layer to absorb requests."
   - "CDN or load-balancer sits at the entry; compute tier sits downstream and still sees all served load, so it must have capacity for the full peak."
   - "Traffic enters the CDN/edge tier, flows through to compute; size compute (or its replicas) so it stays under 100% at 800 RPS peak."
-  - "Place traffic → CDN → compute; the compute tier receives all 800 RPS so size it with enough capacity or replicas to stay under saturation and hit the tight 200 ms p99 target."
+  - "Place traffic → CDN → load-balancer → compute; the compute tier receives all 800 RPS so size it with enough capacity or replicas to stay under saturation and hit the tight 200 ms p99 target."
 schema_version: 2
 track: edge
 tier: 3

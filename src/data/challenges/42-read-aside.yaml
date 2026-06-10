@@ -1,9 +1,11 @@
 id: read-aside
 title: Read-Aside
 brief: >-
-  Repeat reads are hammering your database. Wire a cache as a read-aside layer
-  BETWEEN compute and the store, so hits never reach the database. This one
-  grades the TOPOLOGY, not just the latency — the cache has to sit on the path.
+  The same handful of queries hit your database 1,800 times a second, and it dutifully computes
+  each answer from scratch. The data barely changed all morning — the work is pure repetition, and
+  the poor thing is starting to smoke. Speed alone won't pass this one: the grade watches where
+  requests travel. Repeat reads must be answered before they ever reach the database — intercepted
+  on the path, not bolted off to the side.
 difficulty: intermediate
 budget_cap: 450
 duration_seconds: 90

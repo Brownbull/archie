@@ -1,9 +1,11 @@
 id: add-a-database
 title: Persist It
 brief: >-
-  Your service needs to remember things. Put a data-storage tier behind the
-  compute node so state survives restarts. Wire compute → database and keep the
-  whole thing under budget.
+  Your first service is live, and it has amnesia. Every restart wipes the slate — signups, orders,
+  settings, gone — and users are tired of re-registering. Right now everything lives in memory,
+  which is a polite way of saying nowhere. Something downstream has to actually remember your data
+  when the power blips. Give the service a memory that survives a reboot, and keep 150 requests a
+  second flowing while you do it.
 difficulty: beginner
 budget_cap: 160
 duration_seconds: 60

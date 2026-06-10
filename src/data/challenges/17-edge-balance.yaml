@@ -1,9 +1,12 @@
 id: edge-balance
 title: Load-Balanced Edge
 brief: >-
-  With DNS and replicas in place, add a load balancer at the edge to distribute
-  traffic evenly. Keep latency low as the request count climbs — the balancer
-  should absorb the growth before any single instance saturates.
+  Launch week, and the graphs are doing that thing: one box pinned at 100% while its siblings sit
+  bored. Every request lands on the same replica, because nothing at the front door is dealing out
+  the crowd. Traffic climbs to 1,200 a second and stays there — let one machine eat it all and
+  latency blows the bar long before the peak. You learned to scale out; now make the fleet
+  actually share. Whatever greets traffic at the edge has to spread requests evenly, so no single
+  replica ever saturates.
 difficulty: intermediate
 budget_cap: 500
 duration_seconds: 90
