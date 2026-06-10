@@ -28,7 +28,7 @@ hints:
   - "Place the cache between the traffic source (via compute) and the database. With an 80% hit ratio, the cache serves 1600 rps and the DB only sees 400 rps."
   - "At peak (2000 rps, t=60-90), the cache must hold the hot dataset (~1-2GB depending on key size and working set). If the cache is undersized, eviction is too aggressive and miss ratio climbs."
   - "Use traffic-source → compute → cache → relational-db. Size the cache for 80%+ hit ratio. At 2000 rps peak, 400 rps reaches the DB, 1600 rps served from cache."
-  - "Deploy 1 compute with Redis-like cache (2-3GB, LRU). At t=60-90, 2000 rps: cache serves 1600 (80% hit), DB serves 400 (20% miss). Keeps DB from overload, achieves 97% uptime, p99≤300ms, p95≤180ms."
+  - "Deploy 1 compute with a standalone cache (its 80% hit ratio is built into the variant). At t=60-90, 2000 rps: the cache serves 1600, the DB only the 400 misses — no overload, 97% uptime, p99≤300ms, p95≤180ms."
 schema_version: 2
 track: data
 tier: 3

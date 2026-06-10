@@ -28,7 +28,7 @@ hints:
   - "Use a NoSQL sharded database where writes distribute across multiple shards, or a message queue to buffer the write burst and drain steadily."
   - "At peak (3000 rps, t=60-90), a sharded NoSQL database with 4-6 shards handles ~500-750 rps per shard (within limits). A queue alternative buffers and drains with background workers."
   - "Use traffic-source → compute → nosql (sharded). Distribute writes across shards by partition key (e.g., user ID). Avoid relational-db (forbidden)."
-  - "Deploy nosql with 6 shards handling 500 rps each (3000 rps total). At t=60-90, writes distribute evenly across shards. Add 2-3 compute instances to fan out. Achieves 96% uptime, p99≤400ms, p95≤240ms by avoiding relational-db bottleneck."
+  - "A MongoDB replica set distributes the writes and carries the 3000 rps storm on its own — the sharded tier is headroom, not a requirement. One cluster-mode compute fans in. Roughly $100 of the $500 budget; 96% uptime, p99≤400ms, p95≤240ms with no relational bottleneck."
 forbidden_types: [relational-db]
 schema_version: 2
 track: data

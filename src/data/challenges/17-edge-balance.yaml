@@ -27,7 +27,7 @@ target_metrics:
 hints:
   - "A load balancer prevents any single compute replica from overloading as traffic climbs toward 1200 RPS; DNS points to the balancer, which distributes requests evenly."
   - "DNS routes to load-balancer; balancer shards traffic across 2-3 compute replicas based on round-robin; as peak climbs to 1200 RPS, balancer keeps each replica under saturation."
-  - "traffic-source → dns → load-balancer → compute (3 replicas for 400 RPS each at peak); dns points to load-balancer IP; each replica handles 1200/3=400 RPS at p99≤200ms; 98% uptime requires at least one healthy replica."
+  - "traffic-source → dns → load-balancer → compute (2-3 replicas); dns points at the load-balancer, which splits the 1200 RPS peak evenly — at 2 replicas that is 600 each, comfortably inside p99 200ms. Uptime needs at least one healthy replica at all times."
 schema_version: 2
 track: edge
 tier: 2

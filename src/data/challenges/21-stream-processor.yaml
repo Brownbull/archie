@@ -29,7 +29,7 @@ hints:
   - "Place a stream-processor consuming from event-stream, grouping events by time windows, outputting summaries while handling the 2000 rps peak without falling behind."
   - "Size the stream-processor to process 2000 events/sec with minimal lag; add cache to store latest aggregated results so downstream reads don't re-compute windows."
   - "Wire compute to event-stream; stream-processor reads continuously, emits windowed aggregates to cache/database so reads serve without re-computing the window."
-  - "Deploy event-stream with 3+ partitions for 2000 rps; stream-processor with 2 replicas through peak and 4x spike; cache with 2+ replicas for p95 180ms reads; size compute at 2 replicas for 2000 rps writes."
+  - "Size compute at 2 replicas for the 2000 rps writes into a single-broker event stream; one standalone stream-processor keeps up through the peak and the spike window, and the cache serves the processed view for p95 180ms reads."
 chaos_intensity: 2
 schema_version: 2
 track: realtime

@@ -25,7 +25,7 @@ target_metrics:
 hints:
   - "The core problem is building a production tier that scales to 3000 RPS while holding p99 200ms and p95 155ms under a 1300-unit budget."
   - "Distribute traffic across delivery-network (edge), scaled compute, cache, and data-storage so no single tier exceeds 100% load at peak."
-  - "Scale compute with 10-12 replicas behind a load-balancer; use cache in front of data-storage to reduce database queries; add observability as a leaf."
+  - "Put the cache in front of data-storage so reads barely touch the database — with the hot path absorbed, a couple of compute replicas behind the load-balancer carry the rest. Observability hangs off as a leaf."
   - "Each tier sizes for peak: CDN absorbs traffic, load-balancer fans out to compute, compute queries cache first, cache backs off to database."
   - "CDN → load-balancer → 10 compute replicas → cache → relational-db with observability as leaf. Target 300 RPS per compute, 1500 RPS per cache, cache filtering ~70% of reads to keep all nodes under 90%."
 schema_version: 2

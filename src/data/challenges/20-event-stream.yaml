@@ -28,7 +28,7 @@ hints:
   - "Place an event-stream block to handle the 1500 rps write workload while maintaining ordering per partition and durability for offset replay."
   - "Size the event-stream with enough partitions to handle 1500 rps writes without bottlenecking; add cache downstream to serve repeated reads so consumers don't re-read same events."
   - "Wire compute to write to event-stream; add cache layer so reads of recent events are served from cache (p99 250ms, p95 150ms target) rather than re-reading from stream."
-  - "Deploy compute with 2 replicas for 1500 rps writes; event-stream with 3-4 partitions for parallel writes; cache with 2+ replicas for cached reads; avoid simple message-queue-only architecture."
+  - "Deploy compute with 2 replicas for the 1500 rps writes, feeding BOTH a message queue and an event stream — the queue decouples, the stream (a single Kafka broker carries this volume) retains and replays. A queue alone fails the brief."
 schema_version: 2
 track: realtime
 tier: 2

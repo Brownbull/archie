@@ -26,7 +26,7 @@ target_metrics:
 hints:
   - "The core problem is offloading heavy async work from the request path so the API stays fast while background jobs drain asynchronously."
   - "Write requests hit compute, which enqueues them on message-queue; worker nodes drain the queue async, returning the response immediately without waiting."
-  - "Size compute replicas for the 1500 RPS peak on the request path (~6-8 replicas); size the worker pool to drain faster than writes arrive, preventing queue backup."
+  - "Size compute for the 1500 RPS peak on the request path (2+ replicas covers it); size the worker pool to drain faster than writes arrive, preventing queue backup."
   - "Compute replicas → message-queue → 12-15 workers. Keep message-queue under 100% to prevent backing up at 1500 RPS peak and hold p99 under 250ms with p95 under 200ms."
 schema_version: 2
 track: foundations

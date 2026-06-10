@@ -27,7 +27,7 @@ hints:
   - "Deploy a CDN with an 85% hit ratio: it serves 8500 rps from edge locations (10-20ms latency) and only 1500 rps reaches your origin."
   - "At peak (10,000 rps, t=60-90), the CDN must cache static and semi-static content aggressively (cache-control headers, long TTLs). Miss traffic (1500 rps) hits the origin load balancer."
   - "Use traffic-source → cdn → load-balancer → compute. CDN caches with TTL tuned for your workload; origin sees ~1500 rps (15% misses)."
-  - "Deploy 1-2 compute instances behind LB, with CDN in front. CDN: 85% hit ratio = 8500 rps from edge, 1500 rps (15% misses) reach LB. Keeps origin at 1500 rps. Achieve 97% uptime, p99≤200ms, p95≤130ms via cache headers and <50ms compute response time."
+  - "Deploy 1-2 compute instances behind the LB, CDN in front. The static-caching tier's 90% hit ratio serves 9000 rps from the edge — only the ~1000 rps of misses reach your origin. That ratio is the whole challenge: 97% uptime, p99≤200ms, p95≤130ms follow from it."
 schema_version: 2
 track: edge
 tier: 3

@@ -26,7 +26,7 @@ hints:
   - "Place a realtime block managing 500+ websocket connections and emitting updates under 150ms p99 latency at 2500 rps peak."
   - "Size realtime with 2-3 replicas for 500+ concurrent connections; add cache to pre-compute latest event state so new connections bootstrap fast."
   - "Wire stream-processor output to realtime tier which fans updates to subscribed clients; cache stores latest state so new connections don't request stale history."
-  - "Deploy compute with 2 replicas for stream-processor; realtime with 2-3 replicas managing 500+ clients fanning 2500 rps under 150ms p99; cache with 2 replicas; load-balancer distributing connections."
+  - "The working shape: compute (cluster mode) feeds a stream processor, and the realtime tier fans the processed events to clients at 2500 rps under the 150ms p99. One well-sized websocket server carries it; add replicas for connection headroom, not throughput."
 schema_version: 2
 track: realtime
 tier: 4
