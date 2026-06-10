@@ -1,9 +1,9 @@
 id: serverless-burst
 title: Serverless Burst
 brief: >-
-  A spike hits your scaled-out service. Serverless functions absorb the overflow
-  without pre-provisioning — keep latency flat while the burst passes, and stay
-  under budget by not over-scaling the base compute tier.
+  A spike hits your scaled-out service — steady 200 RPS one moment, 3000 the next, and back down
+  almost as fast as it came. Keep latency flat while the burst passes, and stay under budget:
+  capacity bought for the peak keeps billing long after the peak is gone.
 difficulty: intermediate
 budget_cap: 800
 duration_seconds: 90

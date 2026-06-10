@@ -1,9 +1,9 @@
 id: stream-processor
 title: Process & Aggregate
 brief: >-
-  Window and aggregate events in flight. The stream processor reads from the
-  event log, groups by time windows, and writes summaries downstream. A latency
-  spike on compute tests your pipeline's resilience.
+  Window and aggregate events in flight. Sensors fire 2000 events a second, and downstream
+  consumers need time-windowed summaries, not the raw firehose. A latency spike on compute tests
+  your pipeline's resilience.
 difficulty: advanced
 budget_cap: 1500
 duration_seconds: 120

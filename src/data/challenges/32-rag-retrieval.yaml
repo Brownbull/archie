@@ -1,9 +1,9 @@
 id: rag-retrieval
 title: RAG at Scale
 brief: >-
-  Query a vector DB for semantic context, merge it with the user prompt, and
-  route to the LLM. Under read-heavy load, the cache and search engine absorb
-  repeat queries. A vector-store failure mid-run forces your fallback path.
+  Query a vector DB for semantic context, merge it with the user prompt, and route to the LLM.
+  Under read-heavy load, the same queries arrive again and again. A vector-store failure mid-run
+  forces your fallback path.
 difficulty: advanced
 budget_cap: 2500
 duration_seconds: 150

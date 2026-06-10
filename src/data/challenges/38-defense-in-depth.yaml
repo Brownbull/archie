@@ -1,10 +1,8 @@
 id: defense-in-depth
 title: Defense in Depth
 brief: >-
-  Layer auth, rate limiting, and security monitoring into a production API.
-  A credential-stuffing attack spikes traffic mid-run — the rate limiter must
-  absorb the abuse while auth validates legitimate requests. Observability tracks
-  the attack pattern in real time.
+  Your production API is under siege. A credential-stuffing attack spikes traffic mid-run — absorb
+  the abuse while legitimate requests keep flowing, and track the attack pattern in real time.
 difficulty: advanced
 budget_cap: 1200
 duration_seconds: 120

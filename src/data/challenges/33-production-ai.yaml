@@ -1,9 +1,9 @@
 id: production-ai
 title: Production AI
 brief: >-
-  Capstone: a multi-region AI service with failover, circuit-breaking, and full
-  observability. An AZ outage hits the LLM gateway mid-run — your architecture
-  must route around it and keep serving inference requests under latency.
+  Capstone: your production AI service has real users and an SLA to keep. An AZ outage hits the
+  LLM gateway mid-run — your architecture must route around it and keep serving inference requests
+  under latency.
 difficulty: advanced
 budget_cap: 4000
 duration_seconds: 180

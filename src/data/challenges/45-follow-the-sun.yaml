@@ -1,9 +1,9 @@
 id: follow-the-sun
 title: Follow the Sun
 brief: >-
-  Your audience is global. One traffic source now originates multi-region, so a
-  single-region stack won't cut it: you need an edge (CDN), name resolution
-  (DNS), and a database behind them. Serve the planet without melting.
+  Your audience is global. One traffic source now originates multi-region, so a single-region
+  stack won't cut it — distant users will feel every extra mile as latency. Serve the planet
+  without melting.
 difficulty: advanced
 budget_cap: 1600
 duration_seconds: 100

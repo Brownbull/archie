@@ -1,9 +1,9 @@
 id: search-at-scale
 title: Search at Scale
 brief: >-
-  A product catalog needs fast search across heavy traffic. Combine an edge
-  tier, scaled compute, a search tier, and caching to hold a strict p99 while
-  thousands of requests per second pour in. Every tier has to pull its weight.
+  A product catalog needs fast search across heavy traffic — shoppers bounce the moment results
+  lag. Hold a strict p99 while thousands of requests per second pour in. Every tier has to pull
+  its weight.
 difficulty: advanced
 budget_cap: 800
 duration_seconds: 100

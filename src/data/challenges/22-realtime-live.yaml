@@ -1,8 +1,8 @@
 id: realtime-live
 title: Live Updates
 brief: >-
-  Push processed events to websocket clients in real time. The fan-out must
-  deliver updates under 150 ms to 500+ simulated connections while the stream
+  Five hundred dashboards are open, and every one expects the next update the instant it lands.
+  Polling won't cut it — updates must reach 500+ live connections in under 150 ms while the stream
   processor feeds fresh data continuously.
 difficulty: advanced
 budget_cap: 2000

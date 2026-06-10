@@ -1,9 +1,9 @@
 id: data-pipeline
 title: Data Pipeline
 brief: >-
-  Build an ETL pipeline that ingests text, routes it through the LLM for
-  embeddings, and stores the output. A latency spike on the ETL tier mid-run
-  tests your pipeline's resilience. Keep the ingest queue from backing up.
+  Raw text floods in and every document needs LLM embeddings generated and stored — 1000 writes a
+  second at peak. A latency spike on the ingestion tier mid-run tests your pipeline's resilience.
+  Don't let the intake back up.
 difficulty: intermediate
 budget_cap: 1500
 duration_seconds: 120

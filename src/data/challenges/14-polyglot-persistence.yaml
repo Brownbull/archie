@@ -1,9 +1,10 @@
 id: polyglot-persistence
 title: Polyglot Persistence
 brief: >-
-  Not every workload fits SQL. Route structured data to the relational DB,
-  documents to a NoSQL store, and blobs to object storage — all behind a cache
-  tier. Keep reads fast and writes durable.
+  Not every workload fits SQL. Your product juggles tidy transactional records, free-form
+  documents, and hefty media blobs — and one overworked database has been eating them all. At 1200
+  RPS the seams are showing: match each data shape to the store it deserves. Keep reads fast and
+  writes durable.
 difficulty: intermediate
 budget_cap: 1000
 duration_seconds: 120

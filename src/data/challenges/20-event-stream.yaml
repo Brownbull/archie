@@ -1,9 +1,10 @@
 id: event-stream
 title: Stream the Data
 brief: >-
-  Switch from fire-and-forget queues to a durable event log. Consumers replay
-  from any offset, and ordering is guaranteed per partition. Keep throughput
-  high while the event stream absorbs the write load.
+  Your fire-and-forget queues forget: a consumer crashed last night and every in-flight message
+  vanished with it. Now downstream teams want to replay past events from any point, in order — and
+  1500 rps of writes keep pouring in. Keep throughput high while making sure every event survives
+  to be read again.
 difficulty: intermediate
 budget_cap: 1200
 duration_seconds: 120

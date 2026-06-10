@@ -1,10 +1,8 @@
 id: always-on
 title: Always On
 brief: >-
-  A production platform under sustained heavy load, with observability expected.
-  Build a full multi-tier system — edge, scaled compute, cache, data-storage,
-  and monitoring — that holds a strict latency target at scale and stays under
-  a generous-but-not-infinite budget.
+  A production platform under sustained heavy load, with observability expected. Hold a strict
+  latency target at scale and stay under a generous-but-not-infinite budget.
 difficulty: advanced
 budget_cap: 1300
 duration_seconds: 110

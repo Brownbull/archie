@@ -1,9 +1,9 @@
 id: async-backbone
 title: Event Backbone
 brief: >-
-  Capstone: queue → stream → process → realtime fan-out, end-to-end. An AZ
-  outage on the event stream mid-run tests your full pipeline's redundancy.
-  Maintain uptime and latency across every tier under sustained load.
+  Capstone: every write must reach live subscribers the instant it lands, end-to-end. An AZ outage
+  on the event stream mid-run tests your full pipeline's redundancy. Maintain uptime and latency
+  across every tier under sustained load.
 difficulty: advanced
 budget_cap: 3500
 duration_seconds: 180

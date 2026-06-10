@@ -1,9 +1,9 @@
 id: foundations-mastery
 title: Foundations Mastery
 brief: >-
-  Capstone: compose compute, scale, cache, and async into a single architecture
-  that handles a sustained mixed workload — reads from cache, writes through a
-  queue, burst overflow to serverless — all under budget and under latency.
+  Capstone: compose compute, scale, cache, and async into a single architecture that handles a
+  sustained mixed workload — a flood of reads, writes that must not be lost, and peaks that outrun
+  steady capacity — all under budget and under latency.
 difficulty: advanced
 budget_cap: 2000
 duration_seconds: 180

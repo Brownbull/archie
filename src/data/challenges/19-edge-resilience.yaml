@@ -1,9 +1,9 @@
 id: edge-resilience
 title: Edge Under Chaos
 brief: >-
-  Capstone: your multi-layer edge must survive an AZ failure and a latency spike
-  hitting simultaneously. The CDN, gateway, load balancer, and cache all need to
-  absorb the impact without dropping below the uptime target at 3000+ rps.
+  Capstone: your multi-layer edge must survive an AZ failure and a latency spike hitting
+  simultaneously. Every tier between your users and compute has to absorb the impact without
+  dropping below the uptime target at 3000+ rps.
 difficulty: advanced
 budget_cap: 2500
 duration_seconds: 180

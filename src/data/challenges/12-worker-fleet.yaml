@@ -1,9 +1,10 @@
 id: worker-fleet
 title: Worker Fleet
 brief: >-
-  Heavy async work is clogging the request path. Offload it to a worker pool
-  behind a message queue so the API stays fast. The workers process jobs in the
-  background — keep the queue from backing up under sustained load.
+  Heavy async work is clogging the request path. Every write is stuck waiting on jobs that don't
+  need to finish before the response goes out. Get that work off the hot path so the API stays
+  fast — and make sure the backlog keeps draining under sustained load instead of quietly piling
+  up.
 difficulty: intermediate
 budget_cap: 1200
 duration_seconds: 120
