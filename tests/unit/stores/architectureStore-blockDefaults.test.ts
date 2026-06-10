@@ -20,12 +20,24 @@ const { testComponentMap } = vi.hoisted(() => {
     id: "redis", name: "Redis", category: "caching", typeId: "cache",
     configVariants: [{ id: "standalone", name: "Standalone", metrics: [] }],
   }))
+  map.set("web-users", mk({
+    id: "web-users", name: "Web Users", category: "traffic", typeId: "traffic-source",
+    configVariants: [{ id: "steady", name: "Steady", metrics: [] }, { id: "heavy", name: "Heavy", metrics: [] }],
+  }))
+  map.set("mobile-users", mk({
+    id: "mobile-users", name: "Mobile Users", category: "traffic", typeId: "traffic-source",
+    configVariants: [{ id: "steady", name: "Steady", metrics: [] }],
+  }))
   return { testComponentMap: map }
 })
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
     getComponent: vi.fn((id: string) => testComponentMap.get(id)),
+    // The traffic add-gate (resolveTrafficSourceAdd) enumerates the traffic category.
+    getComponentsByCategory: vi.fn((category: string) =>
+      [...testComponentMap.values()].filter((c) => (c as { category: string }).category === category),
+    ),
     isInitialized: () => true,
     reset: vi.fn(),
   },
@@ -92,5 +104,24 @@ describe("architectureStore.addNode — saved per-type default injection", () =>
     useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
     expect(lastNode().data.archieComponentId).toBe("postgresql")
     expect(lastNode().data.activeConfigVariantId).toBe("single-node")
+  })
+
+  // P1/T3: traffic sources are excluded from saved defaults — demand is per-challenge/experiment,
+  // and a saved traffic default applied after the D63 one-per-type remap could duplicate a type.
+  it("ignores a persisted traffic-source default (variant AND provider) when adding a traffic source", () => {
+    useUserBlockDefaultsStore.setState({ defaults: { "traffic-source": { providerId: "web-users", variantId: "heavy" } } })
+    useArchitectureStore.getState().addNode("web-users", { x: 0, y: 0 })
+    expect(lastNode().data.archieComponentId).toBe("web-users")
+    expect(lastNode().data.activeConfigVariantId).toBe("steady") // first variant, NOT the saved "heavy"
+  })
+
+  it("a saved traffic default cannot override the D63 one-per-type remap (no duplicate traffic types)", () => {
+    useUserBlockDefaultsStore.setState({ defaults: { "traffic-source": { providerId: "web-users", variantId: "steady" } } })
+    // web-users already on canvas → requesting web-users again remaps to the next free traffic type.
+    useArchitectureStore.getState().addNode("web-users", { x: 0, y: 0 })
+    expect(lastNode().data.archieComponentId).toBe("web-users")
+    useArchitectureStore.getState().addNode("web-users", { x: 100, y: 0 })
+    // Without the shield, the saved default would swap the remapped provider back to web-users.
+    expect(lastNode().data.archieComponentId).toBe("mobile-users")
   })
 })

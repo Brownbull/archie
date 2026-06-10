@@ -274,8 +274,10 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       )}
 
       {/* Save-as-default button (top-right, inside the card). Only for typed blocks — it persists
-          a per-user provider+tier default for this block type. Hidden for pre-P5 typeless blocks. */}
-      {typeInfo.typeId && (
+          a per-user provider+tier default for this block type. Hidden for pre-P5 typeless blocks.
+          Hidden for traffic sources (P1/T3): demand is the challenge's problem statement — a saved
+          traffic default would leak into quests (and could double a one-per-type traffic kind). */}
+      {typeInfo.typeId && !isTraffic && (
         <SaveBlockDefaultButton
           typeId={typeInfo.typeId}
           providerId={data.archieComponentId}

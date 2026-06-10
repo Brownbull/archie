@@ -342,10 +342,13 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     // Apply the user's saved default (provider + variant) for this block TYPE, if any. Future
     // adds only — never retroactive. Validate against the library so a stale saved provider/variant
     // (e.g. removed from the catalog, or no longer of this type) falls back to the requested block.
+    // Traffic sources are excluded (P1/T3): demand is per-challenge/per-experiment, and a saved
+    // traffic default applied AFTER the D63 one-per-type remap above could override the remap and
+    // duplicate a traffic type. Also shields defaults already persisted in Firestore.
     let component = requested
     let defaultVariant = component.configVariants[0]
     const typeId = requested.typeId
-    if (typeId) {
+    if (typeId && !isTrafficProvider(addId)) {
       const saved = useUserBlockDefaultsStore.getState().getDefault(typeId)
       if (saved) {
         const savedProvider = componentLibrary.getComponent(saved.providerId)
