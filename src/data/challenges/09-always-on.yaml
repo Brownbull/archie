@@ -33,7 +33,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 4
-requires: [zone-failure]
+requires: [zone-failure, cache-the-hot-path]
 unlocks: [chaos-day, fortress, production-ai]
 min_xp: 5138
 required_types: [observability, load-balancer, cache]

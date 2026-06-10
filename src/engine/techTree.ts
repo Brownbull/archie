@@ -53,8 +53,11 @@ function compareNodes(a: TechTreeNode, b: TechTreeNode): number {
 
 /**
  * Validate a challenge set as a tech tree: duplicate ids, dangling `requires` / `unlocks`
- * references, and cycles in the `requires` graph (which would make a challenge unreachable).
- * Pure + deterministic; returns an ordered list of issues (empty when the tree is sound).
+ * references, cycles in the `requires` graph (which would make a challenge unreachable), and — since
+ * S5 closed every one (D89) — unlock-ordering REQUIRED-TYPE reachability (a required type no challenge
+ * in the requires-closure grants). Pure + deterministic; returns an ordered list of issues (empty when
+ * the tree is sound). The softer `ungrantable-available-block` palette check is NOT gated here — it
+ * stays in `findUnlockOrderingIssues` as a tracked baseline (see that function).
  */
 export function validateTechTree(challenges: readonly Challenge[]): TechTreeIssue[] {
   const issues: TechTreeIssue[] = []
@@ -79,6 +82,11 @@ export function validateTechTree(challenges: readonly Challenge[]): TechTreeIssu
   }
 
   issues.push(...findRequiresCycles(challenges, ids))
+
+  // S5 (D89): the unlock-ordering REQUIRED-TYPE check is now a HARD gate (all 21 violations fixed) —
+  // a required type unreachable via the requires-closure fails here, so challengeLoader's `=== []`
+  // assertion is the permanent regression net. Palette gaps stay soft (findUnlockOrderingIssues).
+  issues.push(...findUnlockOrderingIssues(challenges).filter((i) => i.kind === "unreachable-required-type"))
 
   return issues
 }

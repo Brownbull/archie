@@ -30,7 +30,7 @@ hints:
 schema_version: 2
 track: foundations
 tier: 3
-requires: [scale-out]
+requires: [scale-out, serverless-burst]
 unlocks: []
 min_xp: 1976
 required_types: [serverless]

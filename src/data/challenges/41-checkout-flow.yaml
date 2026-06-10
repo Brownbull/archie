@@ -30,7 +30,7 @@ forbidden_types: [cache]
 schema_version: 2
 track: foundations
 tier: 4
-requires: [serverless-burst]
+requires: [serverless-burst, add-a-database]
 unlocks: []
 min_xp: 5138
 required_types: [payments, relational-db]

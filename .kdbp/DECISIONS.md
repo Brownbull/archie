@@ -1371,3 +1371,19 @@ and carries a mandatory re-tune.
 **Review trigger:** revisit the drop-vs-badge pathway decision once the toolbox lock-reason panel (S6)
 exposes a lock-flagged list; revisit per-challenge port opt-out only if a challenge is found that forces an
 unavoidable mismatch (Phase 1 port-coverage work makes this unlikely).
+
+## D90 — Palette-gap (ungrantable-available-block) policy: hard-gate REQ, accept+track palette gaps (2026-06-10)
+
+**Context:** S3's closure validator surfaced — alongside the 21 hard `unreachable-required-type` violations (all fixed in S4 batch A + S5 batch B via added prerequisite edges) — 53 `ungrantable-available-block` gaps: built-in challenges whose `available_blocks` palette offers a block their requires-closure doesn't grant.
+
+**Decision:**
+1. **`unreachable-required-type` (REQ) is a HARD gate** — folded into `validateTechTree` (S5), so `challengeLoader.test`'s `validateTechTree(getAllChallenges()) === []` is now the permanent regression net. A required type the closure never grants is a genuine dead-end: free-build can't place it (after S2's unlocked-block filter) and the rubric demands an architecture referencing an un-introduced block.
+2. **`ungrantable-available-block` (PAL) gaps are ACCEPTED for built-ins** and tracked softly (a snapshot drift-net in `unlockOrdering.baseline.test`), NOT gated.
+
+**Rationale (PAL):** For a BUILT-IN challenge, `available_blocks` IS the palette regardless of the player's unlocked set — `ComponentTab` intersects available_blocks with unlocked ONLY for `origin: 'user'` challenges (D45-AC2). So offering a not-yet-grantable block in a built-in palette is the intended teach-by-using mechanic (the challenge introduces the block by letting you build with it); it does NOT break built-in play. The gap only bites user-CLONED challenges (the intersection drops the ungrantable block, possibly making the clone unsolvable) — an edge case acceptable for now.
+
+**Note:** burst-absorber was bumped tier 2→4 in S5 — it requires `worker` (a T4 worker-fleet unlock), so its T2 label was an inversion. It's a tech-tree leaf (nothing requires it), so the bump is contained.
+
+**Review trigger:** if user-clone palette coherence matters (community sharing / MVP 4), trim built-in palettes to grantable-only OR add prereq edges so every offered block is grantable. The 53-gap snapshot is the worklist.
+
+**Status:** active

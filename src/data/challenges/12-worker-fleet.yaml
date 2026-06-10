@@ -30,7 +30,7 @@ hints:
 schema_version: 2
 track: foundations
 tier: 4
-requires: [serverless-burst]
+requires: [serverless-burst, async-pipeline]
 unlocks: [foundations-mastery]
 min_xp: 5138
 required_types: [worker, message-queue]

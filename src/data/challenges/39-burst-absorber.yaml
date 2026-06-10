@@ -30,8 +30,8 @@ hints:
   - "Place message queue between traffic source and worker. At t=30-60s the queue buffers ~220k messages (4500 rps × 30s). It fully drains by t=75s when traffic drops to match worker capacity."
 schema_version: 2
 track: realtime
-tier: 2
-requires: [async-pipeline]
+tier: 4
+requires: [async-pipeline, worker-fleet]
 unlocks: []
 min_xp: 494
 required_types: [message-queue, worker]
