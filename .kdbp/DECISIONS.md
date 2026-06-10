@@ -1407,3 +1407,23 @@ unavoidable mismatch (Phase 1 port-coverage work makes this unlikely).
 
 **Status:** active
 **Review trigger:** Phase 4's break-it loop (per-condition resilience targets) and Phase 5's per-block failure conditions build on this targeting; revisit ALL-matching vs single-node kill if a challenge wants "one replica dies" semantics (that's az_outage's lane today).
+
+## D92 — Phase 3 (Teaching quality) design lock + 10-slice decomposition (2026-06-10)
+
+**Context:** Phase 3 design workflow (wf_d7a83f1f-dd8 — 6 architect surface maps + synthesis) consolidated the phase; owner locked 3 forks (2026-06-10 Q&A).
+
+**Verified load-bearing findings:**
+1. **The reseed trap is the NESTED schema:** top-level ComponentSchema is non-strict (D14) but `ConfigVariantSchema` is `.strict()` (componentSchema.ts:68) — reseeding Firestore with new variant fields makes every deployed OLD reader drop EVERY component (empty library in prod). MANDATORY ordering: deploy the tolerant reader FIRST, then ONE combined reseed (calibration + tier descriptions together — never two reseeds).
+2. **Brief count correction (supersedes PLAN's "39"):** 18 pure-instruction + 17 mixed + 26 already context-style. PLAN exit ("0 instruction-style") is satisfied by the 18 alone.
+3. **Prose is harness-inert by construction** (rubricScorer/referenceSolution never read brief/hint text) — so brief/hint edits can't regress D66/3★, AND the harness can't catch a wrong brief: prose-vs-config consistency is a per-file review obligation (+ a narrow forbidden-types keyword guard).
+4. **Hint numeric pass must FOLLOW calibration** (gold-standard hints quote harness-measured par numbers; calibration moves them — author numbers exactly once).
+
+**Owner decisions:**
+1. **Brief scope = MAXIMAL:** all 35 non-context briefs reworked to a uniform context style (zero-budget-hero as template). S3 (18 binding) + S4 (17 mixed) both in scope; S3 still ships first so the exit criterion never depends on S4.
+2. **Calibration = all three as recommended:** Aurora serverless-v2 ceiling ~9000→~6000 keep $90 (provisioned-vs-serverless trade-off); firestore/dynamo same-price gap 6.7×→~1.7× (raise firestore ~8000/~20000, trim dynamo on-demand ~14000, DynamoDB stays leader); TSDB internal ordering fixed (timescale ≥ influx) + relational single-node floor 500→~1500, cross-family spread KEPT (the teaching point). Plus postgres Citus inversion fix (citus ~16000 leads, sync-replica ~9000). Acceptance bar: solvability 62/62 3★ + par regen + D71 ceiling.
+3. **Discipline ladder = uniform 4-tier/track,** thresholds scaled to quest counts (foundations 11, data 15, edge 8, realtime 7, reliability 10, security 5, aiml 5); reconciles to exactly 12 new PNGs + aiml-4→5 rename; the table (authored at S0) is the single source of truth; S6 adds the missing lockstep test.
+
+**10 slices, 6 waves:** S0 contracts (DECISIONS tables: brief classification, ladder table, calibration table) → Wave 1 parallel: S1 schema+UI+tolerant-reader (deploy = the reseed gate), S2 calibration (local YAML, solvability-gated), S3 binding briefs, S5 ladder surgery (no-RPS-dependency fixes), S6 icons+toast → Wave 2: S4 mixed briefs, S7 numeric hint pass (AFTER S2 par regen), S8 tier-description authoring (240 variants, <12-file batches) → Wave 3: S9 the ONE combined reseed (BOTH Firebase projects — prod + test, per the vendor-links seed-drift lesson) + runtime evidence (tier dropdown/inspector screenshots; reader reads reseeded data) + DOCS drift.
+
+**Status:** active
+**Review trigger:** if S2's calibration can't hold 62/62 3★ within the D71 ceiling, revisit the relational-floor lift (the one change that moves harness builds); if S8's authoring quality drifts, sample-review per batch before the reseed.
