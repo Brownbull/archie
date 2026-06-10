@@ -1323,3 +1323,51 @@ component YAMLs; its own focused pass (the playbook's strict (1)→(4) authoring
 **Guard:** Phase 1 adds the challenge-config validation test (forbidden ∩ available_blocks = ∅, forbidden ∩ required_types = ∅ across all 61) so this class of contradiction can't ship again.
 **Alternatives considered:** keep the ban and rewrite the brief as a "do it WITHOUT object storage" constraint quest — rejected: fights the quest's own theme.
 **Status:** accepted — implement in Phase 1
+
+## D89 — Phase 2 (Progression & grading integrity) design lock + 8-slice decomposition (2026-06-10)
+
+**Context:** Phase 2 design workflow (wf_eef42647-9ae — 7 architect surface-maps + synthesis) consolidated
+the phase into two load-bearing seams (port-enforcement snapshot→rubric gate; techTree closure validator
+as the regression guard for the unlock-ordering data fixes) and surfaced four product forks, all locked
+with the owner.
+
+**Owner decisions (2026-06-10 Q&A):**
+1. **Port gate (D87) = GLOBAL-ON.** Every challenge costs the well-formed star when start-time
+   port-mismatched edges exist. NOT per-challenge opt-in: the defaulted-0 `portMismatchCount` param IS
+   the byte-identity safety (golden + harness untouched), reference RefEdges have no port handles so the
+   all-3★ harness is intact, and a mismatch is objectively wrong everywhere — a per-challenge flag would
+   add a 61-challenge migration surface for zero grading benefit.
+2. **Pathway locked suggestions = DROP.** Locked-block pathway suggestions are pre-filtered out (engine
+   stays pure → pathwayEngine golden snapshot protected). Legacy no-typeId components pass through the
+   filter `(!c.typeId) || unlockedBlocks.has(c.typeId)`. Badge+CTA panels are a deferred fast-follow.
+3. **Banned-block display = THREE DISTINCT lock treatments** keyed by a `BlockLockReason` enum: banned
+   (forbiddenTypes → hard 0★) = red lock; not-in-palette = gray lock; not-mastered = existing amber lock.
+   Teaches the constraint; banned reads as a deliberate rule, not mere unavailability. Reserve grayscale
+   for not-mastered (no strikethrough — avoids a new visual idiom).
+4. **Observe-to-Recover = IN PHASE 2 with the scheduled_events retarget folded in.** The retarget
+   (component_failure/latency_spike match by node-id against crypto.randomUUID → never fire live on 8 of 9
+   chaos challenges; only az_outage matches by category) is the deferred latent LEDGER "D25" finding. It is
+   itself a grading-integrity fix (events fire HARDER live than authored once retargeted → mandatory chaos
+   re-tune to restore all-3★), so it is squarely on-theme and a HARD prereq for the observe-markers UI.
+
+**8-slice decomposition (split along dependency seams; each independently shippable behind a green harness):**
+- S1 — Port-mismatch grading signal (snapshot plumbing + rubric gate). No deps. [IN PROGRESS 2026-06-10]
+- S2 — Pathway tech-tree filter (drop locked; engine pure). No deps.
+- S3 — techTree closure-reachability validator + 2 new issue kinds (seeded RED). Coupled with S4/S5.
+- S4 — Unlock-ordering content batch A (edge/foundations capstone prereq edges). Dep: S3.
+- S5 — Unlock-ordering content batch B (reliability + foundations/realtime/security). Dep: S3, S4.
+  At the 12-file ceiling → split to B1/B2 if a fixture regen adds files.
+- S6 — Quest-mode footer CTA gating + budget dedupe + locked-block toolbox display (three-distinct). No deps.
+- S7 — PREREQ: scheduled_events retarget-by-type + chaos re-tune (promotes latent LEDGER D25). Dep of S8.
+- S8 — Observe-to-Recover visibility (engine event emission + timeline markers + free coach). Dep: S7.
+
+**Sequencing:** Wave 1 (parallel, de-risk): S1, S2, S6. Wave 2 (coupled, ordered): S3→S4→S5. Wave 3
+(gated, ordered): S7→S8. Harness safety: every scoring/engine change is an additive identity-element
+field (defaulted-0 param, optional booleans) so the D66 golden + D87 all-3★ stay byte-identical; content
+changes run `test:story` per-file behind the seeded-RED validator; S7 is the one genuine sim-math change
+and carries a mandatory re-tune.
+
+**Status:** active
+**Review trigger:** revisit the drop-vs-badge pathway decision once the toolbox lock-reason panel (S6)
+exposes a lock-flagged list; revisit per-challenge port opt-out only if a challenge is found that forces an
+unavoidable mismatch (Phase 1 port-coverage work makes this unlikely).

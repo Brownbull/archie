@@ -239,6 +239,12 @@ export interface StarBreakdown {
    * architecture gate, like required_types). No multi-region source ⇒ always true (the 41 built-ins).
    */
   originRequirementOk: boolean
+  /**
+   * Ports well-formed (D87): zero port-mismatched edges at start. Folded into the well-formed star in
+   * challenge mode (star = zero blocking issues AND requiredTopologyOk AND this). Optional: only the
+   * rubric populates it; absent/undefined ⇒ treated as well-formed (sandbox runs + legacy callers).
+   */
+  portsWellFormed?: boolean
 }
 
 /**

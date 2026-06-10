@@ -264,3 +264,42 @@ describe("evaluateAttempt (star rubric, Epic 16)", () => {
     })
   })
 })
+
+describe("port enforcement gate (D87 — the well-formed star)", () => {
+  // A perfect 3★ baseline: metrics pass, under budget, clean topology, required types absent (c1 has none).
+  it("drops the otherwise-clean 3★ to 2★ when a start-time port mismatch exists", () => {
+    const clean = evaluateAttempt(stats(100, 50), challenge, 0, 100) // no port arg → 0 → 3★
+    expect(clean.stars).toBe(3)
+    expect(clean.portsWellFormed).toBe(true)
+
+    const mismatched = evaluateAttempt(stats(100, 50), challenge, 0, 100, undefined, undefined, undefined, 0, 1)
+    expect(mismatched.stars).toBe(2) // loses the well-formed star
+    expect(mismatched.portsWellFormed).toBe(false)
+    expect(mismatched.cleanTopology).toBe(true) // structural topology is still clean — only ports gate the star
+    expect(mismatched.underBudget).toBe(true)
+  })
+
+  it("port mismatch never resurrects a failed base pass (still 0★)", () => {
+    const r = evaluateAttempt(stats(0, 50), challenge, 0, 100, undefined, undefined, undefined, 0, 3)
+    expect(r.stars).toBe(0)
+    expect(r.portsWellFormed).toBe(false)
+  })
+
+  it("portMismatchCount === 0 is the identity — byte-identical to omitting the arg", () => {
+    const omitted = evaluateAttempt(stats(100, 50), challenge, 0, 100)
+    const explicitZero = evaluateAttempt(stats(100, 50), challenge, 0, 100, undefined, undefined, undefined, 0, 0)
+    expect(explicitZero.stars).toBe(omitted.stars)
+    expect(explicitZero.portsWellFormed).toBe(true)
+  })
+
+  it("defaults portsWellFormed to true when the arg is omitted (legacy callers + the 41 built-ins)", () => {
+    expect(evaluateAttempt(stats(100, 50), challenge, 0, 100).portsWellFormed).toBe(true)
+  })
+
+  it("a build already missing the topology star (dirty topology) stays 2★ — ports don't double-penalize", () => {
+    // dirty topology already removed the well-formed star; a port mismatch can't drop it twice.
+    const r = evaluateAttempt(stats(100, 50), challenge, 2, 100, undefined, undefined, undefined, 0, 1)
+    expect(r.stars).toBe(2) // base + budget; well-formed already lost to topology
+    expect(r.portsWellFormed).toBe(false)
+  })
+})

@@ -342,6 +342,16 @@ export function ChallengeResultsModal() {
             label="Well-formed"
             detail={result.cleanTopology ? "no orphaned or unreachable nodes" : `${measured.topologyIssueCount} disconnected node${measured.topologyIssueCount === 1 ? "" : "s"}`}
           />
+          {/* Port enforcement (D87): when start-time port mismatches cost the well-formed star, say so —
+              otherwise the player sees a green "no orphaned nodes" check beside a lost star and can't tell
+              why. Shown only on violation; the ⚡ warnings on the canvas pinpoint the offending links. */}
+          {result.portsWellFormed === false && (
+            <Criterion
+              met={false}
+              label="Ports compatible"
+              detail="mismatched port types on one or more links — fix the ⚡ flagged connections"
+            />
+          )}
           {challenge.requiredTopology && challenge.requiredTopology.length > 0 && (
             <Criterion
               met={result.requiredTopologyOk}

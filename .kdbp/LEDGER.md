@@ -4712,3 +4712,28 @@ OPERATIONAL: Firestore re-seeded (114 components — additive stream-out ports; 
 DEVIATIONS: 2 minor — traffic-source YAMLs gained stream-out (audit finding, beyond the 9 compute files);
   T8 used deterministic recolor instead of PixelLab (API erroring; shape/set-consistency preserved).
 NEW DEFERRED: D25 (latent: scheduled_events target literal node ids — inert in live play; Phase-2 candidate)
+
+## 2026-06-10 — PHASE 1 REVIEW: Trust & friction fixes
+VERDICT: APPROVE
+FINDINGS: 1 total (0 critical, 0 high, 0 medium, 1 low)
+COVERAGE: HIGH — all 17 modified source files carry corresponding test changes (11 test files + new E2E spec + config-consistency guard)
+CONFIDENCE: 98/100
+DEFERRED: D26 (DashboardOverlay initialCategory double-rAF lacks cleanup — scale-gate polish)
+ALIGNMENT: ALIGNED (all 17 source + 12 YAML files on Phase 1 scope; 0 off-scope)
+TIER: ent | DRIFT: none
+TICK: ✅ Phase 1 Review
+GATES (verified this run): unit 4851/4851 (269 files) · tsc -b clean (exit 0)
+NOTE: simulationLaunch.ts extraction is a clean dedup across 3 consumers (no new abstraction); challengeConfigConsistency guard makes forbidden∩{available,required} contradictions unshippable. Runtime journey evidence (3/3 desktop E2E + screenshots) recorded at exec (f8d1cd0).
+- 2026-06-10 02:04 | Edit | /home/khujta/projects/bmad/archie/src/engine/portCompatibilityChecker.ts
+- 2026-06-10 02:04 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-10 02:04 | Edit | /home/khujta/projects/bmad/archie/src/stores/challengeStore.ts
+- 2026-06-10 02:05 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-10 02:05 | Edit | /home/khujta/projects/bmad/archie/src/engine/rubricScorer.ts
+- 2026-06-10 02:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-10 02:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationLaunch.ts
+- 2026-06-10 02:06 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationLaunch.ts
+- 2026-06-10 02:06 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/portCompatibilityChecker.test.ts
+- 2026-06-10 02:12 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 02:13 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeResultsModal.test.tsx
+- 2026-06-10 02:15 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/f234e320-5dfc-4415-92dc-4281f932e0af/workflows/scripts/slice1-review-wf_9fb46750-4a6.js
+- 2026-06-10 02:15 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/f234e320-5dfc-4415-92dc-4281f932e0af/workflows/scripts/slice1-review-wf_9fb46750-4a6.js

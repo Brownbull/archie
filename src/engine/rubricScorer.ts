@@ -68,6 +68,9 @@ function requiredTypesOnServedPath(graph: TopologyGraphInput, requiredTypes: rea
  *   the 41 built-ins declare no assertions so they never reach that branch.
  * @param advisoryTopologyCount SPOF + replicas-without-LB issue count (D72). Does not gate any star;
  *   zero (with zero blocking) ⇒ `resilient`. Defaults to 0 so legacy callers stay byte-identical.
+ * @param portMismatchCount port-mismatched edges at start (D87). > 0 ⇒ costs the well-formed star in
+ *   challenge mode. Defaults to 0 (identity) so the golden snapshot, sandbox runs, and the all-3★
+ *   reference harness (RefEdges have no port handles) all stay byte-identical.
  */
 export function evaluateAttempt(
   stats: SimulationStats,
@@ -78,6 +81,7 @@ export function evaluateAttempt(
   costPerRequest?: number,
   topologyGraph?: TopologyGraphInput,
   advisoryTopologyCount = 0,
+  portMismatchCount = 0,
 ): StarBreakdown {
   const tm = challenge.targetMetrics
   // EN4/ED8 (D74): consistency sub-gate — the build's worst read-replica staleness must be ≤ the target.
@@ -139,9 +143,15 @@ export function evaluateAttempt(
   // separate recognition (NOT a star modifier), so it never re-opens the D72 budget-vs-redundancy tension.
   const challengeExercisesOutage = challenge.scheduledEvents.some((e) => e.type === "az_outage")
   const resilienceEarned = basePass && resilient && challengeExercisesOutage
-  // The topology star requires BOTH zero issues AND all required_topology assertions (D66).
-  // For the 41 built-ins requiredTopologyOk is always true, so this equals the prior cleanTopology gate.
-  const topologyStar = cleanTopology && requiredTopologyOk
+  // Port enforcement (D87): mismatched ports are objectively-wrong wiring (an http-out into a db-in),
+  // so they cost the well-formed star in challenge mode. Snapshotted at Start (challengeStore) so a
+  // mid-run delete can't dodge it. Defaults to 0 ⇒ portsWellFormed true ⇒ topology star unchanged, so
+  // the golden snapshot, sandbox runs, and reference builds (no port handles) are byte-identical.
+  const portsWellFormed = portMismatchCount === 0
+  // The topology star requires zero blocking issues AND all required_topology assertions (D66) AND
+  // well-formed ports (D87). For the 41 built-ins requiredTopologyOk and portsWellFormed are both
+  // always true, so this equals the prior cleanTopology gate.
+  const topologyStar = cleanTopology && requiredTopologyOk && portsWellFormed
   const stars = basePass ? 1 + (underBudget ? 1 : 0) + (topologyStar ? 1 : 0) : 0
 
   return {
@@ -156,5 +166,6 @@ export function evaluateAttempt(
     forbiddenTypesOk,
     requiredTopologyOk,
     originRequirementOk,
+    portsWellFormed,
   }
 }

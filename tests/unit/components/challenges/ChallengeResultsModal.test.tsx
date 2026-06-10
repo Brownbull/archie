@@ -143,6 +143,27 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     expect(screen.getByTestId("challenge-results")).toHaveTextContent("2 disconnected nodes")
   })
 
+  it("surfaces a 'Ports compatible' row explaining a port-gated lost star (D87)", () => {
+    // metrics pass, under budget, topology clean — but a start-time port mismatch cost the 3rd star.
+    // Without the ports row, "Well-formed ✓" beside a 2★ would read as an unexplained/buggy score.
+    const result: StarBreakdown = { stars: 2, passedMetrics: true, underBudget: true, cleanTopology: true, resilient: false, portsWellFormed: false }
+    const measured: MeasuredAttempt = { uptimePercent: 100, p99LatencyMs: 50, totalCost: 60, topologyIssueCount: 0 }
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", lastResult: result, lastMeasured: measured })
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("result-well-formed")).toHaveAttribute("data-met", "true") // no orphans
+    const ports = screen.getByTestId("result-ports-compatible")
+    expect(ports).not.toHaveAttribute("data-met")
+    expect(ports).toHaveTextContent("mismatched port types")
+  })
+
+  it("omits the ports row when ports are well-formed or unknown (no clutter on clean runs)", () => {
+    const result: StarBreakdown = { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true, resilient: false, portsWellFormed: true }
+    const measured: MeasuredAttempt = { uptimePercent: 100, p99LatencyMs: 50, totalCost: 60, topologyIssueCount: 0 }
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", lastResult: result, lastMeasured: measured })
+    render(<ChallengeResultsModal />)
+    expect(screen.queryByTestId("result-ports-compatible")).not.toBeInTheDocument()
+  })
+
   it("renders 'unmeasured' (not 'Infinityms') for a consistency target with nothing to measure (D74)", () => {
     const consistencyChallenge: Challenge = { ...challenge, consistencyTargetMs: 100 }
     const result: StarBreakdown = { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true, resilient: false }

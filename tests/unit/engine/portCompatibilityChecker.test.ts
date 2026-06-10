@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   checkPortCompatibility,
+  countPortMismatches,
   type PortLookupContext,
 } from "@/engine/portCompatibilityChecker"
 import type { PortDefinition } from "@/lib/constants"
@@ -204,5 +205,25 @@ describe("checkPortCompatibility", () => {
       expect(result.reason).toContain("cache")
       expect(result.reason).toContain("database")
     })
+  })
+})
+
+describe("countPortMismatches (D87 — port-enforcement grading signal)", () => {
+  const edge = (isPortMismatch?: boolean) => ({ data: { isPortMismatch } })
+
+  it("counts zero for an empty edge list", () => {
+    expect(countPortMismatches([])).toBe(0)
+  })
+
+  it("counts only edges flagged isPortMismatch", () => {
+    expect(countPortMismatches([edge(true), edge(false), edge(true)])).toBe(2)
+  })
+
+  it("treats undefined / missing data as not-mismatched (compatible)", () => {
+    expect(countPortMismatches([{}, { data: {} }, edge(undefined)])).toBe(0)
+  })
+
+  it("returns the full count when every edge is mismatched", () => {
+    expect(countPortMismatches([edge(true), edge(true)])).toBe(2)
   })
 })

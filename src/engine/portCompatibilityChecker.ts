@@ -79,3 +79,19 @@ export function checkPortCompatibility(
 
   return { isCompatible: true, isPortMismatch: false, reason: "" }
 }
+
+/** Minimal edge shape carrying the precomputed port-mismatch flag. Every edge-creation site
+ *  (architectureStore, stackPlacement, yamlImporter) writes `data.isPortMismatch` at creation. */
+interface PortMismatchEdge {
+  data?: { isPortMismatch?: boolean }
+}
+
+/**
+ * Tallies edges whose endpoints have mismatched ports (D87). Pure — it only sums the flag the
+ * canvas already computed at each edge's creation, so it needs no component library access. A
+ * challenge attempt freezes this count into its start-time snapshot (challengeStore.AttemptSnapshot)
+ * so a mid-run edit can't change the well-formed-star verdict. Empty / undefined-data edges count 0.
+ */
+export function countPortMismatches(edges: readonly PortMismatchEdge[]): number {
+  return edges.reduce((n, e) => (e.data?.isPortMismatch ? n + 1 : n), 0)
+}

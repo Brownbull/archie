@@ -13,6 +13,7 @@ import {
   hasTrafficKind,
 } from "@/stores/architectureStoreHelpers"
 import { countTopologyIssues } from "@/engine/topologyChecker"
+import { countPortMismatches } from "@/engine/portCompatibilityChecker"
 import { defaultTrafficCurve } from "@/engine/simulationEngine"
 import { componentLibrary } from "@/services/componentLibrary"
 import { getScenarioPreset } from "@/services/scenarioLoader"
@@ -66,6 +67,10 @@ export function launchChallengeAttempt(challenge: Challenge): void {
     topologyIssueCount: topo.blocking,
     topologyAdvisoryCount: topo.advisory,
     topologyGraph: { typeByNodeId, edges: typedEdges },
+    // D87: freeze the port-mismatch count NOW so the well-formed star reflects the wiring at Start —
+    // a player can't connect a mismatched edge, run, then delete it to recover the star. Sandbox
+    // (launchSandboxRun) never sets this, so it stays WARN-only outside challenges.
+    portMismatchCount: countPortMismatches(edges),
   }) // building → running BEFORE the sim, so a single-tick run is still scored
   // ISAPivot (D63): when the challenge declares typed trafficSources, derive the load from them
   // (peak-anchored, summed) — they OVERRIDE the legacy trafficCurve. Otherwise use trafficCurve.

@@ -111,3 +111,35 @@ describe("challengeStore (Epic 16)", () => {
     expect(s().bestStars["c1"]).toBe(3) // history preserved
   })
 })
+
+describe("challengeStore — port-enforcement snapshot (D87)", () => {
+  beforeEach(() => {
+    useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, attemptSnapshot: null, bestStars: {} })
+  })
+
+  it("freezes portMismatchCount in the snapshot and gates the well-formed star at score time", () => {
+    s().selectChallenge(challenge)
+    s().startAttempt({ totalCost: 100, topologyIssueCount: 0, portMismatchCount: 1 })
+    expect(s().attemptSnapshot?.portMismatchCount).toBe(1)
+    // metrics pass + under budget + clean blocking topology, but the frozen mismatch costs the 3rd star.
+    const r = s().scoreAttempt(stats(100, 50), 0, 100)
+    expect(r?.stars).toBe(2)
+    expect(r?.portsWellFormed).toBe(false)
+  })
+
+  it("scores 3★ when the snapshot has zero port mismatches (omitted ⇒ 0)", () => {
+    s().selectChallenge(challenge)
+    s().startAttempt({ totalCost: 100, topologyIssueCount: 0 }) // no portMismatchCount → defaults to 0
+    const r = s().scoreAttempt(stats(100, 50), 0, 100)
+    expect(r?.stars).toBe(3)
+    expect(r?.portsWellFormed).toBe(true)
+  })
+
+  it("a mid-run edit can't recover the star — scoring reads the frozen snapshot, not live edges", () => {
+    s().selectChallenge(challenge)
+    s().startAttempt({ totalCost: 100, topologyIssueCount: 0, portMismatchCount: 2 })
+    // Even though the player might delete the bad edge after Start, the snapshot still says 2.
+    const r = s().scoreAttempt(stats(100, 50), 0, 100)
+    expect(r?.stars).toBe(2)
+  })
+})

@@ -21,6 +21,13 @@ export interface AttemptSnapshot {
    * not a mid-run edit. Absent when the attempt started outside the Start button.
    */
   topologyGraph?: TopologyGraphInput
+  /**
+   * Count of port-mismatched edges at start (D87). Frozen here — like cost/topology — so a player
+   * can't connect a mismatched edge, press Start, then delete it mid-run to recover the well-formed
+   * star. Set only on the challenge Start path (launchChallengeAttempt); sandbox runs leave it
+   * undefined (WARN-only — no grading gate). undefined ⇒ 0 ⇒ byte-identical to pre-D87 scoring.
+   */
+  portMismatchCount?: number
 }
 
 interface ChallengeState {
@@ -88,7 +95,10 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
     const costPerRequest = costPerMillionRequests(effectiveCost, peakCurveRps(challenge.trafficCurve))
     // required_topology is graded against the frozen start-time graph (D66), pulled from the snapshot.
     const topologyGraph = get().attemptSnapshot?.topologyGraph
-    const result = evaluateAttempt(stats, challenge, topologyIssueCount, effectiveCost, canvasTypeIds, costPerRequest, topologyGraph, advisoryTopologyCount)
+    // Port enforcement (D87): the start-time mismatch count gates the well-formed star. Read from the
+    // snapshot (frozen at Start), never the live canvas — defaults to 0 when absent (sandbox / no snapshot).
+    const portMismatchCount = get().attemptSnapshot?.portMismatchCount ?? 0
+    const result = evaluateAttempt(stats, challenge, topologyIssueCount, effectiveCost, canvasTypeIds, costPerRequest, topologyGraph, advisoryTopologyCount, portMismatchCount)
     const prevBest = get().bestStars[challenge.id] ?? 0
     // D20: pre-3★ record every attempt (the climb); once unlocked (prevBest 3) only a re-earned 3★ counts.
     const recordable = prevBest < 3 || result.stars === 3
