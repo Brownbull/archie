@@ -5023,3 +5023,10 @@ TICK: ✅ Phase 3 Review (Commit ✅ — every slice committed through the gate)
 ## 2026-06-10 18:03 — PUSH dev -> main (PHASE 3 COMPLETE)
 CI: deploy-production ✅ | DEPLOYMENTS: P167
 PHASE 3: all four gates ✅✅✅✅. Current Phase → Phase 4 (Break-it loop & expert currency, scale tier).
+- 2026-06-10 18:22 | Write | /home/khujta/projects/bmad/archie/src/engine/breakDetection.ts
+- 2026-06-10 18:23 | Write | /home/khujta/projects/bmad/archie/tests/unit/engine/breakDetection.test.ts
+
+## 2026-06-10 — Phase 4 opened: D94 design lock + P4-S1 break detection
+D94: 7-slice decomposition from the feedback's revised currency model (breaks earn EXPERT CURRENCY, not hint stars; filter costs 1 unit/quest). Defaults pinned: break = basePass fail + exactly-one-attribute diff; 1 unit per attribute-break (max 4/challenge) + 1 per resilience condition.
+P4-S1 [committed]: src/engine/breakDetection.ts — diffTrafficAttributes (multiset, structural-edit guard) + detectSingleAttributeBreak + collection bookkeeping. 13/13 tests, build clean. Scoring untouched.
+NEXT: P4-S2 (currency + persistence + rules deploy — try the authenticated firebase CLI) → P4-S3 (the loop UX + E2E).
