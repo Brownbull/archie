@@ -210,7 +210,7 @@ decisions_entry: D86
 
 ## Current Phase
 
-Phase 2: Progression & grading integrity
+Phase 3: Teaching quality
 
 ## Dependencies
 
