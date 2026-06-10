@@ -33,9 +33,13 @@ describe("unlock-ordering baseline (S3 — pre-S4/S5 worklist)", () => {
     expect(summary).toMatchSnapshot()
   })
 
-  it("has 21 hard required-type violations across 18 challenges (PLAN headline — S4/S5 drive to 0)", () => {
-    expect(req).toHaveLength(21)
-    expect(new Set(req.map((i) => i.challengeId)).size).toBe(18)
+  // S4 batch A (edge/foundations capstones) landed: planet-scale/edge-cache-ratio/edge-economics/
+  // edge-resilience/the-long-tail gained granting prereq edges (edge-delivery → cdn+dns; cache-the-hot-path
+  // → cache), and thundering-herd cascaded (it requires edge-resilience). 21→13 REQ, 18→12 challenges.
+  // S5 batch B drives the remaining 13 to 0, then folds the gate into validateTechTree.
+  it("has 13 hard required-type violations across 12 challenges (post-S4-batch-A; S5 drives to 0)", () => {
+    expect(req).toHaveLength(13)
+    expect(new Set(req.map((i) => i.challengeId)).size).toBe(12)
   })
 
   it("also flags ungrantable palette blocks (softer; many resolve as a side effect of the REQ prereq edges)", () => {

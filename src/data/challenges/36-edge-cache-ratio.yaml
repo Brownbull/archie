@@ -31,7 +31,7 @@ hints:
 schema_version: 2
 track: edge
 tier: 3
-requires: [edge-balance]
+requires: [edge-balance, edge-delivery]
 unlocks: []
 min_xp: 1976
 required_types: [cdn, load-balancer]

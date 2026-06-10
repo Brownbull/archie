@@ -30,7 +30,7 @@ hints:
 schema_version: 2
 track: realtime
 tier: 3
-requires: [event-stream]
+requires: [event-stream, cache-the-hot-path, edge-delivery]
 unlocks: []
 min_xp: 0
 required_types: [cache, cdn]

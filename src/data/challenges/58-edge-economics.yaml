@@ -36,7 +36,7 @@ hints:
 schema_version: 2
 track: data
 tier: 5
-requires: [unit-economics]
+requires: [unit-economics, edge-delivery]
 unlocks: []
 min_xp: 0
 required_types: [cdn, cache]

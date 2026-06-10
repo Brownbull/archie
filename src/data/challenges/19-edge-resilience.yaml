@@ -37,7 +37,7 @@ chaos_intensity: 2.5
 schema_version: 2
 track: edge
 tier: 5
-requires: [api-gateway, zone-failure]
+requires: [api-gateway, zone-failure, cache-the-hot-path]
 unlocks: []
 min_xp: 10520
 required_types: [cdn, api-gateway, cache]
