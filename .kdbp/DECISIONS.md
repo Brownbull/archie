@@ -1299,3 +1299,27 @@ component YAMLs; its own focused pass (the playbook's strict (1)→(4) authoring
 **Alternatives considered:** (a) full suite as required check — rejected: flake-blocking on 522 cases; (b) no CI at all — rejected: that's how the rot happened.
 **Review trigger:** after the first few informational runs — if reliably green, schedule the @smoke curation + required-check promotion.
 **Status:** active,operational
+
+## D86 — Feedback-overhaul roadmap: phasing + per-phase tiers (2026-06-09)
+
+**Decision:** The verified 2026-06-09 playtest feedback ships as a 5-phase plan in this order: (1) Trust & friction fixes [ent/med], (2) Progression & grading integrity [ent/high], (3) Teaching quality [ent/high], (4) Break-it loop & expert currency [scale/high], (5) New challenge formats [scale/high].
+**Rationale:** Fix what misleads players first (config traps, forced mismatches, dead UI), make grading honest, raise content quality — THEN build the flagship break-it/currency mechanic on a foundation that deserves it. Phases 1–3 are enterprise (shared, tested, user-facing surfaces); 4–5 are scale (new progression systems + schema-level challenge formats).
+**Tier digest:** P1 ent (touches tested shared UI + 61-challenge data, full coverage required); P2 ent (scoring + tech-tree are load-bearing; validator must be CI-gated); P3 ent (240-variant data migration with the strict-schema re-seed trap); P4 scale (new persisted currency + cross-cutting progression UX); P5 scale (challenge-schema evolution + new sim semantics).
+**Alternatives considered:** break-it loop earlier (before content quality) — rejected by user; merged single integrity phase — rejected by user.
+**Source:** docs/gabe/tests/20260609/feedback20260609.md; 14 claims verified by workflow wf_efd61e6d (verdicts: 3 confirmed bugs, 5 design-gaps, 2 data-gaps, 3 partially-true, 1 by-design).
+**Status:** accepted
+
+## D87 — Port compatibility: challenge-mode star gate; sandbox keeps WARN (2026-06-09)
+
+**Decision:** Enforce port compatibility ONLY in challenge mode, as a star gate: count edges with `data.isPortMismatch` at attempt-snapshot time (ChallengeStartButton → AttemptSnapshot), and gate the well-formed-topology star via an optional, defaulted rubricScorer parameter. Sandbox/free mode keeps WARN (allow + warn), honoring the original AC-ARCH-NO-1/FR7 decision.
+**Rationale:** Today the mismatch signal dies at edge.data — buildSimGraph strips it, SimEdge can't carry it, the scorer never sees it — so players earn 3★ through architectures the UI itself flags as wrong (verified). A challenge-mode star gate is small (S code), pedagogically clear (mismatch = structural error, same family as orphan/unreachable), and harness-safe: reference solutions carry no handle ids, so the checker's null-handle escape keeps them mismatch-free and 3★.
+**Hard prerequisite:** the Phase-1 port-coverage fixes (compute stream-out etc.) — enforcing first would punish canonical builds that are currently FORCED into mismatches.
+**Alternatives considered:** (b) sim-level degradation (mismatched edges shed traffic) — pedagogically strongest but M-L effort, ripples through tuned sim invariants and sandbox; revisit later as an optional Phase-5+ enhancement. (c) keep WARN-only everywhere — rejected: keeps grading dishonest.
+**Status:** accepted — implement in Phase 2
+
+## D88 — Polyglot-persistence honors its brief: drop the object-storage ban (2026-06-09)
+
+**Decision:** Remove `object-storage` from polyglot-persistence's `forbidden_types`, re-tune the challenge, and re-verify solvability. The brief ("blobs to object storage") is the quest's educational point; the config contradicted it (a Phase-4c agent-hardening regression, commit 9bc7069, that the solvability harness couldn't catch because it never reads prose).
+**Guard:** Phase 1 adds the challenge-config validation test (forbidden ∩ available_blocks = ∅, forbidden ∩ required_types = ∅ across all 61) so this class of contradiction can't ship again.
+**Alternatives considered:** keep the ban and rewrite the brief as a "do it WITHOUT object storage" constraint quest — rejected: fights the quest's own theme.
+**Status:** accepted — implement in Phase 1

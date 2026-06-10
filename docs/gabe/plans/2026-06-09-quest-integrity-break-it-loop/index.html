@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quest Integrity &amp; Break-It Loop — plan review</title>
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e;
+    --accent:#58a6ff;--green:#3fb950;--amber:#d29922;--red:#f85149;--violet:#bc8cff;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font:15px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;padding:0 0 4rem}
+  .banner{background:#1f2937;border-bottom:1px solid var(--border);padding:.6rem 2rem;font-size:.8rem;color:var(--muted)}
+  header{padding:2rem 2rem 1rem;max-width:1080px;margin:0 auto}
+  h1{font-size:1.6rem;margin-bottom:.3rem}
+  h2{font-size:1.15rem;margin:2rem 0 .8rem;color:var(--accent)}
+  h3{font-size:1rem;margin:1.2rem 0 .4rem}
+  main{max-width:1080px;margin:0 auto;padding:0 2rem}
+  .meta{color:var(--muted);font-size:.85rem}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:1rem 1.2rem;margin:.8rem 0}
+  table{border-collapse:collapse;width:100%;font-size:.85rem;margin:.6rem 0}
+  th,td{border:1px solid var(--border);padding:.45rem .6rem;text-align:left;vertical-align:top}
+  th{background:#1c2128;color:var(--muted);font-weight:600}
+  .tier{display:inline-block;padding:.05rem .5rem;border-radius:10px;font-size:.75rem;font-weight:700}
+  .ent{background:#1f6feb33;color:var(--accent)} .scale{background:#bc8cff33;color:var(--violet)}
+  .bug{color:var(--red);font-weight:600} .gap{color:var(--amber);font-weight:600}
+  .ok{color:var(--green);font-weight:600} .partial{color:var(--violet);font-weight:600}
+  .flow{display:flex;gap:.5rem;flex-wrap:wrap;margin:.8rem 0}
+  .ph{flex:1;min-width:170px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:.8rem}
+  .ph b{display:block;margin-bottom:.3rem} .ph .n{color:var(--muted);font-size:.78rem}
+  .arrow{align-self:center;color:var(--muted)}
+  code{background:#1c2128;border:1px solid var(--border);border-radius:4px;padding:.05rem .35rem;font-size:.82em}
+  ul{margin:.4rem 0 .4rem 1.2rem}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .small{font-size:.82rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="banner">HTML review artifact; .kdbp/PLAN.md and .kdbp/DECISIONS.md remain canonical.</div>
+<header>
+  <h1>Quest Integrity &amp; Break-It Loop</h1>
+  <div class="meta">Feedback-driven overhaul · generated 2026-06-09 by <code>/gabe-plan</code> ·
+  source plan <code>.kdbp/PLAN.md</code> · decisions <code>D86–D88</code> ·
+  ledger entry "PLAN CREATED: Quest Integrity &amp; Break-It Loop"</div>
+</header>
+<main>
+
+<h2>Summary</h2>
+<div class="card">
+  <p>Acts on the <b>2026-06-09 playtest feedback</b> (<code>docs/gabe/tests/20260609/feedback20260609.md</code>),
+  every checkable claim of which was verified against the codebase by a 14-agent workflow
+  (<code>wf_efd61e6d</code>). Order of operations: <b>stop misleading the player → grade honestly →
+  teach well → then build the flagship post-3★ break-it loop + expert currency → open new challenge
+  formats.</b> Tiers: 3× enterprise, 2× scale. No prototypes.</p>
+</div>
+
+<h2>Phase map</h2>
+<div class="flow">
+  <div class="ph"><b>1 · Trust &amp; friction</b><span class="tier ent">ent</span>
+    <div class="n">Polyglot fix + config validation · stream-out ports · traffic save-default ·
+    CategoryBar onClick · data-pipeline hints · Rerun button · gating hints · icon regen</div></div>
+  <div class="arrow">→</div>
+  <div class="ph"><b>2 · Progression &amp; grading</b><span class="tier ent">ent</span>
+    <div class="n">Unlock-order restructure (21 hard violations) + validator · pathway filter ·
+    port star-gate (D87) · banned-block display · Observe visibility · quest CTA gating</div></div>
+  <div class="arrow">→</div>
+  <div class="ph"><b>3 · Teaching quality</b><span class="tier ent">ent</span>
+    <div class="n">39 context-style briefs · hint ladders · tier descriptions (schema + 240 variants
+    + reseed) · RPS calibration · discipline icons + toasts</div></div>
+  <div class="arrow">→</div>
+  <div class="ph"><b>4 · Break-it loop</b><span class="tier scale">scale</span>
+    <div class="n">Post-3★ invite · single-attribute break detection · expert currency ·
+    test-condition lock/highlight · resilience challenges · quest-log surfacing · toolbox realism</div></div>
+  <div class="arrow">→</div>
+  <div class="ph"><b>5 · New formats</b><span class="tier scale">scale</span>
+    <div class="n">Brownfield starts · progressive chains · per-block failures ·
+    vendor restrictions · link-viz dimensions</div></div>
+</div>
+
+<h2>Verified-feedback digest (what drives the phases)</h2>
+<table>
+  <tr><th>Finding</th><th>Verdict</th><th>Lands in</th></tr>
+  <tr><td>Polyglot: brief demands object storage, config forbids it (palette offers it)</td><td class="bug">confirmed bug</td><td>P1 (D88)</td></tr>
+  <tr><td>Save-default leaks traffic config into quests; D63 duplicate bug</td><td class="bug">confirmed bug</td><td>P1</td></tr>
+  <tr><td>Components used before their unlock challenge — 21 hard violations</td><td class="bug">confirmed bug</td><td>P2</td></tr>
+  <tr><td>CategoryBar drops onClick → footer info popup is dead code</td><td class="bug">confirmed bug</td><td>P1</td></tr>
+  <tr><td>No compute has stream-out → canonical builds forced into mismatch warnings</td><td class="gap">data gap</td><td>P1</td></tr>
+  <tr><td>Port mismatch never reaches sim or scorer (3★ despite warnings)</td><td class="gap">design gap</td><td>P2 (D87)</td></tr>
+  <tr><td>Replay re-animates but never re-grades</td><td class="gap">design gap</td><td>P1</td></tr>
+  <tr><td>Pathway suggests blocks the tech tree hasn't unlocked</td><td class="gap">design gap</td><td>P2</td></tr>
+  <tr><td>Config tiers have no description/link anywhere (schema/data/UI all missing)</td><td class="gap">design gap</td><td>P3</td></tr>
+  <tr><td>39 of 61 briefs are instruction-style (the brief IS the solution)</td><td class="gap">design gap</td><td>P3</td></tr>
+  <tr><td>Data-pipeline hint 3 cites a dead mechanic; hint 5 omits the variant knob</td><td class="partial">partially true</td><td>P1</td></tr>
+  <tr><td>RPS spreads: 4 genuine outliers (Citus inversion, Aurora dominance…)</td><td class="partial">partially true</td><td>P3</td></tr>
+  <tr><td>"Missing icons" = web-users.png contrast + 12 discipline PNGs + no unlock toast</td><td class="partial">partially true</td><td>P1/P3</td></tr>
+  <tr><td>Observe Baseline blocks not tunable (beginner disclosure gate, D82/D84)</td><td class="ok">by design</td><td>P1 (discoverability)</td></tr>
+  <tr><td>Observe-to-Recover mechanic real but invisible (no markers/badges)</td><td class="partial">partially true</td><td>P2</td></tr>
+</table>
+
+<h2>Tier decision digest</h2>
+<div class="card small">
+  <b>P1–P3 enterprise:</b> shared, tested, user-facing surfaces + 61-challenge / 240-variant data with
+  the strict-schema re-seed trap — full coverage and migration care, not throwaway.
+  <b>P4–P5 scale:</b> new persisted progression systems (expert currency, break tracking) and
+  challenge-schema evolution (brownfield, chains) — cross-cutting, auth'd writes, owner-only rules.
+  Trade-offs logged in <code>DECISIONS.md D86</code>; port-enforcement option choice in <code>D87</code>;
+  polyglot direction in <code>D88</code>.
+</div>
+
+<h2>Dependencies &amp; risks</h2>
+<div class="card">
+  <ul>
+    <li><b>P2 port star-gate ⇐ P1 port audit</b> (hard prereq — else canonical builds are punished).</li>
+    <li><b>P4 toolbox realism ⇐ P2 ordering fixes</b> ("show all unlocked" needs a coherent unlock order).</li>
+    <li><b>P3 RPS calibration ⇒ full solvability re-run</b> (moves maxRPS under the D71 buildability ceiling).</li>
+    <li class="small">Top risks: solvability regressions from data changes (gate: harness all-3★ per batch);
+    brief↔config drift (gate: P1 validation test); Firestore strict-schema re-seed (deploy reader first);
+    expert-currency scope creep (pilot subset, single spend initially).</li>
+  </ul>
+</div>
+
+<h2>Verification checklist (exit gates)</h2>
+<table>
+  <tr><th>Phase</th><th>Gate</th></tr>
+  <tr><td>1</td><td>Config-validation test green over 61 challenges · async-pipeline build warning-free · rerun-and-grade E2E · footer popup opens · harness all-3★</td></tr>
+  <tr><td>2</td><td>Zero ordering violations + validator in CI · mismatched edge costs the topology star in quests · harness all-3★ · observe mechanic visible unpaid</td></tr>
+  <tr><td>3</td><td>0 instruction-style briefs · tier picker shows meaning+link · calibration table in DECISIONS · reader deployed before re-seed</td></tr>
+  <tr><td>4</td><td>Post-3★ loop live on pilot set · currency earn/spend persisted · quest log surfaces it</td></tr>
+  <tr><td>5</td><td>≥2 brownfield + 1 chain shipped 3★-verified · link-viz shipped or descoped with design doc</td></tr>
+</table>
+
+<h2>Detail paths</h2>
+<div class="card small">
+  <ul>
+    <li>Canonical plan — <code>.kdbp/PLAN.md</code> (phases, YAML blocks, exits, key files)</li>
+    <li>Decisions — <code>.kdbp/DECISIONS.md</code> → D86 (phasing/tiers), D87 (port star-gate), D88 (polyglot)</li>
+    <li>Raw feedback — <a href="../../tests/20260609/feedback20260609.md">docs/gabe/tests/20260609/feedback20260609.md</a></li>
+    <li>Verification evidence — LEDGER entry "PLAN CREATED" 2026-06-09 (verdict digest) + workflow <code>wf_efd61e6d</code> transcripts</li>
+    <li>Data-pipeline reference solution — extracted in the verification run (traffic→compute×2→LLM&nbsp;Streaming→ETL&nbsp;Micro-Batch×2 + connected queue)</li>
+    <li>Engineering track (parallel, not a phase) — desktop-CI greening: maiden run 196✓/60✗; @smoke promotion per <code>DECISIONS.md D85</code></li>
+  </ul>
+</div>
+
+</main>
+</body>
+</html>
