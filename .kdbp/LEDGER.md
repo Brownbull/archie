@@ -4661,3 +4661,54 @@ CI: deploy-production ✅ · e2e-unlocked ⏳ running · e2e-desktop (maiden, in
 PROMOTION: N/A (single-env chain)
 DEPLOYMENTS: P157  (added row to .kdbp/DEPLOYMENTS.md)
 NOTE: origin/dev fast-forwarded e20e43a..b58b1b6 (was 139 behind — stale since 2026-06-04, never the target).
+- 2026-06-09 21:10 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_dump-data-pipeline.test.ts
+- 2026-06-09 21:15 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/hint-quality.tmp.test.ts
+
+## 2026-06-09 21:20 — PLAN CREATED: Quest Integrity & Break-It Loop — feedback-driven overhaul
+PHASES: 5 | COMPLEXITY: high | MATURITY: enterprise
+TIERS: mvp × 0, ent × 3, scale × 2 | PROTOTYPES: 0
+DECISIONS: D86 → D88 (phasing+tiers consolidated in D86; D87 port star-gate; D88 polyglot direction)
+HTML_ARTIFACT: docs/gabe/plans/2026-06-09-quest-integrity-break-it-loop/index.html
+SOURCE: docs/gabe/tests/20260609/feedback20260609.md verified by 14-agent workflow wf_efd61e6d —
+  verdicts: confirmed-bug ×3 (unlock ordering, polyglot config, save-default-traffic + CategoryBar onClick),
+  design-gap ×5 (port enforcement, replay-regrade, pathway-locked, tier descriptions, brief style),
+  data-gap ×2 (missing stream ports, RPS outliers), partially-true ×3 (hints, icons, score-trace),
+  by-design ×1 (observe-baseline gating; discoverability gap noted).
+- 2026-06-09 21:38 | Write | /home/khujta/projects/bmad/archie/docs/gabe/plans/2026-06-09-quest-integrity-break-it-loop/index.html
+- 2026-06-10 00:24 | Write | /home/khujta/projects/bmad/archie/tests/unit/data/challengeConfigConsistency.test.ts
+- 2026-06-10 00:25 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/14-polyglot-persistence.yaml
+- 2026-06-10 00:26 | Edit | /home/khujta/projects/bmad/archie/src/data/challenges/14-polyglot-persistence.yaml
+
+## 2026-06-10 — [90672cb] fix(challenges): polyglot D88 + config-consistency guard (P1/T1)
+FINDINGS: guard caught 8 violations (expected 2) — trap pattern was project-wide
+ACTIONS: committed — polyglot un-banned+requires object-storage (3★ re-verified); 7 palettes fixed
+- 2026-06-10 00:44 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode-saveDefault.test.tsx
+- 2026-06-10 00:44 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-blockDefaults.test.ts
+- 2026-06-10 00:44 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-blockDefaults.test.ts
+- 2026-06-10 00:45 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/architectureStore-blockDefaults.test.ts
+- 2026-06-10 00:46 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/ArchieNode-saveDefault.test.tsx
+- 2026-06-10 00:49 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/CategoryBar.tsx
+- 2026-06-10 00:49 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-10 00:49 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-10 00:49 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-10 00:50 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-10 00:50 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardOverlay.tsx
+- 2026-06-10 00:50 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardOverlay.tsx
+- 2026-06-10 00:51 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardOverlay.tsx
+- 2026-06-10 00:51 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/dashboard/CategoryBar.test.tsx
+- 2026-06-10 00:57 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardOverlay.tsx
+- 2026-06-10 00:59 | Write | /home/khujta/projects/bmad/archie/src/lib/simulationLaunch.ts
+- 2026-06-10 01:10 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/connection/async-canonical.architecture.yaml
+- 2026-06-10 01:11 | Write | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase1.spec.ts
+- 2026-06-10 01:14 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase1.spec.ts
+
+## 2026-06-10 — PHASE EXEC COMPLETE: Phase 1 — Trust & friction fixes
+TIER: ent | TASKS: 9 tasks, 9 commits (90672cb 7aecbe7 679f5b1 5e668b9 f18298d 758a242 d952560 781462b + evidence)
+RUNTIME EVIDENCE: npx playwright test feedback-phase1 --project=desktop (Chromium, local vite no-Firebase-env
+  shell against seeded Firestore) — 3/3 journeys green; artifacts test-results/feedback-phase1/01..04*.png
+  (async build 4 edges 0 warnings; first-service graded then RE-graded via playback-rerun; footer deep-link).
+GATES: unit 4851/4851 (269 files) · solvability 62/62 3★ · config-consistency 4/4 · affected desktop specs 24/24
+OPERATIONAL: Firestore re-seeded (114 components — additive stream-out ports; reader unchanged, P5 trap n/a)
+DEVIATIONS: 2 minor — traffic-source YAMLs gained stream-out (audit finding, beyond the 9 compute files);
+  T8 used deterministic recolor instead of PixelLab (API erroring; shape/set-consistency preserved).
+NEW DEFERRED: D25 (latent: scheduled_events target literal node ids — inert in live play; Phase-2 candidate)
