@@ -1,0 +1,33 @@
+schema_version: 4.0.0
+name: observe-to-recover — reference solution (D71 capstone proof)
+nodes:
+  - id: n-compute
+    component_id: node-express
+    config_variant_id: cluster-mode
+    position:
+      x: 0
+      'y': 0
+    replicas: 5
+  - id: n-observability
+    component_id: prometheus
+    config_variant_id: federated
+    position:
+      x: 220
+      'y': 0
+    replicas: 1
+  - id: n-traffic-0
+    component_id: web-users
+    config_variant_id: heavy
+    position:
+      x: 440
+      'y': 0
+    replicas: 1
+    traffic_rps: 15000
+    traffic_workload: mixed
+edges:
+  - id: e0
+    source_node_id: n-traffic-0
+    target_node_id: n-compute
+  - id: e1
+    source_node_id: n-compute
+    target_node_id: n-observability

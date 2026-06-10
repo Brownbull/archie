@@ -28,6 +28,9 @@ const DIR = join(process.cwd(), "tests/e2e/fixtures/challenges")
 const CASES = [
   { id: "edge-delivery", file: "edge-delivery.architecture.yaml" },   // tier 3
   { id: "production-ai", file: "production-ai.architecture.yaml" },   // tier 4 (the user's LLM scenario)
+  // Phase 2 evidence (S8/D89): its az_outage hits the monitored compute tier, so the timeline's
+  // red→amber detection marker is provable through the real UI (feedback-phase2.unlocked.spec.ts).
+  { id: "observe-to-recover", file: "observe-to-recover.architecture.yaml" },
 ] as const
 
 describe("tier-3 + tier-4 E2E fixtures are generated + 3★", () => {
