@@ -167,6 +167,22 @@ export interface ComponentTypeGroup {
   providers: Component[]
 }
 
+/**
+ * Why a toolbox block is locked in quest mode (S6b, D89 — three distinct treatments so the player
+ * learns the CONSTRAINT, not just "unavailable"):
+ * - `banned`         — the challenge's forbidden_types: placing it is a hard 0★ rule. Red lock.
+ * - `not-in-palette` — outside the challenge's available_blocks (not a rule, just not offered this
+ *                      quest). Gray lock. Fed by Phase 4's "show all unlocked" toolbox realism.
+ * Free-build "not-mastered" keeps its existing TypeBlockCard idiom and is NOT part of this enum.
+ */
+export type BlockLockReason = "banned" | "not-in-palette"
+
+/** Player-facing one-liner per lock reason (rendered as the locked card's tooltip). */
+export const BLOCK_LOCK_REASON_LABELS: Record<BlockLockReason, string> = {
+  banned: "Not allowed in this quest — placing it scores a hard 0★",
+  "not-in-palette": "Not in this quest's palette",
+}
+
 /** Grouping key for a component: its typeId, or a category-fallback key when unset. */
 export function componentGroupKey(component: Pick<Component, "typeId" | "category">): string {
   return component.typeId ?? `category:${component.category}`

@@ -1,7 +1,7 @@
 import { type DragEvent, type MouseEvent, useMemo } from "react"
-import { Plus, CheckCircle2, Lock } from "lucide-react"
+import { Plus, CheckCircle2, Lock, Ban } from "lucide-react"
 import { COMPONENT_CATEGORIES } from "@/lib/constants"
-import { COMPONENT_TYPES, type ComponentTypeGroup } from "@/lib/componentTypes"
+import { COMPONENT_TYPES, BLOCK_LOCK_REASON_LABELS, type BlockLockReason, type ComponentTypeGroup } from "@/lib/componentTypes"
 import { getTypeIconUrl } from "@/lib/typeIcons"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
 import { useArchitectureStore } from "@/stores/architectureStore"
@@ -15,9 +15,15 @@ import { TypeIcon } from "@/components/common/TypeIcon"
 interface TypeBlockCardProps {
   group: ComponentTypeGroup
   dimmed?: boolean
+  /**
+   * Quest-mode lock (S6b, D89): when set, the card is SHOWN-but-locked — visible so the player learns
+   * the constraint, but non-addable and non-draggable so it can never reach the canvas (a banned block
+   * placed = hard 0★). `banned` renders a red Ban badge; `not-in-palette` a gray Lock.
+   */
+  lockReason?: BlockLockReason | null
 }
 
-export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
+export function TypeBlockCard({ group, dimmed, lockReason }: TypeBlockCardProps) {
   const addNodeSmartPosition = useArchitectureStore((s) => s.addNodeSmartPosition)
   const setActiveDrag = useUiStore((s) => s.setActiveDrag)
   const iconSet = usePreferencesStore((s) => s.iconSet)
@@ -47,6 +53,11 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
   const vendorNames = group.providers.map((p) => p.name).join(", ")
 
   const handleDragStart = (event: DragEvent<HTMLDivElement>) => {
+    // S6b: a locked card must never start a drag — a banned block on the canvas is a hard 0★.
+    if (lockReason) {
+      event.preventDefault()
+      return
+    }
     if (!defaultProviderId) return
     event.dataTransfer.setData("application/archie-component", defaultProviderId)
     event.dataTransfer.effectAllowed = "move"
@@ -57,38 +68,59 @@ export function TypeBlockCard({ group, dimmed }: TypeBlockCardProps) {
 
   const handleAdd = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation()
+    if (lockReason) return // shown-but-locked: the Add affordance is inert
     if (defaultProviderId) addNodeSmartPosition(defaultProviderId)
   }
+
+  const lockTitle = lockReason ? BLOCK_LOCK_REASON_LABELS[lockReason] : undefined
 
   return (
     <div
       data-testid={`type-block-${group.typeId ?? group.key}`}
-      className={`group relative h-full cursor-grab rounded-md border border-archie-border bg-panel p-2 pl-3 transition-opacity duration-200 active:cursor-grabbing ${
-        dimmed ? "opacity-40 grayscale" : "opacity-100"
+      data-lock-reason={lockReason ?? undefined}
+      className={`group relative h-full rounded-md border bg-panel p-2 pl-3 transition-opacity duration-200 ${
+        lockReason === "banned"
+          ? "cursor-not-allowed border-red-500/50 opacity-60"
+          : lockReason
+            ? "cursor-not-allowed border-archie-border opacity-50"
+            : `cursor-grab border-archie-border active:cursor-grabbing ${dimmed ? "opacity-40 grayscale" : "opacity-100"}`
       }`}
-      draggable
+      draggable={!lockReason}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      title={dimmed ? "Incompatible with the selected block" : undefined}
+      aria-disabled={lockReason ? true : undefined}
+      title={lockTitle ?? (dimmed ? "Incompatible with the selected block" : undefined)}
     >
-      <div className="absolute left-0 top-0 h-full w-1 rounded-l-md" style={{ backgroundColor: color }} />
+      <div className="absolute left-0 top-0 h-full w-1 rounded-l-md" style={{ backgroundColor: lockReason === "banned" ? "#ef4444" : color }} />
 
-      {/* Add button — top-right */}
+      {/* Add button — top-right. Locked cards keep the slot but the affordance is disabled. */}
       <button
         data-testid={`add-type-${group.typeId ?? group.key}`}
         type="button"
-        className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded text-text-secondary opacity-60 transition-opacity hover:bg-archie-border hover:opacity-100"
+        className={`absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded text-text-secondary transition-opacity ${
+          lockReason ? "cursor-not-allowed opacity-25" : "opacity-60 hover:bg-archie-border hover:opacity-100"
+        }`}
         draggable={false}
         onDragStart={(e) => e.stopPropagation()}
         onClick={handleAdd}
-        title="Add to canvas"
+        disabled={!!lockReason}
+        aria-disabled={lockReason ? true : undefined}
+        title={lockReason ? lockTitle : "Add to canvas"}
       >
         <Plus className="h-3.5 w-3.5" />
       </button>
 
-      {/* Mastery indicator — bottom-right */}
+      {/* Lock / mastery indicator — bottom-right. Quest locks outrank the free-build mastery mark. */}
       <div className="absolute bottom-1 right-1">
-        {isMastered ? (
+        {lockReason === "banned" ? (
+          <span data-testid={`block-lock-${group.typeId ?? group.key}`} title={lockTitle}>
+            <Ban className="h-3.5 w-3.5 text-red-400" />
+          </span>
+        ) : lockReason ? (
+          <span data-testid={`block-lock-${group.typeId ?? group.key}`} title={lockTitle}>
+            <Lock className="h-3 w-3 text-text-secondary opacity-60" />
+          </span>
+        ) : isMastered ? (
           <span title="Mastered — unlocked via quest"><CheckCircle2 className="h-3.5 w-3.5 text-[#ff8a3d]" /></span>
         ) : (
           <span title="Not yet mastered — complete its quest"><Lock className="h-3 w-3 text-text-secondary opacity-40" /></span>

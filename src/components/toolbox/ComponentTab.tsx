@@ -11,7 +11,7 @@ import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePane
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { CATEGORY_ICONS } from "@/lib/categoryIcons"
-import { groupComponentsByType, typeMatchesQuery, typeWithinLevel, type ComponentTypeGroup } from "@/lib/componentTypes"
+import { groupComponentsByType, typeMatchesQuery, typeWithinLevel, type BlockLockReason, type ComponentTypeGroup } from "@/lib/componentTypes"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useUserProgressStore } from "@/stores/userProgressStore"
@@ -135,20 +135,38 @@ export function ComponentTab() {
     return allowed
   }, [activeChallenge, completedChallenges])
 
+  // S6b (D89): the challenge's banned set. Shown-but-locked in the palette — the player learns the
+  // rule ("no cache in this quest — hard 0★") instead of wondering where the block went.
+  const bannedTypeSet = useMemo(
+    () => new Set(activeChallenge?.forbiddenTypes ?? []),
+    [activeChallenge],
+  )
+
   const filtered = useMemo(() => {
+    // S6b: banned types bypass the category + palette filters — they must be VISIBLE (locked) even
+    // though Phase 1's config-consistency guard keeps them out of available_blocks.
+    const isBanned = (c: (typeof components)[number]) => !!c.typeId && bannedTypeSet.has(c.typeId)
     // Restrict to challenge-allowed categories first (no-op when the challenge sets none).
     let scoped = allowedCategories
-      ? components.filter((c) => allowedCategories.includes(c.category))
+      ? components.filter((c) => allowedCategories.includes(c.category) || isBanned(c))
       : components
     // Phase 2: hard-gate by available block types (tight type-level gate on top of category).
     if (challengeBlockSet) {
-      scoped = scoped.filter((c) => c.typeId && challengeBlockSet.has(c.typeId))
+      scoped = scoped.filter((c) => (c.typeId && challengeBlockSet.has(c.typeId)) || isBanned(c))
     }
     if (!searchQuery) return scoped
     const q = searchQuery.toLowerCase()
     const nameMatches = new Set(searchComponents(searchQuery).map((c) => c.id))
     return scoped.filter((c) => nameMatches.has(c.id) || typeMatchesQuery(c, q))
-  }, [searchQuery, components, searchComponents, allowedCategories, challengeBlockSet])
+  }, [searchQuery, components, searchComponents, allowedCategories, challengeBlockSet, bannedTypeSet])
+
+  // Lock classifier for the card: banned outranks everything; not-in-palette reserved for Phase 4's
+  // "show all unlocked" toolbox realism (nothing feeds it yet — the palette filter still drops those).
+  const lockReasonFor = useCallback(
+    (g: ComponentTypeGroup): BlockLockReason | null =>
+      activeChallenge && g.typeId && bannedTypeSet.has(g.typeId) ? "banned" : null,
+    [activeChallenge, bannedTypeSet],
+  )
 
   // Organize the palette by fundamental TYPE (one logical-block per type), then group those
   // type-blocks under their visual category for the collapsible sections.
@@ -251,7 +269,7 @@ export function ComponentTab() {
               {!isCollapsed && (
                 <div className="grid grid-cols-2 gap-2">
                   {typeGroups.map((g) => (
-                    <TypeBlockCard key={g.key} group={g} dimmed={isDimmed(g)} />
+                    <TypeBlockCard key={g.key} group={g} dimmed={isDimmed(g)} lockReason={lockReasonFor(g)} />
                   ))}
                 </div>
               )}
@@ -280,7 +298,7 @@ export function ComponentTab() {
             {advancedExpanded && (
               <div className="grid grid-cols-2 gap-2">
                 {advancedSorted.map((g) => (
-                  <TypeBlockCard key={g.key} group={g} dimmed={isDimmed(g)} />
+                  <TypeBlockCard key={g.key} group={g} dimmed={isDimmed(g)} lockReason={lockReasonFor(g)} />
                 ))}
               </div>
             )}

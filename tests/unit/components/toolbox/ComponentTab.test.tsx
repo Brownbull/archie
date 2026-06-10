@@ -291,4 +291,50 @@ describe("ComponentTab", () => {
       expect(screen.getByTestId("type-block-cache").className).toContain("opacity-100")
     })
   })
+
+  describe("banned-block display (S6b / D89 — shown-but-locked)", () => {
+    it("a forbidden type OUTSIDE the palette still renders, locked red, with add disabled + drag off", () => {
+      // no-cache-no-mercy shape: cache is banned AND not in available_blocks (Phase 1's guard
+      // guarantees forbidden ∩ available_blocks = ∅) — pre-S6b it was simply invisible.
+      useChallengeStore.setState({
+        activeChallenge: makeChallenge({
+          forbiddenTypes: ["cache"],
+          availableBlocks: ["relational-db", "compute", "traffic-source"],
+        }),
+      })
+      render(<ComponentTab />)
+      const card = screen.getByTestId("type-block-cache")
+      expect(card).toBeInTheDocument()
+      expect(card).toHaveAttribute("data-lock-reason", "banned")
+      expect(card).toHaveAttribute("draggable", "false")
+      expect(card).toHaveAttribute("aria-disabled", "true")
+      expect(screen.getByTestId("block-lock-cache")).toBeInTheDocument()
+      expect(screen.getByTestId("add-type-cache")).toBeDisabled()
+      // the in-palette block stays a normal, addable card
+      const ok = screen.getByTestId("type-block-relational-db")
+      expect(ok).not.toHaveAttribute("data-lock-reason")
+      expect(ok).toHaveAttribute("draggable", "true")
+      expect(screen.getByTestId("add-type-relational-db")).toBeEnabled()
+    })
+
+    it("a banned type also bypasses an allowedCategories restriction (visible-locked, not hidden)", () => {
+      useChallengeStore.setState({
+        activeChallenge: makeChallenge({
+          requiredComponents: ["data-storage"],
+          allowedCategories: ["data-storage"],
+          forbiddenTypes: ["cache"], // caching category is NOT allowed — banned still shows
+        }),
+      })
+      render(<ComponentTab />)
+      expect(screen.getByTestId("type-block-cache")).toHaveAttribute("data-lock-reason", "banned")
+      expect(screen.getByTestId("type-block-relational-db")).not.toHaveAttribute("data-lock-reason")
+    })
+
+    it("free build never marks a type banned (forbidden_types is a quest rule)", () => {
+      useChallengeStore.setState({ activeChallenge: null })
+      render(<ComponentTab />)
+      expect(screen.getByTestId("type-block-cache")).not.toHaveAttribute("data-lock-reason")
+      expect(screen.getByTestId("add-type-cache")).toBeEnabled()
+    })
+  })
 })
