@@ -4965,3 +4965,7 @@ S5: 7 surgical hint fixes vs ground truth (pure-read claim, 2-crest curve, pre-D
 GATES: loader+consistency+solvability 79/79 · full suite 4917/4917.
 SPEND-LIMIT CASUALTY: the 25-agent hint verification fan-out died mid-run (wf_e1c2e854-8ac) — long-tail measured-claim audit deferred as PENDING D29.
 PHASE 3 REMAINING: S6 (12 discipline icons + unlock toast), S8 (240-variant tier authoring, <12-file batches), S9 (the ONE combined reseed — gate already open via P163 — + runtime evidence).
+
+## 2026-06-10 15:11 — PUSH dev -> main (Phase 3 S3+S4+S5 content)
+CI: deploy-production ✅ success | DEPLOYMENTS: P164
+SCOPE: 4 commits d601bad..2294e29 — 35 scenario briefs + 7 hint fixes + traces. No tree/schema change (S1 reader already live via P163); no reset needed.
