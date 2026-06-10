@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: gpt-flagship
     name: Flagship (GPT-4-class)
+    description: >-
+      A flagship GPT-class model: maximum capability at ~900ms per call and the steepest unit cost. Reserve it for the requests that earn it.
+    docs_url: https://platform.openai.com/docs/models
     monthly_cost: 300
     max_rps: 800
     base_latency_ms: 900
@@ -84,6 +87,9 @@ config_variants:
           - Tool-use round-trips add tokens
   - id: gpt-mini
     name: Mini (Fast / Cheap)
+    description: >-
+      A mini-tier model: a fifth of the price, a third of the latency, nearly 4x the ceiling. The workhorse for everyday completions.
+    docs_url: https://platform.openai.com/docs/models
     monthly_cost: 60
     max_rps: 3000
     base_latency_ms: 300

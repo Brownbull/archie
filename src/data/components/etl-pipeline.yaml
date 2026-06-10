@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: batch
     name: Batch Processing
+    description: >-
+      Batch ETL: scheduled bulk runs at 100 rps equivalent — fine when tonight is soon enough. The cheapest way to move data that can wait.
+    docs_url: https://en.wikipedia.org/wiki/Extract,_transform,_load
     monthly_cost: 30
     max_rps: 100
     base_latency_ms: 500
@@ -113,6 +116,9 @@ config_variants:
       schedule-pattern: "Designed for hourly, daily, or weekly scheduled runs"
   - id: micro-batch
     name: Micro-Batch
+    description: >-
+      Micro-batch ETL: small frequent windows push 10x the throughput at ~100ms latency — the pragmatic middle for near-real-time pipelines.
+    docs_url: https://en.wikipedia.org/wiki/Extract,_transform,_load
     monthly_cost: 80
     max_rps: 1000
     base_latency_ms: 100
@@ -171,6 +177,9 @@ config_variants:
       schedule-pattern: "Continuous processing with 10-60 second micro-batch intervals"
   - id: streaming
     name: Real-Time Streaming
+    description: >-
+      Streaming ETL: record-at-a-time transformation at 5000 rps and 50ms. Real-time data products pay real-time prices.
+    docs_url: https://en.wikipedia.org/wiki/Streaming_data
     monthly_cost: 200
     max_rps: 5000
     base_latency_ms: 50

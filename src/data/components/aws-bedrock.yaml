@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: on-demand
     name: On-Demand
+    description: >-
+      Bedrock on-demand: hosted models billed per token with no commitment — and a shared-capacity ceiling of a few hundred rps. Easy start, throttles under bursts.
+    docs_url: https://docs.aws.amazon.com/bedrock/latest/userguide/what-is-bedrock.html
     monthly_cost: 80
     max_rps: 200
     base_latency_ms: 400
@@ -99,6 +102,9 @@ config_variants:
       inference-latency: "Standard managed-inference latency, model-dependent"
   - id: provisioned-throughput
     name: Provisioned Throughput
+    description: >-
+      Bedrock provisioned throughput: reserved model units buy 10x the ceiling and faster calls. A serious monthly commitment — for sustained production inference.
+    docs_url: https://docs.aws.amazon.com/bedrock/latest/userguide/prov-throughput.html
     monthly_cost: 600
     max_rps: 2000
     base_latency_ms: 250

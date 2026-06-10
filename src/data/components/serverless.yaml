@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: cold-start
     name: Standard (Cold Start)
+    description: >-
+      Standard serverless: scales to zero and bills by invocation — bursty workloads cost near their average. Cold starts add ~300ms after idle; sustained load erases the savings.
+    docs_url: https://en.wikipedia.org/wiki/Serverless_computing
     monthly_cost: 5
     max_rps: 1000
     base_latency_ms: 100
@@ -96,6 +99,9 @@ config_variants:
       invocation-pattern: "Most cost-effective for sporadic or bursty traffic"
   - id: provisioned-concurrency
     name: Provisioned Concurrency
+    description: >-
+      Provisioned serverless: pre-warmed capacity kills cold starts and lifts the ceiling 5x — at 10x the baseline cost, billed warm whether traffic comes or not.
+    docs_url: https://en.wikipedia.org/wiki/Serverless_computing
     monthly_cost: 50
     max_rps: 5000
     base_latency_ms: 15
@@ -148,6 +154,9 @@ config_variants:
       invocation-pattern: "Best for steady baseline traffic with predictable load"
   - id: edge-function
     name: Edge Function
+    description: >-
+      Edge functions: lightweight handlers at the CDN edge — high ceiling, low cost, scale-to-zero economics. Best for thin request-shaping logic, not heavy compute.
+    docs_url: https://en.wikipedia.org/wiki/Edge_computing
     monthly_cost: 10
     max_rps: 10000
     base_latency_ms: 30

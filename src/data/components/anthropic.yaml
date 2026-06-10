@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: balanced
     name: Balanced (Sonnet-class)
+    description: >-
+      A Sonnet-class model: strong reasoning at ~700ms per call. The quality default when answers matter more than volume.
+    docs_url: https://docs.anthropic.com/en/docs/about-claude/models
     monthly_cost: 180
     max_rps: 1200
     base_latency_ms: 700
@@ -85,6 +88,9 @@ config_variants:
           - Cheaper than a flagship for similar tasks
   - id: fast
     name: Fast (Haiku-class)
+    description: >-
+      A Haiku-class model: a third of the latency and cost at 3x the request ceiling. Right for classification, extraction, and high-volume calls that don't need deep reasoning.
+    docs_url: https://docs.anthropic.com/en/docs/about-claude/models
     monthly_cost: 50
     max_rps: 4000
     base_latency_ms: 250

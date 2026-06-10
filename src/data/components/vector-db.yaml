@@ -42,6 +42,9 @@ base_metrics:
 config_variants:
   - id: single-node
     name: Single Node
+    description: >-
+      A single vector-store node: embeddings searchable by similarity at prototype scale. The 500-rps ceiling arrives fast — plan the next tier.
+    docs_url: https://en.wikipedia.org/wiki/Vector_database
     monthly_cost: 25
     max_rps: 500
     base_latency_ms: 10
@@ -95,6 +98,9 @@ config_variants:
       query-pattern: "Optimized for low-concurrency exploratory queries"
   - id: distributed
     name: Distributed Cluster
+    description: >-
+      A distributed vector cluster: sharded indexes lift similarity search to 10x the ceiling at half the latency. Index rebuilds get operationally interesting.
+    docs_url: https://en.wikipedia.org/wiki/Vector_database
     monthly_cost: 100
     max_rps: 5000
     base_latency_ms: 5
@@ -152,6 +158,9 @@ config_variants:
       query-pattern: "Supports high-concurrency production workloads"
   - id: managed-cloud
     name: Managed Cloud
+    description: >-
+      Managed vector search: the highest ceiling with index management handled. The convenience premium of the vector world.
+    docs_url: https://en.wikipedia.org/wiki/Vector_database
     monthly_cost: 150
     max_rps: 10000
     base_latency_ms: 8

@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: on-demand
     name: On-Demand
+    description: >-
+      Lambda on-demand: code that bills only when it runs — idle costs nothing. Cold starts add ~200ms to the unlucky requests after quiet spells.
+    docs_url: https://docs.aws.amazon.com/lambda/latest/dg/welcome.html
     monthly_cost: 5
     max_rps: 10000
     base_latency_ms: 50
@@ -82,6 +85,9 @@ config_variants:
           - Sub-second metered billing per invocation
   - id: provisioned-concurrency
     name: Provisioned Concurrency
+    description: >-
+      Lambda provisioned concurrency: warm instances standing by — no cold starts, single-digit latency, double the ceiling. You pay for the warmth around the clock.
+    docs_url: https://docs.aws.amazon.com/lambda/latest/dg/provisioned-concurrency.html
     monthly_cost: 40
     max_rps: 20000
     base_latency_ms: 8

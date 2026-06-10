@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: self-hosted
     name: Self-Hosted
+    description: >-
+      Self-hosted Qdrant: fast Rust vector search with filtering, free to run on your own box. Snapshots and scaling are your job.
+    docs_url: https://qdrant.tech/documentation/
     monthly_cost: 40
     max_rps: 4000
     base_latency_ms: 8
@@ -88,6 +91,9 @@ config_variants:
           - Sharding/replication tuned by hand
   - id: cloud
     name: Managed Cloud
+    description: >-
+      Qdrant Cloud: the managed tier with replication and twice the throughput. Vector infrastructure without the 2am page.
+    docs_url: https://qdrant.tech/documentation/cloud-intro/
     monthly_cost: 120
     max_rps: 9000
     base_latency_ms: 6

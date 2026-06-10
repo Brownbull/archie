@@ -43,6 +43,9 @@ base_metrics:
 config_variants:
   - id: standard
     name: Standard (Stateless)
+    description: >-
+      Cloudflare Workers: isolates at the edge with ~zero cold start and global reach for pocket change. Stateless — state lives elsewhere.
+    docs_url: https://developers.cloudflare.com/workers/
     monthly_cost: 5
     max_rps: 20000
     base_latency_ms: 8
@@ -87,6 +90,9 @@ config_variants:
           - Generous free tier covers small apps
   - id: durable-objects
     name: With Durable Objects (Stateful)
+    description: >-
+      Workers with Durable Objects: single-threaded stateful coordination at the edge — counters, sessions, rooms — at a reduced ceiling per object.
+    docs_url: https://developers.cloudflare.com/durable-objects/
     monthly_cost: 30
     max_rps: 9000
     base_latency_ms: 14
