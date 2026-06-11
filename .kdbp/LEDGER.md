@@ -5400,3 +5400,7 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5128/5128) · NOTE: owner REJE
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P188
+
+## 2026-06-11 — [playtest fix] feat(challenges): break-complete state + golden onward CTA
+FINDINGS: the request exposed a quest-level-economy leftover — outcome.remaining was still unscoped (showed "Still standing: Workload, Origin" on a 2-dial quest); scoped in the hook (both v2 + legacy branches)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5128/5128; completion-state pin)
