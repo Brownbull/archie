@@ -153,10 +153,10 @@ function TreeEdges({ positions }: { positions: NodePos[] }) {
             <path key={`${reqId}->${to.node.challenge.id}`} d={d} fill="none"
               data-testid={isChainEdge ? `chain-edge-${reqId}-${to.node.challenge.id}` : undefined}
               stroke={isChainEdge ? "#4a9eff" : isDone ? edgeTrackColor : isLocked ? "#4a5468" : "#7184a6"}
-              strokeWidth={isChainEdge ? 3 : isDone ? 2 : 1.75}
-              opacity={isChainEdge ? (isLocked ? 0.55 : 0.95) : isDone ? 0.9 : isLocked ? 0.5 : 0.72}
+              strokeWidth={isChainEdge ? 2.5 : isDone ? 1.75 : 1.5}
+              opacity={isChainEdge ? (isLocked ? 0.4 : 0.8) : isDone ? 0.5 : isLocked ? 0.18 : 0.3}
               strokeDasharray={isLocked && !isChainEdge ? "5 4" : undefined}
-              filter={isDone || isChainEdge ? "url(#gl-a)" : undefined} />
+              filter={isChainEdge ? "url(#gl-a)" : undefined} />
           )
         }),
       )}
@@ -200,17 +200,21 @@ function TreeNode({ pos, selected, bestStars, breaksCollected, chainBadge, onCli
 
   // Track-colored borders at all states: bright when done/available, muted when locked
   const borderColor = selected ? "#ffffff" : isCompleted ? trackColor : isAvailable ? trackColor : `${trackColor}30`
-  const bgFill = isCompleted ? `${trackColor}10` : isAvailable ? `${trackColor}08` : `${trackColor}05`
+  const bgFill = isCompleted ? `${trackColor}28` : isAvailable ? `${trackColor}1c` : `${trackColor}0d`
   const glow = isCompleted ? "url(#gl-d)" : isAvailable ? "url(#gl-a)" : undefined
 
   return (
     <g onClick={onClick} style={{ cursor: isLocked ? "not-allowed" : "pointer" }}
       data-testid={`tree-node-${c.id}`} data-status={pos.node.status}>
 
+      {/* Backing disc — near-opaque, masks the edge web crossing behind the node face so quests
+          read ABOVE the links (2026-06-11 playtest: "links are more prominent than the quests"). */}
+      <circle cx={pos.x} cy={pos.y} r={NODE_R + 2} fill="#0a0e14" opacity={isLocked ? 0.7 : 0.9} />
+
       {/* Track color ring (outer) — pillar identity, visible even when locked */}
       <circle cx={pos.x} cy={pos.y} r={NODE_R + 4} fill="none"
         stroke={trackColor}
-        strokeWidth={2} opacity={isLocked ? 0.15 : isCompleted ? 0.9 : 0.5} />
+        strokeWidth={2} opacity={isLocked ? 0.3 : isCompleted ? 0.95 : 0.65} />
 
       {/* Grant ring (between track and main circle) */}
       {grants.length > 0 && !isLocked && (
@@ -222,8 +226,8 @@ function TreeNode({ pos, selected, bestStars, breaksCollected, chainBadge, onCli
 
       {/* Main circle */}
       <circle cx={pos.x} cy={pos.y} r={NODE_R} fill={bgFill}
-        stroke={borderColor} strokeWidth={selected ? 2.5 : 1.5}
-        opacity={isLocked ? 0.25 : 1} filter={glow} />
+        stroke={borderColor} strokeWidth={selected ? 2.5 : 1.75}
+        opacity={isLocked ? 0.5 : 1} filter={glow} />
 
       {/* Center content */}
       {isAvailable && (
@@ -570,19 +574,25 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
             >
               <Wrench className="h-3 w-3" /> {expertCurrency} Expert
             </span>
-            <div data-testid="quest-log-track-legend" className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              {Object.entries(TRACK_COLORS).map(([trackId, color]) => (
-                <span key={trackId} className="inline-flex items-center gap-1 text-[0.5625rem] text-[#8b9099]">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
-                  {CHALLENGE_TRACKS.get(trackId)?.name ?? trackId}
-                </span>
-              ))}
-            </div>
           </div>
         </DialogHeader>
         <div className="flex gap-0" style={{ height: "calc(85vh - 80px)" }}>
           {/* Left: quest tree — always visible, fixed position */}
-          <div className="flex-1 overflow-auto quest-scroll" style={{ minWidth: 0 }}>
+          <div className="relative flex-1" style={{ minWidth: 0 }}>
+            {/* Discipline legend — a column pinned over the tree's empty left margin (2026-06-11
+                playtest: one item per row reads better than the cramped header chips). */}
+            <div
+              data-testid="quest-log-track-legend"
+              className="pointer-events-none absolute left-3 top-3 z-10 flex flex-col gap-1.5 rounded-md border border-[#262c38]/60 bg-[#0a0e14]/80 px-3 py-2"
+            >
+              {Object.entries(TRACK_COLORS).map(([trackId, color]) => (
+                <span key={trackId} className="inline-flex items-center gap-2 text-[0.6875rem] text-[#9aa1ab]">
+                  <span className="inline-block h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+                  {CHALLENGE_TRACKS.get(trackId)?.name ?? trackId}
+                </span>
+              ))}
+            </div>
+            <div className="h-full overflow-auto quest-scroll">
             <div className="flex justify-center py-2">
               <svg width={layout.width * scale} height={layout.height * scale}
                 viewBox={`0 0 ${layout.width} ${layout.height}`} className="select-none">
@@ -602,6 +612,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
                   onClick={() => setSelectedId(pos.node.challenge.id)} />
               ))}
             </svg>
+            </div>
             </div>
           </div>
           {/* Right: quest detail — always visible, shows placeholder when nothing selected */}
