@@ -35,7 +35,7 @@ chaos_intensity: 2
 schema_version: 2
 track: aiml
 tier: 2
-requires: [llm-service, add-a-database, async-pipeline]
+requires: [llm-service, add-a-database, async-pipeline, cache-the-hot-path]
 unlocks: [rag-retrieval]
 min_xp: 494
 required_types: [llm-gateway, etl, message-queue]

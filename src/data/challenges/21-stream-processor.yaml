@@ -34,7 +34,7 @@ chaos_intensity: 2
 schema_version: 2
 track: realtime
 tier: 3
-requires: [event-stream]
+requires: [event-stream, cache-the-hot-path]
 unlocks: [realtime-live]
 min_xp: 1976
 required_types: [stream-processor, event-stream]

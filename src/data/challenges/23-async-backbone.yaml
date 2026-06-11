@@ -37,7 +37,7 @@ hints:
 schema_version: 2
 track: realtime
 tier: 5
-requires: [realtime-live]
+requires: [realtime-live, cache-the-hot-path, scale-out]
 unlocks: []
 min_xp: 10520
 required_types: [message-queue, event-stream, stream-processor, realtime]

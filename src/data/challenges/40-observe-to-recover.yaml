@@ -30,7 +30,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 2
-requires: [observe-baseline]
+requires: [observe-baseline, scale-out]
 unlocks: []
 min_xp: 494
 required_types: [observability]

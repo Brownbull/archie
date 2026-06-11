@@ -83,10 +83,12 @@ export function validateTechTree(challenges: readonly Challenge[]): TechTreeIssu
 
   issues.push(...findRequiresCycles(challenges, ids))
 
-  // S5 (D89): the unlock-ordering REQUIRED-TYPE check is now a HARD gate (all 21 violations fixed) —
-  // a required type unreachable via the requires-closure fails here, so challengeLoader's `=== []`
-  // assertion is the permanent regression net. Palette gaps stay soft (findUnlockOrderingIssues).
-  issues.push(...findUnlockOrderingIssues(challenges).filter((i) => i.kind === "unreachable-required-type"))
+  // S5 (D89) + Phase-1 (D96): BOTH unlock-ordering checks are now HARD gates. required-type
+  // unreachability was closed in the Phase-2 restructure (21 violations); the 53 palette gaps
+  // (ungrantable-available-block) were closed in the D96 true-up (47 requires edges + 6 trims) —
+  // a quest may neither DEMAND nor OFFER a block its requires-closure can't grant. challengeLoader's
+  // `=== []` assertion is the permanent regression net for both.
+  issues.push(...findUnlockOrderingIssues(challenges))
 
   return issues
 }

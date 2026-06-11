@@ -28,7 +28,7 @@ hints:
 schema_version: 2
 track: data
 tier: 3
-requires: [cache-the-hot-path]
+requires: [cache-the-hot-path, polyglot-persistence]
 unlocks: []
 min_xp: 0
 required_types: [relational-db]

@@ -31,10 +31,10 @@ hints:
 schema_version: 2
 track: aiml
 tier: 1
-requires: [first-service]
+requires: [first-service, add-a-database]
 unlocks: [data-pipeline]
 required_types: [llm-gateway]
-available_blocks: [traffic-source, compute, llm-gateway, cache, relational-db]
+available_blocks: [traffic-source, compute, llm-gateway, relational-db]
 grants: [llm-gateway]
 rewards:
   xp: 130

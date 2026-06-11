@@ -39,7 +39,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 5
-requires: [always-on]
+requires: [always-on, async-pipeline]
 unlocks: []
 min_xp: 10520
 required_types: [observability, load-balancer, cache]

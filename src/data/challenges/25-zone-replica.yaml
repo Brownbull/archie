@@ -32,7 +32,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 2
-requires: [observe-baseline, scale-out]
+requires: [observe-baseline, scale-out, add-a-database]
 unlocks: [zone-failure]
 min_xp: 494
 required_types: [observability, load-balancer]

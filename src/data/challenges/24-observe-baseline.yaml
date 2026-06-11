@@ -30,7 +30,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 1
-requires: [first-service]
+requires: [first-service, add-a-database]
 unlocks: [zone-replica, observe-to-recover]
 required_types: [observability]
 available_blocks: [compute, relational-db, observability]

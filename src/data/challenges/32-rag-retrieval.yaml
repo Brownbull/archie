@@ -37,7 +37,7 @@ forbidden_types: [relational-db]
 schema_version: 2
 track: aiml
 tier: 3
-requires: [data-pipeline, search-at-scale, cache-the-hot-path]
+requires: [data-pipeline, search-at-scale, cache-the-hot-path, scale-out]
 unlocks: [production-ai]
 min_xp: 1976
 required_types: [llm-gateway, vector-store, search-engine]

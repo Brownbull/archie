@@ -30,7 +30,7 @@ hints:
 schema_version: 2
 track: realtime
 tier: 4
-requires: [stream-processor]
+requires: [stream-processor, cache-the-hot-path]
 unlocks: [async-backbone]
 min_xp: 5138
 required_types: [realtime, stream-processor]

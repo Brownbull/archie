@@ -28,7 +28,7 @@ hints:
 schema_version: 2
 track: foundations
 tier: 6
-requires: [foundations-mastery]
+requires: [foundations-mastery, polyglot-persistence]
 unlocks: []
 min_xp: 0
 required_types: [cache, relational-db]

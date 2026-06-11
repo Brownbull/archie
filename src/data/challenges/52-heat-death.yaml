@@ -39,7 +39,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 6
-requires: [chaos-day]
+requires: [chaos-day, polyglot-persistence, serverless-burst]
 unlocks: []
 min_xp: 0
 required_types: [cdn, cache]

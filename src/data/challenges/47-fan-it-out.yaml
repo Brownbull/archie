@@ -32,7 +32,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 3
-requires: [zone-replica]
+requires: [zone-replica, add-a-database]
 unlocks: []
 min_xp: 0
 required_types: [load-balancer]

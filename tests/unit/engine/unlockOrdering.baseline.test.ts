@@ -3,7 +3,9 @@ import { getAllChallenges } from "@/services/challengeLoader"
 import { findUnlockOrderingIssues, validateTechTree } from "@/engine/techTree"
 
 /**
- * S5 (D89) unlock-ordering — REQUIRED-TYPE gate CLOSED, palette gaps tracked.
+ * Unlock-ordering — BOTH gates closed. S5 (D89) closed the 21 required-type violations; Phase 1
+ * (D96, 2026-06-11) closed the 53 palette gaps (47 requires edges + 6 trims), so a quest may
+ * neither demand nor offer a block its requires-closure can't grant.
  *
  * `findUnlockOrderingIssues` runs the closure-reachability check (BASE_UNLOCKED_BLOCKS ∪ self-grants ∪
  * prereq-closure grants) over the 61 built-ins. As of S4 (batch A) + S5 (batch B), every one of the
@@ -29,10 +31,11 @@ describe("unlock-ordering (S5 — REQ gate closed, palette gaps tracked)", () =>
     expect(validateTechTree(challenges).filter((i) => i.kind === "unreachable-required-type")).toEqual([])
   })
 
-  it("tracks the remaining soft palette gaps (ungrantable-available-block) as a drift-net snapshot", () => {
-    const summary = pal
-      .map((i) => `${i.challengeId} | ${i.detail.match(/"([^"]+)"/)?.[1]}`)
-      .sort()
-    expect(summary).toMatchSnapshot()
+  it("ZERO palette gaps — every offered block is grantable via the requires-closure (D96 hard gate)", () => {
+    expect(pal.map((i) => `${i.challengeId} | ${i.detail}`)).toEqual([])
+  })
+
+  it("validateTechTree enforces the palette gate too (D96 — the D90 migration clause, executed)", () => {
+    expect(validateTechTree(challenges).filter((i) => i.kind === "ungrantable-available-block")).toEqual([])
   })
 })

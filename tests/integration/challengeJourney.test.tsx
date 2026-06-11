@@ -117,7 +117,7 @@ describe("challenge journey (integration): select → build → start → score 
 
   it("honors the level's traffic curve, scheduled outage, and authored duration end-to-end", async () => {
     const { useUserProgressStore } = await import("@/stores/userProgressStore")
-    useUserProgressStore.setState({ completedChallenges: ["first-service", "scale-out", "dns-routing", "edge-balance", "edge-delivery", "observe-baseline", "zone-replica"], trackXp: { foundations: 1000, edge: 1000, reliability: 500 } })
+    useUserProgressStore.setState({ completedChallenges: ["first-service", "add-a-database", "cache-the-hot-path", "scale-out", "dns-routing", "edge-balance", "edge-delivery", "observe-baseline", "zone-replica"], trackXp: { foundations: 1000, edge: 1000, reliability: 500, data: 500 } })
     const zone = getChallenge("zone-failure")
     expect(zone).toBeDefined()
     if (!zone) return

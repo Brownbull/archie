@@ -34,7 +34,7 @@ requires: [event-stream, cache-the-hot-path, edge-delivery]
 unlocks: []
 min_xp: 0
 required_types: [cache, cdn]
-available_blocks: [compute, cdn, cache, load-balancer, relational-db, realtime, traffic-source]
+available_blocks: [compute, cdn, cache, load-balancer, relational-db, traffic-source]
 grants: []
 rewards:
   xp: 455

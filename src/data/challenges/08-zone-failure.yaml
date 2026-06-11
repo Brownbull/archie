@@ -32,7 +32,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 3
-requires: [zone-replica, edge-delivery]
+requires: [zone-replica, edge-delivery, cache-the-hot-path, add-a-database]
 unlocks: [always-on]
 min_xp: 1976
 required_types: [observability, load-balancer]

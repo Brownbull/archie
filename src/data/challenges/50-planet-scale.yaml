@@ -37,7 +37,7 @@ hints:
 schema_version: 2
 track: foundations
 tier: 6
-requires: [foundations-mastery, edge-delivery]
+requires: [foundations-mastery, edge-delivery, polyglot-persistence]
 unlocks: []
 min_xp: 0
 required_types: [cdn, dns, cache]

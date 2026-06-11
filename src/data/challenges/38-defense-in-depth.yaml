@@ -34,7 +34,7 @@ chaos_intensity: 2
 schema_version: 2
 track: security
 tier: 4
-requires: [siem-audit, observe-baseline]
+requires: [siem-audit, observe-baseline, scale-out]
 unlocks: [fortress]
 min_xp: 5138
 required_types: [auth, rate-limiter, security, observability]

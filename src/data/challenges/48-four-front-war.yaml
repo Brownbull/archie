@@ -32,7 +32,7 @@ hints:
 schema_version: 2
 track: reliability
 tier: 4
-requires: [zone-failure, cache-the-hot-path]
+requires: [zone-failure, cache-the-hot-path, polyglot-persistence]
 unlocks: []
 min_xp: 0
 required_types: [load-balancer, cache, relational-db]

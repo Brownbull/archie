@@ -33,7 +33,7 @@ forbidden_types: [relational-db]
 schema_version: 2
 track: data
 tier: 4
-requires: [polyglot-persistence]
+requires: [polyglot-persistence, scale-out, async-pipeline]
 unlocks: []
 min_xp: 5138
 required_types: [nosql]

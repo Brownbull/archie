@@ -31,7 +31,7 @@ hints:
 schema_version: 2
 track: data
 tier: 4
-requires: [polyglot-persistence]
+requires: [polyglot-persistence, edge-delivery]
 unlocks: [analytics-backbone]
 min_xp: 5138
 required_types: [search-engine, cache]
