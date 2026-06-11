@@ -99,3 +99,43 @@ describe("architectureStore — quest forbidden-type chokepoint", () => {
     expect(s().nodes[0].data.archieComponentId).toBe("postgresql")
   })
 })
+
+describe("vendor restrictions — the store chokepoint (P5-S4 / D95)", () => {
+  const restrictChallenge = {
+    id: "c-restrict", title: "Node Shop", brief: "b", difficulty: "beginner",
+    budgetCap: 100, durationSeconds: 60, trafficCurve: [{ t: 0, rps: 0 }],
+    requiredComponents: [], targetMetrics: { uptimePercent: 95, p99LatencyMs: 400 },
+    scheduledEvents: [], hints: [], restrictedVendors: ["postgresql"],
+  } as unknown as Challenge
+
+  beforeEach(() => {
+    vi.mocked(toast.warning).mockClear()
+    useArchitectureStore.setState({ nodes: [], edges: [] })
+    useChallengeStore.setState({ activeChallenge: restrictChallenge, attemptState: "building" })
+  })
+
+  it("addNode blocks a restricted vendor with the team-expertise toast", () => {
+    useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+    expect(useArchitectureStore.getState().nodes).toHaveLength(0)
+    expect(toast.warning).toHaveBeenCalledWith(expect.stringContaining("team doesn't run that vendor"))
+  })
+
+  it("an unrestricted vendor of the same type adds normally", () => {
+    useArchitectureStore.getState().addNode("aws-s3", { x: 0, y: 0 })
+    expect(useArchitectureStore.getState().nodes).toHaveLength(1)
+  })
+
+  it("swapNodeComponent blocks swapping TO a restricted vendor", () => {
+    useArchitectureStore.getState().addNode("aws-s3", { x: 0, y: 0 })
+    const nodeId = useArchitectureStore.getState().nodes[0].id
+    useArchitectureStore.getState().swapNodeComponent(nodeId, "postgresql")
+    expect(useArchitectureStore.getState().nodes[0].data.archieComponentId).toBe("aws-s3")
+    expect(toast.warning).toHaveBeenCalledWith(expect.stringContaining("team doesn't run that vendor"))
+  })
+
+  it("free mode (no challenge): restrictions don't exist", () => {
+    useChallengeStore.setState({ activeChallenge: null })
+    useArchitectureStore.getState().addNode("postgresql", { x: 0, y: 0 })
+    expect(useArchitectureStore.getState().nodes).toHaveLength(1)
+  })
+})

@@ -67,3 +67,19 @@ describe("resilience extras (P4-S7 / D94)", () => {
     }
   }
 })
+
+describe("vendor restrictions — authored quality (P5-S4 / D95)", () => {
+  it("every restricted vendor exists, and no reference build uses one", () => {
+    const restricted = getAllChallenges().filter((c) => (c.restrictedVendors?.length ?? 0) > 0)
+    for (const c of restricted) {
+      for (const vendorId of c.restrictedVendors!) {
+        expect(componentLibrary.getComponent(vendorId), `${c.id}: restricted vendor "${vendorId}" doesn't exist in the catalog`).toBeTruthy()
+      }
+      const build = buildClearingSolution(c, MAX_REPLICAS)
+      expect(scoreBuild(c, build.nodes, build.edges).breakdown.stars, `${c.id}: must stay 3★-clearable WITHOUT its restricted vendors`).toBe(3)
+      const used = build.nodes.filter((n) => c.restrictedVendors!.includes(n.data.archieComponentId))
+      expect(used, `${c.id}: the reference build uses restricted vendor(s): ${used.map((n) => n.data.archieComponentId).join(", ")} — re-curate or fix the solver`).toHaveLength(0)
+    }
+    expect(restricted.length).toBeGreaterThanOrEqual(1) // scale-out authors one from P5-S4 on
+  })
+})

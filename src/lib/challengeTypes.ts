@@ -177,6 +177,10 @@ export interface Challenge {
     nodes: ArchitectureFile["nodes"]
     edges: ArchitectureFile["edges"]
   }
+  /** Team-expertise vendor restrictions (P5-S4, D95): component ids this quest's team can't run —
+   *  shown-but-locked in every vendor surface, blocked at the store chokepoint. Also the
+   *  anti-brute-force tool (restrict the super-tier vendor). Absent ⇒ all vendors usable. */
+  restrictedVendors?: string[]
   /**
    * Runtime-only provenance (D45, NOT in the YAML schema). `builtin` is stamped at the build-time
    * glob (the only path that can produce it); `user` is stamped at loadChallengeFromYaml (runtime

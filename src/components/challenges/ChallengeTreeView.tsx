@@ -5,6 +5,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { getAllChallenges } from "@/services/challengeLoader"
+import { componentLibrary } from "@/services/componentLibrary"
 import { resolveTechTree } from "@/engine/techTree"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
@@ -316,6 +317,11 @@ function QuestDetailPanel({ node, bestStars, breaksRecord, clearsRecord, onStart
               `Keep p99 ≤ ${c.targetMetrics.p99LatencyMs}ms`,
               `Budget ≤ $${c.budgetCap}/mo`,
               ...(c.requiredTypes.length > 0 ? [`Deploy: ${c.requiredTypes.map((t) => COMPONENT_TYPES.get(t)?.label ?? t).join(", ")}`] : []),
+              // P5-S4 (D95): team-expertise restrictions are part of the problem statement — say so
+              // before the quest is accepted, never as a mid-build surprise.
+              ...(c.restrictedVendors?.length
+                ? [`Team expertise: ${c.restrictedVendors.map((v) => componentLibrary.getComponent(v)?.name ?? v).join(", ")} off the table`]
+                : []),
               // P5-S3 (D95): name each chaos event's TARGET — "we don't have visibility of where it
               // is failing" — so the player plans the blast before accepting the quest.
               ...c.scheduledEvents.map((e) => {

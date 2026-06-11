@@ -192,6 +192,14 @@ function blockedByQuestBan(typeId: string | undefined): boolean {
   return !!c?.forbiddenTypes?.includes(typeId)
 }
 
+/** P5-S4 (D95): the vendor-level twin of blockedByQuestBan — team-expertise restrictions block a
+ *  COMPONENT id (vendor) everywhere a typeId ban does. Shown-but-locked in the UI; enforced here. */
+function blockedByVendorRestriction(componentId: string | undefined): boolean {
+  if (!componentId) return false
+  const c = useChallengeStore.getState().activeChallenge
+  return !!c?.restrictedVendors?.includes(componentId)
+}
+
 export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   nodes: [],
   edges: [],
@@ -355,6 +363,10 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       toast.warning("That block is banned in this quest — placing it would score 0★.")
       return
     }
+    if (blockedByVendorRestriction(requested.id)) {
+      toast.warning("Your team doesn't run that vendor in this quest — pick another provider.")
+      return
+    }
 
     // Apply the user's saved default (provider + variant) for this block TYPE, if any. Future
     // adds only — never retroactive. Validate against the library so a stale saved provider/variant
@@ -438,6 +450,10 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
 
     if (blockedByQuestBan(newComponent.typeId)) {
       toast.warning("That block is banned in this quest — swapping to it would score 0★.")
+      return
+    }
+    if (blockedByVendorRestriction(newComponent.id)) {
+      toast.warning("Your team doesn't run that vendor in this quest — pick another provider.")
       return
     }
 

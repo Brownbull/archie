@@ -49,3 +49,9 @@ initial_architecture:
     - { id: bf-app, component_id: node-express, config_variant_id: single-process, position: { x: 340, y: 200 }, replicas: 1 }
   edges:
     - { id: bf-e0, source_node_id: bf-traffic, target_node_id: bf-app }
+
+# P5-S4 (D95): team-expertise restriction — this team runs Node, not Python. FastAPI is also the
+# catalog's brute-force bazooka (feedback: "incredibly more capable... handles everything"); keeping
+# it off the table makes the scale-OUT lesson (spread the load) the only way through. The reference
+# build uses node-express (the compute default), so solvability is unaffected — harness-pinned.
+restricted_vendors: [python-fastapi]

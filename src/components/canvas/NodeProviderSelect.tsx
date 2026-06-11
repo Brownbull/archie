@@ -10,6 +10,7 @@ import {
 import { componentLibrary } from "@/services/componentLibrary"
 import { providersForComponent } from "@/lib/componentTypes"
 import { useArchitectureStore } from "@/stores/architectureStore"
+import { useChallengeStore } from "@/stores/challengeStore"
 import { useDisclosureTier } from "@/hooks/useDisclosureTier"
 import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { formatVariantStats } from "@/lib/formatStats"
@@ -45,6 +46,12 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
     () => (component ? providersForComponent(component, componentLibrary.getAllComponents()) : []),
     [component],
   )
+
+  // P5-S4 (D95): team-expertise restrictions — restricted vendors stay VISIBLE in the dropdown
+  // (the feedback's "explicitly blocked, not hidden") but can't be selected; the store chokepoint
+  // backstops every other path. Free mode: no restrictions.
+  const restrictedVendors = useChallengeStore((s) => s.activeChallenge?.restrictedVendors)
+  const isRestricted = (id: string) => !!restrictedVendors?.includes(id)
 
   // Single (or no) provider → just the vendor + variant label, no dropdown. Fluidity P3c (D84): the
   // vendor swap also discloses progressively in quests — when gated, fall back to the same static label
@@ -88,12 +95,21 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
         <SelectContent className="min-w-[15rem]">
           {providers.map((p) => {
             const stats = providerStats(p)
+            const restricted = isRestricted(p.id)
             return (
-              <SelectItem key={p.id} value={p.id} className="py-1 text-[0.75rem]">
-                <span className="flex w-full items-center justify-between gap-3">
+              <SelectItem
+                key={p.id}
+                value={p.id}
+                disabled={restricted}
+                data-restricted={restricted || undefined}
+                className="py-1 text-[0.75rem]"
+                title={restricted ? "Your team doesn't run this vendor in this quest (team-expertise restriction)" : undefined}
+              >
+                <span className={`flex w-full items-center justify-between gap-3 ${restricted ? "opacity-50" : ""}`}>
                   <span className="flex items-center gap-2">
                     <ComponentIcon componentId={p.id} category={category} className="h-4 w-4 shrink-0" />
                     {p.name}
+                    {restricted && <Lock className="h-3 w-3 shrink-0 text-text-secondary" aria-label="restricted in this quest" />}
                   </span>
                   {stats && <span className="shrink-0 text-[0.625rem] text-text-secondary">{stats}</span>}
                 </span>

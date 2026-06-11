@@ -186,6 +186,11 @@ export const ChallengeYamlSchema = z
       nodes: z.array(ArchitectureFileNodeYamlSchema).min(1).max(40),
       edges: z.array(ArchitectureFileEdgeYamlSchema).max(120),
     }).strict().optional(),
+    // P5-S4 (D95): team-expertise vendor restrictions — COMPONENT ids (vendors) this quest's team
+    // can't run. Shown-but-locked in every vendor surface (never hidden); also the anti-brute-force
+    // tool (block the super-tier vendor). Existence is harness-validated (the component catalog
+    // isn't a static registry at schema time).
+    restricted_vendors: z.array(z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH)).max(12).optional(),
   })
   .strict()
   .superRefine((d, ctx) => {
@@ -292,4 +297,5 @@ export const ChallengeYamlSchema = z
     ...(d.consistency_target_ms !== undefined ? { consistencyTargetMs: d.consistency_target_ms } : {}),
     ...(d.resilience_conditions !== undefined ? { resilienceConditions: d.resilience_conditions } : {}),
     ...(d.initial_architecture !== undefined ? { initialArchitecture: d.initial_architecture } : {}),
+    ...(d.restricted_vendors !== undefined ? { restrictedVendors: d.restricted_vendors } : {}),
   }))

@@ -14,6 +14,10 @@ function SwapPopoverComponent() {
 	// line (relational-db and object-storage are both data-storage) — don't OFFER a banned swap. The
 	// store's swapNodeComponent guard is the hard gate; this keeps the option out of the menu.
 	const forbiddenTypes = useChallengeStore((s) => s.activeChallenge?.forbiddenTypes)
+	// P5-S4 (D95): restricted vendors are dropped from quick-swap offers too — unlike the dropdown
+	// (which shows them locked for the lesson), a one-click swap surface offering an un-pickable
+	// option is just noise. The store chokepoint backstops regardless.
+	const restrictedVendors = useChallengeStore((s) => s.activeChallenge?.restrictedVendors)
 
 	const node = useArchitectureStore((s) =>
 		swapTarget ? s.nodes.find((n) => n.id === swapTarget) : undefined,
@@ -25,7 +29,8 @@ function SwapPopoverComponent() {
 			.getComponentsByCategory(node.data.componentCategory)
 			.filter((c) => c.id !== node.data.archieComponentId && c.configVariants.length > 0)
 			.filter((c) => !c.typeId || !forbiddenTypes?.includes(c.typeId))
-	}, [node, forbiddenTypes])
+			.filter((c) => !restrictedVendors?.includes(c.id))
+	}, [node, forbiddenTypes, restrictedVendors])
 
 	if (!swapTarget || !node || alternatives.length === 0) return null
 
