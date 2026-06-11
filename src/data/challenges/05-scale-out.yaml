@@ -38,3 +38,14 @@ available_blocks: [traffic-source, compute, load-balancer]
 grants: [load-balancer]
 rewards:
   xp: 260
+
+# P5-S2 (D95): brownfield start — "one server got you this far", literally. The player inherits
+# the single box already wired to production traffic and must spread the load (LB + replicas).
+# Needs-work gate: no load-balancer ⇒ required_types fails (and 1500 rps drowns one replica)
+# ⇒ <3★ as-seeded (harness-pinned).
+initial_architecture:
+  nodes:
+    - { id: bf-traffic, component_id: web-users, config_variant_id: moderate, position: { x: 60, y: 200 }, replicas: 1, traffic_rps: 1500, traffic_kind: realistic }
+    - { id: bf-app, component_id: node-express, config_variant_id: single-process, position: { x: 340, y: 200 }, replicas: 1 }
+  edges:
+    - { id: bf-e0, source_node_id: bf-traffic, target_node_id: bf-app }

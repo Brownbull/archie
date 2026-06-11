@@ -45,7 +45,12 @@ function requiredTypesOnServedPath(graph: TopologyGraphInput, requiredTypes: rea
     for (const t of outAdj.get(id) ?? []) if (!reachable.has(t)) queue.push(t)
   }
   const reachableTypes = new Set([...reachable].map((id) => typeByNodeId.get(id)!))
-  return requiredTypes.every((t) => isOnPathExempt(t) || reachableTypes.has(t))
+  // Async tiers (messaging-category) are exempt from the ON-PATH rule — a queue hangs off the side
+  // of the served path by design — but NOT from presence (P5-S2 fix): the old `isOnPathExempt(t) ||`
+  // short-circuit passed a required event-stream/message-queue that wasn't on the canvas AT ALL,
+  // so async-required quests were 3★-able without their core block. Presence anywhere suffices.
+  const presentTypes = new Set(typeByNodeId.values())
+  return requiredTypes.every((t) => (isOnPathExempt(t) ? presentTypes.has(t) : reachableTypes.has(t)))
 }
 
 /**

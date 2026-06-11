@@ -40,3 +40,15 @@ available_blocks: [compute, message-queue, event-stream, relational-db, nosql, c
 grants: [event-stream]
 rewards:
   xp: 260
+
+# P5-S2 (D95): brownfield start — the fire-and-forget system the brief describes. The player
+# inherits a running (and flawed) pipeline and must add durability/replay (the event stream).
+# Needs-work gate: no event-stream block ⇒ required_types fails ⇒ <3★ as-seeded (harness-pinned).
+initial_architecture:
+  nodes:
+    - { id: bf-traffic, component_id: api-client, config_variant_id: steady, position: { x: 60, y: 200 }, replicas: 1, traffic_rps: 1500, traffic_kind: realistic, traffic_workload: write }
+    - { id: bf-api, component_id: node-express, config_variant_id: single-process, position: { x: 320, y: 200 }, replicas: 2 }
+    - { id: bf-queue, component_id: rabbitmq, config_variant_id: single-node, position: { x: 580, y: 200 }, replicas: 1 }
+  edges:
+    - { id: bf-e0, source_node_id: bf-traffic, target_node_id: bf-api }
+    - { id: bf-e1, source_node_id: bf-api, target_node_id: bf-queue }
