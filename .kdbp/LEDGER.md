@@ -5160,3 +5160,9 @@ FIXES: #1 authored-demand gate on resilience clears (cheesed-3★ cheese closed)
 ## 2026-06-10 21:24 — [post-review fix] fix(challenges): close the expert-economy side doors
 FINDINGS: 0 new (review-fix commit)
 CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5032/5032 incl. 5 new gate tests)
+
+## 2026-06-10 21:12 — PUSH dev -> main
+PR: — (direct trunk push, established flow)
+CI: Deploy Production ✅ success
+PROMOTION: N/A (single-env production)
+DEPLOYMENTS: P169 (added row to .kdbp/DEPLOYMENTS.md)
