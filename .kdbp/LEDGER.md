@@ -5392,3 +5392,8 @@ NOTE: D34 softened — origin IS feasible on 4 quests (checkout-flow, data-pipel
 
 ## 2026-06-11 — PUSH dev -> main (retry)
 PR: — · CI: Deploy Production ❌ 1fd09fa (missed file: breakDetection.ts → TS2554) → ✅ 6a21541 · DEPLOYMENTS: P187
+- 2026-06-11 15:53 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/feedback_no-destructive-prod-data-ops.md
+
+## 2026-06-11 — [playtest fix] fix(challenges): star sprite identity + verdict-consistent live colors
+FINDINGS: the star saga's root cause was SPRITE identity (starNew vs starFilled), not tinting — three filter recipes couldn't fix using the wrong asset. Stats/timeline now share metricTone with the scorer (single source of judgment).
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5128/5128) · NOTE: owner REJECTED the Firestore wipe — memory saved: destructive prod-data ops are presented, never executed
