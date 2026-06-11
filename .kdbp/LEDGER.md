@@ -5338,3 +5338,9 @@ NOTE: D94's break semantics superseded by D101 for single-source quests; multi-s
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P180
+- 2026-06-11 12:49 | Write | /home/khujta/projects/bmad/archie/src/components/layout/CurrencyCluster.tsx
+
+## 2026-06-11 — [playtest fix] feat(challenges): dial feasibility + top-bar currencies (D101 follow-up)
+FINDINGS: 1 real bug self-caught pre-commit — useMemo below conditional returns (hook-order crash waiting for a branch flip); hoisted above all returns. Curve-unresolvable guard added so missing data never claims "nothing can fell this build".
+CHECKS: lint ✅ (warnings pre-existing tier) · types ✅ · tests ✅ (quick 5110/5110) · E2E ✅ (journey 47.7s with the live probe)
+NOTE: propagation = automatic (51 single-source v2 / 12 multi-source legacy / 1 sourceless). Feasibility is per-BUILD truth, not per-quest authoring — a different build changes which dials can pay.
