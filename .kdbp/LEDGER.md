@@ -5298,3 +5298,9 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P175
 
 ## 2026-06-11 — PLAN COMPLETE: Progression Legibility & Explainability (Plan-2)
 All 5 phases ALL GATES in one day (P171–P175): unlock-ordering true-up + intro pacing (53 gaps → 0, 2 intro quests, 2 permanent gates) · chain & extras tree legibility (3 chains visible, shields pre-completion) · coach de-escalation (beginner-gated diagnostics) · score trace (every category answers "why") · catalog polish (pool-exhaustion quest, observability explainer, icon audit clean, vendor-unlock doc). Catalog 61→64. Golden 0-deletion through every change. D18 closed; D33 opened (unlocks metadata hygiene, LOW).
+- 2026-06-11 11:16 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_new-quest-checklist.md
+
+## 2026-06-11 — [post-plan audit] fix(challenges): hint–palette coherence gated
+FINDINGS: owner-requested 3-axis audit (structure/seeds/hint-prose) across 64 quests — structure + seeds CLEAN (D96 gates held); 2 hint-class survivors found + fixed (llm-service cache hints after the D96 trim; search-at-scale lb route); drift net added with curated allowlist
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5096/5096; solvability + content gates green post-rewrite)
+NOTE: the third symptom class (hints lying about the palette) is now gated like the first two — none of the three async-pipeline failure modes can be authored again.
