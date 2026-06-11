@@ -14,6 +14,8 @@ import { Trash2 } from "lucide-react"
 import { ConnectionWarning } from "@/components/canvas/ConnectionWarning"
 import { ObjectActionToolbar } from "@/components/canvas/ObjectActionToolbar"
 import { useLibrary } from "@/hooks/useLibrary"
+import { PORT_DASHARRAYS, throughputSpeedFactor } from "@/lib/linkViz"
+import { getNodeCost } from "@/stores/architectureStoreHelpers"
 import { useConnectionHealth } from "@/hooks/useConnectionHealth"
 import { useEdgeOverlay } from "@/hooks/useEdgeOverlay"
 import { EdgeParticles } from "@/components/canvas/EdgeParticles"
@@ -22,14 +24,14 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 
 const LEGACY_EDGE_COLOR = "var(--color-muted)"
 
-function resolvePortColor(
+function resolvePort(
   component: ReturnType<ReturnType<typeof useLibrary>["getComponentById"]>,
   handleId: string | null,
-): string | null {
-  if (!handleId || !component?.ports) return null
+): { color: string | null; type: PortType | null } {
+  if (!handleId || !component?.ports) return { color: null, type: null }
   const port = component.ports.find((p: { id: string; type: PortType }) => p.id === handleId)
-  if (!port) return null
-  return PORT_TYPES[port.type as PortType]?.color ?? null
+  if (!port) return { color: null, type: null }
+  return { color: PORT_TYPES[port.type as PortType]?.color ?? null, type: (port.type as PortType) ?? null }
 }
 
 export function ArchieEdge({
@@ -83,8 +85,18 @@ export function ArchieEdge({
   const connectionProps = sourceComponent?.connectionProperties
 
   const sourceHandleId = data?.sourceHandleId ?? null
-  const portColor = resolvePortColor(sourceComponent, sourceHandleId)
+  const { color: portColor, type: portType } = resolvePort(sourceComponent, sourceHandleId)
   const isLegacy = !sourceHandleId
+
+  // Throughput dimension (P5-S6, D95): dots travel faster on links whose downstream tier can
+  // swallow more — effective capacity (variant maxRPS × replicas) feeds a log-scaled multiplier.
+  const speedFactor = useArchitectureStore((s) => {
+    const t = s.nodes?.find((n) => n.id === target)
+    if (!t) return 1
+    return throughputSpeedFactor(
+      getNodeCost(t.data.archieComponentId, t.data.activeConfigVariantId, t.data.replicaCount ?? 1, t.data.trafficRps).maxRPS,
+    )
+  })
 
   // Drag state for label repositioning (AC-ARCH-PATTERN-5, TD-4-3a)
   // liveOffset tracks visual position during drag; store is committed once on pointerup
@@ -159,6 +171,9 @@ export function ArchieEdge({
   } else if (portColor) {
     strokeColor = portColor
     strokeWidth = 2
+    // Protocol dimension (P5-S6): line style encodes the port type in the DEFAULT view only —
+    // heatmap mode's dasharray = health (the colour-blind cue) always wins above.
+    if (portType) strokeDasharray = PORT_DASHARRAYS[portType]
   } else if (isLegacy) {
     strokeColor = LEGACY_EDGE_COLOR
     strokeDasharray = "6 4"
@@ -187,7 +202,7 @@ export function ArchieEdge({
         data-testid="archie-edge"
       />
       {heatmapEnabled && animationsEnabled && edgeHeatmapStatus && edgeHeatmapStatus in HEATMAP_COLORS && (
-        <EdgeParticles edgePath={edgePath} density={density} status={healthStatus} edgeId={id} portColor={portColor} />
+        <EdgeParticles edgePath={edgePath} density={density} status={healthStatus} edgeId={id} portColor={portColor} speedFactor={speedFactor} />
       )}
       {isIncompatible && (
         <EdgeLabelRenderer>

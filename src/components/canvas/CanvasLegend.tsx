@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useUiStore } from "@/stores/uiStore"
-import { Z_INDEX } from "@/lib/constants"
+import { Z_INDEX, PORT_TYPES, PORT_SORT_ORDER } from "@/lib/constants"
+import { PORT_DASHARRAYS } from "@/lib/linkViz"
 import { X, Minus, Maximize2 } from "lucide-react"
 
 const LEGEND_ITEMS = [
@@ -15,7 +16,9 @@ export function CanvasLegend() {
   const setLegendDismissed = useUiStore((s) => s.setLegendDismissed)
   const [minimized, setMinimized] = useState(false)
 
-  if (!heatmapEnabled || legendDismissed) return null
+  // P5-S6 (D95): the legend now also decodes LINK styles (protocol → line style, port color,
+  // throughput → dot speed), which apply in the DEFAULT view — so it renders in both modes.
+  if (legendDismissed) return null
 
   return (
     <div
@@ -28,7 +31,7 @@ export function CanvasLegend() {
       >
         <div className={`flex items-center justify-between ${minimized ? "" : "mb-2"}`}>
           <span className="text-[0.8125rem] font-semibold text-text-primary">
-            Heatmap Legend
+            {heatmapEnabled ? "Heatmap Legend" : "Link Legend"}
           </span>
           <div className="ml-3 flex items-center gap-0.5">
             <button
@@ -52,7 +55,7 @@ export function CanvasLegend() {
             </button>
           </div>
         </div>
-        {!minimized && (
+        {!minimized && heatmapEnabled && (
           <>
             <div className="space-y-1.5">
               {LEGEND_ITEMS.map((item) => (
@@ -68,6 +71,23 @@ export function CanvasLegend() {
             </div>
             <div className="mt-2 border-t border-archie-border pt-1.5 text-[0.6875rem] text-text-secondary">
               Particle speed: Fast = Healthy, Slow = Bottleneck
+            </div>
+          </>
+        )}
+        {!minimized && !heatmapEnabled && (
+          <>
+            <div data-testid="link-legend-styles" className="space-y-1">
+              {PORT_SORT_ORDER.map((t) => (
+                <div key={t} className="flex items-center gap-2 text-[0.6875rem]">
+                  <svg width="26" height="6" aria-hidden>
+                    <line x1="1" y1="3" x2="25" y2="3" stroke={PORT_TYPES[t].color} strokeWidth="2" strokeDasharray={PORT_DASHARRAYS[t]} />
+                  </svg>
+                  <span className="text-text-primary">{PORT_TYPES[t].label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 border-t border-archie-border pt-1.5 text-[0.6875rem] text-text-secondary">
+              Dot speed scales with the link's downstream capacity
             </div>
           </>
         )}

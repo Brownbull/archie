@@ -8,6 +8,8 @@ interface EdgeParticlesProps {
   status: HeatmapStatus
   edgeId: string
   portColor?: string | null
+  /** Throughput dimension (P5-S6): multiplies the base particle speed — bigger pipes flow faster. */
+  speedFactor?: number
 }
 
 const STATUS_COLORS: Record<HeatmapStatus, string> = {
@@ -16,7 +18,7 @@ const STATUS_COLORS: Record<HeatmapStatus, string> = {
   bottleneck: HEATMAP_COLORS.bottleneck,
 }
 
-export function EdgeParticles({ edgePath, density, status, edgeId, portColor }: EdgeParticlesProps) {
+export function EdgeParticles({ edgePath, density, status, edgeId, portColor, speedFactor = 1 }: EdgeParticlesProps) {
   const pathRef = useRef<SVGPathElement>(null)
   const circleRefs = useRef<(SVGCircleElement | null)[]>([])
   const rafRef = useRef<number>(0)
@@ -46,7 +48,7 @@ export function EdgeParticles({ edgePath, density, status, edgeId, portColor }: 
         const circle = circleRefs.current[i]
         if (!circle) continue
 
-        const offset = ((i / density) + elapsed * PARTICLE_SPEED) % 1.0
+        const offset = ((i / density) + elapsed * PARTICLE_SPEED * speedFactor) % 1.0
         const point = path.getPointAtLength(offset * totalLength)
         circle.setAttribute("cx", String(point.x))
         circle.setAttribute("cy", String(point.y))
@@ -58,7 +60,7 @@ export function EdgeParticles({ edgePath, density, status, edgeId, portColor }: 
     rafRef.current = requestAnimationFrame(animate)
 
     return cleanup
-  }, [density, edgePath])
+  }, [density, edgePath, speedFactor])
 
   const fillColor = portColor ?? STATUS_COLORS[status]
 

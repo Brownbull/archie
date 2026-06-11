@@ -16,10 +16,13 @@ describe("CanvasLegend", () => {
     expect(screen.getByTestId("canvas-legend")).toBeInTheDocument()
   })
 
-  it("does NOT render when heatmap disabled", () => {
+  it("renders the LINK legend when the heatmap is off (P5-S6: protocol line styles + dot-speed cue)", () => {
     useUiStore.setState({ heatmapEnabled: false })
     render(<CanvasLegend />)
-    expect(screen.queryByTestId("canvas-legend")).not.toBeInTheDocument()
+    expect(screen.getByTestId("canvas-legend")).toHaveTextContent("Link Legend")
+    expect(screen.getByTestId("link-legend-styles")).toHaveTextContent("HTTP")
+    expect(screen.getByTestId("link-legend-styles")).toHaveTextContent("Database")
+    expect(screen.getByTestId("canvas-legend")).toHaveTextContent("Dot speed scales with the link's downstream capacity")
   })
 
   it("does NOT render when legendDismissed is true", () => {
