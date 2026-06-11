@@ -28,6 +28,8 @@ export function Toolbar() {
   const setQuestLogOpen = useUiStore((s) => s.setQuestLogOpen)
   const activeChallenge = useChallengeStore((s) => s.activeChallenge)
   const attemptState = useChallengeStore((s) => s.attemptState)
+  // D102: the quest chip wears the Expert orange once the dials are unlocked (break mode).
+  const breakMode = useChallengeStore((s) => !!s.activeChallenge && (s.bestStars[s.activeChallenge.id] ?? 0) >= 3)
 
   return (
     <header
@@ -53,7 +55,9 @@ export function Toolbar() {
             onClick={() => setQuestLogOpen(true)}
             title="Switch quest — open the quest menu"
             aria-label={`Active quest: ${activeChallenge.title}. Open the quest menu to switch.`}
-            className="group flex items-center gap-1 rounded-full bg-blue-500/20 px-3 py-0.5 text-xs font-semibold text-blue-300 transition-colors hover:bg-blue-500/30 hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50"
+            className={breakMode
+              ? "group flex items-center gap-1 rounded-full bg-orange-500/20 px-3 py-0.5 text-xs font-semibold text-orange-300 transition-colors hover:bg-orange-500/30 hover:text-orange-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400/50"
+              : "group flex items-center gap-1 rounded-full bg-blue-500/20 px-3 py-0.5 text-xs font-semibold text-blue-300 transition-colors hover:bg-blue-500/30 hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50"}
           >
             {activeChallenge.title}
             <ChevronDown className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />

@@ -101,3 +101,45 @@ export function isNewBreak(record: BreaksRecord | undefined, attribute: BreakAtt
 export function remainingBreakAttributes(record: BreaksRecord | undefined, dials: readonly BreakAttribute[] = BREAK_ATTRIBUTES): BreakAttribute[] {
   return dials.filter((a) => isNewBreak(record, a))
 }
+
+/**
+ * D102 — the global break-method registry's vocabulary. A "way of breaking" is VALUE-level:
+ * the rps dial is one way regardless of magnitude; each categorical VALUE is its own way
+ * (periodic bursts ≠ steady saturation ≠ search spikes — different failure modes, separately
+ * earnable). Resilience conditions fold in as `resilience-<conditionId>`. Each pays ONCE
+ * game-wide; afterward it's knowledge the registry carries quest to quest.
+ */
+export type BreakMethodId = string
+
+export function breakMethodId(
+  attribute: BreakAttribute,
+  nodes: readonly TrafficNodeLike[],
+): BreakMethodId {
+  if (attribute === "rps") return "rps-overload"
+  const t = nodes.find((n) => n.data.componentCategory === "traffic")
+  if (attribute === "kind") return `shape-${t?.data.trafficKind ?? "unknown"}`
+  if (attribute === "workload") return `workload-${t?.data.trafficWorkload ?? "unknown"}`
+  return "origin-multi-region"
+}
+
+export function resilienceMethodId(conditionId: string): BreakMethodId {
+  return `resilience-${conditionId}`
+}
+
+/** Display labels for registry surfaces; resilience methods resolve via the failure preset name. */
+export const BREAK_METHOD_LABELS: Readonly<Record<string, string>> = {
+  "rps-overload": "Peak-RPS overload",
+  "shape-steady": "Steady saturation",
+  "shape-periodic": "Periodic bursts",
+  "shape-search": "Search spikes",
+  "shape-realistic": "Realistic bursts",
+  "workload-read": "Read storm",
+  "workload-write": "Write storm",
+  "workload-mixed": "Mixed pressure",
+  "origin-multi-region": "Multi-region spread",
+}
+
+export function breakMethodLabel(methodId: BreakMethodId): string {
+  if (methodId.startsWith("resilience-")) return `Survived-condition: ${methodId.slice("resilience-".length)}`
+  return BREAK_METHOD_LABELS[methodId] ?? methodId
+}

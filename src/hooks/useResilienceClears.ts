@@ -5,7 +5,7 @@ import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { computeBreakingFailures } from "@/services/failureImpact"
 import { getFailurePreset, isKnownFailurePresetId } from "@/services/failureLoader"
-import { diffTrafficAttributes } from "@/engine/breakDetection"
+import { diffTrafficAttributes, resilienceMethodId } from "@/engine/breakDetection"
 import type { StarBreakdown } from "@/lib/challengeTypes"
 
 /** One resilience extra the just-scored 3★ run survived. */
@@ -58,7 +58,12 @@ export function useResilienceClears(): ResilienceClearOutcome[] | null {
         if (survived.length > 0) {
           next = survived.map((conditionId) => {
             const fresh = !record[conditionId] && !!userId
-            if (fresh) void progress.collectResilienceClear(userId, activeChallenge.id, conditionId)
+            if (fresh) {
+              void progress.collectResilienceClear(userId, activeChallenge.id, conditionId)
+              // D102: the PAY rides the global method registry — surviving this condition is a
+              // "way" earned once game-wide; later quests' clears register knowledge, not money.
+              void progress.collectBreakMethod(userId, resilienceMethodId(conditionId), activeChallenge.id)
+            }
             return { conditionId, name: getFailurePreset(conditionId)?.name ?? conditionId, fresh }
           })
         }

@@ -1565,3 +1565,14 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 **Achieved standing:** the 3★ is per-quest, earned once — a break run (traffic deviated) keeps 3 themed stars + "Already achieved" (violet, no XP labels, no first-time particles); an architecture regression with authored demand shows honest live stars; a post-3★ RE-earn replays the slam in the achieved theme. Discriminator: pre-run best (prevStars for 3★ runs, bestStars for failed runs).
 **Status:** active
 **Review trigger:** the 2× tolerance + boundary-reveal after the next owner playtest; multi-source v2 semantics if a multi-source quest joins the break meta.
+
+## D102 — Global break-method registry: a way of breaking pays ONCE, then it's knowledge (2026-06-11)
+
+**Owner redesign (playtest: Persist It broke identically to First Service — "repeating the same break doesn't cut it").** Supersedes the per-quest payout semantics of D94/D101 (detection/causality/precision gates all stand).
+1. **Value-level ways (~9 + growth):** `rps-overload`, `shape-{steady,periodic,search,realistic}`, `workload-{read,write,mixed}`, `origin-multi-region`, and — folded in — `resilience-<conditionId>` per failure condition. Each pays 1 Expert ONCE game-wide; the registry records {method, earned-on quest, earnedAt, confirmedOn: quests}.
+2. **Known-way breaks still register:** breaking a current quest with a known method pays nothing but confirms it ("this build falls to it too — as you already know") and adds the quest to the method's confirmedOn.
+3. **Per-quest surfaces re-meaning:** the wrench ledger/chips become COVERAGE (map this build's boundary), not money; "All covered" completion stands. Expert money lives only in registry-new methods → deliberately scarcer.
+4. **Registry UI:** pre-3★ the Expert chip keeps today's explainer popover; post-3★ (break mode) it opens the RIGHT PANEL registry — each known method with provenance and live applicability to the current build (value-level probe, recomputed per open); quest title chip turns expert-orange in break mode; the top-bar Expert chip gains a secondary count = known methods applicable to the current quest.
+5. **Persistence:** `breakMethods` map on userProgress (atomic increment + deep merge per D101's write discipline); rules extended + manual deploy (D9). No migration of pre-D102 per-quest breaks to methods (value-level underivable from attribute records); owner plans a progress wipe anyway.
+6. **Content follow-up (acknowledged, not in this change):** quest catalog diversification so later tiers introduce NEW ways (pool exhaustion, cache stampede, …) as registered methods.
+**Status:** active

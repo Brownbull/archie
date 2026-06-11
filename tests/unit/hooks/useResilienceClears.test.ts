@@ -43,7 +43,7 @@ describe("useResilienceClears (P4-S7 / D94)", () => {
     computeMock.mockReset().mockReturnValue(new Set()) // default: the build survives everything
     useChallengeStore.setState({ activeChallenge: quest(), attemptState: "idle", lastResult: null, bestStars: {} })
     useArchitectureStore.setState({ nodes: [matchingTraffic()] as never, edges: [] })
-    useUserProgressStore.setState({ expertCurrency: 0, resilienceClears: {}, error: null })
+    useUserProgressStore.setState({ expertCurrency: 0, resilienceClears: {}, breakMethods: {}, error: null })
   })
 
   it("a 3★ run that survives the authored condition collects it (+1 expert, fresh)", async () => {
@@ -70,7 +70,7 @@ describe("useResilienceClears (P4-S7 / D94)", () => {
   })
 
   it("a repeat clear reports fresh=false and pays nothing", async () => {
-    useUserProgressStore.setState({ expertCurrency: 1, resilienceClears: { c1: { "failure-traffic-spike": true } } })
+    useUserProgressStore.setState({ expertCurrency: 1, resilienceClears: { c1: { "failure-traffic-spike": true } }, breakMethods: { "resilience-failure-traffic-spike": { challengeId: "c1", earnedAt: 1, confirmedOn: { c1: true } } } })
     useChallengeStore.setState({ attemptState: "scored", lastResult: threeStars() })
     const { result } = renderHook(() => useResilienceClears())
     await waitFor(() => expect(result.current).not.toBeNull())

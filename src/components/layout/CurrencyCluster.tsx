@@ -2,6 +2,8 @@ import { Star, Wrench, Sparkles } from "lucide-react"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import { useUserProgressStore, spendableStars } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
+import { useChallengeStore } from "@/stores/challengeStore"
+import { useUiStore } from "@/stores/uiStore"
 
 /**
  * The player's currencies, always visible in the top bar (2026-06-11 playtest): ★ stars (the hint
@@ -54,6 +56,15 @@ export function CurrencyCluster() {
   const stars = useUserProgressStore(spendableStars)
   const expert = useUserProgressStore((s) => s.expertCurrency)
   const totalXp = useUserProgressStore((s) => Object.values(s.trackXp).reduce((a, b) => a + b, 0))
+  // D102: in break mode (post-3★ on the active quest) the Expert chip opens the REGISTRY panel
+  // instead of the explainer, and carries the count of known ways already confirmed on this quest.
+  const breakMode = useChallengeStore((s) => !!s.activeChallenge && (s.bestStars[s.activeChallenge.id] ?? 0) >= 3)
+  const activeQuestId = useChallengeStore((s) => s.activeChallenge?.id)
+  const confirmedHere = useUserProgressStore((s) =>
+    activeQuestId ? Object.values(s.breakMethods).filter((m) => m.confirmedOn[activeQuestId]).length : 0,
+  )
+  const setBreakRegistryOpen = useUiStore((s) => s.setBreakRegistryOpen)
+  const registryOpen = useUiStore((s) => s.breakRegistryOpen)
 
   if (!userId) return null
 
@@ -77,6 +88,20 @@ export function CurrencyCluster() {
         earn="One per star earned across quests — your best result per quest counts."
         spend="Hints: revealing a quest hint costs 1 star (the first hint on each quest is free). The pool is shared across all quests."
       />
+      {breakMode ? (
+        <button
+          type="button"
+          data-testid="currency-expert"
+          title="Expert points — click to open your break registry (every way you've broken a system, probed against THIS build)"
+          onClick={() => setBreakRegistryOpen(!registryOpen)}
+          className="inline-flex items-center gap-1 rounded-full border border-orange-500/40 bg-orange-500/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-orange-300 transition-colors hover:brightness-125"
+        >
+          <Wrench className="h-3 w-3" /> {expert}
+          <span data-testid="currency-expert-confirmed-here" title="Known ways already confirmed against this quest" className="text-orange-300/60">
+            ({confirmedHere})
+          </span>
+        </button>
+      ) : (
       <CurrencyChip
         testid="currency-expert"
         icon={<Wrench className="h-3 w-3" />}
@@ -86,6 +111,7 @@ export function CurrencyCluster() {
         earn="Breaking your own 3★ builds — one traffic dial at a time: find roughly where it FIRST breaks (within 2× of the boundary), or prove a Shape/Workload/Origin change is what felled it. Resilience extras (surviving authored Test conditions at 3★) also pay 1 each."
         spend="Per-quest required-blocks filter: 1 Expert reveals and filters the toolbox to a quest's required blocks."
       />
+      )}
     </div>
   )
 }

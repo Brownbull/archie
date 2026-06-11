@@ -80,7 +80,7 @@ service cloud.firestore {
       allow read: if isAuthenticated() && request.auth.uid == uid;
       allow create: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'generation', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'generation', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200
@@ -90,10 +90,11 @@ service cloud.firestore {
         && (!('breaksByChallenge' in request.resource.data) || request.resource.data.breaksByChallenge is map)
         && (!('requiredFilterUnlocked' in request.resource.data) || request.resource.data.requiredFilterUnlocked is map)
         && (!('resilienceClears' in request.resource.data) || request.resource.data.resilienceClears is map)
+        && (!('breakMethods' in request.resource.data) || request.resource.data.breakMethods is map)
         && request.resource.data.updatedAt == request.time;
       allow update: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'generation', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'generation', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200
@@ -103,6 +104,7 @@ service cloud.firestore {
         && (!('breaksByChallenge' in request.resource.data) || request.resource.data.breaksByChallenge is map)
         && (!('requiredFilterUnlocked' in request.resource.data) || request.resource.data.requiredFilterUnlocked is map)
         && (!('resilienceClears' in request.resource.data) || request.resource.data.resilienceClears is map)
+        && (!('breakMethods' in request.resource.data) || request.resource.data.breakMethods is map)
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }

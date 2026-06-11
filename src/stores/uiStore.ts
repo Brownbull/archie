@@ -25,6 +25,8 @@ interface UiState {
   /** Quest Log (journey tree) dialog open? Lifted to uiStore so the Quest/Free mode toggle can
       open it — selecting a quest there starts it (enters quest mode); cancelling stays in Free. */
   questLogOpen: boolean
+  /** D102: the break-method registry right panel (opened from the Expert chip in break mode). */
+  breakRegistryOpen: boolean
   /** "Save Canvas" slot-picker dialog open? */
   saveCanvasOpen: boolean
   /** "Saved Canvases" (load/delete) dialog open? */
@@ -57,6 +59,7 @@ interface UiState {
   setCommandPaletteOpen: (open: boolean) => void
   setChallengesOpen: (open: boolean) => void
   setQuestLogOpen: (open: boolean) => void
+  setBreakRegistryOpen: (open: boolean) => void
   setSaveCanvasOpen: (open: boolean) => void
   setSavedCanvasesOpen: (open: boolean) => void
   setPendingSaveAction: (action: (() => void) | null) => void
@@ -78,10 +81,12 @@ interface UiState {
 
 export const useUiStore = create<UiState>()((set) => ({
   toolboxTab: "components",
+  setBreakRegistryOpen: (open: boolean) => set({ breakRegistryOpen: open }),
   searchQuery: "",
   commandPaletteOpen: false,
   challengesOpen: false,
   questLogOpen: false,
+  breakRegistryOpen: false,
   saveCanvasOpen: false,
   savedCanvasesOpen: false,
   pendingSaveAction: null,

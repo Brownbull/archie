@@ -182,3 +182,53 @@ export function feasibleBreakDials(
     boundary,
   }
 }
+
+/**
+ * D102 registry applicability: for each dial-based break METHOD, would it fell THIS build?
+ * Same monotonicity trick as feasibleBreakDials, keyed by method id (value-level). ≤9 sims.
+ * Returns null when no single authored source / curve unresolvable (no claims on missing data).
+ */
+export function breakMethodApplicability(
+  nodes: readonly ArchieNode[],
+  edges: readonly ArchieEdge[],
+  c: ProbeChallenge,
+): Record<string, boolean> | null {
+  const authored = c.trafficSources ?? []
+  if (authored.length !== 1) return null
+  const spec = authored[0]
+  const authoredDials = { trafficKind: spec.kind, trafficWorkload: spec.workload, trafficOrigin: spec.origin }
+  const at = (rps: number) => withTrafficPatch(nodes, () => ({ ...authoredDials, trafficRps: rps }))
+  if (buildTrafficCurveFromSources(at(spec.rps), c.durationSeconds).length === 0) return null
+  // Authored boundary (shared with feasibleBreakDials' approach)
+  let boundary: number | null = null
+  if (!probePasses(at(spec.rps), edges, c)) boundary = spec.rps
+  else {
+    let lo = spec.rps
+    let hi = spec.rps
+    while (hi < 1_000_000 && probePasses(at(hi * 2), edges, c)) hi *= 2
+    if (hi < 1_000_000) {
+      hi *= 2
+      let guard = 0
+      while (hi - lo > Math.max(5, lo * 0.03) && guard++ < 24) {
+        const mid = Math.round((lo + hi) / 2)
+        if (probePasses(at(mid), edges, c)) lo = mid
+        else hi = mid
+      }
+      boundary = hi
+    }
+  }
+  const out: Record<string, boolean> = { "rps-overload": boundary !== null }
+  if (boundary === null) {
+    for (const k of KINDS) if (k !== spec.kind) out[`shape-${k}`] = false
+    for (const w of WORKLOADS) if (w !== spec.workload) out[`workload-${w}`] = false
+    out["origin-multi-region"] = false
+    return out
+  }
+  const testLoad = Math.max(spec.rps, Math.floor(boundary * 0.97))
+  const failsWith = (patch: Partial<ArchieNode["data"]>) =>
+    !probePasses(withTrafficPatch(nodes, () => ({ ...authoredDials, trafficRps: testLoad, ...patch })), edges, c)
+  for (const k of KINDS) if (k !== spec.kind) out[`shape-${k}`] = failsWith({ trafficKind: k })
+  for (const w of WORKLOADS) if (w !== spec.workload) out[`workload-${w}`] = failsWith({ trafficWorkload: w })
+  out["origin-multi-region"] = spec.origin !== "multi-region" && failsWith({ trafficOrigin: "multi-region" })
+  return out
+}

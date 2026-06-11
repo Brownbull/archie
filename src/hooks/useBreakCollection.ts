@@ -4,6 +4,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import {
+  breakMethodId,
   detectSingleAttributeBreak,
   diffTrafficAttributes,
   isNewBreak,
@@ -16,9 +17,10 @@ import type { StarBreakdown } from "@/lib/challengeTypes"
 
 /** What the just-scored run broke (or failed to credit), for the results modal. */
 export interface BreakOutcome {
-  /** D101: collected pays; overshoot = rps break past 2× the boundary (find the edge);
-   *  not-causal = the categorical dial didn't make the difference (the load alone did). */
-  verdict: "collected" | "overshoot" | "not-causal"
+  /** D101/D102: collected pays (registry-new method); known = the way already lives in your
+   *  registry — no pay, the quest is confirmed onto the method; overshoot = rps break past 2×
+   *  the boundary; not-causal = the categorical dial didn't make the difference. */
+  verdict: "collected" | "known" | "overshoot" | "not-causal"
   attribute: BreakAttribute
   /** True when THIS run newly collected the attribute (paid 1 expert unit); false on a repeat. */
   fresh: boolean
@@ -26,6 +28,8 @@ export interface BreakOutcome {
   remaining: BreakAttribute[]
   /** For a collected rps break: the discovered failure boundary (earned knowledge). */
   boundary?: number
+  /** For a known-way break (D102): where the method was first earned. */
+  earnedOnChallengeId?: string
 }
 
 /**
@@ -91,12 +95,20 @@ export function useBreakCollection(): BreakOutcome | null {
             const progress = useUserProgressStore.getState()
             const record = progress.breaksByChallenge[activeChallenge.id]
             if (verdict === "collected") {
-              // 2026-06-11 (wallet-stuck bug): fresh comes from the PAYOUT ITSELF — collectBreak is
-              // idempotent and returns whether it paid, so display can never claim "already
-              // collected" while the wallet missed the point (or vice versa).
-              const fresh = !!userId && isNewBreak(record, attribute)
-              if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
-              next = { verdict, attribute, fresh, boundary, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
+              // D102: money is METHOD-scoped, once game-wide. A registry-new way pays (+1) and is
+              // recorded with provenance; a KNOWN way pays nothing but confirms this quest onto the
+              // method ("as you already know"). Per-quest dial COVERAGE records either way.
+              const methodId = breakMethodId(attribute, nodes)
+              const knownEntry = progress.breakMethods[methodId]
+              if (userId && isNewBreak(record, attribute)) void progress.collectBreak(userId, activeChallenge.id, attribute)
+              if (!knownEntry) {
+                const fresh = !!userId
+                if (fresh) void progress.collectBreakMethod(userId, methodId, activeChallenge.id)
+                next = { verdict: "collected", attribute, fresh, boundary, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
+              } else {
+                if (userId) void progress.confirmBreakMethod(userId, methodId, activeChallenge.id)
+                next = { verdict: "known", attribute, fresh: false, boundary, earnedOnChallengeId: knownEntry.challengeId, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
+              }
             } else {
               next = { verdict, attribute, fresh: false, remaining: remainingBreakAttributes(record, questBreakDials(activeChallenge.id)) }
             }
@@ -106,9 +118,17 @@ export function useBreakCollection(): BreakOutcome | null {
           if (attribute) {
             const progress = useUserProgressStore.getState()
             const record = progress.breaksByChallenge[activeChallenge.id]
-            const fresh = isNewBreak(record, attribute) && !!userId
-            if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
-            next = { verdict: "collected", attribute, fresh, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
+            const methodId = breakMethodId(attribute, nodes)
+            const knownEntry = progress.breakMethods[methodId]
+            if (userId && isNewBreak(record, attribute)) void progress.collectBreak(userId, activeChallenge.id, attribute)
+            if (!knownEntry) {
+              const fresh = !!userId
+              if (fresh) void progress.collectBreakMethod(userId, methodId, activeChallenge.id)
+              next = { verdict: "collected", attribute, fresh, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
+            } else {
+              if (userId) void progress.confirmBreakMethod(userId, methodId, activeChallenge.id)
+              next = { verdict: "known", attribute, fresh: false, earnedOnChallengeId: knownEntry.challengeId, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
+            }
           }
         }
       }

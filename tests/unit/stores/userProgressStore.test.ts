@@ -46,7 +46,7 @@ describe("hint economy selectors (ISAPivot Phase 5, D68)", () => {
 describe("unlockHint — atomic guarded spend (D68)", () => {
   const base = { trackXp: {}, completedChallenges: [], equippedAvatar: null, error: null, loading: false, lastAward: null }
   beforeEach(() => {
-    useUserProgressStore.setState({ ...base, bestStarsCloud: {}, hintsUnlocked: {} })
+    useUserProgressStore.setState({ ...base, bestStarsCloud: {}, hintsUnlocked: {}, breakMethods: {}, expertCurrency: 0, breaksByChallenge: {}, resilienceClears: {}, requiredFilterUnlocked: {} })
   })
 
   it("unlocks the FIRST hint for free, even at 0 spendable stars (LX1)", async () => {
@@ -156,7 +156,7 @@ describe("loadProgress — Phase 6 generation reset (D65)", () => {
 describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
   const base = {
     trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {},
-    expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {},
+    expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, breakMethods: {}, resilienceClears: {},
     generation: PROGRESS_GENERATION, error: null, loading: false, lastAward: null,
   }
   beforeEach(() => {
@@ -164,16 +164,38 @@ describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
     useUserProgressStore.setState({ ...base })
   })
 
-  it("collectBreak awards 1 expert unit, records the attribute, and persists with the generation stamp", async () => {
+  it("collectBreak records COVERAGE only — money lives in the method registry (D102)", async () => {
     const ok = await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
     expect(ok).toBe(true)
     const s = useUserProgressStore.getState()
-    expect(s.expertCurrency).toBe(1)
+    expect(s.expertCurrency).toBe(0) // no pay here
     expect(s.breaksByChallenge.c1).toEqual({ rps: true })
     expect(mockSetDoc).toHaveBeenCalledTimes(1)
-    // 2026-06-11 wallet fix: ATOMIC increment + deep-merged flag — a stale read can't clobber the wallet
-    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, breaksByChallenge: { c1: { rps: true } }, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ breaksByChallenge: { c1: { rps: true } }, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][1]).not.toHaveProperty("expertCurrency")
     expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
+  })
+
+  it("collectBreakMethod pays ONCE game-wide with provenance; a known way returns false (D102)", async () => {
+    const first = await useUserProgressStore.getState().collectBreakMethod("u1", "rps-overload", "c1")
+    expect(first).toBe(true)
+    let s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1)
+    expect(s.breakMethods["rps-overload"]).toMatchObject({ challengeId: "c1", confirmedOn: { c1: true } })
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, generation: PROGRESS_GENERATION })
+    const again = await useUserProgressStore.getState().collectBreakMethod("u1", "rps-overload", "c2")
+    expect(again).toBe(false)
+    s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1) // never re-pays
+    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+  })
+
+  it("confirmBreakMethod registers a known way onto another quest — knowledge, no pay (D102)", async () => {
+    await useUserProgressStore.getState().collectBreakMethod("u1", "rps-overload", "c1")
+    await useUserProgressStore.getState().confirmBreakMethod("u1", "rps-overload", "c2")
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1)
+    expect(s.breakMethods["rps-overload"].confirmedOn).toEqual({ c1: true, c2: true })
   })
 
   it("collectBreak is idempotent per attribute — a repeat is a no-op (no currency, no write)", async () => {
@@ -181,16 +203,16 @@ describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
     mockSetDoc.mockClear()
     const again = await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
     expect(again).toBe(false)
-    expect(useUserProgressStore.getState().expertCurrency).toBe(1)
+    expect(useUserProgressStore.getState().expertCurrency).toBe(0) // coverage never pays (D102)
     expect(mockSetDoc).not.toHaveBeenCalled()
   })
 
-  it("distinct attributes on one challenge each pay out — the natural cap is 4", async () => {
+  it("distinct attributes on one challenge each RECORD coverage — pay lives in the registry (D102)", async () => {
     const s = () => useUserProgressStore.getState()
     for (const attr of ["rps", "kind", "workload", "origin"] as const) {
       expect(await s().collectBreak("u1", "c1", attr)).toBe(true)
     }
-    expect(s().expertCurrency).toBe(4)
+    expect(s().expertCurrency).toBe(0) // coverage never pays — money is method-scoped (D102)
     expect(s().breaksByChallenge.c1).toEqual({ rps: true, kind: true, workload: true, origin: true })
   })
 
@@ -240,11 +262,11 @@ describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
     expect(useUserProgressStore.getState().error).toBe("Could not save your filter unlock.")
   })
 
-  it("collectBreak write failure surfaces the error but keeps the optimistic award (same contract)", async () => {
+  it("collectBreak write failure surfaces the error but keeps the optimistic RECORD (same contract)", async () => {
     mockSetDoc.mockRejectedValueOnce(new Error("offline") as never)
     const ok = await useUserProgressStore.getState().collectBreak("u1", "c1", "rps")
     expect(ok).toBe(true)
-    expect(useUserProgressStore.getState().expertCurrency).toBe(1)
+    expect(useUserProgressStore.getState().breaksByChallenge.c1).toEqual({ rps: true }) // optimistic record kept
     expect(useUserProgressStore.getState().error).toBe("Could not save your break.")
   })
 
@@ -283,13 +305,14 @@ describe("resilience clears (P4-S7 / D94)", () => {
     })
   })
 
-  it("collectResilienceClear pays 1 expert, records the condition, persists with merge + stamp", async () => {
+  it("collectResilienceClear RECORDS the condition (pay rides the method registry — D102)", async () => {
     const ok = await useUserProgressStore.getState().collectResilienceClear("u1", "c1", "failure-traffic-spike")
     expect(ok).toBe(true)
     const s = useUserProgressStore.getState()
-    expect(s.expertCurrency).toBe(1)
+    expect(s.expertCurrency).toBe(0)
     expect(s.resilienceClears.c1).toEqual({ "failure-traffic-spike": true })
-    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, resilienceClears: { c1: { "failure-traffic-spike": true } }, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ resilienceClears: { c1: { "failure-traffic-spike": true } }, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][1]).not.toHaveProperty("expertCurrency")
     expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
   })
 
@@ -297,16 +320,16 @@ describe("resilience clears (P4-S7 / D94)", () => {
     await useUserProgressStore.getState().collectResilienceClear("u1", "c1", "failure-traffic-spike")
     mockSetDoc.mockClear()
     expect(await useUserProgressStore.getState().collectResilienceClear("u1", "c1", "failure-traffic-spike")).toBe(false)
-    expect(useUserProgressStore.getState().expertCurrency).toBe(1)
+    expect(useUserProgressStore.getState().expertCurrency).toBe(0) // record only — pay rides the registry (D102)
     expect(mockSetDoc).not.toHaveBeenCalled()
   })
 
-  it("distinct conditions and quests each pay; guards empty ids", async () => {
+  it("distinct conditions and quests each RECORD; guards empty ids", async () => {
     const st = () => useUserProgressStore.getState()
     expect(await st().collectResilienceClear("u1", "c1", "failure-a")).toBe(true)
     expect(await st().collectResilienceClear("u1", "c1", "failure-b")).toBe(true)
     expect(await st().collectResilienceClear("u1", "c2", "failure-a")).toBe(true)
-    expect(st().expertCurrency).toBe(3)
+    expect(st().expertCurrency).toBe(0) // records only — the registry pays (D102)
     expect(await st().collectResilienceClear("", "c1", "failure-a")).toBe(false)
     expect(await st().collectResilienceClear("u1", "", "failure-a")).toBe(false)
     expect(await st().collectResilienceClear("u1", "c1", "")).toBe(false)

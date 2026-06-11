@@ -78,6 +78,28 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   }, [challenge, willInvite])
   if (!challenge.trafficSources?.length) return null
 
+  // D102: a KNOWN way — you've broken systems like this before. No pay; the quest registers onto
+  // the method ("as you already know") and coverage still maps.
+  if (outcome && outcome.verdict === "known") {
+    return (
+      <div data-testid="break-known" className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+        <ExpertSlots record={{ ...breaksRecord, [outcome.attribute]: true }} freshAttribute={null} dials={dials} />
+        <div className="flex items-center gap-2">
+          <Hammer className="h-4 w-4 text-orange-400/80" />
+          <span className="text-xs font-bold text-orange-200">
+            Breaks it — as you already know
+          </span>
+          <span className="ml-auto text-[0.6875rem] text-orange-300/60">registered</span>
+        </div>
+        <p className="mt-1.5 text-[0.6875rem] leading-snug text-orange-200/80">
+          {BREAK_ATTRIBUTE_LABELS[outcome.attribute]} is in your break registry
+          {outcome.earnedOnChallengeId ? ` (earned on ${outcome.earnedOnChallengeId})` : ""} — this build
+          falls to it too, and that's now on record. New Experts come from ways you haven't proven yet.
+        </p>
+      </div>
+    )
+  }
+
   // D101: a failed credit still teaches — overshoot says "find the edge", not-causal says
   // "the load alone would've done it". Neither pays; both point at the precision game.
   if (outcome && outcome.verdict !== "collected") {

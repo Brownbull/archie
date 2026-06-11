@@ -47,7 +47,7 @@ describe("useBreakCollection (P4-S3 / D94)", () => {
   beforeEach(() => {
     useChallengeStore.setState({ activeChallenge: challenge, attemptState: "idle", lastResult: null, bestStars: { c1: 3 } })
     useArchitectureStore.setState({ nodes: [trafficNode()] as never })
-    useUserProgressStore.setState({ expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, error: null })
+    useUserProgressStore.setState({ expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, breakMethods: {}, error: null })
   })
 
   it("collects a fresh break: outcome reported, +1 expert, attribute recorded", async () => {
@@ -61,7 +61,7 @@ describe("useBreakCollection (P4-S3 / D94)", () => {
   })
 
   it("a repeat of an already-collected attribute reports fresh=false and pays nothing", async () => {
-    useUserProgressStore.setState({ expertCurrency: 1, breaksByChallenge: { c1: { rps: true } } })
+    useUserProgressStore.setState({ expertCurrency: 1, breaksByChallenge: { c1: { rps: true } }, breakMethods: { "rps-overload": { challengeId: "c1", earnedAt: 1, confirmedOn: { c1: true } } } })
     useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000 })] as never })
     useChallengeStore.setState({ attemptState: "scored", lastResult: failed() })
     const { result } = renderHook(() => useBreakCollection())
@@ -86,17 +86,19 @@ describe("useBreakCollection (P4-S3 / D94)", () => {
 
   it("no break when nothing deviated; rps+kind combo pays ONLY when the kind is causal (D101)", async () => {
     useChallengeStore.setState({ attemptState: "scored", lastResult: failed() })
-    const { result: untouched } = renderHook(() => useBreakCollection())
+    const { result: untouched, unmount: u1 } = renderHook(() => useBreakCollection())
     expect(untouched.current).toBeNull()
+    u1() // one live instance at a time — a stale mount would race the collection (prod has one)
 
     // combo, NOT causal: the load alone would've felled it — verdict surfaces, nothing pays
     mockIsCausal.mockReturnValue(false)
     useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000, trafficKind: "periodic" })] as never })
     useChallengeStore.setState({ attemptState: "scored", lastResult: failed() })
-    const { result: notCausal } = renderHook(() => useBreakCollection())
+    const { result: notCausal, unmount: u2 } = renderHook(() => useBreakCollection())
     await waitFor(() => expect(notCausal.current?.verdict).toBe("not-causal"))
     expect(notCausal.current?.attribute).toBe("kind")
     expect(useUserProgressStore.getState().expertCurrency).toBe(0)
+    u2()
 
     // combo, CAUSAL: the owner's combination semantics — the kind made the difference, pays
     mockIsCausal.mockReturnValue(true)

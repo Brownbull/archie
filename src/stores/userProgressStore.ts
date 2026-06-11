@@ -46,9 +46,12 @@ export interface UserProgress {
   /** P4-S7 (D94): cleared resilience extras per challenge — failure-preset id → collected. Each
    *  clear paid 1 expert unit once; the record is the idempotence guard, like breaksByChallenge. */
   resilienceClears: Readonly<Record<string, Readonly<Record<string, true>>>>
+  /** D102 — the global break-method registry: a WAY of breaking pays once game-wide, then it's
+   *  knowledge. methodId → where/when it was first earned + every quest it's been confirmed on. */
+  breakMethods: Readonly<Record<string, { challengeId: string; earnedAt: number; confirmedOn: Readonly<Record<string, true>> }>>
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, generation: PROGRESS_GENERATION }
 
 /** Total stars earned across challenges (sum of per-challenge bests — the ratings, unchanged by spending). */
 export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): number {
@@ -105,6 +108,10 @@ interface UserProgressState extends UserProgress {
   unlockRequiredFilter: (userId: string, challengeId: string) => Promise<boolean>
   /** Collect a cleared resilience extra (P4-S7): +1 expert once per (challenge, condition). */
   collectResilienceClear: (userId: string, challengeId: string, conditionId: string) => Promise<boolean>
+  /** D102: pay 1 expert iff the METHOD is new game-wide; record provenance. False = already known. */
+  collectBreakMethod: (userId: string, methodId: string, challengeId: string) => Promise<boolean>
+  /** D102: register that a KNOWN method also fells this quest's build (no payout, pure knowledge). */
+  confirmBreakMethod: (userId: string, methodId: string, challengeId: string) => Promise<void>
   reset: () => void
 }
 
@@ -130,7 +137,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
         if (storedGen < PROGRESS_GENERATION) {
           // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
           // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
-          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, generation: PROGRESS_GENERATION }
+          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, generation: PROGRESS_GENERATION }
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
@@ -151,6 +158,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           breaksByChallenge: (data.breaksByChallenge as UserProgress["breaksByChallenge"]) ?? {},
           requiredFilterUnlocked: (data.requiredFilterUnlocked as Record<string, true>) ?? {},
           resilienceClears: (data.resilienceClears as UserProgress["resilienceClears"]) ?? {},
+          breakMethods: (data.breakMethods as UserProgress["breakMethods"]) ?? {},
           generation: storedGen,
           loading: false,
         })
@@ -235,6 +243,43 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     }
   },
 
+  collectBreakMethod: async (userId, methodId, challengeId) => {
+    if (!userId || !methodId) return false
+    const state = get()
+    if (state.breakMethods[methodId]) return false // known way — knowledge, not money (D102)
+    const entry = { challengeId, earnedAt: Date.now(), confirmedOn: { [challengeId]: true as const } }
+    set({ breakMethods: { ...state.breakMethods, [methodId]: entry }, expertCurrency: state.expertCurrency + 1, error: null })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        { breakMethods: { [methodId]: entry }, expertCurrency: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save break method:", err)
+      set({ error: "Could not save your break." })
+    }
+    return true
+  },
+
+  confirmBreakMethod: async (userId, methodId, challengeId) => {
+    if (!userId || !methodId) return
+    const state = get()
+    const entry = state.breakMethods[methodId]
+    if (!entry || entry.confirmedOn[challengeId]) return
+    const updated = { ...entry, confirmedOn: { ...entry.confirmedOn, [challengeId]: true as const } }
+    set({ breakMethods: { ...state.breakMethods, [methodId]: updated }, error: null })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        { breakMethods: { [methodId]: { confirmedOn: { [challengeId]: true } } }, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to confirm break method:", err)
+    }
+  },
+
   collectBreak: async (userId, challengeId, attribute) => {
     if (!userId || !challengeId) return false
     const state = get()
@@ -242,15 +287,13 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     if (record[attribute]) return false // this attribute's break already collected for this quest
 
     const newBreaks = { ...state.breaksByChallenge, [challengeId]: { ...record, [attribute]: true as const } }
-    const newCurrency = state.expertCurrency + 1
-    set({ breaksByChallenge: newBreaks, expertCurrency: newCurrency, error: null })
+    // D102: this record is COVERAGE (which dials you've mapped on this quest) — the money lives in
+    // the global method registry (collectBreakMethod). Atomic deep-merge per the wallet-bug fix.
+    set({ breaksByChallenge: newBreaks, error: null })
     try {
-      // 2026-06-11 (wallet-stuck bug): ATOMIC increment + deep-merged break flag — a stale local
-      // read can no longer clobber the server wallet (the lost-update that ate an expert point),
-      // and a whole-map write can no longer resurrect/clobber breaks from another session.
       await setDoc(
         doc(db, COLLECTION, userId),
-        { breaksByChallenge: { [challengeId]: { [attribute]: true } }, expertCurrency: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { breaksByChallenge: { [challengeId]: { [attribute]: true } }, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
@@ -289,12 +332,13 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     if (record[conditionId]) return false // this extra already cleared for this quest
 
     const newClears = { ...state.resilienceClears, [challengeId]: { ...record, [conditionId]: true as const } }
-    const newCurrency = state.expertCurrency + 1
-    set({ resilienceClears: newClears, expertCurrency: newCurrency, error: null })
+    // D102: the clear record is per-quest knowledge; the PAY rides the method registry
+    // (resilience-<conditionId> via collectBreakMethod — once game-wide, folded in by owner fork).
+    set({ resilienceClears: newClears, error: null })
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { resilienceClears: { [challengeId]: { [conditionId]: true } }, expertCurrency: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { resilienceClears: { [challengeId]: { [conditionId]: true } }, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
