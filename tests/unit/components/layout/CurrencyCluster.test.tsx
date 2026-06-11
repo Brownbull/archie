@@ -14,11 +14,22 @@ describe("CurrencyCluster (2026-06-11 playtest)", () => {
     useUserProgressStore.setState({ bestStarsCloud: { a: 3, b: 2 }, hintsUnlocked: { a: 2 }, expertCurrency: 4 } as never)
   })
 
-  it("shows the spendable-star pool and the Expert wallet", () => {
+  it("shows XP, the spendable-star pool, and the Expert wallet", () => {
+    useUserProgressStore.setState({ trackXp: { foundations: 800, data: 450 } } as never)
     render(<CurrencyCluster />)
-    // spendable = 5 earned − (2 unlocked − 1 free first hint) = depends on the store's spendableStars rule
     expect(screen.getByTestId("currency-stars")).toBeInTheDocument()
     expect(screen.getByTestId("currency-expert")).toHaveTextContent("4")
+    expect(screen.getByTestId("currency-xp")).toHaveTextContent("1.3k")
+  })
+
+  it("clicking a chip opens its earn/spend explainer (2026-06-11: 'set information about it')", async () => {
+    const { fireEvent } = await import("@testing-library/react")
+    render(<CurrencyCluster />)
+    fireEvent.click(screen.getByTestId("currency-expert"))
+    const info = await screen.findByTestId("currency-expert-info")
+    expect(info).toHaveTextContent("How to earn it")
+    expect(info).toHaveTextContent(/Breaking your own 3★ builds/)
+    expect(info).toHaveTextContent(/required-blocks filter/)
   })
 
   it("hidden when signed out", () => {
