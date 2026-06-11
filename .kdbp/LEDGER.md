@@ -5355,3 +5355,8 @@ NOTE: boundary map archived in this entry's sweep output — healthy spread 1.1�
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P182
+- 2026-06-11 14:23 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/TrafficResetButton.tsx
+
+## 2026-06-11 — [playtest fix] feat(challenges): traffic reset-to-spec button (the save-slot twin)
+FINDINGS: none — reuses plannedTrafficReset (already pinned); 3 new contract tests (idle/dirty-restore/hidden-outside-quest)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5114/5114) · ArchieNode churn-guard respected (Bash python edit)
