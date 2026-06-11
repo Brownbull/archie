@@ -12,6 +12,7 @@ vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
 vi.mock("@/hooks/useAttemptPersistence", () => ({ useAttemptPersistence: () => undefined }))
 vi.mock("@/hooks/useProgressPersistence", () => ({ useProgressPersistence: () => undefined }))
 vi.mock("@/hooks/useBreakCollection", () => ({ useBreakCollection: () => null }))
+vi.mock("@/hooks/useResilienceClears", () => ({ useResilienceClears: () => null }))
 vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => null }))
 
 import { ChallengeStartButton } from "@/components/challenges/ChallengeStartButton"

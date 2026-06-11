@@ -172,6 +172,11 @@ export const ChallengeYamlSchema = z
     // (incl. the 7 existing multi-region ones) are byte-identical.
     cross_region_rtt_ms: z.number().min(0).max(10_000).optional(),
     consistency_target_ms: z.number().min(0).max(60_000).optional(),
+    // P4-S7 (D94): curated resilience extra-challenges — failure-preset ids (Test conditions) this
+    // quest rewards surviving. A post-3★ build whose metric probe shows NO new bottleneck under the
+    // preset clears the extra (+1 expert, once per condition). Optional + never defaulted at this
+    // layer — absent ⇒ undefined ⇒ the other 60 quests are byte-identical.
+    resilience_conditions: z.array(z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(/^failure-[a-z0-9-]+$/)).max(6).optional(),
   })
   .strict()
   .superRefine((d, ctx) => {
@@ -260,4 +265,5 @@ export const ChallengeYamlSchema = z
     ...(d.usage_rates !== undefined ? { usageRates: { perMillionRequests: d.usage_rates.per_million_requests } } : {}),
     ...(d.cross_region_rtt_ms !== undefined ? { crossRegionRttMs: d.cross_region_rtt_ms } : {}),
     ...(d.consistency_target_ms !== undefined ? { consistencyTargetMs: d.consistency_target_ms } : {}),
+    ...(d.resilience_conditions !== undefined ? { resilienceConditions: d.resilience_conditions } : {}),
   }))

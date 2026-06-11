@@ -86,3 +86,19 @@ describe("ChallengeTreeView — quest-log surfacing (P4-S6 / D94)", () => {
     expect(screen.queryByTestId("quest-extra-challenges")).toBeNull()
   })
 })
+
+describe("resilience extras in the detail panel (P4-S7 / D94)", () => {
+  it("lists authored conditions with cleared state on a completed curated quest", () => {
+    const c = getAllChallenges().find((x) => (x.resilienceConditions?.length ?? 0) > 0)
+    if (!c) throw new Error("no curated quest in the catalog")
+    useUserProgressStore.setState({
+      completedChallenges: [c.id],
+      resilienceClears: { [c.id]: { [c.resilienceConditions![0]]: true } },
+    })
+    render(<ChallengeTreeView open onOpenChange={() => {}} />)
+    fireEvent.click(screen.getByTestId(`tree-node-${c.id}`))
+    const chip = screen.getByTestId(`extra-resilience-${c.resilienceConditions![0]}`)
+    expect(chip).toHaveAttribute("data-cleared", "true")
+    expect(chip).toHaveTextContent("✓")
+  })
+})

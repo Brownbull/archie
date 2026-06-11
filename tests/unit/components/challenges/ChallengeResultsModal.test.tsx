@@ -28,6 +28,8 @@ vi.mock("@/hooks/useAttemptComparison", () => ({ useAttemptComparison: () => moc
 // Break-it loop (P4-S3): the collector has its own unit test; control the outcome directly here.
 let mockBreakOutcome: import("@/hooks/useBreakCollection").BreakOutcome | null = null
 vi.mock("@/hooks/useBreakCollection", () => ({ useBreakCollection: () => mockBreakOutcome }))
+let mockResilienceClears: import("@/hooks/useResilienceClears").ResilienceClearOutcome[] | null = null
+vi.mock("@/hooks/useResilienceClears", () => ({ useResilienceClears: () => mockResilienceClears }))
 
 import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -50,6 +52,7 @@ describe("ChallengeResultsModal (Epic 16 P4)", () => {
     mockSuggestion = null
     mockPriorBest = null
     mockBreakOutcome = null
+    mockResilienceClears = null
     useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, bestStars: {} })
     useSimulationStore.getState().reset()
     useArchitectureStore.setState({ nodes: [], topologyIssues: [], topologyIssuesByNodeId: new Map() })
@@ -385,5 +388,35 @@ describe("break-it loop panel (P4-S3 / D94)", () => {
     const node = useArchitectureStore.getState().nodes.find((n) => n.id === "t1")
     expect(node?.data).toMatchObject({ trafficRps: 800, trafficKind: "steady", trafficWorkload: "read", trafficOrigin: "one-region" })
     expect(cs().attemptState).toBe("building")
+  })
+})
+
+describe("resilience extras panel (P4-S7 / D94)", () => {
+  beforeEach(() => {
+    mockResilienceClears = null
+    mockBreakOutcome = null
+  })
+  const threeStars = {
+    lastResult: { stars: 3, passedMetrics: true, underBudget: true, cleanTopology: true },
+    lastMeasured: { uptimePercent: 100, p99LatencyMs: 40, totalCost: 60, topologyIssueCount: 0 },
+  }
+
+  it("celebrates fresh clears with the +1 Expert payout per condition", () => {
+    mockResilienceClears = [
+      { conditionId: "failure-traffic-spike", name: "Traffic Spike (10x)", fresh: true },
+      { conditionId: "failure-data-corruption", name: "Data Corruption", fresh: false },
+    ]
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", ...threeStars } as never)
+    render(<ChallengeResultsModal />)
+    const panel = screen.getByTestId("resilience-clears")
+    expect(panel).toHaveTextContent("Resilience extras cleared")
+    expect(screen.getByTestId("resilience-clear-failure-traffic-spike")).toHaveTextContent("+1 Expert")
+    expect(screen.getByTestId("resilience-clear-failure-data-corruption")).toHaveTextContent("already collected")
+  })
+
+  it("no panel when the run cleared nothing", () => {
+    useChallengeStore.setState({ activeChallenge: challenge, attemptState: "scored", ...threeStars } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.queryByTestId("resilience-clears")).toBeNull()
   })
 })

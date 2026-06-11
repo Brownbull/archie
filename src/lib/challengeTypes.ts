@@ -165,6 +165,10 @@ export interface Challenge {
   /** Consistency target (EN4/ED8, D74): max acceptable read staleness (ms). A 5th metrics sub-gate —
    *  the build's worst read-replica staleness must be ≤ this. Absent ⇒ not graded (the 60 built-ins). */
   consistencyTargetMs?: number
+  /** Resilience extra-challenges (P4-S7, D94): failure-preset ids this quest rewards surviving — a
+   *  3★ build whose metric probe shows NO new bottleneck under the preset clears the extra (+1
+   *  expert, once per condition per quest). Absent ⇒ no extras (all pre-S7 quests). Never scored. */
+  resilienceConditions?: string[]
   /**
    * Runtime-only provenance (D45, NOT in the YAML schema). `builtin` is stamped at the build-time
    * glob (the only path that can produce it); `user` is stamped at loadChallengeFromYaml (runtime

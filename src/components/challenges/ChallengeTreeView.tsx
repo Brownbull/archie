@@ -16,6 +16,8 @@ import { makeChallengeTrafficNodes } from "@/services/trafficSourceInjection"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { CHALLENGE_TRACKS } from "@/lib/challengeTracks"
 import { BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS, type BreaksRecord } from "@/engine/breakDetection"
+import { getFailurePreset } from "@/services/failureLoader"
+import { ShieldCheck } from "lucide-react"
 import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
 const TIER_LABELS = ["", "I", "II", "III", "IV", "V", "VI"]
@@ -268,7 +270,7 @@ function TreeNode({ pos, selected, bestStars, breaksCollected, onClick }: {
   )
 }
 
-function QuestDetailPanel({ node, bestStars, breaksRecord, onStart }: { node: TechTreeNode; bestStars: number; breaksRecord: BreaksRecord | undefined; onStart: () => void }) {
+function QuestDetailPanel({ node, bestStars, breaksRecord, clearsRecord, onStart }: { node: TechTreeNode; bestStars: number; breaksRecord: BreaksRecord | undefined; clearsRecord: Readonly<Record<string, true>> | undefined; onStart: () => void }) {
   const c = node.challenge
   const trackMeta = c.track ? CHALLENGE_TRACKS.get(c.track) : undefined
   const trackColor = TRACK_COLORS[c.track ?? ""] ?? "#6b7280"
@@ -383,11 +385,12 @@ function QuestDetailPanel({ node, bestStars, breaksRecord, onStart }: { node: Te
         {/* Extra challenges (P4-S6, D94): the break-it extras on a completed quest with authored
             traffic — per-dial collection state + the expert payout. S7's resilience conditions will
             extend this same section. */}
-        {node.status === "completed" && (c.trafficSources?.length ?? 0) > 0 && (
+        {node.status === "completed" && ((c.trafficSources?.length ?? 0) > 0 || (c.resilienceConditions?.length ?? 0) > 0) && (
           <div data-testid="quest-extra-challenges" className="rounded border border-orange-500/30 bg-orange-500/5 p-2.5">
             <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-orange-400">
               <Hammer className="h-3 w-3" /> Extra challenges
             </div>
+            {(c.trafficSources?.length ?? 0) > 0 && (<>
             <p className="mt-1 text-[0.625rem] leading-snug text-[#d0c8b8]/80">
               Replay, hold 3★, then break your own build — ONE traffic dial at a time. Each dial that
               fells it pays <span className="font-semibold text-orange-300">1 Expert</span>.
@@ -407,6 +410,29 @@ function QuestDetailPanel({ node, bestStars, breaksRecord, onStart }: { node: Te
                 )
               })}
             </div>
+            </>)}
+            {/* P4-S7: curated resilience extras — survive the condition AT 3★ (+1 expert each). */}
+            {(c.resilienceConditions?.length ?? 0) > 0 && (<>
+            <p className="mt-1.5 flex items-center gap-1 text-[0.625rem] leading-snug text-[#d0c8b8]/80">
+              <ShieldCheck className="h-3 w-3 shrink-0 text-violet-300" />
+              Or harden it: re-earn 3★ with a build that survives the Test condition.
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {(c.resilienceConditions ?? []).map((id) => {
+                const cleared = !!clearsRecord?.[id]
+                return (
+                  <span key={id} data-testid={`extra-resilience-${id}`} data-cleared={cleared || undefined}
+                    className={`rounded-full border px-2 py-0.5 text-[0.5625rem] font-medium ${
+                      cleared
+                        ? "border-violet-500/60 bg-violet-500/20 text-violet-200"
+                        : "border-[#3a4050] text-[#6b7280]"
+                    }`}>
+                    {getFailurePreset(id)?.name ?? id}{cleared ? " ✓" : ""}
+                  </span>
+                )
+              })}
+            </div>
+            </>)}
           </div>
         )}
         {node.status !== "locked" && (
@@ -424,6 +450,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
   const challenges = getAllChallenges()
   const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
   const breaksByChallenge = useUserProgressStore((s) => s.breaksByChallenge)
+  const resilienceClears = useUserProgressStore((s) => s.resilienceClears)
   const expertCurrency = useUserProgressStore((s) => s.expertCurrency)
   const bestStars = useChallengeStore((s) => s.bestStars)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
@@ -505,6 +532,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
               <QuestDetailPanel node={selectedNode}
                 bestStars={bestStars[selectedNode.challenge.id] ?? 0}
                 breaksRecord={breaksByChallenge[selectedNode.challenge.id]}
+                clearsRecord={resilienceClears[selectedNode.challenge.id]}
                 onStart={() => startChallenge(selectedNode.challenge)} />
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">

@@ -19,7 +19,7 @@ const TRACKS = ["foundations", "data", "edge", "realtime", "reliability", "secur
 const PROGRESS_GENERATION = 3 // must equal userProgressStore.PROGRESS_GENERATION or the reader wipes it
 // expertCurrency/breaksByChallenge/requiredFilterUnlocked (P4-S2) reset to zero each setup run so the
 // break-it journey spec (feedback-phase4) always collects FRESH breaks — the seed is the fixture.
-const ALLOWED_KEYS = ["trackXp", "completedChallenges", "bestStarsCloud", "equippedAvatar", "hintsUnlocked", "expertCurrency", "breaksByChallenge", "requiredFilterUnlocked", "generation"] as const
+const ALLOWED_KEYS = ["trackXp", "completedChallenges", "bestStarsCloud", "equippedAvatar", "hintsUnlocked", "expertCurrency", "breaksByChallenge", "requiredFilterUnlocked", "resilienceClears", "generation"] as const
 
 function loadEnv(): Record<string, string> {
   const env: Record<string, string> = { ...process.env } as Record<string, string>
@@ -73,6 +73,7 @@ async function writeProgress(page: Page, projectId: string, completedChallenges:
         expertCurrency: { integerValue: "0" },
         breaksByChallenge: { mapValue: { fields: {} } },
         requiredFilterUnlocked: { mapValue: { fields: {} } },
+        resilienceClears: { mapValue: { fields: {} } },
         generation: { integerValue: String(generation) },
       }
       const docName = `projects/${projectId}/databases/(default)/documents/userProgress/${uid}`

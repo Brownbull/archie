@@ -269,3 +269,60 @@ describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
     expect(s.requiredFilterUnlocked).toEqual({ b: true })
   })
 })
+
+describe("resilience clears (P4-S7 / D94)", () => {
+  beforeEach(() => {
+    mockSetDoc.mockReset().mockResolvedValue(undefined as never)
+    useUserProgressStore.setState({
+      trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {},
+      expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {},
+      generation: PROGRESS_GENERATION, error: null, loading: false, lastAward: null,
+    })
+  })
+
+  it("collectResilienceClear pays 1 expert, records the condition, persists with merge + stamp", async () => {
+    const ok = await useUserProgressStore.getState().collectResilienceClear("u1", "c1", "failure-traffic-spike")
+    expect(ok).toBe(true)
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1)
+    expect(s.resilienceClears.c1).toEqual({ "failure-traffic-spike": true })
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 1, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
+  })
+
+  it("a repeat clear is a no-op (idempotent per condition per quest)", async () => {
+    await useUserProgressStore.getState().collectResilienceClear("u1", "c1", "failure-traffic-spike")
+    mockSetDoc.mockClear()
+    expect(await useUserProgressStore.getState().collectResilienceClear("u1", "c1", "failure-traffic-spike")).toBe(false)
+    expect(useUserProgressStore.getState().expertCurrency).toBe(1)
+    expect(mockSetDoc).not.toHaveBeenCalled()
+  })
+
+  it("distinct conditions and quests each pay; guards empty ids", async () => {
+    const st = () => useUserProgressStore.getState()
+    expect(await st().collectResilienceClear("u1", "c1", "failure-a")).toBe(true)
+    expect(await st().collectResilienceClear("u1", "c1", "failure-b")).toBe(true)
+    expect(await st().collectResilienceClear("u1", "c2", "failure-a")).toBe(true)
+    expect(st().expertCurrency).toBe(3)
+    expect(await st().collectResilienceClear("", "c1", "failure-a")).toBe(false)
+    expect(await st().collectResilienceClear("u1", "", "failure-a")).toBe(false)
+    expect(await st().collectResilienceClear("u1", "c1", "")).toBe(false)
+  })
+
+  it("the generation wipe zeroes resilienceClears with everything else", async () => {
+    mockGetDoc.mockReset().mockResolvedValue(snapshot({
+      generation: 1, resilienceClears: { a: { "failure-x": true } }, expertCurrency: 2,
+    }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    expect(useUserProgressStore.getState().resilienceClears).toEqual({})
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ resilienceClears: {} })
+  })
+
+  it("loadProgress reads resilienceClears from a current-generation doc", async () => {
+    mockGetDoc.mockReset().mockResolvedValue(snapshot({
+      generation: PROGRESS_GENERATION, resilienceClears: { a: { "failure-x": true } },
+    }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    expect(useUserProgressStore.getState().resilienceClears).toEqual({ a: { "failure-x": true } })
+  })
+})

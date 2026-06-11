@@ -20,6 +20,7 @@ import { useAttemptPersistence } from "@/hooks/useAttemptPersistence"
 import { useProgressPersistence } from "@/hooks/useProgressPersistence"
 import { useAttemptComparison } from "@/hooks/useAttemptComparison"
 import { useBreakCollection } from "@/hooks/useBreakCollection"
+import { useResilienceClears } from "@/hooks/useResilienceClears"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { plannedTrafficReset } from "@/services/trafficSourceInjection"
 import { BreakItPanel } from "@/components/challenges/BreakItPanel"
@@ -199,6 +200,7 @@ export function ChallengeResultsModal() {
 
   const suggestion = useChallengeSuggestion()
   const breakOutcome = useBreakCollection()
+  const resilienceClears = useResilienceClears()
   const lastAward = useUserProgressStore((s) => s.lastAward)
 
   const attemptState = useChallengeStore((s) => s.attemptState)
@@ -405,6 +407,24 @@ export function ChallengeResultsModal() {
             </div>
           )}
         </div>
+
+        {/* Resilience extras (P4-S7, D94): this 3★ build also survived authored failure conditions. */}
+        {resilienceClears && resilienceClears.length > 0 && (
+          <div data-testid="resilience-clears" className="rounded-lg border border-violet-500/40 bg-violet-500/10 p-3">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-violet-300" />
+              <span className="text-xs font-bold text-violet-200">Resilience extra{resilienceClears.length === 1 ? "" : "s"} cleared</span>
+            </div>
+            <div className="mt-1.5 flex flex-col gap-1">
+              {resilienceClears.map((rc) => (
+                <div key={rc.conditionId} data-testid={`resilience-clear-${rc.conditionId}`} className="flex items-center text-[0.6875rem] text-violet-200/90">
+                  <span>Survived <span className="font-semibold text-violet-200">{rc.name}</span> at 3★</span>
+                  <span className="ml-auto font-semibold text-orange-300">{rc.fresh ? "+1 Expert" : "already collected"}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Break-it loop (P4-S3, D94): the 3★ invitation / the collected-break celebration. */}
         <BreakItPanel challenge={challenge} stars={result.stars} outcome={breakOutcome} onResetDials={onResetDials} />

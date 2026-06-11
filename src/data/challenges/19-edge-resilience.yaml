@@ -45,3 +45,7 @@ available_blocks: [compute, traffic-source, dns, load-balancer, cdn, api-gateway
 grants: []
 rewards:
   xp: 1600
+
+# P4-S7 (D94): resilience extra — survive a 10x spike with a 3★ build (+1 expert). Lean breaks,
+# hardened clears (engine-probed) — the quest is literally named for this.
+resilience_conditions: [failure-traffic-spike]

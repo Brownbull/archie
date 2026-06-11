@@ -43,9 +43,12 @@ export interface UserProgress {
   breaksByChallenge: Readonly<Record<string, Partial<Record<"rps" | "kind" | "workload" | "origin", true>>>>
   /** Challenges whose "show required blocks" filter has been purchased (1 expert unit each). */
   requiredFilterUnlocked: Readonly<Record<string, true>>
+  /** P4-S7 (D94): cleared resilience extras per challenge — failure-preset id → collected. Each
+   *  clear paid 1 expert unit once; the record is the idempotence guard, like breaksByChallenge. */
+  resilienceClears: Readonly<Record<string, Readonly<Record<string, true>>>>
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, generation: PROGRESS_GENERATION }
 
 /** Total stars earned across challenges (sum of per-challenge bests — the ratings, unchanged by spending). */
 export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): number {
@@ -100,6 +103,8 @@ interface UserProgressState extends UserProgress {
   collectBreak: (userId: string, challengeId: string, attribute: "rps" | "kind" | "workload" | "origin") => Promise<boolean>
   /** Spend 1 expert unit to unlock a quest's required-blocks filter. False when broke or already owned. */
   unlockRequiredFilter: (userId: string, challengeId: string) => Promise<boolean>
+  /** Collect a cleared resilience extra (P4-S7): +1 expert once per (challenge, condition). */
+  collectResilienceClear: (userId: string, challengeId: string, conditionId: string) => Promise<boolean>
   reset: () => void
 }
 
@@ -125,7 +130,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
         if (storedGen < PROGRESS_GENERATION) {
           // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
           // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
-          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, generation: PROGRESS_GENERATION }
+          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, generation: PROGRESS_GENERATION }
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
@@ -145,6 +150,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           expertCurrency: (data.expertCurrency as number) ?? 0,
           breaksByChallenge: (data.breaksByChallenge as UserProgress["breaksByChallenge"]) ?? {},
           requiredFilterUnlocked: (data.requiredFilterUnlocked as Record<string, true>) ?? {},
+          resilienceClears: (data.resilienceClears as UserProgress["resilienceClears"]) ?? {},
           generation: storedGen,
           loading: false,
         })
@@ -269,6 +275,28 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     } catch (err) {
       if (import.meta.env.DEV) console.error("Failed to save filter unlock:", err)
       set({ error: "Could not save your filter unlock." })
+    }
+    return true
+  },
+
+  collectResilienceClear: async (userId, challengeId, conditionId) => {
+    if (!userId || !challengeId || !conditionId) return false
+    const state = get()
+    const record = state.resilienceClears[challengeId] ?? {}
+    if (record[conditionId]) return false // this extra already cleared for this quest
+
+    const newClears = { ...state.resilienceClears, [challengeId]: { ...record, [conditionId]: true as const } }
+    const newCurrency = state.expertCurrency + 1
+    set({ resilienceClears: newClears, expertCurrency: newCurrency, error: null })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        { resilienceClears: newClears, expertCurrency: newCurrency, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save resilience clear:", err)
+      set({ error: "Could not save your resilience clear." })
     }
     return true
   },
