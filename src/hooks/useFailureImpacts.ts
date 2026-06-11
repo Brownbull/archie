@@ -17,8 +17,22 @@ export function useFailureImpacts(): ReadonlySet<string> | null {
     (s) => isChallengeMode(s) && (s.bestStars[s.activeChallenge?.id ?? ""] ?? 0) >= 3,
   )
 
+  // Structural signature (review #3): the probe's inputs are component/variant/replica identity and
+  // wiring — NOT positions. Node drags replace the nodes array every frame; memoizing on array
+  // identity would re-run 7 recalculations per drag tick. Key on what the heatmap actually reads.
+  const signature = useMemo(
+    () =>
+      nodes.map((n) => `${n.id}:${n.data.archieComponentId}:${n.data.activeConfigVariantId}:${n.data.replicaCount ?? 1}`).join("|") +
+      "//" +
+      edges.map((e) => `${e.source}>${e.target}`).join("|"),
+    [nodes, edges],
+  )
+
   return useMemo(() => {
     if (!unlocked || nodes.length === 0) return null
     return computeBreakingFailures(nodes, edges)
-  }, [unlocked, nodes, edges])
+    // signature IS nodes+edges structurally: a render where the arrays changed but the signature
+    // didn't (a drag) must NOT re-probe — that's the whole point of the structural key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unlocked, signature])
 }

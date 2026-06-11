@@ -52,4 +52,18 @@ describe("useFailureImpacts — probe scope (P4-S4 / D94)", () => {
     rerender()
     expect(computeMock).toHaveBeenCalledTimes(1)
   })
+
+  it("a node DRAG (new array identity, same structure) does not re-probe (review #3)", () => {
+    useChallengeStore.setState({ activeChallenge: challenge, bestStars: { c1: 3 } })
+    const { rerender } = renderHook(() => useFailureImpacts())
+    expect(computeMock).toHaveBeenCalledTimes(1)
+    // simulate a drag: same id/component/variant/replicas, new array + new position
+    useArchitectureStore.setState({ nodes: [{ ...node, position: { x: 100, y: 50 } }] as never })
+    rerender()
+    expect(computeMock).toHaveBeenCalledTimes(1) // structural signature unchanged → memo holds
+    // a REAL structural change (replica bump) re-probes
+    useArchitectureStore.setState({ nodes: [{ ...node, data: { ...node.data, replicaCount: 3 } }] as never })
+    rerender()
+    expect(computeMock).toHaveBeenCalledTimes(2)
+  })
 })

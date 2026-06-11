@@ -21,6 +21,7 @@ const challenge = {
   trafficCurve: [{ t: 0, rps: 0 }], requiredComponents: [],
   targetMetrics: { uptimePercent: 99, p99LatencyMs: 200 }, scheduledEvents: [], hints: [],
   trafficSources: [{ type: "web-users", rps: 1000, kind: "steady", workload: "mixed", origin: "one-region" }],
+  origin: "builtin",
 } as unknown as Challenge
 
 const failed = (): StarBreakdown => ({ stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true }) as StarBreakdown
@@ -101,5 +102,16 @@ describe("useBreakCollection (P4-S3 / D94)", () => {
     await waitFor(() => expect(result.current).not.toBeNull())
     useChallengeStore.setState({ attemptState: "building", lastResult: null })
     await waitFor(() => expect(result.current).toBeNull())
+  })
+
+  it("no collection on user-authored quests — only builtins mint expert currency (review #2)", () => {
+    useChallengeStore.setState({
+      activeChallenge: { ...challenge, origin: "user" } as never,
+      attemptState: "scored", lastResult: failed(),
+    })
+    useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000 })] as never })
+    const { result } = renderHook(() => useBreakCollection())
+    expect(result.current).toBeNull()
+    expect(useUserProgressStore.getState().expertCurrency).toBe(0)
   })
 })

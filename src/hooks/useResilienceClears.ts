@@ -4,7 +4,8 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { computeBreakingFailures } from "@/services/failureImpact"
-import { getFailurePreset } from "@/services/failureLoader"
+import { getFailurePreset, isKnownFailurePresetId } from "@/services/failureLoader"
+import { diffTrafficAttributes } from "@/engine/breakDetection"
 import type { StarBreakdown } from "@/lib/challengeTypes"
 
 /** One resilience extra the just-scored 3★ run survived. */
@@ -36,15 +37,24 @@ export function useResilienceClears(): ResilienceClearOutcome[] | null {
     if (attemptState === "scored" && lastResult && handledRef.current !== lastResult) {
       handledRef.current = lastResult
       const { activeChallenge } = useChallengeStore.getState()
-      const conditions = activeChallenge?.resilienceConditions ?? []
+      // Origin gate (review #2): only BUILTIN quests mint expert currency — a user-authored quest
+      // could author arbitrary (even unknown) conditions and self-mint. Mirrors awardXp's gate.
+      // Unknown preset ids are also skipped: a condition the probe can't simulate can't be earned.
+      const conditions = (activeChallenge?.origin === "builtin" ? activeChallenge.resilienceConditions ?? [] : [])
+        .filter((id) => isKnownFailurePresetId(id))
       // Only a FULL 3★ clear can collect — the extra is "held the targets AND survived", not
       // "survived a condition on a build that failed the quest".
       if (activeChallenge && conditions.length > 0 && lastResult.stars === 3) {
         const { nodes, edges } = useArchitectureStore.getState()
-        const breaking = computeBreakingFailures(nodes, edges)
+        // Authored-demand gate (review #1): post-3★ the canvas dials drive the load (the S3 seam)
+        // while the probe is load-independent — without this check a player could lower the rps
+        // dial, cheese an easy 3★, and collect a clear their build never earned at the authored
+        // demand. The dials must MATCH the spec for the 3★ half of the bargain to count.
+        const authoredDemand = diffTrafficAttributes(nodes, activeChallenge.trafficSources ?? []).size === 0
+        const breaking = authoredDemand ? computeBreakingFailures(nodes, edges) : null
         const progress = useUserProgressStore.getState()
         const record = progress.resilienceClears[activeChallenge.id] ?? {}
-        const survived = conditions.filter((id) => !breaking.has(id))
+        const survived = breaking ? conditions.filter((id) => !breaking.has(id)) : []
         if (survived.length > 0) {
           next = survived.map((conditionId) => {
             const fresh = !record[conditionId] && !!userId

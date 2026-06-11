@@ -44,8 +44,10 @@ export function useBreakCollection(): BreakOutcome | null {
     if (attemptState === "scored" && lastResult && handledRef.current !== lastResult) {
       handledRef.current = lastResult // one collection per scored result
       const { activeChallenge, bestStars } = useChallengeStore.getState()
-      // Dials unlock at the session 3★ (D20) — below that it's not a break context.
-      if (activeChallenge && (bestStars[activeChallenge.id] ?? 0) >= 3) {
+      // Dials unlock at the session 3★ (D20) — below that it's not a break context. Origin gate
+      // (review #2): only BUILTIN quests mint expert currency — a self-authored quest with a
+      // trivially-breakable spec would otherwise be a currency printer. Mirrors awardXp.
+      if (activeChallenge && activeChallenge.origin === "builtin" && (bestStars[activeChallenge.id] ?? 0) >= 3) {
         const nodes = useArchitectureStore.getState().nodes
         const attribute = detectSingleAttributeBreak(nodes, activeChallenge, lastResult)
         if (attribute) {
