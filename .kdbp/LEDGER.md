@@ -5447,3 +5447,8 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5140/5140)
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P194
+- 2026-06-11 19:12 | Write | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+
+## 2026-06-11 — [owner] feat(challenges): D105 leaderboard + icon shuffle
+FINDINGS: none — read-rule widening is the one real surface change (documented in D105; displayName is the only identity field)
+CHECKS: lint ✅ (sync-setState-in-effect caught + fixed via async continuation) · types ✅ · tests ✅ (quick 5142/5142) · rules deployed pre-push
