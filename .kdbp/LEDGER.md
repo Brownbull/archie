@@ -5304,3 +5304,6 @@ All 5 phases ALL GATES in one day (P171–P175): unlock-ordering true-up + intro
 FINDINGS: owner-requested 3-axis audit (structure/seeds/hint-prose) across 64 quests — structure + seeds CLEAN (D96 gates held); 2 hint-class survivors found + fixed (llm-service cache hints after the D96 trim; search-at-scale lb route); drift net added with curated allowlist
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5096/5096; solvability + content gates green post-rewrite)
 NOTE: the third symptom class (hints lying about the palette) is now gated like the first two — none of the three async-pipeline failure modes can be authored again.
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P176
