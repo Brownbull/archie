@@ -96,7 +96,8 @@ export function isNewBreak(record: BreaksRecord | undefined, attribute: BreakAtt
   return !record?.[attribute]
 }
 
-/** The attributes still uncollected for a challenge, in display order (the "try these next" list). */
-export function remainingBreakAttributes(record: BreaksRecord | undefined): BreakAttribute[] {
-  return BREAK_ATTRIBUTES.filter((a) => isNewBreak(record, a))
+/** The attributes still uncollected for a challenge, in display order (the "try these next" list).
+ *  `dials` scopes to the quest's collectible set (challengeBreakDials) — defaults to all four. */
+export function remainingBreakAttributes(record: BreaksRecord | undefined, dials: readonly BreakAttribute[] = BREAK_ATTRIBUTES): BreakAttribute[] {
+  return dials.filter((a) => isNewBreak(record, a))
 }
