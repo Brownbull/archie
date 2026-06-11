@@ -16,6 +16,7 @@ const s = () => useSimulationStore.getState()
 
 describe("simulationStore — playback state machine (Epic 15)", () => {
   beforeEach(() => {
+    localStorage.removeItem("archie-playback-speed")
     vi.useFakeTimers()
     s().reset()
   })
@@ -109,7 +110,7 @@ describe("simulationStore — playback state machine (Epic 15)", () => {
     expect(s().currentTick).toBe(5) // unchanged, never NaN
   })
 
-  it("reset returns to idle, clears ticks, and restores default speed", () => {
+  it("reset returns to idle and clears ticks — the chosen speed STAYS (sticky, 2026-06-11)", () => {
     s().start(graph, ramp)
     s().setSpeed(10)
     s().reset()
@@ -117,7 +118,7 @@ describe("simulationStore — playback state machine (Epic 15)", () => {
     expect(s().ticks).toHaveLength(0)
     expect(s().currentTick).toBe(0)
     expect(s().isPlaying).toBe(false)
-    expect(s().speed).toBe(1)
+    expect(s().speed).toBe(10) // sticky — survives reset
   })
 
   it("replay while running restarts from 0 without leaking a timer", () => {
@@ -163,5 +164,24 @@ describe("simulationStore — playback state machine (Epic 15)", () => {
     const tickAtDone = s().currentTick
     vi.advanceTimersByTime(SIM_BASE_TICK_MS * 10)
     expect(s().currentTick).toBe(tickAtDone) // timer stopped, no drift
+  })
+})
+
+describe("sticky playback speed (2026-06-11 playtest)", () => {
+  it("setSpeed persists; reset keeps the chosen speed instead of snapping to 1×", () => {
+    const s = () => useSimulationStore.getState()
+    s().setSpeed(5)
+    expect(localStorage.getItem("archie-playback-speed")).toBe("5")
+    s().reset()
+    expect(s().speed).toBe(5)
+    s().setSpeed(1)
+    localStorage.removeItem("archie-playback-speed")
+  })
+
+  it("garbage in storage falls back to 1×", () => {
+    localStorage.setItem("archie-playback-speed", "999")
+    useSimulationStore.getState().reset()
+    expect(useSimulationStore.getState().speed).toBe(1)
+    localStorage.removeItem("archie-playback-speed")
   })
 })

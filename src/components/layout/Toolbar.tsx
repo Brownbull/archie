@@ -63,7 +63,7 @@ export function Toolbar() {
             <ChevronDown className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
           </button>
           <span className="text-[0.625rem] text-text-secondary">
-            {attemptState === "building" ? "Building…" : attemptState === "running" ? "Running…" : attemptState === "scored" ? "Scored" : ""}
+            {attemptState === "building" ? (breakMode ? "Breaking…" : "Building…") : attemptState === "running" ? "Running…" : attemptState === "scored" ? "Scored" : ""}
           </span>
         </div>
       )}

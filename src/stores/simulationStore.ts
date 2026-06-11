@@ -43,6 +43,19 @@ function stopTimer(): void {
   }
 }
 
+const STICKY_SPEED_KEY = "archie-playback-speed"
+
+/** The persisted speed preference — untrusted on read (only known speeds pass). */
+function readStickySpeed(): PlaybackSpeed {
+  try {
+    const raw = Number(localStorage.getItem(STICKY_SPEED_KEY))
+    if (raw === 1 || raw === 2 || raw === 5 || raw === 10) return raw
+  } catch {
+    /* storage unavailable */
+  }
+  return 1
+}
+
 export const useSimulationStore = create<SimulationState>((set, get) => {
   function startTimer(): void {
     stopTimer()
@@ -63,7 +76,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     ticks: [],
     currentTick: 0,
     isPlaying: false,
-    speed: 1,
+    speed: readStickySpeed(),
     entryNodeIds: [],
     durationS: SIM_DEFAULT_DURATION_S,
 
@@ -102,6 +115,13 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
     },
 
     setSpeed: (speed) => {
+      // 2026-06-11 playtest: the speed selection is STICKY — once chosen, every later run (free
+      // or quest) starts at it, across sessions (localStorage; treated as untrusted on read).
+      try {
+        localStorage.setItem(STICKY_SPEED_KEY, String(speed))
+      } catch {
+        /* storage unavailable (private mode) — session-only stickiness still applies */
+      }
       set({ speed })
       if (get().isPlaying) startTimer() // restart interval at the new rate
     },
@@ -115,7 +135,7 @@ export const useSimulationStore = create<SimulationState>((set, get) => {
 
     reset: () => {
       stopTimer()
-      set({ status: "idle", ticks: [], currentTick: 0, isPlaying: false, speed: 1, entryNodeIds: [], durationS: SIM_DEFAULT_DURATION_S })
+      set({ status: "idle", ticks: [], currentTick: 0, isPlaying: false, speed: readStickySpeed(), entryNodeIds: [], durationS: SIM_DEFAULT_DURATION_S })
     },
   }
 })
