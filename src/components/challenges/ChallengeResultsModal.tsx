@@ -27,6 +27,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { plannedTrafficReset } from "@/services/trafficSourceInjection"
 import { BreakItPanel } from "@/components/challenges/BreakItPanel"
 import { diffTrafficAttributes } from "@/engine/breakDetection"
+import { questBreakDials } from "@/lib/challengeBreakDials"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 import { DeltaChip } from "@/components/challenges/DeltaChip"
 import { CHALLENGE_TRACKS, rankForXp, MASTERY_RANKS, RANK_XP_THRESHOLDS } from "@/lib/challengeTracks"
@@ -233,6 +234,15 @@ export function ChallengeResultsModal() {
   // Pre-run standing: a failed run can't have set bestStars, so bestStars≥3 means it pre-existed;
   // a 3★ run just SET it, so the pre-run question is answered by prevBestStars (lastAward.prevStars)
   // — first earn keeps the full gold celebration, only a RE-earn gets the achieved theme.
+  // 2026-06-11: every collectible dial earned → the break challenge is done — the Quest menu
+  // button promotes to the gold "go onward" treatment.
+  const breaksRecordForQuest = useUserProgressStore((s) => (challenge ? s.breaksByChallenge[challenge.id] : undefined))
+  const breakComplete = useMemo(() => {
+    if (!challenge) return false
+    const dials = questBreakDials(challenge.id)
+    return dials.length > 0 && dials.every((d) => breaksRecordForQuest?.[d])
+  }, [challenge, breaksRecordForQuest])
+
   const trafficDeviated = useMemo(
     () => (challenge ? diffTrafficAttributes(canvasNodes, challenge.trafficSources ?? []).size > 0 : false),
     [challenge, canvasNodes],
@@ -535,8 +545,15 @@ export function ChallengeResultsModal() {
           ) : (
             // 0★ is not a dead-end: still offer a path to the quest menu so the player can switch quests
             // without close → exit → reopen (the asymmetry the nav audit flagged).
-            <Button data-testid="result-quest-menu" variant="outline" size="sm" className="gap-1.5" onClick={openQuestMenu}>
-              <Map className="h-3.5 w-3.5" /> Quest menu
+            <Button
+              data-testid="result-quest-menu"
+              data-break-complete={breakComplete || undefined}
+              variant={breakComplete ? "default" : "outline"}
+              size="sm"
+              className={breakComplete ? "gap-1.5 bg-[#c9a961] font-bold text-[#1a1410] hover:bg-[#d4b872]" : "gap-1.5"}
+              onClick={openQuestMenu}
+            >
+              <Map className="h-3.5 w-3.5" /> {breakComplete ? "Next Quest" : "Quest menu"}
             </Button>
           )}
         </DialogFooter>

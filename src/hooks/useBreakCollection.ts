@@ -96,9 +96,9 @@ export function useBreakCollection(): BreakOutcome | null {
               // collected" while the wallet missed the point (or vice versa).
               const fresh = !!userId && isNewBreak(record, attribute)
               if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
-              next = { verdict, attribute, fresh, boundary, remaining: remainingBreakAttributes({ ...record, [attribute]: true }) }
+              next = { verdict, attribute, fresh, boundary, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
             } else {
-              next = { verdict, attribute, fresh: false, remaining: remainingBreakAttributes(record) }
+              next = { verdict, attribute, fresh: false, remaining: remainingBreakAttributes(record, questBreakDials(activeChallenge.id)) }
             }
           }
         } else {
@@ -108,7 +108,7 @@ export function useBreakCollection(): BreakOutcome | null {
             const record = progress.breaksByChallenge[activeChallenge.id]
             const fresh = isNewBreak(record, attribute) && !!userId
             if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
-            next = { verdict: "collected", attribute, fresh, remaining: remainingBreakAttributes({ ...record, [attribute]: true }) }
+            next = { verdict: "collected", attribute, fresh, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
           }
         }
       }

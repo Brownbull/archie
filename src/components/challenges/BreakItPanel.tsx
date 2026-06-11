@@ -122,8 +122,16 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
           )}
           {outcome.remaining.length > 0
             ? `Your build held 3★ until this dial moved — that's the failure boundary. Still standing: ${outcome.remaining.map((a) => BREAK_ATTRIBUTE_LABELS[a]).join(", ")}.`
-            : "All four dials collected — you've mapped this build's entire failure boundary."}
+            : "Every collectible dial on this quest is covered — you've mapped this build's failure boundary."}
         </p>
+        {outcome.remaining.length === 0 && (
+          <div
+            data-testid="break-all-covered"
+            className="mt-2 flex items-center justify-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-300"
+          >
+            ✓ All covered — break challenge complete
+          </div>
+        )}
         {outcome.remaining.length > 0 && (
           <Button
             data-testid="break-reset"

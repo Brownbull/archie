@@ -371,7 +371,8 @@ describe("break-it loop panel (P4-S3 / D94)", () => {
       lastMeasured: { uptimePercent: 80, p99LatencyMs: 400, totalCost: 60, topologyIssueCount: 0 },
     } as never)
     render(<ChallengeResultsModal />)
-    expect(screen.getByTestId("break-collected")).toHaveTextContent("entire failure boundary")
+    expect(screen.getByTestId("break-collected")).toHaveTextContent("Every collectible dial on this quest is covered")
+    expect(screen.getByTestId("break-all-covered")).toHaveTextContent(/All covered/)
     expect(screen.queryByTestId("break-reset")).toBeNull()
   })
 
