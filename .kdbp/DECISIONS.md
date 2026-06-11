@@ -1521,3 +1521,18 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 
 **Status:** active
 **Review trigger:** chain carry-forward UX after the first authored chain; link-viz perf at 50 nodes.
+
+## D96 — Phase 1 design lock: palette-gap dispositions (D90 reversal) (2026-06-11)
+
+**Context:** the 2026-06-11 playtest re-flagged D90's accepted palette gaps (async-pipeline offering load-balancer/cache/worker at tier 1). D90's rationale is stale: P4-S5 toolbox realism now shows ALL unlocked blocks gray-locked, so trimming a palette no longer hides blocks from view, and the owner has now flagged the same quest twice (feedback lines 20 + 59).
+
+**Decision — per-gap disposition over the 53-entry snapshot:**
+1. **EDGE (47 gaps):** wherever a granting quest exists at same-or-lower tier with no requires-cycle, add it to the offender's `requires`. The block is in the palette because the author considered it solution-relevant; the edge preserves the solution space and creates the cross-track co-dependencies feedback line 59 asked for ("more rows per tier... use that in other ones, but not before"). New edges concentrate into intro-quest hubs (add-a-database, scale-out, cache-the-hot-path, async-pipeline, polyglot-persistence, edge-delivery, dns-routing, serverless-burst, observe-baseline) — hub importance becomes visible in the tree.
+2. **TRIM (6 gaps):** no layout-safe candidate (granter tier > offender tier) → remove from `available_blocks`: async-pipeline×{cache, load-balancer, worker}, event-stream×nosql, llm-service×cache, the-long-tail×realtime. All are incidental to the quest's lesson; none is in required_types (the REQ hard gate guarantees that by construction), so scoring is untouched; the harness re-proves 3★ per batch.
+3. **async-pipeline hints 3–4 rewritten** — they literally instruct a worker route (granted at tier 4 by worker-fleet, which REQUIRES async-pipeline). Rewrite against harness ground truth (compute → queue → db).
+4. **Gate promotion:** at gap count 0, `ungrantable-available-block` folds into `validateTechTree` as a HARD gate (the D90 migration clause); the baseline snapshot test flips to `=== []`.
+5. **No progress reset:** edges only restrict FUTURE availability; completed stays completed (unlike the Phase-2 re-tiering that forced D28). Verified against the live owner account behavior at exec.
+
+**Supersedes:** D90's clause 2 (PAL gaps accepted). D90's clause 1 (REQ hard gate) stands.
+**Status:** active
+**Review trigger:** tree visual density after +47 edges (Phase 2's chain visualization pass is the natural checkpoint).
