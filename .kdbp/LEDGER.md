@@ -5352,3 +5352,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P181
 FINDINGS: 3 classes — (1) FIXED: 6 quests failed untouched post-3★ re-runs (node-curve shape ≠ spec-curve at the same peak; seam now only canvas-wins on actual deviation); (2) D34 deferred: Origin dial causally dead game-wide (engine calibration, golden-sensitive); (3) D35 deferred: 2 capstones out-scale the dial. A (deps + XP-reachability) clean; C (resilience extras) twin proofs green.
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5111/5111 incl. shape-identity pin) · E2E ✅ (journey 46s)
 NOTE: boundary map archived in this entry's sweep output — healthy spread 1.1×–17× authored across 45 quests.
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P182
