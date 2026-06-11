@@ -5311,3 +5311,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P176
 ## 2026-06-11 — [playtest fix] fix(challenges): saved block defaults free-mode-only
 FINDINGS: owner playtest — saved FastAPI default auto-applied in quests, pre-solving them; apply path gated on activeChallenge (single site, architectureStore.addNode); save button untouched (it captures a free-mode preference)
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5098/5098; both modes pinned in architectureStore-blockDefaults)
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P177
