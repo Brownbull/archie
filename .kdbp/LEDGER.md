@@ -5073,3 +5073,90 @@ PR: — (direct trunk push, established flow)
 CI: Deploy Production ✅ success; E2E unlocked/desktop in_progress (non-gating; journey green locally)
 PROMOTION: N/A (single-env production)
 DEPLOYMENTS: P168 (added row to .kdbp/DEPLOYMENTS.md)
+- 2026-06-10 20:10 | Write | /home/khujta/projects/bmad/archie/src/services/failureImpact.ts
+- 2026-06-10 20:11 | Write | /home/khujta/projects/bmad/archie/src/hooks/useFailureImpacts.ts
+- 2026-06-10 20:11 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/FailureSelector.tsx
+- 2026-06-10 20:12 | Write | /home/khujta/projects/bmad/archie/tests/unit/services/failureImpact.test.ts
+- 2026-06-10 20:12 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/FailureSelector.test.tsx
+- 2026-06-10 20:13 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useFailureImpacts.test.ts
+- 2026-06-10 20:15 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/failureImpact.integration.test.ts
+
+## 2026-06-10 20:18 — [4a7fbe4] feat(canvas): test-conditions gating + break glow (P4-S4)
+FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low)
+ACTIONS: 1:accept (G1/G5 well docs 0-topic scaffolds — /gabe-teach owns consolidation)
+DEFERRED: none
+CHECKS: lint ✅ (0 issues) · types ✅ (tsc -b) · tests ✅ (quick 4994/4994 incl. 20 new + real-data integration sanity) · shape ✅ · structure ✅ (services/hooks/components patterns)
+NOTE: probe = baseline-vs-preset HEATMAP recalculation (synchronous, no tick sim) — scoring untouched, golden/62-62 not in blast radius. New-bottlenecks-only rule keeps the glow meaningful on already-red canvases. Free-play behavior byte-identical.
+- 2026-06-10 20:20 | Write | /home/khujta/projects/bmad/archie/src/components/toolbox/RequiredFilterToggle.tsx
+- 2026-06-10 20:20 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 20:21 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 20:21 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 20:21 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 20:22 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 20:22 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+- 2026-06-10 20:23 | Edit | /home/khujta/projects/bmad/archie/src/components/toolbox/ComponentTab.tsx
+
+## 2026-06-10 20:27 — [6cb6a0f] feat(toolbox): show-all-unlocked palette + required-blocks filter (P4-S5)
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept (2 object-injection warnings, typed lookups) 2:accept (G4 UI-panels well doc 0-topic scaffold)
+DEFERRED: none
+CHECKS: lint ✅ (0 err) · types ✅ (tsc -b) · tests ✅ (quick 5002/5002 incl. 8 new; toolbox 116/116) · shape ✅ (ComponentTab 357) · structure ✅
+NOTE: not-in-palette enum slot (S6b) now FED — visibility = palette ∪ banned ∪ tech-tree-unlocked; lock precedence banned > not-in-palette. Filter on/off is quest-id-BOUND state (no reset effect — set-state-in-effect lint avoided by construction). RequiredFilterToggle uses useCurrentUserId → mocked in ComponentTab suite (the P4-S3 AuthProvider lesson applied proactively-ish: 5 failures caught at dev time, not in CI).
+- 2026-06-10 20:30 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-10 20:30 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:31 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:32 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-10 20:34 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-10 20:35 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeTreeView-surfacing.test.tsx
+
+## 2026-06-10 20:38 — [c2ade73] feat(challenges): quest-log surfacing for the expert economy (P4-S6)
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept (8 object-injection warnings, typed lookups) 2:accept (G2 Engine well doc scaffold — label constant added beside its type)
+DEFERRED: none
+CHECKS: lint ✅ (0 err; fixed a react-refresh/only-export-components error by moving BREAK_ATTRIBUTE_LABELS into the engine) · types ✅ (tsc -b) · tests ✅ (quick 5008/5008 incl. 6 new vs the REAL catalog) · shape ✅ (ChallengeTreeView 521 — under 600 medium bar) · structure ✅
+NOTE: surfacing reads existing P4-S2 data only (expertCurrency, breaksByChallenge) — no schema/engine behavior change. Extras section + corner badge keyed on trafficSources presence; S7's resilience conditions extend the same section.
+- 2026-06-10 20:39 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_resilience-probe.tmp.test.ts
+- 2026-06-10 20:41 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-10 20:41 | Edit | /home/khujta/projects/bmad/archie/src/schemas/challengeSchema.ts
+- 2026-06-10 20:42 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-10 20:44 | Write | /home/khujta/projects/bmad/archie/src/hooks/useResilienceClears.ts
+- 2026-06-10 20:45 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 20:45 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 20:45 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 20:47 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/resilienceExtras.test.ts
+- 2026-06-10 20:49 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useResilienceClears.test.ts
+
+## 2026-06-10 20:55 — [40b1968] feat(challenges): resilience extra-challenges (P4-S7 — FINAL slice, Phase 4 Exec COMPLETE)
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept (16 object-injection warnings, typed lookups) 2:accept (G2/G3 well doc scaffolds)
+DEFERRED: none
+CHECKS: lint ✅ (0 err) · types ✅ (tsc -b) · tests ✅ (quick 5027/5027; harness 5/5 incl. clearable+non-trivial proofs per curated pair; golden + 62/62 untouched) · structure ✅
+NOTE: firestore.rules DEPLOYED pre-commit (resilienceClears map, create+update). Curation engine-probed: lean breaks / hardened-3★ clears — {edge-delivery, edge-resilience}×traffic-spike, follow-the-sun×data-corruption (production-ai, defense-in-depth, observe-to-recover probed and REJECTED — no clearable gap). Clear = metric-probe survival at 3★ (P4-S4 prober, heatmap-space) — the tick sim + rubric untouched by construction.
+- 2026-06-10 20:59 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useResilienceClears.ts
+- 2026-06-10 20:59 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useResilienceClears.ts
+- 2026-06-10 21:00 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useBreakCollection.ts
+- 2026-06-10 21:00 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useFailureImpacts.ts
+- 2026-06-10 21:01 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useFailureImpacts.ts
+- 2026-06-10 21:04 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useFailureImpacts.ts
+
+## 2026-06-10 21:20 — PHASE 4 REVIEW: Break-it loop & expert currency
+VERDICT: APPROVE
+FINDINGS: 4 total (0 critical, 0 high, 3 medium, 1 low)
+COVERAGE: HIGH
+CONFIDENCE: 98/100 (83 pre-triage; #1-#3 fixed in-session, #4 deferred)
+DEFERRED: D30 (client-asserted wallet — Scale gate, consistent with existing trust model); D27 times_deferred 0→1 (same-function touch, still latent)
+ALIGNMENT: ALIGNED (44/44 files map to D94 slices)
+TIER: scale | DRIFT: none
+TICK: ✅
+FIXES: #1 authored-demand gate on resilience clears (cheesed-3★ cheese closed) · #2 origin=builtin gate on BOTH collectors + unknown-preset filter (self-mint closed) · #3 structural memo signature in useFailureImpacts (drag re-probe closed) — 5 new gate tests, quick 5032/5032
+
+## 2026-06-10 21:24 — [post-review fix] fix(challenges): close the expert-economy side doors
+FINDINGS: 0 new (review-fix commit)
+CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5032/5032 incl. 5 new gate tests)
