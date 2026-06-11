@@ -125,3 +125,34 @@ describe("architectureStore.addNode — saved per-type default injection", () =>
     expect(lastNode().data.archieComponentId).toBe("mobile-users")
   })
 })
+
+describe("quest mode bypasses saved defaults (2026-06-11 owner playtest)", () => {
+  beforeEach(async () => {
+    useArchitectureStore.setState({ nodes: [], edges: [] })
+    useUserBlockDefaultsStore.setState({ defaults: {} })
+    const { useChallengeStore } = await import("@/stores/challengeStore")
+    useChallengeStore.setState({ activeChallenge: null })
+  })
+
+  it("in a quest, addNode loads the requested block's own configuration — never the saved default", async () => {
+    const { useChallengeStore } = await import("@/stores/challengeStore")
+    useUserBlockDefaultsStore.setState({ defaults: { "relational-db": { providerId: "postgresql", variantId: "primary-replica" } } } as never)
+    useChallengeStore.setState({ activeChallenge: { id: "q1", forbiddenTypes: [], restrictedVendors: [] } } as never)
+
+    useArchitectureStore.getState().addNode("mysql", { x: 0, y: 0 })
+    const n = lastNode()
+    expect(n.data.archieComponentId).toBe("mysql") // saved default would have swapped to postgresql
+    expect(n.data.activeConfigVariantId).toBe("single")
+  })
+
+  it("back in free mode, the saved default applies again", async () => {
+    const { useChallengeStore } = await import("@/stores/challengeStore")
+    useChallengeStore.setState({ activeChallenge: null })
+    useUserBlockDefaultsStore.setState({ defaults: { "relational-db": { providerId: "postgresql", variantId: "primary-replica" } } } as never)
+
+    useArchitectureStore.getState().addNode("mysql", { x: 0, y: 0 })
+    const n = lastNode()
+    expect(n.data.archieComponentId).toBe("postgresql")
+    expect(n.data.activeConfigVariantId).toBe("primary-replica")
+  })
+})

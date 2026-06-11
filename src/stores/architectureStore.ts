@@ -374,10 +374,15 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
     // Traffic sources are excluded (P1/T3): demand is per-challenge/per-experiment, and a saved
     // traffic default applied AFTER the D63 one-per-type remap above could override the remap and
     // duplicate a traffic type. Also shields defaults already persisted in Firestore.
+    // QUESTS are excluded entirely (2026-06-11 owner playtest): saved defaults personalize FREE
+    // build only — in a quest, blocks load the catalog/challenge configuration, so a saved
+    // top-tier stack can't silently pre-solve the quest (the "FastAPI one-shots everything" leak;
+    // restrictions/bans still apply on top either way).
     let component = requested
     let defaultVariant = component.configVariants[0]
     const typeId = requested.typeId
-    if (typeId && !isTrafficProvider(addId)) {
+    const inQuest = useChallengeStore.getState().activeChallenge !== null
+    if (typeId && !isTrafficProvider(addId) && !inQuest) {
       const saved = useUserBlockDefaultsStore.getState().getDefault(typeId)
       if (saved) {
         const savedProvider = componentLibrary.getComponent(saved.providerId)
