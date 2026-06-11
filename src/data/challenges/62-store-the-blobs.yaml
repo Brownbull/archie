@@ -1,0 +1,39 @@
+id: store-the-blobs
+title: Store the Blobs
+brief: >-
+  The product photos live INSIDE the orders database — every row drags megabytes of image bytes
+  with it. Backups take all night, the cache can't hold rows that fat, and every catalog page
+  read makes the database shovel pixels instead of answering queries. Shoppers keep browsing
+  either way: 600 requests a second of image-heavy pages, and the p99 has started to crawl.
+  Get the bytes somewhere built for them, and let the database go back to being a database.
+difficulty: beginner
+budget_cap: 300
+duration_seconds: 75
+traffic_curve:
+  - { t: 0, rps: 0 }
+  - { t: 25, rps: 400 }
+  - { t: 50, rps: 600 }
+  - { t: 75, rps: 500 }
+traffic_sources:
+  - { type: web-users, rps: 600, kind: realistic, workload: read, origin: one-region }
+required_components:
+  - compute
+  - data-storage
+target_metrics:
+  uptime_percent: 98
+  p99_latency_ms: 250
+hints:
+  - "The database is paying twice: once to answer queries, once to shovel image bytes. Those are different jobs — and there's a storage type built for exactly one of them."
+  - "Object storage holds blobs cheaply and serves them without touching the database; the relational store keeps doing what it's good at — rows, not pixels."
+  - "Wire traffic → compute, then fan compute out to BOTH stores: relational-db for the order rows, object-storage for the image bytes. Each tier only carries the load it was built for."
+schema_version: 2
+track: data
+tier: 2
+requires: [add-a-database]
+unlocks: [polyglot-persistence]
+min_xp: 494
+required_types: [object-storage, relational-db]
+available_blocks: [traffic-source, compute, relational-db, object-storage]
+grants: [object-storage]
+rewards:
+  xp: 180

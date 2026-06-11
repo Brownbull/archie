@@ -28,9 +28,9 @@ function ch(partial: Partial<Challenge> & Pick<Challenge, "id">): Challenge {
 // A small spine: foundations 1→2, data 1 off foundations 1.
 const TREE: Challenge[] = [
   ch({ id: "first-service", track: "foundations", tier: 1, requires: [], unlocks: ["scale-out", "add-a-db"], grants: [] }),
-  ch({ id: "scale-out", track: "foundations", tier: 2, requires: ["first-service"], unlocks: [], grants: ["load-balancer"] }),
-  ch({ id: "add-a-db", track: "data", tier: 1, requires: ["first-service"], unlocks: ["cache"], grants: ["relational-db"] }),
-  ch({ id: "cache", track: "data", tier: 2, requires: ["add-a-db"], unlocks: [], grants: ["cache"] }),
+  ch({ id: "scale-out", track: "foundations", tier: 2, requires: ["first-service"], unlocks: [], grants: ["load-balancer"], requiredTypes: ["load-balancer"] }),
+  ch({ id: "add-a-db", track: "data", tier: 1, requires: ["first-service"], unlocks: ["cache"], grants: ["relational-db"], requiredTypes: ["relational-db"] }),
+  ch({ id: "cache", track: "data", tier: 2, requires: ["add-a-db"], unlocks: [], grants: ["cache"], requiredTypes: ["cache"] }),
 ]
 
 describe("resolveTechTree", () => {

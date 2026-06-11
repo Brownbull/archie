@@ -90,6 +90,21 @@ export function validateTechTree(challenges: readonly Challenge[]): TechTreeIssu
   // `=== []` assertion is the permanent regression net for both.
   issues.push(...findUnlockOrderingIssues(challenges))
 
+  // Phase-1b (D96): INTRO PACING is a hard gate too — a quest introduces at most ONE new block,
+  // and must EXERCISE what it grants (grant ∈ its own required_types — teach-by-using, enforced).
+  // "One quest with many new components at once" was the original feedback's pacing complaint;
+  // this rule makes the progressive-journey property permanent, like the ordering gates above.
+  for (const c of challenges) {
+    if (c.grants.length > 1) {
+      issues.push({ kind: "multi-grant", challengeId: c.id, detail: `grants ${c.grants.length} blocks at once [${c.grants.join(", ")}] — one intro per quest` })
+    }
+    for (const g of c.grants) {
+      if (!c.requiredTypes.includes(g)) {
+        issues.push({ kind: "unexercised-grant", challengeId: c.id, detail: `grants "${g}" without requiring its use — a handout, not a lesson` })
+      }
+    }
+  }
+
   return issues
 }
 

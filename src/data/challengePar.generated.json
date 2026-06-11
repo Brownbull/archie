@@ -23,6 +23,10 @@
     "cost": 40,
     "nodes": 3
   },
+  "store-the-blobs": {
+    "cost": 83,
+    "nodes": 4
+  },
   "async-pipeline": {
     "cost": 115,
     "nodes": 4
@@ -170,6 +174,10 @@
   "maxwells-demon": {
     "cost": 10200,
     "nodes": 8
+  },
+  "metrics-firehose": {
+    "cost": 115,
+    "nodes": 4
   },
   "no-cache-no-mercy": {
     "cost": 390,

@@ -225,6 +225,10 @@ export interface TechTreeIssue {
     // challenge's requires-closure (nor the challenge itself, nor BASE_UNLOCKED_BLOCKS) grants.
     | "unreachable-required-type"
     | "ungrantable-available-block"
+    // Phase-1b (D96): intro pacing — one new block per quest, and a grant must be exercised
+    // (∈ the granting quest's own required_types). Handouts aren't lessons.
+    | "multi-grant"
+    | "unexercised-grant"
   /** Challenge id the issue is attached to. */
   challengeId: string
   /** Human-readable detail (e.g. the missing ref id, or the cycle path). */

@@ -34,11 +34,11 @@ forbidden_types: [relational-db]
 schema_version: 2
 track: data
 tier: 5
-requires: [search-at-scale]
+requires: [search-at-scale, metrics-firehose, rag-retrieval]
 unlocks: []
 min_xp: 10520
 required_types: [time-series-db, graph-db, vector-store]
 available_blocks: [compute, time-series-db, graph-db, vector-store, cache, traffic-source]
-grants: [graph-db, time-series-db, vector-store]
+grants: [graph-db]
 rewards:
   xp: 1600

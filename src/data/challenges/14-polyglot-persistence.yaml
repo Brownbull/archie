@@ -31,7 +31,7 @@ hints:
 schema_version: 2
 track: data
 tier: 3
-requires: [cache-the-hot-path]
+requires: [cache-the-hot-path, store-the-blobs]
 unlocks: [search-at-scale, write-storm]
 min_xp: 1976
 required_types: [relational-db, nosql, cache, object-storage]
