@@ -81,3 +81,30 @@ describe("makeChallengeCanvas (P5-S1 / D95)", () => {
     expect(nodes.find((n) => n.id === "n-c")?.data.activeConfigVariantId).toBe("small")
   })
 })
+
+describe("chain carry-forward seeding priority (P5-S5 / D95)", () => {
+  it("the player's carried build outranks the authored seed; absent → authored fallback", async () => {
+    const { saveChainBuild } = await import("@/services/chainCarryForward")
+    localStorage.clear()
+    const chainQuest = {
+      ...base,
+      chain: { id: "ch", stage: 2, continuesFrom: "parent-quest" },
+      initialArchitecture: {
+        nodes: [{ id: "authored-node", componentId: "fastapi", configVariantId: "small", position: { x: 0, y: 0 }, replicas: 1 }],
+        edges: [],
+      },
+    } as unknown as Challenge
+
+    // No carried build yet → the authored seed wins.
+    expect(makeChallengeCanvas(chainQuest).nodes.some((n) => n.id === "authored-node")).toBe(true)
+
+    // Save a parent build → it takes over.
+    saveChainBuild("parent-quest", [
+      { id: "carried-node", type: "archie-component", position: { x: 10, y: 10 }, data: { archieComponentId: "fastapi", activeConfigVariantId: "large", componentName: "F", componentCategory: "compute", replicaCount: 3 } },
+    ] as never, [])
+    const { nodes } = makeChallengeCanvas(chainQuest)
+    expect(nodes.some((n) => n.id === "carried-node")).toBe(true)
+    expect(nodes.some((n) => n.id === "authored-node")).toBe(false)
+    expect(nodes.find((n) => n.id === "carried-node")?.data.replicaCount).toBe(3)
+  })
+})

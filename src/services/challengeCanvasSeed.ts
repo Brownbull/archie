@@ -1,6 +1,8 @@
 import { hydrateArchitectureSkeleton } from "@/services/yamlImporter"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import { makeChallengeTrafficNodes, hasTrafficSource } from "@/services/trafficSourceInjection"
+import { loadChainBuild } from "@/services/chainCarryForward"
+import type { ArchitectureFile } from "@/schemas/architectureFileSchema"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
 import type { Challenge } from "@/lib/challengeTypes"
 
@@ -19,7 +21,12 @@ import type { Challenge } from "@/lib/challengeTypes"
  * shipped content — it guards user-authored quests).
  */
 export function makeChallengeCanvas(challenge: Challenge): { nodes: ArchieNode[]; edges: ArchieEdge[] } {
-  const seed = challenge.initialArchitecture
+  // P5-S5: a chain stage continues the PLAYER'S build of its parent when one is saved (the
+  // progressive-challenge vision — grow one architecture across stages); the authored seed is the
+  // fallback, traffic-only the floor. All three roads hydrate through the same import pipeline.
+  const carried: Pick<ArchitectureFile, "nodes" | "edges"> | null =
+    challenge.chain?.continuesFrom ? loadChainBuild(challenge.chain.continuesFrom) : null
+  const seed = carried ?? challenge.initialArchitecture
   if (!seed || seed.nodes.length === 0) {
     return { nodes: makeChallengeTrafficNodes(challenge), edges: [] }
   }

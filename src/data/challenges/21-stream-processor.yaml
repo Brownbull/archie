@@ -42,3 +42,10 @@ available_blocks: [compute, event-stream, stream-processor, relational-db, cache
 grants: [stream-processor]
 rewards:
   xp: 560
+
+# P5-S5 (D95): Data Backbone chain, stage 3 (PROCESSING branch of the fork) — grows your Stream
+# the Data build into windowed aggregation.
+chain:
+  id: data-backbone
+  stage: 3
+  continues_from: event-stream

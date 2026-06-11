@@ -181,6 +181,10 @@ export interface Challenge {
    *  shown-but-locked in every vendor surface, blocked at the store chokepoint. Also the
    *  anti-brute-force tool (restrict the super-tier vendor). Absent ⇒ all vendors usable. */
   restrictedVendors?: string[]
+  /** Progressive-chain membership (P5-S5, D95): one architecture grown across stages. Forks emerge
+   *  from shape (several quests continuing from one parent). The player's 3★ build of
+   *  `continuesFrom` seeds this stage's canvas; the authored seed is the fallback. */
+  chain?: { id: string; stage: number; continuesFrom?: string }
   /**
    * Runtime-only provenance (D45, NOT in the YAML schema). `builtin` is stamped at the build-time
    * glob (the only path that can produce it); `user` is stamped at loadChallengeFromYaml (runtime

@@ -39,3 +39,9 @@ available_blocks: [compute, message-queue, worker, relational-db, cache, load-ba
 grants: [message-queue]
 rewards:
   xp: 130
+
+# P5-S5 (D95): Data Backbone chain, stage 1 — the root. Your 3★ build here carries forward into
+# Stream the Data (stage 2), growing one architecture across the chain's requirement stages.
+chain:
+  id: data-backbone
+  stage: 1

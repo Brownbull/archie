@@ -242,3 +242,18 @@ describe("initial_architecture — brownfield starts (P5-S1 / D95)", () => {
     expect(ChallengeYamlSchema.safeParse({ ...valid, initial_architecture: { nodes: [], edges: [] } }).success).toBe(false)
   })
 })
+
+describe("chain metadata (P5-S5 / D95)", () => {
+  it("parses a chain member and transforms continues_from → continuesFrom", () => {
+    const r = ChallengeYamlSchema.safeParse({ ...valid, chain: { id: "data-backbone", stage: 2, continues_from: "async-pipeline" } })
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect(r.data.chain).toEqual({ id: "data-backbone", stage: 2, continuesFrom: "async-pipeline" })
+  })
+
+  it("stage 1 must be a root; stage >1 must name its build parent", () => {
+    expect(ChallengeYamlSchema.safeParse({ ...valid, chain: { id: "c", stage: 1, continues_from: "x" } }).success).toBe(false)
+    expect(ChallengeYamlSchema.safeParse({ ...valid, chain: { id: "c", stage: 2 } }).success).toBe(false)
+    expect(ChallengeYamlSchema.safeParse({ ...valid, chain: { id: "c", stage: 1 } }).success).toBe(true)
+  })
+})

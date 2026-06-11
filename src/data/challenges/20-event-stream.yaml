@@ -52,3 +52,11 @@ initial_architecture:
   edges:
     - { id: bf-e0, source_node_id: bf-traffic, target_node_id: bf-api }
     - { id: bf-e1, source_node_id: bf-api, target_node_id: bf-queue }
+
+# P5-S5 (D95): Data Backbone chain, stage 2 — continues from YOUR async-pipeline build (the
+# authored fire-and-forget seed above is the fallback when no carried build exists). The chain
+# FORKS after this stage: stream-processor (processing branch) and the-long-tail (latency branch).
+chain:
+  id: data-backbone
+  stage: 2
+  continues_from: async-pipeline

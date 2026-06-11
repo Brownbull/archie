@@ -336,6 +336,29 @@ function QuestDetailPanel({ node, bestStars, breaksRecord, clearsRecord, onStart
             ))}
           </div>
         </div>)}
+        {/* P5-S5 (D95): chain membership — stage, what the build grows out of, where it forks to. */}
+        {c.chain && (() => {
+          const members = getAllChallenges().filter((x) => x.chain?.id === c.chain!.id)
+          const parent = c.chain.continuesFrom ? members.find((x) => x.id === c.chain!.continuesFrom) : null
+          const forks = members.filter((x) => x.chain?.continuesFrom === c.id)
+          const maxStage = Math.max(...members.map((x) => x.chain?.stage ?? 0))
+          return (
+            <div data-testid="quest-chain-info" className="rounded border border-[#4a9eff]/30 bg-[#4a9eff]/5 p-2.5">
+              <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-[#4a9eff]">
+                <Scroll className="h-3 w-3" /> Chain · stage {c.chain.stage} of {maxStage}
+              </div>
+              <div className="mt-1 flex flex-col gap-0.5 text-[0.6875rem] text-[#d0c8b8]">
+                {parent && <span>Grows your <span className="text-[#4a9eff]">{parent.title}</span> build</span>}
+                {forks.length > 0 && (
+                  <span data-testid="quest-chain-forks">
+                    {forks.length > 1 ? "Forks to: " : "Continues to: "}
+                    {forks.map((f) => f.title).join(" · ")}
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })()}
         {node.missingRequirements.length > 0 && (
           <div>
             <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-amber-400">

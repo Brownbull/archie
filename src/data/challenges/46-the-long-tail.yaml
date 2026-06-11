@@ -38,3 +38,11 @@ available_blocks: [compute, cdn, cache, load-balancer, relational-db, realtime, 
 grants: []
 rewards:
   xp: 455
+
+# P5-S5 (D95): Data Backbone chain, stage 3 (LATENCY branch of the fork) — the same Stream the
+# Data build, grown toward edge caching instead of processing. Forks ARE the chain shape: two
+# quests continuing from one parent.
+chain:
+  id: data-backbone
+  stage: 3
+  continues_from: event-stream

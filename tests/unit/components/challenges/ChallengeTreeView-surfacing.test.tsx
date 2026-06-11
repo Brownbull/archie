@@ -116,3 +116,16 @@ describe("named chaos objectives (P5-S3 / D95)", () => {
     expect(panel).not.toHaveTextContent(/Survive 1 chaos event/)
   })
 })
+
+describe("chain panel in the quest detail (P5-S5 / D95)", () => {
+  it("event-stream shows its stage, build parent, and the fork", () => {
+    const c = getAllChallenges().find((x) => x.id === "event-stream")!
+    useUserProgressStore.setState({ completedChallenges: [...c.requires], trackXp: { realtime: 1_000_000 } })
+    render(<ChallengeTreeView open onOpenChange={() => {}} />)
+    fireEvent.click(screen.getByTestId(`tree-node-${c.id}`))
+    const chain = screen.getByTestId("quest-chain-info")
+    expect(chain).toHaveTextContent(/stage 2 of 3/)
+    expect(chain).toHaveTextContent(/Grows your .*Pipeline.* build/)
+    expect(screen.getByTestId("quest-chain-forks")).toHaveTextContent(/Forks to:/)
+  })
+})

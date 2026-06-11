@@ -191,6 +191,15 @@ export const ChallengeYamlSchema = z
     // tool (block the super-tier vendor). Existence is harness-validated (the component catalog
     // isn't a static registry at schema time).
     restricted_vendors: z.array(z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH)).max(12).optional(),
+    // P5-S5 (D95): progressive-chain membership — one architecture grown across stages, forks
+    // allowed (multiple quests continuing from the same parent ARE the fork). `continues_from`
+    // names the quest whose build seeds this stage (player's 3★ build carries forward; the
+    // authored initial_architecture is the fallback). Stage 1 omits it; stage >1 requires it.
+    chain: z.object({
+      id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(/^[a-z0-9-]+$/),
+      stage: z.number().int().min(1).max(9),
+      continues_from: challengeIdRef.optional(),
+    }).strict().optional(),
   })
   .strict()
   .superRefine((d, ctx) => {
@@ -238,6 +247,15 @@ export const ChallengeYamlSchema = z
           path: ["traffic_sources"],
           message: `combined traffic peak ${peak} exceeds the buildable maximum ${MAX_BUILDABLE_PEAK_RPS} (50 nodes × 20 replicas)`,
         })
+      }
+    }
+    // P5-S5: chain coherence — the build-parent edge exists exactly when there's a prior stage.
+    if (d.chain) {
+      if (d.chain.stage === 1 && d.chain.continues_from) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["chain", "continues_from"], message: "stage 1 is the chain root — it can't continue from another quest" })
+      }
+      if (d.chain.stage > 1 && !d.chain.continues_from) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["chain", "continues_from"], message: "stage >1 must name the quest its build continues from" })
       }
     }
     // P5-S1: brownfield integrity — node ids unique, every edge endpoint references a seeded node.
@@ -298,4 +316,5 @@ export const ChallengeYamlSchema = z
     ...(d.resilience_conditions !== undefined ? { resilienceConditions: d.resilience_conditions } : {}),
     ...(d.initial_architecture !== undefined ? { initialArchitecture: d.initial_architecture } : {}),
     ...(d.restricted_vendors !== undefined ? { restrictedVendors: d.restricted_vendors } : {}),
+    ...(d.chain !== undefined ? { chain: { id: d.chain.id, stage: d.chain.stage, ...(d.chain.continues_from !== undefined ? { continuesFrom: d.chain.continues_from } : {}) } } : {}),
   }))

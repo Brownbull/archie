@@ -6,6 +6,8 @@ import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { rankForXp, CHALLENGE_TRACKS } from "@/lib/challengeTracks"
 import { getDisciplineAvatars } from "@/lib/masteryAvatars"
 import { getAllChallenges } from "@/services/challengeLoader"
+import { saveChainBuild } from "@/services/chainCarryForward"
+import { useArchitectureStore } from "@/stores/architectureStore"
 import type { StarBreakdown } from "@/lib/challengeTypes"
 
 /** Per-track completed-quest count — the SAME basis MasteryProfilePanel's DisciplineRow unlocks on
@@ -39,6 +41,13 @@ export function useProgressPersistence(): void {
     if (lastResult.stars === 0) return
 
     awardedRef.current = lastResult
+
+    // P5-S5 (D95): a 3★ clear of a CHAIN quest snapshots the winning build so the next stage
+    // starts from it (client-side; losing it falls back to the stage's authored seed).
+    if (activeChallenge.chain && lastResult.stars === 3) {
+      const { nodes, edges } = useArchitectureStore.getState()
+      saveChainBuild(activeChallenge.id, nodes, edges)
+    }
 
     const track = activeChallenge.track
     const prevTrackXp = useUserProgressStore.getState().trackXp[track] ?? 0
