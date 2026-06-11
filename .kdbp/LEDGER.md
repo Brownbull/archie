@@ -5423,3 +5423,10 @@ TICK: —
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P191
+- 2026-06-11 17:28 | Write | /home/khujta/projects/bmad/archie/src/lib/vendorPricing.ts
+- 2026-06-11 17:36 | Write | /home/khujta/projects/bmad/archie/src/hooks/usePoolExhaustionWay.ts
+
+## 2026-06-11 — [owner redesign] feat(challenges): D103 capability progression + pool-exhaustion way
+FINDINGS: D18's calibration trap confirmed live (single-model can't isolate the pool — latency/capacity fail first) → dedicated-capacity teaching variant; reference-solver premium-tier reliance surfaced → affordability gate (free-clearable OR closure-covered) instead of naive free-only; AuthProvider trap hit a 3rd time (usePoolExhaustionWay) — mocked per pattern.
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5138/5138; affordability + pool pins; purchase-action pins; golden byte-identical through the variant add) · E2E ✅ (journey 45.3s) · rules deployed pre-push
+NOTE: progress wipe executed earlier this turn (userProgress + attempts) — fresh economy for all accounts.

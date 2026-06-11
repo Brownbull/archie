@@ -1,6 +1,6 @@
 # aislop Quality Report
 
-**Date:** 20260611-170958
+**Date:** 20260611-181701
 **Score:** 10/100 (Critical)
 **Scan:** `aislop scan --staged`
 
@@ -8,14 +8,14 @@
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 52 | 472ms |
-| code-quality | 79 | 5863ms |
-| ai-slop | 0 | 26ms |
-| security | 11 | 2249ms |
+| lint | 53 | 317ms |
+| code-quality | 82 | 3820ms |
+| ai-slop | 0 | 29ms |
+| security | 11 | 2669ms |
 
 ## Findings
 
-### code-quality (79)
+### code-quality (82)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:43` — knip/dependencies: Unused dependency: tailwindcss
@@ -41,6 +41,9 @@
 - [!] `src/lib/constants.ts:0` — knip/duplicates: Duplicate export: unknown
 - [!] `src/engine/breakDetection.ts:130` — knip/exports: Unused export: BREAK_METHOD_LABELS
 - [!] `src/engine/breakDetection.ts:112` — knip/types: Unused type: BreakMethodId
+- [!] `src/lib/vendorPricing.ts:33` — knip/exports: Unused export: eliteVendorId
+- [!] `src/lib/vendorPricing.ts:15` — knip/types: Unused type: VendorPrice
+- [!] `src/lib/vendorPricing.ts:22` — knip/types: Unused type: TierPrice
 - [!] `src/engine/topologyChecker.ts:27` — knip/exports: Unused export: isBlockingTopologyIssue
 - [!] `src/lib/componentTypes.ts:245` — knip/exports: Unused export: ASYNC_OFFPATH_CATEGORIES
 - [!] `src/lib/componentTypes.ts:10` — knip/types: Unused type: ComponentType
@@ -49,10 +52,10 @@
 - [!] `src/services/trafficSourceInjection.ts:16` — knip/types: Unused type: TrafficSourceConfig
 - [!] `src/services/trafficSourceInjection.ts:182` — knip/types: Unused type: TrafficResetUpdate
 - [!] `src/services/scenarioLoader.ts:34` — knip/exports: Unused export: getAllScenarioPresets
+- [!] `src/lib/vendorOwnership.ts:36` — knip/exports: Unused export: typeIdOf
 - [!] `src/schemas/blueprintSchema.ts:42` — knip/types: Unused type: Blueprint
 - [!] `src/stores/challengeStore.ts:12` — knip/types: Unused type: AttemptSnapshot
 - [!] `src/stores/simulationStore.ts:6` — knip/types: Unused type: SimulationStatus
-- [!] `src/stores/userProgressStore.ts:24` — knip/types: Unused type: UserProgress
 - [!] `src/engine/dashboardCalculator.ts:8` — knip/types: Unused type: ComponentCategoryMetric
 - [!] `src/engine/dashboardCalculator.ts:13` — knip/types: Unused type: CategoryBreakdown
 - [!] `src/engine/recalculator.ts:13` — knip/types: Unused type: MetricAdjustment
@@ -62,7 +65,7 @@
 - [!] `src/lib/demandTypes.ts:100` — knip/types: Unused type: FailureResponse
 - [!] `src/services/stackPlacement.ts:18` — knip/types: Unused type: StackPlacementResult
 - [!] `src/engine/compatibilityChecker.ts:3` — knip/types: Unused type: CompatibilityResult
-- [!] `src/services/breakProbe.ts:118` — knip/types: Unused type: BreakFeasibility
+- [!] `src/services/breakProbe.ts:130` — knip/types: Unused type: BreakFeasibility
 - [!] `src/engine/demandEngine.ts:7` — knip/types: Unused type: AdjustedMetric
 - [!] `src/engine/ghostSuggestionEngine.ts:10` — knip/types: Unused type: GhostPlacement
 - [!] `src/engine/portCompatibilityChecker.ts:4` — knip/types: Unused type: PortCompatibilityResult
@@ -88,30 +91,29 @@
 - [!] `src/stores/userCanvasesStore.ts:22` — knip/types: Unused type: CanvasSlot
 - [!] `src/stores/userCanvasesStore.ts:28` — knip/types: Unused type: CanvasSlots
 - [!] `src/services/challengeAutosave.ts:5` — knip/types: Unused type: SavedChallenge
+- [!] `src/hooks/usePoolExhaustionWay.ts:9` — knip/types: Unused type: MechanicWayOutcome
 - [!] `src/lib/equipmentSlots.ts:3` — knip/types: Unused type: EquipmentSlot
 - [!] `src/components/common/DataSourceNote.tsx:4` — knip/types: Unused type: DataSourceKind
-- [!] `src/components/canvas/CanvasView.tsx:72` — complexity/function-too-long: Function 'CanvasViewInner' has 325 lines (max: 80)
-- [!] `src/components/challenges/BreakItPanel.tsx:66` — complexity/function-too-long: Function 'BreakItPanel' has 168 lines (max: 80)
-- [!] `src/components/challenges/BreakRegistryPanel.tsx:17` — complexity/function-too-long: Function 'BreakRegistryPanel' has 93 lines (max: 80)
-- [!] `src/hooks/useBreakCollection.ts:44` — complexity/function-too-long: Function 'useBreakCollection' has 106 lines (max: 80)
-- [!] `src/hooks/useBreakCollection.ts:44` — complexity/deep-nesting: Function 'useBreakCollection' has nesting depth 7 (max: 5)
-- [!] `src/hooks/useResilienceClears.ts:27` — complexity/deep-nesting: Function 'useResilienceClears' has nesting depth 6 (max: 5)
+- [!] `src/components/canvas/NodeConfigSelect.tsx:33` — complexity/function-too-long: Function 'NodeConfigSelectBase' has 117 lines (max: 80)
+- [!] `src/components/canvas/NodeProviderSelect.tsx:49` — complexity/function-too-long: Function 'NodeProviderSelectBase' has 162 lines (max: 80)
+- [!] `src/components/challenges/BreakRegistryPanel.tsx:18` — complexity/function-too-long: Function 'BreakRegistryPanel' has 101 lines (max: 80)
+- [!] `src/components/challenges/ChallengeResultsModal.tsx:201` — complexity/function-too-long: Function 'ChallengeResultsModal' has 386 lines (max: 80)
+- [!] `src/stores/architectureStore.ts:0` — complexity/file-too-large: File has 941 lines (max: 800)
 
-### lint (52)
+### lint (53)
 
 - [!] `tests/integration/challenges/referenceSolution.ts:8` — eslint/no-unused-vars: Identifier 'computeTotalArchitectureCost' is imported but never used.
+- [!] `src/components/dashboard/DashboardOverlay.tsx:272` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/challenges/ChallengeTreeView.tsx:2` — import/no-duplicates: Module 'lucide-react' is imported more than once in this file
+- [!] `src/services/yamlImporter.ts:139` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `src/components/canvas/ArchieNode.tsx:9` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
 - [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/NodeProviderSelect.tsx:78` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/NodeProviderSelect.tsx:78` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/NodeConfigSelect.tsx:57` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/NodeConfigSelect.tsx:57` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/TrafficNodeControls.tsx:123` — jsx-a11y/no-autofocus: The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users.
-- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/canvas/NodeProviderSelect.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
+- [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/challenges/ChallengeEditor.tsx:113` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:178` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:320` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
@@ -124,33 +126,35 @@
 - [!] `src/components/challenges/ChallengeEditor.tsx:379` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:386` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:390` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
-- [!] `src/components/challenges/ChallengeTreeView.tsx:2` — import/no-duplicates: Module 'lucide-react' is imported more than once in this file
-- [!] `src/services/yamlImporter.ts:139` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
-- [!] `src/components/dashboard/DashboardOverlay.tsx:272` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/TrafficNodeControls.tsx:123` — jsx-a11y/no-autofocus: The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users.
+- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/dashboard/CategoryBar.tsx:53` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
-- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `tests/e2e/helpers/canvas-helpers.ts:27` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
-- [!] `src/components/dashboard/CategoryBar.tsx:53` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/challenges/BreakRegistryPanel.tsx:34` — react-hooks/exhaustive-deps: React Hook useMemo has missing dependencies: 'edges', and 'nodes'
+- [!] `src/components/challenges/BreakRegistryPanel.tsx:35` — react-hooks/exhaustive-deps: React Hook useMemo has missing dependencies: 'nodes', and 'edges'
 - [!] `src/components/challenges/MasteryProfilePanel.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
 - [!] `src/components/layout/AppMenuBar.tsx:51` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/layout/AppMenuBar.tsx:51` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:143` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/unit/engine/monitoringFeedback.test.ts:2` — eslint/no-unused-vars: Identifier 'simulateTick' is imported but never used.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
+- [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
 - [!] `tests/unit/hooks/useChallengeCoach.test.ts:6` — eslint/no-unused-vars: Identifier 'COMPONENT_CATEGORIES' is imported but never used.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/e2e/global-setup.ts:20` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
+- [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 - [!] `tests/e2e/unlocked-setup.ts:32` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
+- [!] `tests/e2e/global-setup.ts:20` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 
 ### security (11)
 
