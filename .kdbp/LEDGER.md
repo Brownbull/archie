@@ -5414,3 +5414,9 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5128/5128; pins flipped in use
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P190
+- 2026-06-11 16:51 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/BreakRegistryPanel.tsx
+
+## 2026-06-11 — [playtest redesign] feat(challenges): break-method registry (D102)
+FINDINGS: economy inverted from per-quest to global-once without breaking the journey E2E (distinct methods still pay); 11 old-economy pins converted; 1 test-only race found (stale mounted hooks racing collection — prod single-instance)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5130/5130) · E2E ✅ (46.3s) · rules deployed (D9 manual) BEFORE the code push — schema-tolerant ordering per P5 lesson
+TICK: —
