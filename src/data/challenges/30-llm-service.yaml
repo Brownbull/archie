@@ -24,10 +24,10 @@ target_metrics:
   p99_latency_ms: 500
   p95_latency_ms: 350
 hints:
-  - "Core problem: LLM inference is expensive. Gateway routes models; caching dedupes prompts; database holds conversation history."
-  - "Place llm-gateway to route inference, cache to catch repeated prompts, and relational-db to persist conversation state. As traffic ramps 200→600 rps, cache hits on repeated queries keep p99 reasonable."
-  - "Wire traffic → compute → llm-gateway, with cache in front of gateway (TTL 1-2 min). Relational-db stores conversation history. Cache dedupes identical prompts; expect 30-50% hit rate on realistic read workload."
-  - "Topology: traffic → compute → llm-gateway ← cache (1-2min TTL) ← relational-db. 2 compute replicas at 600 rps. Cache dedupes ~40%, cutting gateway load to ~360 rps. LLM latency 200-400ms + compute 50-100ms + cache <5ms = p99 <500ms. DB persists conversation context."
+  - "Core problem: LLM inference is slow and expensive, and every request rides through it. The gateway routes model calls; the database holds conversation history."
+  - "Place llm-gateway to route inference and relational-db to persist conversation state. As traffic ramps 200→600 rps, the gateway tier — not compute — is where latency piles up."
+  - "Wire traffic → compute → llm-gateway, with relational-db hanging off compute for conversation history. The gateway holds each request for the full generation, so its capacity is what the ramp stresses."
+  - "Topology: traffic → compute → llm-gateway, plus compute → relational-db for history. Size compute for 600 rps ingestion and give the gateway enough replicas that inference latency holds p99 — one instance will not carry the peak."
 schema_version: 2
 track: aiml
 tier: 1
