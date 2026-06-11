@@ -5250,3 +5250,11 @@ TICK: ✅
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — (direct trunk push) · CI: Deploy Production ✅ success · DEPLOYMENTS: P171
+
+## 2026-06-11 — [Plan-2 P2] feat(challenges): chains & extras visible in the tree (D97)
+FINDINGS: 1 contract update (extras-section availability test pinned the completed-only behavior D97 widens)
+CHECKS: lint ✅ · types ✅ (1 duplicate-import caught by build, fixed) · tests ✅ (quick 5078/5078; 3 new marker suites; chains coherence auto-covers both retrofits) · E2E ✅ (17s, 2 artifacts)
+NOTE: both chains retrofit with ZERO new requires edges — the graph already encoded the progressions; D97 just made them visible. scale-out: carried build > authored lone-box seed, and the fictions coincide.
+
+## 2026-06-11 — PHASE 2 REVIEW (Plan-2): Chain & extras legibility
+VERDICT: APPROVE · FINDINGS: 2 (0C/0H/0M/2L — #1 fiction-drift deferred to playtest, #2 dismissed) · COVERAGE: HIGH · CONFIDENCE: 97/100 · ALIGNMENT: ALIGNED · TICK: ✅
