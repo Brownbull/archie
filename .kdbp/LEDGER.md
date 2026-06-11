@@ -5407,3 +5407,7 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5128/5128; completion-state pi
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P189
+
+## 2026-06-11 — [playtest fix] fix(challenges): toolbox banner + global tackle removal + terse unlock
+FINDINGS: D98's beginner carve-out reversed by the owner on live evidence — the carve-out's "onboarding value" was indistinguishable from handing out the answer; D98 note superseded (tackle gone everywhere)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5128/5128; pins flipped in useChallengeCoach/ComponentTab/ChallengeCoach suites)
