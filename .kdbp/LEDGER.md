@@ -5314,3 +5314,7 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5098/5098; both modes pinned i
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P177
+
+## 2026-06-11 — [playtest fix] fix(challenges): quest-log visual balance (legend column + edge/node contrast)
+FINDINGS: none — render-only; legend testid preserved (73 component tests green untouched)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5098/5098) · E2E ✅ (16.8s, fresh tree screenshots verified visually)
