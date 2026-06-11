@@ -5292,3 +5292,9 @@ NOTE: D18's hard part had quietly shipped (variant limits live since the reseed)
 
 ## 2026-06-11 — PHASE 5 REVIEW (Plan-2): Catalog polish & explainers
 VERDICT: APPROVE · FINDINGS: 1L (hint generosity → playtest) · COVERAGE: HIGH · CONFIDENCE: 96/100 · ALIGNMENT: ALIGNED · TICK: ✅
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P175
+
+## 2026-06-11 — PLAN COMPLETE: Progression Legibility & Explainability (Plan-2)
+All 5 phases ALL GATES in one day (P171–P175): unlock-ordering true-up + intro pacing (53 gaps → 0, 2 intro quests, 2 permanent gates) · chain & extras tree legibility (3 chains visible, shields pre-completion) · coach de-escalation (beginner-gated diagnostics) · score trace (every category answers "why") · catalog polish (pool-exhaustion quest, observability explainer, icon audit clean, vendor-unlock doc). Catalog 61→64. Golden 0-deletion through every change. D18 closed; D33 opened (unlocks metadata hygiene, LOW).
