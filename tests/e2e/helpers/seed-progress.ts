@@ -19,7 +19,7 @@ const TRACKS = ["foundations", "data", "edge", "realtime", "reliability", "secur
 const PROGRESS_GENERATION = 3 // must equal userProgressStore.PROGRESS_GENERATION or the reader wipes it
 // expertCurrency/breaksByChallenge/requiredFilterUnlocked (P4-S2) reset to zero each setup run so the
 // break-it journey spec (feedback-phase4) always collects FRESH breaks — the seed is the fixture.
-const ALLOWED_KEYS = ["trackXp", "completedChallenges", "bestStarsCloud", "equippedAvatar", "hintsUnlocked", "expertCurrency", "breaksByChallenge", "requiredFilterUnlocked", "resilienceClears", "breakMethods", "unlockedVendors", "unlockedTiers", "starsSpentOnUnlocks", "bonusStars", "generation"] as const
+const ALLOWED_KEYS = ["trackXp", "completedChallenges", "bestStarsCloud", "equippedAvatar", "hintsUnlocked", "expertCurrency", "breaksByChallenge", "requiredFilterUnlocked", "resilienceClears", "breakMethods", "unlockedVendors", "unlockedTiers", "starsSpentOnUnlocks", "bonusStars", "isTestAccount", "generation"] as const
 
 function loadEnv(): Record<string, string> {
   const env: Record<string, string> = { ...process.env } as Record<string, string>
@@ -77,6 +77,7 @@ async function writeProgress(page: Page, projectId: string, completedChallenges:
         unlockedTiers: { mapValue: { fields: {} } },
         starsSpentOnUnlocks: { integerValue: "0" },
         bonusStars: { integerValue: "0" },
+        isTestAccount: { booleanValue: true },
         requiredFilterUnlocked: { mapValue: { fields: {} } },
         resilienceClears: { mapValue: { fields: {} } },
         generation: { integerValue: String(generation) },
@@ -108,4 +109,33 @@ async function writeProgress(page: Page, projectId: string, completedChallenges:
 /** Seed the signed-in account's progress so EVERY quest is unlocked + replayable (all complete + max XP). */
 export async function seedUnlockedProgress(page: Page, projectId: string): Promise<void> {
   await writeProgress(page, projectId, allChallengeIds(), 1_000_000)
+}
+
+/** D105b: mark the signed-in account as a TEST account (hidden from the leaderboard). Used by
+ *  global-setup for the regular E2E user, whose progress doc is app-created. */
+export async function stampTestAccount(page: Page, projectId: string): Promise<void> {
+  const result = await page.evaluate(async ({ projectId }) => {
+    const authKey = Object.keys(localStorage).find((k) => k.startsWith("firebase:authUser:"))
+    if (!authKey) return { ok: false, error: "no firebase auth" }
+    const user = JSON.parse(localStorage.getItem(authKey) as string)
+    const uid: string | undefined = user?.uid
+    const token: string | undefined = user?.stsTokenManager?.accessToken
+    if (!uid || !token) return { ok: false, error: "no uid/token" }
+    const docName = `projects/${projectId}/databases/(default)/documents/userProgress/${uid}`
+    const body = {
+      writes: [{
+        update: { name: docName, fields: { isTestAccount: { booleanValue: true } } },
+        updateMask: { fieldPaths: ["isTestAccount"] },
+        updateTransforms: [{ fieldPath: "updatedAt", setToServerValue: "REQUEST_TIME" }],
+      }],
+    }
+    const res = await fetch(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:commit`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) return { ok: false, error: `commit ${res.status}` }
+    return { ok: true }
+  }, { projectId })
+  if (!result.ok) console.warn(`stampTestAccount: ${result.error}`)
 }

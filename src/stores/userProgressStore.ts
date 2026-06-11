@@ -1,6 +1,7 @@
 import { create } from "zustand"
-import { doc, getDoc, setDoc, serverTimestamp, increment } from "firebase/firestore"
+import { doc, getDoc, setDoc, serverTimestamp, increment, deleteDoc } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase"
+import { randomNickname, nicknameSlug, validateNickname } from "@/lib/nicknames"
 
 const COLLECTION = "userProgress"
 
@@ -63,9 +64,11 @@ export interface UserProgress {
   bonusStars: number
   /** D105 — self-stamped display name (from the auth profile) for the leaderboard. */
   displayName: string | null
+  /** D105b — the unique, player-visible nickname (auto-assigned, changeable in the profile). */
+  nickname: string | null
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, displayName: null, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, displayName: null, nickname: null, generation: PROGRESS_GENERATION }
 
 /** D104 — the provisioned baseline a fresh/reset account lands on. */
 const STARTER_PROGRESS: UserProgress = { ...EMPTY_PROGRESS, bonusStars: STARTER_BONUS_STARS, expertCurrency: STARTER_EXPERT }
@@ -135,6 +138,8 @@ interface UserProgressState extends UserProgress {
   purchaseVendor: (userId: string, vendorId: string, cost: { stars?: number; expert?: number }) => Promise<boolean>
   /** D103: buy a premium tier (stars only). False = broke/owned/invalid. */
   purchaseTier: (userId: string, vendorId: string, variantId: string, costStars: number) => Promise<boolean>
+  /** D105b: claim + set a new nickname. Returns null on success, or a user-facing error message. */
+  changeNickname: (userId: string, nickname: string) => Promise<string | null>
   reset: () => void
 }
 
@@ -161,7 +166,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
           // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
           // D104: a reset doesn't strand the player at zero — they land on the starter grant.
-          const wiped: UserProgress = { ...STARTER_PROGRESS, displayName: auth.currentUser?.displayName ?? null, generation: PROGRESS_GENERATION }
+          const wiped: UserProgress = { ...STARTER_PROGRESS, displayName: auth.currentUser?.displayName ?? null, nickname: randomNickname(), generation: PROGRESS_GENERATION }
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
@@ -188,20 +193,28 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           starsSpentOnUnlocks: (data.starsSpentOnUnlocks as number) ?? 0,
           bonusStars: (data.bonusStars as number) ?? 0,
           displayName: (data.displayName as string) ?? null,
+          nickname: (data.nickname as string) ?? null,
           generation: storedGen,
           loading: false,
         })
-        // D105: older docs may predate the name stamp — backfill once, fire-and-forget.
+        // D105/D105b: older docs may predate the name/nickname stamps — backfill once, fire-and-forget.
         if (!data.displayName && auth.currentUser?.displayName) {
           void setDoc(doc(db, COLLECTION, userId), { displayName: auth.currentUser.displayName, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
+        }
+        if (!data.nickname) {
+          const assigned = randomNickname()
+          set({ nickname: assigned })
+          void setDoc(doc(db, COLLECTION, userId), { nickname: assigned, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
+          void setDoc(doc(db, "nicknames", nicknameSlug(assigned)), { uid: userId }).catch(() => undefined)
         }
       } else {
         // D104: first sign-in (or post-wipe) — provision the starter grant and persist it so the
         // baseline is durable from minute one.
-        const provisioned = { ...STARTER_PROGRESS, displayName: auth.currentUser?.displayName ?? null }
+        const provisioned = { ...STARTER_PROGRESS, displayName: auth.currentUser?.displayName ?? null, nickname: randomNickname() }
         set({ ...provisioned, loading: false })
         try {
           await setDoc(doc(db, COLLECTION, userId), { ...provisioned, updatedAt: serverTimestamp() })
+          if (provisioned.nickname) void setDoc(doc(db, "nicknames", nicknameSlug(provisioned.nickname)), { uid: userId }).catch(() => undefined)
         } catch (err) {
           if (import.meta.env.DEV) console.error("Failed to provision starter progress:", err)
         }
@@ -281,6 +294,34 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
       await setDoc(doc(db, COLLECTION, userId), { equippedAvatar: avatarKey, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
     } catch (err) {
       if (import.meta.env.DEV) console.error("Failed to save equipped avatar:", err)
+    }
+  },
+
+  changeNickname: async (userId, raw) => {
+    if (!userId) return "Sign in to change your nickname."
+    const invalid = validateNickname(raw)
+    if (invalid) return invalid
+    const nickname = raw.trim()
+    const slug = nicknameSlug(nickname)
+    const prev = get().nickname
+    if (prev && nicknameSlug(prev) === slug) return null // unchanged
+    try {
+      // Claim: creating an EXISTING doc is an update, owner-only by rules → denied = occupied.
+      const claim = await getDoc(doc(db, "nicknames", slug))
+      if (claim.exists() && (claim.data() as { uid?: string }).uid !== userId) {
+        return "Name is occupied. Please use another one."
+      }
+      await setDoc(doc(db, "nicknames", slug), { uid: userId })
+      await setDoc(doc(db, COLLECTION, userId), { nickname, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
+      if (prev && nicknameSlug(prev) !== slug) {
+        void deleteDoc(doc(db, "nicknames", nicknameSlug(prev))).catch(() => undefined)
+      }
+      set({ nickname, error: null })
+      return null
+    } catch {
+      // The claim write itself is the race-proof gate: a concurrent claimant's create became a
+      // denied update — surface it as occupied.
+      return "Name is occupied. Please use another one."
     }
   },
 

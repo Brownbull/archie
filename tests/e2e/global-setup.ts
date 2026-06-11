@@ -1,5 +1,6 @@
 import { test as setup } from "@playwright/test"
 import { loginWithTestCredentials } from "./helpers/auth"
+import { stampTestAccount, seedProjectId } from "./helpers/seed-progress"
 
 const AUTH_FILE = "tests/e2e/.auth/user.json"
 
@@ -20,6 +21,10 @@ setup("authenticate with test credentials", async ({ page }) => {
     const state = { ...(parsed.state ?? {}), tourSeen: true }
     localStorage.setItem(KEY, JSON.stringify({ state, version: parsed.version ?? 0 }))
   })
+
+  // D105b: the test account never ranks on the leaderboard.
+  const projectId = seedProjectId()
+  if (projectId) await stampTestAccount(page, projectId)
 
   // Save authenticated state (cookies + localStorage) for reuse
   await page.context().storageState({ path: AUTH_FILE })

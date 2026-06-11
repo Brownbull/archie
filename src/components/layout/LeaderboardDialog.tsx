@@ -10,10 +10,12 @@ import {
 } from "@/components/ui/dialog"
 import { db } from "@/lib/firebase"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
+import { resolveAvatarSrc } from "@/lib/masteryAvatars"
 
 interface LeaderboardRow {
   uid: string
   name: string
+  avatar: string | null
   threeStarQuests: number
   xp: number
 }
@@ -43,12 +45,19 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
         const out: LeaderboardRow[] = []
         snap.forEach((d) => {
           const data = d.data()
+          if (data.isTestAccount === true) return // E2E/test accounts never rank (D105b)
           const trackXp = (data.trackXp as Record<string, number>) ?? {}
           const xp = Object.values(trackXp).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0)
           if (xp <= 0) return // only players with experience appear
           const best = (data.bestStarsCloud as Record<string, number>) ?? {}
           const threeStarQuests = Object.values(best).filter((v) => v === 3).length
-          out.push({ uid: d.id, name: (data.displayName as string) || "Anonymous architect", threeStarQuests, xp })
+          out.push({
+            uid: d.id,
+            name: (data.nickname as string) || (data.displayName as string) || "Anonymous architect",
+            avatar: resolveAvatarSrc((data.equippedAvatar as string) ?? null, xp),
+            threeStarQuests,
+            xp,
+          })
         })
         out.sort((a, b) => b.threeStarQuests - a.threeStarQuests || b.xp - a.xp)
         setRows(out)
@@ -97,7 +106,12 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
                     className={`border-b border-archie-border/40 ${r.uid === userId ? "bg-[#c9a961]/10 font-semibold text-[#c9a961]" : "text-text-primary"}`}
                   >
                     <td className="py-1.5 pr-2 tabular-nums">{i + 1}</td>
-                    <td className="py-1.5 pr-2">{r.name}{r.uid === userId ? " (you)" : ""}</td>
+                    <td className="py-1.5 pr-2">
+                      <span className="flex items-center gap-1.5">
+                        {r.avatar && <img src={r.avatar} alt="" className="h-4 w-4 rounded-full" style={{ imageRendering: "pixelated" }} />}
+                        {r.name}{r.uid === userId ? " (you)" : ""}
+                      </span>
+                    </td>
                     <td className="py-1.5 pr-2 text-right tabular-nums">{r.threeStarQuests}</td>
                     <td className="py-1.5 text-right tabular-nums">{r.xp.toLocaleString()}</td>
                   </tr>

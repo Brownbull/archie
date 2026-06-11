@@ -137,6 +137,7 @@ describe("loadProgress — Phase 6 generation reset (D65)", () => {
 
   it("loads a current-generation doc unchanged — no reset, no write (idempotent)", async () => {
     mockGetDoc.mockResolvedValue(snapshot({
+      nickname: "KeptName42",
       generation: PROGRESS_GENERATION, trackXp: { foundations: 300 }, completedChallenges: ["a"],
       bestStarsCloud: { a: 3 }, hintsUnlocked: { a: 1 }, equippedAvatar: "y",
     }))
@@ -156,8 +157,10 @@ describe("loadProgress — Phase 6 generation reset (D65)", () => {
     expect(st.bonusStars).toBe(STARTER_BONUS_STARS)
     expect(st.expertCurrency).toBe(STARTER_EXPERT)
     expect(spendableStars(st)).toBe(STARTER_BONUS_STARS)
-    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+    // D105b: the provisioning write + the nickname claim
+    expect(mockSetDoc.mock.calls.length).toBeGreaterThanOrEqual(1)
     expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ bonusStars: STARTER_BONUS_STARS, expertCurrency: STARTER_EXPERT, generation: PROGRESS_GENERATION })
+    expect(typeof (mockSetDoc.mock.calls[0][1] as { nickname?: unknown }).nickname).toBe("string")
   })
 })
 
@@ -400,5 +403,39 @@ describe("vendor & tier purchases (D103)", () => {
     useUserProgressStore.setState({ bestStarsCloud: { q1: 2 }, starsSpentOnUnlocks: 1 } as never) // spendable 1
     expect(await useUserProgressStore.getState().purchaseVendor("u1", "laravel", { stars: 2 })).toBe(false)
     expect(useUserProgressStore.getState().unlockedVendors["laravel"]).toBeUndefined()
+  })
+})
+
+describe("nickname auto-assign + change (D105b)", () => {
+  beforeEach(() => {
+    mockSetDoc.mockReset().mockResolvedValue(undefined as never)
+    mockGetDoc.mockReset()
+    useUserProgressStore.setState({ nickname: null, error: null })
+  })
+
+  it("a current-gen doc missing a nickname gets one backfilled (write fired)", async () => {
+    mockGetDoc.mockResolvedValue(snapshot({ generation: PROGRESS_GENERATION, trackXp: { f: 10 } }))
+    await useUserProgressStore.getState().loadProgress("u1")
+    expect(useUserProgressStore.getState().nickname).toBeTruthy()
+    expect(mockSetDoc).toHaveBeenCalled()
+  })
+
+  it("changeNickname: occupied name errors with the exact copy", async () => {
+    mockGetDoc.mockResolvedValue({ exists: () => true, data: () => ({ uid: "someone-else" }) })
+    const err = await useUserProgressStore.getState().changeNickname("u1", "TakenName")
+    expect(err).toBe("Name is occupied. Please use another one.")
+  })
+
+  it("changeNickname: free name claims + saves", async () => {
+    mockGetDoc.mockResolvedValue({ exists: () => false, data: () => ({}) })
+    const err = await useUserProgressStore.getState().changeNickname("u1", "FreshName_7")
+    expect(err).toBeNull()
+    expect(useUserProgressStore.getState().nickname).toBe("FreshName_7")
+  })
+
+  it("changeNickname: invalid input is rejected before any I/O", async () => {
+    const err = await useUserProgressStore.getState().changeNickname("u1", "x")
+    expect(err).toMatch(/3–20 characters/)
+    expect(mockGetDoc).not.toHaveBeenCalled()
   })
 })

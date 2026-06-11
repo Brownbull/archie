@@ -1,3 +1,4 @@
+import { rankForXp } from "@/lib/challengeTracks"
 import rank00 from "@/../docs/gabe/plans/2026-06-02-mastery-tracks/avatars/rank-00-novice.png"
 import rank01 from "@/../docs/gabe/plans/2026-06-02-mastery-tracks/avatars/rank-01-apprentice.png"
 import rank02 from "@/../docs/gabe/plans/2026-06-02-mastery-tracks/avatars/rank-02-builder.png"
@@ -80,3 +81,14 @@ export function getDisciplineAvatars(trackId: string): Array<{ level: number; sr
   return DISCIPLINE_AVATARS[trackId] ?? []
 }
 
+/** D105b — resolve any equipped-avatar key (rank:/discipline:/track:) to its image, with the
+ *  XP-rank fallback. Shared by the profile menu and the leaderboard. */
+export function resolveAvatarSrc(equippedAvatar: string | null | undefined, totalXp: number): string | null {
+  if (equippedAvatar?.startsWith("rank:")) return getMasteryAvatar(parseInt(equippedAvatar.slice(5), 10))
+  if (equippedAvatar?.startsWith("discipline:")) {
+    const parts = equippedAvatar.slice(11).split(":")
+    return getDisciplineAvatars(parts[0]).find((a) => a.level === parseInt(parts[1], 10))?.src ?? getTrackAvatar(parts[0])
+  }
+  if (equippedAvatar?.startsWith("track:")) return getTrackAvatar(equippedAvatar.slice(6))
+  return getMasteryAvatar(rankForXp(totalXp).rank)
+}
