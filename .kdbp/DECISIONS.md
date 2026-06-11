@@ -1503,3 +1503,21 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 
 **Status:** active
 **Review trigger:** earn/spend rates after the first owner playtest of the loop; the resilience-extra catalog before P4-S7 authoring.
+
+## D95 — Phase 5 (New challenge formats) design lock + 7-slice decomposition (2026-06-10)
+
+**Source of truth:** feedback20260609.md lines 13-18 (link dimensions), 71-73 (brownfield "Stream the Data" starts), 75 (per-block failure on Observe-to-Recover), 81 (progressive chains that FORK), 87+101-103 (team-expertise vendor restrictions, blocked-not-hidden, anti-brute-force), 112 (polyglot data-type divergence). PLAN Phase 5 row + D86. Tier: scale. Owner forks (2026-06-10): link-viz SHIP SCOPED V1 (throughput→dot density/speed + protocol→line style; glow/aura deferred to design note) · chains FULL FORKING DAG (one chain splitting into 2-3 requirement branches this phase) · polyglot EXPLORATION DOC ONLY (no engine change — scoring blast radius).
+
+**Core definitions:**
+1. **Brownfield start** = challenge YAML carries `initial_architecture` (nodes+edges, the architecture-fixture shape the Import flow already accepts); quest start seeds it instead of just traffic nodes. Player grows/fixes the inherited build. Additive: absent ⇒ current behavior byte-identical.
+2. **Per-block failure condition** = a test condition / scheduled event targeting a SPECIFIC node or typeId ("this component fails mid-run") instead of only global presets. D91's matchesTarget (id ∪ category ∪ typeId) is the targeting seam. Observe-to-Recover is the retrofit candidate.
+3. **Vendor restriction** = `restricted_vendors` (component ids) per challenge: SHOWN in the vendor dropdown but locked (the S6b/P4-S5 lock vocabulary extended to vendor level), never silently hidden. Also the anti-brute-force tool (block the super-tier vendor).
+4. **Forking chain** = chain metadata (chain id + stage + forks_to); stage N+1 seeds from the player's verified stage-N build (challengeAutosave carry-forward; authored initial_architecture as fallback); forks present 2-3 requirement branches (latency / multi-region / observability style).
+5. **Link-viz v1** = throughput → particle density+speed on EdgeParticles; protocol → line style (solid/dashed/dotted) + legend. Glow/aura + remaining dimensions → design note. Perf bound: no regression at 50 nodes.
+
+**7 slices:** P5-S1 brownfield schema+loader+seeding+harness · P5-S2 ≥2 brownfield quests 3★-verified · P5-S3 per-block failure conditions + Observe-to-Recover retrofit + Test-conditions surfacing · P5-S4 vendor restrictions schema+UI+1 quest · P5-S5 forking chain (schema, carry-forward, quest-log chain view, 1 forked chain authored+harness) · P5-S6 link-viz v1 + evidence · P5-S7 polyglot exploration doc + phase evidence wrap.
+
+**Sequencing:** S1 → S2 → S5 (chains ride brownfield seeding) · S3, S4, S6 parallel after S1 · S7 anytime. Invariants: golden byte-identity + 62/62 3★ (initial_architecture/chain metadata identity-defaulted; link-viz is render-only; per-block failure additive on the D91 seam).
+
+**Status:** active
+**Review trigger:** chain carry-forward UX after the first authored chain; link-viz perf at 50 nodes.
