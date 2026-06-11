@@ -5460,3 +5460,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P195
 ## 2026-06-11 — [owner] feat(challenges): D105b nicknames + leaderboard hygiene
 FINDINGS: uniqueness without transactions via create-vs-update rule semantics on the claim collection; existing users get names via lazy backfill at next load (no admin tooling available — the friend's row names itself on their next sign-in)
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5146/5146) · rules deployed pre-push
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P196
