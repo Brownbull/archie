@@ -5389,3 +5389,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P186
 FINDINGS: the owner's manual replication caught a REAL persistence bug (lost-update on the expert wallet — ledger 2, wallet 1); root-fixed with increment() + deep-merge on all 3 economy writes. Quest-level dials generated (51 quests; 2 capstones drop to zero-dial = no break challenge shown).
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5126/5126; atomic write-shape pins; freshness-gated dials artifact) · E2E ✅ (journey 48s)
 NOTE: D34 softened — origin IS feasible on 4 quests (checkout-flow, data-pipeline, api-gateway, personalized-feed); the dial isn't globally dead, just rare. The user's missing +1 self-heals: re-break Shape on first-service pays it.
+
+## 2026-06-11 — PUSH dev -> main (retry)
+PR: — · CI: Deploy Production ❌ 1fd09fa (missed file: breakDetection.ts → TS2554) → ✅ 6a21541 · DEPLOYMENTS: P187
