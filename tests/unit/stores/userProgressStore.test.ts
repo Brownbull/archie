@@ -439,3 +439,26 @@ describe("nickname auto-assign + change (D105b)", () => {
     expect(mockGetDoc).not.toHaveBeenCalled()
   })
 })
+
+describe("earned-vs-purchased accountability (D106)", () => {
+  beforeEach(() => {
+    mockSetDoc.mockReset().mockResolvedValue(undefined as never)
+    useUserProgressStore.setState({ expertCurrency: 0, expertEarned: 0, breakMethods: {}, error: null })
+  })
+
+  it("in-game collection raises BOTH the wallet and the earned ledger, atomically", async () => {
+    await useUserProgressStore.getState().collectBreakMethod("u1", "rps-overload", "c1")
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1)
+    expect(s.expertEarned).toBe(1)
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, expertEarned: { __increment: 1 } })
+  })
+
+  it("spending lowers the wallet but never the earned ledger", async () => {
+    useUserProgressStore.setState({ expertCurrency: 2, expertEarned: 2, requiredFilterUnlocked: {} } as never)
+    await useUserProgressStore.getState().unlockRequiredFilter("u1", "c1")
+    const s = useUserProgressStore.getState()
+    expect(s.expertCurrency).toBe(1)
+    expect(s.expertEarned).toBe(2) // lifetime, play-only — rankings read this
+  })
+})

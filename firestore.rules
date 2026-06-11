@@ -94,7 +94,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'generation', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'expertEarned', 'generation', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200
@@ -112,10 +112,11 @@ service cloud.firestore {
         && (!('displayName' in request.resource.data) || request.resource.data.displayName is string)
         && (!('nickname' in request.resource.data) || request.resource.data.nickname is string)
         && (!('isTestAccount' in request.resource.data) || request.resource.data.isTestAccount is bool)
+        && (!('expertEarned' in request.resource.data) || (request.resource.data.expertEarned is int && request.resource.data.expertEarned >= 0))
         && request.resource.data.updatedAt == request.time;
       allow update: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'generation', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'expertEarned', 'generation', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200
@@ -133,6 +134,7 @@ service cloud.firestore {
         && (!('displayName' in request.resource.data) || request.resource.data.displayName is string)
         && (!('nickname' in request.resource.data) || request.resource.data.nickname is string)
         && (!('isTestAccount' in request.resource.data) || request.resource.data.isTestAccount is bool)
+        && (!('expertEarned' in request.resource.data) || (request.resource.data.expertEarned is int && request.resource.data.expertEarned >= 0))
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }

@@ -1593,3 +1593,8 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 
 **Owner:** a Leaderboard in the top bar, left side, between Build and the mode toggle; the cup (Trophy — previously quest mode's icon) becomes the leaderboard's icon, and Quest Mode takes the quests' own Scroll. Ranks every registered player with XP > 0 by 3★-cleared quests, then total XP; "(you)" highlighted; fetched fresh per open. Data: userProgress collection reads opened to ANY signed-in user (writes stay owner-only) — acceptable surface: no PII beyond the self-stamped displayName (stamped from the auth profile on provisioning + lazily backfilled). Rules deployed pre-push.
 **Status:** active
+
+## D106 — Earned-vs-purchased currency accountability (2026-06-11)
+
+**Owner (pre-monetization):** future star/Expert packages must never pollute rankings. Ledger split: `expertCurrency` = the spendable WALLET (purchases will land here); `expertEarned` = lifetime Experts earned through PLAY, incremented atomically alongside the wallet at the single in-game pay-point (collectBreakMethod — all D102 ways, dial + mechanic + resilience, flow through it). Spends never touch it. The starter grant (D104) is wallet-only (granted, not earned). Stars already split by construction: earned stars derive from bestStarsCloud (pure play); grants/purchases live in bonusStars — XP + 3★ rankings were never purchasable. The leaderboard shows the "Earned" wrench column (expertEarned) and ranks only by 3★/XP.
+**Status:** active

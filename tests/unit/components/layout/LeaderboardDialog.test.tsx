@@ -19,19 +19,38 @@ const snap = (docs: Array<{ id: string; data: Record<string, unknown> }>) => ({
 describe("LeaderboardDialog (D105)", () => {
   beforeEach(() => mockGetDocs.mockReset())
 
-  it("ranks by 3★ quests then XP, hides zero-XP accounts, marks you", async () => {
+  it("ranks by 3★ then XP; TIES share a rank and order alphabetically; zero-XP hidden", async () => {
     mockGetDocs.mockResolvedValue(snap([
-      { id: "a", data: { displayName: "Ada", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3, q3: 2 } } },
-      { id: "me", data: { displayName: "Gabriel", trackXp: { f: 900 }, bestStarsCloud: { q1: 3, q2: 3 } } },
-      { id: "zero", data: { displayName: "Lurker", trackXp: {}, bestStarsCloud: {} } },
+      { id: "a", data: { nickname: "Zelda", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 } } },
+      { id: "me", data: { nickname: "Gabriel", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 } } },
+      { id: "zero", data: { nickname: "Lurker", trackXp: {}, bestStarsCloud: {} } },
       { id: "b", data: { trackXp: { f: 100 }, bestStarsCloud: { q1: 3, q2: 3, q3: 3 } } },
     ]))
     render(<LeaderboardDialog open onOpenChange={() => {}} />)
     await waitFor(() => expect(screen.getByTestId("leaderboard-row-1")).toBeInTheDocument())
-    expect(screen.getByTestId("leaderboard-row-1")).toHaveTextContent("Anonymous architect") // 3×3★ wins
-    expect(screen.getByTestId("leaderboard-row-2")).toHaveTextContent("Gabriel (you)") // 2×3★, 900xp beats Ada's 500
-    expect(screen.getByTestId("leaderboard-row-3")).toHaveTextContent("Ada")
+    expect(screen.getByTestId("leaderboard-row-1")).toHaveTextContent("Anonymous architect") // 3×3★ → rank 1
+    // Gabriel and Zelda tie (2×3★, 500xp) → BOTH rank 2, alphabetical: Gabriel first
+    expect(screen.getByTestId("leaderboard-row-2")).toHaveTextContent("Gabriel (you)")
+    expect(screen.getByTestId("leaderboard-row-2")).toHaveTextContent("2")
+    expect(screen.getByTestId("leaderboard-row-3")).toHaveTextContent("Zelda")
+    expect(screen.getByTestId("leaderboard-row-3")).toHaveTextContent("2") // shared rank
     expect(screen.queryByText("Lurker")).toBeNull() // xp 0 hidden
+  })
+
+  it("shows only the top 10 — with an ellipsis + your row when you rank below", async () => {
+    const docs = Array.from({ length: 14 }, (_, i) => ({
+      id: `u${i}`,
+      data: { nickname: `Arch${String(i).padStart(2, "0")}`, trackXp: { f: 1000 - i * 10 }, bestStarsCloud: { q1: 3 } },
+    }))
+    docs.push({ id: "me", data: { nickname: "TailMe", trackXp: { f: 1 }, bestStarsCloud: {} } })
+    mockGetDocs.mockResolvedValue(snap(docs))
+    render(<LeaderboardDialog open onOpenChange={() => {}} />)
+    await waitFor(() => expect(screen.getByTestId("leaderboard-row-1")).toBeInTheDocument())
+    expect(screen.getByTestId("leaderboard-row-10")).toBeInTheDocument()
+    expect(screen.queryByTestId("leaderboard-row-11")).toBeNull() // top 10 only
+    expect(screen.getByTestId("leaderboard-ellipsis")).toBeInTheDocument()
+    expect(screen.getByTestId("leaderboard-row-you")).toHaveTextContent("TailMe (you)")
+    expect(screen.getByTestId("leaderboard-row-you")).toHaveTextContent("15") // your true rank
   })
 
   it("fetch failure shows the error state, not a crash", async () => {

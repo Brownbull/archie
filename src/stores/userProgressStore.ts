@@ -66,9 +66,12 @@ export interface UserProgress {
   displayName: string | null
   /** D105b — the unique, player-visible nickname (auto-assigned, changeable in the profile). */
   nickname: string | null
+  /** D106 — LIFETIME Experts earned through PLAY (breaks/resilience). Future purchased packs land
+   *  in the wallet (expertCurrency) but never here — rankings read THIS, so money can't rank. */
+  expertEarned: number
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, displayName: null, nickname: null, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, displayName: null, nickname: null, expertEarned: 0, generation: PROGRESS_GENERATION }
 
 /** D104 — the provisioned baseline a fresh/reset account lands on. */
 const STARTER_PROGRESS: UserProgress = { ...EMPTY_PROGRESS, bonusStars: STARTER_BONUS_STARS, expertCurrency: STARTER_EXPERT }
@@ -194,6 +197,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           bonusStars: (data.bonusStars as number) ?? 0,
           displayName: (data.displayName as string) ?? null,
           nickname: (data.nickname as string) ?? null,
+          expertEarned: (data.expertEarned as number) ?? 0,
           generation: storedGen,
           loading: false,
         })
@@ -387,11 +391,13 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     const state = get()
     if (state.breakMethods[methodId]) return false // known way — knowledge, not money (D102)
     const entry = { challengeId, earnedAt: Date.now(), confirmedOn: { [challengeId]: true as const } }
-    set({ breakMethods: { ...state.breakMethods, [methodId]: entry }, expertCurrency: state.expertCurrency + 1, error: null })
+    // D106: the wallet (spendable, purchasable later) and the EARNED ledger (play-only, ranked)
+    // increment together here — the one in-game pay-point post-D102.
+    set({ breakMethods: { ...state.breakMethods, [methodId]: entry }, expertCurrency: state.expertCurrency + 1, expertEarned: state.expertEarned + 1, error: null })
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { breakMethods: { [methodId]: entry }, expertCurrency: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { breakMethods: { [methodId]: entry }, expertCurrency: increment(1), expertEarned: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
