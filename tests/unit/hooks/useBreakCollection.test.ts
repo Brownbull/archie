@@ -3,6 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react"
 
 vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("firebase/firestore", () => ({
+  increment: vi.fn((n: number) => ({ __increment: n })),
   doc: vi.fn(() => ({})),
   getDoc: vi.fn(),
   setDoc: vi.fn(() => Promise.resolve()),

@@ -4,6 +4,7 @@ import type { Challenge, StarBreakdown, MeasuredAttempt } from "@/lib/challengeT
 import type { TickState } from "@/lib/simulationTypes"
 
 // Control the scored inputs so auto-scoring is deterministic without a real engine run.
+vi.mock("@/hooks/usePoolExhaustionWay", () => ({ usePoolExhaustionWay: () => null }))
 vi.mock("@/lib/simulationStats", async (orig) => {
   const actual = await orig<typeof import("@/lib/simulationStats")>()
   return { ...actual, computeSimStats: () => ({ uptimePercent: 100, avgLatencyMs: 10, p99LatencyMs: 50, currentRps: 0, servedRps: 0, failedRps: 0, totalServed: 0, totalFailed: 0 }) }

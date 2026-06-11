@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 
+vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
 vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), warning: vi.fn(), error: vi.fn() } }))
 

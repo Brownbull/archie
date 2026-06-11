@@ -99,6 +99,73 @@ config_variants:
       model-size: "Suitable for any single model size since routing is direct"
       token-throughput: "Handles moderate throughput; limited by single provider rate limits"
       inference-latency: "Low added latency due to simple proxy path"
+  - id: dedicated-capacity
+    name: Dedicated Capacity
+    description: >-
+      Reserved model capacity behind a small, fixed connection pool: throughput to spare, but only
+      50 requests may be IN FLIGHT per instance — the pool, not the model, is the ceiling.
+    docs_url: https://en.wikipedia.org/wiki/Connection_pool
+    monthly_cost: 60
+    max_rps: 400
+    base_latency_ms: 400
+    # D103/B: the pool-exhaustion teaching variant — capacity (400 rps) far exceeds what the pool
+    # (50 in-flight ≈ 125 rps at 400ms) will ever admit, so stripping the cap flips fail→pass: the
+    # causal-grade counterfactual the pool-exhaustion WAY requires. Existing variants keep their
+    # ids/numbers (golden-inert by construction).
+    concurrency_limit: 50
+    code_snippet:
+      language: typescript
+      code: |
+        // LLM Gateway - Dedicated Capacity with a fixed connection pool
+        import OpenAI from 'openai'
+        import { Pool } from 'generic-pool'
+
+        const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+        // Reserved capacity: throughput to spare, but only POOL_SIZE requests in flight.
+        const POOL_SIZE = 50
+
+        export async function complete(prompt: string) {
+          const slot = await pool.acquire() // queues — or rejects — past 50 in flight
+          try {
+            const r = await client.chat.completions.create({
+              model: 'gpt-4o', messages: [{ role: 'user', content: prompt }],
+            })
+            return r.choices[0]?.message?.content
+          } finally {
+            pool.release(slot)
+          }
+        }
+    metric_explanations:
+      inference-latency:
+        reason: Reserved capacity answers fast when a slot is free — the pool, not the model, decides whether a request waits.
+        contributing_factors:
+          - Dedicated throughput keeps model-side queuing minimal
+          - A fixed 50-slot pool caps concurrent requests per instance
+          - Requests beyond the pool are rejected rather than queued indefinitely
+      model-availability:
+        reason: Single dedicated endpoint with reserved capacity — availability tracks one provider, with the pool shielding it from overload.
+        contributing_factors:
+          - Reserved capacity is not shared with other tenants
+          - The pool sheds excess load before it can brown out the model
+      cost-per-inference:
+        reason: Reserved capacity bills for the reservation — efficient when the pool runs warm, wasteful when slots sit idle.
+        contributing_factors:
+          - Flat reservation cost amortizes over actual usage
+          - Idle slots still bill — sizing the fleet to demand matters
+    metrics:
+      - id: inference-latency
+        category: performance
+        value: medium
+        numeric_value: 6
+      - id: model-availability
+        category: reliability
+        value: medium
+        numeric_value: 6
+      - id: cost-per-inference
+        category: cost-efficiency
+        value: medium
+        numeric_value: 5
+
   - id: multi-model-router
     name: Multi-Model Router
     description: >-

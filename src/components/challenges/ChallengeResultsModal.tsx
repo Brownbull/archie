@@ -22,6 +22,7 @@ import { useAttemptPersistence } from "@/hooks/useAttemptPersistence"
 import { useProgressPersistence } from "@/hooks/useProgressPersistence"
 import { useAttemptComparison } from "@/hooks/useAttemptComparison"
 import { useBreakCollection } from "@/hooks/useBreakCollection"
+import { usePoolExhaustionWay } from "@/hooks/usePoolExhaustionWay"
 import { useResilienceClears } from "@/hooks/useResilienceClears"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { plannedTrafficReset } from "@/services/trafficSourceInjection"
@@ -204,6 +205,7 @@ export function ChallengeResultsModal() {
 
   const suggestion = useChallengeSuggestion()
   const breakOutcome = useBreakCollection()
+  const mechanicWay = usePoolExhaustionWay()
   const resilienceClears = useResilienceClears()
   const lastAward = useUserProgressStore((s) => s.lastAward)
 
@@ -475,6 +477,27 @@ export function ChallengeResultsModal() {
             </div>
           )}
         </div>
+
+        {/* D103/B — a mechanic way fired on this run (pool exhaustion): the run failed BECAUSE the
+            pool starved (counterfactual-proven). New = +1 Expert; known = registered knowledge. */}
+        {mechanicWay && (
+          <div data-testid="mechanic-way-card" className="rounded-lg border border-orange-500/40 bg-orange-500/10 p-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-orange-200">
+                {mechanicWay.fresh ? "New way discovered: Pool exhaustion!" : "Pool exhaustion — as you already know"}
+              </span>
+              <span data-testid="mechanic-way-payout" className="ml-auto text-[0.6875rem] font-semibold text-orange-300">
+                {mechanicWay.fresh ? "+1 Expert" : "registered"}
+              </span>
+            </div>
+            <p className="mt-1.5 text-[0.6875rem] leading-snug text-orange-200/80">
+              Every request HOLDS a slot for its full duration — the gateway turned traffic away while
+              capacity sat idle. {mechanicWay.fresh
+                ? "This way of breaking is yours now, game-wide."
+                : "This build falls to it too — that's on record in your registry."}
+            </p>
+          </div>
+        )}
 
         {/* Observability explainer (Plan-2 P5, D100 — feedback line 75 "I don't get why changing the
             observability provider solves it"): when the run had authored failures, state the engine's

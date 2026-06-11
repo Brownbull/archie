@@ -8,6 +8,8 @@ import type { Challenge } from "@/lib/challengeTypes"
 
 // NodeConfigSelect reads the component's config variants from the library singleton.
 const mockGetComponent = vi.fn()
+vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
+vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: { getComponent: (id: string) => mockGetComponent(id) },
 }))

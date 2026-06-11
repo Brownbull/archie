@@ -49,9 +49,14 @@ export interface UserProgress {
   /** D102 — the global break-method registry: a WAY of breaking pays once game-wide, then it's
    *  knowledge. methodId → where/when it was first earned + every quest it's been confirmed on. */
   breakMethods: Readonly<Record<string, { challengeId: string; earnedAt: number; confirmedOn: Readonly<Record<string, true>> }>>
+  /** D103 — capability progression: purchased vendors (account-wide) and premium tiers. */
+  unlockedVendors: Readonly<Record<string, true>>
+  unlockedTiers: Readonly<Record<string, true>>
+  /** D103 — stars spent on vendor/tier unlocks (subtracted from the spendable pool). */
+  starsSpentOnUnlocks: number
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, generation: PROGRESS_GENERATION }
 
 /** Total stars earned across challenges (sum of per-challenge bests — the ratings, unchanged by spending). */
 export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): number {
@@ -73,8 +78,9 @@ export function totalHintsSpent(p: Pick<UserProgress, "hintsUnlocked">): number 
 }
 
 /** Spendable star balance (D68): earned − spent (first hint per challenge free, LX1), never negative. */
-export function spendableStars(p: Pick<UserProgress, "bestStarsCloud" | "hintsUnlocked">): number {
-  return Math.max(0, totalEarnedStars(p) - totalHintsSpent(p))
+export function spendableStars(p: Pick<UserProgress, "bestStarsCloud" | "hintsUnlocked" | "starsSpentOnUnlocks">): number {
+  // D103: stars are dual-use — hints AND capability unlocks both draw from the same pool.
+  return Math.max(0, totalEarnedStars(p) - totalHintsSpent(p) - (p.starsSpentOnUnlocks ?? 0))
 }
 
 export interface XpAwardResult {
@@ -112,6 +118,10 @@ interface UserProgressState extends UserProgress {
   collectBreakMethod: (userId: string, methodId: string, challengeId: string) => Promise<boolean>
   /** D102: register that a KNOWN method also fells this quest's build (no payout, pure knowledge). */
   confirmBreakMethod: (userId: string, methodId: string, challengeId: string) => Promise<void>
+  /** D103: buy a vendor with stars or expert per the pricing model. False = broke/owned/invalid. */
+  purchaseVendor: (userId: string, vendorId: string, cost: { stars?: number; expert?: number }) => Promise<boolean>
+  /** D103: buy a premium tier (stars only). False = broke/owned/invalid. */
+  purchaseTier: (userId: string, vendorId: string, variantId: string, costStars: number) => Promise<boolean>
   reset: () => void
 }
 
@@ -137,7 +147,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
         if (storedGen < PROGRESS_GENERATION) {
           // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
           // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
-          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, generation: PROGRESS_GENERATION }
+          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, generation: PROGRESS_GENERATION }
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
@@ -159,6 +169,9 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           requiredFilterUnlocked: (data.requiredFilterUnlocked as Record<string, true>) ?? {},
           resilienceClears: (data.resilienceClears as UserProgress["resilienceClears"]) ?? {},
           breakMethods: (data.breakMethods as UserProgress["breakMethods"]) ?? {},
+          unlockedVendors: (data.unlockedVendors as UserProgress["unlockedVendors"]) ?? {},
+          unlockedTiers: (data.unlockedTiers as UserProgress["unlockedTiers"]) ?? {},
+          starsSpentOnUnlocks: (data.starsSpentOnUnlocks as number) ?? 0,
           generation: storedGen,
           loading: false,
         })
@@ -241,6 +254,63 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     } catch (err) {
       if (import.meta.env.DEV) console.error("Failed to save equipped avatar:", err)
     }
+  },
+
+  purchaseVendor: async (userId, vendorId, cost) => {
+    if (!userId || !vendorId) return false
+    const state = get()
+    if (state.unlockedVendors[vendorId]) return false
+    const stars = cost.stars ?? 0
+    const expert = cost.expert ?? 0
+    if (stars > 0 && spendableStars(state) < stars) return false
+    if (expert > 0 && state.expertCurrency < expert) return false
+    set({
+      unlockedVendors: { ...state.unlockedVendors, [vendorId]: true as const },
+      starsSpentOnUnlocks: state.starsSpentOnUnlocks + stars,
+      expertCurrency: state.expertCurrency - expert,
+      error: null,
+    })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        {
+          unlockedVendors: { [vendorId]: true },
+          ...(stars > 0 ? { starsSpentOnUnlocks: increment(stars) } : {}),
+          ...(expert > 0 ? { expertCurrency: increment(-expert) } : {}),
+          generation: PROGRESS_GENERATION,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save vendor unlock:", err)
+      set({ error: "Could not save your vendor unlock." })
+    }
+    return true
+  },
+
+  purchaseTier: async (userId, vendorId, variantId, costStars) => {
+    if (!userId || !vendorId || !variantId) return false
+    const state = get()
+    const key = `${vendorId}/${variantId}`
+    if (state.unlockedTiers[key]) return false
+    if (spendableStars(state) < costStars) return false
+    set({
+      unlockedTiers: { ...state.unlockedTiers, [key]: true as const },
+      starsSpentOnUnlocks: state.starsSpentOnUnlocks + costStars,
+      error: null,
+    })
+    try {
+      await setDoc(
+        doc(db, COLLECTION, userId),
+        { unlockedTiers: { [key]: true }, starsSpentOnUnlocks: increment(costStars), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { merge: true },
+      )
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to save tier unlock:", err)
+      set({ error: "Could not save your tier unlock." })
+    }
+    return true
   },
 
   collectBreakMethod: async (userId, methodId, challengeId) => {

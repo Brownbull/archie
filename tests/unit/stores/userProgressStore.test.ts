@@ -352,3 +352,45 @@ describe("resilience clears (P4-S7 / D94)", () => {
     expect(useUserProgressStore.getState().resilienceClears).toEqual({ a: { "failure-x": true } })
   })
 })
+
+describe("vendor & tier purchases (D103)", () => {
+  const base = {
+    trackXp: {}, completedChallenges: [], bestStarsCloud: { q1: 3, q2: 3 }, equippedAvatar: null, hintsUnlocked: {},
+    expertCurrency: 2, breaksByChallenge: {}, requiredFilterUnlocked: {}, breakMethods: {}, resilienceClears: {},
+    unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0,
+    generation: PROGRESS_GENERATION, error: null, loading: false, lastAward: null,
+  }
+  beforeEach(() => {
+    mockSetDoc.mockReset().mockResolvedValue(undefined as never)
+    useUserProgressStore.setState({ ...base })
+  })
+
+  it("purchaseVendor with stars: spends from the pool, persists atomic increments", async () => {
+    const ok = await useUserProgressStore.getState().purchaseVendor("u1", "python-fastapi", { stars: 2 })
+    expect(ok).toBe(true)
+    const s = useUserProgressStore.getState()
+    expect(s.unlockedVendors["python-fastapi"]).toBe(true)
+    expect(s.starsSpentOnUnlocks).toBe(2)
+    expect(spendableStars(s)).toBe(4) // 6 earned − 2 spent
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ unlockedVendors: { "python-fastapi": true }, starsSpentOnUnlocks: { __increment: 2 } })
+  })
+
+  it("purchaseVendor with expert: spends the wallet; broke = refused", async () => {
+    expect(await useUserProgressStore.getState().purchaseVendor("u1", "go-service", { expert: 2 })).toBe(true)
+    expect(useUserProgressStore.getState().expertCurrency).toBe(0)
+    expect(await useUserProgressStore.getState().purchaseVendor("u1", "spring-boot", { expert: 1 })).toBe(false)
+  })
+
+  it("purchaseTier spends stars once; owned tier refuses", async () => {
+    expect(await useUserProgressStore.getState().purchaseTier("u1", "node-express", "cluster-mode", 1)).toBe(true)
+    expect(useUserProgressStore.getState().unlockedTiers["node-express/cluster-mode"]).toBe(true)
+    expect(await useUserProgressStore.getState().purchaseTier("u1", "node-express", "cluster-mode", 1)).toBe(false)
+    expect(useUserProgressStore.getState().starsSpentOnUnlocks).toBe(1)
+  })
+
+  it("star purchases refuse when the pool (earned − hints − unlocks) can't cover", async () => {
+    useUserProgressStore.setState({ bestStarsCloud: { q1: 2 }, starsSpentOnUnlocks: 1 } as never) // spendable 1
+    expect(await useUserProgressStore.getState().purchaseVendor("u1", "laravel", { stars: 2 })).toBe(false)
+    expect(useUserProgressStore.getState().unlockedVendors["laravel"]).toBeUndefined()
+  })
+})

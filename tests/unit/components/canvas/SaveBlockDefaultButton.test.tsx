@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
 
 vi.mock("@/lib/firebase", () => ({ db: {} }))
-vi.mock("firebase/firestore", () => ({ doc: vi.fn(), getDoc: vi.fn(), setDoc: vi.fn(), serverTimestamp: vi.fn() }))
+vi.mock("firebase/firestore", () => ({
+  increment: vi.fn((n: number) => ({ __increment: n })), doc: vi.fn(), getDoc: vi.fn(), setDoc: vi.fn(), serverTimestamp: vi.fn() }))
 vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
 vi.mock("sonner", () => ({ toast: { success: vi.fn(), error: vi.fn() } }))
 vi.mock("@/services/componentLibrary", () => ({

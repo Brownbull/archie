@@ -3,9 +3,9 @@ title: The Pool Runs Dry
 brief: >-
   The AI summary feature shipped Friday and the team is proud of it — until Monday's traffic. The
   model isn't slow; the LINE in front of it is. Every request holds a gateway slot for the full
-  generation, the pool has 150 of them per instance, and at 300 requests a second your two
-  instances are turning users away while their GPUs sit half idle. Nobody bought more model — they
-  just never counted how long each request KEEPS its slot.
+  generation, the pool admits 50 in flight per instance, and at 300 requests a second your two
+  instances are turning users away while reserved capacity sits idle. Nobody bought more model —
+  they just never counted how long each request KEEPS its slot.
 difficulty: intermediate
 budget_cap: 700
 duration_seconds: 90
@@ -23,8 +23,8 @@ target_metrics:
   p99_latency_ms: 1200
 hints:
   - "Watch WHERE requests die: the gateway rejects them before the model ever sees them. A pool isn't throughput — it's how many requests can be IN FLIGHT at once."
-  - "In-flight ≈ arrival rate × time each request holds its slot. At 500 ms per generation (and worse under load), 150 slots per instance saturate far below this demand."
-  - "Two escapes, both real: more instances (each brings its own pool of 150), or a gateway tier built for more concurrent requests. Price them both against the budget."
+  - "In-flight ≈ arrival rate × time each request holds its slot. At 500 ms per generation (and worse under load), 50 slots per instance saturate far below this demand."
+  - "Two escapes, both real: more instances (each brings its own pool of 50), or a gateway tier built for more concurrent requests. Price them both against the budget."
 schema_version: 2
 track: aiml
 tier: 2
@@ -44,7 +44,7 @@ initial_architecture:
   nodes:
     - { id: bf-traffic, component_id: api-client, config_variant_id: rest-api, position: { x: 60, y: 200 }, replicas: 1, traffic_rps: 300, traffic_kind: realistic }
     - { id: bf-app, component_id: node-express, config_variant_id: single-process, position: { x: 320, y: 200 }, replicas: 2 }
-    - { id: bf-llm, component_id: llm-gateway, config_variant_id: single-model, position: { x: 580, y: 200 }, replicas: 2 }
+    - { id: bf-llm, component_id: llm-gateway, config_variant_id: dedicated-capacity, position: { x: 580, y: 200 }, replicas: 2 }
   edges:
     - { id: bf-e0, source_node_id: bf-traffic, target_node_id: bf-app }
     - { id: bf-e1, source_node_id: bf-app, target_node_id: bf-llm }

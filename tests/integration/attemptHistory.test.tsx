@@ -15,6 +15,7 @@ const fs = vi.hoisted(() => {
 })
 vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: { __db: true } }))
 vi.mock("firebase/firestore", () => ({
+  increment: vi.fn((n: number) => ({ __increment: n })),
   collection: (_db: unknown, name: string) => ({ name }),
   addDoc: async (_col: unknown, data: Record<string, unknown>) => {
     const createdAt = data.createdAt === "SERVER_TS" ? new fs.MockTimestamp(1000 + fs.DOCS.length) : data.createdAt

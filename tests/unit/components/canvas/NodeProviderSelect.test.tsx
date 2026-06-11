@@ -11,6 +11,8 @@ const twoProviders = [
   { id: "python-flask", name: "Python Flask", configVariants: [{ monthlyCost: 40, maxRPS: 800, baseLatencyMs: 25 }] },
 ]
 
+vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
+vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
     getComponent: () => twoProviders[0],

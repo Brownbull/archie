@@ -50,6 +50,7 @@ vi.stubGlobal("crypto", { randomUUID: () => `test-uuid-${++uuidCounter}` })
 
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUserBlockDefaultsStore } from "@/stores/userBlockDefaultsStore"
+import { useUserProgressStore } from "@/stores/userProgressStore"
 
 function lastNode() {
   const nodes = useArchitectureStore.getState().nodes
@@ -58,6 +59,7 @@ function lastNode() {
 
 describe("architectureStore.addNode — saved per-type default injection", () => {
   beforeEach(() => {
+    useUserProgressStore.setState({ unlockedVendors: { postgresql: true, mysql: true }, unlockedTiers: { "postgresql/primary-replica": true, "postgresql/single-node": true } } as never)
     uuidCounter = 0
     useArchitectureStore.setState({ nodes: [], edges: [] })
     useUserBlockDefaultsStore.setState({ defaults: {} })
@@ -137,6 +139,7 @@ describe("quest mode bypasses saved defaults (2026-06-11 owner playtest)", () =>
   it("in a quest, addNode loads the requested block's own configuration — never the saved default", async () => {
     const { useChallengeStore } = await import("@/stores/challengeStore")
     useUserBlockDefaultsStore.setState({ defaults: { "relational-db": { providerId: "postgresql", variantId: "primary-replica" } } } as never)
+    useUserProgressStore.setState({ unlockedVendors: { postgresql: true }, unlockedTiers: { "postgresql/primary-replica": true } } as never)
     useChallengeStore.setState({ activeChallenge: { id: "q1", forbiddenTypes: [], restrictedVendors: [] } } as never)
 
     useArchitectureStore.getState().addNode("mysql", { x: 0, y: 0 })
@@ -149,10 +152,24 @@ describe("quest mode bypasses saved defaults (2026-06-11 owner playtest)", () =>
     const { useChallengeStore } = await import("@/stores/challengeStore")
     useChallengeStore.setState({ activeChallenge: null })
     useUserBlockDefaultsStore.setState({ defaults: { "relational-db": { providerId: "postgresql", variantId: "primary-replica" } } } as never)
+    useUserProgressStore.setState({ unlockedVendors: { postgresql: true }, unlockedTiers: { "postgresql/primary-replica": true } } as never)
 
     useArchitectureStore.getState().addNode("mysql", { x: 0, y: 0 })
     const n = lastNode()
     expect(n.data.archieComponentId).toBe("postgresql")
     expect(n.data.activeConfigVariantId).toBe("primary-replica")
+  })
+})
+
+describe("saved defaults respect ownership (D103)", () => {
+  it("an UNOWNED saved default falls back to the requested block", async () => {
+    useArchitectureStore.setState({ nodes: [], edges: [] })
+    const { useChallengeStore } = await import("@/stores/challengeStore")
+    useChallengeStore.setState({ activeChallenge: null })
+    useUserProgressStore.setState({ unlockedVendors: {}, unlockedTiers: {} } as never)
+    useUserBlockDefaultsStore.setState({ defaults: { "relational-db": { providerId: "postgresql", variantId: "primary-replica" } } } as never)
+    useArchitectureStore.getState().addNode("mysql", { x: 0, y: 0 })
+    const nodes = useArchitectureStore.getState().nodes
+    expect(nodes[nodes.length - 1].data.archieComponentId).toBe("mysql") // not swapped to the unowned default
   })
 })

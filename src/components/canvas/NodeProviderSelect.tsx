@@ -1,4 +1,14 @@
-import { Lock } from "lucide-react"
+import { useState } from "react"
+import { Lock, Star, Wrench } from "lucide-react"
+import { toast } from "sonner"
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { useUserProgressStore, spendableStars } from "@/stores/userProgressStore"
+import { useCurrentUserId } from "@/hooks/useCurrentUserId"
+import { isVendorOwned, vendorPriceLabel } from "@/lib/vendorOwnership"
+import { vendorPrice } from "@/lib/vendorPricing"
 import { memo, useMemo } from "react"
 import {
   Select,
@@ -37,6 +47,12 @@ interface NodeProviderSelectProps {
  * Falls back to a static label when a type has only one provider. Drag-safe inside React Flow.
  */
 function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: NodeProviderSelectProps) {
+  // D103 — capability purchases: unowned vendors render with a price tag; choosing one opens the
+  // dual-currency purchase dialog instead of swapping.
+  const userId = useCurrentUserId()
+  const progress = useUserProgressStore((st) => st)
+  const [pendingVendor, setPendingVendor] = useState<{ id: string; name: string; typeId: string } | null>(null)
+
   const swapNodeComponent = useArchitectureStore((s) => s.swapNodeComponent)
   const { showOnNodeConfig } = useDisclosureTier()
   const component = componentLibrary.getComponent(componentId)
@@ -81,7 +97,17 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <Select value={componentId} onValueChange={(v) => swapNodeComponent(nodeId, v)}>
+      <Select
+        value={componentId}
+        onValueChange={(v) => {
+          const target = componentLibrary.getComponent(v)
+          if (target?.typeId && !isVendorOwned(progress, target.typeId, v)) {
+            setPendingVendor({ id: v, name: target.name, typeId: target.typeId })
+            return
+          }
+          swapNodeComponent(nodeId, v)
+        }}
+      >
         <SelectTrigger
           data-testid="archie-node-provider"
           title="Switch vendor — see each one's cost, throughput, and latency"
@@ -96,6 +122,8 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
           {providers.map((p) => {
             const stats = providerStats(p)
             const restricted = isRestricted(p.id)
+            const owned = isVendorOwned(progress, p.typeId, p.id)
+            const price = p.typeId && !owned ? vendorPriceLabel(p.typeId, p.id) : null
             return (
               <SelectItem
                 key={p.id}
@@ -105,19 +133,78 @@ function NodeProviderSelectBase({ nodeId, componentId, category, variantName }: 
                 className="py-1 text-[0.75rem]"
                 title={restricted ? "Your team doesn't run this vendor in this quest (team-expertise restriction)" : undefined}
               >
-                <span className={`flex w-full items-center justify-between gap-3 ${restricted ? "opacity-50" : ""}`}>
+                <span className={`flex w-full items-center justify-between gap-3 ${restricted || !owned ? "opacity-60" : ""}`}>
                   <span className="flex items-center gap-2">
                     <ComponentIcon componentId={p.id} category={category} className="h-4 w-4 shrink-0" />
                     {p.name}
                     {restricted && <Lock className="h-3 w-3 shrink-0 text-text-secondary" aria-label="restricted in this quest" />}
+                    {!restricted && !owned && <Lock className="h-3 w-3 shrink-0 text-orange-300/70" aria-label="locked — purchasable" />}
                   </span>
-                  {stats && <span className="shrink-0 text-[0.625rem] text-text-secondary">{stats}</span>}
+                  <span className="flex shrink-0 items-center gap-2">
+                    {price && <span data-testid={`vendor-price-${p.id}`} className="text-[0.625rem] font-semibold text-orange-300">{price}</span>}
+                    {stats && <span className="text-[0.625rem] text-text-secondary">{stats}</span>}
+                  </span>
                 </span>
               </SelectItem>
             )
           })}
         </SelectContent>
       </Select>
+
+      {/* D103 purchase dialog — dual currency (standard: 2★ or 1🔧; elite: 2🔧 only). */}
+      {pendingVendor && (() => {
+        const price = vendorPrice(pendingVendor.typeId, pendingVendor.id)
+        const stars = spendableStars(progress)
+        const buy = async (cost: { stars?: number; expert?: number }) => {
+          const ok = userId ? await useUserProgressStore.getState().purchaseVendor(userId, pendingVendor.id, cost) : false
+          if (ok) {
+            toast.success(`${pendingVendor.name} unlocked — yours everywhere now.`)
+            swapNodeComponent(nodeId, pendingVendor.id)
+          } else {
+            toast.warning("Couldn't complete the unlock (not enough currency?).")
+          }
+          setPendingVendor(null)
+        }
+        return (
+          <Dialog open onOpenChange={(o) => !o && setPendingVendor(null)}>
+            <DialogContent data-testid="vendor-unlock-dialog" className="max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Unlock {pendingVendor.name}</DialogTitle>
+                <DialogDescription>
+                  Vendors are capability knowledge — unlock once, use everywhere (quests and free build).
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="flex-row justify-end gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setPendingVendor(null)}>Cancel</Button>
+                {price.stars !== null && (
+                  <Button
+                    data-testid="vendor-buy-stars"
+                    size="sm"
+                    variant="outline"
+                    disabled={stars < price.stars}
+                    className="gap-1 border-yellow-500/40 text-yellow-300 hover:bg-yellow-500/10"
+                    onClick={() => void buy({ stars: price.stars! })}
+                  >
+                    <Star className="h-3.5 w-3.5 fill-current" /> {price.stars}
+                  </Button>
+                )}
+                {price.expert !== null && (
+                  <Button
+                    data-testid="vendor-buy-expert"
+                    size="sm"
+                    variant="outline"
+                    disabled={progress.expertCurrency < price.expert}
+                    className="gap-1 border-orange-500/40 text-orange-300 hover:bg-orange-500/10"
+                    onClick={() => void buy({ expert: price.expert! })}
+                  >
+                    <Wrench className="h-3.5 w-3.5" /> {price.expert}
+                  </Button>
+                )}
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )
+      })()}
     </div>
   )
 }

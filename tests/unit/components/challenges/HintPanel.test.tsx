@@ -6,6 +6,7 @@ let mockUser: { uid: string } | null = null
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: mockUser }) }))
 vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("firebase/firestore", () => ({
+  increment: vi.fn((n: number) => ({ __increment: n })),
   doc: vi.fn(() => ({})),
   getDoc: vi.fn(),
   setDoc: vi.fn(() => Promise.resolve()),

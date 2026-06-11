@@ -137,6 +137,8 @@ export const BREAK_METHOD_LABELS: Readonly<Record<string, string>> = {
   "workload-write": "Write storm",
   "workload-mixed": "Mixed pressure",
   "origin-multi-region": "Multi-region spread",
+  // D103/B — mechanic ways (component-class failure modes, earnable at first encounter):
+  "pool-exhaustion": "Pool exhaustion",
 }
 
 export function breakMethodLabel(methodId: BreakMethodId): string {

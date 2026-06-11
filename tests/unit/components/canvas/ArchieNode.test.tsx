@@ -7,6 +7,7 @@ import type { HeatmapStatus } from "@/engine/heatmapCalculator"
 import type { ConstraintViolation } from "@/engine/constraintEvaluator"
 import type { TopMetric } from "@/hooks/useTopMetrics"
 
+vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
 vi.mock("@xyflow/react", () => ({
   Handle: ({ type, position, ...props }: Record<string, unknown>) => (
     <div data-testid={`handle-${type}`} data-position={position} {...props} />

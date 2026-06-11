@@ -5,6 +5,8 @@ import { toast } from "sonner"
 import { componentLibrary } from "@/services/componentLibrary"
 import { useUiStore } from "@/stores/uiStore"
 import { useUserBlockDefaultsStore } from "@/stores/userBlockDefaultsStore"
+import { useUserProgressStore } from "@/stores/userProgressStore"
+import { isVendorOwned, isTierOwned } from "@/lib/vendorOwnership"
 import { checkCompatibility } from "@/engine/compatibilityChecker"
 import { checkPortCompatibility } from "@/engine/portCompatibilityChecker"
 import { recalculationService } from "@/services/recalculationService"
@@ -389,7 +391,9 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
         const savedVariant = savedProvider?.typeId === typeId
           ? savedProvider.configVariants.find((v) => v.id === saved.variantId)
           : undefined
-        if (savedProvider && savedVariant) {
+        if (savedProvider && savedVariant
+            && isVendorOwned(useUserProgressStore.getState(), savedProvider.typeId, savedProvider.id)
+            && isTierOwned(useUserProgressStore.getState(), savedProvider.typeId, savedProvider.id, savedVariant.id)) {
           component = savedProvider
           defaultVariant = savedVariant
         }
@@ -461,6 +465,15 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
       toast.warning("Your team doesn't run that vendor in this quest — pick another provider.")
       return
     }
+    // D103: capability progression — an unowned vendor can't be swapped in (the provider select
+    // offers the purchase; this chokepoint backstops imports/drag paths). Seeds bypass (hydrate).
+    {
+      const progress = useUserProgressStore.getState()
+      if (!isVendorOwned(progress, newComponent.typeId, newComponent.id)) {
+        toast.warning("You haven't unlocked that vendor yet — buy it in the provider menu (★ or Expert).")
+        return
+      }
+    }
 
     // ISAPivot one-per-type hard-gate (D63): block swapping a traffic node to a type already placed.
     if (wouldDuplicateTrafficType(get().nodes, nodeId, newComponentId)) {
@@ -494,6 +507,15 @@ export const useArchitectureStore = create<ArchitectureState>()((set, get) => ({
   updateNodeConfigVariant: (nodeId, variantId) => {
     const node = get().nodes.find((n) => n.id === nodeId)
     if (!node || node.data.activeConfigVariantId === variantId) return
+    // D103: premium tiers are purchases — the tier select offers the buy; this backstops.
+    {
+      const comp = componentLibrary.getComponent(node.data.archieComponentId)
+      const progress = useUserProgressStore.getState()
+      if (comp && !isTierOwned(progress, comp.typeId, comp.id, variantId)) {
+        toast.warning("That tier isn't unlocked yet — buy it in the tier menu (★).")
+        return
+      }
+    }
 
     set({
       nodes: get().nodes.map((n) =>

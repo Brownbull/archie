@@ -1,4 +1,4 @@
-import { buildSimGraph, buildTrafficCurveFromSources } from "@/stores/architectureStoreHelpers"
+import { buildSimGraph, buildTrafficCurveFromSources, buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
 import { runSimulation } from "@/engine/simulationEngine"
 import { computeSimStats } from "@/lib/simulationStats"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
@@ -35,13 +35,25 @@ export function rawTrafficRps(nodes: readonly ArchieNode[]): number {
   return nodes.reduce((sum, n) => sum + (isTraffic(n) ? (n.data.trafficRps ?? 0) : 0), 0)
 }
 
-function probePasses(nodes: readonly ArchieNode[], edges: readonly ArchieEdge[], c: ProbeChallenge): boolean {
+function probePasses(
+  nodes: readonly ArchieNode[],
+  edges: readonly ArchieEdge[],
+  c: ProbeChallenge,
+  opts?: { stripPools?: boolean; authoredCurve?: boolean },
+): boolean {
   const simOpts = {
     crossRegionRttMs: c.crossRegionRttMs,
     multiRegion: nodes.some((n) => isTraffic(n) && n.data.trafficOrigin === "multi-region"),
   }
-  const graph = buildSimGraph(nodes as ArchieNode[], edges as ArchieEdge[], simOpts)
-  const curve = buildTrafficCurveFromSources(nodes as ArchieNode[], c.durationSeconds)
+  const baseGraph = buildSimGraph(nodes as ArchieNode[], edges as ArchieEdge[], simOpts)
+  // D103/B: the pool-exhaustion counterfactual — same build, caps lifted. If THIS passes while the
+  // real run failed, the pool was the cause (the D101 causal discipline, applied to a mechanic).
+  const graph = opts?.stripPools
+    ? { ...baseGraph, nodes: baseGraph.nodes.map((n) => ({ ...n, concurrencyLimit: undefined })) }
+    : baseGraph
+  const curve = opts?.authoredCurve && c.trafficSources && c.trafficSources.length > 0
+    ? buildTrafficCurveFromSpecs(c.trafficSources, c.durationSeconds)
+    : buildTrafficCurveFromSources(nodes as ArchieNode[], c.durationSeconds)
   if (curve.length === 0) return true // no rate-bearing source — nothing to probe
   const result = runSimulation(graph, curve, undefined, c.durationSeconds, c.scheduledEvents, c.chaosIntensity)
   const stats = computeSimStats(result.ticks, result.ticks.length - 1)
@@ -231,4 +243,34 @@ export function breakMethodApplicability(
   for (const w of WORKLOADS) if (w !== spec.workload) out[`workload-${w}`] = failsWith({ trafficWorkload: w })
   out["origin-multi-region"] = spec.origin !== "multi-region" && failsWith({ trafficOrigin: "multi-region" })
   return out
+}
+
+/**
+ * D103/B — pool-exhaustion causality: the failed run's build has concurrency-capped nodes, and the
+ * SAME run with the caps lifted passes. `authoredCurve` mirrors the pre-3★ scoring path (the way is
+ * earnable at first encounter — The Pool Runs Dry's seeded build is the introduction).
+ */
+export function poolExhaustionCausal(
+  nodes: readonly ArchieNode[],
+  edges: readonly ArchieEdge[],
+  c: ProbeChallenge,
+  useAuthoredCurve: boolean,
+): boolean {
+  try {
+    return poolExhaustionCausalInner(nodes, edges, c, useAuthoredCurve)
+  } catch {
+    return false // a probe must never take the results modal down with it
+  }
+}
+
+function poolExhaustionCausalInner(
+  nodes: readonly ArchieNode[],
+  edges: readonly ArchieEdge[],
+  c: ProbeChallenge,
+  useAuthoredCurve: boolean,
+): boolean {
+  const graph = buildSimGraph(nodes as ArchieNode[], edges as ArchieEdge[], { crossRegionRttMs: c.crossRegionRttMs, multiRegion: false })
+  if (!graph.nodes.some((n) => n.concurrencyLimit !== undefined && n.concurrencyLimit > 0)) return false
+  if (probePasses(nodes, edges, c, { authoredCurve: useAuthoredCurve })) return false // didn't reproduce the failure
+  return probePasses(nodes, edges, c, { stripPools: true, authoredCurve: useAuthoredCurve })
 }

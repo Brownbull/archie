@@ -7,6 +7,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { breakMethodLabel } from "@/engine/breakDetection"
 import { breakMethodApplicability } from "@/services/breakProbe"
 import { getAllChallenges } from "@/services/challengeLoader"
+import { componentLibrary } from "@/services/componentLibrary"
 
 /**
  * D102 — the break-knowledge registry (right panel). Every WAY you've ever broken a system:
@@ -45,6 +46,14 @@ export function BreakRegistryPanel() {
     if (methodId.startsWith("resilience-")) {
       const cond = methodId.slice("resilience-".length)
       return (challenge.resilienceConditions ?? []).includes(cond)
+    }
+    if (methodId === "pool-exhaustion") {
+      // applies when the current build carries concurrency-capped tiers (the mechanic exists here)
+      return nodes.some((n) => {
+        const comp = componentLibrary.getComponent(n.data.archieComponentId)
+        const v = comp?.configVariants.find((cv) => cv.id === n.data.activeConfigVariantId)
+        return (v?.concurrencyLimit ?? 0) > 0
+      })
     }
     return applicability ? (applicability[methodId] ?? null) : null
   }

@@ -5,6 +5,7 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import type { TopMetric } from "@/hooks/useTopMetrics"
 import type { NodePorts } from "@/hooks/useNodePorts"
 
+vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
 vi.mock("@xyflow/react", () => ({
   Handle: ({ type, position, ...props }: Record<string, unknown>) => (
     <div data-testid={`handle-${type}`} data-position={position} {...props} />

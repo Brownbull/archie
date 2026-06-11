@@ -4,6 +4,7 @@ import type { ComponentCategoryId } from "@/lib/constants"
 
 // Real engine + real stats; only the component library is stubbed so nodes have capacity + cost.
 const mockGetComponent = vi.fn()
+vi.mock("@/hooks/usePoolExhaustionWay", () => ({ usePoolExhaustionWay: () => null }))
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: { getComponent: (...a: unknown[]) => mockGetComponent(...a) },
 }))

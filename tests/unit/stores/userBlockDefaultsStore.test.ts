@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest"
 
 vi.mock("@/lib/firebase", () => ({ db: {} }))
 vi.mock("firebase/firestore", () => ({
+  increment: vi.fn((n: number) => ({ __increment: n })),
   doc: vi.fn(() => ({})),
   getDoc: vi.fn(),
   setDoc: vi.fn(() => Promise.resolve()),
