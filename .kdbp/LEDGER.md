@@ -5374,3 +5374,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P184
 ## 2026-06-11 — [playtest fix] feat(challenges): currency explainers + per-tier break harness
 FINDINGS: harness ALL-GREEN first run across T1–T6 — the break economy verified collectible per tier with zero fixes needed (the P182 seam fix + D101 probes already carried it)
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5123/5123; 6-tier harness 184ms) · curated picks avoid D35 unbreakables + multi-source
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P185
