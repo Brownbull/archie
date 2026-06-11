@@ -1576,3 +1576,10 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 5. **Persistence:** `breakMethods` map on userProgress (atomic increment + deep merge per D101's write discipline); rules extended + manual deploy (D9). No migration of pre-D102 per-quest breaks to methods (value-level underivable from attribute records); owner plans a progress wipe anyway.
 6. **Content follow-up (acknowledged, not in this change):** quest catalog diversification so later tiers introduce NEW ways (pool exhaustion, cache stampede, …) as registered methods.
 **Status:** active
+
+## D103 — Vendor & tier progression, dual-currency; pool-exhaustion as the first mechanic way (2026-06-11)
+
+**Owner pricing model (fork answer):** non-default VENDORS gated at **2★ OR 1🔧** (player's choice); PREMIUM TIERS (variants beyond a vendor's base) **1★**; per type the ELITE vendor (highest best-variant capacity among non-defaults) **2🔧 only**, and its top tier **2★**. Defaults stay free: each type's default vendor + base variant — and the reference solver's existence proofs use defaults, so the AFFORDABILITY gate is "paid cost of the clearing build ≤ 3★ × |requires-closure|" (free-only sweep: 51/64 clear with zero spend; the 13 climbers are all affordable by arrival, llm-service T1 worst-case 1★ vs 6★ earnable).
+**Knowledge model:** locks are ACCOUNT progression (apply in quests and free build); challenge seeds/carried builds bypass (given, not bought); saved block defaults apply only when owned. Stars become a true dual-use currency (hints + capability) via starsSpentOnUnlocks in the spendable pool.
+**Track B:** `pool-exhaustion` is the first MECHANIC way (D102 registry): a failed run on a pooled build where the counterfactual WITHOUT concurrency caps passes — causal-grade like the dial ways. Earnable at first encounter (pre-3★ included: The Pool Runs Dry's seeded build is the introduction). Probed finding behind the design: tiers move boundaries, classes mint ways (docs/gabe/design/vendor-tier-progression-v2.md).
+**Status:** active
