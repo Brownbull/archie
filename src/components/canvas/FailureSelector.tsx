@@ -9,6 +9,7 @@ import {
   Layers,
   Lock,
   Hammer,
+  Crosshair,
   type LucideIcon,
 } from "lucide-react"
 import {
@@ -53,6 +54,16 @@ export function FailureSelector() {
   const locked = useChallengeStore((s) => isChallengeMode(s) && (s.bestStars[s.activeChallenge?.id ?? ""] ?? 0) < 3)
   // Post-3★ glow: the presets the metric probe says would fell THIS build (null outside the loop).
   const breaking = useFailureImpacts()
+
+  // P5-S3 (D95): post-3★ per-block failure injection — "what if THIS block dies mid-run?". Only
+  // meaningful in quest mode once the dials unlock (same gate as the preset glow); the next re-run
+  // carries a component_failure on the chosen node (simulationLaunch appends it, unlocked path only).
+  const injectedBlockFailure = useChallengeStore((s) => s.injectedBlockFailure)
+  const setInjectedBlockFailure = useChallengeStore((s) => s.setInjectedBlockFailure)
+  const unlockedQuest = useChallengeStore((s) => isChallengeMode(s) && (s.bestStars[s.activeChallenge?.id ?? ""] ?? 0) >= 3)
+  const allNodes = useArchitectureStore((s) => s.nodes) // stable reference; filter in useMemo —
+  // a filtering selector returns a fresh array per snapshot and loops the React 18 sync-store render.
+  const blockOptions = useMemo(() => allNodes.filter((n) => n.data.componentCategory !== "traffic"), [allNodes])
 
   const handleChange = (value: string) => {
     setActiveFailureScenario(value === NONE_VALUE ? null : value)
@@ -134,6 +145,52 @@ export function FailureSelector() {
         >
           <div className="text-xs font-medium">Failure: {activePreset.name}</div>
           <p className="mt-0.5 text-[0.625rem] font-normal leading-snug text-red-200/80">{activePreset.description}</p>
+        </div>
+      )}
+
+      {unlockedQuest && blockOptions.length > 0 && (
+        <div className="mt-1.5">
+          <Select
+            value={injectedBlockFailure ?? NONE_VALUE}
+            onValueChange={(v) => setInjectedBlockFailure(v === NONE_VALUE ? null : v)}
+          >
+            <SelectTrigger
+              data-testid="block-failure-select"
+              className="w-full border-archie-border bg-panel/90 backdrop-blur-sm"
+              title="Per-block failure — pick a block and the next re-run kills IT mid-run (component_failure at 40% of the run). The post-3★ way to ask: what if THIS one dies?"
+            >
+              <SelectValue placeholder="Fail a specific block…" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={NONE_VALUE}>
+                <span className="flex items-center gap-2">
+                  <Layers className="h-4 w-4 text-text-secondary" />
+                  No block failure
+                </span>
+              </SelectItem>
+              {blockOptions.map((n) => (
+                <SelectItem key={n.id} value={n.id}>
+                  <span className="flex items-center gap-2">
+                    <Crosshair className="h-4 w-4 text-amber-400" />
+                    {n.data.componentName}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {injectedBlockFailure && (
+            <div
+              data-testid="block-failure-banner"
+              className="mt-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-amber-200 backdrop-blur-sm"
+            >
+              <div className="text-xs font-medium">
+                Next run: {blockOptions.find((n) => n.id === injectedBlockFailure)?.data.componentName ?? "block"} fails mid-run
+              </div>
+              <p className="mt-0.5 text-[0.625rem] font-normal leading-snug text-amber-200/80">
+                A component failure hits it at 40% of the run — survive it to prove the design, not the luck.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -69,3 +69,34 @@ describe("FailureSelector — quest gating + break glow (P4-S4 / D94)", () => {
     expect(screen.getByTestId("failure-selector-trigger")).toBeDisabled()
   })
 })
+
+describe("per-block failure injection (P5-S3 / D95)", () => {
+  const compute = { id: "n-api", type: "archie-component", position: { x: 0, y: 0 }, data: { archieComponentId: "x", activeConfigVariantId: "v", componentName: "API Server", componentCategory: "compute", replicaCount: 1 } }
+  const traffic = { id: "n-t", type: "archie-component", position: { x: 0, y: 0 }, data: { archieComponentId: "w", activeConfigVariantId: "v", componentName: "Web Users", componentCategory: "traffic", replicaCount: 1 } }
+
+  beforeEach(() => {
+    useArchitectureStore.setState({ nodes: [traffic, compute] as never })
+    useChallengeStore.setState({ activeChallenge: challenge, bestStars: { c1: 3 }, injectedBlockFailure: null })
+  })
+
+  it("post-3★ quest mode: the block-failure select appears (traffic excluded from options)", () => {
+    render(<FailureSelector />)
+    expect(screen.getByTestId("block-failure-select")).toBeInTheDocument()
+  })
+
+  it("hidden pre-3★ and in free mode", () => {
+    useChallengeStore.setState({ bestStars: {} })
+    const { unmount } = render(<FailureSelector />)
+    expect(screen.queryByTestId("block-failure-select")).toBeNull()
+    unmount()
+    useChallengeStore.setState({ activeChallenge: null })
+    render(<FailureSelector />)
+    expect(screen.queryByTestId("block-failure-select")).toBeNull()
+  })
+
+  it("an active injection shows the next-run banner with the block's name", () => {
+    useChallengeStore.setState({ injectedBlockFailure: "n-api" })
+    render(<FailureSelector />)
+    expect(screen.getByTestId("block-failure-banner")).toHaveTextContent("API Server fails mid-run")
+  })
+})

@@ -5,6 +5,7 @@ import type { ArchieNode as ArchieNodeType } from "@/stores/architectureStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
 import { useChallengeStore, isChallengeMode } from "@/stores/challengeStore"
+import { eventTargetMatches } from "@/engine/simulationEngine"
 import { COMPONENT_CATEGORIES, HEATMAP_COLORS, NODE_MIN_WIDTH, NODE_MAX_WIDTH, MIN_REPLICAS, MAX_REPLICAS, getScalingRule, type ComponentCategoryId } from "@/lib/constants"
 import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { NodeActionToolbar } from "@/components/canvas/NodeActionToolbar"
@@ -170,6 +171,17 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
     scalingRule.actsAsLoadBalancer ? s.edges.filter((e) => e.source === id).length : 0,
   )
 
+  // P5-S3 (D95): chaos-target visibility — the feedback's "we don't have visibility of where it is
+  // failing". While BUILDING a quest, a block matched by an authored scheduled event (id ∪ category
+  // ∪ typeId — the sim's own matcher) wears a "may fail" badge, so the player plans around the blast
+  // instead of discovering it mid-run.
+  const chaosEvent = useChallengeStore((st) => {
+    if (!st.activeChallenge || st.attemptState !== "building") return null
+    return st.activeChallenge.scheduledEvents.find((e) =>
+      eventTargetMatches(e.target, { id, category: data.componentCategory, typeId: typeInfo.typeId ?? undefined }),
+    ) ?? null
+  })
+
   // Live simulation telemetry for this node at the current playback tick (Epic 15).
   const simTelemetry = useNodeSimTelemetry(id)
 
@@ -270,6 +282,16 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
           className="absolute -top-2 left-2 z-10 rounded-full bg-red-500/90 px-1.5 py-0.5 text-[0.5625rem] font-bold text-white shadow"
         >
           {topologyStatus === "orphan" ? "disconnected" : "unreachable"}
+        </span>
+      )}
+
+      {chaosEvent && (
+        <span
+          data-testid="node-chaos-target"
+          title={`A ${chaosEvent.type === "az_outage" ? "zone outage" : chaosEvent.type === "latency_spike" ? "latency spike" : "failure"} hits this block at t=${chaosEvent.t}s${chaosEvent.durationS ? ` for ${chaosEvent.durationS}s` : ""} — plan for the blast (redundancy, monitoring)`}
+          className="absolute -top-2 right-2 z-10 rounded-full bg-amber-500/90 px-1.5 py-0.5 text-[0.5625rem] font-bold text-[#1a1410] shadow"
+        >
+          ⚡ t={chaosEvent.t}s
         </span>
       )}
 

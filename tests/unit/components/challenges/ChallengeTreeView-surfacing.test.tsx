@@ -102,3 +102,17 @@ describe("resilience extras in the detail panel (P4-S7 / D94)", () => {
     expect(chip).toHaveTextContent("✓")
   })
 })
+
+describe("named chaos objectives (P5-S3 / D95)", () => {
+  it("the detail panel names each event's target, time, and duration", () => {
+    const c = getAllChallenges().find((x) => x.id === "observe-to-recover")
+    if (!c) throw new Error("observe-to-recover missing")
+    // Objectives only render on an unlocked quest — complete its prerequisites + grant the XP gate.
+    useUserProgressStore.setState({ completedChallenges: [...c.requires], trackXp: { reliability: 1_000_000 } })
+    render(<ChallengeTreeView open onOpenChange={() => {}} />)
+    fireEvent.click(screen.getByTestId(`tree-node-${c.id}`))
+    const panel = screen.getByTestId("tree-detail-panel")
+    expect(panel).toHaveTextContent(/Survive: Zone outage on Compute at t=30s \(30s\)/)
+    expect(panel).not.toHaveTextContent(/Survive 1 chaos event/)
+  })
+})

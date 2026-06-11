@@ -92,3 +92,30 @@ describe("launchChallengeAttempt — post-3★ canvas-wins seam (P4-S3 / D94)", 
     expect(peakOf(curve)).toBe(800)
   })
 })
+
+describe("post-3★ per-block failure injection (P5-S3 / D95)", () => {
+  beforeEach(() => {
+    startMock.mockClear()
+    useChallengeStore.setState({ injectedBlockFailure: null })
+  })
+
+  it("post-3★ with an injection: the run carries an extra component_failure on the chosen node", () => {
+    useChallengeStore.setState({ bestStars: { c1: 3 }, injectedBlockFailure: "n-api" })
+    launchChallengeAttempt(challenge)
+    const events = startMock.mock.calls[0][2]
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ type: "component_failure", target: "n-api", t: 24, durationS: 15 })
+  })
+
+  it("pre-3★: the injection is ignored — the quest's conditions are the fixed problem statement", () => {
+    useChallengeStore.setState({ bestStars: {}, injectedBlockFailure: "n-api" })
+    launchChallengeAttempt(challenge)
+    expect(startMock.mock.calls[0][2]).toEqual(challenge.scheduledEvents)
+  })
+
+  it("no injection: authored events pass through untouched", () => {
+    useChallengeStore.setState({ bestStars: { c1: 3 } })
+    launchChallengeAttempt(challenge)
+    expect(startMock.mock.calls[0][2]).toEqual(challenge.scheduledEvents)
+  })
+})

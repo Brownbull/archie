@@ -124,8 +124,7 @@ export function computeOverrides(nodes: SimNode[], events: ScheduledEvent[], tim
   // id-matching made component_failure / latency_spike silently inert (everywhere — the harness's
   // RefNode ids are `n-*` prefixed too). Matching by id ∪ category ∪ typeId makes the events FIRE;
   // id-equality is kept for back-compat with literal-id imports/tests.
-  const matchesTarget = (n: SimNode, target: string): boolean =>
-    n.id === target || n.category === target || n.typeId === target
+  const matchesTarget = (n: SimNode, target: string): boolean => eventTargetMatches(target, n)
   // S8 (D89): surface each active event for the timeline/coach — pure presentation of the state
   // computed below (no routing effect). `detected` = a monitored target past the detection delay.
   const activeEvents: TickEventState[] = []
@@ -507,6 +506,18 @@ export function simulateTick(graph: SimGraph, tick: number, targetRps: number, o
  * Runs a full simulation: `ticks` evenly-spaced samples of the traffic curve over `durationS`,
  * each routed through the graph. Pure + synchronous — returns all tick frames for playback.
  */
+/**
+ * S7 (D89) target matching, extracted pure (P5-S3): an event target names a node id, a CATEGORY, or
+ * a fundamental TYPE. Shared by the sim (which blocks fail at runtime) and the canvas (which blocks
+ * to badge as "targeted by a chaos event" before the run) so the two can never drift.
+ */
+export function eventTargetMatches(
+  target: string,
+  node: { id: string; category?: string; typeId?: string },
+): boolean {
+  return node.id === target || node.category === target || node.typeId === target
+}
+
 export function runSimulation(
   graph: SimGraph,
   curve: TrafficCurve,

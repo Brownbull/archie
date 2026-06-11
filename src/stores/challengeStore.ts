@@ -44,6 +44,12 @@ interface ChallengeState {
   attemptSnapshot: AttemptSnapshot | null
   /** Best stars earned per challenge id (persists across attempts within the session). */
   bestStars: Record<string, number>
+  /** P5-S3 (D95): a post-3★ per-block failure injection — the node id whose component_failure
+   *  event the NEXT quest re-run will carry ("what if THIS block dies mid-run?"). Quest-scoped:
+   *  cleared on selectChallenge/reset; only read by the unlocked launch path. */
+  injectedBlockFailure: string | null
+  /** Set/clear the post-3★ per-block failure injection. */
+  setInjectedBlockFailure: (nodeId: string | null) => void
   /** D20 (D74): whether the just-scored attempt should be PERSISTED. Pre-3★ every attempt is recorded
    *  (the climb). Once a challenge is 3★ the traffic node unlocks for sandbox experimentation, and a
    *  subsequent run is recorded only if it RE-EARNS 3★ (an improvement-worthy clear) — a worse tinker
@@ -70,9 +76,13 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   attemptSnapshot: null,
   bestStars: {} as Record<string, number>,
   lastRecordable: true,
+  injectedBlockFailure: null,
+  setInjectedBlockFailure: (nodeId) => set({ injectedBlockFailure: nodeId }),
 
   selectChallenge: (challenge) => {
-    set({ activeChallenge: challenge, attemptState: "building", lastResult: null, lastMeasured: null, attemptSnapshot: null })
+    // Keep the injection only while the SAME quest re-arms (the break-it style loop); switching
+    // quests or re-selecting after an exit clears it via reset() below.
+    set((st) => ({ activeChallenge: challenge, attemptState: "building", lastResult: null, lastMeasured: null, attemptSnapshot: null, injectedBlockFailure: st.activeChallenge?.id === challenge.id ? st.injectedBlockFailure : null }))
     writeSavedChallenge(challenge.id, "building")
   },
 
@@ -122,7 +132,7 @@ export const useChallengeStore = create<ChallengeState>((set, get) => ({
   },
 
   reset: () => {
-    set({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, attemptSnapshot: null })
+    set({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, attemptSnapshot: null, injectedBlockFailure: null })
     writeSavedChallenge("", "idle")
   },
 }))

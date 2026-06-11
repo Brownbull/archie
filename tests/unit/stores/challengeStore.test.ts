@@ -143,3 +143,29 @@ describe("challengeStore — port-enforcement snapshot (D87)", () => {
     expect(r?.stars).toBe(2)
   })
 })
+
+describe("injectedBlockFailure — post-3★ per-block injection (P5-S3 / D95)", () => {
+  const quest = (id: string) => ({
+    id, title: id, brief: "b", difficulty: "beginner", budgetCap: 100, durationSeconds: 60,
+    trafficCurve: [{ t: 0, rps: 0 }], requiredComponents: [],
+    targetMetrics: { uptimePercent: 95, p99LatencyMs: 400 }, scheduledEvents: [], hints: [],
+  }) as never
+
+  it("persists across a SAME-quest re-arm (the break-it style loop) but clears on quest switch", () => {
+    const s = useChallengeStore.getState()
+    s.selectChallenge(quest("c1"))
+    s.setInjectedBlockFailure("n-db")
+    s.selectChallenge(quest("c1")) // re-arm after a scored run
+    expect(useChallengeStore.getState().injectedBlockFailure).toBe("n-db")
+    s.selectChallenge(quest("c2")) // different quest
+    expect(useChallengeStore.getState().injectedBlockFailure).toBeNull()
+  })
+
+  it("clears on reset (leaving challenge mode)", () => {
+    const s = useChallengeStore.getState()
+    s.selectChallenge(quest("c1"))
+    s.setInjectedBlockFailure("n-db")
+    s.reset()
+    expect(useChallengeStore.getState().injectedBlockFailure).toBeNull()
+  })
+})

@@ -316,7 +316,13 @@ function QuestDetailPanel({ node, bestStars, breaksRecord, clearsRecord, onStart
               `Keep p99 ≤ ${c.targetMetrics.p99LatencyMs}ms`,
               `Budget ≤ $${c.budgetCap}/mo`,
               ...(c.requiredTypes.length > 0 ? [`Deploy: ${c.requiredTypes.map((t) => COMPONENT_TYPES.get(t)?.label ?? t).join(", ")}`] : []),
-              ...(c.scheduledEvents.length > 0 ? [`Survive ${c.scheduledEvents.length} chaos event${c.scheduledEvents.length > 1 ? "s" : ""}`] : []),
+              // P5-S3 (D95): name each chaos event's TARGET — "we don't have visibility of where it
+              // is failing" — so the player plans the blast before accepting the quest.
+              ...c.scheduledEvents.map((e) => {
+                const what = e.type === "az_outage" ? "Zone outage" : e.type === "latency_spike" ? "Latency spike" : "Failure"
+                const who = COMPONENT_TYPES.get(e.target)?.label ?? e.target
+                return `Survive: ${what} on ${who} at t=${e.t}s${e.durationS ? ` (${e.durationS}s)` : ""}`
+              }),
             ].map((o, i) => (
               <div key={i} className="flex items-start gap-1.5 text-[0.6875rem] text-[#d0c8b8]">
                 <span className="text-[#c9a961]">•</span><span>{o}</span>

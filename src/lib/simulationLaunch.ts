@@ -94,9 +94,16 @@ export function launchChallengeAttempt(challenge: Challenge): void {
   const curve = canvasCurve.length > 0 ? canvasCurve : authoredCurve
   // Pass the challenge's authored duration so the curve + scheduled events map over the
   // intended window (not the engine's default 90s), plus its chaos intensity (3e; undefined ⇒ 1).
+  // P5-S3 (D95): post-3★ per-block failure injection — "what if THIS block dies mid-run?". The
+  // injected component_failure fires at 40% of the run for a quarter of it, on top of the authored
+  // events. Locked (pre-3★) runs never inject: the quest's conditions are the fixed problem statement.
+  const injectedNodeId = useChallengeStore.getState().injectedBlockFailure
+  const events = !locked && injectedNodeId
+    ? [...challenge.scheduledEvents, { t: Math.round(challenge.durationSeconds * 0.4), type: "component_failure" as const, target: injectedNodeId, durationS: Math.max(10, Math.round(challenge.durationSeconds * 0.25)) }]
+    : challenge.scheduledEvents
   useSimulationStore
     .getState()
-    .start(graph, curve, challenge.scheduledEvents, challenge.durationSeconds, challenge.chaosIntensity)
+    .start(graph, curve, events, challenge.durationSeconds, challenge.chaosIntensity)
 }
 
 /**
