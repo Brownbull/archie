@@ -19,7 +19,12 @@ let loadSeq = 0
  *   re-climbs the corrected tree. The E2E unlocked account is exempt in effect: unlocked-setup
  *   re-seeds it with the CURRENT generation on every run (see tests/e2e/helpers/seed-progress.ts).
  */
-export const PROGRESS_GENERATION = 3
+export const PROGRESS_GENERATION = 4
+
+/** D104 (owner, 2026-06-11): every user — newly registered or generation-reset — starts provisioned
+ *  with a baseline grant so the dual-currency economy is playable from minute one. Tunable here. */
+export const STARTER_BONUS_STARS = 3
+export const STARTER_EXPERT = 1
 
 export interface UserProgress {
   trackXp: Readonly<Record<string, number>>
@@ -54,9 +59,14 @@ export interface UserProgress {
   unlockedTiers: Readonly<Record<string, true>>
   /** D103 — stars spent on vendor/tier unlocks (subtracted from the spendable pool). */
   starsSpentOnUnlocks: number
+  /** D104 — provisioned starter stars (granted at registration/reset), added to the spendable pool. */
+  bonusStars: number
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, generation: PROGRESS_GENERATION }
+
+/** D104 — the provisioned baseline a fresh/reset account lands on. */
+const STARTER_PROGRESS: UserProgress = { ...EMPTY_PROGRESS, bonusStars: STARTER_BONUS_STARS, expertCurrency: STARTER_EXPERT }
 
 /** Total stars earned across challenges (sum of per-challenge bests — the ratings, unchanged by spending). */
 export function totalEarnedStars(p: Pick<UserProgress, "bestStarsCloud">): number {
@@ -78,9 +88,10 @@ export function totalHintsSpent(p: Pick<UserProgress, "hintsUnlocked">): number 
 }
 
 /** Spendable star balance (D68): earned − spent (first hint per challenge free, LX1), never negative. */
-export function spendableStars(p: Pick<UserProgress, "bestStarsCloud" | "hintsUnlocked" | "starsSpentOnUnlocks">): number {
-  // D103: stars are dual-use — hints AND capability unlocks both draw from the same pool.
-  return Math.max(0, totalEarnedStars(p) - totalHintsSpent(p) - (p.starsSpentOnUnlocks ?? 0))
+export function spendableStars(p: Pick<UserProgress, "bestStarsCloud" | "hintsUnlocked" | "starsSpentOnUnlocks" | "bonusStars">): number {
+  // D103/D104: stars are dual-use — hints AND capability unlocks draw from one pool, which the
+  // starter grant (bonusStars) seeds at provisioning.
+  return Math.max(0, totalEarnedStars(p) + (p.bonusStars ?? 0) - totalHintsSpent(p) - (p.starsSpentOnUnlocks ?? 0))
 }
 
 export interface XpAwardResult {
@@ -147,7 +158,8 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
         if (storedGen < PROGRESS_GENERATION) {
           // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
           // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
-          const wiped: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, generation: PROGRESS_GENERATION }
+          // D104: a reset doesn't strand the player at zero — they land on the starter grant.
+          const wiped: UserProgress = { ...STARTER_PROGRESS, generation: PROGRESS_GENERATION }
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
@@ -172,11 +184,19 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           unlockedVendors: (data.unlockedVendors as UserProgress["unlockedVendors"]) ?? {},
           unlockedTiers: (data.unlockedTiers as UserProgress["unlockedTiers"]) ?? {},
           starsSpentOnUnlocks: (data.starsSpentOnUnlocks as number) ?? 0,
+          bonusStars: (data.bonusStars as number) ?? 0,
           generation: storedGen,
           loading: false,
         })
       } else {
-        set({ ...EMPTY_PROGRESS, loading: false })
+        // D104: first sign-in (or post-wipe) — provision the starter grant and persist it so the
+        // baseline is durable from minute one.
+        set({ ...STARTER_PROGRESS, loading: false })
+        try {
+          await setDoc(doc(db, COLLECTION, userId), { ...STARTER_PROGRESS, updatedAt: serverTimestamp() })
+        } catch (err) {
+          if (import.meta.env.DEV) console.error("Failed to provision starter progress:", err)
+        }
       }
     } catch (err) {
       if (seq !== loadSeq) return

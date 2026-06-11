@@ -1583,3 +1583,8 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 **Knowledge model:** locks are ACCOUNT progression (apply in quests and free build); challenge seeds/carried builds bypass (given, not bought); saved block defaults apply only when owned. Stars become a true dual-use currency (hints + capability) via starsSpentOnUnlocks in the spendable pool.
 **Track B:** `pool-exhaustion` is the first MECHANIC way (D102 registry): a failed run on a pooled build where the counterfactual WITHOUT concurrency caps passes — causal-grade like the dial ways. Earnable at first encounter (pre-3★ included: The Pool Runs Dry's seeded build is the introduction). Probed finding behind the design: tiers move boundaries, classes mint ways (docs/gabe/design/vendor-tier-progression-v2.md).
 **Status:** active
+
+## D104 — Starter provisioning: every fresh/reset account lands on a baseline grant (2026-06-11)
+
+**Owner:** "all users, once registered, should be provisioned with stars and Expert currency, so we can reset all quest progress and provision any current user." Implementation: `bonusStars` field (stars are quest-derived, so the grant rides a separate term in spendableStars) + expertCurrency seeded; STARTER_BONUS_STARS=3, STARTER_EXPERT=1 (tunable constants). Provisioned on (a) first sign-in with no doc (persisted immediately) and (b) the generation wipe path — and PROGRESS_GENERATION bumped 3→4 so every existing account re-lands at the baseline on next load (the owner's "reset all current users"), incl. anyone who signed in since today's manual wipe. E2E replay account seeds bonusStars 0 (deterministic journeys; D28 carve-out pattern).
+**Status:** active

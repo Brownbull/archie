@@ -11,7 +11,7 @@ vi.mock("firebase/firestore", () => ({
 }))
 
 import { getDoc, setDoc } from "firebase/firestore"
-import { useUserProgressStore, spendableStars, totalEarnedStars, totalHintsUnlocked, totalHintsSpent, PROGRESS_GENERATION } from "@/stores/userProgressStore"
+import { useUserProgressStore, spendableStars, totalEarnedStars, totalHintsUnlocked, totalHintsSpent, PROGRESS_GENERATION, STARTER_BONUS_STARS, STARTER_EXPERT } from "@/stores/userProgressStore"
 
 const mockGetDoc = vi.mocked(getDoc)
 const mockSetDoc = vi.mocked(setDoc)
@@ -116,7 +116,10 @@ describe("loadProgress — Phase 6 generation reset (D65)", () => {
     expect(s.hintsUnlocked).toEqual({})
     expect(s.equippedAvatar).toBeNull()
     expect(s.generation).toBe(PROGRESS_GENERATION)
-    expect(spendableStars(s)).toBe(0)
+    // D104: a reset PROVISIONS — players land on the starter grant, not zero
+    expect(s.bonusStars).toBe(STARTER_BONUS_STARS)
+    expect(s.expertCurrency).toBe(STARTER_EXPERT)
+    expect(spendableStars(s)).toBe(STARTER_BONUS_STARS)
     // persisted once, as a FULL document replace (no merge options) so old maps are truly cleared
     expect(mockSetDoc).toHaveBeenCalledTimes(1)
     const call = mockSetDoc.mock.calls[0]
@@ -145,11 +148,16 @@ describe("loadProgress — Phase 6 generation reset (D65)", () => {
     expect(mockSetDoc).not.toHaveBeenCalled()
   })
 
-  it("no existing doc → empty at current generation, no write", async () => {
+  it("no existing doc → PROVISIONED at the starter grant, persisted (D104)", async () => {
     mockGetDoc.mockResolvedValue(noDoc())
     await useUserProgressStore.getState().loadProgress("u1")
-    expect(useUserProgressStore.getState().generation).toBe(PROGRESS_GENERATION)
-    expect(mockSetDoc).not.toHaveBeenCalled()
+    const st = useUserProgressStore.getState()
+    expect(st.generation).toBe(PROGRESS_GENERATION)
+    expect(st.bonusStars).toBe(STARTER_BONUS_STARS)
+    expect(st.expertCurrency).toBe(STARTER_EXPERT)
+    expect(spendableStars(st)).toBe(STARTER_BONUS_STARS)
+    expect(mockSetDoc).toHaveBeenCalledTimes(1)
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ bonusStars: STARTER_BONUS_STARS, expertCurrency: STARTER_EXPERT, generation: PROGRESS_GENERATION })
   })
 })
 
@@ -270,16 +278,16 @@ describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
     expect(useUserProgressStore.getState().error).toBe("Could not save your break.")
   })
 
-  it("generation wipe zeroes the expert economy alongside stars and hints", async () => {
+  it("generation wipe resets the expert economy to the STARTER grant (D104)", async () => {
     mockGetDoc.mockReset().mockResolvedValue(snapshot({
       generation: 1, expertCurrency: 3, breaksByChallenge: { a: { rps: true } }, requiredFilterUnlocked: { a: true },
     }))
     await useUserProgressStore.getState().loadProgress("u1")
     const s = useUserProgressStore.getState()
-    expect(s.expertCurrency).toBe(0)
+    expect(s.expertCurrency).toBe(STARTER_EXPERT)
     expect(s.breaksByChallenge).toEqual({})
     expect(s.requiredFilterUnlocked).toEqual({})
-    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {} })
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: STARTER_EXPERT, breaksByChallenge: {}, requiredFilterUnlocked: {} })
   })
 
   it("loadProgress reads the expert fields from a current-generation doc", async () => {
