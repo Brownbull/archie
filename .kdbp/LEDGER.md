@@ -5420,3 +5420,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P190
 FINDINGS: economy inverted from per-quest to global-once without breaking the journey E2E (distinct methods still pay); 11 old-economy pins converted; 1 test-only race found (stale mounted hooks racing collection — prod single-instance)
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5130/5130) · E2E ✅ (46.3s) · rules deployed (D9 manual) BEFORE the code push — schema-tolerant ordering per P5 lesson
 TICK: —
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P191
