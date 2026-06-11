@@ -11,6 +11,7 @@ import {
   type BreakAttribute,
 } from "@/engine/breakDetection"
 import { minBreakingRps, isCategoricalCausal, rawTrafficRps } from "@/services/breakProbe"
+import { questBreakDials } from "@/lib/challengeBreakDials"
 import type { StarBreakdown } from "@/lib/challengeTypes"
 
 /** What the just-scored run broke (or failed to credit), for the results modal. */
@@ -80,11 +81,20 @@ export function useBreakCollection(): BreakOutcome | null {
             attribute = cats[0]
             verdict = isCategoricalCausal(nodes, edges, activeChallenge, cats[0]) ? "collected" : "not-causal"
           }
+          // Quest-level economy (2026-06-11): a dial outside the quest's collectible set never
+          // pays nor reports — the ledger's slot count IS the quest's expert ceiling.
+          if (attribute && !questBreakDials(activeChallenge.id).includes(attribute)) {
+            verdict = null
+            attribute = null
+          }
           if (verdict && attribute) {
             const progress = useUserProgressStore.getState()
             const record = progress.breaksByChallenge[activeChallenge.id]
             if (verdict === "collected") {
-              const fresh = isNewBreak(record, attribute) && !!userId
+              // 2026-06-11 (wallet-stuck bug): fresh comes from the PAYOUT ITSELF — collectBreak is
+              // idempotent and returns whether it paid, so display can never claim "already
+              // collected" while the wallet missed the point (or vice versa).
+              const fresh = !!userId && isNewBreak(record, attribute)
               if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
               next = { verdict, attribute, fresh, boundary, remaining: remainingBreakAttributes({ ...record, [attribute]: true }) }
             } else {

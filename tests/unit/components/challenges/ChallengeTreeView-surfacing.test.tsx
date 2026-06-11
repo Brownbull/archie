@@ -5,6 +5,7 @@ vi.mock("@/lib/firebase", () => ({ auth: { currentUser: null }, db: {} }))
 vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
 
 import { ChallengeTreeView } from "@/components/challenges/ChallengeTreeView"
+import { questBreakDials } from "@/lib/challengeBreakDials"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { getAllChallenges } from "@/services/challengeLoader"
@@ -62,8 +63,9 @@ describe("ChallengeTreeView — quest-log surfacing (P4-S6 / D94)", () => {
     expect(screen.queryByTestId(`break-badge-${c.id}`)).toBeNull()
   })
 
-  it("the detail panel lists the four dials with collected state on a completed quest", () => {
+  it("the detail panel lists the QUEST'S collectible dials with collected state (2026-06-11: quest-level economy)", () => {
     const c = aBreakable()
+    const dials = questBreakDials(c.id)
     useUserProgressStore.setState({
       completedChallenges: [c.id],
       breaksByChallenge: { [c.id]: { rps: true } },
@@ -73,10 +75,15 @@ describe("ChallengeTreeView — quest-log surfacing (P4-S6 / D94)", () => {
     const section = screen.getByTestId("quest-extra-challenges")
     expect(section).toHaveTextContent("Extra challenges")
     expect(section).toHaveTextContent("1 Expert")
+    expect(dials).toContain("rps") // rps is collectible on every breakable quest
     expect(screen.getByTestId("extra-break-rps")).toHaveAttribute("data-collected", "true")
-    expect(screen.getByTestId("extra-break-kind")).not.toHaveAttribute("data-collected")
-    expect(screen.getByTestId("extra-break-workload")).not.toHaveAttribute("data-collected")
-    expect(screen.getByTestId("extra-break-origin")).not.toHaveAttribute("data-collected")
+    for (const d of dials.filter((x) => x !== "rps")) {
+      expect(screen.getByTestId(`extra-break-${d}`)).not.toHaveAttribute("data-collected")
+    }
+    // dials OUTSIDE the quest's collectible set don't render at all
+    for (const d of ["rps", "kind", "workload", "origin"].filter((x) => !dials.includes(x as never))) {
+      expect(screen.queryByTestId(`extra-break-${d}`)).toBeNull()
+    }
   })
 
   it("an AVAILABLE quest shows the extras section with after-3★ framing (Plan-2 P2 / D97)", () => {

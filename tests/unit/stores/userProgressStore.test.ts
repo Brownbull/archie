@@ -6,6 +6,8 @@ vi.mock("firebase/firestore", () => ({
   getDoc: vi.fn(),
   setDoc: vi.fn(() => Promise.resolve()),
   serverTimestamp: vi.fn(() => "ts"),
+  // 2026-06-11 wallet fix: payouts write atomic increments — surface them as inspectable markers.
+  increment: vi.fn((n: number) => ({ __increment: n })),
 }))
 
 import { getDoc, setDoc } from "firebase/firestore"
@@ -169,7 +171,8 @@ describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
     expect(s.expertCurrency).toBe(1)
     expect(s.breaksByChallenge.c1).toEqual({ rps: true })
     expect(mockSetDoc).toHaveBeenCalledTimes(1)
-    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 1, generation: PROGRESS_GENERATION })
+    // 2026-06-11 wallet fix: ATOMIC increment + deep-merged flag — a stale read can't clobber the wallet
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, breaksByChallenge: { c1: { rps: true } }, generation: PROGRESS_GENERATION })
     expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
   })
 
@@ -212,7 +215,7 @@ describe("expert currency — break collection + spend (P4-S2 / D94)", () => {
     const s = useUserProgressStore.getState()
     expect(s.expertCurrency).toBe(1)
     expect(s.requiredFilterUnlocked.c1).toBe(true)
-    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 1, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: -1 }, requiredFilterUnlocked: { c1: true }, generation: PROGRESS_GENERATION })
     expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
   })
 
@@ -286,7 +289,7 @@ describe("resilience clears (P4-S7 / D94)", () => {
     const s = useUserProgressStore.getState()
     expect(s.expertCurrency).toBe(1)
     expect(s.resilienceClears.c1).toEqual({ "failure-traffic-spike": true })
-    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: 1, generation: PROGRESS_GENERATION })
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, resilienceClears: { c1: { "failure-traffic-spike": true } }, generation: PROGRESS_GENERATION })
     expect(mockSetDoc.mock.calls[0][2]).toEqual({ merge: true })
   })
 

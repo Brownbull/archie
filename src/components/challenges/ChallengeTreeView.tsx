@@ -16,7 +16,8 @@ import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { makeChallengeCanvas } from "@/services/challengeCanvasSeed"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { CHALLENGE_TRACKS } from "@/lib/challengeTracks"
-import { BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS, type BreaksRecord } from "@/engine/breakDetection"
+import { BREAK_ATTRIBUTE_LABELS, type BreaksRecord } from "@/engine/breakDetection"
+import { questBreakDials } from "@/lib/challengeBreakDials"
 import { getFailurePreset } from "@/services/failureLoader"
 import { ShieldCheck } from "lucide-react"
 import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
@@ -280,7 +281,7 @@ function TreeNode({ pos, selected, bestStars, breaksCollected, chainBadge, onCli
           Orange once collecting started, dim until then — and NEVER a star (expert ≠ hint pool). */}
       {isCompleted && breaksCollected !== null && (
         <g data-testid={`break-badge-${c.id}`} transform={`translate(${pos.x + NODE_R - 4}, ${pos.y - NODE_R - 12})`}>
-          <title>{`Break-it extras: ${breaksCollected} of 4 traffic dials collected — replay, hold 3★, then break it one dial at a time (+1 Expert each)`}</title>
+          <title>{`Break-it extras: ${breaksCollected} of ${questBreakDials(c.id).length} collectible dials — replay, hold 3★, then break it one dial at a time (+1 Expert each)`}</title>
           <circle cx={10} cy={10} r={10.5} fill="#080c12" stroke={breaksCollected > 0 ? "#f97316" : "#f9731640"} strokeWidth={1.5} />
           <Hammer x={3.5} y={5.5} width={8} height={8} color={breaksCollected > 0 ? "#f97316" : "#6b7280"} />
           <text x={13} y={13} fontSize={7} fontWeight={800} fill={breaksCollected > 0 ? "#f97316" : "#6b7280"} textAnchor="middle">
@@ -465,7 +466,7 @@ function QuestDetailPanel({ node, bestStars, breaksRecord, clearsRecord, onStart
               fells it pays <span className="font-semibold text-orange-300">1 Expert</span>.
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1">
-              {BREAK_ATTRIBUTES.map((a) => {
+              {questBreakDials(c.id).map((a) => {
                 const collected = !!breaksRecord?.[a]
                 return (
                   <span key={a} data-testid={`extra-break-${a}`} data-collected={collected || undefined}

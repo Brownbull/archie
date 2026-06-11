@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
+import { doc, getDoc, setDoc, serverTimestamp, increment } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 
 const COLLECTION = "userProgress"
@@ -245,9 +245,12 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     const newCurrency = state.expertCurrency + 1
     set({ breaksByChallenge: newBreaks, expertCurrency: newCurrency, error: null })
     try {
+      // 2026-06-11 (wallet-stuck bug): ATOMIC increment + deep-merged break flag — a stale local
+      // read can no longer clobber the server wallet (the lost-update that ate an expert point),
+      // and a whole-map write can no longer resurrect/clobber breaks from another session.
       await setDoc(
         doc(db, COLLECTION, userId),
-        { breaksByChallenge: newBreaks, expertCurrency: newCurrency, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { breaksByChallenge: { [challengeId]: { [attribute]: true } }, expertCurrency: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
@@ -269,7 +272,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { requiredFilterUnlocked: newUnlocked, expertCurrency: newCurrency, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { requiredFilterUnlocked: { [challengeId]: true }, expertCurrency: increment(-1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
@@ -291,7 +294,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { resilienceClears: newClears, expertCurrency: newCurrency, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { resilienceClears: { [challengeId]: { [conditionId]: true } }, expertCurrency: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {

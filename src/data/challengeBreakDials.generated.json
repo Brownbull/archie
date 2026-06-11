@@ -1,0 +1,219 @@
+{
+  "add-a-database": [
+    "rps",
+    "kind"
+  ],
+  "auth-101": [
+    "rps",
+    "kind"
+  ],
+  "cache-the-hot-path": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "dns-routing": [
+    "rps",
+    "kind"
+  ],
+  "first-service": [
+    "rps",
+    "kind"
+  ],
+  "observe-baseline": [
+    "rps"
+  ],
+  "store-the-blobs": [
+    "rps"
+  ],
+  "async-pipeline": [
+    "rps",
+    "kind"
+  ],
+  "burst-absorber": [
+    "rps",
+    "kind"
+  ],
+  "cache-or-crash": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "checkout-flow": [
+    "rps",
+    "kind",
+    "workload",
+    "origin"
+  ],
+  "cold-start-spike": [
+    "rps",
+    "kind"
+  ],
+  "data-pipeline": [
+    "rps",
+    "kind",
+    "workload",
+    "origin"
+  ],
+  "edge-balance": [
+    "rps",
+    "kind"
+  ],
+  "edge-cache-ratio": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "edge-delivery": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "event-stream": [
+    "rps",
+    "kind"
+  ],
+  "llm-service": [
+    "rps",
+    "kind"
+  ],
+  "observe-to-recover": [
+    "rps"
+  ],
+  "polyglot-persistence": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "pool-exhaustion": [
+    "rps",
+    "kind"
+  ],
+  "read-aside": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "scale-out": [
+    "rps",
+    "kind"
+  ],
+  "serverless-burst": [
+    "rps",
+    "kind"
+  ],
+  "siem-audit": [
+    "rps",
+    "kind"
+  ],
+  "worker-fleet": [
+    "rps",
+    "kind"
+  ],
+  "zone-replica": [
+    "rps",
+    "kind"
+  ],
+  "always-on": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "api-gateway": [
+    "rps",
+    "kind",
+    "workload",
+    "origin"
+  ],
+  "chaos-day": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "defense-in-depth": [
+    "rps",
+    "kind"
+  ],
+  "edge-economics": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "edge-resilience": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "fan-it-out": [
+    "rps",
+    "kind"
+  ],
+  "foundations-mastery": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "heat-death": [],
+  "lean-at-scale": [],
+  "maxwells-demon": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "metrics-firehose": [
+    "rps",
+    "kind"
+  ],
+  "no-cache-no-mercy": [
+    "rps"
+  ],
+  "personalized-feed": [
+    "rps",
+    "kind",
+    "workload",
+    "origin"
+  ],
+  "realtime-live": [
+    "rps",
+    "kind"
+  ],
+  "search-at-scale": [
+    "rps",
+    "workload"
+  ],
+  "serverless-or-bust": [
+    "rps"
+  ],
+  "stream-processor": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "thundering-herd": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "unit-economics": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "write-storm": [
+    "rps",
+    "kind"
+  ],
+  "write-storm-brownout": [
+    "rps"
+  ],
+  "zero-budget-hero": [
+    "rps",
+    "kind",
+    "workload"
+  ],
+  "zone-failure": [
+    "rps",
+    "kind",
+    "workload"
+  ]
+}

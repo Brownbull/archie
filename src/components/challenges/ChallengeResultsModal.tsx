@@ -343,10 +343,10 @@ export function ChallengeResultsModal() {
                   className="h-12 w-12"
                   style={{
                     imageRendering: "pixelated",
-                    // 2026-06-11 playtest: the NORMAL star icon, just greyed — "already achieved",
-                    // not a different trophy.
-                    filter: "grayscale(0.8) brightness(0.9)",
-                    opacity: 0.85,
+                    // 2026-06-11 playtest round 2: keep the GOLD readable — full grayscale turned
+                    // the star silver, which read as a different trophy. Muted gold = "greyed out".
+                    filter: "saturate(0.35) brightness(0.8)",
+                    opacity: 0.6,
                     animation: result.stars === 3 ? `star-slam 0.4s ease-out ${(n - 1) * 0.35}s both` : undefined,
                   }}
                 />

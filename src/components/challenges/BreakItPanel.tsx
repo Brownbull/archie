@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { feasibleBreakDials } from "@/services/breakProbe"
-import { remainingBreakAttributes, BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS, type BreaksRecord, type BreakAttribute } from "@/engine/breakDetection"
+import { remainingBreakAttributes, BREAK_ATTRIBUTE_LABELS, type BreaksRecord, type BreakAttribute } from "@/engine/breakDetection"
+import { questBreakDials } from "@/lib/challengeBreakDials"
 import type { BreakOutcome } from "@/hooks/useBreakCollection"
 import type { Challenge } from "@/lib/challengeTypes"
 
@@ -31,10 +32,10 @@ interface BreakItPanelProps {
  * dial — shadow when unearned, lit when collected, and the one collected THIS run slams in like
  * a star. Renders at the top of every break card so the earnable currency is always in view.
  */
-function ExpertSlots({ record, freshAttribute }: { record: BreaksRecord | undefined; freshAttribute: BreakAttribute | null }) {
+function ExpertSlots({ record, freshAttribute, dials }: { record: BreaksRecord | undefined; freshAttribute: BreakAttribute | null; dials: readonly BreakAttribute[] }) {
   return (
     <div data-testid="expert-slots" className="mb-2 flex items-center justify-center gap-3">
-      {BREAK_ATTRIBUTES.map((a) => {
+      {dials.map((a) => {
         const earned = !!record?.[a]
         const fresh = a === freshAttribute
         return (
@@ -67,8 +68,9 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   // Hooks live ABOVE every conditional return (hook-order invariant). The feasibility probe only
   // actually runs when the INVITE will render (3★, single-source, no outcome): ≤18 engine sims
   // against the build that just ran — the chips tell the truth about THIS build (D101 follow-up).
+  const dials = questBreakDials(challenge.id)
   const willInvite = stars >= 3 && !outcome && (challenge.trafficSources?.length ?? 0) > 0
-    && remainingBreakAttributes(breaksRecord).length > 0
+    && remainingBreakAttributes(breaksRecord, dials).length > 0
   const feasibility = useMemo(() => {
     if (!willInvite || challenge.trafficSources?.length !== 1) return null
     const { nodes, edges } = useArchitectureStore.getState()
@@ -81,7 +83,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   if (outcome && outcome.verdict !== "collected") {
     return (
       <div data-testid={`break-${outcome.verdict}`} className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
-        <ExpertSlots record={breaksRecord} freshAttribute={null} />
+        <ExpertSlots record={breaksRecord} freshAttribute={null} dials={dials} />
         <div className="flex items-center gap-2">
           <Hammer className="h-4 w-4 text-orange-400/70" />
           <span className="text-xs font-bold text-orange-200/90">
@@ -101,7 +103,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   if (outcome) {
     return (
       <div data-testid="break-collected" className="rounded-lg border border-orange-500/40 bg-orange-500/10 p-3">
-        <ExpertSlots record={{ ...breaksRecord, [outcome.attribute]: true }} freshAttribute={outcome.fresh ? outcome.attribute : null} />
+        <ExpertSlots record={{ ...breaksRecord, [outcome.attribute]: true }} freshAttribute={outcome.fresh ? outcome.attribute : null} dials={dials} />
         <div className="flex items-center gap-2">
           <Hammer className="h-4 w-4 text-orange-400" />
           <span className="text-xs font-bold text-orange-200">
@@ -138,17 +140,17 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   }
 
   if (stars < 3) return null
-  const remaining = remainingBreakAttributes(breaksRecord)
+  const remaining = remainingBreakAttributes(breaksRecord, dials)
   if (remaining.length === 0) return null
-  const collected = BREAK_ATTRIBUTES.length - remaining.length
+  const collected = dials.length - remaining.length
 
   return (
     <div data-testid="break-invite" className="rounded-lg border border-orange-500/40 bg-orange-500/10 p-3">
-      <ExpertSlots record={breaksRecord} freshAttribute={null} />
+      <ExpertSlots record={breaksRecord} freshAttribute={null} dials={dials} />
       <div className="flex items-center gap-2">
         <Hammer className="h-4 w-4 text-orange-400" />
         <span className="text-xs font-bold text-orange-200">Now break it</span>
-        <span className="ml-auto text-[0.625rem] text-orange-300/80">{collected}/4 collected</span>
+        <span className="ml-auto text-[0.625rem] text-orange-300/80">{collected}/{dials.length} collected</span>
       </div>
       <p className="mt-1.5 text-[0.6875rem] leading-snug text-orange-200/80">
         Your build holds the quest's demand — now find where it shatters. The traffic dials just
