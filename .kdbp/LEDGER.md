@@ -5335,3 +5335,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P179
 FINDINGS: probe revealed the earlier spec-curve boundary (~154) was the WRONG path — the live node-built curve peaks at the dial, so first-service's true boundary ≈1055; pins corrected to live-path truth. Raw-dial rps (not library-resolved) for player totals.
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5107/5107; 5 engine-truth probe pins; 10 hook verdicts; 31 modal) · E2E ✅ (break journey 46.5s unchanged — 12k within gate, workload causal)
 NOTE: D94's break semantics superseded by D101 for single-source quests; multi-source keeps legacy. Boundary reveal = the "know at which point we break" ask.
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P180
