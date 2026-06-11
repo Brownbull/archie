@@ -36,6 +36,21 @@ const mockComponents: Component[] = [
     ],
   },
   {
+    id: "ec2",
+    name: "EC2",
+    category: "compute",
+    typeId: "compute",
+    description: "Virtual servers",
+    is: "Generic compute",
+    gain: ["Flexible"],
+    cost: ["Ops burden"],
+    tags: ["compute"],
+    baseMetrics: [{ id: "latency", value: "medium", numericValue: 5, category: "performance" }],
+    configVariants: [
+      { id: "default", name: "Default", metrics: [{ id: "latency", value: "medium", numericValue: 5, category: "performance" }] },
+    ],
+  },
+  {
     id: "redis",
     name: "Redis",
     category: "caching",
@@ -89,6 +104,7 @@ vi.mock("@/engine/compatibilityChecker", () => ({
 
 // usePathwaySuggestions drives the inline "Suggested next" panel. Default: no suggestions
 // (so existing tests are unaffected); a specific test overrides it.
+vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
 vi.mock("@/hooks/usePathwaySuggestions", () => ({
   usePathwaySuggestions: vi.fn(() => ({ suggestions: [], hasGaps: false, nextTierName: null })),
 }))
@@ -211,7 +227,7 @@ describe("ComponentTab", () => {
   it("displays component count per category", () => {
     render(<ComponentTab />)
     const counts = screen.getAllByText("(1)")
-    expect(counts).toHaveLength(2) // One per category (data-storage, caching)
+    expect(counts).toHaveLength(3) // One per category (data-storage, compute, caching)
   })
 
   describe("challenge guidance (item 4b)", () => {
@@ -336,5 +352,103 @@ describe("ComponentTab", () => {
       expect(screen.getByTestId("type-block-cache")).not.toHaveAttribute("data-lock-reason")
       expect(screen.getByTestId("add-type-cache")).toBeEnabled()
     })
+  })
+})
+
+describe("toolbox realism + required-blocks filter (P4-S5 / D94)", () => {
+  beforeEach(async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ completedChallenges: [], expertCurrency: 0, requiredFilterUnlocked: {} })
+  })
+
+  it("an UNLOCKED type outside the quest palette renders gray-locked, not hidden (realism)", () => {
+    // compute is base-unlocked (BASE_UNLOCKED_BLOCKS) but NOT in this quest's available_blocks.
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({ availableBlocks: ["relational-db", "traffic-source"] }),
+    })
+    render(<ComponentTab />)
+    const card = screen.getByTestId("type-block-compute")
+    expect(card).toHaveAttribute("data-lock-reason", "not-in-palette")
+    expect(card).toHaveAttribute("draggable", "false")
+    expect(screen.getByTestId("add-type-compute")).toBeDisabled()
+    // in-palette block unaffected
+    expect(screen.getByTestId("type-block-relational-db")).not.toHaveAttribute("data-lock-reason")
+  })
+
+  it("a NOT-yet-unlocked type outside the palette stays hidden (realism shows YOUR toolbox, not the catalog)", () => {
+    // cache is neither base-unlocked nor granted by completed quests → still invisible.
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({ availableBlocks: ["relational-db", "traffic-source"] }),
+    })
+    render(<ComponentTab />)
+    expect(screen.queryByTestId("type-block-cache")).toBeNull()
+  })
+
+  it("banned outranks not-in-palette (a banned base block shows the red Ban, not the gray Lock)", () => {
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({ availableBlocks: ["relational-db"], forbiddenTypes: ["compute"] }),
+    })
+    render(<ComponentTab />)
+    expect(screen.getByTestId("type-block-compute")).toHaveAttribute("data-lock-reason", "banned")
+  })
+
+  it("free build: no gray locks (the palette filters are quest-mode concepts)", () => {
+    useChallengeStore.setState({ activeChallenge: null })
+    render(<ComponentTab />)
+    expect(screen.getByTestId("type-block-compute")).not.toHaveAttribute("data-lock-reason")
+  })
+
+  it("filter not owned: unlock button disabled at 0 expert balance, enabled once affordable", async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useChallengeStore.setState({ activeChallenge: makeChallenge({ requiredTypes: ["relational-db"] }) })
+    const { unmount } = render(<ComponentTab />)
+    expect(screen.getByTestId("required-filter-unlock")).toBeDisabled()
+    expect(screen.getByTestId("required-filter-price")).toHaveTextContent("you have 0")
+    unmount()
+    useUserProgressStore.setState({ expertCurrency: 2 })
+    render(<ComponentTab />)
+    expect(screen.getByTestId("required-filter-unlock")).toBeEnabled()
+  })
+
+  it("clicking unlock spends through the store action (u1, quest id)", async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    const spend = vi.fn().mockResolvedValue(true)
+    useUserProgressStore.setState({ expertCurrency: 1, unlockRequiredFilter: spend } as never)
+    useChallengeStore.setState({ activeChallenge: makeChallenge({ requiredTypes: ["relational-db"] }) })
+    render(<ComponentTab />)
+    fireEvent.click(screen.getByTestId("required-filter-unlock"))
+    expect(spend).toHaveBeenCalledWith("u1", "c1")
+  })
+
+  it("owned: the toggle narrows the palette to required types + categories, and back", async () => {
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ requiredFilterUnlocked: { c1: true } })
+    // cache is in-palette but NOT required; relational-db is required by type, ec2 by category.
+    useChallengeStore.setState({
+      activeChallenge: makeChallenge({
+        requiredTypes: ["relational-db"],
+        requiredComponents: ["compute"],
+        availableBlocks: ["relational-db", "cache", "compute", "traffic-source"],
+      }),
+    })
+    render(<ComponentTab />)
+    expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("required-filter-toggle"))
+    expect(screen.queryByTestId("type-block-cache")).toBeNull()
+    expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
+    expect(screen.getByTestId("type-block-compute")).toBeInTheDocument()
+    fireEvent.click(screen.getByTestId("required-filter-toggle"))
+    expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
+  })
+
+  it("no toggle row outside quest mode or when the quest grades nothing", () => {
+    useChallengeStore.setState({ activeChallenge: null })
+    const { unmount } = render(<ComponentTab />)
+    expect(screen.queryByTestId("required-filter-toggle")).toBeNull()
+    expect(screen.queryByTestId("required-filter-unlock")).toBeNull()
+    unmount()
+    useChallengeStore.setState({ activeChallenge: makeChallenge({ requiredComponents: [], requiredTypes: [] }) })
+    render(<ComponentTab />)
+    expect(screen.queryByTestId("required-filter-unlock")).toBeNull()
   })
 })

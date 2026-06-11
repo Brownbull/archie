@@ -7,6 +7,7 @@ import { useChallengeStore } from "@/stores/challengeStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { usePathwaySuggestions } from "@/hooks/usePathwaySuggestions"
 import { TypeBlockCard } from "@/components/toolbox/TypeBlockCard"
+import { RequiredFilterToggle } from "@/components/toolbox/RequiredFilterToggle"
 import { PathwayGuidancePanel } from "@/components/dashboard/PathwayGuidancePanel"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
@@ -71,7 +72,7 @@ export function ComponentTab() {
 
   // Challenge guidance: required categories are always shown; allowedCategories (optional)
   // additionally restricts the palette to those categories for the duration of the challenge.
-  const requiredCategories = activeChallenge?.requiredComponents ?? []
+  const requiredCategories = useMemo(() => activeChallenge?.requiredComponents ?? [], [activeChallenge])
   const allowedCategories = activeChallenge?.allowedCategories?.length
     ? activeChallenge.allowedCategories
     : null
@@ -142,30 +143,71 @@ export function ComponentTab() {
     [activeChallenge],
   )
 
+  // Toolbox realism (P4-S5, D94): in quest mode the player's WHOLE unlocked toolbox stays visible.
+  // Blocks outside the quest palette render gray-locked (`not-in-palette` — the S6b slot reserved
+  // for exactly this) instead of vanishing, so the toolbox reads as YOUR toolbox, with this quest
+  // offering a subset — not a toolbox that mysteriously shrinks per quest.
+  const unlockedTypeSet = useMemo(() => {
+    if (!activeChallenge) return null
+    return resolveTechTree(getAllChallenges(), completedChallenges).unlockedBlocks
+  }, [activeChallenge, completedChallenges])
+
+  // The expert-currency spend (P4-S5): once purchased for this quest, the palette can be narrowed
+  // to just the graded blocks. Ownership is persistent (userProgress); the on/off is session-local
+  // and BOUND to the quest id — switching quests naturally deactivates it, no reset effect needed.
+  const [requiredFilterState, setRequiredFilterState] = useState<{ id: string | null; on: boolean }>({ id: null, on: false })
+  const requiredOnly = requiredFilterState.on && requiredFilterState.id === (activeChallenge?.id ?? null)
+  const setRequiredOnly = useCallback(
+    (on: boolean) => setRequiredFilterState({ id: useChallengeStore.getState().activeChallenge?.id ?? null, on }),
+    [],
+  )
+  const requiredFilterOwned = useUserProgressStore(
+    (s) => !!activeChallenge && !!s.requiredFilterUnlocked[activeChallenge.id],
+  )
+  const requiredTypeSet = useMemo(
+    () => new Set(activeChallenge?.requiredTypes ?? []),
+    [activeChallenge],
+  )
+  const hasRequiredTargets = requiredTypeSet.size > 0 || requiredCategories.length > 0
+  const requiredFilterActive = requiredOnly && requiredFilterOwned && hasRequiredTargets
+
   const filtered = useMemo(() => {
     // S6b: banned types bypass the category + palette filters — they must be VISIBLE (locked) even
     // though Phase 1's config-consistency guard keeps them out of available_blocks.
     const isBanned = (c: (typeof components)[number]) => !!c.typeId && bannedTypeSet.has(c.typeId)
+    // P4-S5: unlocked types also bypass the quest filters — VISIBLE but gray-locked below.
+    const isUnlocked = (c: (typeof components)[number]) => !!c.typeId && !!unlockedTypeSet?.has(c.typeId)
     // Restrict to challenge-allowed categories first (no-op when the challenge sets none).
     let scoped = allowedCategories
-      ? components.filter((c) => allowedCategories.includes(c.category) || isBanned(c))
+      ? components.filter((c) => allowedCategories.includes(c.category) || isBanned(c) || isUnlocked(c))
       : components
     // Phase 2: hard-gate by available block types (tight type-level gate on top of category).
     if (challengeBlockSet) {
-      scoped = scoped.filter((c) => (c.typeId && challengeBlockSet.has(c.typeId)) || isBanned(c))
+      scoped = scoped.filter((c) => (c.typeId && challengeBlockSet.has(c.typeId)) || isBanned(c) || isUnlocked(c))
+    }
+    // P4-S5: the purchased required-blocks filter — focus the palette on what the brief grades.
+    if (requiredFilterActive) {
+      scoped = scoped.filter(
+        (c) => (c.typeId && requiredTypeSet.has(c.typeId)) || requiredCategories.includes(c.category),
+      )
     }
     if (!searchQuery) return scoped
     const q = searchQuery.toLowerCase()
     const nameMatches = new Set(searchComponents(searchQuery).map((c) => c.id))
     return scoped.filter((c) => nameMatches.has(c.id) || typeMatchesQuery(c, q))
-  }, [searchQuery, components, searchComponents, allowedCategories, challengeBlockSet, bannedTypeSet])
+  }, [searchQuery, components, searchComponents, allowedCategories, challengeBlockSet, bannedTypeSet, unlockedTypeSet, requiredFilterActive, requiredTypeSet, requiredCategories])
 
-  // Lock classifier for the card: banned outranks everything; not-in-palette reserved for Phase 4's
-  // "show all unlocked" toolbox realism (nothing feeds it yet — the palette filter still drops those).
+  // Lock classifier for the card: banned outranks everything; otherwise a block outside the quest's
+  // palette (category- or type-gated) is `not-in-palette` — visible, gray-locked, never draggable.
   const lockReasonFor = useCallback(
-    (g: ComponentTypeGroup): BlockLockReason | null =>
-      activeChallenge && g.typeId && bannedTypeSet.has(g.typeId) ? "banned" : null,
-    [activeChallenge, bannedTypeSet],
+    (g: ComponentTypeGroup): BlockLockReason | null => {
+      if (!activeChallenge || !g.typeId) return null
+      if (bannedTypeSet.has(g.typeId)) return "banned"
+      const inCategory = !allowedCategories || allowedCategories.includes(g.categoryId)
+      const inPalette = !challengeBlockSet || challengeBlockSet.has(g.typeId)
+      return inCategory && inPalette ? null : "not-in-palette"
+    },
+    [activeChallenge, bannedTypeSet, allowedCategories, challengeBlockSet],
   )
 
   // Organize the palette by fundamental TYPE (one logical-block per type), then group those
@@ -231,6 +273,13 @@ export function ComponentTab() {
       <div className="space-y-3 p-3">
         {activeChallenge && (
           <ChallengeGuidanceBanner required={requiredCategories} allowed={allowedCategories} />
+        )}
+        {activeChallenge && hasRequiredTargets && (
+          <RequiredFilterToggle
+            challengeId={activeChallenge.id}
+            active={requiredFilterActive}
+            onToggle={setRequiredOnly}
+          />
         )}
         {showPathway && (
           <div data-testid="component-tab-pathway" className="rounded-md border border-blue-500/30 bg-blue-500/5 p-2">
