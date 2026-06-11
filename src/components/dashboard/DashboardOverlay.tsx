@@ -25,6 +25,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
 import { CategoryInfoPopup } from "@/components/dashboard/CategoryInfoPopup"
+import { categoryContributors } from "@/lib/categoryContributors"
 import { PanelInfoButton } from "@/components/help/PanelInfoButton"
 import { WeightSliders } from "@/components/dashboard/WeightSliders"
 import { ConstraintPanel } from "@/components/dashboard/ConstraintPanel"
@@ -250,6 +251,7 @@ export function DashboardOverlay({ open, onOpenChange, initialSection, initialCa
                   key={cs.categoryId}
                   category={componentLibrary.getMetricCategory(cs.categoryId)}
                   score={cs.score}
+                  contributors={categoryContributors(nodes, computedMetrics, cs.categoryId)}
                   open={infoCategoryId === cs.categoryId}
                   onOpenChange={(popOpen) =>
                     setInfoCategoryId(popOpen ? cs.categoryId : null)

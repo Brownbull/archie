@@ -362,3 +362,38 @@ describe("quest-mode footer gating (S6 / D89)", () => {
     expect(screen.getByTestId("dashboard-weakest")).toBeInTheDocument()
   })
 })
+
+describe("category trace popup (Plan-2 P4 / D99)", () => {
+  it("CategoryInfoPopup renders contributors worst-first with the biggest-lever line", async () => {
+    const { CategoryInfoPopup } = await import("@/components/dashboard/CategoryInfoPopup")
+    const category = {
+      id: "performance", name: "Performance", description: "d", whyItMatters: "w",
+      scoreInterpretations: [{ minScore: 0, maxScore: 10, text: "ok" }],
+    } as never
+    const contributors = [
+      { nodeId: "n1", name: "API Gateway", subScore: 3.2, worstMetricId: "p99-latency", worstMetricValue: 2 },
+      { nodeId: "n2", name: "PostgreSQL", subScore: 7.1, worstMetricId: "query-latency", worstMetricValue: 6 },
+    ]
+    render(
+      <CategoryInfoPopup category={category} score={5.1} contributors={contributors} open onOpenChange={() => {}}>
+        <button>anchor</button>
+      </CategoryInfoPopup>,
+    )
+    const trace = screen.getByTestId("category-trace")
+    expect(trace).toHaveTextContent("Where it comes from")
+    expect(screen.getByTestId("trace-row-n1")).toHaveTextContent("API Gateway")
+    expect(screen.getByTestId("trace-row-n1")).toHaveTextContent("3.2 · dragged by p99-latency (2)")
+    expect(screen.getByTestId("category-lever")).toHaveTextContent(/Biggest lever: .*p99-latency.* on .*API Gateway/)
+  })
+
+  it("no trace section without contributors (docs-surface callers keep the classic popup)", async () => {
+    const { CategoryInfoPopup } = await import("@/components/dashboard/CategoryInfoPopup")
+    const category = { id: "performance", name: "Performance", description: "d", whyItMatters: "w", scoreInterpretations: [] } as never
+    render(
+      <CategoryInfoPopup category={category} score={5} open onOpenChange={() => {}}>
+        <button>anchor</button>
+      </CategoryInfoPopup>,
+    )
+    expect(screen.queryByTestId("category-trace")).toBeNull()
+  })
+})

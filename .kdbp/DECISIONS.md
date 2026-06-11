@@ -1547,3 +1547,8 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 **Owner fork (2026-06-11):** beginner-gated. `difficulty: beginner` quests keep the step-by-step tackle coaching (first-quest UI onboarding); intermediate/advanced building-state coaching becomes DIAGNOSTICS ONLY — validation, not instruction (feedback lines 6-8: "telling me, step by step, what I must do… I shouldn't have that hard of hints. A syntax compiler… that kind of thing is okay").
 **Non-beginner build-state ladder:** (1) no traffic source → "no load origin" validation framing; (2) port mismatches → "N connections have mismatched port types (⚡) — they cost the well-formed star"; (3) orphans/unreachable → existing wiring diagnostic; (4) structurally clean → run-ready line (state report + the only CTA — not a build instruction). Required-category prompts DROPPED for non-beginner (the HUD checklist is the overview surface for that). Running/scored/break-loop coaching unchanged everywhere.
 **Status:** active
+
+## D99 — Plan-2 Phase 4 design lock: score trace, complexity, CTA inventory (2026-06-11)
+
+**Inventory findings:** (1) score clickability + deep-links already shipped in Fluidity (D80/P1-T4) — the missing piece is the TRACE (which components feed the number); (2) complexity is already the "Operational Simplicity" category — visible, no stat-bar work; (3) the CTA set post-D98 has one surface per job — documented, no kills. **Delivery:** Contributors section in CategoryInfoPopup (per-node category sub-scores, worst-first, lowest-metric attribution, "what moves it" line) — pure presentation over computedMetrics; design doc docs/gabe/design/score-trace.md.
+**Status:** active
