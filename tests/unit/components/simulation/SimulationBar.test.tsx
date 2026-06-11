@@ -115,23 +115,17 @@ describe("SimulationBar (Epic 15)", () => {
 
   // P1/T6: a distinct RERUN re-simulates the live canvas (and re-grades in a quest) — "Watch again"
   // only replays the recorded ticks. The button appears exactly when the run is done.
-  it("offers a Rerun control once the run is done, hidden during live playback", () => {
+  it("the bar offers ONLY Watch again when done — Rerun moved to the floating start slot (2026-06-11)", () => {
     setDone()
     const { unmount } = render(<SimulationBar />)
-    expect(screen.getByTestId("playback-rerun")).toHaveTextContent("Rerun")
+    expect(screen.queryByTestId("playback-rerun")).not.toBeInTheDocument()
+    expect(screen.getByTestId("playback-replay")).toHaveTextContent("Watch again")
+    // the toggle would duplicate Watch again while idle-done — hidden until playback is live
+    expect(screen.queryByTestId("playback-toggle")).not.toBeInTheDocument()
     unmount()
     setRunning()
     render(<SimulationBar />)
-    expect(screen.queryByTestId("playback-rerun")).not.toBeInTheDocument()
-  })
-
-  it("Rerun re-simulates from the live canvas (sandbox path → fresh run from tick 0)", () => {
-    setDone()
-    render(<SimulationBar />)
-    fireEvent.click(screen.getByTestId("playback-rerun"))
-    // launchSandboxRun → simulationStore.start() on the (empty) canvas: a fresh result replaces the
-    // recorded ticks and playback state restarts.
-    expect(s().currentTick).toBe(0)
+    expect(screen.getByTestId("playback-toggle")).toBeInTheDocument()
   })
 
   it("shows the failed-request uptime drop in stats", () => {

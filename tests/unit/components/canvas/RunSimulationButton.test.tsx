@@ -99,3 +99,26 @@ describe("RunSimulationButton (Epic 15)", () => {
     expect(s().ticks[0].targetRps).toBe(200)
   })
 })
+
+describe("floating Rerun takes over the start slot when done (2026-06-11)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    s().reset()
+    mockNodes = [{ id: "n1" }]
+  })
+  afterEach(() => {
+    s().reset()
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
+
+  it("done state swaps the start slot to Rerun; clicking re-simulates from tick 0", () => {
+    useSimulationStore.setState({ status: "done", currentTick: 5 })
+    render(<RunSimulationButton />)
+    expect(screen.queryByTestId("run-simulation")).not.toBeInTheDocument()
+    const rerun = screen.getByTestId("playback-rerun")
+    expect(rerun).toHaveTextContent("Rerun")
+    fireEvent.click(rerun) // launchSandboxRun → fresh start
+    expect(s().currentTick).toBe(0)
+  })
+})

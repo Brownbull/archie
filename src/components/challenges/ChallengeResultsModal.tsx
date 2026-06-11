@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -287,7 +288,16 @@ export function ChallengeResultsModal() {
 
   return (
     <Dialog open onOpenChange={(next) => !next && onClose()}>
-      <DialogContent data-testid="challenge-results" className="max-w-md">
+      <DialogContent data-testid="challenge-results" className="max-w-md" showCloseButton={false}>
+        {/* 2026-06-11 playtest: ONE close affordance — the top-right X (same effect as before:
+            back to the canvas, run data kept). The footer Close button is gone. */}
+        <DialogClose
+          data-testid="result-close"
+          className="absolute right-4 top-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:outline-hidden"
+          aria-label="Close"
+        >
+          <XIcon className="h-4 w-4" />
+        </DialogClose>
         <DialogHeader className="text-center">
           <DialogTitle>{challenge.title}</DialogTitle>
           <DialogDescription>
@@ -435,7 +445,7 @@ export function ChallengeResultsModal() {
         )}
 
         {/* Break-it loop (P4-S3, D94): the 3★ invitation / the collected-break celebration. */}
-        <BreakItPanel challenge={challenge} stars={result.stars} outcome={breakOutcome} onResetDials={onResetDials} />
+        <BreakItPanel challenge={challenge} stars={result.stars} outcome={breakOutcome} onResetDials={onResetDials} onProceed={onClose} />
 
         {/* LX3 (D74): lean-reference benchmark — a concrete "par" so 3★ isn't the end of the lesson. */}
         {par && (
@@ -463,11 +473,8 @@ export function ChallengeResultsModal() {
         {suggestion && <SuggestionCard result={suggestion} />}
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button data-testid="result-close" variant="ghost" size="sm" onClick={onClose}>
-            Close
-          </Button>
           <Button data-testid="result-retry" variant="outline" size="sm" onClick={onRetry}>
-            Adjust &amp; retry
+            Continue here
           </Button>
           {result.stars > 0 ? (
             <Button

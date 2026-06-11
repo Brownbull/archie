@@ -1,7 +1,5 @@
-import { Play, Pause, RotateCcw, RefreshCw } from "lucide-react"
+import { Play, Pause, RotateCcw } from "lucide-react"
 import { useSimulationStore, type PlaybackSpeed } from "@/stores/simulationStore"
-import { useChallengeStore } from "@/stores/challengeStore"
-import { launchChallengeAttempt, launchSandboxRun } from "@/lib/simulationLaunch"
 
 const SPEEDS: PlaybackSpeed[] = [1, 2, 5, 10]
 
@@ -16,21 +14,6 @@ export function PlaybackControls() {
   const replay = useSimulationStore((s) => s.replay)
   const setSpeed = useSimulationStore((s) => s.setSpeed)
   const seek = useSimulationStore((s) => s.seek)
-  const activeChallenge = useChallengeStore((s) => s.activeChallenge)
-  const selectChallenge = useChallengeStore((s) => s.selectChallenge)
-
-  // P1/T6: RERUN re-simulates the LIVE canvas (and re-grades in challenge mode) — the gap that forced
-  // "close the sim, click Start Challenge again" after every architecture tweak. Distinct from the
-  // playback-only "Watch again". The challenge path re-arms the attempt first (selectChallenge →
-  // building) so startAttempt's anti-double-score guard is honored.
-  const onRerun = () => {
-    if (activeChallenge) {
-      selectChallenge(activeChallenge)
-      launchChallengeAttempt(activeChallenge)
-    } else {
-      launchSandboxRun()
-    }
-  }
 
   const onPlayPause = () => {
     if (isPlaying) pause()
@@ -42,6 +25,10 @@ export function PlaybackControls() {
 
   return (
     <div data-testid="playback-controls" className="flex items-center gap-2">
+      {/* When a finished run sits idle, the toggle would duplicate "Watch again" (both restart
+          playback) — hide it until playback is live again (2026-06-11 playtest: two buttons, not
+          three; RERUN moved to the floating start-button slot). */}
+      {!(status === "done" && !isPlaying) && (
       <button
         type="button"
         data-testid="playback-toggle"
@@ -51,6 +38,7 @@ export function PlaybackControls() {
       >
         {isPlaying ? <Pause className="h-3.5 w-3.5" /> : status === "done" ? <RotateCcw className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
       </button>
+      )}
       <button
         type="button"
         data-testid="playback-replay"
@@ -64,19 +52,6 @@ export function PlaybackControls() {
             "re-run the simulation" and sent players hunting for a way to get re-graded. */}
         {status === "done" && <span>Watch again</span>}
       </button>
-      {status === "done" && (
-        <button
-          type="button"
-          data-testid="playback-rerun"
-          aria-label="Rerun the simulation on the current architecture"
-          title="Re-simulate the current canvas — in a quest this re-grades the attempt"
-          onClick={onRerun}
-          className="flex items-center gap-1 rounded bg-emerald-500/90 px-1.5 py-0.5 text-[0.625rem] font-semibold text-white hover:bg-emerald-500"
-        >
-          <RefreshCw className="h-3.5 w-3.5" />
-          <span>Rerun</span>
-        </button>
-      )}
 
       <input
         type="range"

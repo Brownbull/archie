@@ -11,6 +11,8 @@ interface BreakItPanelProps {
   outcome: BreakOutcome | null
   /** Restores the traffic dials to the authored spec and re-enters build mode. */
   onResetDials: () => void
+  /** Closes the modal back to the canvas (run kept) — dials are unlocked and Rerun is waiting. */
+  onProceed: () => void
 }
 
 /**
@@ -21,7 +23,7 @@ interface BreakItPanelProps {
  *   player to break their own build, one dial at a time. The dials just unlocked (D20).
  * Renders nothing otherwise (no authored sources, all four collected, sub-3★ ordinary runs).
  */
-export function BreakItPanel({ challenge, stars, outcome, onResetDials }: BreakItPanelProps) {
+export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProceed }: BreakItPanelProps) {
   const breaksRecord = useUserProgressStore((s) => s.breaksByChallenge[challenge.id])
   if (!challenge.trafficSources?.length) return null
 
@@ -86,6 +88,17 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials }: BreakI
           </span>
         ))}
       </div>
+      {/* 2026-06-11 playtest: the invite needs its own CTA — "what do I press next?" Closes back
+          to the canvas where the dials are unlocked and Rerun waits in the start slot. */}
+      <button
+        type="button"
+        data-testid="break-proceed"
+        onClick={onProceed}
+        className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md bg-orange-500/90 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-orange-500"
+      >
+        <Hammer className="h-3.5 w-3.5" />
+        Let's break it
+      </button>
     </div>
   )
 }
