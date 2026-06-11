@@ -5,19 +5,26 @@ import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import {
   detectSingleAttributeBreak,
+  diffTrafficAttributes,
   isNewBreak,
   remainingBreakAttributes,
   type BreakAttribute,
 } from "@/engine/breakDetection"
+import { minBreakingRps, isCategoricalCausal, rawTrafficRps } from "@/services/breakProbe"
 import type { StarBreakdown } from "@/lib/challengeTypes"
 
-/** What the just-scored run broke, for the results modal to celebrate. */
+/** What the just-scored run broke (or failed to credit), for the results modal. */
 export interface BreakOutcome {
+  /** D101: collected pays; overshoot = rps break past 2× the boundary (find the edge);
+   *  not-causal = the categorical dial didn't make the difference (the load alone did). */
+  verdict: "collected" | "overshoot" | "not-causal"
   attribute: BreakAttribute
   /** True when THIS run newly collected the attribute (paid 1 expert unit); false on a repeat. */
   fresh: boolean
   /** Attributes still uncollected for this challenge after this run, in display order. */
   remaining: BreakAttribute[]
+  /** For a collected rps break: the discovered failure boundary (earned knowledge). */
+  boundary?: number
 }
 
 /**
@@ -48,14 +55,51 @@ export function useBreakCollection(): BreakOutcome | null {
       // (review #2): only BUILTIN quests mint expert currency — a self-authored quest with a
       // trivially-breakable spec would otherwise be a currency printer. Mirrors awardXp.
       if (activeChallenge && activeChallenge.origin === "builtin" && (bestStars[activeChallenge.id] ?? 0) >= 3) {
-        const nodes = useArchitectureStore.getState().nodes
-        const attribute = detectSingleAttributeBreak(nodes, activeChallenge, lastResult)
-        if (attribute) {
-          const progress = useUserProgressStore.getState()
-          const record = progress.breaksByChallenge[activeChallenge.id]
-          const fresh = isNewBreak(record, attribute) && !!userId
-          if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
-          next = { attribute, fresh, remaining: remainingBreakAttributes({ ...record, [attribute]: true }) }
+        const { nodes, edges } = useArchitectureStore.getState()
+        const authored = activeChallenge.trafficSources ?? []
+        // D101 (owner fork 2026-06-11): single-source quests get the v2 economy — precision-gated
+        // rps breaks + causal (combination-allowed) categorical breaks. Multi-source quests keep
+        // the legacy exactly-one-attribute rule (positional restore is ambiguous across sources).
+        if (authored.length === 1 && !lastResult.passedMetrics) {
+          const diff = diffTrafficAttributes(nodes, authored)
+          const cats = (["kind", "workload", "origin"] as const).filter((a) => diff.has(a))
+          let verdict: BreakOutcome["verdict"] | null = null
+          let attribute: BreakAttribute | null = null
+          let boundary: number | undefined
+          if (diff.size === 1 && diff.has("rps")) {
+            attribute = "rps"
+            const b = minBreakingRps(nodes, edges, activeChallenge)
+            // null = probe couldn't bracket (drift) — collect, never punish on drift.
+            if (b === null || rawTrafficRps(nodes) <= 2 * b) {
+              verdict = "collected"
+              boundary = b ?? undefined
+            } else {
+              verdict = "overshoot"
+            }
+          } else if (cats.length === 1 && (diff.size === 1 || (diff.size === 2 && diff.has("rps")))) {
+            attribute = cats[0]
+            verdict = isCategoricalCausal(nodes, edges, activeChallenge, cats[0]) ? "collected" : "not-causal"
+          }
+          if (verdict && attribute) {
+            const progress = useUserProgressStore.getState()
+            const record = progress.breaksByChallenge[activeChallenge.id]
+            if (verdict === "collected") {
+              const fresh = isNewBreak(record, attribute) && !!userId
+              if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
+              next = { verdict, attribute, fresh, boundary, remaining: remainingBreakAttributes({ ...record, [attribute]: true }) }
+            } else {
+              next = { verdict, attribute, fresh: false, remaining: remainingBreakAttributes(record) }
+            }
+          }
+        } else {
+          const attribute = detectSingleAttributeBreak(nodes, activeChallenge, lastResult)
+          if (attribute) {
+            const progress = useUserProgressStore.getState()
+            const record = progress.breaksByChallenge[activeChallenge.id]
+            const fresh = isNewBreak(record, attribute) && !!userId
+            if (fresh) void progress.collectBreak(userId, activeChallenge.id, attribute)
+            next = { verdict: "collected", attribute, fresh, remaining: remainingBreakAttributes({ ...record, [attribute]: true }) }
+          }
         }
       }
     } else if (attemptState === "scored") {

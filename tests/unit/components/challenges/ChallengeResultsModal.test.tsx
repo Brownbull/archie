@@ -339,7 +339,7 @@ describe("break-it loop panel (P4-S3 / D94)", () => {
   })
 
   it("celebrates a fresh break with the +1 Expert payout and reframes the header", () => {
-    mockBreakOutcome = { attribute: "rps", fresh: true, remaining: ["kind", "workload", "origin"] }
+    mockBreakOutcome = { verdict: "collected", attribute: "rps", fresh: true, remaining: ["kind", "workload", "origin"] }
     useChallengeStore.setState({
       activeChallenge: breakable, attemptState: "scored",
       lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
@@ -353,7 +353,7 @@ describe("break-it loop panel (P4-S3 / D94)", () => {
   })
 
   it("a repeat break says 'already collected' and never re-pays", () => {
-    mockBreakOutcome = { attribute: "kind", fresh: false, remaining: ["workload"] }
+    mockBreakOutcome = { verdict: "collected", attribute: "kind", fresh: false, remaining: ["workload"] }
     useChallengeStore.setState({
       activeChallenge: breakable, attemptState: "scored",
       lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
@@ -364,7 +364,7 @@ describe("break-it loop panel (P4-S3 / D94)", () => {
   })
 
   it("the final break drops the reset CTA — the boundary is fully mapped", () => {
-    mockBreakOutcome = { attribute: "origin", fresh: true, remaining: [] }
+    mockBreakOutcome = { verdict: "collected", attribute: "origin", fresh: true, remaining: [] }
     useChallengeStore.setState({
       activeChallenge: breakable, attemptState: "scored",
       lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
@@ -376,7 +376,7 @@ describe("break-it loop panel (P4-S3 / D94)", () => {
   })
 
   it("Reset dials restores the authored traffic spec and re-enters build mode", () => {
-    mockBreakOutcome = { attribute: "rps", fresh: true, remaining: ["kind", "workload", "origin"] }
+    mockBreakOutcome = { verdict: "collected", attribute: "rps", fresh: true, remaining: ["kind", "workload", "origin"] }
     useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000 })] as never })
     useChallengeStore.setState({
       activeChallenge: breakable, attemptState: "scored",
@@ -468,5 +468,42 @@ describe("observability explainer (Plan-2 P5 / D100)", () => {
   it("absent when the run had no failure events", () => {
     score(challenge)
     expect(screen.queryByTestId("observability-explainer")).toBeNull()
+  })
+})
+
+describe("achieved standing (2026-06-11 playtest)", () => {
+  beforeEach(() => {
+    mockSuggestion = null
+    mockPriorBest = null
+    mockBreakOutcome = null
+    mockResilienceClears = null
+    useSimulationStore.getState().reset()
+    useUiStore.setState({ questLogOpen: false, challengesOpen: false })
+  })
+
+  const breakable = { ...challenge, trafficSources: [{ type: "web-users", rps: 1000, kind: "steady", workload: "mixed", origin: "one-region" }] } as Challenge
+
+  it("a failed break run keeps the 3★ standing — themed stars + Already achieved badge, no empty stars", () => {
+    useArchitectureStore.setState({ nodes: [{ id: "t1", data: { componentCategory: "traffic", trafficRps: 9000, trafficKind: "steady", trafficWorkload: "mixed", trafficOrigin: "one-region" } }], edges: [], topologyIssues: [], topologyIssuesByNodeId: new Map() } as never)
+    useChallengeStore.setState({
+      activeChallenge: breakable, attemptState: "scored", bestStars: { c1: 3 },
+      lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
+      lastMeasured: { uptimePercent: 50, p99LatencyMs: 900, totalCost: 60, topologyIssueCount: 0 },
+    } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.getByTestId("stars-achieved-badge")).toHaveTextContent(/Already achieved/)
+    expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "3 of 3 stars — already achieved")
+  })
+
+  it("a failed run with UNCHANGED traffic (architecture regression) shows honest live stars", () => {
+    useArchitectureStore.setState({ nodes: [{ id: "t1", data: { componentCategory: "traffic", trafficRps: 1000, trafficKind: "steady", trafficWorkload: "mixed", trafficOrigin: "one-region" } }], edges: [], topologyIssues: [], topologyIssuesByNodeId: new Map() } as never)
+    useChallengeStore.setState({
+      activeChallenge: breakable, attemptState: "scored", bestStars: { c1: 3 },
+      lastResult: { stars: 0, passedMetrics: false, underBudget: true, cleanTopology: true },
+      lastMeasured: { uptimePercent: 50, p99LatencyMs: 900, totalCost: 60, topologyIssueCount: 0 },
+    } as never)
+    render(<ChallengeResultsModal />)
+    expect(screen.queryByTestId("stars-achieved-badge")).toBeNull()
+    expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "0 of 3 stars")
   })
 })

@@ -9,6 +9,17 @@ vi.mock("firebase/firestore", () => ({
   serverTimestamp: vi.fn(() => "ts"),
 }))
 vi.mock("@/hooks/useCurrentUserId", () => ({ useCurrentUserId: () => "u1" }))
+// D101: probe behavior is pinned in breakProbe.test — here we script verdict paths.
+const { mockMinBreakingRps, mockIsCausal } = vi.hoisted(() => ({
+  mockMinBreakingRps: vi.fn<() => number | null>(() => null),
+  mockIsCausal: vi.fn(() => false),
+}))
+vi.mock("@/services/breakProbe", () => ({
+  minBreakingRps: mockMinBreakingRps,
+  isCategoricalCausal: mockIsCausal,
+  rawTrafficRps: (nodes: Array<{ data: { componentCategory: string; trafficRps?: number } }>) =>
+    nodes.reduce((sum, n) => sum + (n.data.componentCategory === "traffic" ? (n.data.trafficRps ?? 0) : 0), 0),
+}))
 
 import { useBreakCollection } from "@/hooks/useBreakCollection"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -73,16 +84,48 @@ describe("useBreakCollection (P4-S3 / D94)", () => {
     expect(result.current).toBeNull()
   })
 
-  it("no break when nothing deviated, or when two dials moved at once", () => {
+  it("no break when nothing deviated; rps+kind combo pays ONLY when the kind is causal (D101)", async () => {
     useChallengeStore.setState({ attemptState: "scored", lastResult: failed() })
     const { result: untouched } = renderHook(() => useBreakCollection())
     expect(untouched.current).toBeNull()
 
+    // combo, NOT causal: the load alone would've felled it — verdict surfaces, nothing pays
+    mockIsCausal.mockReturnValue(false)
     useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000, trafficKind: "periodic" })] as never })
     useChallengeStore.setState({ attemptState: "scored", lastResult: failed() })
-    const { result: two } = renderHook(() => useBreakCollection())
-    expect(two.current).toBeNull()
+    const { result: notCausal } = renderHook(() => useBreakCollection())
+    await waitFor(() => expect(notCausal.current?.verdict).toBe("not-causal"))
+    expect(notCausal.current?.attribute).toBe("kind")
     expect(useUserProgressStore.getState().expertCurrency).toBe(0)
+
+    // combo, CAUSAL: the owner's combination semantics — the kind made the difference, pays
+    mockIsCausal.mockReturnValue(true)
+    useChallengeStore.setState({ attemptState: "scored", lastResult: { ...failed() } })
+    const { result: causal } = renderHook(() => useBreakCollection())
+    await waitFor(() => expect(causal.current?.verdict).toBe("collected"))
+    expect(causal.current?.attribute).toBe("kind")
+    await waitFor(() => expect(useUserProgressStore.getState().expertCurrency).toBe(1))
+  })
+
+  it("an rps break past 2× the boundary is an OVERSHOOT — broke it, paid nothing (D101)", async () => {
+    mockMinBreakingRps.mockReturnValue(200) // boundary 200; player at 9000 ≫ 400
+    useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000 })] as never })
+    useChallengeStore.setState({ attemptState: "scored", lastResult: failed() })
+    const { result } = renderHook(() => useBreakCollection())
+    await waitFor(() => expect(result.current?.verdict).toBe("overshoot"))
+    expect(useUserProgressStore.getState().expertCurrency).toBe(0)
+    mockMinBreakingRps.mockReturnValue(null)
+  })
+
+  it("an rps break within 2× of the boundary collects AND reports the boundary (D101)", async () => {
+    mockMinBreakingRps.mockReturnValue(5000) // player 9000 ≤ 10000 ✓
+    useArchitectureStore.setState({ nodes: [trafficNode({ trafficRps: 9000 })] as never })
+    useChallengeStore.setState({ attemptState: "scored", lastResult: failed() })
+    const { result } = renderHook(() => useBreakCollection())
+    await waitFor(() => expect(result.current?.verdict).toBe("collected"))
+    expect(result.current?.boundary).toBe(5000)
+    await waitFor(() => expect(useUserProgressStore.getState().expertCurrency).toBe(1))
+    mockMinBreakingRps.mockReturnValue(null)
   })
 
   it("the same scored result is collected exactly once (re-render can't double-pay)", async () => {

@@ -27,6 +27,27 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   const breaksRecord = useUserProgressStore((s) => s.breaksByChallenge[challenge.id])
   if (!challenge.trafficSources?.length) return null
 
+  // D101: a failed credit still teaches — overshoot says "find the edge", not-causal says
+  // "the load alone would've done it". Neither pays; both point at the precision game.
+  if (outcome && outcome.verdict !== "collected") {
+    return (
+      <div data-testid={`break-${outcome.verdict}`} className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+        <div className="flex items-center gap-2">
+          <Hammer className="h-4 w-4 text-orange-400/70" />
+          <span className="text-xs font-bold text-orange-200/90">
+            {outcome.verdict === "overshoot" ? "Broken — but anything breaks at that load" : `Broken — but not by ${BREAK_ATTRIBUTE_LABELS[outcome.attribute]}`}
+          </span>
+          <span className="ml-auto text-[0.6875rem] text-orange-300/60">no Expert</span>
+        </div>
+        <p className="mt-1.5 text-[0.6875rem] leading-snug text-orange-200/70">
+          {outcome.verdict === "overshoot"
+            ? "The point pays for FINDING the failure boundary: bring the load down and hunt for where it first breaks (within 2× pays)."
+            : "At this load the build falls with the authored value too. Find a level the authored setting survives — where only YOUR change makes the difference."}
+        </p>
+      </div>
+    )
+  }
+
   if (outcome) {
     return (
       <div data-testid="break-collected" className="rounded-lg border border-orange-500/40 bg-orange-500/10 p-3">
@@ -41,6 +62,11 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
           </span>
         </div>
         <p className="mt-1.5 text-[0.6875rem] leading-snug text-orange-200/80">
+          {outcome.boundary !== undefined && (
+            <span data-testid="break-boundary" className="font-semibold text-orange-200">
+              Failure boundary ≈ {outcome.boundary.toLocaleString()} rps.{" "}
+            </span>
+          )}
           {outcome.remaining.length > 0
             ? `Your build held 3★ until this dial moved — that's the failure boundary. Still standing: ${outcome.remaining.map((a) => BREAK_ATTRIBUTE_LABELS[a]).join(", ")}.`
             : "All four dials collected — you've mapped this build's entire failure boundary."}
@@ -74,8 +100,10 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
       </div>
       <p className="mt-1.5 text-[0.6875rem] leading-snug text-orange-200/80">
         Your build holds the quest's demand — now find where it shatters. The traffic dials just
-        unlocked: change <span className="font-semibold text-orange-200">ONE</span> of them and
-        re-run. Each dial that fells the build pays 1 Expert point.
+        unlocked. <span className="font-semibold text-orange-200">Peak RPS</span> pays when you find
+        roughly where it FIRST breaks (within 2× of the boundary — brute force pays nothing). The
+        other dials pay when <span className="font-semibold text-orange-200">they</span> make the
+        difference: raise the load to where the authored setting survives but your change doesn't.
       </p>
       <div className="mt-1.5 flex flex-wrap gap-1">
         {remaining.map((a) => (

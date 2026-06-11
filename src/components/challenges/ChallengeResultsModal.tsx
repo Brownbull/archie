@@ -26,6 +26,7 @@ import { useResilienceClears } from "@/hooks/useResilienceClears"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { plannedTrafficReset } from "@/services/trafficSourceInjection"
 import { BreakItPanel } from "@/components/challenges/BreakItPanel"
+import { diffTrafficAttributes } from "@/engine/breakDetection"
 import { SuggestionCard } from "@/components/challenges/SuggestionCard"
 import { DeltaChip } from "@/components/challenges/DeltaChip"
 import { CHALLENGE_TRACKS, rankForXp, MASTERY_RANKS, RANK_XP_THRESHOLDS } from "@/lib/challengeTracks"
@@ -224,6 +225,19 @@ export function ChallengeResultsModal() {
     return lastAward?.prevStars ?? 0
   }, [challenge, lastAward])
 
+  // 2026-06-11 playtest: the 3★ standing is per-quest and earned once (session basis, D20 — the
+  // same gate that unlocks the dials). On a break run (traffic deviated) the standing stays on
+  // screen; on an architecture change with authored demand, live stars tell the truth.
+  const sessionBestStars = useChallengeStore((s) => (challenge ? (s.bestStars[challenge.id] ?? 0) : 0))
+  const canvasNodes = useArchitectureStore((s) => s.nodes)
+  // Pre-run standing: a failed run can't have set bestStars, so bestStars≥3 means it pre-existed;
+  // a 3★ run just SET it, so the pre-run question is answered by prevBestStars (lastAward.prevStars)
+  // — first earn keeps the full gold celebration, only a RE-earn gets the achieved theme.
+  const trafficDeviated = useMemo(
+    () => (challenge ? diffTrafficAttributes(canvasNodes, challenge.trafficSources ?? []).size > 0 : false),
+    [challenge, canvasNodes],
+  )
+
   const open = attemptState === "scored" && !!challenge && !!result && !!measured
   if (!open) return null
 
@@ -307,6 +321,36 @@ export function ChallengeResultsModal() {
           </DialogDescription>
         </DialogHeader>
 
+        {/* Achieved standing (2026-06-11 playtest): the quest's 3★ is earned ONCE — a deliberate
+            break run (traffic dials deviated) doesn't strip the display down to sad empty stars.
+            The standing shows themed + "Already achieved"; the run's own verdict lives in the
+            criteria rows below. Architecture changes (no traffic deviation) keep honest live stars,
+            and a post-3★ re-earn replays the slam in the achieved theme (no first-time particles). */}
+        {(result.stars === 3 ? prevBestStars >= 3 : sessionBestStars >= 3 && trafficDeviated) ? (
+          <div className="flex flex-col items-center gap-1 py-2">
+            <span
+              data-testid="stars-achieved-badge"
+              className="inline-flex items-center gap-1 rounded-full border border-violet-500/40 bg-violet-500/10 px-2 py-0.5 text-[0.625rem] font-semibold text-violet-300"
+            >
+              ★ Already achieved
+            </span>
+            <div className="flex justify-center gap-3 pt-1" data-testid="result-stars" aria-label="3 of 3 stars — already achieved">
+              {[1, 2, 3].map((n) => (
+                <img
+                  key={n}
+                  src={starFilled}
+                  alt="★"
+                  className="h-12 w-12"
+                  style={{
+                    imageRendering: "pixelated",
+                    filter: "saturate(0.75) drop-shadow(0 0 6px rgba(139, 92, 246, 0.55))",
+                    animation: result.stars === 3 ? `star-slam 0.4s ease-out ${(n - 1) * 0.35}s both` : undefined,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
         <div className="flex justify-center gap-3 py-3" data-testid="result-stars" aria-label={`${result.stars} of 3 stars`}>
           {[1, 2, 3].map((n) => (
             <div key={n} className="flex flex-col items-center gap-1">
@@ -322,6 +366,7 @@ export function ChallengeResultsModal() {
             </div>
           ))}
         </div>
+        )}
 
         <div className="flex flex-col gap-1">
           <Criterion
