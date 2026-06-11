@@ -1,3 +1,4 @@
+import { metricTone } from "@/lib/metricTone"
 import { useMemo, useState } from "react"
 import { useSimulationStore, getCurrentTickState } from "@/stores/simulationStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
@@ -14,9 +15,19 @@ const METRICS: { id: BlockMetric; label: string }[] = [
   { id: "util", label: "Util" },
 ]
 
-function uptimeColor(pct: number): string {
+function uptimeColor(pct: number, target?: number): string {
+  // In a quest, judge against the QUEST'S target (same metricTone the results modal uses) so the
+  // live panel and the scoring never disagree (2026-06-11 playtest: 752ms white here, red there).
+  if (target !== undefined) return metricTone(pct, target, false, 1).cls
   if (pct >= 99) return "text-emerald-400"
   if (pct >= 95) return "text-yellow-400"
+  return "text-red-400"
+}
+
+function latencyColor(p99: number, target?: number): string {
+  if (target !== undefined) return metricTone(p99, target, true, 0).cls
+  if (p99 <= 200) return "text-emerald-400"
+  if (p99 <= 400) return "text-yellow-400"
   return "text-red-400"
 }
 
@@ -36,6 +47,7 @@ function Metric({ label, value, sub, color }: { label: string; value: string; su
  * switchable metric (RPS / Latency / Util). Reuses the existing tick series + cost helper.
  */
 export function SimulationStatsSidePanel() {
+  const activeChallenge = useChallengeStore((st) => st.activeChallenge)
   const status = useSimulationStore((s) => s.status)
   const ticks = useSimulationStore((s) => s.ticks)
   const currentTick = useSimulationStore((s) => s.currentTick)
@@ -101,9 +113,14 @@ export function SimulationStatsSidePanel() {
         <Metric
           label="Uptime"
           value={`${stats.uptimePercent.toFixed(1)}%`}
-          color={uptimeColor(stats.uptimePercent)}
+          color={uptimeColor(stats.uptimePercent, activeChallenge?.targetMetrics.uptimePercent)}
         />
-        <Metric label="Avg latency" value={`${Math.round(stats.avgLatencyMs)}ms`} sub={`p99 ${Math.round(stats.p99LatencyMs)}ms`} />
+        <Metric
+          label="Avg latency"
+          value={`${Math.round(stats.avgLatencyMs)}ms`}
+          sub={`p99 ${Math.round(stats.p99LatencyMs)}ms`}
+          color={latencyColor(stats.p99LatencyMs, activeChallenge?.targetMetrics.p99LatencyMs)}
+        />
         <Metric
           label="Current RPS"
           value={`${Math.round(stats.servedRps)}`}

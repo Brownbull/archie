@@ -1,3 +1,4 @@
+import { useChallengeStore } from "@/stores/challengeStore"
 import type { TickState, TickEventState } from "@/lib/simulationTypes"
 
 interface SimulationTimelineProps {
@@ -28,6 +29,7 @@ function eventTitle(events: TickEventState[]): string {
  * <title> tooltip carry the annotation.
  */
 export function SimulationTimeline({ ticks, currentTick }: SimulationTimelineProps) {
+  const latencyTargetMs = useChallengeStore((st) => st.activeChallenge?.targetMetrics.p99LatencyMs)
   if (ticks.length === 0) return null
   const n = ticks.length
   const H = 100
@@ -48,9 +50,12 @@ export function SimulationTimeline({ ticks, currentTick }: SimulationTimelinePro
       {ticks.map((t, i) => {
         const served = (t.totalServedRps / maxRps) * H
         const failed = (t.totalFailedRps / maxRps) * H
+        // 2026-06-11 playtest: an all-green bar over a latency-failing run is a lie — served ticks
+        // whose end-to-end latency exceeds the quest's p99 target render amber ("served, but slow").
+        const slow = latencyTargetMs !== undefined && t.pathLatencyMs !== undefined && t.pathLatencyMs > latencyTargetMs
         return (
           <g key={i}>
-            <rect x={i} y={H - served} width={1.02} height={served} className="fill-green-500/70" />
+            <rect x={i} y={H - served} width={1.02} height={served} className={slow ? "fill-yellow-500/70" : "fill-green-500/70"} />
             <rect x={i} y={H - served - failed} width={1.02} height={failed} className="fill-red-500/70" />
             {t.events && t.events.length > 0 && (
               <rect

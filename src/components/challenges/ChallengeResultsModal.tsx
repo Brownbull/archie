@@ -338,15 +338,14 @@ export function ChallengeResultsModal() {
               {[1, 2, 3].map((n) => (
                 <img
                   key={n}
-                  src={starFilled}
+                  src={starNew}
                   alt="★"
                   className="h-12 w-12"
                   style={{
                     imageRendering: "pixelated",
-                    // 2026-06-11 playtest round 2: keep the GOLD readable — full grayscale turned
-                    // the star silver, which read as a different trophy. Muted gold = "greyed out".
-                    filter: "saturate(0.35) brightness(0.8)",
-                    opacity: 0.6,
+                    // 2026-06-11 playtest round 3: the SAME sprite a first-time earn shows
+                    // (star-new), just dimmed — starFilled is a visibly different star.
+                    opacity: 0.45,
                     animation: result.stars === 3 ? `star-slam 0.4s ease-out ${(n - 1) * 0.35}s both` : undefined,
                   }}
                 />
