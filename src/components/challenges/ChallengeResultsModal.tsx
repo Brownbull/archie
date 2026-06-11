@@ -343,7 +343,10 @@ export function ChallengeResultsModal() {
                   className="h-12 w-12"
                   style={{
                     imageRendering: "pixelated",
-                    filter: "saturate(0.75) drop-shadow(0 0 6px rgba(139, 92, 246, 0.55))",
+                    // 2026-06-11 playtest: the NORMAL star icon, just greyed — "already achieved",
+                    // not a different trophy.
+                    filter: "grayscale(0.8) brightness(0.9)",
+                    opacity: 0.85,
                     animation: result.stars === 3 ? `star-slam 0.4s ease-out ${(n - 1) * 0.35}s both` : undefined,
                   }}
                 />

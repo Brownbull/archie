@@ -520,3 +520,32 @@ describe("invite dial feasibility + currency cluster (D101 follow-up)", () => {
     expect(screen.getByTestId("break-feasible-count")).toHaveTextContent("1 of 4 remaining dials can fell this build")
   })
 })
+
+describe("expert slots — the wrench ledger (2026-06-11 playtest)", () => {
+  it("invite shows 4 slots: earned lit, unearned shadowed", async () => {
+    const { BreakItPanel } = await import("@/components/challenges/BreakItPanel")
+    const probe = await import("@/services/breakProbe")
+    vi.spyOn(probe, "feasibleBreakDials").mockReturnValue(null)
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ breaksByChallenge: { c1: { rps: true } } } as never)
+    const breakable = { ...challenge, trafficSources: [{ type: "web-users", rps: 120, kind: "realistic", workload: "mixed", origin: "one-region" }] } as Challenge
+    render(<BreakItPanel challenge={breakable} stars={3} outcome={null} onResetDials={() => {}} onProceed={() => {}} />)
+    expect(screen.getByTestId("expert-slot-rps")).toHaveAttribute("data-earned", "true")
+    expect(screen.getByTestId("expert-slot-kind")).not.toHaveAttribute("data-earned")
+    expect(screen.getAllByTestId(/expert-slot-/)).toHaveLength(4)
+  })
+
+  it("a fresh collection slams its slot in (animation flag), older ones sit lit", async () => {
+    const { BreakItPanel } = await import("@/components/challenges/BreakItPanel")
+    const { useUserProgressStore } = await import("@/stores/userProgressStore")
+    useUserProgressStore.setState({ breaksByChallenge: { c1: { rps: true } } } as never)
+    const breakable = { ...challenge, trafficSources: [{ type: "web-users", rps: 120, kind: "realistic", workload: "mixed", origin: "one-region" }] } as Challenge
+    render(<BreakItPanel challenge={breakable} stars={0}
+      outcome={{ verdict: "collected", attribute: "kind", fresh: true, remaining: ["workload", "origin"] }}
+      onResetDials={() => {}} onProceed={() => {}} />)
+    expect(screen.getByTestId("expert-slot-kind")).toHaveAttribute("data-fresh", "true")
+    expect(screen.getByTestId("expert-slot-kind")).toHaveAttribute("data-earned", "true")
+    expect(screen.getByTestId("expert-slot-rps")).toHaveAttribute("data-earned", "true")
+    expect(screen.getByTestId("expert-slot-rps")).not.toHaveAttribute("data-fresh")
+  })
+})

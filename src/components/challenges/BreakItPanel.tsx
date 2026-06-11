@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { feasibleBreakDials } from "@/services/breakProbe"
-import { remainingBreakAttributes, BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS } from "@/engine/breakDetection"
+import { remainingBreakAttributes, BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS, type BreaksRecord, type BreakAttribute } from "@/engine/breakDetection"
 import type { BreakOutcome } from "@/hooks/useBreakCollection"
 import type { Challenge } from "@/lib/challengeTypes"
 
@@ -26,6 +26,42 @@ interface BreakItPanelProps {
  *   player to break their own build, one dial at a time. The dials just unlocked (D20).
  * Renders nothing otherwise (no authored sources, all four collected, sub-3★ ordinary runs).
  */
+/**
+ * The quest's Expert ledger, star-row style (2026-06-11 playtest): one wrench slot per traffic
+ * dial — shadow when unearned, lit when collected, and the one collected THIS run slams in like
+ * a star. Renders at the top of every break card so the earnable currency is always in view.
+ */
+function ExpertSlots({ record, freshAttribute }: { record: BreaksRecord | undefined; freshAttribute: BreakAttribute | null }) {
+  return (
+    <div data-testid="expert-slots" className="mb-2 flex items-center justify-center gap-3">
+      {BREAK_ATTRIBUTES.map((a) => {
+        const earned = !!record?.[a]
+        const fresh = a === freshAttribute
+        return (
+          <span
+            key={a}
+            data-testid={`expert-slot-${a}`}
+            data-earned={earned || undefined}
+            data-fresh={fresh || undefined}
+            title={`${BREAK_ATTRIBUTE_LABELS[a]} — ${earned ? "Expert collected" : "1 Expert if this dial fells the build"}`}
+            className={earned ? "text-orange-400" : "text-orange-200/20"}
+            style={fresh ? { animation: "expert-slam 0.45s ease-out both" } : undefined}
+          >
+            <Wrench className="h-5 w-5" strokeWidth={earned ? 2.5 : 1.5} />
+          </span>
+        )
+      })}
+      <style>{`
+        @keyframes expert-slam {
+          0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+          60% { transform: scale(1.4) rotate(8deg); opacity: 1; }
+          100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
 export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProceed }: BreakItPanelProps) {
   const breaksRecord = useUserProgressStore((s) => s.breaksByChallenge[challenge.id])
   // Hooks live ABOVE every conditional return (hook-order invariant). The feasibility probe only
@@ -45,6 +81,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   if (outcome && outcome.verdict !== "collected") {
     return (
       <div data-testid={`break-${outcome.verdict}`} className="rounded-lg border border-orange-500/30 bg-orange-500/5 p-3">
+        <ExpertSlots record={breaksRecord} freshAttribute={null} />
         <div className="flex items-center gap-2">
           <Hammer className="h-4 w-4 text-orange-400/70" />
           <span className="text-xs font-bold text-orange-200/90">
@@ -64,6 +101,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
   if (outcome) {
     return (
       <div data-testid="break-collected" className="rounded-lg border border-orange-500/40 bg-orange-500/10 p-3">
+        <ExpertSlots record={{ ...breaksRecord, [outcome.attribute]: true }} freshAttribute={outcome.fresh ? outcome.attribute : null} />
         <div className="flex items-center gap-2">
           <Hammer className="h-4 w-4 text-orange-400" />
           <span className="text-xs font-bold text-orange-200">
@@ -106,6 +144,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
 
   return (
     <div data-testid="break-invite" className="rounded-lg border border-orange-500/40 bg-orange-500/10 p-3">
+      <ExpertSlots record={breaksRecord} freshAttribute={null} />
       <div className="flex items-center gap-2">
         <Hammer className="h-4 w-4 text-orange-400" />
         <span className="text-xs font-bold text-orange-200">Now break it</span>
