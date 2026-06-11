@@ -10,7 +10,7 @@ import { getDisciplineAvatars } from "@/lib/masteryAvatars"
  */
 const D93_LADDER: Record<string, number[]> = {
   foundations: [3, 5, 7, 11],
-  data: [3, 5, 7, 15],
+  data: [3, 5, 7, 17],
   edge: [2, 4, 6, 8],
   realtime: [2, 4, 6, 7],
   reliability: [2, 4, 6, 10],

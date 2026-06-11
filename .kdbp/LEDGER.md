@@ -5236,3 +5236,14 @@ DEPLOYMENTS: P170 (added row to .kdbp/DEPLOYMENTS.md)
 FINDINGS: 1 fixed in-dev (challengeJourney seeded progress needed the new closure — exactly the availability tightening working as designed)
 CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5071/5071; engine 632; solvability + golden + chains held) · E2E tree smoke ✅ (20s, 4-node navigation on the +47-edge graph)
 NOTE: D96 executed in two verified batches (trims+hints, then edges, then gate promotion). NO progress reset — completed-stays-completed by construction; mid-progress accounts may see quests lock until their new prereqs complete (the intended fiction). D90's review trigger (tree density after +47 edges) hands off to Phase 2's chain-visualization pass.
+
+## 2026-06-11 — [Plan-2 P1b] feat(challenges): intro pacing — 2 new quests + the one-block-per-quest gate
+FINDINGS: the gate caught both closure breakages from the grant move PRE-commit (cache-the-hot-path palette, data-pipeline edge) — the D96 hard gate doing its job on day one
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5075/5075; both new quests 3★ first try; golden 0-deletion additive; par regenerated) · structure ✅
+NOTE: catalog 61→63. Pacing rules (multi-grant + unexercised-grant) joined validateTechTree — catalog-wide clean. vector-store discovery: rag-retrieval was already its intro; analytics-backbone's grant was duplicate. Owner forks: 2-intros-plus-capstone-keeps-graph-db; extend-Phase-1.
+
+## 2026-06-11 — PHASE 1 REVIEW (Plan-2): Unlock-ordering true-up + intro pacing
+VERDICT: APPROVE
+FINDINGS: 3 (0C/0H/1M/2L) — #1 ladder drift FIXED in-session (data-15→data-17 rename), #2 unlocks hygiene deferred (D33), #3 prose dismissed (owner playtest active)
+COVERAGE: HIGH · CONFIDENCE: 96/100 (91 pre-triage) · ALIGNMENT: ALIGNED · TIER: ent | DRIFT: none
+TICK: ✅
