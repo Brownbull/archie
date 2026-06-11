@@ -5030,3 +5030,40 @@ PHASE 3: all four gates ✅✅✅✅. Current Phase → Phase 4 (Break-it loop &
 D94: 7-slice decomposition from the feedback's revised currency model (breaks earn EXPERT CURRENCY, not hint stars; filter costs 1 unit/quest). Defaults pinned: break = basePass fail + exactly-one-attribute diff; 1 unit per attribute-break (max 4/challenge) + 1 per resilience condition.
 P4-S1 [committed]: src/engine/breakDetection.ts — diffTrafficAttributes (multiset, structural-edit guard) + detectSingleAttributeBreak + collection bookkeeping. 13/13 tests, build clean. Scoring untouched.
 NEXT: P4-S2 (currency + persistence + rules deploy — try the authenticated firebase CLI) → P4-S3 (the loop UX + E2E).
+
+## 2026-06-10 18:57 — [359f311] feat(progress): expert currency — collect breaks, spend on required-blocks filter (P4-S2)
+FINDINGS: 2 (0 critical, 0 high, 0 medium, 2 low)
+ACTIONS: 1:accept (6 eslint object-injection warnings — typed-union index, matches existing store pattern) 2:accept (G3 well doc 0-topic scaffold; /gabe-teach owns consolidation)
+DEFERRED: none
+CHECKS: lint ✅ (0 err) · types ✅ (npm run build, tsc -b) · tests ✅ (quick tier 4952/4952 + store 26/26) · coverage ✅ (new actions fully covered incl. both error paths) · shape ✅ (277/271 lines) · deferred ✅ (D9/D28 matches both resolved) · structure ✅ (no new files)
+NOTE: firestore.rules DEPLOYED to archie-2a560 pre-commit (authed CLI, D9 path) — expertCurrency int>=0 + breaksByChallenge/requiredFilterUnlocked maps, create+update hasOnly extended.
+- 2026-06-10 19:04 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationLaunch.ts
+- 2026-06-10 19:04 | Edit | /home/khujta/projects/bmad/archie/src/lib/simulationLaunch.ts
+- 2026-06-10 19:04 | Edit | /home/khujta/projects/bmad/archie/src/services/trafficSourceInjection.ts
+- 2026-06-10 19:04 | Write | /home/khujta/projects/bmad/archie/src/hooks/useBreakCollection.ts
+- 2026-06-10 19:05 | Write | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-10 19:05 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 19:05 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 19:05 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 19:05 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 19:06 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeResultsModal.tsx
+- 2026-06-10 19:06 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-10 19:06 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-10 19:06 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-10 19:06 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useChallengeCoach.ts
+- 2026-06-10 19:08 | Write | /home/khujta/projects/bmad/archie/tests/unit/hooks/useBreakCollection.test.ts
+- 2026-06-10 19:09 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/simulationLaunch.test.ts
+- 2026-06-10 19:13 | Write | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase4.unlocked.spec.ts
+- 2026-06-10 19:19 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useBreakCollection.ts
+- 2026-06-10 19:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase4.unlocked.spec.ts
+- 2026-06-10 19:29 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase4.unlocked.spec.ts
+- 2026-06-10 19:31 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/_break-probe.tmp.test.ts
+- 2026-06-10 19:33 | Write | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase4.unlocked.spec.ts
+
+## 2026-06-10 19:38 — [2e1e25d] feat(challenges): the break-it loop UX — invite, collect, reset (P4-S3)
+FINDINGS: 4 (0 critical, 0 high, 0 medium, 4 low)
+ACTIONS: 1:accept (pre-existing unused-import lint error in referenceSolution.ts — comment-only ref, predates slice) 2:skip (D27 latent port-mismatch counting on simulationLaunch.ts — untouched concern) 3:accept (G1/G5 well docs 0-topic scaffolds) 4:accept (6 object-injection warnings, typed-union pattern)
+DEFERRED: none
+CHECKS: lint ✅ (0 new err) · types ✅ (tsc -b) · tests ✅ (quick 4977/4977 + golden byte-identity + 62/62 3★ + 24 modal + 7 hook + 5 launch) · E2E ✅ (full journey 43.8s, 3 evidence shots) · shape ✅ (max 464 lines) · structure ✅
+EVIDENCE: test-results/feedback-phase4/01-03*.png — production-ai 3★ invite → RPS 2k→12k break (+1 Expert) → reset → workload break. Deviation magnitudes engine-probed (single rps step HOLDS; 12k + write fail) — the boundary is real, not scripted.
+NOTE: launch seam = post-3★ ONLY (locked path byte-identical); fixtures gained traffic_kind/origin so imported replays diff cleanly; unlocked seeder zeroes the expert economy each run (journey idempotent).
