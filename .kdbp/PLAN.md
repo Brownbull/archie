@@ -1,35 +1,36 @@
 # Active Plan
 
-<!-- status: complete -->
+<!-- status: active -->
 <!-- project_type: code -->
 
 ## Goal
 
-Quest Integrity & Break-It Loop — feedback-driven overhaul: act on the verified 2026-06-09 playtest
-feedback. Fix everything that misleads the player (config traps, forced port mismatches, dead UI,
-unlock-order violations), make grading honest (port enforcement in quests), raise teaching quality
-(context-style briefs, tier descriptions), then build the flagship post-3★ break-it loop with an
-expert currency, and open new challenge formats (brownfield, progressive chains).
+Progression Legibility & Explainability — close the gaps the 2026-06-11 playtest + feedback re-audit
+surfaced: make the tech tree honest at the PALETTE level (no block offered before its unlock quest —
+the D90 reversal), make shipped-but-invisible features legible (chains in the tree, extras before
+completion), de-escalate the coach from step-by-step instruction to compiler-style diagnostics, and
+make the architectural scores explain themselves. Then polish the catalog (icons, explainers,
+the pool-exhaustion quest) and research vendor-unlock progression.
 
 ## Context
 
 - **Maturity:** enterprise
 - **Domain:** Software architecture visualization and design tool (react, typescript, vite, react-flow)
-- **Created:** 2026-06-09
-- **Last Updated:** 2026-06-10
-- **Source:** docs/gabe/tests/20260609/feedback20260609.md — 14 claims verified against the codebase
-  (workflow wf_efd61e6d, 14 parallel verifiers; verdicts + evidence in LEDGER 2026-06-09)
-- **Supersedes:** none (Fluidity — UX consolidation archived completed 2026-06-09)
+- **Created:** 2026-06-11
+- **Source:** 2026-06-11 owner playtest (async-pipeline palette complaint + chain invisibility) +
+  full re-audit of docs/gabe/tests/20260609/feedback20260609.md against the shipped roadmap
+  (9 open/partial items identified; lines 1-8 of the original feedback were never scoped).
+- **Supersedes:** Quest Integrity & Break-It Loop (completed 2026-06-10, archived; P158–P170).
 
 ## Phases
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Trust & friction fixes | Fix everything that lies to the player: polyglot config contradiction (D88) + challenge-config validation, compute stream-out ports, save-default traffic leak, CategoryBar dead onClick, data-pipeline hints, Rerun button, gating discoverability, web-users icon. | ent | med | ✅ | ✅ | ✅ | ✅ |
-| 2 | Progression & grading integrity | Unlock-ordering restructure (21 hard violations) + tech-tree validator, pathway tech-tree filter, port enforcement star gate (D87), explicit banned-block display, Observe-to-Recover visibility, quest-mode CTA gating. | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 3 | Teaching quality | 39 context-style brief rewrites + hint-ladder pass, per-tier descriptions + docs links (schema + 240 variants + reseed), RPS calibration (4 outliers), discipline icons + unlock toasts. | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 4 | Break-it loop & expert currency | Post-3★ "now break it": single-attribute break detection + tracking, expert currency (earn: traffic-breaks + resilience; spend: required-blocks filter), test-conditions lock/highlight, resilience extra-challenges, quest-log surfacing, toolbox realism. | scale | high | ✅ | ✅ | ✅ | ✅ |
-| 5 | New challenge formats | Brownfield starts (initial_architecture), progressive/forking chains, per-block failure conditions, team-expertise vendor restrictions, link-visualization dimensions, data-type traffic divergence. | scale | high | ✅ | ✅ | ✅ | ✅ |
+| 1 | Unlock-ordering true-up | Close the 53 ungrantable-available-block palette gaps (D90 reversal): per gap add a prereq edge, re-tier via dependency sub-rows, or trim the palette; fix async-pipeline (palette + worker-naming hints); promote the palette check to a HARD gate at zero; solvability re-verified per batch. | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Chain & extras legibility | Make shipped features visible: tree-level chain visualization (chain-styled member edges + stage badges), pre-completion extra-challenge indicators (resilience/breakable markers on available quests), retrofit 1–2 more chains from existing progressions. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Coach de-escalation | Replace build-state step-by-step tackle instructions ("Add a Compute block") with compiler-style diagnostics only (wiring, orphans, ports, missing-required as validation); keep run/watch/scored coaching; owner fork: difficulty-gated vs global. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Score explainability & CTA consolidation | Architectural scores become clickable → per-metric trace (which components/factors feed performance, reliability, scalability…); surface complexity as a visible stat; audit + consolidate the duplicate call-to-action surfaces (foundation suggestions vs pathway vs coach). | scale | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 5 | Catalog polish & explainers | Icon coverage sweep (both icon modes, all blocks/variants); observability "why monitoring fixes it" explainer (feedback line 75); D18 pool-exhaustion challenge (concurrency_limit authoring); vendor-unlock progression design doc (research only). | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec is written by /gabe-execute: ⬜ not started, 🔄 in progress, ✅ complete -->
 <!-- Review/Commit/Push auto-ticked by /gabe-review, /gabe-commit, /gabe-push -->
@@ -40,223 +41,171 @@ expert currency, and open new challenge formats (brownfield, progressive chains)
 
 ## Phase Details
 
-### Phase 1 — Trust & friction fixes
+### Phase 1 — Unlock-ordering true-up
 
 ```yaml
 phase: 1
-types: [user-facing, content, client-state]
+types: [content, user-facing]
 phase_tier: ent
 prototype: false
 dim_overrides: []
-sections_considered: [Core, Client-state, Content]
+sections_considered: [Core, Content]
 suppressed_dims_count: 0
-decisions_entry: D86
+decisions_entry: TBD (phase design lock at exec start — D90 reversal rationale + per-gap dispositions)
 ```
 
-- **Trade-offs accepted:** See DECISIONS.md D86 (phasing + tiers), D88 (polyglot direction)
-- **Scope:** (a) polyglot-persistence per D88 — drop the object-storage `forbidden_types` ban, re-tune,
-  re-verify solvability; NEW validation test: `forbidden ∩ available_blocks = ∅` and
-  `forbidden ∩ required_types = ∅` across all 61 challenge YAMLs (also removes data-pipeline's
-  relational-db palette trap). (b) Add `stream-out` to the 9 compute component YAMLs; add `worker` to
-  async-pipeline `available_blocks` + update its hints; audit challenges 20/31/39 against the port
-  matrix — canonical builds become warning-free. (c) save-default-traffic: hide SaveBlockDefaultButton
-  on traffic nodes (ArchieNode.tsx is CHURN-GUARDED → Bash edit) + `addNode` skips saved defaults for
-  traffic providers (also fixes the D63 one-per-type override bug). (d) CategoryBar dead `onClick` fix +
-  footer deep-link into DashboardOverlay (`initialCategory`, mirroring `initialSection="pathway"`).
-  (e) data-pipeline hint rewrite — hint 3 references the dead queueBufferSize mechanic; hint 5 must name
-  the variant knob (Streaming gateway + Micro-Batch ETL) and drop fictional numbers. (f) "Rerun
-  simulation" button — re-sim + re-grade from the live canvas via a shared start helper; relabel
-  Replay → "Watch again". (g) disclosure-gating discoverability: locked-hint placeholder on gated
-  on-node controls ("Tuning unlocks in intermediate quests — or switch to Free mode"). (h) regenerate
-  web-users.png with a lighter palette (the dark-on-dark "placeholder square").
-- **Exit:** challenge-config validation test green over all 61; async-pipeline canonical build renders
-  zero mismatch warnings; rerun-and-grade works end-to-end; footer category popup opens; full unit +
-  affected E2E green; solvability harness still all-3★.
-- **Key files:** src/data/challenges/{14-polyglot-persistence,06-async-pipeline,20,31,39}.yaml, 9 compute
-  component YAMLs, src/components/canvas/ArchieNode.tsx (guarded), src/stores/architectureStore.ts,
-  src/components/dashboard/{CategoryBar,DashboardPanel,DashboardOverlay}.tsx, src/stores/simulationStore.ts,
-  src/components/simulation/{SimulationBar,PlaybackControls}.tsx,
-  src/components/canvas/{NodeConfigSelect,NodeProviderSelect}.tsx, public/icons/web-users.png,
-  new tests/unit challenge-config validation.
+- **Scope:** The 53-gap snapshot in `tests/unit/engine/unlockOrdering.baseline.test.ts` is the
+  worklist. Per gap, one of three dispositions: (a) add a `requires` edge so the granting quest
+  precedes (the tree layout already supports dependency sub-rows within a tier — feedback line 59's
+  "more rows per tier"); (b) re-tier the offending quest (burst-absorber precedent); (c) trim the
+  palette entry (P4-S5 toolbox realism shows all unlocked blocks gray-locked, so trimming no longer
+  hides blocks from view — the original D90 pressure is gone). async-pipeline is the poster child:
+  palette offers worker/cache/load-balancer at tier 1, and hints 3–4 literally instruct a worker
+  route (granted at tier 4 by worker-fleet, which REQUIRES async-pipeline). Fix palette + rewrite
+  those hints vs harness ground truth. End state: gap count 0 and `ungrantable-available-block`
+  folded into `validateTechTree` as a hard gate (the D90 migration clause).
+- **Exit:** palette-gap count = 0, hard-gated; async-pipeline hints worker-free and harness-true;
+  62/62 solvability + golden held; tree renders without tier-height regressions.
+- **Key files:** src/data/challenges/*.yaml (requires/available_blocks/hints), src/engine/techTree.ts
+  (gate promotion), tests/unit/engine/unlockOrdering.baseline.test.ts (snapshot → hard assert),
+  tests/integration/challenges/referenceSolution.ts (re-verify per batch).
+- **Risk/decision:** adding requires-edges changes availability for mid-progress players. Unlike the
+  Phase-2 re-tiering (which forced the D28/D65 generation reset), edges only RESTRICT future
+  availability — completed quests stay completed. Expected: NO progress reset; verify at exec start
+  against the owner's live account before committing to that.
 
-### Phase 2 — Progression & grading integrity
+### Phase 2 — Chain & extras legibility
 
 ```yaml
 phase: 2
-types: [user-facing, scoring-engine, content]
+types: [user-facing]
 phase_tier: ent
 prototype: false
 dim_overrides: []
-sections_considered: [Core, Engine, Content]
+sections_considered: [Core, Client-state]
 suppressed_dims_count: 0
-decisions_entry: D87
+decisions_entry: TBD
 ```
 
-- **Trade-offs accepted:** See DECISIONS.md D86, D87 (port enforcement = challenge-mode star gate)
-- **Scope:** fix the 21 hard `required_types` unlock-ordering violations + palette (PAL) list via
-  tier/level restructuring (more rows per tier allowed); extend techTree `validateTechTree` to
-  cross-check required_types/available_blocks against grants reachable via the requires closure (CI
-  unit test so the class can't regress); pathwayEngine tech-tree filter (design call: badge-locked with
-  unlock CTA vs drop; handle legacy no-typeId components); port enforcement per D87 (snapshot
-  isPortMismatch count → AttemptSnapshot → optional defaulted rubricScorer gate on the well-formed
-  star; sandbox keeps WARN); explicit banned-block display in quest palettes (show blocked, don't hide
-  — e.g. No Cache No Mercy shows CDN/cache locked); Observe-to-Recover visibility (SimulationTimeline
-  detection markers "detected at t+5s, blast 100→60%", monitored-node badges, free coach line);
-  quest-mode CTA gating in the footer (hide TierBadge/pathway CTAs during quests; dedupe the double
-  budget readout vs ChallengeHud).
-- **Exit:** zero ordering violations + validator green; mismatched edges cost the topology star in
-  quests while the solvability harness stays all-3★; the observe mechanic is visible without paid
-  hints; footer is quiet during quests.
-- **Key files:** src/data/challenges/*.yaml (ordering), src/engine/techTree.ts, src/engine/pathwayEngine.ts,
-  src/hooks/usePathwaySuggestions.ts, src/engine/rubricScorer.ts,
-  src/components/challenges/ChallengeStartButton.tsx, src/stores/challengeStore.ts,
-  src/components/toolbox/ComponentTab.tsx, src/components/simulation/{SimulationTimeline,SimulationStatsPanel}.tsx,
-  src/components/dashboard/{DashboardPanel,TierBadge}.tsx.
+- **Scope:** (a) Tree-level chain visualization: chain-member edges drawn distinctly (e.g., doubled/
+  link-styled stroke), a stage badge on member nodes (1/3, 2/3…), and fork-point affordance — the
+  Data Backbone must be discoverable without clicking event-stream. (b) Pre-completion extras
+  indicators: quests authoring resilience_conditions or trafficSources (breakable) carry a corner
+  marker on AVAILABLE nodes too (today the hammer badge is completed-only; feedback line 51 wanted
+  "there is an additional challenge here" before you start). (c) Retrofit 1–2 more chains from
+  existing requires-progressions (candidates: foundations first-service → add-a-database →
+  cache-the-hot-path → scale-out; edge track edge-delivery line) — chain coherence harness already
+  gates parent/child correctness.
+- **Exit:** a player opening the Quest Log can SEE every chain and every extras-bearing quest at a
+  glance; ≥2 chains shipped; E2E evidence artifact of the tree with chain + extras markers.
+- **Key files:** src/components/challenges/ChallengeTreeView.tsx, src/data/challenges/*.yaml (chain
+  blocks), tests/integration/challenges/chains.test.ts, tests/e2e/feedback-phase*.unlocked.spec.ts.
 
-### Phase 3 — Teaching quality
+### Phase 3 — Coach de-escalation
 
 ```yaml
 phase: 3
-types: [content, user-facing, data-migration]
+types: [user-facing]
 phase_tier: ent
 prototype: false
 dim_overrides: []
-sections_considered: [Core, Content, Data]
+sections_considered: [Core]
 suppressed_dims_count: 0
-decisions_entry: D86
+decisions_entry: TBD (owner fork at design: difficulty-gated vs global removal)
 ```
 
-- **Trade-offs accepted:** See DECISIONS.md D86
-- **Scope:** rewrite the 39 instruction-style briefs to context-style (zero-budget-hero as the
-  template; the "how" moves into hints; keep the 600-char brief cap — no schema change; optional
-  `story` field decision deferred); per-difficulty hint-ladder quality pass (counts already variable
-  2–5); tier descriptions — add optional `description` + `docs_url` to ConfigVariantSchema (both Zod
-  schemas + transform), author ~240 variants (https-only links per security rules), render in
-  NodeConfigSelect dropdown + ComponentDetail Tier row, and DEPLOY THE READER BEFORE RE-SEEDING
-  (P5 strict-schema trap); RPS calibration story — fix the 4 verified outliers (postgres Citus
-  inversion, Aurora-serverless dominance, firestore/dynamo same-price 6.7× gap, time-series vs
-  relational spread) + a calibration table in DECISIONS (ripples: D71 buildability ceiling, full
-  solvability re-run); discipline icons — 12 new PixelLab PNGs + aiml-4→5 rename + unlock toasts in
-  useProgressPersistence.
-- **Exit:** 0 instruction-style briefs (all context or mixed); tier picker shows meaning + link;
-  calibration documented in DECISIONS; harness all-3★ maintained; icons render at the documented
-  allocation levels.
-- **Key files:** src/data/challenges/*.yaml (39 briefs + hints), src/schemas/componentSchema.ts,
-  src/data/components/*.yaml (240 variants), scripts/seed-firestore.ts,
-  src/components/canvas/NodeConfigSelect.tsx, src/components/inspector/ComponentDetail.tsx,
-  src/hooks/useProgressPersistence.ts, src/lib/masteryAvatars.ts,
-  docs/gabe/plans/2026-06-02-mastery-tracks/avatars/disciplines/ (PNGs).
+- **Scope:** The original feedback's lines 6–8 — never scoped until now. Build-state coach today
+  issues ordered instructions ("Add a traffic source" → "Add a Compute block" → "Wire it together").
+  Replace with compiler-style DIAGNOSTICS: report structural blockers (orphans, port mismatches,
+  unreachable subgraphs, missing required categories phrased as validation-failure, not as a to-do),
+  and otherwise stay quiet until run/scored states (those keep their current coaching — measured-vs-
+  target iterate lines are results explanation, which the feedback explicitly endorsed). Owner fork:
+  remove tackle-steps globally, or keep them for `difficulty: beginner` quests only (first-quest UI
+  onboarding value). Break-loop narration (P4-S3) unchanged.
+- **Exit:** no step-by-step build instructions in non-beginner quests (or globally, per fork); coach
+  tests updated to pin the diagnostic contract; HUD checklist (the overview surface) untouched.
+- **Key files:** src/hooks/useChallengeCoach.ts, tests/unit/hooks/useChallengeCoach.test.ts.
 
-### Phase 4 — Break-it loop & expert currency
+### Phase 4 — Score explainability & CTA consolidation
 
 ```yaml
 phase: 4
-types: [user-facing, client-state, progression]
+types: [user-facing]
 phase_tier: scale
 prototype: false
 dim_overrides: []
-sections_considered: [Core, Client-state, Progression]
+sections_considered: [Core, Client-state]
 suppressed_dims_count: 0
-decisions_entry: D86
+decisions_entry: TBD (design doc before exec — the trace surface needs UX exploration)
 ```
 
-- **Trade-offs accepted:** See DECISIONS.md D86
-- **Scope:** post-3★ results-modal invitation ("now break it"); single-attribute break detection —
-  RPS / pattern / workload / origin, exactly ONE attribute changed from the challenge default,
-  validated; per-attribute break tracking per challenge; popup on break + reset-to-default flow to try
-  the next attribute; expert-currency model (earned by traffic-breaks + resilience achievements — per
-  the user's revised design these do NOT feed the hint-star pool); test conditions (failure
-  injections) locked until 3★ + highlight which conditions break the current build; curated resilience
-  extra-challenges (subset of quests with per-condition resilience targets → expert currency);
-  quest-log surfacing (extra-challenge corner indicators, different-color star counts, discipline
-  color legend under the Quest Log title, extra-challenge details in the right panel); toolbox realism
-  in quests (show ALL unlocked blocks; "show required blocks" filter purchasable with expert currency).
-- **Exit:** full post-3★ loop live on a pilot set of challenges; currency earn + spend functional and
-  persisted (Firestore, owner-only rules); quest log surfaces extra stars/currency; solvability +
-  challenge E2E green.
-- **Key files:** src/components/challenges/{ChallengeResultsModal,ChallengeHud,ChallengeTreeView}.tsx,
-  src/stores/{challengeStore,userProgressStore}.ts (+ new currency store), src/engine (break detection),
-  src/components/canvas/{TestConditionsPanel,FailureSelector}.tsx, src/components/toolbox/ComponentTab.tsx,
-  src/data/challenges/*.yaml (break-condition + resilience metadata), firestore.rules.
+- **Scope:** Feedback lines 1–4, never scoped. (a) The bottom-bar architectural scores (performance,
+  reliability, scalability…) become clickable → a trace panel: which components and which metric
+  values feed this score, and what would move it (read-only over the existing recalculation output —
+  metrics are already per-node directional values; this is presentation, engine-inert). (b) Promote
+  complexity (operational-complexity already exists as a metric) into the visible stat bar (feedback
+  line 93). (c) CTA consolidation audit: foundation suggestion counts, pathway guidance, and coach
+  all compete for attention — map every adjustment CTA, kill or merge duplicates, one design doc +
+  implementation. Design-first phase: a short UX doc precedes implementation (the trace panel shape
+  is genuinely open).
+- **Exit:** every bottom-bar score answers "why this number, what moves it" on click; complexity
+  visible; CTA inventory documented with duplicates resolved; no scoring/engine change (golden inert).
+- **Key files:** src/components/dashboard/**, src/components/toolbar/**, src/services/
+  recalculationService.ts (read-only consumers), docs/gabe/design/score-trace.md (new).
 
-### Phase 5 — New challenge formats
+### Phase 5 — Catalog polish & explainers
 
 ```yaml
 phase: 5
-types: [user-facing, content, architecture]
-phase_tier: scale
+types: [content, user-facing]
+phase_tier: ent
 prototype: false
 dim_overrides: []
-sections_considered: [Core, Content, Architecture]
+sections_considered: [Content, Core]
 suppressed_dims_count: 0
-decisions_entry: D86
+decisions_entry: TBD
 ```
 
-- **Trade-offs accepted:** See DECISIONS.md D86
-- **Scope:** brownfield challenges (`initial_architecture` seeded from challenge YAML — "Stream the
-  Data" style starts); progressive/forking challenge chains (grow one architecture across successive
-  requirement stages); per-block failure conditions (`component_failure` targeting specific
-  nodes/types instead of only general conditions); team-expertise vendor/config restrictions per
-  challenge (explicitly blocked vendors shown, not hidden); link-visualization dimensions (throughput
-  as dot density/speed, protocol label, line style, glow) design + implementation; polyglot data-type
-  traffic divergence exploration (relational vs NoSQL vs blob request kinds).
-- **Exit:** ≥2 brownfield challenges + 1 progressive chain shipped and 3★-verified through the
-  harness; link-viz shipped or consciously descoped with a design doc; per-block failure conditions
-  used by at least one challenge (Observe-to-Recover candidate).
-- **Key files:** src/schemas/challengeSchema.ts (initial_architecture, restrictions, chain metadata),
-  src/data/challenges/*.yaml, src/services/trafficSourceInjection.ts + challenge loaders,
-  src/components/canvas/{ArchieEdge,EdgeParticles}.tsx, src/engine/simulationEngine.ts (per-block failure),
-  tests/integration/challenges/referenceSolution.ts.
+- **Scope:** (a) Icon coverage sweep: every block + traffic option has icons in BOTH modes (pixel +
+  official); placeholder-square audit; deterministic recolor fallback per T8 precedent where
+  generation is unavailable. (b) Observe-to-Recover explainer (feedback line 75): the results/coach
+  surface explains WHY monitoring shrinks the blast (detection delay → residual blast mechanics
+  already exist in the engine — surface them). (c) D18: the pool-exhaustion challenge —
+  concurrency_limit authoring at the calibrated knife-edge (engine landed d82baee; this is the
+  delicate content pass). (d) Vendor-unlock progression design doc (feedback lines 89/104: "instead
+  of blocking, unlock them") — research only, no implementation.
+- **Exit:** zero placeholder icons; observability mechanics explained in-surface; pool-exhaustion
+  quest shipped 3★-verified + non-trivial; vendor-unlock doc with a revisit trigger; D18 closed.
+- **Key files:** public/icons/**, src/lib/typeIcons.ts, src/hooks/useChallengeCoach.ts or results
+  modal, src/data/challenges/ (new quest), src/data/components/ (concurrency_limit),
+  docs/gabe/design/vendor-unlock-progression.md (new).
 
 ## Current Phase
 
-Phase 5: New challenge formats
+Phase 1: Unlock-ordering true-up
 
 ## Dependencies
 
-- Phase 2's port enforcement (D87) has a HARD PREREQ in Phase 1's port-coverage fixes — enforcing
-  before the audit would punish canonical builds that are forced into mismatches today.
-- Phase 4's toolbox realism (show all unlocked) presumes Phase 2's unlock-ordering fixes — showing
-  "all unlocked" is only coherent once unlock order is consistent.
-- Phase 4's expert currency precedes its own consumers (required-blocks filter, resilience rewards).
-- Phase 3's RPS calibration requires a full solvability re-run (it moves maxRPS values that the D71
-  buildability ceiling and reference solutions depend on).
-- Phase 5's per-block failure conditions build on Phase 4's test-conditions surfacing.
+- Phase 2's chain visualization renders chain metadata shipped in P5-S5 — no new mechanics needed.
+- Phase 3 is independent but should land BEFORE Phase 4's CTA consolidation (the coach is one of the
+  CTAs being consolidated — de-escalate first, then audit what remains).
+- Phase 5(c) pool-exhaustion depends on nothing in this plan (engine landed in d82baee).
+- Phase 1 must precede Phase 2's new chains (chain members must be palette-clean first).
 
 ## Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| Solvability regressions from data changes (ports, calibration, polyglot retune, ordering) | high | Re-run the reference-solution harness after every data batch; 3★ invariant is the gate |
-| Brief rewrites drift from machine config (the polyglot failure mode at scale) | medium | Phase 1's forbidden∩palette/required validation + review briefs against required_types per rewrite |
-| Expert-currency scope creep (future unlocks undefined) | medium | Pilot subset; currency spends limited to the required-blocks filter initially; design doc before expanding |
-| Firestore strict-schema re-seed trap (P5/D14) | high | Deploy the tolerant reader BEFORE re-seeding new variant fields |
-| Churn-guarded files (ArchieNode.tsx, constants.ts, PLAN.md) | low | Bash/python edits per established protocol |
-| Phase 4 store/persistence surface (new currency) touches auth'd writes | medium | Owner-only Firestore rules + manual rules deploy (D9 precedent) |
+| Requires-edge additions strand mid-progress players (availability shrink) | medium | Completed-stays-completed by construction; verify against the live owner account at Phase-1 exec start; D28-style generation reset is the documented fallback, NOT the default |
+| Solvability regressions from palette trims (reference solver uses default providers per type) | high | Re-run the 62/62 harness per batch; the solver only uses type defaults, so trims of non-default vendors are inert — pin per batch anyway |
+| Coach de-escalation breaks E2E/unit specs that assert tackle text | medium | Grep-driven spec inventory before the change; the contract tests get updated WITH the change, never after |
+| Score-trace panel scope creep (Phase 4 is design-open) | medium | Design doc gate before implementation; read-only over existing recalculation output — any engine change is out of scope by definition |
+| Tree layout height/width regressions from chain badges + sub-row additions | low | The layout already supports dependency sub-rows (Phase-2 precedent); visual E2E artifact per phase |
 
 ## Notes
 
-- Open PENDING items related to this plan: D11 (component-swapping connectNodes flake — Phase 2's E2E
-  touchpoints may absorb it), D18 (EN2 pool-exhaustion authoring — separate focused pass, not in this
-  plan), D12 (parked, scale-conditional).
-- The 2026-06-09 feedback file is the canonical source for Phase 4/5 design intent — re-read it before
-  designing the break-detection and currency UX (lines 19, 33-55, 97-99 for the loop; 69-89 for formats).
-- Maiden desktop-CI run (informational): 196 passed / 60 failed — CI-greening + @smoke promotion (D85)
-  runs on the engineering track in parallel, not as a plan phase.
-
-## Review Artifacts
-
-- HTML review artifact: docs/gabe/plans/2026-06-09-quest-integrity-break-it-loop/index.html
-- Canonical source: `.kdbp/PLAN.md`, `.kdbp/DECISIONS.md`, `.kdbp/LEDGER.md`
-
-## Runtime Evidence Checkpoints
-
-- Phase 1 (user-facing): desktop E2E — async-pipeline canonical build renders zero mismatch warnings;
-  rerun-and-grade journey; footer category popup opens. Artifacts → test-results/.
-- Phase 2 (user-facing): desktop E2E — a quest attempt with a mismatched edge loses the topology star;
-  Observe-to-Recover timeline shows the detection marker. Artifacts → test-results/.
-- Phase 3 (user-facing): tier dropdown + inspector show description/link for a sampled component set
-  (screenshot evidence); re-seeded Firestore read by the deployed reader.
-- Phase 4 (user-facing): full post-3★ break-it journey on a pilot challenge (break via RPS → popup →
-  reset → break via origin) captured as E2E + screenshots.
-- Phase 5 (user-facing): brownfield challenge loads its seeded architecture; chain advances. E2E.
+- The 2026-06-09 feedback file remains the canonical source; this plan covers its re-audit residue
+  (items 1–9 in the 2026-06-11 audit) — primarily lines 1-8 (never scoped), 20/59 (D90 deferral),
+  51 (pre-completion indicators), 75/93/104 (explainers/complexity/vendor-unlock).
+- Open deferred items NOT pulled into this plan (correctly parked): D11 (env-flaky E2E cluster),
+  D12 (attempts pagination), D26/D27/D30/D31/D32 (latent micro-debt with documented triggers).
