@@ -2,6 +2,7 @@ import { hydrateArchitectureSkeleton } from "@/services/yamlImporter"
 import { CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import { makeChallengeTrafficNodes, hasTrafficSource } from "@/services/trafficSourceInjection"
 import { loadChainBuild } from "@/services/chainCarryForward"
+import { componentLibrary } from "@/services/componentLibrary"
 import type { ArchitectureFile } from "@/schemas/architectureFileSchema"
 import type { ArchieNode, ArchieEdge } from "@/stores/architectureStore"
 import type { Challenge } from "@/lib/challengeTypes"
@@ -42,8 +43,33 @@ export function makeChallengeCanvas(challenge: Challenge): { nodes: ArchieNode[]
     return { nodes: makeChallengeTrafficNodes(challenge), edges: [] }
   }
 
-  const nodes = hasTrafficSource(result.architecture.nodes)
-    ? result.architecture.nodes
-    : [...makeChallengeTrafficNodes(challenge), ...result.architecture.nodes]
-  return { nodes, edges: result.architecture.edges }
+  // Review P5#1: a CARRIED build bypassed the ban/restriction chokepoints when it was placed —
+  // strip blocks THIS stage forbids or restricts (plus their edges) so a chain can never hand the
+  // player an inherited silent-0★ trap. Authored seeds are harness-pinned instead (content-time
+  // coherence beats runtime surgery for content we ship).
+  let hydratedNodes = result.architecture.nodes
+  let hydratedEdges = result.architecture.edges
+  if (carried) {
+    const forbidden = new Set(challenge.forbiddenTypes ?? [])
+    const restricted = new Set(challenge.restrictedVendors ?? [])
+    if (forbidden.size > 0 || restricted.size > 0) {
+      const dropped = new Set(
+        hydratedNodes
+          .filter((n) => {
+            const typeId = componentLibrary.getComponent(n.data.archieComponentId)?.typeId
+            return (typeId && forbidden.has(typeId)) || restricted.has(n.data.archieComponentId)
+          })
+          .map((n) => n.id),
+      )
+      if (dropped.size > 0) {
+        hydratedNodes = hydratedNodes.filter((n) => !dropped.has(n.id))
+        hydratedEdges = hydratedEdges.filter((e) => !dropped.has(e.source) && !dropped.has(e.target))
+      }
+    }
+  }
+
+  const nodes = hasTrafficSource(hydratedNodes)
+    ? hydratedNodes
+    : [...makeChallengeTrafficNodes(challenge), ...hydratedNodes]
+  return { nodes, edges: hydratedEdges }
 }

@@ -68,3 +68,27 @@ describe("progressive chains — authored coherence (P5-S5)", () => {
     expect(forkChildren.length, "data-backbone forks after event-stream (≥2 branches)").toBeGreaterThanOrEqual(2)
   })
 })
+
+describe("seed/gate coherence (Phase 5 review #1)", () => {
+  it("no chain stage forbids/restricts what its parent's reference build uses", async () => {
+    const { buildClearingSolution } = await import("./referenceSolution")
+    const { MAX_REPLICAS } = await import("@/lib/constants")
+    const all = getAllChallenges()
+    for (const child of all) {
+      if (!child.chain?.continuesFrom) continue
+      const parent = all.find((x) => x.id === child.chain!.continuesFrom)!
+      const parentBuild = buildClearingSolution(parent, MAX_REPLICAS)
+      for (const n of parentBuild.nodes) {
+        const typeId = componentLibrary.getComponent(n.data.archieComponentId)?.typeId
+        expect(
+          typeId && child.forbiddenTypes?.includes(typeId),
+          `${child.id} forbids "${typeId}" — its chain parent ${parent.id}'s reference build uses it (inherited 0★ trap)`,
+        ).toBeFalsy()
+        expect(
+          child.restrictedVendors?.includes(n.data.archieComponentId),
+          `${child.id} restricts "${n.data.archieComponentId}" — its chain parent ${parent.id}'s reference build uses it`,
+        ).toBeFalsy()
+      }
+    }
+  })
+})

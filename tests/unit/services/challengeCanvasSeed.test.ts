@@ -108,3 +108,39 @@ describe("chain carry-forward seeding priority (P5-S5 / D95)", () => {
     expect(nodes.find((n) => n.id === "carried-node")?.data.replicaCount).toBe(3)
   })
 })
+
+describe("carried-build strip (Phase 5 review #1)", () => {
+  it("a carried build sheds the blocks THIS stage forbids/restricts, plus their edges", async () => {
+    const { saveChainBuild } = await import("@/services/chainCarryForward")
+    localStorage.clear()
+    saveChainBuild("parent-q", [
+      { id: "keep", type: "archie-component", position: { x: 0, y: 0 }, data: { archieComponentId: "web-users", activeConfigVariantId: "moderate", componentName: "W", componentCategory: "traffic", replicaCount: 1, trafficRps: 800 } },
+      { id: "banned", type: "archie-component", position: { x: 200, y: 0 }, data: { archieComponentId: "fastapi", activeConfigVariantId: "small", componentName: "F", componentCategory: "compute", replicaCount: 1 } },
+    ] as never, [
+      { id: "e0", source: "keep", target: "banned", sourceHandle: null, targetHandle: null, type: "archie-connection", data: {} },
+    ] as never)
+    const c = {
+      ...base,
+      chain: { id: "ch", stage: 2, continuesFrom: "parent-q" },
+      restrictedVendors: ["fastapi"],
+    } as unknown as Challenge
+    const { nodes, edges } = makeChallengeCanvas(c)
+    expect(nodes.some((n) => n.id === "banned")).toBe(false)
+    expect(nodes.some((n) => n.id === "keep")).toBe(true)
+    expect(edges).toHaveLength(0) // the edge died with its endpoint
+  })
+
+  it("an AUTHORED seed is not stripped (harness-pinned instead)", () => {
+    localStorage.clear()
+    const c = {
+      ...base,
+      restrictedVendors: ["fastapi"],
+      initialArchitecture: {
+        nodes: [{ id: "n1", componentId: "fastapi", configVariantId: "small", position: { x: 0, y: 0 }, replicas: 1 }],
+        edges: [],
+      },
+    } as unknown as Challenge
+    const { nodes } = makeChallengeCanvas(c)
+    expect(nodes.some((n) => n.id === "n1")).toBe(true) // authored content is the harness's job
+  })
+})

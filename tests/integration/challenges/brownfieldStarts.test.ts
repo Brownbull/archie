@@ -38,3 +38,22 @@ describe("brownfield starts — authored seed quality (P5-S1)", () => {
     expect(brownfield.length).toBeGreaterThanOrEqual(0)
   })
 })
+
+describe("seed self-coherence (Phase 5 review #1)", () => {
+  it("no authored seed contains its own quest's forbidden types or restricted vendors", () => {
+    for (const c of getAllChallenges()) {
+      if (!c.initialArchitecture?.nodes.length) continue
+      for (const n of c.initialArchitecture.nodes) {
+        const typeId = componentLibrary.getComponent(n.componentId)?.typeId
+        expect(
+          typeId && c.forbiddenTypes?.includes(typeId),
+          `${c.id}: authored seed places forbidden type "${typeId}" (${n.componentId})`,
+        ).toBeFalsy()
+        expect(
+          c.restrictedVendors?.includes(n.componentId),
+          `${c.id}: authored seed places restricted vendor "${n.componentId}"`,
+        ).toBeFalsy()
+      }
+    }
+  })
+})

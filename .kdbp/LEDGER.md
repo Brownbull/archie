@@ -5214,3 +5214,14 @@ FINDINGS: 3 E2E iterations (selector opened the wrong menu → mode-toggle-quest
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5067/5067; evidence spec 4/4 sections, 4 artifacts) · structure ✅
 EVIDENCE: test-results/feedback-phase5/01-04*.png — chain panel, restriction + chaos objectives, brownfield wired canvas, link legend
 NOTE: all 7 D95 slices done. Exit criteria met: 2 brownfield quests 3★-verified ✓ · 1 progressive (forked) chain ✓ · link-viz SHIPPED v1 + design doc for the deferred dimensions ✓ · per-block failure used by Observe-to-Recover ✓ · polyglot exploration doc ✓.
+
+## 2026-06-10 23:15 — PHASE 5 REVIEW: New challenge formats
+VERDICT: APPROVE
+FINDINGS: 3 total (0 critical, 0 high, 1 medium, 2 low)
+COVERAGE: HIGH
+CONFIDENCE: 98/100 (91 pre-triage; #1 fixed in-session, #2/#3 deferred as D31/D32)
+DEFERRED: D31 (orphaned-async nuance), D32 (per-browser carry-forward)
+ALIGNMENT: ALIGNED
+TIER: scale | DRIFT: none
+TICK: ✅
+FIXES: #1 — carried builds now SHED blocks the stage forbids/restricts (+ their edges) at seed time; two new harness coherence gates (authored-seed self-coherence + chain parent-child) make the trap unauthorable. quick 5071/5071.
