@@ -251,3 +251,55 @@ describe("break-it loop narration (P4-S3 / D94)", () => {
     expect(r.current?.mode).toBe("iterate")
   })
 })
+
+describe("coach de-escalation — beginner-gated tackle (Plan-2 P3 / D98)", () => {
+  const advanced = (over: Partial<Challenge> = {}) => makeChallenge({ difficulty: "advanced", ...over })
+
+  beforeEach(() => {
+    useChallengeStore.setState({ activeChallenge: advanced(), attemptState: "building" })
+    useArchitectureStore.setState({ edges: [] } as never)
+  })
+
+  it("non-beginner: NO step-by-step build instructions — missing required categories are the HUD's job", () => {
+    setNodes([node("src", "traffic")]) // compute + data-storage required but missing
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).not.toMatch(/Add a/)
+    expect(r.current?.mode).toBe("run")
+    expect(r.current?.headline).toBe("No structural issues")
+  })
+
+  it("non-beginner: a deleted traffic source reads as a VALIDATION failure, not an instruction", () => {
+    setNodes([node("c", "compute")])
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.modeLabel).toBe("Check")
+    expect(r.current?.headline).toBe("No load origin")
+    expect(r.current?.headline).not.toMatch(/Add/)
+  })
+
+  it("non-beginner: port mismatches surface as a compiler-style diagnostic", () => {
+    setNodes([node("src", "traffic"), node("c", "compute")])
+    useArchitectureStore.setState({ edges: [{ id: "e1", source: "src", target: "c", data: { isPortMismatch: true } }] } as never)
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toBe("1 port mismatch")
+    expect(r.current?.detail).toContain("well-formed star")
+  })
+
+  it("non-beginner: stranded blocks surface as a diagnostic, not a to-do", () => {
+    setNodes([node("src", "traffic"), node("d", "data-storage")], [{ issueType: "orphan", nodeId: "d" }])
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toBe("Stranded blocks")
+  })
+
+  it("beginner quests keep the full tackle ladder (first-quest onboarding)", () => {
+    useChallengeStore.setState({ activeChallenge: makeChallenge(), attemptState: "building" }) // beginner
+    setNodes([node("src", "traffic")])
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.headline).toMatch(/Add a .* block/)
+  })
+
+  it("running/scored coaching is untouched by the gate", () => {
+    useChallengeStore.setState({ activeChallenge: advanced(), attemptState: "running" })
+    const { result: r } = renderHook(() => useChallengeCoach())
+    expect(r.current?.mode).toBe("watch")
+  })
+})

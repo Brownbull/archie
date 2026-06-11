@@ -4,6 +4,7 @@ import { useArchitectureStore } from "@/stores/architectureStore"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { hasTrafficSource } from "@/services/trafficSourceInjection"
+import { countPortMismatches } from "@/engine/portCompatibilityChecker"
 import { detectSingleAttributeBreak, remainingBreakAttributes } from "@/engine/breakDetection"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
@@ -43,6 +44,7 @@ export function useChallengeCoach(): CoachState | null {
   const lastResult = useChallengeStore((s) => s.lastResult)
   const lastMeasured = useChallengeStore((s) => s.lastMeasured)
   const nodes = useArchitectureStore((s) => s.nodes)
+  const edges = useArchitectureStore((s) => s.edges)
   const topologyIssues = useArchitectureStore((s) => s.topologyIssues)
   // Break-it loop (P4-S3, D94): session bestStars gates the post-3★ break narration; the durable
   // breaks record drives the "N dials left" framing.
@@ -194,9 +196,55 @@ export function useChallengeCoach(): CoachState | null {
       // Defensive fall-through (passed everything but <3 stars shouldn't happen) → treat as build-ready.
     }
 
-    // 3. BUILDING / IDLE — ordered "tackle" steps toward a runnable architecture.
+    // 3. BUILDING / IDLE.
     const placed = new Set(nodes.map((n) => n.data.componentCategory))
     const orphanCount = topologyIssues.filter((i) => i.issueType === "orphan").length
+
+    // D98 (Plan-2 P3): step-by-step tackle coaching is BEGINNER-ONLY — first-quest UI onboarding.
+    // Intermediate/advanced get compiler-style DIAGNOSTICS: report what's structurally broken
+    // (no load origin, mismatched ports, stranded blocks), never what to build next — the HUD
+    // checklist is the requirements overview; the build plan is the player's job.
+    if (challenge.difficulty !== "beginner") {
+      if (nodes.length > 0 && !hasTrafficSource(nodes)) {
+        return {
+          mode: "tackle",
+          modeLabel: "Check",
+          headline: "No load origin",
+          detail: "The canvas has no traffic source, so the simulation has nothing to drive it with. Quests pre-place one — it may have been deleted.",
+        }
+      }
+      const mismatchCount = countPortMismatches(edges)
+      if (mismatchCount > 0) {
+        return {
+          mode: "tackle",
+          modeLabel: "Check",
+          headline: `${mismatchCount} port mismatch${mismatchCount === 1 ? "" : "es"}`,
+          detail: "⚡-flagged connections join incompatible port types — in a quest they cost the well-formed star. Rewire or remove them.",
+        }
+      }
+      if (orphanCount > 0) {
+        return {
+          mode: "tackle",
+          modeLabel: "Check",
+          headline: "Stranded blocks",
+          detail: `${orphanCount} block${orphanCount === 1 ? " isn't" : "s aren't"} connected to the request path — they won't run and won't bill.`,
+        }
+      }
+      if (nodes.length === 0) {
+        return {
+          mode: "tackle",
+          modeLabel: "Check",
+          headline: "Empty canvas",
+          detail: "Nothing placed yet. The brief and the HUD checklist state what this quest grades — the build is yours.",
+        }
+      }
+      return {
+        mode: "run",
+        modeLabel: "Run it",
+        headline: "No structural issues",
+        detail: "Wiring checks pass. Run the simulation whenever you're ready.",
+      }
+    }
 
     if (!hasTrafficSource(nodes)) {
       return {
@@ -232,5 +280,5 @@ export function useChallengeCoach(): CoachState | null {
       headline: "Run the simulation",
       detail: "Looks wired up! Hit Run Simulation to push traffic through and earn your stars.",
     }
-  }, [challenge, attemptState, lastResult, lastMeasured, nodes, topologyIssues, liveEvents, sessionBest, breaksRecord])
+  }, [challenge, attemptState, lastResult, lastMeasured, nodes, edges, topologyIssues, liveEvents, sessionBest, breaksRecord])
 }
