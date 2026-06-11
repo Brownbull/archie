@@ -5272,3 +5272,12 @@ VERDICT: APPROVE · FINDINGS: 1L (copy tone → playtest) · COVERAGE: HIGH · C
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P173
+- 2026-06-11 10:33 | Write | /home/khujta/projects/bmad/archie/src/lib/categoryContributors.ts
+
+## 2026-06-11 — [Plan-2 P4] feat(dashboard): the score trace (D99)
+FINDINGS: design-first inventory PREVENTED redundant work — clickability + complexity were already shipped (Fluidity/D80); the trace was the only real gap. Review APPROVE 97/100 (1 LOW: trace metric ids are raw slugs not display labels — defer to playtest verdict on whether labels read better).
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5090/5090 incl. helper + popup contract pins) · engine-inert by construction
+TICK: ✅ (Review + Commit)
+
+## 2026-06-11 — PHASE 4 REVIEW (Plan-2): Score explainability
+VERDICT: APPROVE · FINDINGS: 1L (raw metric slugs → playtest) · COVERAGE: HIGH · CONFIDENCE: 97/100 · ALIGNMENT: ALIGNED · TICK: ✅
