@@ -14,6 +14,7 @@ import {
 } from "@/stores/architectureStoreHelpers"
 import { countTopologyIssues } from "@/engine/topologyChecker"
 import { countPortMismatches } from "@/engine/portCompatibilityChecker"
+import { diffTrafficAttributes } from "@/engine/breakDetection"
 import { defaultTrafficCurve } from "@/engine/simulationEngine"
 import { componentLibrary } from "@/services/componentLibrary"
 import { getScenarioPreset } from "@/services/scenarioLoader"
@@ -86,7 +87,13 @@ export function launchChallengeAttempt(challenge: Challenge): void {
   // D94 (P4-S3): post-3★ the canvas dials DRIVE the load — the break-it loop's seam: the player
   // changes one traffic attribute and the re-run actually feels it. Falls back to the authored
   // demand when the canvas has no rate-bearing source (e.g. the traffic node was deleted).
-  const canvasCurve = locked ? [] : buildTrafficCurveFromSources(nodes, challenge.durationSeconds)
+  // D101 audit (2026-06-11): the canvas wins only when the dials actually DEVIATE — the node-built
+  // curve's shape stresses differently than the authored spec curve, and 6 quests' lean builds sit
+  // close enough to the edge that an UNTOUCHED post-3★ re-run would fail on it ("I changed
+  // nothing!"). Unchanged dials ⇒ the authored demand, byte-identical to the run that earned 3★.
+  const dialsDeviate = (challenge.trafficSources?.length ?? 0) === 0
+    || diffTrafficAttributes(nodes, challenge.trafficSources ?? []).size > 0
+  const canvasCurve = locked || !dialsDeviate ? [] : buildTrafficCurveFromSources(nodes, challenge.durationSeconds)
   const authoredCurve =
     challenge.trafficSources && challenge.trafficSources.length > 0
       ? buildTrafficCurveFromSpecs(challenge.trafficSources, challenge.durationSeconds)

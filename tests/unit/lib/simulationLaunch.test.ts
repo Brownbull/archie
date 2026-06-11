@@ -13,6 +13,7 @@ vi.mock("@/services/componentLibrary", () => ({
   },
 }))
 
+import { buildTrafficCurveFromSpecs } from "@/stores/architectureStoreHelpers"
 import { launchChallengeAttempt } from "@/lib/simulationLaunch"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useChallengeStore } from "@/stores/challengeStore"
@@ -82,6 +83,15 @@ describe("launchChallengeAttempt — post-3★ canvas-wins seam (P4-S3 / D94)", 
     const [graph, curve] = startMock.mock.calls[0]
     expect(peakOf(curve)).toBe(800)
     expect(graph.multiRegion).toBeUndefined()
+  })
+
+  it("post-3★ with matching dials uses the authored curve ITSELF — shape-identical to the 3★ run (D101 audit)", () => {
+    // 6 quests' lean builds fail the node-SHAPED curve at the same peak — an untouched re-run
+    // must be byte-identical to the run that earned the stars, not merely peak-equal.
+    useChallengeStore.setState({ bestStars: { c1: 3 } })
+    launchChallengeAttempt(challenge)
+    const [, curve] = startMock.mock.calls[0]
+    expect(curve).toEqual(buildTrafficCurveFromSpecs(challenge.trafficSources!, challenge.durationSeconds))
   })
 
   it("post-3★ with no traffic node falls back to the authored demand", () => {
