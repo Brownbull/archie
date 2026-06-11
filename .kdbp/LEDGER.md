@@ -5166,3 +5166,51 @@ PR: — (direct trunk push, established flow)
 CI: Deploy Production ✅ success
 PROMOTION: N/A (single-env production)
 DEPLOYMENTS: P169 (added row to .kdbp/DEPLOYMENTS.md)
+- 2026-06-10 21:19 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-10 21:19 | Edit | /home/khujta/projects/bmad/archie/src/lib/challengeTypes.ts
+- 2026-06-10 21:19 | Write | /home/khujta/projects/bmad/archie/src/services/challengeCanvasSeed.ts
+- 2026-06-10 21:21 | Write | /home/khujta/projects/bmad/archie/tests/unit/services/challengeCanvasSeed.test.ts
+- 2026-06-10 21:22 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/brownfieldStarts.test.ts
+
+## 2026-06-10 21:25 — [P5-S1] feat(challenges): brownfield starts — initial_architecture foundation
+FINDINGS: 1 (0 critical, 0 high, 0 medium, 1 low)
+ACTIONS: 1:accept (9 object-injection warnings, typed lookups; G3 well scaffold)
+DEFERRED: none
+CHECKS: lint ✅ (0 err) · types ✅ (tsc -b) · tests ✅ (quick 5042/5042 incl. 5 schema + 4 seed; golden + 62/62 + brownfield gate vacuous-green) · structure ✅ (services/ pattern)
+NOTE: seeding reuses hydrateArchitectureSkeleton — an inherited build behaves exactly like an imported one (placeholders, variant fallback, port-aware edges). Needs-work gate (<3★ as-seeded) is the P4-S7 non-triviality principle applied to starts.
+
+## 2026-06-10 21:35 — [P5-S2] feat(challenges): 2 brownfield quests + async-presence scoring fix
+FINDINGS: 1 significant (the D74 isOnPathExempt hole — fixed in-slice, golden byte-identical proves no pinned case moved)
+CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5043/5043; golden + 62/62 + brownfield gates 2/2) · structure ✅
+NOTE: seeds authored from DEGRADED reference builds (probe-derived real component/variant ids); event-stream seed = the brief's fire-and-forget BEFORE state; scale-out seed = the lone box, wired to live traffic. Needs-work gate caught the scorer hole on first contact — exactly what it exists for.
+
+## 2026-06-10 21:52 — [P5-S3] feat(challenges): per-block failure conditions
+FINDINGS: 1 fixed in-dev (unstable filtering selector → React 18 sync-store render loop; stable ref + useMemo)
+CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5052/5052; golden byte-identical after the eventTargetMatches extraction) · structure ✅
+NOTE: ArchieNode (churn-guarded) edited via python per protocol — one badge block + one selector. Injection is post-3★ ONLY and additive on the authored events; scoring untouched.
+
+## 2026-06-10 22:05 — [P5-S4] feat(challenges): team-expertise vendor restrictions
+FINDINGS: 1 caught by the new harness gate pre-commit (authored "fastapi" — real id is python-fastapi; exactly the typo class the gate exists for)
+CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5057/5057; vendor gate + solvability 68/68) · structure ✅
+NOTE: dropdown = shown-but-locked (lesson), quick-swap = filtered (noise), store = blocked (integrity) — three surfaces, one policy.
+- 2026-06-10 21:49 | Write | /home/khujta/projects/bmad/archie/src/services/chainCarryForward.ts
+- 2026-06-10 21:52 | Write | /home/khujta/projects/bmad/archie/tests/integration/challenges/chains.test.ts
+- 2026-06-10 21:52 | Write | /home/khujta/projects/bmad/archie/tests/unit/services/chainCarryForward.test.ts
+
+## 2026-06-10 22:25 — [P5-S5] feat(challenges): the Data Backbone forking chain
+FINDINGS: 0
+CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5065/5065; chain coherence gate + 3 round-trip suites) · structure ✅
+NOTE: chain content is a RETROFIT of an existing requires-progression (zero new quest authoring, solvability pre-proven); carry-forward is client-side by design (canvasAutosave tier — convenience, not progression truth). Carried build > authored seed > traffic-only, one hydration pipeline.
+- 2026-06-10 21:57 | Write | /home/khujta/projects/bmad/archie/src/lib/linkViz.ts
+
+## 2026-06-10 22:40 — [P5-S6] feat(canvas): link-viz v1 (protocol line styles + throughput dot speed)
+FINDINGS: 1 contract update (CanvasLegend "heatmap-only" test pinned the OLD behavior — the legend now serves both modes by design)
+CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5067/5067 incl. distinctness + monotonic-clamp pins) · structure ✅
+NOTE: PORT_DASHARRAYS lives in lib/linkViz (constants.ts untouched — churn guard respected); speed factor reads effective capacity via getNodeCost (render-only, no engine change). Perf: speedFactor memoized per target-node snapshot; rAF loop unchanged.
+- 2026-06-10 22:04 | Write | /home/khujta/projects/bmad/archie/tests/e2e/feedback-phase5.unlocked.spec.ts
+
+## 2026-06-10 22:55 — [P5-S7] feat(challenges): Phase 5 evidence + deferred-design docs — PHASE 5 EXEC COMPLETE
+FINDINGS: 3 E2E iterations (selector opened the wrong menu → mode-toggle-quest; quest heatmap-on default → H toggle; tabIndex=-1 container needs explicit focus) — all spec-side, zero app changes
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5067/5067; evidence spec 4/4 sections, 4 artifacts) · structure ✅
+EVIDENCE: test-results/feedback-phase5/01-04*.png — chain panel, restriction + chaos objectives, brownfield wired canvas, link legend
+NOTE: all 7 D95 slices done. Exit criteria met: 2 brownfield quests 3★-verified ✓ · 1 progressive (forked) chain ✓ · link-viz SHIPPED v1 + design doc for the deferred dimensions ✓ · per-block failure used by Observe-to-Recover ✓ · polyglot exploration doc ✓.

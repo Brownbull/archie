@@ -29,7 +29,7 @@ expert currency, and open new challenge formats (brownfield, progressive chains)
 | 2 | Progression & grading integrity | Unlock-ordering restructure (21 hard violations) + tech-tree validator, pathway tech-tree filter, port enforcement star gate (D87), explicit banned-block display, Observe-to-Recover visibility, quest-mode CTA gating. | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 3 | Teaching quality | 39 context-style brief rewrites + hint-ladder pass, per-tier descriptions + docs links (schema + 240 variants + reseed), RPS calibration (4 outliers), discipline icons + unlock toasts. | ent | high | ✅ | ✅ | ✅ | ✅ |
 | 4 | Break-it loop & expert currency | Post-3★ "now break it": single-attribute break detection + tracking, expert currency (earn: traffic-breaks + resilience; spend: required-blocks filter), test-conditions lock/highlight, resilience extra-challenges, quest-log surfacing, toolbox realism. | scale | high | ✅ | ✅ | ✅ | ✅ |
-| 5 | New challenge formats | Brownfield starts (initial_architecture), progressive/forking chains, per-block failure conditions, team-expertise vendor restrictions, link-visualization dimensions, data-type traffic divergence. | scale | high | 🔄 | ⬜ | ⬜ | ⬜ |
+| 5 | New challenge formats | Brownfield starts (initial_architecture), progressive/forking chains, per-block failure conditions, team-expertise vendor restrictions, link-visualization dimensions, data-type traffic divergence. | scale | high | ✅ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec is written by /gabe-execute: ⬜ not started, 🔄 in progress, ✅ complete -->
 <!-- Review/Commit/Push auto-ticked by /gabe-review, /gabe-commit, /gabe-push -->
