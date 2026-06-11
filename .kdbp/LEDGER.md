@@ -5440,3 +5440,7 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5138/5138; provisioning pins o
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P193
+
+## 2026-06-11 — [playtest fix] fix(challenges): Breaking… status + sticky playback speed
+FINDINGS: none — 2 surface tweaks; reset-speed contract updated (sticky survives reset)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5140/5140)
