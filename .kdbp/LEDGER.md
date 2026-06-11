@@ -5344,3 +5344,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P180
 FINDINGS: 1 real bug self-caught pre-commit — useMemo below conditional returns (hook-order crash waiting for a branch flip); hoisted above all returns. Curve-unresolvable guard added so missing data never claims "nothing can fell this build".
 CHECKS: lint ✅ (warnings pre-existing tier) · types ✅ · tests ✅ (quick 5110/5110) · E2E ✅ (journey 47.7s with the live probe)
 NOTE: propagation = automatic (51 single-source v2 / 12 multi-source legacy / 1 sourceless). Feasibility is per-BUILD truth, not per-quest authoring — a different build changes which dials can pay.
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P181
