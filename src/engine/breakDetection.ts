@@ -18,6 +18,14 @@ import type { Challenge, ChallengeTrafficSource, StarBreakdown } from "@/lib/cha
 export const BREAK_ATTRIBUTES = ["rps", "kind", "workload", "origin"] as const
 export type BreakAttribute = (typeof BREAK_ATTRIBUTES)[number]
 
+/** Player-facing names for the four dials — shared by the results modal + Quest Log surfacing. */
+export const BREAK_ATTRIBUTE_LABELS: Record<BreakAttribute, string> = {
+  rps: "Peak RPS",
+  kind: "Shape",
+  workload: "Workload",
+  origin: "Origin",
+}
+
 /** Minimal traffic-node shape the detector reads (the canvas node's data fields). */
 export interface TrafficNodeLike {
   data: {

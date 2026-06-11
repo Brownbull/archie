@@ -1,16 +1,9 @@
 import { Hammer, Wrench, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUserProgressStore } from "@/stores/userProgressStore"
-import { remainingBreakAttributes, BREAK_ATTRIBUTES, type BreakAttribute } from "@/engine/breakDetection"
+import { remainingBreakAttributes, BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS } from "@/engine/breakDetection"
 import type { BreakOutcome } from "@/hooks/useBreakCollection"
 import type { Challenge } from "@/lib/challengeTypes"
-
-const ATTRIBUTE_LABELS: Record<BreakAttribute, string> = {
-  rps: "Peak RPS",
-  kind: "Shape",
-  workload: "Workload",
-  origin: "Origin",
-}
 
 interface BreakItPanelProps {
   challenge: Challenge
@@ -38,7 +31,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials }: BreakI
         <div className="flex items-center gap-2">
           <Hammer className="h-4 w-4 text-orange-400" />
           <span className="text-xs font-bold text-orange-200">
-            Broke it with {ATTRIBUTE_LABELS[outcome.attribute]}!
+            Broke it with {BREAK_ATTRIBUTE_LABELS[outcome.attribute]}!
           </span>
           <span data-testid="break-payout" className="ml-auto flex items-center gap-1 text-[0.6875rem] font-semibold text-orange-300">
             <Wrench className="h-3 w-3" />
@@ -47,7 +40,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials }: BreakI
         </div>
         <p className="mt-1.5 text-[0.6875rem] leading-snug text-orange-200/80">
           {outcome.remaining.length > 0
-            ? `Your build held 3★ until this dial moved — that's the failure boundary. Still standing: ${outcome.remaining.map((a) => ATTRIBUTE_LABELS[a]).join(", ")}.`
+            ? `Your build held 3★ until this dial moved — that's the failure boundary. Still standing: ${outcome.remaining.map((a) => BREAK_ATTRIBUTE_LABELS[a]).join(", ")}.`
             : "All four dials collected — you've mapped this build's entire failure boundary."}
         </p>
         {outcome.remaining.length > 0 && (
@@ -89,7 +82,7 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials }: BreakI
             data-testid={`break-attr-${a}`}
             className="rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-[0.625rem] text-orange-200"
           >
-            {ATTRIBUTE_LABELS[a]}
+            {BREAK_ATTRIBUTE_LABELS[a]}
           </span>
         ))}
       </div>

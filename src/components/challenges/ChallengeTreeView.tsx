@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Lock, Star, Gift, Scroll, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Lock, Star, Gift, Scroll, AlertCircle, CheckCircle2, Hammer, Wrench } from "lucide-react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
@@ -15,6 +15,7 @@ import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { makeChallengeTrafficNodes } from "@/services/trafficSourceInjection"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { CHALLENGE_TRACKS } from "@/lib/challengeTracks"
+import { BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS, type BreaksRecord } from "@/engine/breakDetection"
 import type { Challenge, TechTreeNode } from "@/lib/challengeTypes"
 
 const TIER_LABELS = ["", "I", "II", "III", "IV", "V", "VI"]
@@ -170,8 +171,12 @@ function TierSeparators({ bands, width }: { bands: TierBand[]; width: number }) 
   )
 }
 
-function TreeNode({ pos, selected, bestStars, onClick }: {
-  pos: NodePos; selected: boolean; bestStars: number; onClick: () => void
+function TreeNode({ pos, selected, bestStars, breaksCollected, onClick }: {
+  pos: NodePos; selected: boolean; bestStars: number;
+  /** Collected break-dials for this quest (0–4), or null when the quest has no authored traffic
+   *  to break (legacy curve-only) — null hides the extra-challenge corner badge entirely. */
+  breaksCollected: number | null;
+  onClick: () => void
 }) {
   const c = pos.node.challenge
   const isLocked = pos.node.status === "locked"
@@ -234,6 +239,20 @@ function TreeNode({ pos, selected, bestStars, onClick }: {
         {c.rewards?.xp ?? 0} XP
       </text>
 
+      {/* Extra-challenge corner badge — top-right (P4-S6, D94): a completed quest with authored
+          traffic carries the break-it extras; the badge shows collection progress (N/4 dials).
+          Orange once collecting started, dim until then — and NEVER a star (expert ≠ hint pool). */}
+      {isCompleted && breaksCollected !== null && (
+        <g data-testid={`break-badge-${c.id}`} transform={`translate(${pos.x + NODE_R - 4}, ${pos.y - NODE_R - 12})`}>
+          <title>{`Break-it extras: ${breaksCollected} of 4 traffic dials collected — replay, hold 3★, then break it one dial at a time (+1 Expert each)`}</title>
+          <circle cx={10} cy={10} r={10.5} fill="#080c12" stroke={breaksCollected > 0 ? "#f97316" : "#f9731640"} strokeWidth={1.5} />
+          <Hammer x={3.5} y={5.5} width={8} height={8} color={breaksCollected > 0 ? "#f97316" : "#6b7280"} />
+          <text x={13} y={13} fontSize={7} fontWeight={800} fill={breaksCollected > 0 ? "#f97316" : "#6b7280"} textAnchor="middle">
+            {breaksCollected}
+          </text>
+        </g>
+      )}
+
       {/* Grant badge — bottom-left */}
       {firstGrant && (
         <g transform={`translate(${pos.x - NODE_R - 6}, ${pos.y + NODE_R * 0.3})`}>
@@ -249,7 +268,7 @@ function TreeNode({ pos, selected, bestStars, onClick }: {
   )
 }
 
-function QuestDetailPanel({ node, bestStars, onStart }: { node: TechTreeNode; bestStars: number; onStart: () => void }) {
+function QuestDetailPanel({ node, bestStars, breaksRecord, onStart }: { node: TechTreeNode; bestStars: number; breaksRecord: BreaksRecord | undefined; onStart: () => void }) {
   const c = node.challenge
   const trackMeta = c.track ? CHALLENGE_TRACKS.get(c.track) : undefined
   const trackColor = TRACK_COLORS[c.track ?? ""] ?? "#6b7280"
@@ -361,6 +380,35 @@ function QuestDetailPanel({ node, bestStars, onStart }: { node: TechTreeNode; be
             ))}
           </div>
         )}
+        {/* Extra challenges (P4-S6, D94): the break-it extras on a completed quest with authored
+            traffic — per-dial collection state + the expert payout. S7's resilience conditions will
+            extend this same section. */}
+        {node.status === "completed" && (c.trafficSources?.length ?? 0) > 0 && (
+          <div data-testid="quest-extra-challenges" className="rounded border border-orange-500/30 bg-orange-500/5 p-2.5">
+            <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-orange-400">
+              <Hammer className="h-3 w-3" /> Extra challenges
+            </div>
+            <p className="mt-1 text-[0.625rem] leading-snug text-[#d0c8b8]/80">
+              Replay, hold 3★, then break your own build — ONE traffic dial at a time. Each dial that
+              fells it pays <span className="font-semibold text-orange-300">1 Expert</span>.
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1">
+              {BREAK_ATTRIBUTES.map((a) => {
+                const collected = !!breaksRecord?.[a]
+                return (
+                  <span key={a} data-testid={`extra-break-${a}`} data-collected={collected || undefined}
+                    className={`rounded-full border px-2 py-0.5 text-[0.5625rem] font-medium ${
+                      collected
+                        ? "border-orange-500/60 bg-orange-500/20 text-orange-200"
+                        : "border-[#3a4050] text-[#6b7280]"
+                    }`}>
+                    {BREAK_ATTRIBUTE_LABELS[a]}{collected ? " ✓" : ""}
+                  </span>
+                )
+              })}
+            </div>
+          </div>
+        )}
         {node.status !== "locked" && (
           <Button size="sm" data-testid="tree-start-challenge" onClick={onStart}
             className="w-full bg-[#c9a961] text-[#1a1410] hover:bg-[#d4b872] font-bold">
@@ -375,6 +423,8 @@ function QuestDetailPanel({ node, bestStars, onStart }: { node: TechTreeNode; be
 export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const challenges = getAllChallenges()
   const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
+  const breaksByChallenge = useUserProgressStore((s) => s.breaksByChallenge)
+  const expertCurrency = useUserProgressStore((s) => s.expertCurrency)
   const bestStars = useChallengeStore((s) => s.bestStars)
   const selectChallenge = useChallengeStore((s) => s.selectChallenge)
   const userId = useCurrentUserId()
@@ -408,6 +458,25 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
           <DialogDescription className="text-[#6b7280]">
             {challenges.length} quests · {completedChallenges.length} completed
           </DialogDescription>
+          {/* P4-S6 (D94): the expert wallet — wrench + orange, deliberately NOT a star (it never
+              feeds the hint pool) — and the discipline color legend that decodes the tree's rings. */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-0.5">
+            <span
+              data-testid="quest-log-expert-count"
+              title="Expert points — earned by breaking your 3★ builds one traffic dial at a time; spent on per-quest required-blocks filters"
+              className="inline-flex items-center gap-1 rounded-full border border-orange-500/40 bg-orange-500/10 px-2 py-0.5 text-[0.6875rem] font-semibold text-orange-300"
+            >
+              <Wrench className="h-3 w-3" /> {expertCurrency} Expert
+            </span>
+            <div data-testid="quest-log-track-legend" className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              {Object.entries(TRACK_COLORS).map(([trackId, color]) => (
+                <span key={trackId} className="inline-flex items-center gap-1 text-[0.5625rem] text-[#8b9099]">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+                  {CHALLENGE_TRACKS.get(trackId)?.name ?? trackId}
+                </span>
+              ))}
+            </div>
+          </div>
         </DialogHeader>
         <div className="flex gap-0" style={{ height: "calc(85vh - 80px)" }}>
           {/* Left: quest tree — always visible, fixed position */}
@@ -422,6 +491,9 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
                 <TreeNode key={pos.node.challenge.id} pos={pos}
                   selected={selectedId === pos.node.challenge.id}
                   bestStars={bestStars[pos.node.challenge.id] ?? 0}
+                  breaksCollected={(pos.node.challenge.trafficSources?.length ?? 0) > 0
+                    ? Object.keys(breaksByChallenge[pos.node.challenge.id] ?? {}).length
+                    : null}
                   onClick={() => setSelectedId(pos.node.challenge.id)} />
               ))}
             </svg>
@@ -432,6 +504,7 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
             {selectedNode ? (
               <QuestDetailPanel node={selectedNode}
                 bestStars={bestStars[selectedNode.challenge.id] ?? 0}
+                breaksRecord={breaksByChallenge[selectedNode.challenge.id]}
                 onStart={() => startChallenge(selectedNode.challenge)} />
             ) : (
               <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
