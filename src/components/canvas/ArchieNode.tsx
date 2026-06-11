@@ -11,6 +11,7 @@ import { ComponentIcon } from "@/components/common/ComponentIcon"
 import { NodeActionToolbar } from "@/components/canvas/NodeActionToolbar"
 import { ConstraintViolationBadge } from "@/components/canvas/ConstraintViolationBadge"
 import { SaveBlockDefaultButton } from "@/components/canvas/SaveBlockDefaultButton"
+import { TrafficResetButton } from "@/components/canvas/TrafficResetButton"
 import { InlineMetricBar } from "@/components/canvas/InlineMetricBar"
 import { StatusDot } from "@/components/canvas/StatusDot"
 import { useNodeOverlay } from "@/hooks/useNodeOverlay"
@@ -298,7 +299,10 @@ function ArchieNodeComponent({ id, data }: NodeProps<ArchieNodeType>) {
       {/* Save-as-default button (top-right, inside the card). Only for typed blocks — it persists
           a per-user provider+tier default for this block type. Hidden for pre-P5 typeless blocks.
           Hidden for traffic sources (P1/T3): demand is the challenge's problem statement — a saved
-          traffic default would leak into quests (and could double a one-per-type traffic kind). */}
+          traffic default would leak into quests (and could double a one-per-type traffic kind).
+          A quest traffic source gets the slot's TWIN instead (2026-06-11): once the dials unlock
+          at 3★, a reset-to-authored-spec button — back to baseline mid-experiment. */}
+      {isTraffic && !trafficLocked && <TrafficResetButton />}
       {typeInfo.typeId && !isTraffic && (
         <SaveBlockDefaultButton
           typeId={typeInfo.typeId}
