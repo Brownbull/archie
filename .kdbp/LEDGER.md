@@ -5360,3 +5360,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P182
 ## 2026-06-11 — [playtest fix] feat(challenges): traffic reset-to-spec button (the save-slot twin)
 FINDINGS: none — reuses plannedTrafficReset (already pinned); 3 new contract tests (idle/dirty-restore/hidden-outside-quest)
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5114/5114) · ArchieNode churn-guard respected (Bash python edit)
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P183
