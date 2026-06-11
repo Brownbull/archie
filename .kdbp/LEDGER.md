@@ -5231,3 +5231,8 @@ PR: — (direct trunk push, established flow)
 CI: Deploy Production ✅ success
 PROMOTION: N/A (single-env production)
 DEPLOYMENTS: P170 (added row to .kdbp/DEPLOYMENTS.md)
+
+## 2026-06-11 — [Plan-2 P1] feat(challenges): unlock-ordering true-up — 53 palette gaps → 0, hard-gated
+FINDINGS: 1 fixed in-dev (challengeJourney seeded progress needed the new closure — exactly the availability tightening working as designed)
+CHECKS: lint ✅ (0 err) · types ✅ · tests ✅ (quick 5071/5071; engine 632; solvability + golden + chains held) · E2E tree smoke ✅ (20s, 4-node navigation on the +47-edge graph)
+NOTE: D96 executed in two verified batches (trims+hints, then edges, then gate promotion). NO progress reset — completed-stays-completed by construction; mid-progress accounts may see quests lock until their new prereqs complete (the intended fiction). D90's review trigger (tree density after +47 edges) hands off to Phase 2's chain-visualization pass.
