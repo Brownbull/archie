@@ -5225,3 +5225,9 @@ ALIGNMENT: ALIGNED
 TIER: scale | DRIFT: none
 TICK: ✅
 FIXES: #1 — carried builds now SHED blocks the stage forbids/restricts (+ their edges) at seed time; two new harness coherence gates (authored-seed self-coherence + chain parent-child) make the trap unauthorable. quick 5071/5071.
+
+## 2026-06-10 22:35 — PUSH dev -> main
+PR: — (direct trunk push, established flow)
+CI: Deploy Production ✅ success
+PROMOTION: N/A (single-env production)
+DEPLOYMENTS: P170 (added row to .kdbp/DEPLOYMENTS.md)
