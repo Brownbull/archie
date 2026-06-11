@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Trophy } from "lucide-react"
+import { Scroll } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -96,7 +96,7 @@ export function ModeToggle() {
               : "text-text-secondary hover:text-text-primary",
           )}
         >
-          <Trophy className="h-3 w-3" /> Quest Mode
+          <Scroll className="h-3 w-3" /> Quest Mode
         </button>
       </div>
 

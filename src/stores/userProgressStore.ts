@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import { doc, getDoc, setDoc, serverTimestamp, increment } from "firebase/firestore"
-import { db } from "@/lib/firebase"
+import { db, auth } from "@/lib/firebase"
 
 const COLLECTION = "userProgress"
 
@@ -61,9 +61,11 @@ export interface UserProgress {
   starsSpentOnUnlocks: number
   /** D104 — provisioned starter stars (granted at registration/reset), added to the spendable pool. */
   bonusStars: number
+  /** D105 — self-stamped display name (from the auth profile) for the leaderboard. */
+  displayName: string | null
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, displayName: null, generation: PROGRESS_GENERATION }
 
 /** D104 — the provisioned baseline a fresh/reset account lands on. */
 const STARTER_PROGRESS: UserProgress = { ...EMPTY_PROGRESS, bonusStars: STARTER_BONUS_STARS, expertCurrency: STARTER_EXPERT }
@@ -159,7 +161,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           // Phase 6 (D65): one-time destructive reset to ground zero, then stamp current. Idempotent —
           // after the stamp persists, storedGen == PROGRESS_GENERATION and this branch never re-fires.
           // D104: a reset doesn't strand the player at zero — they land on the starter grant.
-          const wiped: UserProgress = { ...STARTER_PROGRESS, generation: PROGRESS_GENERATION }
+          const wiped: UserProgress = { ...STARTER_PROGRESS, displayName: auth.currentUser?.displayName ?? null, generation: PROGRESS_GENERATION }
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
@@ -185,15 +187,21 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           unlockedTiers: (data.unlockedTiers as UserProgress["unlockedTiers"]) ?? {},
           starsSpentOnUnlocks: (data.starsSpentOnUnlocks as number) ?? 0,
           bonusStars: (data.bonusStars as number) ?? 0,
+          displayName: (data.displayName as string) ?? null,
           generation: storedGen,
           loading: false,
         })
+        // D105: older docs may predate the name stamp — backfill once, fire-and-forget.
+        if (!data.displayName && auth.currentUser?.displayName) {
+          void setDoc(doc(db, COLLECTION, userId), { displayName: auth.currentUser.displayName, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
+        }
       } else {
         // D104: first sign-in (or post-wipe) — provision the starter grant and persist it so the
         // baseline is durable from minute one.
-        set({ ...STARTER_PROGRESS, loading: false })
+        const provisioned = { ...STARTER_PROGRESS, displayName: auth.currentUser?.displayName ?? null }
+        set({ ...provisioned, loading: false })
         try {
-          await setDoc(doc(db, COLLECTION, userId), { ...STARTER_PROGRESS, updatedAt: serverTimestamp() })
+          await setDoc(doc(db, COLLECTION, userId), { ...provisioned, updatedAt: serverTimestamp() })
         } catch (err) {
           if (import.meta.env.DEV) console.error("Failed to provision starter progress:", err)
         }

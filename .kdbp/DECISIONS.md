@@ -1588,3 +1588,8 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 
 **Owner:** "all users, once registered, should be provisioned with stars and Expert currency, so we can reset all quest progress and provision any current user." Implementation: `bonusStars` field (stars are quest-derived, so the grant rides a separate term in spendableStars) + expertCurrency seeded; STARTER_BONUS_STARS=3, STARTER_EXPERT=1 (tunable constants). Provisioned on (a) first sign-in with no doc (persisted immediately) and (b) the generation wipe path — and PROGRESS_GENERATION bumped 3→4 so every existing account re-lands at the baseline on next load (the owner's "reset all current users"), incl. anyone who signed in since today's manual wipe. E2E replay account seeds bonusStars 0 (deterministic journeys; D28 carve-out pattern).
 **Status:** active
+
+## D105 — Leaderboard + the cup's new job (2026-06-11)
+
+**Owner:** a Leaderboard in the top bar, left side, between Build and the mode toggle; the cup (Trophy — previously quest mode's icon) becomes the leaderboard's icon, and Quest Mode takes the quests' own Scroll. Ranks every registered player with XP > 0 by 3★-cleared quests, then total XP; "(you)" highlighted; fetched fresh per open. Data: userProgress collection reads opened to ANY signed-in user (writes stay owner-only) — acceptable surface: no PII beyond the self-stamped displayName (stamped from the auth profile on provisioning + lazily backfilled). Rules deployed pre-push.
+**Status:** active

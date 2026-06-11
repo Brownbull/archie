@@ -1,8 +1,10 @@
-import { ChevronDown } from "lucide-react"
+import { useState } from "react"
+import { ChevronDown, Trophy } from "lucide-react"
 import { SettingsMenu } from "@/components/layout/SettingsMenu"
 import { ExperienceLevelControl } from "@/components/layout/ExperienceLevelControl"
 import { AppMenuBar } from "@/components/layout/AppMenuBar"
 import { ModeToggle } from "@/components/layout/ModeToggle"
+import { LeaderboardDialog } from "@/components/layout/LeaderboardDialog"
 import { AccountMenu } from "@/components/layout/AccountMenu"
 import { CurrencyCluster } from "@/components/layout/CurrencyCluster"
 import { IssuesSummary } from "@/components/layout/IssuesSummary"
@@ -30,6 +32,7 @@ export function Toolbar() {
   const attemptState = useChallengeStore((s) => s.attemptState)
   // D102: the quest chip wears the Expert orange once the dials are unlocked (break mode).
   const breakMode = useChallengeStore((s) => !!s.activeChallenge && (s.bestStars[s.activeChallenge.id] ?? 0) >= 3)
+  const [leaderboardOpen, setLeaderboardOpen] = useState(false)
 
   return (
     <header
@@ -40,6 +43,16 @@ export function Toolbar() {
       <div className="flex items-center gap-2">
         <span className="text-sm font-semibold text-text-primary">Archie</span>
         <AppMenuBar />
+        {/* D105: the cup belongs to the LEADERBOARD now (quest mode wears the scroll). */}
+        <button
+          type="button"
+          data-testid="leaderboard-button"
+          title="Leaderboard — quests cleared at 3★ and experience, all registered architects"
+          onClick={() => setLeaderboardOpen(true)}
+          className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-text-secondary transition-colors hover:bg-[#c9a961]/15 hover:text-[#c9a961]"
+        >
+          <Trophy className="h-3.5 w-3.5" /> Leaderboard
+        </button>
         <ModeToggle />
       </div>
 
@@ -78,6 +91,7 @@ export function Toolbar() {
 
       {/* Dialogs opened from the menu bar — open state lives in uiStore. */}
       <PromptTemplateDialog open={promptOpen} onOpenChange={setPromptOpen} />
+      <LeaderboardDialog open={leaderboardOpen} onOpenChange={setLeaderboardOpen} />
       <ChallengeSelector hideTrigger />
       <ChallengeTreeView open={questLogOpen} onOpenChange={setQuestLogOpen} />
       <SaveCanvasDialog />
