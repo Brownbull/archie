@@ -5463,3 +5463,7 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5146/5146) · rules deployed p
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P196
+
+## 2026-06-11 — [owner] feat(challenges): top-10 ranks + D106 earned-ledger
+FINDINGS: rankings were ALREADY purchase-proof by construction (XP + 3★ derive from play) — the new expertEarned ledger extends that guarantee to the Expert column ahead of monetization
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5147/5147) · rules deployed pre-push
