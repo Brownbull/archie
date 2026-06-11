@@ -420,3 +420,53 @@ describe("resilience extras panel (P4-S7 / D94)", () => {
     expect(screen.queryByTestId("resilience-clears")).toBeNull()
   })
 })
+
+describe("observability explainer (Plan-2 P5 / D100)", () => {
+  const failingChallenge = {
+    ...challenge,
+    scheduledEvents: [{ t: 30, type: "component_failure", target: "db" }],
+  } as Challenge
+
+  beforeEach(() => {
+    mockSuggestion = null
+    mockPriorBest = null
+    mockBreakOutcome = null
+    mockResilienceClears = null
+    useChallengeStore.setState({ activeChallenge: null, attemptState: "idle", lastResult: null, lastMeasured: null, bestStars: {} })
+    useSimulationStore.getState().reset()
+    useArchitectureStore.setState({ nodes: [], edges: [], topologyIssues: [], topologyIssuesByNodeId: new Map() } as never)
+    useUiStore.setState({ questLogOpen: false, challengesOpen: false })
+  })
+  afterEach(() => useSimulationStore.getState().reset())
+
+  const score = (c: Challenge) => {
+    cs().selectChallenge(c)
+    cs().startAttempt()
+    useSimulationStore.setState({ status: "done", ticks: [frame(0), frame(1)], currentTick: 1 })
+    render(<ChallengeResultsModal />)
+  }
+
+  it("renders the unwatched variant when failures ran with no wired monitor", () => {
+    score(failingChallenge)
+    expect(screen.getByTestId("observability-explainer")).toHaveTextContent(/Failures ran unwatched/)
+    expect(screen.getByTestId("observability-explainer")).toHaveTextContent(/~5s/)
+  })
+
+  it("renders the paid-off variant when a monitoring node is wired", () => {
+    useArchitectureStore.setState({
+      nodes: [
+        { id: "m1", data: { componentCategory: "monitoring", componentName: "Grafana" } },
+        { id: "c1", data: { componentCategory: "compute", componentName: "Node" } },
+      ],
+      edges: [{ id: "e1", source: "c1", target: "m1" }],
+    } as never)
+    score(failingChallenge)
+    expect(screen.getByTestId("observability-explainer")).toHaveTextContent(/How monitoring paid off/)
+    expect(screen.getByTestId("observability-explainer")).toHaveTextContent(/per-wire/)
+  })
+
+  it("absent when the run had no failure events", () => {
+    score(challenge)
+    expect(screen.queryByTestId("observability-explainer")).toBeNull()
+  })
+})

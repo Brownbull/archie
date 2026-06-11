@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { OBS_DETECT_DELAY_S, OBS_RESIDUAL_BLAST } from "@/lib/constants"
 import { useSimulationStore } from "@/stores/simulationStore"
 import { useUiStore } from "@/stores/uiStore"
 import { useUserProgressStore, type XpAwardResult } from "@/stores/userProgressStore"
@@ -408,6 +409,13 @@ export function ChallengeResultsModal() {
           )}
         </div>
 
+        {/* Observability explainer (Plan-2 P5, D100 — feedback line 75 "I don't get why changing the
+            observability provider solves it"): when the run had authored failures, state the engine's
+            actual mechanic where the player reads the outcome. */}
+        {(challenge.scheduledEvents?.some((e) => e.type.includes("failure") || e.type.includes("outage")) ?? false) && (
+          <ObservabilityExplainer />
+        )}
+
         {/* Resilience extras (P4-S7, D94): this 3★ build also survived authored failure conditions. */}
         {resilienceClears && resilienceClears.length > 0 && (
           <div data-testid="resilience-clears" className="rounded-lg border border-violet-500/40 bg-violet-500/10 p-3">
@@ -480,5 +488,41 @@ export function ChallengeResultsModal() {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** Plan-2 P5 (D100): the WHY behind monitoring, said at the moment of the outcome. Coverage is
+ *  per-wire (engine EN7: a monitor shrinks blast only for tiers wired to it), so the copy names
+ *  that nuance instead of "add monitoring". */
+function ObservabilityExplainer() {
+  const nodes = useArchitectureStore((s) => s.nodes)
+  const edges = useArchitectureStore((s) => s.edges)
+  const monitorIds = useMemo(
+    () => new Set(nodes.filter((n) => n.data.componentCategory === "monitoring").map((n) => n.id)),
+    [nodes],
+  )
+  const wired = useMemo(
+    () => edges.some((e) => monitorIds.has(e.source) || monitorIds.has(e.target)),
+    [edges, monitorIds],
+  )
+  const residualPct = Math.round(OBS_RESIDUAL_BLAST * 100)
+  return (
+    <div data-testid="observability-explainer" className="rounded-lg border border-sky-500/30 bg-sky-500/5 px-3 py-2 text-[0.6875rem] leading-snug text-sky-200/90">
+      {monitorIds.size > 0 && wired ? (
+        <>
+          <span className="font-semibold text-sky-200">How monitoring paid off:</span> a watched failure runs
+          full-blast only until detection (~{OBS_DETECT_DELAY_S}s); then traffic sheds onto healthy capacity and
+          only {residualPct}% of the damage remains. Coverage is per-wire — a monitor watches the tiers it's
+          connected to, not the whole canvas.
+        </>
+      ) : (
+        <>
+          <span className="font-semibold text-sky-200">Failures ran unwatched:</span> without a wired monitoring
+          block each failure stays full-blast for its whole duration. Monitoring doesn't prevent it — it cuts
+          detection to ~{OBS_DETECT_DELAY_S}s, after which only {residualPct}% of the damage remains on the
+          tiers it's wired to.
+        </>
+      )}
+    </div>
   )
 }

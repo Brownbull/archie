@@ -1552,3 +1552,8 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 
 **Inventory findings:** (1) score clickability + deep-links already shipped in Fluidity (D80/P1-T4) — the missing piece is the TRACE (which components feed the number); (2) complexity is already the "Operational Simplicity" category — visible, no stat-bar work; (3) the CTA set post-D98 has one surface per job — documented, no kills. **Delivery:** Contributors section in CategoryInfoPopup (per-node category sub-scores, worst-first, lowest-metric attribution, "what moves it" line) — pure presentation over computedMetrics; design doc docs/gabe/design/score-trace.md.
 **Status:** active
+
+## D100 — Plan-2 Phase 5 design lock: catalog polish & explainers (2026-06-11)
+
+**Scope:** (a) icon coverage audit, both modes, deterministic-fallback fixes; (b) observability explainer in the results surface — the engine's own mechanic (full blast until OBS detection delay, then (1/az)×severity) stated where the player sees the outcome (feedback line 75); (c) D18 closure: pool-exhaustion quest "The Pool Runs Dry" (T2 aiml, brownfield seed pinning llm-gateway single-model ×2 — concurrency_limit 150 binds at the authored demand; both escapes are real lessons: scale out the pools, or re-tier to a bigger pool). Variant limits were ALREADY authored — only the challenge was missing; existing 5 LLM quests untouched → golden additive-only; (d) vendor-unlock progression design doc, research only.
+**Status:** active

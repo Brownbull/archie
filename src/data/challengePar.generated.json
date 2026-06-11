@@ -79,6 +79,10 @@
     "cost": 158,
     "nodes": 6
   },
+  "pool-exhaustion": {
+    "cost": 170,
+    "nodes": 3
+  },
   "rate-limit": {
     "cost": 85,
     "nodes": 5
