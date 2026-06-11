@@ -39,3 +39,10 @@ available_blocks: [compute, relational-db, cache, traffic-source]
 grants: [cache]
 rewards:
   xp: 200
+
+# Plan-2 P2 (D97): Startup Stack chain, stage 3 (data branch) — your database-backed build,
+# grown again: the hot reads move in front of the store.
+chain:
+  id: startup-stack
+  stage: 3
+  continues_from: add-a-database

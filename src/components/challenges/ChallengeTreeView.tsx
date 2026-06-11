@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { Lock, Star, Gift, Scroll, AlertCircle, CheckCircle2, Hammer, Wrench } from "lucide-react"
+import { Lock, Star, Gift, Scroll, AlertCircle, CheckCircle2, Hammer, Wrench, Link2 } from "lucide-react"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
@@ -139,6 +139,9 @@ function TreeEdges({ positions }: { positions: NodePos[] }) {
           if (!from) return null
           const isLocked = to.node.status === "locked"
           const isDone = from.node.status === "completed" && to.node.status !== "locked"
+          // Plan-2 P2 (D97): a chain-member edge (the BUILD-parent link, continues_from) draws in
+          // the chain blue, heavier and solid — the progression is visible in the tree itself.
+          const isChainEdge = to.node.challenge.chain?.continuesFrom === reqId
           const edgeTrackColor = TRACK_COLORS[to.node.challenge.track ?? ""] ?? "#4a9eff"
           const x1 = from.x, y1 = from.y + NODE_R
           const x2 = to.x, y2 = to.y - NODE_R
@@ -148,10 +151,12 @@ function TreeEdges({ positions }: { positions: NodePos[] }) {
             : `M${x1},${y1} C${x1},${my} ${x2},${my} ${x2},${y2}`
           return (
             <path key={`${reqId}->${to.node.challenge.id}`} d={d} fill="none"
-              stroke={isDone ? edgeTrackColor : isLocked ? "#4a5468" : "#7184a6"}
-              strokeWidth={isDone ? 2 : 1.75} opacity={isDone ? 0.9 : isLocked ? 0.5 : 0.72}
-              strokeDasharray={isLocked ? "5 4" : undefined}
-              filter={isDone ? "url(#gl-a)" : undefined} />
+              data-testid={isChainEdge ? `chain-edge-${reqId}-${to.node.challenge.id}` : undefined}
+              stroke={isChainEdge ? "#4a9eff" : isDone ? edgeTrackColor : isLocked ? "#4a5468" : "#7184a6"}
+              strokeWidth={isChainEdge ? 3 : isDone ? 2 : 1.75}
+              opacity={isChainEdge ? (isLocked ? 0.55 : 0.95) : isDone ? 0.9 : isLocked ? 0.5 : 0.72}
+              strokeDasharray={isLocked && !isChainEdge ? "5 4" : undefined}
+              filter={isDone || isChainEdge ? "url(#gl-a)" : undefined} />
           )
         }),
       )}
@@ -174,11 +179,13 @@ function TierSeparators({ bands, width }: { bands: TierBand[]; width: number }) 
   )
 }
 
-function TreeNode({ pos, selected, bestStars, breaksCollected, onClick }: {
+function TreeNode({ pos, selected, bestStars, breaksCollected, chainBadge, onClick }: {
   pos: NodePos; selected: boolean; bestStars: number;
   /** Collected break-dials for this quest (0–4), or null when the quest has no authored traffic
    *  to break (legacy curve-only) — null hides the extra-challenge corner badge entirely. */
   breaksCollected: number | null;
+  /** Plan-2 P2 (D97): chain membership — stage/max for the top-left badge; null = not a member. */
+  chainBadge: { stage: number; max: number } | null;
   onClick: () => void
 }) {
   const c = pos.node.challenge
@@ -241,6 +248,28 @@ function TreeNode({ pos, selected, bestStars, breaksCollected, onClick }: {
       <text x={pos.x} y={pos.y + NODE_R + 25} fontSize={9} fill="#6b7280" textAnchor="middle">
         {c.rewards?.xp ?? 0} XP
       </text>
+
+      {/* Chain stage badge — top-left (Plan-2 P2, D97): the progression is visible on the node,
+          at every state, so a chain can be discovered from the tree instead of the detail panel. */}
+      {chainBadge && (
+        <g data-testid={`chain-badge-${c.id}`} transform={`translate(${pos.x - NODE_R - 16}, ${pos.y - NODE_R - 12})`} opacity={isLocked ? 0.45 : 1}>
+          <title>{`Chain quest — stage ${chainBadge.stage} of ${chainBadge.max}: your build carries forward between stages`}</title>
+          <rect x={0} y={0} width={34} height={16} rx={8} fill="#080c12" stroke="#4a9eff" strokeWidth={1.2} />
+          <Link2 x={3} y={3} width={10} height={10} color="#4a9eff" />
+          <text x={22} y={11.5} fontSize={8} fontWeight={800} fill="#4a9eff" textAnchor="middle">{chainBadge.stage}/{chainBadge.max}</text>
+        </g>
+      )}
+
+      {/* Resilience-extra shield — bottom-right (Plan-2 P2, D97): "there is an additional
+          challenge here" BEFORE you start (feedback line 51); the hammer badge above stays
+          completed-only because it shows PROGRESS, not existence. */}
+      {(c.resilienceConditions?.length ?? 0) > 0 && (
+        <g data-testid={`resilience-marker-${c.id}`} transform={`translate(${pos.x + NODE_R - 4}, ${pos.y + NODE_R * 0.3})`} opacity={isLocked ? 0.35 : 1}>
+          <title>{`Resilience extra: re-earn 3★ while surviving ${c.resilienceConditions!.length} authored Test condition${c.resilienceConditions!.length === 1 ? "" : "s"} (+1 Expert each)`}</title>
+          <circle cx={9} cy={9} r={9.5} fill="#080c12" stroke="#8b5cf6" strokeWidth={1.4} />
+          <ShieldCheck x={3.5} y={3.5} width={11} height={11} color="#a78bfa" />
+        </g>
+      )}
 
       {/* Extra-challenge corner badge — top-right (P4-S6, D94): a completed quest with authored
           traffic carries the break-it extras; the badge shows collection progress (N/4 dials).
@@ -420,14 +449,15 @@ function QuestDetailPanel({ node, bestStars, breaksRecord, clearsRecord, onStart
         {/* Extra challenges (P4-S6, D94): the break-it extras on a completed quest with authored
             traffic — per-dial collection state + the expert payout. S7's resilience conditions will
             extend this same section. */}
-        {node.status === "completed" && ((c.trafficSources?.length ?? 0) > 0 || (c.resilienceConditions?.length ?? 0) > 0) && (
+        {node.status !== "locked" && ((c.trafficSources?.length ?? 0) > 0 || (c.resilienceConditions?.length ?? 0) > 0) && (
           <div data-testid="quest-extra-challenges" className="rounded border border-orange-500/30 bg-orange-500/5 p-2.5">
             <div className="flex items-center gap-1.5 text-[0.6rem] font-bold uppercase tracking-wider text-orange-400">
               <Hammer className="h-3 w-3" /> Extra challenges
             </div>
             {(c.trafficSources?.length ?? 0) > 0 && (<>
             <p className="mt-1 text-[0.625rem] leading-snug text-[#d0c8b8]/80">
-              Replay, hold 3★, then break your own build — ONE traffic dial at a time. Each dial that
+              {node.status === "completed" ? "Replay, hold 3★, then break" : "After you 3★ this quest: break"} your
+              own build — ONE traffic dial at a time. Each dial that
               fells it pays <span className="font-semibold text-orange-300">1 Expert</span>.
             </p>
             <div className="mt-1.5 flex flex-wrap gap-1">
@@ -495,6 +525,14 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const totalXp = Object.values(useUserProgressStore.getState().trackXp).reduce((s, v) => s + v, 0)
   const tree = useMemo(() => resolveTechTree(challenges, completedChallenges, undefined, totalXp), [challenges, completedChallenges, totalXp])
+  // Plan-2 P2 (D97): per-chain max stage, for the node badges.
+  const chainMax = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const c of challenges) {
+      if (c.chain) m.set(c.chain.id, Math.max(m.get(c.chain.id) ?? 0, c.chain.stage))
+    }
+    return m
+  }, [challenges])
   const layout = useMemo(() => layoutTree(tree.ordered), [tree.ordered])
   const selectedNode = selectedId ? tree.nodes.get(selectedId) : null
 
@@ -557,6 +595,9 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
                   bestStars={bestStars[pos.node.challenge.id] ?? 0}
                   breaksCollected={(pos.node.challenge.trafficSources?.length ?? 0) > 0
                     ? Object.keys(breaksByChallenge[pos.node.challenge.id] ?? {}).length
+                    : null}
+                  chainBadge={pos.node.challenge.chain
+                    ? { stage: pos.node.challenge.chain.stage, max: chainMax.get(pos.node.challenge.chain.id) ?? pos.node.challenge.chain.stage }
                     : null}
                   onClick={() => setSelectedId(pos.node.challenge.id)} />
               ))}

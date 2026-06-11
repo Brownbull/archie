@@ -34,3 +34,8 @@ available_blocks: [compute, traffic-source, dns]
 grants: [dns]
 rewards:
   xp: 100
+
+# Plan-2 P2 (D97): Edge Line chain, stage 1 — the root of the edge progression.
+chain:
+  id: edge-line
+  stage: 1

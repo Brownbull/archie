@@ -1536,3 +1536,8 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 **Supersedes:** D90's clause 2 (PAL gaps accepted). D90's clause 1 (REQ hard gate) stands.
 **Status:** active
 **Review trigger:** tree visual density after +47 edges (Phase 2's chain visualization pass is the natural checkpoint).
+
+## D97 — Plan-2 Phase 2 design lock: chain & extras legibility (2026-06-11)
+
+**Scope:** (1) TREE chain visualization — chain-member edges (target.chain.continuesFrom === source) drawn in the chain blue (#4a9eff), heavier + solid; stage badge (link glyph, "stage/max") top-left on member nodes at all states. (2) Resilience-extra SHIELD marker (violet, bottom-right) at ALL states — feedback line 51's "there is an additional challenge here" before starting; the hammer badge stays completed-only (it's progress, not existence). (3) Detail-panel extras section widens to non-locked states with "after 3★" framing. (4) Two retrofit chains, ZERO new requires edges: startup-stack (first-service → {add-a-database → cache-the-hot-path} fork {scale-out}) and edge-line (dns-routing → edge-balance → edge-delivery). scale-out's brownfield seed becomes the carry-forward FALLBACK — the lone-box fiction IS your first-service build. Serves as D96's tree-density checkpoint.
+**Status:** active

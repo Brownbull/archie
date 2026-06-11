@@ -32,3 +32,9 @@ available_blocks: [traffic-source, compute]
 grants: []
 rewards:
   xp: 100
+
+# Plan-2 P2 (D97): Startup Stack chain, stage 1 — the root. The chain FORKS here: add-a-database
+# grows this build toward data; scale-out grows it toward load. Your 3★ build carries forward.
+chain:
+  id: startup-stack
+  stage: 1

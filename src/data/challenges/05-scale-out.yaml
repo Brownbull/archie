@@ -55,3 +55,11 @@ initial_architecture:
 # it off the table makes the scale-OUT lesson (spread the load) the only way through. The reference
 # build uses node-express (the compute default), so solvability is unaffected — harness-pinned.
 restricted_vendors: [python-fastapi]
+
+# Plan-2 P2 (D97): Startup Stack chain, stage 2 (SCALE branch of the root fork) — the same lone
+# box from first-service, now drowning. The authored brownfield seed above is the fallback when
+# no carried build exists; otherwise the box you inherit IS the build you 3★'d at stage 1.
+chain:
+  id: startup-stack
+  stage: 2
+  continues_from: first-service

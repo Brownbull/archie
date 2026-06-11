@@ -39,3 +39,9 @@ available_blocks: [compute, traffic-source, dns, load-balancer]
 grants: []
 rewards:
   xp: 260
+
+# Plan-2 P2 (D97): Edge Line chain, stage 2 — your DNS-fronted build grows a balanced edge.
+chain:
+  id: edge-line
+  stage: 2
+  continues_from: dns-routing

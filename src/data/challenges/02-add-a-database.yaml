@@ -35,3 +35,10 @@ available_blocks: [compute, relational-db, traffic-source]
 grants: [relational-db]
 rewards:
   xp: 100
+
+# Plan-2 P2 (D97): Startup Stack chain, stage 2 (DATA branch of the root fork) — grows your
+# first-service build by giving it real persistence.
+chain:
+  id: startup-stack
+  stage: 2
+  continues_from: first-service

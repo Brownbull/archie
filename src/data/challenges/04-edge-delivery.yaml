@@ -42,3 +42,10 @@ rewards:
 # P4-S7 (D94): resilience extra — survive a 10x spike with a 3★ build (+1 expert). The lean
 # reference breaks under it; a hardened (redundant) build clears it — engine-probed, non-trivial.
 resilience_conditions: [failure-traffic-spike]
+
+# Plan-2 P2 (D97): Edge Line chain, stage 3 — the balanced edge grows delivery (CDN). The
+# brownfield seed above stays as the no-carried-build fallback.
+chain:
+  id: edge-line
+  stage: 3
+  continues_from: edge-balance

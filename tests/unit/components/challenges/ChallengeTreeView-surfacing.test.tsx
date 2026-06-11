@@ -79,11 +79,11 @@ describe("ChallengeTreeView — quest-log surfacing (P4-S6 / D94)", () => {
     expect(screen.getByTestId("extra-break-origin")).not.toHaveAttribute("data-collected")
   })
 
-  it("no extras section on an available (not yet completed) quest", () => {
+  it("an AVAILABLE quest shows the extras section with after-3★ framing (Plan-2 P2 / D97)", () => {
     const c = aBreakable()
     render(<ChallengeTreeView open onOpenChange={() => {}} />)
     fireEvent.click(screen.getByTestId(`tree-node-${c.id}`))
-    expect(screen.queryByTestId("quest-extra-challenges")).toBeNull()
+    expect(screen.getByTestId("quest-extra-challenges")).toHaveTextContent(/After you 3★ this quest/)
   })
 })
 
@@ -127,5 +127,30 @@ describe("chain panel in the quest detail (P5-S5 / D95)", () => {
     expect(chain).toHaveTextContent(/stage 2 of 3/)
     expect(chain).toHaveTextContent(/Grows your .*Pipeline.* build/)
     expect(screen.getByTestId("quest-chain-forks")).toHaveTextContent(/Forks to:/)
+  })
+})
+
+describe("chain & extras tree legibility (Plan-2 P2 / D97)", () => {
+  it("chain members wear the stage badge at every state; non-members don't", () => {
+    render(<ChallengeTreeView open onOpenChange={() => {}} />)
+    expect(screen.getByTestId("chain-badge-first-service")).toHaveTextContent("1/3")
+    expect(screen.getByTestId("chain-badge-scale-out")).toHaveTextContent("2/3")
+    expect(screen.getByTestId("chain-badge-event-stream")).toHaveTextContent("2/3")
+    expect(screen.queryByTestId("chain-badge-observe-baseline")).toBeNull()
+  })
+
+  it("chain-member edges are drawn distinctly (the continues_from link)", () => {
+    render(<ChallengeTreeView open onOpenChange={() => {}} />)
+    expect(screen.getByTestId("chain-edge-first-service-add-a-database")).toBeInTheDocument()
+    expect(screen.getByTestId("chain-edge-first-service-scale-out")).toBeInTheDocument() // the fork
+    expect(screen.getByTestId("chain-edge-dns-routing-edge-balance")).toBeInTheDocument()
+  })
+
+  it("resilience-extra quests wear the shield marker before completion", () => {
+    render(<ChallengeTreeView open onOpenChange={() => {}} />)
+    for (const id of ["edge-delivery", "edge-resilience", "follow-the-sun"]) {
+      expect(screen.getByTestId(`resilience-marker-${id}`)).toBeInTheDocument()
+    }
+    expect(screen.queryByTestId("resilience-marker-first-service")).toBeNull()
   })
 })
