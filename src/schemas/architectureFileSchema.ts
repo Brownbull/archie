@@ -229,7 +229,7 @@ export const ArchitectureFileSchema = z.object({
 }).strict()
 
 // YAML input variant: accepts snake_case fields and transforms to camelCase
-const ArchitectureFileNodeYamlSchema = z.object({
+export const ArchitectureFileNodeYamlSchema = z.object({
   id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   component_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   config_variant_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).optional(),
@@ -256,7 +256,7 @@ const ArchitectureFileNodeYamlSchema = z.object({
   dataContext: data.data_context,
 }))
 
-const ArchitectureFileEdgeYamlSchema = z.object({
+export const ArchitectureFileEdgeYamlSchema = z.object({
   id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   source_node_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),
   target_node_id: z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH),

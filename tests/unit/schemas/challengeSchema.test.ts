@@ -199,3 +199,46 @@ describe("ChallengeYamlSchema traffic_sources (ISAPivot)", () => {
     expect(ChallengeYamlSchema.safeParse(noCurve).success).toBe(false)
   })
 })
+
+describe("initial_architecture — brownfield starts (P5-S1 / D95)", () => {
+  const seed = {
+    nodes: [
+      { id: "n-traffic", component_id: "web-users", config_variant_id: "moderate", position: { x: 0, y: 0 }, replicas: 1, traffic_rps: 800 },
+      { id: "n-compute", component_id: "fastapi", config_variant_id: "small", position: { x: 220, y: 0 }, replicas: 2 },
+    ],
+    edges: [{ id: "e0", source_node_id: "n-traffic", target_node_id: "n-compute" }],
+  }
+
+  it("parses a valid brownfield seed and transforms to camelCase", () => {
+    const r = ChallengeYamlSchema.safeParse({ ...valid, initial_architecture: seed })
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect(r.data.initialArchitecture?.nodes).toHaveLength(2)
+    expect(r.data.initialArchitecture?.nodes[0]).toMatchObject({ id: "n-traffic", componentId: "web-users", trafficRps: 800 })
+    expect(r.data.initialArchitecture?.edges[0]).toMatchObject({ sourceNodeId: "n-traffic", targetNodeId: "n-compute" })
+  })
+
+  it("absent ⇒ no initialArchitecture key (the other 60+ quests are byte-identical)", () => {
+    const r = ChallengeYamlSchema.safeParse(valid)
+    expect(r.success).toBe(true)
+    if (!r.success) return
+    expect("initialArchitecture" in r.data).toBe(false)
+  })
+
+  it("rejects duplicate node ids", () => {
+    const dup = { ...seed, nodes: [seed.nodes[0], { ...seed.nodes[1], id: "n-traffic" }], edges: [] }
+    const r = ChallengeYamlSchema.safeParse({ ...valid, initial_architecture: dup })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects an edge referencing a node id not in the seed", () => {
+    const dangling = { ...seed, edges: [{ id: "e0", source_node_id: "n-traffic", target_node_id: "n-ghost" }] }
+    const r = ChallengeYamlSchema.safeParse({ ...valid, initial_architecture: dangling })
+    expect(r.success).toBe(false)
+  })
+
+  it("rejects unknown keys (strict) and an empty node list", () => {
+    expect(ChallengeYamlSchema.safeParse({ ...valid, initial_architecture: { ...seed, bogus: 1 } }).success).toBe(false)
+    expect(ChallengeYamlSchema.safeParse({ ...valid, initial_architecture: { nodes: [], edges: [] } }).success).toBe(false)
+  })
+})

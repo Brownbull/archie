@@ -6,6 +6,7 @@ import { sanitizeDisplayString } from "@/lib/sanitize"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 import { isKnownTrackId, MIN_CHALLENGE_TIER, MAX_CHALLENGE_TIER } from "@/lib/challengeTracks"
 import { CHALLENGE_TRAFFIC_SOURCE_TYPES } from "@/lib/challengeTypes"
+import { ArchitectureFileNodeYamlSchema, ArchitectureFileEdgeYamlSchema } from "@/schemas/architectureFileSchema"
 
 const CHALLENGE_BRIEF_MAX = 600
 const CHALLENGE_HINT_MAX = 300
@@ -177,6 +178,14 @@ export const ChallengeYamlSchema = z
     // preset clears the extra (+1 expert, once per condition). Optional + never defaulted at this
     // layer — absent ⇒ undefined ⇒ the other 60 quests are byte-identical.
     resilience_conditions: z.array(z.string().min(1).max(MAX_SCHEMA_STRING_LENGTH).regex(/^failure-[a-z0-9-]+$/)).max(6).optional(),
+    // P5-S1 (D95): brownfield start — the quest seeds an EXISTING architecture the player must grow
+    // or fix ("Stream the Data" style), in the same node/edge shape the Import flow accepts. Capped
+    // at 40 nodes so the inherited build always leaves room to grow within the 50-node canvas.
+    // Optional + never defaulted — absent ⇒ traffic-only seeding, byte-identical for all priors.
+    initial_architecture: z.object({
+      nodes: z.array(ArchitectureFileNodeYamlSchema).min(1).max(40),
+      edges: z.array(ArchitectureFileEdgeYamlSchema).max(120),
+    }).strict().optional(),
   })
   .strict()
   .superRefine((d, ctx) => {
@@ -226,6 +235,22 @@ export const ChallengeYamlSchema = z
         })
       }
     }
+    // P5-S1: brownfield integrity — node ids unique, every edge endpoint references a seeded node.
+    // (Component-id existence is a data concern checked by the harness, not the schema.)
+    if (d.initial_architecture) {
+      const ids = new Set<string>()
+      d.initial_architecture.nodes.forEach((n, i) => {
+        if (ids.has(n.id)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["initial_architecture", "nodes", i, "id"], message: `duplicate initial_architecture node id "${n.id}"` })
+        }
+        ids.add(n.id)
+      })
+      d.initial_architecture.edges.forEach((e, i) => {
+        if (!ids.has(e.sourceNodeId) || !ids.has(e.targetNodeId)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["initial_architecture", "edges", i], message: `edge "${e.id}" references a node id not in initial_architecture` })
+        }
+      })
+    }
   })
   .transform((d) => ({
     schemaVersion: d.schema_version,
@@ -266,4 +291,5 @@ export const ChallengeYamlSchema = z
     ...(d.cross_region_rtt_ms !== undefined ? { crossRegionRttMs: d.cross_region_rtt_ms } : {}),
     ...(d.consistency_target_ms !== undefined ? { consistencyTargetMs: d.consistency_target_ms } : {}),
     ...(d.resilience_conditions !== undefined ? { resilienceConditions: d.resilience_conditions } : {}),
+    ...(d.initial_architecture !== undefined ? { initialArchitecture: d.initial_architecture } : {}),
   }))

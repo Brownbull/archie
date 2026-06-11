@@ -18,7 +18,7 @@ import { useSimulationStore } from "@/stores/simulationStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
-import { makeChallengeTrafficNodes } from "@/services/trafficSourceInjection"
+import { makeChallengeCanvas } from "@/services/challengeCanvasSeed"
 import { useUiStore } from "@/stores/uiStore"
 import { resolveTechTree } from "@/engine/techTree"
 import { rankForXp, relativeLevelForTier, RELATIVE_LEVEL_COLORS, CHALLENGE_TRACKS, type RelativeLevel } from "@/lib/challengeTracks"
@@ -91,8 +91,10 @@ export function ChallengeSelector({ hideTrigger = false }: { hideTrigger?: boole
   const startChallenge = (c: Challenge) => {
     try {
       useSimulationStore.getState().reset()
-      // ISAPivot: seed one typed source per authored trafficSources entry (else the curve-peak source).
-      useArchitectureStore.getState().loadArchitecture(makeChallengeTrafficNodes(c), [])
+      // Seed the quest canvas: typed traffic nodes (ISAPivot), or the full inherited
+      // architecture when the quest authors a brownfield start (P5-S1, D95).
+      const seeded = makeChallengeCanvas(c)
+      useArchitectureStore.getState().loadArchitecture(seeded.nodes, seeded.edges)
     } catch {
       // ignore
     }

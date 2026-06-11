@@ -1,5 +1,6 @@
 import type { TrafficCurve, ScheduledEvent } from "@/lib/simulationTypes"
 import type { TrafficKind } from "@/engine/trafficPatterns"
+import type { ArchitectureFile } from "@/schemas/architectureFileSchema"
 
 export type ChallengeDifficulty = "beginner" | "intermediate" | "advanced"
 
@@ -169,6 +170,13 @@ export interface Challenge {
    *  3★ build whose metric probe shows NO new bottleneck under the preset clears the extra (+1
    *  expert, once per condition per quest). Absent ⇒ no extras (all pre-S7 quests). Never scored. */
   resilienceConditions?: string[]
+  /** Brownfield start (P5-S1, D95): an EXISTING architecture the quest seeds on start — the player
+   *  inherits and grows/fixes it ("Stream the Data" style). Same node/edge shape the Import flow
+   *  accepts (ArchitectureFile, camelCase post-transform). Absent ⇒ traffic-only seeding. */
+  initialArchitecture?: {
+    nodes: ArchitectureFile["nodes"]
+    edges: ArchitectureFile["edges"]
+  }
   /**
    * Runtime-only provenance (D45, NOT in the YAML schema). `builtin` is stamped at the build-time
    * glob (the only path that can produce it); `user` is stamped at loadChallengeFromYaml (runtime
