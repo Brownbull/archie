@@ -60,3 +60,26 @@ describe("TrafficResetButton (2026-06-11 playtest)", () => {
     expect(screen.queryByTestId("traffic-reset")).toBeNull()
   })
 })
+
+describe("rps free input (D101 UI gap, 2026-06-11)", () => {
+  it("the readout opens an input; Enter commits an exact value", async () => {
+    const { TrafficNodeControls } = await import("@/components/canvas/TrafficNodeControls")
+    const setRps = vi.fn()
+    useArchitectureStore.setState({ setNodeTrafficRps: setRps } as never)
+    render(<TrafficNodeControls nodeId="t1" data={{ componentCategory: "traffic", trafficRps: 120, trafficKind: "realistic" } as never} />)
+    fireEvent.click(screen.getByTestId("rps-stepper-value"))
+    const input = screen.getByTestId("rps-input")
+    fireEvent.keyDown(input, { key: "Enter", target: { value: "1100" } })
+    expect(setRps).toHaveBeenCalledWith("t1", 1100)
+  })
+
+  it("garbage and out-of-range values never commit", async () => {
+    const { TrafficNodeControls } = await import("@/components/canvas/TrafficNodeControls")
+    const setRps = vi.fn()
+    useArchitectureStore.setState({ setNodeTrafficRps: setRps } as never)
+    render(<TrafficNodeControls nodeId="t1" data={{ componentCategory: "traffic", trafficRps: 120, trafficKind: "realistic" } as never} />)
+    fireEvent.click(screen.getByTestId("rps-stepper-value"))
+    fireEvent.keyDown(screen.getByTestId("rps-input"), { key: "Enter", target: { value: "-5" } })
+    expect(setRps).not.toHaveBeenCalled()
+  })
+})

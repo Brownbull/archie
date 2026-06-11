@@ -1,4 +1,4 @@
-import { memo } from "react"
+import { memo, useState } from "react"
 import { Lock } from "lucide-react"
 import {
   Select,
@@ -67,6 +67,15 @@ function TrafficNodeControlsBase({ nodeId, data }: TrafficNodeControlsProps) {
   const locked = useChallengeStore((s) => isChallengeMode(s) && (s.bestStars[s.activeChallenge?.id ?? ""] ?? 0) < 3)
 
   const rps = data.trafficRps ?? FIRST_STEP
+  // 2026-06-11 (D101 UI gap): the stepper's floor is 3k — far above small quests' failure
+  // boundaries (first-service: ≈1055, pays ≤2110). The readout doubles as a free input so any
+  // exact value is reachable; the steppers stay for coarse jumps.
+  const [editing, setEditing] = useState(false)
+  const commitRps = (raw: string) => {
+    setEditing(false)
+    const v = Math.round(Number(raw))
+    if (Number.isFinite(v) && v >= 1 && v <= LAST_STEP && v !== rps) setNodeTrafficRps(nodeId, v)
+  }
   const kind = (data.trafficKind ?? "steady") as TrafficKind
   const workload = (data.trafficWorkload ?? "mixed") as ChallengeTrafficWorkload
   const origin = (data.trafficOrigin ?? "one-region") as ChallengeTrafficOrigin
@@ -104,9 +113,39 @@ function TrafficNodeControlsBase({ nodeId, data }: TrafficNodeControlsProps) {
           >
             −
           </button>
-          <span data-testid="rps-stepper-value" className="flex-1 whitespace-nowrap text-center text-[0.6875rem] font-semibold text-text-primary">
+          {editing ? (
+            <input
+              data-testid="rps-input"
+              type="number"
+              min={1}
+              max={LAST_STEP}
+              defaultValue={rps}
+              autoFocus
+              onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onKeyDown={(e) => {
+                e.stopPropagation()
+                if (e.key === "Enter") commitRps((e.target as HTMLInputElement).value)
+                if (e.key === "Escape") setEditing(false)
+              }}
+              onBlur={(e) => commitRps(e.target.value)}
+              className="nodrag h-full w-full flex-1 bg-transparent text-center text-[0.6875rem] font-semibold text-text-primary outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+          ) : (
+          <button
+            type="button"
+            data-testid="rps-stepper-value"
+            title="Click to type an exact peak RPS — the break-it boundary hunt wants precise values"
+            onClick={(e) => {
+              e.stopPropagation()
+              setEditing(true)
+            }}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="nodrag flex-1 whitespace-nowrap text-center text-[0.6875rem] font-semibold text-text-primary hover:text-blue-300"
+          >
             {formatRpsCompact(rps)} peak
-          </span>
+          </button>
+          )}
           <button
             type="button"
             data-testid="rps-increment"
