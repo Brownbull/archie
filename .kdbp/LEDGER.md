@@ -5067,3 +5067,9 @@ DEFERRED: none
 CHECKS: lint ✅ (0 new err) · types ✅ (tsc -b) · tests ✅ (quick 4977/4977 + golden byte-identity + 62/62 3★ + 24 modal + 7 hook + 5 launch) · E2E ✅ (full journey 43.8s, 3 evidence shots) · shape ✅ (max 464 lines) · structure ✅
 EVIDENCE: test-results/feedback-phase4/01-03*.png — production-ai 3★ invite → RPS 2k→12k break (+1 Expert) → reset → workload break. Deviation magnitudes engine-probed (single rps step HOLDS; 12k + write fail) — the boundary is real, not scripted.
 NOTE: launch seam = post-3★ ONLY (locked path byte-identical); fixtures gained traffic_kind/origin so imported replays diff cleanly; unlocked seeder zeroes the expert economy each run (journey idempotent).
+
+## 2026-06-10 19:55 — PUSH dev -> main
+PR: — (direct trunk push, established flow)
+CI: Deploy Production ✅ success; E2E unlocked/desktop in_progress (non-gating; journey green locally)
+PROMOTION: N/A (single-env production)
+DEPLOYMENTS: P168 (added row to .kdbp/DEPLOYMENTS.md)
