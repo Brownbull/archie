@@ -5284,3 +5284,11 @@ VERDICT: APPROVE · FINDINGS: 1L (raw metric slugs → playtest) · COVERAGE: HI
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P174
+
+## 2026-06-11 — [Plan-2 P5] feat(challenges): catalog polish & explainers — D18 closed (D100)
+FINDINGS: 1 authoring error caught by the schema gate (ai-ml is not a category — llm-gateway IS compute); review APPROVE 96/100, 1 LOW deferred-to-playtest (pool-exhaustion hint-3 names both escapes — may be one beat too generous for intermediate)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5095/5095; seeded-fails + reference-3★ both first try; golden 0-deletion; par regenerated) · icon lockstep 114+27 verified
+NOTE: D18's hard part had quietly shipped (variant limits live since the reseed) — the deferred item was 90% done before this phase touched it. PENDING: D18 resolved.
+
+## 2026-06-11 — PHASE 5 REVIEW (Plan-2): Catalog polish & explainers
+VERDICT: APPROVE · FINDINGS: 1L (hint generosity → playtest) · COVERAGE: HIGH · CONFIDENCE: 96/100 · ALIGNMENT: ALIGNED · TICK: ✅
