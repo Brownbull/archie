@@ -4,6 +4,7 @@ import { ExperienceLevelControl } from "@/components/layout/ExperienceLevelContr
 import { AppMenuBar } from "@/components/layout/AppMenuBar"
 import { ModeToggle } from "@/components/layout/ModeToggle"
 import { AccountMenu } from "@/components/layout/AccountMenu"
+import { CurrencyCluster } from "@/components/layout/CurrencyCluster"
 import { IssuesSummary } from "@/components/layout/IssuesSummary"
 import { ResetCanvasDialog } from "@/components/layout/ResetCanvasDialog"
 import { PromptTemplateDialog } from "@/components/import-export/PromptTemplateDialog"
@@ -65,6 +66,7 @@ export function Toolbar() {
 
       <div className="flex items-center gap-2">
         {!(activeChallenge && attemptState !== "idle") && <ExperienceLevelControl />}
+        <CurrencyCluster />
         <IssuesSummary />
         <SettingsMenu />
         <AccountMenu />

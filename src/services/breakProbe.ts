@@ -113,3 +113,72 @@ export function isCategoricalCausal(
     { trafficOrigin: spec.origin }
   return probePasses(withTrafficPatch(nodes, () => restore), edges, c)
 }
+
+/** Per-dial feasibility for the invite chips (D101 follow-up, 2026-06-11). */
+export interface BreakFeasibility {
+  rps: boolean
+  kind: boolean
+  workload: boolean
+  origin: boolean
+  /** The authored-config failure boundary used for the categorical checks (null = none found). */
+  boundary: number | null
+}
+
+const KINDS = ["steady", "realistic", "periodic", "search"] as const
+const WORKLOADS = ["read", "write", "mixed"] as const
+
+/**
+ * Which dials CAN fell THIS build (monotonicity argument): a categorical alternative v is feasible
+ * ⟺ its failure boundary sits BELOW the authored boundary b — equivalently, the deviated config
+ * already fails at a load just under b, where the authored config still passes. So: one boundary
+ * search for the authored config (≤12 sims), then ONE sim per alternative value at 0.97×b
+ * (≤6 sims). rps is feasible whenever a finite authored boundary exists. Single-source only.
+ */
+export function feasibleBreakDials(
+  nodes: readonly ArchieNode[],
+  edges: readonly ArchieEdge[],
+  c: ProbeChallenge,
+  searchCeiling = 1_000_000,
+): BreakFeasibility | null {
+  const authored = c.trafficSources ?? []
+  if (authored.length !== 1) return null
+  const spec = authored[0]
+  // Authored boundary: probe with ALL dials at authored values, scaling only rps.
+  const authoredDials = { trafficKind: spec.kind, trafficWorkload: spec.workload, trafficOrigin: spec.origin }
+  const at = (rps: number) => withTrafficPatch(nodes, () => ({ ...authoredDials, trafficRps: rps }))
+  // No buildable curve (traffic node unresolvable) ⇒ NO feasibility info — never a confident
+  // "nothing can fell this build" on missing data.
+  if (buildTrafficCurveFromSources(at(spec.rps), c.durationSeconds).length === 0) return null
+  let boundary: number | null = null
+  if (!probePasses(at(spec.rps), edges, c)) {
+    boundary = spec.rps
+  } else {
+    let lo = spec.rps
+    let hi = spec.rps
+    while (hi < searchCeiling && probePasses(at(hi * 2), edges, c)) hi *= 2
+    if (hi < searchCeiling) {
+      hi *= 2
+      let guard = 0
+      while (hi - lo > Math.max(5, lo * 0.03) && guard++ < 24) {
+        const mid = Math.round((lo + hi) / 2)
+        if (probePasses(at(mid), edges, c)) lo = mid
+        else hi = mid
+      }
+      boundary = hi
+    }
+  }
+  if (boundary === null) {
+    // The build out-scales the search ceiling — nothing here can fell it.
+    return { rps: false, kind: false, workload: false, origin: false, boundary: null }
+  }
+  const testLoad = Math.max(spec.rps, Math.floor(boundary * 0.97))
+  const failsWith = (patch: Partial<ArchieNode["data"]>) =>
+    !probePasses(withTrafficPatch(nodes, () => ({ ...authoredDials, trafficRps: testLoad, ...patch })), edges, c)
+  return {
+    rps: true,
+    kind: KINDS.some((k) => k !== spec.kind && failsWith({ trafficKind: k })),
+    workload: WORKLOADS.some((w) => w !== spec.workload && failsWith({ trafficWorkload: w })),
+    origin: spec.origin !== "multi-region" && failsWith({ trafficOrigin: "multi-region" }),
+    boundary,
+  }
+}

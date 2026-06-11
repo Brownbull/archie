@@ -1,6 +1,9 @@
+import { useMemo } from "react"
 import { Hammer, Wrench, RotateCcw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUserProgressStore } from "@/stores/userProgressStore"
+import { useArchitectureStore } from "@/stores/architectureStore"
+import { feasibleBreakDials } from "@/services/breakProbe"
 import { remainingBreakAttributes, BREAK_ATTRIBUTES, BREAK_ATTRIBUTE_LABELS } from "@/engine/breakDetection"
 import type { BreakOutcome } from "@/hooks/useBreakCollection"
 import type { Challenge } from "@/lib/challengeTypes"
@@ -25,6 +28,16 @@ interface BreakItPanelProps {
  */
 export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProceed }: BreakItPanelProps) {
   const breaksRecord = useUserProgressStore((s) => s.breaksByChallenge[challenge.id])
+  // Hooks live ABOVE every conditional return (hook-order invariant). The feasibility probe only
+  // actually runs when the INVITE will render (3★, single-source, no outcome): ≤18 engine sims
+  // against the build that just ran — the chips tell the truth about THIS build (D101 follow-up).
+  const willInvite = stars >= 3 && !outcome && (challenge.trafficSources?.length ?? 0) > 0
+    && remainingBreakAttributes(breaksRecord).length > 0
+  const feasibility = useMemo(() => {
+    if (!willInvite || challenge.trafficSources?.length !== 1) return null
+    const { nodes, edges } = useArchitectureStore.getState()
+    return feasibleBreakDials(nodes, edges, challenge)
+  }, [challenge, willInvite])
   if (!challenge.trafficSources?.length) return null
 
   // D101: a failed credit still teaches — overshoot says "find the edge", not-causal says
@@ -106,16 +119,33 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
         difference: raise the load to where the authored setting survives but your change doesn't.
       </p>
       <div className="mt-1.5 flex flex-wrap gap-1">
-        {remaining.map((a) => (
-          <span
-            key={a}
-            data-testid={`break-attr-${a}`}
-            className="rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-[0.625rem] text-orange-200"
-          >
-            {BREAK_ATTRIBUTE_LABELS[a]}
-          </span>
-        ))}
+        {remaining.map((a) => {
+          const infeasible = feasibility !== null && !feasibility[a]
+          return (
+            <span
+              key={a}
+              data-testid={`break-attr-${a}`}
+              data-feasible={feasibility === null ? undefined : !infeasible}
+              title={infeasible ? `This build can't be felled by ${BREAK_ATTRIBUTE_LABELS[a]} — no load makes it the deciding dial` : undefined}
+              className={infeasible
+                ? "rounded-full border border-orange-500/10 bg-orange-500/5 px-2 py-0.5 text-[0.625rem] text-orange-200/30 line-through"
+                : "rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-[0.625rem] text-orange-200"}
+            >
+              {BREAK_ATTRIBUTE_LABELS[a]}
+            </span>
+          )
+        })}
       </div>
+      {feasibility !== null && (
+        <p data-testid="break-feasible-count" className="mt-1 text-[0.625rem] text-orange-300/70">
+          {(() => {
+            const reachable = remaining.filter((a) => feasibility[a]).length
+            return reachable === 0
+              ? "None of the remaining dials can fell THIS build — it out-scales them. (A leaner build breaks more interestingly.)"
+              : `${reachable} of ${remaining.length} remaining dial${remaining.length === 1 ? "" : "s"} can fell this build.`
+          })()}
+        </p>
+      )}
       {/* 2026-06-11 playtest: the invite needs its own CTA — "what do I press next?" Closes back
           to the canvas where the dials are unlocked and Rerun waits in the start slot. */}
       <button

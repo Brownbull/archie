@@ -507,3 +507,16 @@ describe("achieved standing (2026-06-11 playtest)", () => {
     expect(screen.getByTestId("result-stars")).toHaveAttribute("aria-label", "0 of 3 stars")
   })
 })
+
+describe("invite dial feasibility + currency cluster (D101 follow-up)", () => {
+  it("infeasible dials gray out with the truth-telling title; the reachable count renders", async () => {
+    const { BreakItPanel } = await import("@/components/challenges/BreakItPanel")
+    const probe = await import("@/services/breakProbe")
+    vi.spyOn(probe, "feasibleBreakDials").mockReturnValue({ rps: true, kind: false, workload: false, origin: false, boundary: 1055 })
+    const breakable = { ...challenge, trafficSources: [{ type: "web-users", rps: 120, kind: "realistic", workload: "mixed", origin: "one-region" }] } as Challenge
+    render(<BreakItPanel challenge={breakable} stars={3} outcome={null} onResetDials={() => {}} onProceed={() => {}} />)
+    expect(screen.getByTestId("break-attr-rps")).toHaveAttribute("data-feasible", "true")
+    expect(screen.getByTestId("break-attr-kind")).toHaveAttribute("data-feasible", "false")
+    expect(screen.getByTestId("break-feasible-count")).toHaveTextContent("1 of 4 remaining dials can fell this build")
+  })
+})
