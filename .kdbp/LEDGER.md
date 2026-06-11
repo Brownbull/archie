@@ -5261,3 +5261,11 @@ VERDICT: APPROVE · FINDINGS: 2 (0C/0H/0M/2L — #1 fiction-drift deferred to pl
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P172
+
+## 2026-06-11 — [Plan-2 P3] feat(challenges): coach de-escalation (D98, beginner-gated)
+FINDINGS: review APPROVE 97/100 — 1 LOW deferred-to-playtest (diagnostic copy tone is an owner-taste surface), 0 contract breaks (full quick tier proved no suite pinned non-beginner tackle text)
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5084/5084 incl. 6 D98 contract pins) · scored/running/break narration untouched by construction
+TICK: ✅ (Review + Commit)
+
+## 2026-06-11 — PHASE 3 REVIEW (Plan-2): Coach de-escalation
+VERDICT: APPROVE · FINDINGS: 1L (copy tone → playtest) · COVERAGE: HIGH · CONFIDENCE: 97/100 · ALIGNMENT: ALIGNED · TICK: ✅
