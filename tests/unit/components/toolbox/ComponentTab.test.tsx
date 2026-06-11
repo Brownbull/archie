@@ -237,11 +237,11 @@ describe("ComponentTab", () => {
       expect(screen.queryByTestId("challenge-component-guidance")).toBeNull()
     })
 
-    it("shows the guidance banner while a challenge is active", () => {
+    it("NO required-categories banner — it gave the solution away (2026-06-11 playtest)", () => {
       useChallengeStore.setState({ activeChallenge: makeChallenge({ requiredComponents: ["data-storage", "caching"] }) })
       render(<ComponentTab />)
-      expect(screen.getByTestId("challenge-component-guidance")).toBeInTheDocument()
-      // Both blocks still visible — required is guidance, not a restriction.
+      expect(screen.queryByTestId("challenge-component-guidance")).toBeNull()
+      // Blocks still visible — requirements live in the quest panel's REQUIRED checklist only.
       expect(screen.getByTestId("type-block-relational-db")).toBeInTheDocument()
       expect(screen.getByTestId("type-block-cache")).toBeInTheDocument()
     })
@@ -403,7 +403,7 @@ describe("toolbox realism + required-blocks filter (P4-S5 / D94)", () => {
     useChallengeStore.setState({ activeChallenge: makeChallenge({ requiredTypes: ["relational-db"] }) })
     const { unmount } = render(<ComponentTab />)
     expect(screen.getByTestId("required-filter-unlock")).toBeDisabled()
-    expect(screen.getByTestId("required-filter-price")).toHaveTextContent("you have 0")
+    expect(screen.getByTestId("required-filter-price")).toHaveTextContent("Unlock for 1")
     unmount()
     useUserProgressStore.setState({ expertCurrency: 2 })
     render(<ComponentTab />)

@@ -6,7 +6,6 @@ import { useUserProgressStore } from "@/stores/userProgressStore"
 import { hasTrafficSource } from "@/services/trafficSourceInjection"
 import { countPortMismatches } from "@/engine/portCompatibilityChecker"
 import { detectSingleAttributeBreak, remainingBreakAttributes } from "@/engine/breakDetection"
-import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { COMPONENT_TYPES } from "@/lib/componentTypes"
 
 /**
@@ -27,9 +26,7 @@ export interface CoachState {
   detail: string
 }
 
-function categoryLabel(cat: string): string {
-  return COMPONENT_CATEGORIES[cat as ComponentCategoryId]?.label ?? cat
-}
+
 
 /**
  * Derives the active challenge's coaching step from attempt lifecycle + live graph/topology +
@@ -197,88 +194,51 @@ export function useChallengeCoach(): CoachState | null {
     }
 
     // 3. BUILDING / IDLE.
-    const placed = new Set(nodes.map((n) => n.data.componentCategory))
     const orphanCount = topologyIssues.filter((i) => i.issueType === "orphan").length
 
-    // D98 (Plan-2 P3): step-by-step tackle coaching is BEGINNER-ONLY — first-quest UI onboarding.
-    // Intermediate/advanced get compiler-style DIAGNOSTICS: report what's structurally broken
-    // (no load origin, mismatched ports, stranded blocks), never what to build next — the HUD
-    // checklist is the requirements overview; the build plan is the player's job.
-    if (challenge.difficulty !== "beginner") {
-      if (nodes.length > 0 && !hasTrafficSource(nodes)) {
-        return {
-          mode: "tackle",
-          modeLabel: "Check",
-          headline: "No load origin",
-          detail: "The canvas has no traffic source, so the simulation has nothing to drive it with. Quests pre-place one — it may have been deleted.",
-        }
-      }
-      const mismatchCount = countPortMismatches(edges)
-      if (mismatchCount > 0) {
-        return {
-          mode: "tackle",
-          modeLabel: "Check",
-          headline: `${mismatchCount} port mismatch${mismatchCount === 1 ? "" : "es"}`,
-          detail: "⚡-flagged connections join incompatible port types — in a quest they cost the well-formed star. Rewire or remove them.",
-        }
-      }
-      if (orphanCount > 0) {
-        return {
-          mode: "tackle",
-          modeLabel: "Check",
-          headline: "Stranded blocks",
-          detail: `${orphanCount} block${orphanCount === 1 ? " isn't" : "s aren't"} connected to the request path — they won't run and won't bill.`,
-        }
-      }
-      if (nodes.length === 0) {
-        return {
-          mode: "tackle",
-          modeLabel: "Check",
-          headline: "Empty canvas",
-          detail: "Nothing placed yet. The brief and the HUD checklist state what this quest grades — the build is yours.",
-        }
-      }
-      return {
-        mode: "run",
-        modeLabel: "Run it",
-        headline: "No structural issues",
-        detail: "Wiring checks pass. Run the simulation whenever you're ready.",
-      }
-    }
-
-    if (!hasTrafficSource(nodes)) {
+    // D98 (Plan-2 P3) → 2026-06-11 playtest: tackle coaching is GONE everywhere — even on beginner
+    // quests, "Add a Data Storage block" IS the solution (Persist It's whole challenge). The coach
+    // speaks compiler only: report what's structurally broken (no load origin, mismatched ports,
+    // stranded blocks), never what to build next — hints are the paid solution channel, the HUD
+    // checklist is the requirements overview.
+    if (nodes.length > 0 && !hasTrafficSource(nodes)) {
       return {
         mode: "tackle",
-        modeLabel: "Tackle",
-        headline: "Add a traffic source",
-        detail: "Requests need an origin — drag a Traffic Source onto the canvas (challenges usually pre-place one).",
+        modeLabel: "Check",
+        headline: "No load origin",
+        detail: "The canvas has no traffic source, so the simulation has nothing to drive it with. Quests pre-place one — it may have been deleted.",
       }
     }
-
-    const firstMissing = challenge.requiredComponents.find((cat) => !placed.has(cat as ComponentCategoryId))
-    if (firstMissing) {
+    const mismatchCount = countPortMismatches(edges)
+    if (mismatchCount > 0) {
       return {
         mode: "tackle",
-        modeLabel: "Tackle",
-        headline: `Add a ${categoryLabel(firstMissing)} block`,
-        detail: "Drag it from the Blocks panel on the left, then wire it into the request path.",
+        modeLabel: "Check",
+        headline: `${mismatchCount} port mismatch${mismatchCount === 1 ? "" : "es"}`,
+        detail: "⚡-flagged connections join incompatible port types — in a quest they cost the well-formed star. Rewire or remove them.",
       }
     }
-
     if (orphanCount > 0) {
       return {
         mode: "tackle",
-        modeLabel: "Tackle",
-        headline: "Wire it all together",
-        detail: `${orphanCount} block${orphanCount === 1 ? "" : "s"} ${orphanCount === 1 ? "isn't" : "aren't"} connected — drag from one node's handle to another so traffic flows end-to-end.`,
+        modeLabel: "Check",
+        headline: "Stranded blocks",
+        detail: `${orphanCount} block${orphanCount === 1 ? " isn't" : "s aren't"} connected to the request path — they won't run and won't bill.`,
       }
     }
-
+    if (nodes.length === 0) {
+      return {
+        mode: "tackle",
+        modeLabel: "Check",
+        headline: "Empty canvas",
+        detail: "Nothing placed yet. The brief and the HUD checklist state what this quest grades — the build is yours.",
+      }
+    }
     return {
       mode: "run",
       modeLabel: "Run it",
-      headline: "Run the simulation",
-      detail: "Looks wired up! Hit Run Simulation to push traffic through and earn your stars.",
+      headline: "No structural issues",
+      detail: "Wiring checks pass. Run the simulation whenever you're ready.",
     }
   }, [challenge, attemptState, lastResult, lastMeasured, nodes, edges, topologyIssues, liveEvents, sessionBest, breaksRecord])
 }

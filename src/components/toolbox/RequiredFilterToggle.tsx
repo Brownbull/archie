@@ -56,8 +56,8 @@ export function RequiredFilterToggle({ challengeId, active, onToggle }: Required
     >
       <ListFilter className="h-3.5 w-3.5" />
       <span className="font-medium">Required blocks only</span>
-      <span data-testid="required-filter-price" className="ml-auto flex items-center gap-1 text-[0.625rem] text-orange-300">
-        <Wrench className="h-3 w-3" /> 1 · you have {balance}
+      <span data-testid="required-filter-price" className="ml-auto flex items-center gap-1 text-[0.625rem] font-semibold text-orange-300">
+        Unlock for 1 <Wrench className="h-3 w-3" />
       </span>
     </button>
   )

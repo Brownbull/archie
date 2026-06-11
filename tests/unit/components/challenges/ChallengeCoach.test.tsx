@@ -30,8 +30,8 @@ describe("ChallengeCoach (P88)", () => {
     render(<ChallengeCoach />)
     const card = screen.getByTestId("challenge-coach")
     expect(card).toHaveAttribute("data-mode", "tackle")
-    expect(card).toHaveTextContent(/tackle/i)
-    expect(screen.getByTestId("challenge-coach-headline")).toHaveTextContent("Add a traffic source")
+    expect(card).toHaveTextContent(/check/i)
+    expect(screen.getByTestId("challenge-coach-headline")).toHaveTextContent("Empty canvas")
   })
 
   it("reflects the watch stage while running", () => {

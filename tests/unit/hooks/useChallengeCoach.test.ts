@@ -42,36 +42,36 @@ describe("useChallengeCoach (P88)", () => {
       useChallengeStore.setState({ activeChallenge: makeChallenge(), attemptState: "building" })
     })
 
-    it("first step: add a traffic source when none exists", () => {
+    it("a deleted traffic source is a VALIDATION failure, never an instruction (2026-06-11: tackle is gone everywhere)", () => {
       setNodes([node("c", "compute")]) // compute but no traffic source
       const { result: r } = renderHook(() => useChallengeCoach())
-      expect(r.current?.mode).toBe("tackle")
-      expect(r.current?.headline).toBe("Add a traffic source")
+      expect(r.current?.modeLabel).toBe("Check")
+      expect(r.current?.headline).toBe("No load origin")
     })
 
-    it("next: add the first missing required block once a source exists", () => {
+    it("missing required blocks are NEVER prompted — that's the solution channel (hints/HUD)", () => {
       setNodes([node("src", "traffic")]) // source present, compute/data missing
       const { result: r } = renderHook(() => useChallengeCoach())
-      expect(r.current?.mode).toBe("tackle")
-      expect(r.current?.headline).toBe(`Add a ${COMPONENT_CATEGORIES["compute"].label} block`)
+      expect(r.current?.headline).not.toMatch(/Add a/)
+      expect(r.current?.mode).toBe("run") // structurally clean → run-ready, requirements are the player's job
     })
 
-    it("next: wire orphans once source + all required are placed", () => {
+    it("stranded blocks surface as a diagnostic", () => {
       setNodes(
         [node("src", "traffic"), node("c", "compute"), node("d", "data-storage")],
         [{ issueType: "orphan", nodeId: "d" }],
       )
       const { result: r } = renderHook(() => useChallengeCoach())
-      expect(r.current?.mode).toBe("tackle")
-      expect(r.current?.headline).toBe("Wire it all together")
+      expect(r.current?.modeLabel).toBe("Check")
+      expect(r.current?.headline).toBe("Stranded blocks")
       expect(r.current?.detail).toContain("1 block")
     })
 
-    it("ready: prompt to run when source + required present and no orphans", () => {
+    it("ready: run prompt when structurally clean", () => {
       setNodes([node("src", "traffic"), node("c", "compute"), node("d", "data-storage")], [])
       const { result: r } = renderHook(() => useChallengeCoach())
       expect(r.current?.mode).toBe("run")
-      expect(r.current?.headline).toBe("Run the simulation")
+      expect(r.current?.headline).toBe("No structural issues")
     })
   })
 
@@ -290,11 +290,12 @@ describe("coach de-escalation — beginner-gated tackle (Plan-2 P3 / D98)", () =
     expect(r.current?.headline).toBe("Stranded blocks")
   })
 
-  it("beginner quests keep the full tackle ladder (first-quest onboarding)", () => {
+  it("beginner quests get diagnostics too — 'Add a Data Storage block' IS the solution (2026-06-11)", () => {
     useChallengeStore.setState({ activeChallenge: makeChallenge(), attemptState: "building" }) // beginner
     setNodes([node("src", "traffic")])
     const { result: r } = renderHook(() => useChallengeCoach())
-    expect(r.current?.headline).toMatch(/Add a .* block/)
+    expect(r.current?.headline).not.toMatch(/Add a/)
+    expect(r.current?.mode).toBe("run")
   })
 
   it("running/scored coaching is untouched by the gate", () => {

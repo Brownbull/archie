@@ -30,13 +30,14 @@ function categoryLabel(id: string): string {
  * when the challenge restricts them via allowedCategories, that only those are available).
  */
 function ChallengeGuidanceBanner({
-  required,
   allowed,
 }: {
-  required: readonly string[]
   allowed: readonly string[] | null
 }) {
-  if (required.length === 0 && !allowed) return null
+  // 2026-06-11 playtest: the REQUIRED variant gave the solution away in the build surface — the
+  // quest panel's REQUIRED checklist is the one owner of that info. Only the explicit
+  // allowed-palette variant (user-cloned quests) still renders here.
+  if (!allowed) return null
   return (
     <div
       data-testid="challenge-component-guidance"
@@ -44,10 +45,10 @@ function ChallengeGuidanceBanner({
     >
       <div className="flex items-center gap-1.5 font-medium text-text-primary">
         <Target className="h-3 w-3 text-blue-400" />
-        {allowed ? "Allowed for this challenge" : "This challenge needs"}
+        Allowed for this challenge
       </div>
       <div className="mt-1 flex flex-wrap gap-1">
-        {(allowed ?? required).map((cat) => (
+        {allowed.map((cat) => (
           <span key={cat} className="rounded-full bg-surface px-1.5 py-0.5 text-[0.625rem] text-text-primary">
             {categoryLabel(cat)}
           </span>
@@ -259,7 +260,7 @@ export function ComponentTab() {
     return (
       <div data-testid="component-tab-empty" className="p-3">
         {activeChallenge && (
-          <ChallengeGuidanceBanner required={requiredCategories} allowed={allowedCategories} />
+          <ChallengeGuidanceBanner allowed={allowedCategories} />
         )}
         <p className="p-3 text-center text-sm text-text-secondary">
           {searchQuery ? "No matching components" : "No components loaded"}
@@ -272,7 +273,7 @@ export function ComponentTab() {
     <ScrollArea data-testid="component-tab" className="h-full">
       <div className="space-y-3 p-3">
         {activeChallenge && (
-          <ChallengeGuidanceBanner required={requiredCategories} allowed={allowedCategories} />
+          <ChallengeGuidanceBanner allowed={allowedCategories} />
         )}
         {activeChallenge && hasRequiredTargets && (
           <RequiredFilterToggle
