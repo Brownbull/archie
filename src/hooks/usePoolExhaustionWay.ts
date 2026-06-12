@@ -40,7 +40,7 @@ export function usePoolExhaustionWay(): MechanicWayOutcome | null {
           const known = progress.breakMethods["pool-exhaustion"]
           if (!known) {
             const fresh = !!userId
-            if (fresh) void progress.collectBreakMethod(userId, "pool-exhaustion", activeChallenge.id)
+            if (fresh) void progress.collectBreakMethod(userId, "pool-exhaustion", activeChallenge.id, activeChallenge.track)
             next = { methodId: "pool-exhaustion", fresh }
           } else {
             if (userId) void progress.confirmBreakMethod(userId, "pool-exhaustion", activeChallenge.id)

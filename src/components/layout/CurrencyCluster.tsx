@@ -76,7 +76,7 @@ export function CurrencyCluster() {
         value={compact(totalXp)}
         className="border-sky-500/30 bg-sky-500/10 text-sky-300"
         title="Experience (XP)"
-        earn="Completing quests — each star pays a share of the quest's XP reward, and it counts toward that quest's discipline track."
+        earn="Only through play: quest stars pay the quest's XP, and every Expert earned pays bonus XP onto its quest's track. Purchased packs never grant XP — the ranking can't be bought."
         spend="Progression, not spending: total XP gates higher-tier quests (their minimum-XP requirement), and per-discipline XP climbs the mastery ranks that unlock avatars."
       />
       <CurrencyChip

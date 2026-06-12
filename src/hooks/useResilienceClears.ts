@@ -62,7 +62,7 @@ export function useResilienceClears(): ResilienceClearOutcome[] | null {
               void progress.collectResilienceClear(userId, activeChallenge.id, conditionId)
               // D102: the PAY rides the global method registry — surviving this condition is a
               // "way" earned once game-wide; later quests' clears register knowledge, not money.
-              void progress.collectBreakMethod(userId, resilienceMethodId(conditionId), activeChallenge.id)
+              void progress.collectBreakMethod(userId, resilienceMethodId(conditionId), activeChallenge.id, activeChallenge.track)
             }
             return { conditionId, name: getFailurePreset(conditionId)?.name ?? conditionId, fresh }
           })

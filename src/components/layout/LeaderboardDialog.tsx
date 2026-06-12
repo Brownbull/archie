@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { collection, getDocs } from "firebase/firestore"
-import { Trophy, Star, Sparkles, Wrench } from "lucide-react"
+import { Trophy, Star, Sparkles } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -18,9 +18,7 @@ interface LeaderboardRow {
   avatar: string | null
   threeStarQuests: number
   xp: number
-  /** D106: Experts EARNED through play — purchased packs live in the wallet, never here. */
-  expertEarned: number
-  /** Competition ranking: ties (same 3★ AND same XP) share a rank; next rank skips (1,1,3). */
+  /** Competition ranking: equal XP shares a rank; next rank skips (1,1,3). */
   rank: number
 }
 
@@ -61,25 +59,15 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
             avatar: resolveAvatarSrc((data.equippedAvatar as string) ?? null, xp),
             threeStarQuests,
             xp,
-            expertEarned: (data.expertEarned as number) ?? 0,
             rank: 0,
           })
         })
-        // Owner ranking order: 1. experience, 2. Experts EARNED (weighs more than stars), 3. quests
-        // at 3★ — full ties share a rank and order alphabetically within the tie.
-        out.sort(
-          (a, b) =>
-            b.xp - a.xp ||
-            b.expertEarned - a.expertEarned ||
-            b.threeStarQuests - a.threeStarQuests ||
-            a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
-        )
+        // D107: rankings are EXPERIENCE-ONLY — stars and Experts grant XP when earned through play,
+        // so the single axis already weighs everything (and purchased packs grant no XP at all).
+        out.sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name, undefined, { sensitivity: "base" }))
         let rank = 0
         for (let i = 0; i < out.length; i++) {
-          const p = out[i - 1]
-          if (i === 0 || out[i].xp !== p.xp || out[i].expertEarned !== p.expertEarned || out[i].threeStarQuests !== p.threeStarQuests) {
-            rank = i + 1
-          }
+          if (i === 0 || out[i].xp !== out[i - 1].xp) rank = i + 1
           out[i].rank = rank
         }
         setRows(out)
@@ -100,7 +88,7 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
             <Trophy className="h-4 w-4 text-[#c9a961]" /> Leaderboard
           </DialogTitle>
           <DialogDescription>
-            Ranked by experience, then Experts earned, then quests cleared at 3★.
+            Ranked by experience — earned only through play.
           </DialogDescription>
         </DialogHeader>
 
@@ -116,8 +104,7 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
                 <tr className="border-b border-archie-border text-left text-[0.625rem] uppercase tracking-wide text-text-secondary">
                   <th className="py-1 pr-2">#</th>
                   <th className="py-1 pr-2">Architect</th>
-                  <th className="py-1 pr-2 text-right"><span className="inline-flex items-center gap-1"><Sparkles className="h-3 w-3 text-sky-300" />XP</span></th>
-                  <th className="py-1 pr-2 text-right"><span className="inline-flex items-center gap-1" title="Experts earned through play — purchased points never count here"><Wrench className="h-3 w-3 text-orange-300" />Earned</span></th>
+                  <th className="py-1 pr-2 text-right"><span className="inline-flex items-center gap-1" title="The ranking axis — only play grants XP"><Sparkles className="h-3 w-3 text-sky-300" />XP</span></th>
                   <th className="py-1 text-right"><span className="inline-flex items-center gap-1"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />3★</span></th>
                 </tr>
               </thead>
@@ -140,7 +127,6 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
                         </span>
                       </td>
                       <td className="py-1.5 pr-2 text-right tabular-nums">{r.xp.toLocaleString()}</td>
-                      <td className="py-1.5 pr-2 text-right tabular-nums">{r.expertEarned}</td>
                       <td className="py-1.5 text-right tabular-nums">{r.threeStarQuests}</td>
                     </tr>
                   )
@@ -150,7 +136,7 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
                       {mineOutside && (
                         <>
                           <tr data-testid="leaderboard-ellipsis">
-                            <td colSpan={5} className="py-1 text-center text-text-secondary">…</td>
+                            <td colSpan={4} className="py-1 text-center text-text-secondary">…</td>
                           </tr>
                           {renderRow(mine, "you")}
                         </>

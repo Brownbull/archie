@@ -103,7 +103,7 @@ export function useBreakCollection(): BreakOutcome | null {
               if (userId && isNewBreak(record, attribute)) void progress.collectBreak(userId, activeChallenge.id, attribute)
               if (!knownEntry) {
                 const fresh = !!userId
-                if (fresh) void progress.collectBreakMethod(userId, methodId, activeChallenge.id)
+                if (fresh) void progress.collectBreakMethod(userId, methodId, activeChallenge.id, activeChallenge.track)
                 next = { verdict: "collected", attribute, fresh, boundary, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
               } else {
                 if (userId) void progress.confirmBreakMethod(userId, methodId, activeChallenge.id)
@@ -123,7 +123,7 @@ export function useBreakCollection(): BreakOutcome | null {
             if (userId && isNewBreak(record, attribute)) void progress.collectBreak(userId, activeChallenge.id, attribute)
             if (!knownEntry) {
               const fresh = !!userId
-              if (fresh) void progress.collectBreakMethod(userId, methodId, activeChallenge.id)
+              if (fresh) void progress.collectBreakMethod(userId, methodId, activeChallenge.id, activeChallenge.track)
               next = { verdict: "collected", attribute, fresh, remaining: remainingBreakAttributes({ ...record, [attribute]: true }, questBreakDials(activeChallenge.id)) }
             } else {
               if (userId) void progress.confirmBreakMethod(userId, methodId, activeChallenge.id)

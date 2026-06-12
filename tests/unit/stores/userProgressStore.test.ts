@@ -11,7 +11,7 @@ vi.mock("firebase/firestore", () => ({
 }))
 
 import { getDoc, setDoc } from "firebase/firestore"
-import { useUserProgressStore, spendableStars, totalEarnedStars, totalHintsUnlocked, totalHintsSpent, PROGRESS_GENERATION, STARTER_BONUS_STARS, STARTER_EXPERT } from "@/stores/userProgressStore"
+import { useUserProgressStore, spendableStars, totalEarnedStars, totalHintsUnlocked, totalHintsSpent, PROGRESS_GENERATION, STARTER_BONUS_STARS, STARTER_EXPERT, EXPERT_XP } from "@/stores/userProgressStore"
 
 const mockGetDoc = vi.mocked(getDoc)
 const mockSetDoc = vi.mocked(setDoc)
@@ -29,16 +29,16 @@ describe("hint economy selectors (ISAPivot Phase 5, D68)", () => {
     expect(totalHintsUnlocked({ hintsUnlocked: {} })).toBe(0)
   })
 
-  it("totalHintsSpent counts only hints beyond the first per challenge (first is free, LX1)", () => {
-    expect(totalHintsSpent({ hintsUnlocked: { a: 2, b: 1 } })).toBe(1) // a: 2→1 spent, b: 1→0 (free)
-    expect(totalHintsSpent({ hintsUnlocked: { a: 1, b: 1, c: 1 } })).toBe(0) // all first hints free
+  it("totalHintsSpent counts EVERY unlocked hint — LX1 free-first retired (the spend-display bug)", () => {
+    expect(totalHintsSpent({ hintsUnlocked: { a: 2, b: 1 } })).toBe(3)
+    expect(totalHintsSpent({ hintsUnlocked: { a: 1, b: 1, c: 1 } })).toBe(3)
     expect(totalHintsSpent({ hintsUnlocked: {} })).toBe(0)
   })
 
-  it("spendable = earned − spent (first hint per challenge free), clamped at 0", () => {
-    expect(spendableStars({ bestStarsCloud: { a: 3, b: 2 }, hintsUnlocked: { a: 2 } })).toBe(4) // 5 earned − 1 spent (a's 2nd)
+  it("spendable = earned − every hint spent, clamped at 0", () => {
+    expect(spendableStars({ bestStarsCloud: { a: 3, b: 2 }, hintsUnlocked: { a: 2 } })).toBe(3) // 5 earned − 2 spent
     expect(spendableStars({ bestStarsCloud: { a: 1 }, hintsUnlocked: { a: 5 } })).toBe(0) // never negative
-    expect(spendableStars({ bestStarsCloud: { a: 3 }, hintsUnlocked: { a: 1 } })).toBe(3) // first hint free
+    expect(spendableStars({ bestStarsCloud: { a: 3 }, hintsUnlocked: { a: 1 } })).toBe(2) // first hint costs too
     expect(spendableStars({ bestStarsCloud: { a: 3 }, hintsUnlocked: {} })).toBe(3)
   })
 })
@@ -57,14 +57,14 @@ describe("unlockHint — atomic guarded spend (D68)", () => {
     expect(spendableStars(useUserProgressStore.getState())).toBe(0) // first hint cost nothing
   })
 
-  it("charges a star for the 2nd+ hint; first free, then drains the balance", async () => {
+  it("every hint drains the balance — the indicator discounts from the first reveal", async () => {
     useUserProgressStore.setState({ bestStarsCloud: { c1: 3 }, hintsUnlocked: {} })
     const s = useUserProgressStore.getState()
-    await s.unlockHint("u1", "c1", 5) // 1st — free
-    expect(spendableStars(useUserProgressStore.getState())).toBe(3)
+    await s.unlockHint("u1", "c1", 5) // 1st — costs 1 (2026-06-11)
+    expect(spendableStars(useUserProgressStore.getState())).toBe(2)
     await s.unlockHint("u1", "c1", 5) // 2nd — costs 1
     expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(2)
-    expect(spendableStars(useUserProgressStore.getState())).toBe(2) // 3 earned − 1 spent
+    expect(spendableStars(useUserProgressStore.getState())).toBe(1)
   })
 
   it("spends a star earned on ANY challenge for hints on ANOTHER (shared pool, anytime access)", async () => {
@@ -440,25 +440,26 @@ describe("nickname auto-assign + change (D105b)", () => {
   })
 })
 
-describe("earned-vs-purchased accountability (D106)", () => {
+describe("play-only XP accountability (D106→D107)", () => {
   beforeEach(() => {
     mockSetDoc.mockReset().mockResolvedValue(undefined as never)
-    useUserProgressStore.setState({ expertCurrency: 0, expertEarned: 0, breakMethods: {}, error: null })
+    useUserProgressStore.setState({ expertCurrency: 0, trackXp: {}, breakMethods: {}, error: null })
   })
 
-  it("in-game collection raises BOTH the wallet and the earned ledger, atomically", async () => {
-    await useUserProgressStore.getState().collectBreakMethod("u1", "rps-overload", "c1")
+  it("in-game collection pays the wallet AND grants EXPERT_XP onto the quest's track (D107)", async () => {
+    useUserProgressStore.setState({ trackXp: {} } as never)
+    await useUserProgressStore.getState().collectBreakMethod("u1", "rps-overload", "c1", "foundations")
     const s = useUserProgressStore.getState()
     expect(s.expertCurrency).toBe(1)
-    expect(s.expertEarned).toBe(1)
-    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, expertEarned: { __increment: 1 } })
+    expect(s.trackXp.foundations).toBe(EXPERT_XP)
+    expect(mockSetDoc.mock.calls[0][1]).toMatchObject({ expertCurrency: { __increment: 1 }, trackXp: { foundations: { __increment: EXPERT_XP } } })
   })
 
-  it("spending lowers the wallet but never the earned ledger", async () => {
-    useUserProgressStore.setState({ expertCurrency: 2, expertEarned: 2, requiredFilterUnlocked: {} } as never)
+  it("spending lowers the wallet but never XP", async () => {
+    useUserProgressStore.setState({ expertCurrency: 2, trackXp: { f: 100 }, requiredFilterUnlocked: {} } as never)
     await useUserProgressStore.getState().unlockRequiredFilter("u1", "c1")
     const s = useUserProgressStore.getState()
     expect(s.expertCurrency).toBe(1)
-    expect(s.expertEarned).toBe(2) // lifetime, play-only — rankings read this
+    expect(s.trackXp.f).toBe(100) // spending never touches XP — the ranking axis (D107)
   })
 })

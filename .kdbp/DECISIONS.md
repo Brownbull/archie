@@ -1598,3 +1598,9 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 
 **Owner (pre-monetization):** future star/Expert packages must never pollute rankings. Ledger split: `expertCurrency` = the spendable WALLET (purchases will land here); `expertEarned` = lifetime Experts earned through PLAY, incremented atomically alongside the wallet at the single in-game pay-point (collectBreakMethod — all D102 ways, dial + mechanic + resilience, flow through it). Spends never touch it. The starter grant (D104) is wallet-only (granted, not earned). Stars already split by construction: earned stars derive from bestStarsCloud (pure play); grants/purchases live in bonusStars — XP + 3★ rankings were never purchasable. The leaderboard shows the "Earned" wrench column (expertEarned) and ranks only by 3★/XP.
 **Status:** active
+
+## D107 — XP-only rankings: earning currency grants experience; spending and packs never touch it (2026-06-11)
+
+**Owner (supersedes D106's dual-ledger):** rankings read EXPERIENCE alone. Every Expert earned through play grants EXPERT_XP (50) onto its quest's track at the single pay-point (collectBreakMethod + trackId); stars already pay quest XP. Spends only lower wallets; future purchased packs add wallet currency and zero XP — the ranking is purchase-proof by construction with ONE axis, so the expertEarned ledger is retired (field stops being written/read; rules keep it harmlessly). Leaderboard: XP desc, equal-XP shares a rank (competition), alphabetical within; 3★ stays as a display column.
+**Also fixed (the owner's bug report):** totalHintsSpent still applied LX1's retired free-first discount (`count − 1`) — star spends were invisible in the top bar. Every unlocked hint now counts as spent.
+**Status:** active

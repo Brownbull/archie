@@ -27,6 +27,9 @@ export const PROGRESS_GENERATION = 4
 export const STARTER_BONUS_STARS = 3
 export const STARTER_EXPERT = 1
 
+/** D107 — XP granted per Expert EARNED through play (rankings are XP-only; packs grant none). */
+export const EXPERT_XP = 50
+
 export interface UserProgress {
   trackXp: Readonly<Record<string, number>>
   completedChallenges: readonly string[]
@@ -66,12 +69,9 @@ export interface UserProgress {
   displayName: string | null
   /** D105b — the unique, player-visible nickname (auto-assigned, changeable in the profile). */
   nickname: string | null
-  /** D106 — LIFETIME Experts earned through PLAY (breaks/resilience). Future purchased packs land
-   *  in the wallet (expertCurrency) but never here — rankings read THIS, so money can't rank. */
-  expertEarned: number
 }
 
-const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, displayName: null, nickname: null, expertEarned: 0, generation: PROGRESS_GENERATION }
+const EMPTY_PROGRESS: UserProgress = { trackXp: {}, completedChallenges: [], bestStarsCloud: {}, equippedAvatar: null, hintsUnlocked: {}, expertCurrency: 0, breaksByChallenge: {}, requiredFilterUnlocked: {}, resilienceClears: {}, breakMethods: {}, unlockedVendors: {}, unlockedTiers: {}, starsSpentOnUnlocks: 0, bonusStars: 0, displayName: null, nickname: null, generation: PROGRESS_GENERATION }
 
 /** D104 — the provisioned baseline a fresh/reset account lands on. */
 const STARTER_PROGRESS: UserProgress = { ...EMPTY_PROGRESS, bonusStars: STARTER_BONUS_STARS, expertCurrency: STARTER_EXPERT }
@@ -92,10 +92,12 @@ export function totalHintsUnlocked(p: Pick<UserProgress, "hintsUnlocked">): numb
  * of the one hint that would unblock them — they still pay for the deeper reference-solution hints.
  */
 export function totalHintsSpent(p: Pick<UserProgress, "hintsUnlocked">): number {
-  return Object.values(p.hintsUnlocked).reduce((a, b) => a + Math.max(0, b - 1), 0)
+  // 2026-06-11 (spend-display bug): LX1's free-first retired with P199 — EVERY unlocked hint cost
+  // a star, so every one counts as spent. The old `b - 1` discount made spends invisible.
+  return Object.values(p.hintsUnlocked).reduce((a, b) => a + b, 0)
 }
 
-/** Spendable star balance (D68): earned − spent (first hint per challenge free, LX1), never negative. */
+/** Spendable star balance (D68): earned − spent, never negative. */
 export function spendableStars(p: Pick<UserProgress, "bestStarsCloud" | "hintsUnlocked" | "starsSpentOnUnlocks" | "bonusStars">): number {
   // D103/D104: stars are dual-use — hints AND capability unlocks draw from one pool, which the
   // starter grant (bonusStars) seeds at provisioning.
@@ -133,8 +135,9 @@ interface UserProgressState extends UserProgress {
   unlockRequiredFilter: (userId: string, challengeId: string) => Promise<boolean>
   /** Collect a cleared resilience extra (P4-S7): +1 expert once per (challenge, condition). */
   collectResilienceClear: (userId: string, challengeId: string, conditionId: string) => Promise<boolean>
-  /** D102: pay 1 expert iff the METHOD is new game-wide; record provenance. False = already known. */
-  collectBreakMethod: (userId: string, methodId: string, challengeId: string) => Promise<boolean>
+  /** D102/D107: pay 1 expert iff the METHOD is new game-wide (+EXPERT_XP onto the quest's track —
+   *  rankings are XP-only and XP comes solely from play). False = already known. */
+  collectBreakMethod: (userId: string, methodId: string, challengeId: string, trackId?: string) => Promise<boolean>
   /** D102: register that a KNOWN method also fells this quest's build (no payout, pure knowledge). */
   confirmBreakMethod: (userId: string, methodId: string, challengeId: string) => Promise<void>
   /** D103: buy a vendor with stars or expert per the pricing model. False = broke/owned/invalid. */
@@ -197,7 +200,6 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           bonusStars: (data.bonusStars as number) ?? 0,
           displayName: (data.displayName as string) ?? null,
           nickname: (data.nickname as string) ?? null,
-          expertEarned: (data.expertEarned as number) ?? 0,
           generation: storedGen,
           loading: false,
         })
@@ -386,18 +388,30 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     return true
   },
 
-  collectBreakMethod: async (userId, methodId, challengeId) => {
+  collectBreakMethod: async (userId, methodId, challengeId, trackId) => {
     if (!userId || !methodId) return false
     const state = get()
     if (state.breakMethods[methodId]) return false // known way — knowledge, not money (D102)
     const entry = { challengeId, earnedAt: Date.now(), confirmedOn: { [challengeId]: true as const } }
-    // D106: the wallet (spendable, purchasable later) and the EARNED ledger (play-only, ranked)
-    // increment together here — the one in-game pay-point post-D102.
-    set({ breakMethods: { ...state.breakMethods, [methodId]: entry }, expertCurrency: state.expertCurrency + 1, expertEarned: state.expertEarned + 1, error: null })
+    // D107: the wallet gets the spendable point; the RANKING gets EXPERT_XP on the quest's track —
+    // XP only ever comes from play, so future purchased packs can't rank by construction.
+    const xpTrack = trackId ?? null
+    set({
+      breakMethods: { ...state.breakMethods, [methodId]: entry },
+      expertCurrency: state.expertCurrency + 1,
+      ...(xpTrack ? { trackXp: { ...state.trackXp, [xpTrack]: (state.trackXp[xpTrack] ?? 0) + EXPERT_XP } } : {}),
+      error: null,
+    })
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { breakMethods: { [methodId]: entry }, expertCurrency: increment(1), expertEarned: increment(1), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        {
+          breakMethods: { [methodId]: entry },
+          expertCurrency: increment(1),
+          ...(xpTrack ? { trackXp: { [xpTrack]: increment(EXPERT_XP) } } : {}),
+          generation: PROGRESS_GENERATION,
+          updatedAt: serverTimestamp(),
+        },
         { merge: true },
       )
     } catch (err) {

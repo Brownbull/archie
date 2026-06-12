@@ -19,12 +19,12 @@ const snap = (docs: Array<{ id: string; data: Record<string, unknown> }>) => ({
 describe("LeaderboardDialog (D105)", () => {
   beforeEach(() => mockGetDocs.mockReset())
 
-  it("ranks by XP → Experts earned → 3★; full ties share a rank, alphabetical within; zero-XP hidden", async () => {
+  it("ranks by XP ONLY (D107); equal XP shares a rank, alphabetical within; zero-XP hidden", async () => {
     mockGetDocs.mockResolvedValue(snap([
-      { id: "a", data: { nickname: "Zelda", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 }, expertEarned: 1 } },
-      { id: "me", data: { nickname: "Gabriel", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 }, expertEarned: 1 } },
+      { id: "a", data: { nickname: "Zelda", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 } } },
+      { id: "me", data: { nickname: "Gabriel", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 } } },
       { id: "zero", data: { nickname: "Lurker", trackXp: {}, bestStarsCloud: {} } },
-      { id: "b", data: { trackXp: { f: 100 }, bestStarsCloud: { q1: 3, q2: 3, q3: 3 }, expertEarned: 4 } },
+      { id: "b", data: { trackXp: { f: 100 }, bestStarsCloud: { q1: 3, q2: 3, q3: 3 } } },
     ]))
     render(<LeaderboardDialog open onOpenChange={() => {}} />)
     await waitFor(() => expect(screen.getByTestId("leaderboard-row-1")).toBeInTheDocument())
