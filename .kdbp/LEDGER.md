@@ -5470,3 +5470,7 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5147/5147) · rules deployed p
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P197
+- 2026-06-11 19:52 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_currency-wallet-vs-earned.md
+
+## 2026-06-11 — [playtest fix] fix(challenges): nickname in the account corner
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5149/5149)
