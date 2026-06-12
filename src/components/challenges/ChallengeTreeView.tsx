@@ -280,7 +280,7 @@ function TreeNode({ pos, selected, bestStars, breaksCollected, chainBadge, onCli
           traffic carries the break-it extras; the badge shows collection progress (N/4 dials).
           Orange once collecting started, dim until then — and NEVER a star (expert ≠ hint pool). */}
       {isCompleted && breaksCollected !== null && (
-        <g data-testid={`break-badge-${c.id}`} transform={`translate(${pos.x + NODE_R - 4}, ${pos.y - NODE_R - 12})`}>
+        <g data-testid={`break-badge-${c.id}`} transform={`translate(${pos.x + (NODE_R - 5) * 0.707 - 10}, ${pos.y - (NODE_R - 5) * 0.707 - 10})`}>
           <title>{`Break-it extras: ${breaksCollected} of ${questBreakDials(c.id).length} collectible dials — replay, hold 3★, then break it one dial at a time (+1 Expert each)`}</title>
           <circle cx={10} cy={10} r={10.5} fill="#080c12" stroke={breaksCollected > 0 ? "#f97316" : "#f9731640"} strokeWidth={1.5} />
           <Hammer x={3.5} y={5.5} width={8} height={8} color={breaksCollected > 0 ? "#f97316" : "#6b7280"} />

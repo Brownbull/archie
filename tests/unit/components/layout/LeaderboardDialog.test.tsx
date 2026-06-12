@@ -19,21 +19,21 @@ const snap = (docs: Array<{ id: string; data: Record<string, unknown> }>) => ({
 describe("LeaderboardDialog (D105)", () => {
   beforeEach(() => mockGetDocs.mockReset())
 
-  it("ranks by 3★ then XP; TIES share a rank and order alphabetically; zero-XP hidden", async () => {
+  it("ranks by XP → Experts earned → 3★; full ties share a rank, alphabetical within; zero-XP hidden", async () => {
     mockGetDocs.mockResolvedValue(snap([
-      { id: "a", data: { nickname: "Zelda", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 } } },
-      { id: "me", data: { nickname: "Gabriel", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 } } },
+      { id: "a", data: { nickname: "Zelda", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 }, expertEarned: 1 } },
+      { id: "me", data: { nickname: "Gabriel", trackXp: { f: 500 }, bestStarsCloud: { q1: 3, q2: 3 }, expertEarned: 1 } },
       { id: "zero", data: { nickname: "Lurker", trackXp: {}, bestStarsCloud: {} } },
-      { id: "b", data: { trackXp: { f: 100 }, bestStarsCloud: { q1: 3, q2: 3, q3: 3 } } },
+      { id: "b", data: { trackXp: { f: 100 }, bestStarsCloud: { q1: 3, q2: 3, q3: 3 }, expertEarned: 4 } },
     ]))
     render(<LeaderboardDialog open onOpenChange={() => {}} />)
     await waitFor(() => expect(screen.getByTestId("leaderboard-row-1")).toBeInTheDocument())
-    expect(screen.getByTestId("leaderboard-row-1")).toHaveTextContent("Anonymous architect") // 3×3★ → rank 1
-    // Gabriel and Zelda tie (2×3★, 500xp) → BOTH rank 2, alphabetical: Gabriel first
-    expect(screen.getByTestId("leaderboard-row-2")).toHaveTextContent("Gabriel (you)")
-    expect(screen.getByTestId("leaderboard-row-2")).toHaveTextContent("2")
-    expect(screen.getByTestId("leaderboard-row-3")).toHaveTextContent("Zelda")
-    expect(screen.getByTestId("leaderboard-row-3")).toHaveTextContent("2") // shared rank
+    // XP rules: 500 beats 100 regardless of 3★ count; Gabriel/Zelda full-tie → BOTH rank 1, alphabetical
+    expect(screen.getByTestId("leaderboard-row-1")).toHaveTextContent("Gabriel (you)")
+    expect(screen.getByTestId("leaderboard-row-2")).toHaveTextContent("Zelda")
+    expect(screen.getByTestId("leaderboard-row-2")).toHaveTextContent("1") // shared rank
+    expect(screen.getByTestId("leaderboard-row-3")).toHaveTextContent("Anonymous architect")
+    expect(screen.getByTestId("leaderboard-row-3")).toHaveTextContent("3") // competition skip (1,1,3)
     expect(screen.queryByText("Lurker")).toBeNull() // xp 0 hidden
   })
 

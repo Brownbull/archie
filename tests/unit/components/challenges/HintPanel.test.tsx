@@ -40,59 +40,51 @@ describe("HintPanel (ISAPivot Phase 5 hint economy)", () => {
 
   it("signed out: shows 0 balance, a login prompt, and a disabled reveal button", () => {
     render(<HintPanel />)
-    expect(screen.getByTestId("hint-panel")).toHaveTextContent("Hints (0/3)")
+    expect(screen.getByTestId("hint-panel")).toHaveTextContent("Hints (0/4)") // +1: the required-blocks reveal leads the ladder
     expect(screen.getByTestId("hint-balance")).toHaveTextContent("0")
     expect(screen.getByTestId("hint-reveal-next")).toBeDisabled()
     expect(screen.getByTestId("hint-login")).toBeInTheDocument()
     expect(screen.queryByTestId("hint-0")).not.toBeInTheDocument()
   })
 
-  it("signed in, first hint FREE even at 0 spendable stars (LX1)", () => {
+  it("the FIRST hint is the required-blocks reveal and costs 1★ — broke = disabled (2026-06-11; LX1 retired)", () => {
     mockUser = { uid: "u1" }
     render(<HintPanel />) // 0 stars, 0 unlocked
-    expect(screen.getByTestId("hint-balance")).toHaveTextContent("0")
-    expect(screen.getByTestId("hint-reveal-next")).toBeEnabled()
-    expect(screen.getByTestId("hint-cost")).toHaveTextContent("free")
-    expect(screen.queryByTestId("hint-no-stars")).not.toBeInTheDocument()
-
-    fireEvent.click(screen.getByTestId("hint-reveal-next"))
-    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(1)
-    expect(screen.getByTestId("hint-0")).toHaveTextContent("First nudge")
-  })
-
-  it("signed in, no stars, after the free first hint: 2nd hint disabled + earn-stars prompt", () => {
-    mockUser = { uid: "u1" }
-    useUserProgressStore.setState({ bestStarsCloud: {}, hintsUnlocked: { c1: 1 } }) // free first used, 0 spendable
-    render(<HintPanel />)
-    expect(screen.getByTestId("hint-reveal-next")).toBeDisabled()
+    expect(screen.getByTestId("hint-reveal-next")).toBeDisabled() // no free first anymore
     expect(screen.getByTestId("hint-cost")).toHaveTextContent("1")
     expect(screen.getByTestId("hint-no-stars")).toBeInTheDocument()
   })
 
-  it("signed in with stars: 2nd hint costs a star and drains the balance", () => {
+  it("with a star: the first reveal names the REQUIRED blocks", () => {
     mockUser = { uid: "u1" }
-    useUserProgressStore.setState({ bestStarsCloud: { cX: 3 }, hintsUnlocked: { c1: 1 } }) // free first used; 3 spendable
+    useUserProgressStore.setState({ bestStarsCloud: { cX: 1 }, hintsUnlocked: {} })
     render(<HintPanel />)
-    expect(screen.getByTestId("hint-balance")).toHaveTextContent("3")
-    expect(screen.getByTestId("hint-cost")).toHaveTextContent("1")
-
+    expect(screen.getByTestId("hint-reveal-next")).toHaveTextContent("required blocks")
     fireEvent.click(screen.getByTestId("hint-reveal-next"))
+    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(1)
+    expect(screen.getByTestId("hint-0")).toHaveTextContent(/This quest grades on/)
+  })
 
+  it("the authored hints follow, shifted by one, each 1★", () => {
+    mockUser = { uid: "u1" }
+    useUserProgressStore.setState({ bestStarsCloud: { cX: 3 }, hintsUnlocked: { c1: 1 } })
+    render(<HintPanel />)
+    expect(screen.getByTestId("hint-cost")).toHaveTextContent("1")
+    fireEvent.click(screen.getByTestId("hint-reveal-next"))
     expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(2)
-    expect(screen.getByTestId("hint-1")).toHaveTextContent("Second hint")
-    expect(screen.getByTestId("hint-balance")).toHaveTextContent("2")
+    expect(screen.getByTestId("hint-1")).toHaveTextContent("First nudge")
   })
 
   it("labels the final hint as the full solution and shows all-revealed when done", () => {
     mockUser = { uid: "u1" }
-    useUserProgressStore.setState({ bestStarsCloud: { cX: 10 }, hintsUnlocked: { c1: 2 } }) // 2 of 3 revealed
+    useUserProgressStore.setState({ bestStarsCloud: { cX: 10 }, hintsUnlocked: { c1: 3 } }) // 3 of 4 revealed
     render(<HintPanel />)
     expect(screen.getByTestId("hint-reveal-next")).toHaveTextContent("full solution")
 
     fireEvent.click(screen.getByTestId("hint-reveal-next"))
 
-    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(3)
-    expect(screen.getByTestId("hint-2")).toHaveTextContent("The full solution")
+    expect(useUserProgressStore.getState().hintsUnlocked.c1).toBe(4)
+    expect(screen.getByTestId("hint-3")).toHaveTextContent("The full solution")
     expect(screen.getByTestId("hint-all-revealed")).toBeInTheDocument()
     expect(screen.queryByTestId("hint-reveal-next")).not.toBeInTheDocument()
   })

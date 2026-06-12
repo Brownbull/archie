@@ -1,5 +1,6 @@
 import { Lightbulb, Lock, Star } from "lucide-react"
 import { useChallengeStore } from "@/stores/challengeStore"
+import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
 import { useUserProgressStore, spendableStars } from "@/stores/userProgressStore"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -19,14 +20,18 @@ export function HintPanel() {
 
   if (!challenge || challenge.hints.length === 0) return null
 
-  const total = challenge.hints.length
+  // 2026-06-11 (owner): the REQUIRED-blocks list was a free solution leak in the HUD — it's now the
+  // FIRST hint on every quest, paid like the rest (1★; the LX1 free-first perk retired with it).
+  const requiredHint = `This quest grades on: ${challenge.requiredComponents
+    .map((cat) => COMPONENT_CATEGORIES[cat as ComponentCategoryId]?.label ?? cat)
+    .join(", ")}.`
+  const ladder = [requiredHint, ...challenge.hints]
+  const total = ladder.length
   const allRevealed = unlocked >= total
   const userId = user?.uid ?? null
-  // LX1 (D74): the first hint per challenge is free — a stuck beginner with 0 stars can still unlock it.
-  const firstIsFree = unlocked === 0
-  const canUnlock = !!userId && !allRevealed && (firstIsFree || balance >= 1)
+  const canUnlock = !!userId && !allRevealed && balance >= 1
   const nextIsFinal = unlocked === total - 1
-  const revealed = challenge.hints.slice(0, unlocked)
+  const revealed = ladder.slice(0, unlocked)
 
   const onReveal = () => {
     if (userId) void unlockHint(userId, challenge.id, total)
@@ -65,15 +70,15 @@ export function HintPanel() {
             className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md border border-archie-border bg-surface px-2 py-1.5 text-[0.75rem] font-medium text-text-primary transition-colors hover:bg-panel disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Lock className="h-3 w-3" />
-            {nextIsFinal ? "Reveal the full solution" : "Reveal next hint"}
+            {unlocked === 0 ? "Reveal the required blocks" : nextIsFinal ? "Reveal the full solution" : "Reveal next hint"}
             <span data-testid="hint-cost" className="flex items-center gap-0.5 text-yellow-400">
-              {firstIsFree ? "(free)" : <>(1<Star className="h-2.5 w-2.5 fill-yellow-400" />)</>}
+              (1<Star className="h-2.5 w-2.5 fill-yellow-400" />)
             </span>
           </button>
           {!userId && (
             <p data-testid="hint-login" className="mt-1 text-[0.6875rem] text-text-secondary">Log in to unlock hints.</p>
           )}
-          {userId && !firstIsFree && balance < 1 && (
+          {userId && balance < 1 && (
             <p data-testid="hint-no-stars" className="mt-1 text-[0.6875rem] text-text-secondary">Earn stars by clearing challenges to unlock more hints.</p>
           )}
         </>

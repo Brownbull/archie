@@ -20,6 +20,7 @@ import { ChallengeStartButton } from "@/components/challenges/ChallengeStartButt
 import { ChallengeResultsModal } from "@/components/challenges/ChallengeResultsModal"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useSimulationStore } from "@/stores/simulationStore"
+import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { getChallenge } from "@/services/challengeLoader"
 import { interpolateRps } from "@/engine/simulationEngine"
@@ -78,8 +79,12 @@ describe("challenge journey (integration): select → build → start → score 
     expect(cs().activeChallenge?.id).toBe("first-service")
     expect(cs().attemptState).toBe("building")
 
-    // BUILD — the HUD shows the brief + required-components checklist; compute starts unmet.
+    // BUILD — the HUD shows the brief; the required names reveal after the first paid hint (2026-06-11).
     expect(screen.getByTestId("challenge-hud")).toBeInTheDocument()
+    expect(screen.getByTestId("required-hidden")).toBeInTheDocument()
+    act(() => {
+      useUserProgressStore.setState({ hintsUnlocked: { "first-service": 1 } })
+    })
     expect(screen.getByTestId("req-compute")).not.toHaveAttribute("data-present")
     act(() => {
       useArchitectureStore.setState({ nodes: [computeNode] as never })

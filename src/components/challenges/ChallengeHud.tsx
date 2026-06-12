@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { Check, X as XIcon, Minus, Maximize2 } from "lucide-react"
+import { Check, X as XIcon, Minus, Maximize2, Lock } from "lucide-react"
+import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
@@ -18,6 +19,9 @@ export function ChallengeHud() {
   const edges = useArchitectureStore((s) => s.edges)
   const [minimized, setMinimized] = useState(false)
   const [confirmExit, setConfirmExit] = useState(false)
+
+  // Hooks above every conditional return (hook-order invariant).
+  const hintsUnlocked = useUserProgressStore((s) => (s.hintsUnlocked[useChallengeStore.getState().activeChallenge?.id ?? ""] ?? 0))
 
   if (!challenge) return null
 
@@ -78,7 +82,15 @@ export function ChallengeHud() {
 
             <div className="mt-3" data-testid="challenge-checklist">
               <span className="text-[0.6875rem] font-semibold uppercase tracking-wide text-text-secondary">Required</span>
-              {challenge.requiredComponents.map((cat) => {
+              {hintsUnlocked === 0 ? (
+                // 2026-06-11 (owner): the category names ARE the solution — they reveal as the
+                // first paid hint. Until then, only the count shows.
+                <div data-testid="required-hidden" className="flex items-center gap-1.5 text-[0.8125rem] text-text-secondary">
+                  <Lock className="h-3.5 w-3.5" />
+                  {challenge.requiredComponents.length} block type{challenge.requiredComponents.length === 1 ? "" : "s"} — reveal via the first hint (1★)
+                </div>
+              ) : (
+              challenge.requiredComponents.map((cat) => {
                 const present = placed.has(cat as ComponentCategoryId)
                 const label = COMPONENT_CATEGORIES[cat as ComponentCategoryId]?.label ?? cat
                 return (
@@ -87,7 +99,8 @@ export function ChallengeHud() {
                     <span className={present ? "text-text-primary" : "text-text-secondary"}>{label}</span>
                   </div>
                 )
-              })}
+              })
+              )}
             </div>
 
             <HintPanel />

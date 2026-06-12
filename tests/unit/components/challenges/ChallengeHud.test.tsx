@@ -15,6 +15,7 @@ vi.mock("@/stores/architectureStoreHelpers", async (importActual) => {
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: null }) }))
 
 import { ChallengeHud } from "@/components/challenges/ChallengeHud"
+import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { makeNode } from "../../../helpers/factories"
@@ -51,6 +52,8 @@ describe("ChallengeHud (Epic 16)", () => {
   it("shows the brief, budget figures, and required-components checklist (green, well under cap)", () => {
     mockCost = 30
     cs().selectChallenge(challenge)
+    // 2026-06-11: the names reveal only after the first paid hint
+    useUserProgressStore.setState({ hintsUnlocked: { c1: 1 } } as never)
     setNodes("data-storage") // only one of the two required categories placed
     render(<ChallengeHud />)
     expect(screen.getByTestId("challenge-hud")).toHaveTextContent("Two-Tier")
@@ -101,11 +104,12 @@ describe("ChallengeHud (Epic 16)", () => {
   })
 
   it("renders the hint economy panel locked when signed out (Phase 5)", () => {
+    useUserProgressStore.setState({ hintsUnlocked: {} } as never) // isolate from prior seeds
     cs().selectChallenge(challenge)
     render(<ChallengeHud />)
     // No free hint list anymore — hints are gated behind the economy.
     expect(screen.queryByTestId("challenge-hints")).not.toBeInTheDocument()
-    expect(screen.getByTestId("hint-panel")).toHaveTextContent("Hints (0/2)")
+    expect(screen.getByTestId("hint-panel")).toHaveTextContent("Hints (0/3)")
     expect(screen.getByTestId("hint-reveal-next")).toBeDisabled()
     expect(screen.getByTestId("hint-login")).toBeInTheDocument()
   })
@@ -119,5 +123,15 @@ describe("ChallengeHud (Epic 16)", () => {
     // Click "Exit Quest" to confirm
     fireEvent.click(screen.getByText("Exit Quest"))
     expect(cs().activeChallenge).toBeNull()
+  })
+})
+
+describe("required checklist gating (2026-06-11 — names are the first paid hint)", () => {
+  it("at 0 hints the names are hidden — only the count shows", () => {
+    useChallengeStore.getState().selectChallenge(challenge)
+    useUserProgressStore.setState({ hintsUnlocked: {} } as never)
+    render(<ChallengeHud />)
+    expect(screen.getByTestId("required-hidden")).toHaveTextContent("2 block types — reveal via the first hint")
+    expect(screen.queryByTestId("req-compute")).toBeNull()
   })
 })

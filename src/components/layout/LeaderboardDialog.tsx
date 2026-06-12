@@ -65,16 +65,19 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
             rank: 0,
           })
         })
-        // Ties (same 3★ count AND same XP) share a rank and order alphabetically within the tie.
+        // Owner ranking order: 1. experience, 2. Experts EARNED (weighs more than stars), 3. quests
+        // at 3★ — full ties share a rank and order alphabetically within the tie.
         out.sort(
           (a, b) =>
-            b.threeStarQuests - a.threeStarQuests ||
             b.xp - a.xp ||
+            b.expertEarned - a.expertEarned ||
+            b.threeStarQuests - a.threeStarQuests ||
             a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
         )
         let rank = 0
         for (let i = 0; i < out.length; i++) {
-          if (i === 0 || out[i].threeStarQuests !== out[i - 1].threeStarQuests || out[i].xp !== out[i - 1].xp) {
+          const p = out[i - 1]
+          if (i === 0 || out[i].xp !== p.xp || out[i].expertEarned !== p.expertEarned || out[i].threeStarQuests !== p.threeStarQuests) {
             rank = i + 1
           }
           out[i].rank = rank
@@ -97,7 +100,7 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
             <Trophy className="h-4 w-4 text-[#c9a961]" /> Leaderboard
           </DialogTitle>
           <DialogDescription>
-            Ranked by quests cleared at 3★, then total experience.
+            Ranked by experience, then Experts earned, then quests cleared at 3★.
           </DialogDescription>
         </DialogHeader>
 
@@ -113,9 +116,9 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
                 <tr className="border-b border-archie-border text-left text-[0.625rem] uppercase tracking-wide text-text-secondary">
                   <th className="py-1 pr-2">#</th>
                   <th className="py-1 pr-2">Architect</th>
-                  <th className="py-1 pr-2 text-right"><span className="inline-flex items-center gap-1"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />3★ quests</span></th>
                   <th className="py-1 pr-2 text-right"><span className="inline-flex items-center gap-1"><Sparkles className="h-3 w-3 text-sky-300" />XP</span></th>
-                  <th className="py-1 text-right"><span className="inline-flex items-center gap-1" title="Experts earned through play — purchased points never count here"><Wrench className="h-3 w-3 text-orange-300" />Earned</span></th>
+                  <th className="py-1 pr-2 text-right"><span className="inline-flex items-center gap-1" title="Experts earned through play — purchased points never count here"><Wrench className="h-3 w-3 text-orange-300" />Earned</span></th>
+                  <th className="py-1 text-right"><span className="inline-flex items-center gap-1"><Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />3★</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -136,9 +139,9 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
                           {r.name}{r.uid === userId ? " (you)" : ""}
                         </span>
                       </td>
-                      <td className="py-1.5 pr-2 text-right tabular-nums">{r.threeStarQuests}</td>
                       <td className="py-1.5 pr-2 text-right tabular-nums">{r.xp.toLocaleString()}</td>
-                      <td className="py-1.5 text-right tabular-nums">{r.expertEarned}</td>
+                      <td className="py-1.5 pr-2 text-right tabular-nums">{r.expertEarned}</td>
+                      <td className="py-1.5 text-right tabular-nums">{r.threeStarQuests}</td>
                     </tr>
                   )
                   return (
