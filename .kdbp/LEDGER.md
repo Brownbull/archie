@@ -5484,3 +5484,7 @@ CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5150/5150; ranking/ladder/gati
 
 ## 2026-06-11 — PUSH dev -> main
 PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P199
+
+## 2026-06-11 — [owner] feat(challenges): D107 XP-only rankings + spend-display bug
+FINDINGS: the bug was LX1's ghost — the retired free-first perk lived on in totalHintsSpent's formula, eating the first star silently
+CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5150/5150)
