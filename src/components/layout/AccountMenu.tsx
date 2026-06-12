@@ -17,7 +17,10 @@ import { NicknameDialog } from "@/components/layout/NicknameDialog"
 
 export function AccountMenu() {
   const { user, signOut } = useAuth()
-  const name = user?.displayName ?? null
+  // D105b follow-up: the public identity is the NICKNAME — the Google name stays private
+  // (it only appears as the dropdown's sublabel so you know which account is signed in).
+  const nickname = useUserProgressStore((s) => s.nickname)
+  const name = nickname ?? user?.displayName ?? null
   const [profileOpen, setProfileOpen] = useState(false)
   const [nicknameOpen, setNicknameOpen] = useState(false)
   const trackXp = useUserProgressStore((s) => s.trackXp)
@@ -53,7 +56,14 @@ export function AccountMenu() {
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" data-testid="account-menu-content">
-          {name && <DropdownMenuLabel className="max-w-[200px] truncate">{name}</DropdownMenuLabel>}
+          {name && (
+            <DropdownMenuLabel className="max-w-[200px]">
+              <span className="block truncate">{name}</span>
+              {nickname && user?.displayName && (
+                <span className="block truncate text-[0.625rem] font-normal text-text-secondary">{user.displayName}</span>
+              )}
+            </DropdownMenuLabel>
+          )}
           {name && <DropdownMenuSeparator />}
           <DropdownMenuItem data-testid="account-mastery-profile" onSelect={() => setProfileOpen(true)}>
             <Trophy className="mr-2 h-3.5 w-3.5" /> Quest Profile
