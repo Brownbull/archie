@@ -5481,3 +5481,6 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P198
 ## 2026-06-11 — [owner] feat(challenges): XP-first ranking + badge overlap + required-as-first-hint
 FINDINGS: hooks-below-return trap hit a 2nd time (ChallengeHud) — hoisted; LX1 free-first retired by owner direction (the free slot was covering the leak being closed)
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5150/5150; ranking/ladder/gating pins converted)
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P199
