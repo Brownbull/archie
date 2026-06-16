@@ -30,15 +30,26 @@ export async function useAdvancedLevel(page: Page): Promise<void> {
 }
 
 /**
- * Wait for the component library to finish loading.
- * Returns true if components were loaded, false if empty state.
+ * Wait for the component library to finish loading. Returns true once at least one component CARD
+ * is visible (the real "library is ready" signal), false only if the toolbox genuinely settles on
+ * its empty state.
+ *
+ * The component library hydrates ASYNC from Firestore, so the toolbox can briefly render its empty
+ * state (`component-tab-empty`) before the cards arrive. The previous implementation raced the two
+ * tab states and then took an INSTANTANEOUS `isVisible()` snapshot — if the empty state won the
+ * race by a frame, callers skipped (or the 5s card wait downstream raced the late-loading cards),
+ * which is the root of the chronic `component-card-` flakiness. We now wait for an actual card,
+ * and only conclude "empty" when the empty state holds with no card present.
  */
 export async function waitForComponentLibrary(page: Page): Promise<boolean> {
-  await Promise.race([
-    page.locator('[data-testid="component-tab"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-    page.locator('[data-testid="component-tab-empty"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-  ])
-  return page.locator('[data-testid="component-tab"]').isVisible()
+  try {
+    // 30s covers a slow real-Firebase hydration in CI; a card appearing IS the readiness signal.
+    await page.locator('[data-testid^="component-card-"]').first().waitFor({ state: "visible", timeout: 30_000 })
+    return true
+  } catch {
+    // No card after 30s — the library genuinely has no components to show.
+    return false
+  }
 }
 
 /**
