@@ -69,3 +69,31 @@ component-icons, toolbox-browsing, component-swapping, ghost-placement.
   status-dot, decision-support, ui-sweep, import-export, connection-wiring, component-types — verify on CI run.
 
 Next: CI run to confirm Category A passes, then Category B (independent failures).
+
+## Update 2026-06-16 (session 2) — incremental fix loop working
+
+ENABLER: added `grep` input to e2e-desktop workflow_dispatch → validate a subset in ~2-4min
+(`gh workflow run "E2E (desktop — informational)" --ref dev -f grep="<filter>"`). This makes
+fix→validate cycles fast instead of 28-min full-suite gambles.
+
+ROOT CAUSES FOUND + FIXED (all source-confirmed, not guessed):
+1. **Node width drift**: nodes are variable-width (NODE_MIN_WIDTH 176 … NODE_MAX_WIDTH 280), tests
+   asserted fixed "208px" (drifted to 213.5px). → assert the [176,280] range / font-independence.
+   Fixed: canvas-and-placement (×2), settings-and-preferences font-size test.
+2. **Center-click vs header-click**: the node CENTER now carries on-node vendor/config dropdowns
+   (Fluidity P1). Clicking center opens a Radix listbox instead of selecting the node, so native
+   React-Flow Delete never fires + inspector never opens. → click header `{x:12,y:6}`.
+   Fixed: component-swapping local selectNodeOnCanvas + both cleanup-deletes.
+3. **add-type-.first() = traffic-source** (TYPE_LIST[0]) which is SOURCE-ONLY (no target handle).
+   → target `add-type-compute` when the test needs a node with both handles.
+
+VERIFIED GREEN: canvas-and-placement (9/9). component-swapping: delete/select tests pass; the SWAP
+tests (208/254/356) still fail on `.react-flow__edge` count 0 (connectNodes drag-to-connect not
+creating an edge — separate root cause). settings:342 has a settings-dialog click timeout.
+
+REMAINING (~55-60 distinct tests, 24 specs) are mostly INDEPENDENT runtime issues (edge creation,
+settings dialog timing, vendor selection, history state, scoring cascades). No single root cause
+clears them; each needs source-confirmation + a filtered-dispatch validation.
+
+GOTCHAS confirmed: inspector widths 300/500/40px are LEGIT fixed constants (not drift) — do NOT
+"fix" them. Always source-confirm before changing an assertion.
