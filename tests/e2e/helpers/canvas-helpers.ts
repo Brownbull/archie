@@ -30,24 +30,28 @@ export async function useAdvancedLevel(page: Page): Promise<void> {
 }
 
 /**
+ * How long to wait for an async-Firestore-backed card to appear before concluding "not loaded".
+ * A real hydration completes in a few seconds; this is generous headroom for slow CI but NOT so
+ * long that the failure/skip path (×2 CI retries) blows the 30-min job budget — the over-long 30s
+ * value did exactly that (job timed out mid-run even though only ~6 tests truly failed).
+ */
+const CARD_LOAD_TIMEOUT_MS = 12_000
+
+/**
  * Wait for the component library to finish loading. Returns true once at least one component CARD
- * is visible (the real "library is ready" signal), false only if the toolbox genuinely settles on
- * its empty state.
+ * is visible (the real "library is ready" signal), false only on timeout (genuine empty state).
  *
- * The component library hydrates ASYNC from Firestore, so the toolbox can briefly render its empty
- * state (`component-tab-empty`) before the cards arrive. The previous implementation raced the two
- * tab states and then took an INSTANTANEOUS `isVisible()` snapshot — if the empty state won the
- * race by a frame, callers skipped (or the 5s card wait downstream raced the late-loading cards),
- * which is the root of the chronic `component-card-` flakiness. We now wait for an actual card,
- * and only conclude "empty" when the empty state holds with no card present.
+ * The library hydrates ASYNC from Firestore, so the toolbox can briefly render its empty state
+ * before the cards arrive. The previous implementation raced the tab shell vs empty state then took
+ * an INSTANTANEOUS isVisible() snapshot — if empty won the race by a frame, callers wrongly skipped
+ * (or the downstream 5s card wait raced the late cards). Waiting for an actual card fixes it.
  */
 export async function waitForComponentLibrary(page: Page): Promise<boolean> {
   try {
-    // 30s covers a slow real-Firebase hydration in CI; a card appearing IS the readiness signal.
-    await page.locator('[data-testid^="component-card-"]').first().waitFor({ state: "visible", timeout: 30_000 })
+    // A card appearing IS the readiness signal (not the tab shell).
+    await page.locator('[data-testid^="component-card-"]').first().waitFor({ state: "visible", timeout: CARD_LOAD_TIMEOUT_MS })
     return true
   } catch {
-    // No card after 30s — the library genuinely has no components to show.
     return false
   }
 }
@@ -61,7 +65,7 @@ export async function waitForBlueprints(page: Page): Promise<boolean> {
   try {
     // Wait for an actual blueprint card (the readiness signal), not the tab shell — same async-
     // Firestore race fix as waitForComponentLibrary.
-    await page.locator('[data-testid="blueprint-card"]').first().waitFor({ state: "visible", timeout: 30_000 })
+    await page.locator('[data-testid="blueprint-card"]').first().waitFor({ state: "visible", timeout: CARD_LOAD_TIMEOUT_MS })
     return true
   } catch {
     return false
@@ -77,7 +81,7 @@ export async function waitForStacksTab(page: Page): Promise<boolean> {
   try {
     // Wait for an actual stack card (the readiness signal), not the tab shell — same async-Firestore
     // race fix as waitForComponentLibrary.
-    await page.locator('[data-testid^="stack-card-"]').first().waitFor({ state: "visible", timeout: 30_000 })
+    await page.locator('[data-testid^="stack-card-"]').first().waitFor({ state: "visible", timeout: CARD_LOAD_TIMEOUT_MS })
     return true
   } catch {
     return false
