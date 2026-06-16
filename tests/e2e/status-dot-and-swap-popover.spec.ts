@@ -189,13 +189,25 @@ test.describe("Status Dot & Swap Popover E2E (Phase 5)", () => {
     const isVisible = await swapPopover.isVisible().catch(() => false)
     test.skip(!isVisible, "Skipped: no swap alternatives available")
 
-    const swapOption = swapPopover.locator("button[data-testid^='swap-option-']").first()
+    // The popover lists every same-category alternative, but the store's D103 capability gate
+    // (architectureStore.swapNodeComponent) silently rejects a swap to an UNOWNED, paid vendor —
+    // only a type's free default vendor (vendorPrice null/null in vendorPricing.ts) is owned by
+    // the fresh test user. So target an owned option explicitly: "serverless" is the `serverless`
+    // type's free default, same `compute` category as node-express, so it's always offered AND
+    // actually applies. Clicking `.first()` could land on a paid vendor (e.g. Adyen) whose swap
+    // is rejected, leaving the node unchanged.
+    const swapOption = swapPopover.locator('[data-testid="swap-option-serverless"]')
+    test.skip(!(await swapOption.isVisible().catch(() => false)), "Skipped: no owned swap alternative offered")
     const swapName = await swapOption.textContent()
     await swapOption.click()
     await page.waitForTimeout(300)
 
     await expect(swapPopover).not.toBeVisible()
 
+    // After a successful swap the node's componentName becomes the new vendor's name, which the
+    // on-node provider switcher renders as text. Assert the node now shows the swapped vendor and
+    // no longer matches the original — the real "component was replaced" invariant. (The node TITLE
+    // is the type LABEL, not the vendor, so we assert on the vendor name in the node body.)
     const newName = await page.locator('[data-testid="archie-node"]').first().textContent()
     expect(newName).toContain(swapName?.trim())
     expect(newName).not.toBe(originalName)

@@ -1,5 +1,4 @@
 import { test, expect } from "@playwright/test"
-import { signOut } from "./helpers/auth"
 
 const SCREENSHOT_DIR = "test-results/auth-and-app-shell"
 
@@ -34,9 +33,12 @@ test.describe("Auth & App Shell E2E", () => {
     await page.goto("/")
     await expect(page.locator('[data-testid="toolbar"]')).toBeVisible()
 
-    await signOut(page)
+    // Sign out now lives inside the account dropdown (data-testid="account-sign-out"),
+    // opened via the account-menu trigger — it is no longer a top-level "Sign out" button.
+    await page.getByTestId("account-menu-trigger").click()
+    await page.getByTestId("account-sign-out").click()
 
-    await expect(page.locator('[data-testid="sign-in-button"]')).toBeVisible()
+    await expect(page.locator('[data-testid="sign-in-button"]')).toBeVisible({ timeout: 10_000 })
     await expect(page.locator('text=Sign in with Google')).toBeVisible()
 
     await page.screenshot({

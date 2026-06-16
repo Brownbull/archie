@@ -1,5 +1,11 @@
 import { test, expect, type Page } from "@playwright/test"
-import { waitForComponentLibrary, dragComponentToCanvas, useAdvancedLevel } from "./helpers/canvas-helpers"
+import {
+  waitForComponentLibrary,
+  dragComponentToCanvas,
+  placeComponentAt,
+  triggerRecalcViaConfigChange as triggerRecalcViaConfigChangeHelper,
+  useAdvancedLevel,
+} from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/scoring-dashboard"
 
@@ -21,49 +27,37 @@ async function placeComponent(page: Page, buttonIndex = 0) {
 /**
  * Trigger recalculation for a node by changing its config variant ON THE BLOCK.
  *
- * addNode() does NOT call triggerRecalculation(), so computedMetrics stays empty
+ * addNode()/drag-drop placement does NOT call triggerRecalculation(), so computedMetrics stays empty
  * after placement. Changing the config variant triggers the full pipeline:
  * updateNodeConfigVariant → triggerRecalculation → computedMetrics populated.
  *
- * Fluidity P1: the config-tier picker moved off the inspector onto the canvas node
- * (`archie-node-config-trigger`) and only renders for MULTI-VARIANT providers. Mirrors
- * the redirected `triggerRecalcViaConfigChange` in helpers/canvas-helpers.ts.
+ * Fluidity P1: the config-tier picker (`archie-node-config-trigger`, NodeConfigSelect.tsx) only renders
+ * for MULTI-VARIANT providers and sits in the node body under the React Flow minimap. Delegate to the
+ * shared canvas-helpers implementation, which opens it via keyboard (focus + Enter) — a plain
+ * node.click() opens a stray Radix listbox whose overlay then blocks subsequent clicks, and a pointer
+ * click on the trigger can be intercepted by the minimap. (That stale local approach was why the
+ * dashboard never left its empty state in CI.)
  */
 async function triggerRecalcViaConfigChange(page: Page, nodeIndex = 0) {
-  const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
-  // Click the node (opens the read-only inspector; harmless, not required to reach the dropdown).
-  await node.click()
-
-  // Open the on-node config variant dropdown (Radix Select combobox).
-  const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
-  if (!(await configTrigger.isVisible().catch(() => false))) {
-    // Single-variant provider — no on-node config picker; recalculation won't trigger this way.
-    await page.waitForTimeout(500)
-    return
-  }
-  await configTrigger.click()
-
-  // Wait for the dropdown to open (Radix portals to body)
-  await page.locator('[role="listbox"]').waitFor({ state: "visible", timeout: 3_000 })
-
-  // Pick a variant that is NOT currently selected (data-state="unchecked")
-  const unchecked = page.locator('[role="option"][data-state="unchecked"]')
-  if ((await unchecked.count()) > 0) {
-    await unchecked.first().click()
-  } else {
-    // Single variant — close dropdown; recalculation won't trigger
-    await page.keyboard.press("Escape")
-  }
-
-  // Allow recalculation + React re-render to settle
-  await page.waitForTimeout(500)
+  await triggerRecalcViaConfigChangeHelper(page, nodeIndex)
 }
 
+// Known MULTI-VARIANT base components (verified in src/data/components/*.yaml) from distinct categories,
+// so each placement reliably renders the on-node config trigger AND adds a new scoring category. Indexed
+// to mirror the previous buttonIndex sequencing used by the metric-dependent tests.
+const MULTI_VARIANT_COMPONENTS = ["node-express", "postgresql"] as const
+
 /**
- * Place a component AND trigger recalculation to populate computedMetrics.
+ * Place a multi-variant component on the canvas via drag AND trigger recalculation to populate
+ * computedMetrics. Drag (vs the index-based `add-type-` "+") guarantees a known multi-variant provider:
+ * `add-type-`.nth(0) is the source-only traffic block, which has a single config variant and so renders
+ * no config trigger — recalculation never fires and the dashboard stays in its empty state.
  */
 async function addComponentWithMetrics(page: Page, buttonIndex = 0) {
-  await placeComponent(page, buttonIndex)
+  const componentId = MULTI_VARIANT_COMPONENTS[buttonIndex] ?? MULTI_VARIANT_COMPONENTS[0]
+  // Spread placements horizontally so multiple nodes don't stack on top of each other.
+  const fractionX = 0.3 + buttonIndex * 0.3
+  await placeComponentAt(page, componentId, fractionX, 0.5)
   await triggerRecalcViaConfigChange(page, buttonIndex)
 }
 

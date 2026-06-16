@@ -85,29 +85,36 @@ test.describe("Flow Particles & Canvas Legend E2E (Story 4-5)", () => {
   // Legend: heatmap toggle removes and restores the legend
   // -------------------------------------------------------------------------
 
-  test("AC-LEGEND-3: heatmap off removes legend; re-enable restores it", async ({ page }) => {
+  test("AC-LEGEND-3: heatmap off switches legend to link mode; re-enable restores heatmap mode", async ({ page }) => {
     await page.goto("/")
 
     await expect(page.locator('[data-testid="canvas-panel"]')).toBeVisible({ timeout: 15_000 })
-    await expect(page.locator('[data-testid="canvas-legend"]')).toBeVisible({ timeout: 5_000 })
+    const legend = page.locator('[data-testid="canvas-legend"]')
+    await expect(legend).toBeVisible({ timeout: 5_000 })
 
-    // Toggle heatmap OFF — legend disappears
+    // Heatmap defaults ON — legend renders in "Heatmap Legend" mode.
+    await expect(legend).toContainText("Heatmap Legend")
+
+    // Toggle heatmap OFF — D95: the legend stays visible but switches to "Link Legend" mode
+    // (it now also decodes link styles, which apply in the default/heatmap-off view).
     await focusCanvas(page)
     await toggleHeatmap(page)
     await page.waitForTimeout(300)
 
-    await expect(page.locator('[data-testid="canvas-legend"]')).toHaveCount(0)
+    await expect(legend).toBeVisible({ timeout: 3_000 })
+    await expect(legend).toContainText("Link Legend")
 
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/03-legend-gone-heatmap-off.png`, fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/03-legend-link-mode-heatmap-off.png`, fullPage: true })
 
-    // Toggle heatmap ON — legend reappears (toggleHeatmap resets legendDismissed=false)
+    // Toggle heatmap ON — legend returns to "Heatmap Legend" mode (toggleHeatmap resets legendDismissed=false)
     await focusCanvas(page)
     await toggleHeatmap(page)
     await page.waitForTimeout(300)
 
-    await expect(page.locator('[data-testid="canvas-legend"]')).toBeVisible({ timeout: 3_000 })
+    await expect(legend).toBeVisible({ timeout: 3_000 })
+    await expect(legend).toContainText("Heatmap Legend")
 
-    await page.screenshot({ path: `${SCREENSHOT_DIR}/04-legend-reappears-heatmap-on.png`, fullPage: true })
+    await page.screenshot({ path: `${SCREENSHOT_DIR}/04-legend-heatmap-mode-heatmap-on.png`, fullPage: true })
   })
 
   test("AC-LEGEND-4: dismissed legend reappears after heatmap off→on cycle", async ({ page }) => {
@@ -222,7 +229,7 @@ test.describe("Flow Particles & Canvas Legend E2E (Story 4-5)", () => {
   // Combined: full journey — legend + particles through full heatmap cycle
   // -------------------------------------------------------------------------
 
-  test("AC-COMBINED-1: full cycle — heatmap on has legend; heatmap off removes both", async ({
+  test("AC-COMBINED-1: full cycle — heatmap on has heatmap-legend+particles; heatmap off keeps edge, drops particles, switches legend to link mode", async ({
     page,
   }) => {
     await page.goto("/")
@@ -233,29 +240,35 @@ test.describe("Flow Particles & Canvas Legend E2E (Story 4-5)", () => {
     const ready = await setupConnectedCanvas(page)
     test.skip(!ready, "Skipped: Need at least 2 components in the library")
 
-    // Phase 1: heatmap ON — legend visible, edge present
-    await expect(page.locator('[data-testid="canvas-legend"]')).toBeVisible({ timeout: 5_000 })
+    const legend = page.locator('[data-testid="canvas-legend"]')
+
+    // Phase 1: heatmap ON — legend in "Heatmap Legend" mode, edge present
+    await expect(legend).toBeVisible({ timeout: 5_000 })
+    await expect(legend).toContainText("Heatmap Legend")
     await expect(page.locator(".react-flow__edge")).toHaveCount(1)
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/13-phase1-heatmap-on.png`, fullPage: true })
 
-    // Phase 2: toggle heatmap OFF — legend gone, particles gone, edge remains
+    // Phase 2: toggle heatmap OFF — particles gone, edge remains, legend stays but
+    // switches to "Link Legend" mode (D95: legend renders in both modes).
     await focusCanvas(page)
     await toggleHeatmap(page)
     await page.waitForTimeout(300)
 
-    await expect(page.locator('[data-testid="canvas-legend"]')).toHaveCount(0)
     await expect(page.locator('[data-testid^="edge-particles-"] circle')).toHaveCount(0)
     await expect(page.locator(".react-flow__edge")).toHaveCount(1)
+    await expect(legend).toBeVisible({ timeout: 3_000 })
+    await expect(legend).toContainText("Link Legend")
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/14-phase2-heatmap-off.png`, fullPage: true })
 
-    // Phase 3: toggle heatmap back ON — legend reappears
+    // Phase 3: toggle heatmap back ON — legend returns to "Heatmap Legend" mode
     await focusCanvas(page)
     await toggleHeatmap(page)
     await page.waitForTimeout(300)
 
-    await expect(page.locator('[data-testid="canvas-legend"]')).toBeVisible({ timeout: 3_000 })
+    await expect(legend).toBeVisible({ timeout: 3_000 })
+    await expect(legend).toContainText("Heatmap Legend")
 
     await page.screenshot({ path: `${SCREENSHOT_DIR}/15-phase3-heatmap-on-again.png`, fullPage: true })
   })

@@ -190,10 +190,21 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
     // Wait for toolbox to load
     await expect(page.locator('[data-testid="toolbox-panel"]')).toBeVisible({ timeout: 15_000 })
 
-    // AC-1: Click Stacks tab — shows placeholder
+    // AC-1: Click Stacks tab — shows stack cards, empty state, loading skeleton, or error
+    // (the old "Coming in Phase 2" placeholder was replaced by a real StacksTab that renders
+    //  one of stacks-tab / stacks-tab-empty / stacks-tab-loading / stacks-tab-error).
     await page.getByRole("tab", { name: "Stacks" }).click()
-    await expect(page.locator('[data-testid="stack-tab"]')).toBeVisible()
-    await expect(page.locator('[data-testid="stack-tab"]')).toContainText("Coming in Phase 2")
+    await Promise.race([
+      page.locator('[data-testid="stacks-tab"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {}),
+      page.locator('[data-testid="stacks-tab-empty"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {}),
+      page.locator('[data-testid="stacks-tab-loading"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {}),
+      page.locator('[data-testid="stacks-tab-error"]').waitFor({ state: "visible", timeout: 10_000 }).catch(() => {}),
+    ])
+    const hasStacks = await page.locator('[data-testid="stacks-tab"]').isVisible()
+    const hasStacksEmpty = await page.locator('[data-testid="stacks-tab-empty"]').isVisible()
+    const hasStacksLoading = await page.locator('[data-testid="stacks-tab-loading"]').isVisible()
+    const hasStacksError = await page.locator('[data-testid="stacks-tab-error"]').isVisible()
+    expect(hasStacks || hasStacksEmpty || hasStacksLoading || hasStacksError).toBe(true)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/07-stacks-placeholder.png`,

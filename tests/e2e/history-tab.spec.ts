@@ -20,10 +20,22 @@ test.describe("History Tab E2E (Epic 17)", () => {
     // The load cycle must resolve (not hang): the loading state clears.
     await expect(page.locator('[data-testid="history-loading"]')).toHaveCount(0, { timeout: 10_000 })
 
-    // P4: the query no longer uses a composite-index orderBy, so it resolves cleanly — NOT the
-    // "Could not load your attempt history" error. A fresh owner sees the empty state.
+    // P4: the query no longer uses a composite-index orderBy (attemptsStore.loadAttempts is an
+    // equality-only `where(userId)` query), so it resolves cleanly — NEVER the "Could not load
+    // your attempt history" error. This invariant holds regardless of the account's data.
     await expect(page.locator('[data-testid="history-error"]')).toHaveCount(0)
-    await expect(page.locator('[data-testid="history-empty"]')).toBeVisible()
+
+    // The load resolved to a definite, non-error terminal state: either the empty state (a fresh
+    // owner) OR the attempts list. The shared E2E account accumulates real attempt records across
+    // scoring-flow specs (useAttemptPersistence writes one per scored run), so it is NOT
+    // guaranteed empty — assert the data area landed in one of the two valid non-error states.
+    const emptyState = page.locator('[data-testid="history-empty"]')
+    const attemptRow = page.locator('[data-testid^="attempt-row-"]')
+    await expect
+      .poll(async () => (await emptyState.count()) > 0 || (await attemptRow.count()) > 0, {
+        timeout: 10_000,
+      })
+      .toBe(true)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-history-tab.png`, fullPage: true })
   })
 })

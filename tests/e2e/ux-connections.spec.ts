@@ -41,11 +41,21 @@ test.describe("Cross-surface UX connections", () => {
     await page.locator('[data-testid="suggestion-stacks"]').click()
     await expect(page.locator('[data-testid="stacks-tab"]')).toBeVisible()
     await page.waitForTimeout(600)
+    // P92/Phase D progressive disclosure: above-level stacks live in a collapsed
+    // "More advanced stacks" drawer (plain conditional render, not in the DOM while
+    // collapsed). The default `beginner` level keeps most of the catalog hidden, so
+    // expand the drawer before counting to see the full catalog.
+    const advancedToggle = page.locator('[data-testid="advanced-stacks-toggle"]')
+    if (await advancedToggle.isVisible().catch(() => false)) {
+      if ((await advancedToggle.getAttribute("aria-expanded")) !== "true") {
+        await advancedToggle.click()
+      }
+    }
     const count = await page.locator('[data-testid^="stack-card-"]').count()
     expect(count).toBeGreaterThanOrEqual(12)
   })
 
-  test("active challenge surfaces the component-guidance banner", async ({ page }) => {
+  test("active challenge surfaces palette guidance in the Blocks tab", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
     await page.getByTestId("menu-build").click()
@@ -54,7 +64,17 @@ test.describe("Cross-surface UX connections", () => {
     await expect(page.locator('[data-testid="challenge-hud"]')).toBeVisible({ timeout: 5_000 })
 
     await page.getByRole("tab", { name: "Blocks" }).click()
-    await expect(page.locator('[data-testid="challenge-component-guidance"]')).toBeVisible({ timeout: 5_000 })
+    // 2026-06-11 playtest (ComponentTab.tsx): the `challenge-component-guidance` banner now
+    // renders ONLY for user-cloned quests that set `allowed_categories` — no built-in challenge
+    // (incl. first-service) sets it, so the banner is intentionally absent here. The surviving
+    // challenge→palette guidance for a brief with `required_components` is the Required-blocks
+    // filter, which renders as `required-filter-unlock` (fresh user, not yet purchased) or
+    // `required-filter-toggle` (already owned). first-service has required_components:[compute],
+    // so hasRequiredTargets is true and one of the two must be visible.
+    const requiredFilter = page.locator(
+      '[data-testid="required-filter-unlock"], [data-testid="required-filter-toggle"]',
+    )
+    await expect(requiredFilter).toBeVisible({ timeout: 5_000 })
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-challenge-guidance.png`, fullPage: true })
   })
 

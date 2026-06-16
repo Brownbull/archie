@@ -3,11 +3,20 @@ import {
   waitForComponentLibrary,
   addComponentToCanvas,
   selectNodeOnCanvas,
+  expandInspectorSection,
+  useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/metric-filter-and-recommendations"
 
 test.describe("Metric Filter & Variant Recommendations E2E (Story 4-2b)", () => {
+  // The inspector's metric filter + metric bars (showTechnical) and recommendations (showTradeoffs)
+  // are gated behind the experience level (P89/Phase C); the default "beginner" hides them all. Seed
+  // "advanced" before load so every section under test renders. (ComponentDetail.tsx lines 47-48.)
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
   test("AC-FUNC-3: metric filter toggles hide and show metrics", async ({ page }) => {
     await page.goto("/")
 
@@ -16,6 +25,10 @@ test.describe("Metric Filter & Variant Recommendations E2E (Story 4-2b)", () => 
 
     await addComponentToCanvas(page)
     await selectNodeOnCanvas(page)
+
+    // The metric filter lives inside the collapse-by-default "Metrics" disclosure (advanced only) —
+    // expand it before asserting the filter and the metric bars are visible.
+    await expandInspectorSection(page, "disclosure-metrics")
 
     // Metric filter should be present
     const metricFilter = page.locator('[data-testid="metric-filter"]')
@@ -80,6 +93,10 @@ test.describe("Metric Filter & Variant Recommendations E2E (Story 4-2b)", () => 
     const recsVisible = await recsSection.isVisible().catch(() => false)
 
     if (recsVisible) {
+      // Recommendation cards live inside the collapse-by-default "Recommendations" disclosure —
+      // expand it so the cards (and their improvement indicators) become visible.
+      await expandInspectorSection(page, "disclosure-recommendations")
+
       // At least one recommendation card
       const recCards = page.locator('[data-testid="variant-recommendation"]')
       const recCount = await recCards.count()

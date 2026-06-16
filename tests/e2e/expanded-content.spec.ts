@@ -3,7 +3,6 @@ import {
   waitForComponentLibrary,
   waitForBlueprints,
   dragComponentToCanvas,
-  triggerRecalcViaConfigChange,
   openDashboardOverlay,
   useAdvancedLevel,
 } from "./helpers/canvas-helpers"
@@ -20,6 +19,15 @@ const SEVERITY: Record<string, number> = { bottleneck: 0, warning: 1, healthy: 2
 /**
  * Place a component and trigger recalculation to populate computedMetrics.
  * Deselects the node afterward to prevent React Flow overlay interference.
+ *
+ * Recalc is triggered by bumping the node's replica count (setNodeReplicaCount → triggerRecalculation
+ * in architectureStore) rather than switching its config tier. A tier switch goes through
+ * updateNodeConfigVariant, which D103-gates premium tiers behind a star purchase: every non-base
+ * config_variant costs 1★, the shared E2E account's STARTER_BONUS_STARS (3) is consumed/persisted in
+ * Firestore across the whole suite, and an unaffordable switch silently no-ops (no recalc → empty
+ * computedMetrics → no dashboard-expand-button). Replicas carry no ownership gate, so the recalc
+ * always fires regardless of the account's star balance. Compute/data-storage components are
+ * `scalable` (src/lib/constants CATEGORY_SCALING_RULES), so the replica stepper is present on-node.
  */
 async function addComponentWithMetrics(
   page: Page,
@@ -32,7 +40,12 @@ async function addComponentWithMetrics(
   await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(expectedCount, {
     timeout: 5_000,
   })
-  await triggerRecalcViaConfigChange(page, expectedCount - 1)
+  const node = page.locator('[data-testid="archie-node"]').nth(expectedCount - 1)
+  const replicaIncrement = node.locator('[data-testid="replica-increment"]')
+  await expect(replicaIncrement).toBeVisible({ timeout: 5_000 })
+  await replicaIncrement.click()
+  // setNodeReplicaCount runs the recalc synchronously then ripples; give the ripple time to settle.
+  await page.waitForTimeout(500)
   await page.locator('[data-testid="canvas-panel"]').click({ position: { x: 10, y: 10 } })
   await expect(page.locator('[data-testid="inspector-panel"]')).toBeHidden({ timeout: 3_000 })
 }

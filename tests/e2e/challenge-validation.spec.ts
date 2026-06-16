@@ -35,7 +35,7 @@ const CHALLENGES: Array<{
   { id: "serverless-burst", title: "Serverless Burst", requiredTypes: ["serverless", "load-balancer"], requires: ["scale-out"] },
   { id: "worker-fleet", title: "Worker Fleet", requiredTypes: ["worker", "message-queue"], requires: ["serverless-burst"] },
   { id: "foundations-mastery", title: "Foundations Mastery", requiredTypes: ["load-balancer", "cache", "message-queue"], requires: ["worker-fleet", "cache-the-hot-path"] },
-  { id: "polyglot-persistence", title: "Polyglot Persistence", requiredTypes: ["relational-db", "nosql", "cache"], requires: ["cache-the-hot-path"] },
+  { id: "polyglot-persistence", title: "Polyglot Persistence", requiredTypes: ["relational-db", "nosql", "cache", "object-storage"], requires: ["cache-the-hot-path"] },
   { id: "analytics-backbone", title: "Analytics Backbone", requiredTypes: ["time-series-db", "graph-db", "vector-store"], requires: ["search-at-scale"] },
   { id: "dns-routing", title: "DNS Routing", requiredTypes: ["dns"], requires: ["first-service"] },
   { id: "edge-balance", title: "Load-Balanced Edge", requiredTypes: ["dns", "load-balancer"], requires: ["dns-routing", "scale-out"] },
@@ -64,7 +64,11 @@ async function scoreWithTypes(page: Page, challengeId: string, typeIdsOnCanvas: 
       // Access stores via zustand's internal module cache
       const challengeLoader = (window as any).__archie_challengeLoader
       const challengeStore = (window as any).__archie_challengeStore
-      const simStats = { uptimePercent: 100, avgLatencyMs: 5, p99LatencyMs: 20, currentRps: 100, servedRps: 100, failedRps: 0, totalServed: 1000, totalFailed: 0 }
+      // p95LatencyMs is graded by evaluateAttempt when a challenge declares target_metrics.p95_latency_ms
+      // (all built-ins except zone-failure do). computeSimStats always populates it; this fixture must too,
+      // or passedMetrics fails the p95 gate (undefined ≤ target → false) and every scored challenge → 0★.
+      // Set well below the strictest authored p95 target (140ms) so a perfect run passes the metric gate.
+      const simStats = { uptimePercent: 100, avgLatencyMs: 5, p95LatencyMs: 10, p99LatencyMs: 20, currentRps: 100, servedRps: 100, failedRps: 0, totalServed: 1000, totalFailed: 0 }
 
       if (!challengeStore || !challengeLoader) return -1
 
@@ -241,7 +245,9 @@ test.describe("Challenge Validation E2E", () => {
       // Tier-I challenges that require ONLY first-service (min_xp 0) should be available.
       // NOTE: scale-out also requires first-service but is XP-gated (min_xp 494); first-service
       // grants 100 XP, so scale-out stays locked until ~494 XP is accumulated — excluded here.
-      for (const id of ["add-a-database", "dns-routing", "observe-baseline", "auth-101", "llm-service"]) {
+      // NOTE: observe-baseline + llm-service now require [first-service, add-a-database] (prereq-chain
+      // change in the YAML), so they stay locked after first-service alone — excluded here too.
+      for (const id of ["add-a-database", "dns-routing", "auth-101"]) {
         const node = page.locator(`[data-testid="tree-node-${id}"]`)
         if (await node.isVisible().catch(() => false)) {
           const status = await node.getAttribute("data-status")

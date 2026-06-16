@@ -84,6 +84,9 @@ test.describe("Replicas & Horizontal Scaling E2E (Epic 14)", () => {
     await expect(node.locator('[data-testid="replica-count"]')).toHaveText("3×")
 
     // Export and confirm the replica count is serialized into the YAML.
+    // P95 menu-bar refactor: Export lives inside the File menu — open it before clicking
+    // (mirrors import-export.spec.ts), otherwise the hidden button never fires the download.
+    await page.getByTestId("menu-file").click()
     const [download] = await Promise.all([
       page.waitForEvent("download"),
       page.getByTestId("export-button").click(),
