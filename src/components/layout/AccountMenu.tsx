@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react"
-import { CircleUser, LogOut, Trophy, Pencil } from "lucide-react"
+import { CircleUser, LogOut, Trophy } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { rankForXp } from "@/lib/challengeTracks"
@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { MasteryProfilePanel } from "@/components/challenges/MasteryProfilePanel"
-import { NicknameDialog } from "@/components/layout/NicknameDialog"
 
 export function AccountMenu() {
   const { user, signOut } = useAuth()
@@ -22,7 +21,6 @@ export function AccountMenu() {
   const nickname = useUserProgressStore((s) => s.nickname)
   const name = nickname ?? user?.displayName ?? null
   const [profileOpen, setProfileOpen] = useState(false)
-  const [nicknameOpen, setNicknameOpen] = useState(false)
   const trackXp = useUserProgressStore((s) => s.trackXp)
   const equippedAvatar = useUserProgressStore((s) => s.equippedAvatar)
   const totalXp = Object.values(trackXp).reduce((sum, v) => sum + v, 0)
@@ -68,9 +66,6 @@ export function AccountMenu() {
           <DropdownMenuItem data-testid="account-mastery-profile" onSelect={() => setProfileOpen(true)}>
             <Trophy className="mr-2 h-3.5 w-3.5" /> Quest Profile
           </DropdownMenuItem>
-          <DropdownMenuItem data-testid="account-change-nickname" onSelect={() => setNicknameOpen(true)}>
-            <Pencil className="mr-2 h-3.5 w-3.5" /> Change nickname
-          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem data-testid="account-sign-out" onSelect={() => signOut()}>
             <LogOut className="mr-2 h-3.5 w-3.5" /> Sign out
@@ -78,7 +73,6 @@ export function AccountMenu() {
         </DropdownMenuContent>
       </DropdownMenu>
       <MasteryProfilePanel open={profileOpen} onOpenChange={setProfileOpen} />
-      <NicknameDialog open={nicknameOpen} onOpenChange={setNicknameOpen} />
     </>
   )
 }

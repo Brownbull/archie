@@ -1,13 +1,13 @@
-import { useMemo } from "react"
-import { Hammer, Wrench, RotateCcw } from "lucide-react"
+import { useMemo, useState } from "react"
+import { Hammer, Wrench, RotateCcw, ChevronDown, ChevronRight, Radio } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { feasibleBreakDials } from "@/services/breakProbe"
-import { remainingBreakAttributes, BREAK_ATTRIBUTE_LABELS, type BreaksRecord, type BreakAttribute } from "@/engine/breakDetection"
+import { remainingBreakAttributes, BREAK_ATTRIBUTE_LABELS, isDialFullyKnown, alternativeMethodIds, breakMethodLabel, type BreaksRecord, type BreakAttribute } from "@/engine/breakDetection"
+import type { ChallengeTrafficSource, Challenge } from "@/lib/challengeTypes"
 import { questBreakDials } from "@/lib/challengeBreakDials"
 import type { BreakOutcome } from "@/hooks/useBreakCollection"
-import type { Challenge } from "@/lib/challengeTypes"
 
 interface BreakItPanelProps {
   challenge: Challenge
@@ -63,8 +63,80 @@ function ExpertSlots({ record, freshAttribute, dials }: { record: BreaksRecord |
   )
 }
 
+const TRAFFIC_TYPE_LABELS: Record<string, string> = {
+  "api-client": "API Client",
+  "iot-sensors": "IoT Sensors",
+  "mobile-users": "Mobile Users",
+  "web-users": "Web Users",
+}
+
+function TrafficSourceDropdown({
+  source,
+  dials,
+  breakMethods,
+}: {
+  source: ChallengeTrafficSource
+  dials: readonly BreakAttribute[]
+  breakMethods: Readonly<Record<string, unknown>>
+}) {
+  const [open, setOpen] = useState(false)
+
+  const knownStrategies = useMemo(() => {
+    const result: Array<{ dial: BreakAttribute; methodId: string; label: string }> = []
+    for (const dial of dials) {
+      for (const mid of alternativeMethodIds(dial, source)) {
+        if (breakMethods[mid]) {
+          result.push({ dial, methodId: mid, label: breakMethodLabel(mid) })
+        }
+      }
+    }
+    return result
+  }, [source, dials, breakMethods])
+
+  if (knownStrategies.length === 0) return null
+
+  const Chevron = open ? ChevronDown : ChevronRight
+  return (
+    <div data-testid={`traffic-source-${source.type}`} className="rounded-md border border-orange-500/20 bg-orange-500/5">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center gap-2 px-2.5 py-1.5 text-left"
+      >
+        <Radio className="h-3 w-3 shrink-0 text-orange-400/70" />
+        <span className="flex-1 text-[0.6875rem] font-medium text-orange-200">
+          {TRAFFIC_TYPE_LABELS[source.type] ?? source.type}
+        </span>
+        <span className="text-[0.625rem] text-orange-300/50">
+          {source.rps} rps · {source.kind} · {source.workload} · {source.origin}
+        </span>
+        <span className="text-[0.5625rem] text-orange-300/40">
+          {knownStrategies.length} known
+        </span>
+        <Chevron className="h-3 w-3 shrink-0 text-orange-300/40" />
+      </button>
+      {open && (
+        <div className="border-t border-orange-500/15 px-2.5 py-1.5">
+          <div className="flex flex-wrap gap-1">
+            {knownStrategies.map((s) => (
+              <span
+                key={s.methodId}
+                data-testid={`known-strategy-${s.methodId}`}
+                className="rounded-full border border-orange-500/15 bg-orange-500/5 px-2 py-0.5 text-[0.625rem] text-orange-200/50"
+              >
+                {s.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProceed }: BreakItPanelProps) {
   const breaksRecord = useUserProgressStore((s) => s.breaksByChallenge[challenge.id])
+  const breakMethods = useUserProgressStore((s) => s.breakMethods)
   // Hooks live ABOVE every conditional return (hook-order invariant). The feasibility probe only
   // actually runs when the INVITE will render (3★, single-source, no outcome): ≤18 engine sims
   // against the build that just ran — the chips tell the truth about THIS build (D101 follow-up).
@@ -192,17 +264,26 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
       <div className="mt-1.5 flex flex-wrap gap-1">
         {remaining.map((a) => {
           const infeasible = feasibility !== null && !feasibility[a]
+          const authored = challenge.trafficSources?.[0]
+          const known = !infeasible && authored ? isDialFullyKnown(a, authored, breakMethods) : false
           return (
             <span
               key={a}
               data-testid={`break-attr-${a}`}
               data-feasible={feasibility === null ? undefined : !infeasible}
-              title={infeasible ? `This build can't be felled by ${BREAK_ATTRIBUTE_LABELS[a]} — no load makes it the deciding dial` : undefined}
+              data-known={known || undefined}
+              title={infeasible
+                ? `This build can't be felled by ${BREAK_ATTRIBUTE_LABELS[a]} — no load makes it the deciding dial`
+                : known
+                  ? `${BREAK_ATTRIBUTE_LABELS[a]} — every alternative is already in your break registry (no Expert payout)`
+                  : undefined}
               className={infeasible
                 ? "rounded-full border border-orange-500/10 bg-orange-500/5 px-2 py-0.5 text-[0.625rem] text-orange-200/30 line-through"
-                : "rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-[0.625rem] text-orange-200"}
+                : known
+                  ? "rounded-full border border-orange-500/15 bg-orange-500/5 px-2 py-0.5 text-[0.625rem] text-orange-200/40"
+                  : "rounded-full border border-orange-500/30 bg-orange-500/15 px-2 py-0.5 text-[0.625rem] text-orange-200"}
             >
-              {BREAK_ATTRIBUTE_LABELS[a]}
+              {BREAK_ATTRIBUTE_LABELS[a]}{known && <span className="ml-1 text-orange-300/30">known</span>}
             </span>
           )
         })}
@@ -217,8 +298,18 @@ export function BreakItPanel({ challenge, stars, outcome, onResetDials, onProcee
           })()}
         </p>
       )}
-      {/* 2026-06-11 playtest: the invite needs its own CTA — "what do I press next?" Closes back
-          to the canvas where the dials are unlocked and Rerun waits in the start slot. */}
+      {(challenge.trafficSources ?? []).length > 0 && Object.keys(breakMethods).length > 0 && (
+        <div data-testid="traffic-sources-section" className="mt-2 space-y-1">
+          {(challenge.trafficSources ?? []).map((src) => (
+            <TrafficSourceDropdown
+              key={src.type}
+              source={src}
+              dials={dials}
+              breakMethods={breakMethods}
+            />
+          ))}
+        </div>
+      )}
       <button
         type="button"
         data-testid="break-proceed"

@@ -4,6 +4,7 @@ import type { Challenge } from "@/lib/challengeTypes"
 
 let mockUser: { uid: string } | null = null
 vi.mock("@/hooks/useAuth", () => ({ useAuth: () => ({ user: mockUser }) }))
+vi.mock("@/lib/writeThrottle", () => ({ canWrite: () => true }))
 vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("firebase/firestore", () => ({
   increment: vi.fn((n: number) => ({ __increment: n })),

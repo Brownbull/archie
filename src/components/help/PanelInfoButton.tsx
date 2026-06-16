@@ -61,7 +61,7 @@ export function PanelInfoButton({
               // the current experience level are skipped, so the tour adapts to what's visible).
               // If nothing resolves (e.g. the panel isn't mounted), fall back to the full list.
               const all = guide.tour ?? []
-              const present = all.filter((s) => !s.selector || document.querySelector(s.selector) != null)
+              const present = all.filter((s) => !s.selector || (Array.isArray(s.selector) ? s.selector.some((sel) => document.querySelector(sel) != null) : document.querySelector(s.selector) != null))
               startTour(present.length > 0 ? present : all)
             }}
             className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-md border border-blue-500/40 bg-blue-500/10 px-2 py-1 text-[0.6875rem] font-medium text-blue-300 hover:bg-blue-500/20"

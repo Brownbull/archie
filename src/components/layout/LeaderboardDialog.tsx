@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { collection, getDocs } from "firebase/firestore"
+import { collection, query, orderBy, limit, getDocs, getDoc, getCountFromServer, doc, where } from "firebase/firestore"
 import { Trophy, Star, Sparkles } from "lucide-react"
 import {
   Dialog,
@@ -22,11 +22,43 @@ interface LeaderboardRow {
   rank: number
 }
 
-/**
- * D105 — the leaderboard: every registered player with XP > 0, ranked by 3★-cleared quests, then
- * total experience. Reads the userProgress collection (rules: signed-in read; names are
- * self-stamped from the auth profile). Fetched fresh on every open.
- */
+const CACHE_TTL_MS = 60_000
+let cachedRows: LeaderboardRow[] | null = null
+let cacheStamp = 0
+
+export function __resetLeaderboardCache(): void {
+  cachedRows = null
+  cacheStamp = 0
+}
+
+function assignRanks(rows: LeaderboardRow[]): void {
+  let rank = 0
+  for (let i = 0; i < rows.length; i++) {
+    if (i === 0 || rows[i].xp !== rows[i - 1].xp) rank = i + 1
+    rows[i].rank = rank
+  }
+}
+
+function docToRow(uid: string, data: Record<string, unknown>): LeaderboardRow | null {
+  if (data.isTestAccount === true) return null
+  const totalXp = (data.totalXp as number) ?? 0
+  const trackXp = (data.trackXp as Record<string, number>) ?? {}
+  const xp = totalXp > 0
+    ? totalXp
+    : Object.values(trackXp).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0)
+  if (xp <= 0) return null
+  const best = (data.bestStarsCloud as Record<string, number>) ?? {}
+  const threeStarQuests = Object.values(best).filter((v) => v === 3).length
+  return {
+    uid,
+    name: (data.nickname as string) || (data.displayName as string) || "Anonymous architect",
+    avatar: resolveAvatarSrc((data.equippedAvatar as string) ?? null, xp),
+    threeStarQuests,
+    xp,
+    rank: 0,
+  }
+}
+
 export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (o: boolean) => void }) {
   const userId = useCurrentUserId()
   const [rows, setRows] = useState<LeaderboardRow[] | null>(null)
@@ -36,41 +68,54 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
     if (!open) return
     let cancelled = false
     void (async () => {
-      // state rides the async continuation — no synchronous setState inside the effect body
       await Promise.resolve()
       if (cancelled) return
+
+      if (cachedRows && Date.now() - cacheStamp < CACHE_TTL_MS) {
+        setRows(cachedRows)
+        return
+      }
+
       setRows(null)
       setError(null)
       try {
-        const snap = await getDocs(collection(db, "userProgress"))
+        const ref = collection(db, "userProgress")
+        // Fetch slightly more than 10 to account for test accounts filtered client-side.
+        // Single-field index on totalXp (desc) — Firestore creates it automatically.
+        const topQuery = query(ref, orderBy("totalXp", "desc"), limit(15))
+        const snap = await getDocs(topQuery)
         if (cancelled) return
+
         const out: LeaderboardRow[] = []
         snap.forEach((d) => {
-          const data = d.data()
-          if (data.isTestAccount === true) return // E2E/test accounts never rank (D105b)
-          const trackXp = (data.trackXp as Record<string, number>) ?? {}
-          const xp = Object.values(trackXp).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0)
-          if (xp <= 0) return // only players with experience appear
-          const best = (data.bestStarsCloud as Record<string, number>) ?? {}
-          const threeStarQuests = Object.values(best).filter((v) => v === 3).length
-          out.push({
-            uid: d.id,
-            name: (data.nickname as string) || (data.displayName as string) || "Anonymous architect",
-            avatar: resolveAvatarSrc((data.equippedAvatar as string) ?? null, xp),
-            threeStarQuests,
-            xp,
-            rank: 0,
-          })
+          const row = docToRow(d.id, d.data())
+          if (row) out.push(row)
         })
-        // D107: rankings are EXPERIENCE-ONLY — stars and Experts grant XP when earned through play,
-        // so the single axis already weighs everything (and purchased packs grant no XP at all).
+
         out.sort((a, b) => b.xp - a.xp || a.name.localeCompare(b.name, undefined, { sensitivity: "base" }))
-        let rank = 0
-        for (let i = 0; i < out.length; i++) {
-          if (i === 0 || out[i].xp !== out[i - 1].xp) rank = i + 1
-          out[i].rank = rank
+        assignRanks(out)
+
+        if (userId && !out.some((r) => r.uid === userId)) {
+          const myDoc = await getDoc(doc(db, "userProgress", userId))
+          if (!cancelled && myDoc.exists()) {
+            const myRow = docToRow(userId, myDoc.data())
+            if (myRow) {
+              // Count docs with strictly higher XP (aggregation — zero doc reads)
+              const aboveQuery = query(ref, where("totalXp", ">", myRow.xp))
+              const countSnap = await getCountFromServer(aboveQuery)
+              if (!cancelled) {
+                myRow.rank = countSnap.data().count + 1
+                out.push(myRow)
+              }
+            }
+          }
         }
-        setRows(out)
+
+        if (!cancelled) {
+          cachedRows = out
+          cacheStamp = Date.now()
+          setRows(out)
+        }
       } catch {
         if (!cancelled) setError("Couldn't load the leaderboard — try again in a moment.")
       }
@@ -78,7 +123,7 @@ export function LeaderboardDialog({ open, onOpenChange }: { open: boolean; onOpe
     return () => {
       cancelled = true
     }
-  }, [open])
+  }, [open, userId])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

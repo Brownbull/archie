@@ -4,6 +4,8 @@ import {
   detectSingleAttributeBreak,
   isNewBreak,
   remainingBreakAttributes,
+  alternativeMethodIds,
+  isDialFullyKnown,
   type TrafficNodeLike,
 } from "@/engine/breakDetection"
 import type { ChallengeTrafficSource } from "@/lib/challengeTypes"
@@ -86,5 +88,67 @@ describe("break collection bookkeeping", () => {
     expect(remainingBreakAttributes(undefined)).toEqual(["rps", "kind", "workload", "origin"])
     expect(remainingBreakAttributes({ rps: true, workload: true })).toEqual(["kind", "origin"])
     expect(remainingBreakAttributes({ rps: true, kind: true, workload: true, origin: true })).toEqual([])
+  })
+})
+
+describe("alternativeMethodIds", () => {
+  const authored = { kind: "realistic", workload: "read", origin: "one-region" }
+
+  it("rps always returns rps-overload", () => {
+    expect(alternativeMethodIds("rps", authored)).toEqual(["rps-overload"])
+  })
+
+  it("kind returns all shapes except the authored one", () => {
+    const ids = alternativeMethodIds("kind", authored)
+    expect(ids).toEqual(["shape-steady", "shape-periodic", "shape-search"])
+    expect(ids).not.toContain("shape-realistic")
+  })
+
+  it("workload returns all workloads except the authored one", () => {
+    const ids = alternativeMethodIds("workload", authored)
+    expect(ids).toEqual(["workload-write", "workload-mixed"])
+    expect(ids).not.toContain("workload-read")
+  })
+
+  it("origin returns origin-multi-region when authored is one-region", () => {
+    expect(alternativeMethodIds("origin", authored)).toEqual(["origin-multi-region"])
+  })
+
+  it("origin returns empty when authored is multi-region", () => {
+    expect(alternativeMethodIds("origin", { ...authored, origin: "multi-region" })).toEqual([])
+  })
+})
+
+describe("isDialFullyKnown", () => {
+  const authored = { kind: "realistic", workload: "read", origin: "one-region" }
+
+  it("returns false when no methods are known", () => {
+    expect(isDialFullyKnown("rps", authored, {})).toBe(false)
+  })
+
+  it("returns true for rps when rps-overload is known", () => {
+    expect(isDialFullyKnown("rps", authored, { "rps-overload": {} })).toBe(true)
+  })
+
+  it("returns false for kind when only some alternatives are known", () => {
+    expect(isDialFullyKnown("kind", authored, { "shape-steady": {} })).toBe(false)
+  })
+
+  it("returns true for kind when all alternatives are known", () => {
+    const methods = { "shape-steady": {}, "shape-periodic": {}, "shape-search": {} }
+    expect(isDialFullyKnown("kind", authored, methods)).toBe(true)
+  })
+
+  it("returns true for workload when both alternatives are known", () => {
+    const methods = { "workload-write": {}, "workload-mixed": {} }
+    expect(isDialFullyKnown("workload", authored, methods)).toBe(true)
+  })
+
+  it("returns true for origin when origin-multi-region is known", () => {
+    expect(isDialFullyKnown("origin", authored, { "origin-multi-region": {} })).toBe(true)
+  })
+
+  it("returns false for origin when authored is multi-region (no alternatives)", () => {
+    expect(isDialFullyKnown("origin", { ...authored, origin: "multi-region" }, { "origin-multi-region": {} })).toBe(false)
   })
 })

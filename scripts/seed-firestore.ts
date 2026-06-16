@@ -254,8 +254,10 @@ export function validateBlueprintReferences(
  * Metadata is committed in its own separate batch after all component writes.
  */
 export async function seedToFirestore(db: FirestoreSubset, components: Component[], logger: SeedLogger = console): Promise<number> {
-  // Note: unlike seedBlueprintsToFirestore, we always write metadata even when components is empty,
-  // so the seed document records componentCount: 0 as a valid seed state.
+  if (components.length === 0) {
+    logger.log("No components to seed.")
+    return 0
+  }
   const totalChunks = Math.ceil(components.length / BATCH_LIMIT)
 
   for (let chunkNum = 1; chunkNum <= totalChunks; chunkNum++) {
@@ -270,16 +272,7 @@ export async function seedToFirestore(db: FirestoreSubset, components: Component
     logger.log(`Batch ${chunkNum}/${totalChunks} committed (${chunk.length} operations)`)
   }
 
-  const metaBatch = db.batch()
-  metaBatch.set(db.collection("_metadata").doc("seed"), {
-    version: "1.0.0",
-    seededAt: new Date().toISOString(),
-    componentCount: components.length,
-  })
-  await metaBatch.commit()
-
   logger.log(`Seeded ${components.length} components to Firestore.`)
-  logger.log("Metadata written to _metadata/seed.")
   return components.length
 }
 
@@ -574,9 +567,20 @@ async function main() {
   const db = getFirestore()
   db.settings({ ignoreUndefinedProperties: true })
 
-  await seedToFirestore(db, components)
-  await seedBlueprintsToFirestore(db, blueprints)
-  await seedStacksToFirestore(db, stacks, components)
+  const componentCount = await seedToFirestore(db, components)
+  const blueprintCount = await seedBlueprintsToFirestore(db, blueprints)
+  const stackCount = await seedStacksToFirestore(db, stacks, components)
+
+  const metaBatch = db.batch()
+  metaBatch.set(db.collection("_metadata").doc("seed"), {
+    version: "1.0.0",
+    seededAt: new Date().toISOString(),
+    componentCount,
+    blueprintCount,
+    stackCount,
+  })
+  await metaBatch.commit()
+  console.log("Metadata written to _metadata/seed — client caches will refresh on next load.")
 }
 
 // Only auto-execute when run directly (not when imported by tests)

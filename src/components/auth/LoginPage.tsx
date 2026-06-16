@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Navigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
@@ -7,7 +8,11 @@ const hasTestCredentials = !!import.meta.env.VITE_TEST_EMAIL
 const hasUnlockedTestCredentials = !!import.meta.env.VITE_TEST_UNLOCKED_EMAIL
 
 export function LoginPage() {
-  const { user, loading, error, signIn, signInWithTest, signInWithUnlockedTestUser } = useAuth()
+  const { user, loading, error, signIn, signInWithEmail, signInWithTest, signInWithUnlockedTestUser } = useAuth()
+  const [emailOpen, setEmailOpen] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [submitting, setSubmitting] = useState(false)
 
   if (loading) {
     return null
@@ -17,12 +22,20 @@ export function LoginPage() {
     return <Navigate to="/" replace />
   }
 
+  const handleEmailSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (submitting || !email || !password) return
+    setSubmitting(true)
+    await signInWithEmail(email, password)
+    setSubmitting(false)
+  }
+
   return (
     <div
       data-testid="login-page"
       className="flex min-h-screen items-center justify-center bg-canvas"
     >
-      <div className="flex w-full max-w-sm flex-col items-center gap-8 rounded-lg border border-archie-border bg-panel p-8">
+      <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-lg border border-archie-border bg-panel p-8">
         <div className="flex flex-col items-center gap-2">
           <h1 className="text-3xl font-bold text-text-primary">Archie</h1>
           <p className="text-center text-sm text-text-secondary">
@@ -38,6 +51,51 @@ export function LoginPage() {
         >
           Sign in with Google
         </Button>
+
+        {!emailOpen ? (
+          <button
+            type="button"
+            data-testid="email-toggle"
+            onClick={() => setEmailOpen(true)}
+            className="text-xs text-text-secondary hover:text-text-primary"
+          >
+            Sign in with email
+          </button>
+        ) : (
+          <form onSubmit={(e) => void handleEmailSubmit(e)} className="flex w-full flex-col gap-3">
+            <div className="h-px bg-archie-border" />
+            <label className="sr-only" htmlFor="login-email">Email</label>
+            <input
+              id="login-email"
+              data-testid="email-input"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              className="w-full rounded-md border border-archie-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:border-blue-500/60"
+            />
+            <label className="sr-only" htmlFor="login-password">Password</label>
+            <input
+              id="login-password"
+              data-testid="password-input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              className="w-full rounded-md border border-archie-border bg-surface px-3 py-2 text-sm text-text-primary outline-none focus:border-blue-500/60"
+            />
+            <Button
+              data-testid="email-password-submit"
+              type="submit"
+              disabled={submitting || !email || !password}
+              className="w-full"
+            >
+              {submitting ? "Signing in…" : "Sign in"}
+            </Button>
+          </form>
+        )}
 
         {isDev && hasTestCredentials && (
           <Button

@@ -37,6 +37,7 @@ const testPorts: Record<string, PortDefinition[]> = {
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
+    initialize: vi.fn().mockResolvedValue(undefined),
     getComponent: vi.fn((id: string) => {
       const ports = testPorts[id]
       if (!ports) return undefined

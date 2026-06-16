@@ -1,6 +1,7 @@
 import { create } from "zustand"
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase"
+import { canWrite } from "@/lib/writeThrottle"
 
 /**
  * Per-user, per-block-TYPE configuration defaults. When a user saves a node's current
@@ -61,6 +62,7 @@ export const useUserBlockDefaultsStore = create<UserBlockDefaultsState>((set, ge
 
   saveDefault: async (userId, typeId, providerId, variantId) => {
     if (!userId || !typeId || !providerId || !variantId) return
+    if (!canWrite(`defaults:${userId}`)) return
     // Optimistic local update first so the button clears immediately, then persist.
     const next = { ...get().defaults, [typeId]: { providerId, variantId } }
     set({ defaults: next, error: null })

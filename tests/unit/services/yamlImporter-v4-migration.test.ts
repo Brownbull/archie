@@ -10,6 +10,7 @@ const defaultProfile = Object.fromEntries(ALL_CATEGORY_IDS.map((id) => [id, 1.0]
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
+    initialize: vi.fn().mockResolvedValue(undefined),
     getComponent: vi.fn((id: string) => {
       const known = ["postgresql", "redis", "node-express"]
       if (!known.includes(id)) return undefined

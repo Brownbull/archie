@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 
+vi.mock("@/lib/writeThrottle", () => ({ canWrite: () => true }))
 vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("firebase/firestore", () => ({
   doc: vi.fn(() => ({})),
@@ -137,7 +138,7 @@ describe("loadProgress — Phase 6 generation reset (D65)", () => {
 
   it("loads a current-generation doc unchanged — no reset, no write (idempotent)", async () => {
     mockGetDoc.mockResolvedValue(snapshot({
-      nickname: "KeptName42",
+      nickname: "KeptName42", totalXp: 300,
       generation: PROGRESS_GENERATION, trackXp: { foundations: 300 }, completedChallenges: ["a"],
       bestStarsCloud: { a: 3 }, hintsUnlocked: { a: 1 }, equippedAvatar: "y",
     }))

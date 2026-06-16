@@ -1,7 +1,6 @@
-import { useMemo } from "react"
-import { Shield, Lock } from "lucide-react"
+import { useMemo, useState } from "react"
+import { Shield, Lock, Pencil, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
-import { useState } from "react"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useCurrentUserId } from "@/hooks/useCurrentUserId"
 import { getAllChallenges } from "@/services/challengeLoader"
@@ -13,9 +12,11 @@ import {
 } from "@/lib/challengeTracks"
 import { getMasteryAvatar, getTrackAvatar, getDisciplineAvatars } from "@/lib/masteryAvatars"
 import { ALL_EQUIPMENT_SLOTS, getBlockColor } from "@/lib/equipmentSlots"
+import { Button } from "@/components/ui/button"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog"
+import { NicknameDialog } from "@/components/layout/NicknameDialog"
 
 interface Props { open: boolean; onOpenChange: (open: boolean) => void }
 
@@ -199,7 +200,12 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
   const completedChallenges = useUserProgressStore((s) => s.completedChallenges)
   const equippedAvatar = useUserProgressStore((s) => s.equippedAvatar)
   const equipAvatar = useUserProgressStore((s) => s.equipAvatar)
+  const nickname = useUserProgressStore((s) => s.nickname)
+  const resetQuestProgress = useUserProgressStore((s) => s.resetQuestProgress)
   const userId = useCurrentUserId()
+  const [nicknameOpen, setNicknameOpen] = useState(false)
+  const [resetConfirm, setResetConfirm] = useState(false)
+  const [resetting, setResetting] = useState(false)
 
   const totalXp = Object.values(trackXp).reduce((sum, v) => sum + v, 0)
   const overallRank = rankForXp(totalXp)
@@ -266,6 +272,18 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
               </div>
             </div>
             <span data-testid="overall-rank" className="text-sm font-bold text-[#f5deb3]">{overallRank.name}</span>
+            {nickname && (
+              <button
+                type="button"
+                data-testid="profile-nickname"
+                onClick={() => setNicknameOpen(true)}
+                className="group flex items-center gap-1 text-[0.6875rem] text-[#6b7280] transition-colors hover:text-[#9ca3af]"
+                title="Change nickname"
+              >
+                <span className="truncate">{nickname}</span>
+                <Pencil className="h-2.5 w-2.5 opacity-0 transition-opacity group-hover:opacity-100" />
+              </button>
+            )}
 
             {/* Equipment grid: left column | character | right column */}
             <div className="flex items-start gap-2">
@@ -304,9 +322,63 @@ export function MasteryProfilePanel({ open, onOpenChange }: Props) {
             <div className="rounded-md border border-dashed border-[#2a3040] p-3 text-center">
               <span className="text-[0.625rem] text-[#4b5563]">Blueprints & Stacks unlocks — coming in Season 2</span>
             </div>
+
+            {/* Reset quest progress */}
+            <div className="rounded-md border border-[#1e2530] p-2">
+              {!resetConfirm ? (
+                <Button
+                  data-testid="reset-progress-trigger"
+                  variant="ghost"
+                  size="sm"
+                  className="w-full gap-1.5 text-[0.6875rem] text-red-400/70 hover:bg-red-500/10 hover:text-red-400"
+                  onClick={() => setResetConfirm(true)}
+                >
+                  <RotateCcw className="h-3 w-3" /> Reset quest progress
+                </Button>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-center text-[0.6875rem] leading-snug text-red-300/90">
+                    This resets all quests, stars, expert currency, break methods, and unlocked blocks back to the starter grant (3 stars, 1 expert). Your nickname and avatar stay.
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1 text-[0.6875rem]"
+                      onClick={() => setResetConfirm(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      data-testid="reset-progress-confirm"
+                      variant="destructive"
+                      size="sm"
+                      className="flex-1 text-[0.6875rem]"
+                      disabled={resetting}
+                      onClick={async () => {
+                        if (!userId) return
+                        setResetting(true)
+                        const err = await resetQuestProgress(userId)
+                        setResetting(false)
+                        if (err) {
+                          toast.error(err)
+                        } else {
+                          toast.success("Quest progress reset to starter grant.")
+                          setResetConfirm(false)
+                          onOpenChange(false)
+                        }
+                      }}
+                    >
+                      {resetting ? "Resetting…" : "Confirm reset"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>
+      <NicknameDialog open={nicknameOpen} onOpenChange={setNicknameOpen} />
     </Dialog>
   )
 }

@@ -3,6 +3,19 @@ import type { Component } from "@/schemas/componentSchema"
 import type { BlueprintFull } from "@/schemas/blueprintSchema"
 import type { MetricCategory } from "@/schemas/metricCategorySchema"
 
+vi.mock("@/lib/firebase", () => ({ db: {} }))
+vi.mock("firebase/firestore", () => ({
+  doc: vi.fn(() => ({})),
+  getDoc: vi.fn(() => Promise.resolve({ exists: () => false })),
+}))
+vi.mock("@/services/refDataCache", () => ({
+  isCacheValid: vi.fn(() => Promise.resolve(false)),
+  readCached: vi.fn(() => null),
+  writeCache: vi.fn(),
+  stampCache: vi.fn(),
+  clearCache: vi.fn(),
+}))
+
 const { mockComponentRepo, mockStackRepo, mockBlueprintRepo, mockMetricCategoryRepo } = vi.hoisted(() => ({
   mockComponentRepo: {
     getAll: vi.fn(),
@@ -317,6 +330,41 @@ describe("componentLibrary", () => {
 
     it("getAllMetricCategories returns empty array before initialization", () => {
       expect(componentLibrary.getAllMetricCategories()).toEqual([])
+    })
+  })
+
+  describe("localStorage cache", () => {
+    it("uses cached data when isCacheValid returns true and localStorage has data", async () => {
+      const { isCacheValid, readCached } = await import("@/services/refDataCache")
+      const isCacheValidMock = vi.mocked(isCacheValid)
+      const readCachedMock = vi.mocked(readCached)
+
+      isCacheValidMock.mockResolvedValueOnce(true)
+      readCachedMock
+        .mockReturnValueOnce([mockComponent])
+        .mockReturnValueOnce([])
+        .mockReturnValueOnce([])
+        .mockReturnValueOnce([])
+
+      await componentLibrary.initialize()
+
+      expect(mockComponentRepo.getAll).not.toHaveBeenCalled()
+      expect(componentLibrary.getAllComponents()).toHaveLength(1)
+      expect(componentLibrary.getComponent("postgresql")?.name).toBe("PostgreSQL")
+    })
+
+    it("falls back to Firestore when cache is valid but localStorage data is missing", async () => {
+      const { isCacheValid, readCached } = await import("@/services/refDataCache")
+      const isCacheValidMock = vi.mocked(isCacheValid)
+      const readCachedMock = vi.mocked(readCached)
+
+      isCacheValidMock.mockResolvedValueOnce(true)
+      readCachedMock.mockReturnValue(null)
+
+      await componentLibrary.initialize()
+
+      expect(mockComponentRepo.getAll).toHaveBeenCalledTimes(1)
+      expect(componentLibrary.getAllComponents()).toHaveLength(2)
     })
   })
 })

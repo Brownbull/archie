@@ -34,7 +34,7 @@ export function SettingsMenu() {
   // on-block tuning + an unselected inspector are skipped (tier/state-aware). Falls back to the full
   // list if nothing resolves (e.g. launched before the app shell mounts).
   const startFullJourney = () => {
-    const present = FULL_JOURNEY.filter((s) => !s.selector || document.querySelector(s.selector) != null)
+    const present = FULL_JOURNEY.filter((s) => !s.selector || (Array.isArray(s.selector) ? s.selector.some((sel) => document.querySelector(sel) != null) : document.querySelector(s.selector) != null))
     startTour(present.length > 0 ? present : FULL_JOURNEY)
   }
 

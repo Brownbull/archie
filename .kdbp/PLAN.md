@@ -1,36 +1,38 @@
 # Active Plan
 
-<!-- status: complete -->
+<!-- status: active -->
 <!-- project_type: code -->
 
 ## Goal
 
-Progression Legibility & Explainability — close the gaps the 2026-06-11 playtest + feedback re-audit
-surfaced: make the tech tree honest at the PALETTE level (no block offered before its unlock quest —
-the D90 reversal), make shipped-but-invisible features legible (chains in the tree, extras before
-completion), de-escalate the coach from step-by-step instruction to compiler-style diagnostics, and
-make the architectural scores explain themselves. Then polish the catalog (icons, explainers,
-the pool-exhaustion quest) and research vendor-unlock progression.
+Kane QA remediation (2026-06-15 handoff) — close the *verified* findings from the Khujta Scanner
+7-session evaluation, after correcting the report's severity for stale-build + test-harness artifacts.
+The import init-race (B1) and stale AI-prompt template (B2) are already fixed this session; this plan
+covers the remaining real work: redeploy current HEAD to retire the already-fixed "MAJOR" items,
+build the novice on-ramp (S1 — the keystone for the public self-serve audience), fix the real WCAG
+contrast failures, and add agent/SEO discoverability files.
 
 ## Context
 
 - **Maturity:** enterprise
 - **Domain:** Software architecture visualization and design tool (react, typescript, vite, react-flow)
-- **Created:** 2026-06-11
-- **Source:** 2026-06-11 owner playtest (async-pipeline palette complaint + chain invisibility) +
-  full re-audit of docs/gabe/tests/20260609/feedback20260609.md against the shipped roadmap
-  (9 open/partial items identified; lines 1-8 of the original feedback were never scoped).
-- **Supersedes:** Quest Integrity & Break-It Loop (completed 2026-06-10, archived; P158–P170).
+- **Created:** 2026-06-15
+- **Last Updated:** 2026-06-15
+- **Source:** `reports/archie/archie-qa-handoff.md` (Khujta Scanner / Kane, 7 sessions). Every claim
+  verified against code + live Firestore this session — see "Verification ledger" in Notes.
+- **Audience (owner-confirmed):** public self-serve novices → S1 onboarding is high-value, not optional.
+- **Already done (not in phases):** B1 import init-race fix (`importYaml` awaits `componentLibrary.initialize()`
+  + `LIBRARY_UNAVAILABLE` guard + 2 regression tests); B2 `prompt-template.md` regenerated to schema
+  4.0.0 / 114 components via `scripts/gen-prompt-template.ts` + 5-test drift gate.
 
 ## Phases
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Unlock-ordering true-up | Close the 53 ungrantable-available-block palette gaps (D90 reversal): per gap add a prereq edge, re-tier via dependency sub-rows, or trim the palette; fix async-pipeline (palette + worker-naming hints); promote the palette check to a HARD gate at zero; solvability re-verified per batch. | ent | high | ✅ | ✅ | ✅ | ✅ |
-| 2 | Chain & extras legibility | Make shipped features visible: tree-level chain visualization (chain-styled member edges + stage badges), pre-completion extra-challenge indicators (resilience/breakable markers on available quests), retrofit 1–2 more chains from existing progressions. | ent | med | ✅ | ✅ | ✅ | ✅ |
-| 3 | Coach de-escalation | Replace build-state step-by-step tackle instructions ("Add a Compute block") with compiler-style diagnostics only (wiring, orphans, ports, missing-required as validation); keep run/watch/scored coaching; owner fork: difficulty-gated vs global. | ent | med | ✅ | ✅ | ✅ | ✅ |
-| 4 | Score explainability & CTA consolidation | Architectural scores become clickable → per-metric trace (which components/factors feed performance, reliability, scalability…); surface complexity as a visible stat; audit + consolidate the duplicate call-to-action surfaces (foundation suggestions vs pathway vs coach). | scale | high | ✅ | ✅ | ✅ | ✅ |
-| 5 | Catalog polish & explainers | Icon coverage sweep (both icon modes, all blocks/variants); observability "why monitoring fixes it" explainer (feedback line 75); D18 pool-exhaustion challenge (concurrency_limit authoring); vendor-unlock progression design doc (research only). | ent | med | ✅ | ✅ | ✅ | ✅ |
+| 1 | Redeploy + re-verify the stale-build items | Ship current HEAD (carries B1/B2 + the already-landed M2/M3/C3 fixes), then re-test M1/M2/M3/C3 on a NORMALLY-PLAYED account to confirm they're resolved; document residual gaps (loading skeleton, "test accounts excluded" copy) only if still real. | ent | low | ⬜ | ⬜ | ⬜ | ⬜ |
+| 2 | Novice on-ramp (S1 keystone) | First-run route fork ("New to architecture?" → Quest Mode / "I know architecture" → Free Mode), persisted; S1c promote "Start from a Blueprint" as the beginner Free-Mode default; S1d plain-language layer on the bottom-bar scores (extend the Build-Health checklist style). | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
+| 3 | Accessibility & discoverability | M4: fix the 5 verified WCAG-AA contrast failures (Free-Mode pill, Test-Conditions label, tour Next button, History date/tags); C4 valid robots.txt; C5 llms.txt for agentic browsing. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
+| 4 | Polish & research | S1b beginner-mode chrome reduction (design/research doc first — overlaps shipped Beginner-mode work, scope it before building); M5 failure-selector discoverability ("stop sim to change conditions" hint) — keep the intentional idle-gate. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
 
 <!-- Exec is written by /gabe-execute: ⬜ not started, 🔄 in progress, ✅ complete -->
 <!-- Review/Commit/Push auto-ticked by /gabe-review, /gabe-commit, /gabe-push -->
@@ -41,171 +43,168 @@ the pool-exhaustion quest) and research vendor-unlock progression.
 
 ## Phase Details
 
-### Phase 1 — Unlock-ordering true-up
+### Phase 1 — Redeploy + re-verify the stale-build items
 
 ```yaml
 phase: 1
-types: [content, user-facing]
-phase_tier: ent
-prototype: false
-dim_overrides: []
-sections_considered: [Core, Content]
-suppressed_dims_count: 0
-decisions_entry: TBD (phase design lock at exec start — D90 reversal rationale + per-gap dispositions)
-```
-
-- **Scope:** The 53-gap snapshot in `tests/unit/engine/unlockOrdering.baseline.test.ts` is the
-  worklist. Per gap, one of three dispositions: (a) add a `requires` edge so the granting quest
-  precedes (the tree layout already supports dependency sub-rows within a tier — feedback line 59's
-  "more rows per tier"); (b) re-tier the offending quest (burst-absorber precedent); (c) trim the
-  palette entry (P4-S5 toolbox realism shows all unlocked blocks gray-locked, so trimming no longer
-  hides blocks from view — the original D90 pressure is gone). async-pipeline is the poster child:
-  palette offers worker/cache/load-balancer at tier 1, and hints 3–4 literally instruct a worker
-  route (granted at tier 4 by worker-fleet, which REQUIRES async-pipeline). Fix palette + rewrite
-  those hints vs harness ground truth. End state: gap count 0 and `ungrantable-available-block`
-  folded into `validateTechTree` as a hard gate (the D90 migration clause).
-- **Exit:** palette-gap count = 0, hard-gated; async-pipeline hints worker-free and harness-true;
-  62/62 solvability + golden held; tree renders without tier-height regressions.
-- **Key files:** src/data/challenges/*.yaml (requires/available_blocks/hints), src/engine/techTree.ts
-  (gate promotion), tests/unit/engine/unlockOrdering.baseline.test.ts (snapshot → hard assert),
-  tests/integration/challenges/referenceSolution.ts (re-verify per batch).
-- **Risk/decision:** adding requires-edges changes availability for mid-progress players. Unlike the
-  Phase-2 re-tiering (which forced the D28/D65 generation reset), edges only RESTRICT future
-  availability — completed quests stay completed. Expected: NO progress reset; verify at exec start
-  against the owner's live account before committing to that.
-
-### Phase 2 — Chain & extras legibility
-
-```yaml
-phase: 2
-types: [user-facing]
+types: [user-facing, deployment]
 phase_tier: ent
 prototype: false
 dim_overrides: []
 sections_considered: [Core, Client-state]
 suppressed_dims_count: 0
-decisions_entry: TBD
+decisions_entry: D108
 ```
 
-- **Scope:** (a) Tree-level chain visualization: chain-member edges drawn distinctly (e.g., doubled/
-  link-styled stroke), a stage badge on member nodes (1/3, 2/3…), and fork-point affordance — the
-  Data Backbone must be discoverable without clicking event-stream. (b) Pre-completion extras
-  indicators: quests authoring resilience_conditions or trafficSources (breakable) carry a corner
-  marker on AVAILABLE nodes too (today the hammer badge is completed-only; feedback line 51 wanted
-  "there is an additional challenge here" before you start). (c) Retrofit 1–2 more chains from
-  existing requires-progressions (candidates: foundations first-service → add-a-database →
-  cache-the-hot-path → scale-out; edge track edge-delivery line) — chain coherence harness already
-  gates parent/child correctness.
-- **Exit:** a player opening the Quest Log can SEE every chain and every extras-bearing quest at a
-  glance; ≥2 chains shipped; E2E evidence artifact of the tree with chain + extras markers.
-- **Key files:** src/components/challenges/ChallengeTreeView.tsx, src/data/challenges/*.yaml (chain
-  blocks), tests/integration/challenges/chains.test.ts, tests/e2e/feedback-phase*.unlocked.spec.ts.
+- **Scope:** Kane tested an OLDER deployed build. Current HEAD already contains: M2 leaderboard
+  empty-state ("No ranked architects yet…", LeaderboardDialog.tsx:143) + self-placement
+  (`myRow.rank`, :107); M3 tour `tour-skip` button (:227) + `pointer-events-none` backdrop (:175/196,
+  so it does NOT intercept clicks) + once-only `tourSeen` gate; C3 `<main>` landmark (AppLayout.tsx:86).
+  HEAD also now carries the B1/B2 fixes. So a redeploy retires those four findings at once. After
+  deploy, re-run the journey on a *normally-played* account (NOT the REST-seeded `qa-unlocked` — its
+  M1 contradictions are seed artifacts: `isTestAccount` excludes it from the board, and it never
+  logged attempts). Capture before/after evidence.
+- **Exit:** current HEAD live on prod; B1 re-validated via the cold-load import reproduction (now
+  passes); M2/M3/C3 confirmed resolved by browser journey artifacts; residual gaps (loading skeleton,
+  "excluded" copy) either closed or logged to PENDING with a trigger.
+- **Key files:** (deploy only — no source change expected) `firebase.json`, the build output;
+  re-verify against `src/components/layout/LeaderboardDialog.tsx`, `src/components/onboarding/*`.
+- **Runtime evidence:** `npm run build` + `firebase deploy --only hosting`; browser journey on
+  prod (login → import fixture → leaderboard → tour) with screenshots to `test-results/qa-reverify/`.
 
-### Phase 3 — Coach de-escalation
+### Phase 2 — Novice on-ramp (S1 keystone)
+
+```yaml
+phase: 2
+types: [user-facing, client-state]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Client-state]
+suppressed_dims_count: 0
+decisions_entry: D109
+```
+
+- **Scope:** The report's highest-leverage UX item, justified by the public-novice audience. (a) S1a:
+  on first visit (no persisted choice), present a route fork — "New to architecture?" → Quest Mode
+  (First Service) vs "I know architecture" → Free Mode. Persist the choice (preferencesStore, like
+  `tourSeen`). (b) S1c: in Free Mode's empty state, promote "Start from a Blueprint" as the visually
+  primary beginner option (it's already the most novice-friendly path, just buried as 1 of N). (c)
+  S1d: add a plain-language gloss to the bottom-bar architectural scores (e.g., "6.0 C — solid but
+  the database is a bottleneck"), reusing the Build-Health checklist's plain-language style. No engine
+  change — presentation over existing recalculation output.
+- **Exit:** a first-time visitor is offered the Quest/Free fork and lands where they chose; Blueprint
+  is the obvious beginner start in Free Mode; every bottom-bar score carries a plain-language line;
+  E2E journey artifact of the first-run fork + a fresh account landing in Quest Mode.
+- **Key files:** `src/components/canvas/EmptyCanvasState.tsx`, `src/components/layout/ModeToggle.tsx`,
+  `src/stores/preferencesStore.ts` (first-run flag), `src/components/dashboard/**` (score gloss),
+  `src/components/toolbox/BlueprintTab.tsx` (beginner promotion).
+- **Runtime evidence:** E2E spec for the first-run fork on a brand-new account → screenshots of both
+  branches; unauthenticated + authenticated paths.
+
+### Phase 3 — Accessibility & discoverability
 
 ```yaml
 phase: 3
+types: [user-facing, web]
+phase_tier: ent
+prototype: false
+dim_overrides: []
+sections_considered: [Core, Client-state]
+suppressed_dims_count: 0
+decisions_entry: D110
+```
+
+- **Scope:** (a) M4: raise contrast to WCAG AA (4.5:1 normal / 3:1 large) on the 5 verified elements —
+  Free-Mode mode pill (~3.5:1), Test-Conditions label (`text-text-secondary/80` at 9px, ~1.1:1),
+  tour Next button (~3.5:1), History date (~1.8:1), History tags (~1.6:1). Fix via token/opacity
+  bumps; verify ratios. (b) C4: ship a valid `public/robots.txt`. (c) C5: ship `public/llms.txt`
+  (agentic-browsing score was 67) describing the app for agent crawlers.
+- **Exit:** all 5 elements meet AA (measured); robots.txt + llms.txt present and valid; Lighthouse
+  a11y ≥ 95 on the affected pages (was 92).
+- **Key files:** `src/components/canvas/TestConditionsPanel.tsx`, `src/components/layout/ModeToggle.tsx`,
+  `src/components/onboarding/SpotlightTour.tsx`, History panel components, `src/index.css`/theme tokens;
+  `public/robots.txt`, `public/llms.txt` (new).
+- **Runtime evidence:** contrast-ratio measurement per element (devtools/axe) + Lighthouse a11y re-run.
+
+### Phase 4 — Polish & research
+
+```yaml
+phase: 4
 types: [user-facing]
 phase_tier: ent
 prototype: false
 dim_overrides: []
 sections_considered: [Core]
 suppressed_dims_count: 0
-decisions_entry: TBD (owner fork at design: difficulty-gated vs global removal)
+decisions_entry: D111
 ```
 
-- **Scope:** The original feedback's lines 6–8 — never scoped until now. Build-state coach today
-  issues ordered instructions ("Add a traffic source" → "Add a Compute block" → "Wire it together").
-  Replace with compiler-style DIAGNOSTICS: report structural blockers (orphans, port mismatches,
-  unreachable subgraphs, missing required categories phrased as validation-failure, not as a to-do),
-  and otherwise stay quiet until run/scored states (those keep their current coaching — measured-vs-
-  target iterate lines are results explanation, which the feedback explicitly endorsed). Owner fork:
-  remove tackle-steps globally, or keep them for `difficulty: beginner` quests only (first-quest UI
-  onboarding value). Break-loop narration (P4-S3) unchanged.
-- **Exit:** no step-by-step build instructions in non-beginner quests (or globally, per fork); coach
-  tests updated to pin the diagnostic contract; HUD checklist (the overview surface) untouched.
-- **Key files:** src/hooks/useChallengeCoach.ts, tests/unit/hooks/useChallengeCoach.test.ts.
-
-### Phase 4 — Score explainability & CTA consolidation
-
-```yaml
-phase: 4
-types: [user-facing]
-phase_tier: scale
-prototype: false
-dim_overrides: []
-sections_considered: [Core, Client-state]
-suppressed_dims_count: 0
-decisions_entry: TBD (design doc before exec — the trace surface needs UX exploration)
-```
-
-- **Scope:** Feedback lines 1–4, never scoped. (a) The bottom-bar architectural scores (performance,
-  reliability, scalability…) become clickable → a trace panel: which components and which metric
-  values feed this score, and what would move it (read-only over the existing recalculation output —
-  metrics are already per-node directional values; this is presentation, engine-inert). (b) Promote
-  complexity (operational-complexity already exists as a metric) into the visible stat bar (feedback
-  line 93). (c) CTA consolidation audit: foundation suggestion counts, pathway guidance, and coach
-  all compete for attention — map every adjustment CTA, kill or merge duplicates, one design doc +
-  implementation. Design-first phase: a short UX doc precedes implementation (the trace panel shape
-  is genuinely open).
-- **Exit:** every bottom-bar score answers "why this number, what moves it" on click; complexity
-  visible; CTA inventory documented with duplicates resolved; no scoring/engine change (golden inert).
-- **Key files:** src/components/dashboard/**, src/components/toolbar/**, src/services/
-  recalculationService.ts (read-only consumers), docs/gabe/design/score-trace.md (new).
-
-### Phase 5 — Catalog polish & explainers
-
-```yaml
-phase: 5
-types: [content, user-facing]
-phase_tier: ent
-prototype: false
-dim_overrides: []
-sections_considered: [Content, Core]
-suppressed_dims_count: 0
-decisions_entry: TBD
-```
-
-- **Scope:** (a) Icon coverage sweep: every block + traffic option has icons in BOTH modes (pixel +
-  official); placeholder-square audit; deterministic recolor fallback per T8 precedent where
-  generation is unavailable. (b) Observe-to-Recover explainer (feedback line 75): the results/coach
-  surface explains WHY monitoring shrinks the blast (detection delay → residual blast mechanics
-  already exist in the engine — surface them). (c) D18: the pool-exhaustion challenge —
-  concurrency_limit authoring at the calibrated knife-edge (engine landed d82baee; this is the
-  delicate content pass). (d) Vendor-unlock progression design doc (feedback lines 89/104: "instead
-  of blocking, unlock them") — research only, no implementation.
-- **Exit:** zero placeholder icons; observability mechanics explained in-surface; pool-exhaustion
-  quest shipped 3★-verified + non-trivial; vendor-unlock doc with a revisit trigger; D18 closed.
-- **Key files:** public/icons/**, src/lib/typeIcons.ts, src/hooks/useChallengeCoach.ts or results
-  modal, src/data/challenges/ (new quest), src/data/components/ (concurrency_limit),
-  docs/gabe/design/vendor-unlock-progression.md (new).
+- **Scope:** (a) S1b: "Beginner mode reduces chrome, not just palette" — but this overlaps the already-
+  shipped Beginner-mode work and the report flagged it Medium. Research/design FIRST (short doc:
+  what chrome to collapse at beginner level — minimap, overlapping panels, overlay toolbar — and
+  whether it's worth it), then implement only if the doc justifies it. (b) M5: the failure selector
+  is intentionally idle-only (`TestConditionsPanel.tsx:16`, "live STATS panel owns this rail" during
+  sim) — keep the gate, add a one-line discoverability hint ("Stop the simulation to change test
+  conditions") so the disappearance isn't surprising.
+- **Exit:** S1b decision doc written with a build/skip verdict (+ implementation only if "build");
+  M5 hint shipped; no regression to the sim STATS rail.
+- **Key files:** `docs/gabe/design/beginner-chrome-reduction.md` (new, research), `src/components/canvas/
+  TestConditionsPanel.tsx` (M5 hint), beginner-mode chrome components (only if S1b → build).
 
 ## Current Phase
 
-None — plan complete (all 5 phases, P171–P175, 2026-06-11)
+Phase 1: Redeploy + re-verify the stale-build items
 
 ## Dependencies
 
-- Phase 2's chain visualization renders chain metadata shipped in P5-S5 — no new mechanics needed.
-- Phase 3 is independent but should land BEFORE Phase 4's CTA consolidation (the coach is one of the
-  CTAs being consolidated — de-escalate first, then audit what remains).
-- Phase 5(c) pool-exhaustion depends on nothing in this plan (engine landed in d82baee).
-- Phase 1 must precede Phase 2's new chains (chain members must be palette-clean first).
+- Phase 1 (redeploy) should land FIRST — it ships the B1/B2 fixes already made and retires the
+  stale-build findings, shrinking what the later phases must touch.
+- Phase 2 (S1) is the headline feature work; independent of 3 and 4.
+- Phase 3 is independent; can run parallel to 2.
+- Phase 4(a) S1b is design-gated — do not implement before the research doc verdict.
 
 ## Risks
 
 | Risk | Severity | Mitigation |
 |------|----------|------------|
-| Requires-edge additions strand mid-progress players (availability shrink) | medium | Completed-stays-completed by construction; verify against the live owner account at Phase-1 exec start; D28-style generation reset is the documented fallback, NOT the default |
-| Solvability regressions from palette trims (reference solver uses default providers per type) | high | Re-run the 62/62 harness per batch; the solver only uses type defaults, so trims of non-default vendors are inert — pin per batch anyway |
-| Coach de-escalation breaks E2E/unit specs that assert tackle text | medium | Grep-driven spec inventory before the change; the contract tests get updated WITH the change, never after |
-| Score-trace panel scope creep (Phase 4 is design-open) | medium | Design doc gate before implementation; read-only over existing recalculation output — any engine change is out of scope by definition |
-| Tree layout height/width regressions from chain badges + sub-row additions | low | The layout already supports dependency sub-rows (Phase-2 precedent); visual E2E artifact per phase |
+| B1 race re-appears on prod after deploy (local can't reproduce — Firebase env unset locally) | medium | Phase 1 exit re-runs the live cold-load import reproduction against the new deploy; unit tests already lock the await-ordering contract |
+| S1 route fork annoys returning users or mis-detects "novice" | medium | Persist the choice like `tourSeen`; offer both branches explicitly; never auto-decide — the user picks |
+| Plain-language score gloss drifts from the real scoring math | low | Generate the gloss from the existing recalculation output (read-only); no parallel logic |
+| Contrast fixes change the visual design language unexpectedly | low | Token-level opacity/color bumps only; measure ratios before/after; visual diff |
+| S1b chrome reduction re-opens settled Beginner-mode design | medium | Research doc gate before any code; explicit build/skip verdict |
 
 ## Notes
 
-- The 2026-06-09 feedback file remains the canonical source; this plan covers its re-audit residue
-  (items 1–9 in the 2026-06-11 audit) — primarily lines 1-8 (never scoped), 20/59 (D90 deferral),
-  51 (pre-completion indicators), 75/93/104 (explainers/complexity/vendor-unlock).
-- Open deferred items NOT pulled into this plan (correctly parked): D11 (env-flaky E2E cluster),
-  D12 (attempts pagination), D26/D27/D30/D31/D32 (latent micro-debt with documented triggers).
+### Verification ledger (what was checked, what changed)
+
+| Finding | Report severity | Verified verdict | Disposition |
+|---------|-----------------|------------------|-------------|
+| B1 import broken | BLOCKER | Reproduced live — but it's an INIT RACE, not a bundling/data bug (deployed Firestore has all 114 components; settled import works) | **FIXED this session** |
+| B2 stale prompt | (blocker) | Confirmed: schema 1.0.0 vs 4.0.0; ~19 vs 114 components | **FIXED this session** (auto-gen + drift test) |
+| S1 route novices | STRATEGIC | Sound; aligns with audience | **Phase 2** |
+| M1 gamification contradiction | MAJOR | Artifact of the REST-seeded `qa-unlocked` account (isTestAccount excludes it; no attempts logged) | Re-verify in **Phase 1**; likely no real bug |
+| M2 leaderboard | MAJOR | Empty-state + self-placement ALREADY in HEAD; stale build | **Phase 1** redeploy + minor polish |
+| M3 tour | MAJOR | `tour-skip` + `pointer-events-none` backdrop + once-only gate ALREADY in HEAD; stale build | **Phase 1** redeploy |
+| M4 contrast | MAJOR | Confirmed real (5 elements) | **Phase 3** |
+| M5 failure selector idle-only | MAJOR | Confirmed but INTENTIONAL | **Phase 4** hint only |
+| C3 main landmark | MINOR | ALREADY exists (AppLayout.tsx:86) | **Phase 1** redeploy retires it |
+| C4 robots.txt / C5 llms.txt | MINOR | Genuinely absent | **Phase 3** |
+| C1/C2/C6 (jargon, drag model, console) | MINOR | Subjective / partly addressed by S1d + S1b | Folded into Phase 2/4 or parked |
+
+### Parked (not in this plan)
+- C1 jargon / C2 drag-model signposting — partly served by S1d (plain language) and the tour; revisit
+  if novice testing still flags after S1 ships.
+- C6 console issues — investigate opportunistically; Lighthouse best-practices was already 96.
+
+## Review Artifacts
+
+- HTML review artifact: none — remediation plan with a verified text ledger; canonical Markdown suffices.
+- Canonical source: `.kdbp/PLAN.md`, `.kdbp/DECISIONS.md`, `.kdbp/LEDGER.md`
+
+## Runtime Evidence Checkpoints
+
+- **Phase 1:** prod journey (login → import fixture → leaderboard → tour) → `test-results/qa-reverify/`;
+  live cold-load import reproduction re-run against the new deploy.
+- **Phase 2:** E2E first-run route fork on a fresh account → both branches screenshotted.
+- **Phase 3:** per-element contrast-ratio measurements + Lighthouse a11y re-run artifact.
