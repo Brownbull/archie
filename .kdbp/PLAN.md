@@ -29,7 +29,7 @@ contrast failures, and add agent/SEO discoverability files.
 
 | # | Phase | Description | Tier | Complexity | Exec | Review | Commit | Push |
 |---|-------|-------------|------|------------|------|--------|--------|------|
-| 1 | Redeploy + re-verify the stale-build items | Ship current HEAD (carries B1/B2 + the already-landed M2/M3/C3 fixes), then re-test M1/M2/M3/C3 on a NORMALLY-PLAYED account to confirm they're resolved; document residual gaps (loading skeleton, "test accounts excluded" copy) only if still real. | ent | low | ⬜ | ⬜ | ⬜ | ⬜ |
+| 1 | Redeploy + re-verify the stale-build items | Ship current HEAD (carries B1/B2 + the already-landed M2/M3/C3 fixes), then re-test M1/M2/M3/C3 on a NORMALLY-PLAYED account to confirm they're resolved; document residual gaps (loading skeleton, "test accounts excluded" copy) only if still real. | ent | low | 🔄 | ⬜ | ✅ | ⬜ |
 | 2 | Novice on-ramp (S1 keystone) | First-run route fork ("New to architecture?" → Quest Mode / "I know architecture" → Free Mode), persisted; S1c promote "Start from a Blueprint" as the beginner Free-Mode default; S1d plain-language layer on the bottom-bar scores (extend the Build-Health checklist style). | ent | high | ⬜ | ⬜ | ⬜ | ⬜ |
 | 3 | Accessibility & discoverability | M4: fix the 5 verified WCAG-AA contrast failures (Free-Mode pill, Test-Conditions label, tour Next button, History date/tags); C4 valid robots.txt; C5 llms.txt for agentic browsing. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |
 | 4 | Polish & research | S1b beginner-mode chrome reduction (design/research doc first — overlaps shipped Beginner-mode work, scope it before building); M5 failure-selector discoverability ("stop sim to change conditions" hint) — keep the intentional idle-gate. | ent | med | ⬜ | ⬜ | ⬜ | ⬜ |

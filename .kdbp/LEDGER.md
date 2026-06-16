@@ -5639,3 +5639,8 @@ TIERS: mvp × 0, ent × 4, scale × 0 | PROTOTYPES: 0
 DECISIONS: D108 → D111 (4 phase tier decisions logged)
 PRE-DONE: B1 import init-race fix + B2 prompt-template auto-gen (landed this session, tests green)
 HTML_ARTIFACT: none
+
+## 2026-06-15 22:04 — [80d8a6f] feat(import): fix init race + auto-gen prompt template (B1/B2)
+FINDINGS: lint baseline (19 pre-existing, none new) | types ✅ | tests ✅ 5180/5180 | structure ✅
+SCOPE: B1/B2 + accumulated break-it/QA-login/refData work (owner: commit together)
+PHASE: 1 (Commit ticked)
