@@ -82,7 +82,7 @@ export function TierBadge({ onOpenPathway }: TierBadgeProps) {
                     <button
                       type="button"
                       data-testid="pathway-suggestions-link"
-                      className="mt-2 text-xs font-medium text-primary hover:underline"
+                      className="mt-2 text-xs font-medium text-archie-accent-hover hover:underline"
                       onClick={(e) => {
                         e.stopPropagation()
                         setIsExpanded(false)

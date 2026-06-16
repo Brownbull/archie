@@ -145,7 +145,7 @@ export function DashboardOverlay({ open, onOpenChange, initialSection, initialCa
               {isNonDefaultWeights && (
                 <span
                   data-testid="weight-indicator"
-                  className="rounded-full bg-primary/15 px-1.5 py-0.5 text-xs text-primary"
+                  className="rounded-full bg-primary/15 px-1.5 py-0.5 text-xs text-archie-accent-hover"
                 >
                   Custom
                 </span>
@@ -213,7 +213,7 @@ export function DashboardOverlay({ open, onOpenChange, initialSection, initialCa
                 {suggestions.length > 0 && (
                   <span
                     data-testid="pathway-count-badge"
-                    className="rounded-full bg-primary/15 px-1.5 py-0.5 text-xs text-primary"
+                    className="rounded-full bg-primary/15 px-1.5 py-0.5 text-xs text-archie-accent-hover"
                   >
                     {suggestions.length}
                   </span>
