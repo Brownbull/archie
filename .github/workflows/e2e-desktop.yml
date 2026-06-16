@@ -78,8 +78,16 @@ jobs:
         # suite under the 30-min cap. Real pass/fail status is reported — a red run is the rot signal —
         # but this workflow is not a required check, so it never blocks a merge.
         # GREP: a workflow_dispatch can pass a --grep filter to validate a subset fast (batch fixes);
-        # push events run the full suite (empty grep).
-        run: npx playwright test --project=desktop --workers=4 ${{ inputs.grep && format('--grep {0}', inputs.grep) || '' }}
+        # push events run the full suite (empty grep). Passed via env + shell-quoted so multi-word
+        # filters work (an unquoted multi-word grep splits into a stray positional arg → "No tests found").
+        env:
+          GREP_FILTER: ${{ inputs.grep }}
+        run: |
+          if [ -n "$GREP_FILTER" ]; then
+            npx playwright test --project=desktop --workers=4 --grep "$GREP_FILTER"
+          else
+            npx playwright test --project=desktop --workers=4
+          fi
 
       - name: Upload Playwright artifacts
         if: ${{ failure() && steps.guard.outputs.configured == 'true' }}
