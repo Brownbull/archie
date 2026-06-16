@@ -14,6 +14,8 @@ const UNLOCKED_AUTH_FILE = "tests/e2e/.auth/unlocked-user.json"
  * is needed (unlike the primary user, this account is SUPPOSED to be permanently all-complete).
  */
 setup("seed the unlocked replay account", async ({ page }) => {
+  // Real network work — login + userProgress seed + cache pre-warm — exceeds the default 30s budget.
+  setup.setTimeout(120_000)
   const projectId = seedProjectId()
   expect(projectId, "VITE_FIREBASE_PROJECT_ID must be set to seed the unlocked replay account").toBeTruthy()
 

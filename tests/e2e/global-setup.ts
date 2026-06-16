@@ -5,6 +5,9 @@ import { stampTestAccount, seedProjectId } from "./helpers/seed-progress"
 const AUTH_FILE = "tests/e2e/.auth/user.json"
 
 setup("authenticate with test credentials", async ({ page }) => {
+  // This setup does real network work — login + a Firestore stamp + a cache pre-warm (loads the app
+  // and waits for the component library). That exceeds the default 30s test budget, so give it room.
+  setup.setTimeout(120_000)
   await loginWithTestCredentials(page)
 
   // Mark the first-run guided tour (P6) as already seen so its modal never blocks the rest of
