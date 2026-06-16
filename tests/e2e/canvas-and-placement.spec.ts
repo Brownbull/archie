@@ -255,8 +255,10 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
     // D23: the "add to canvas" button inside each type-block card is now add-type-* (the default
-    // toolbox no longer renders the component-card-* grid with a readable h4 name).
-    const addBtn = page.locator('[data-testid^="add-type-"]').first()
+    // toolbox no longer renders the component-card-* grid with a readable h4 name). Target the
+    // Compute block specifically — `.first()` is the traffic-source, which has only a SOURCE handle
+    // (traffic originates there), so its node has no target handle and the structure check below fails.
+    const addBtn = page.locator('[data-testid="add-type-compute"]')
     await addBtn.click()
 
     // Verify node structure
