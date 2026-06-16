@@ -4,6 +4,7 @@ import {
   addComponentToCanvas,
   selectNodeOnCanvas,
   connectNodes,
+  dragComponentToCanvas,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/ui-sweep"
@@ -87,8 +88,15 @@ test.describe("UI visual sweep", () => {
   test("dense canvas — many nodes + connections + overlay coexist", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
-    // Crowd the canvas: 5 nodes, a couple of connections, an overlay active.
-    for (let i = 0; i < 5; i++) await addComponentToCanvas(page, i)
+    // Crowd the canvas with 5 DISTINCT known types, dropped at spread positions. (The old
+    // add-type-.nth(i) loop hit the one-per-type / max-traffic gate — add-type-.nth(0) is the
+    // traffic-source block, which is per-type capped — so the per-add count assertion failed.)
+    const box = await page.locator('[data-testid="canvas-panel"]').boundingBox()
+    const ids = ["web-users", "node-express", "postgresql", "redis", "nginx"]
+    for (let i = 0; i < ids.length; i++) {
+      await dragComponentToCanvas(page, ids[i], box!.x + box!.width * (0.15 + i * 0.17), box!.y + box!.height * 0.5)
+    }
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(5, { timeout: 5_000 })
     await connectNodes(page, 0, 1).catch(() => {})
     await connectNodes(page, 1, 2).catch(() => {})
     const cost = page.locator('[data-testid="overlay-mode-cost"]')
