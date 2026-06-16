@@ -10,18 +10,19 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     // Wait for app to be ready
     await expect(page.locator('[data-testid="canvas-panel"]')).toBeVisible({ timeout: 15_000 })
 
-    // Empty state overlay with three suggestions
+    // Empty-state overlay with the start-option suggestions (post-first-run-fork; the suite seeds
+    // firstRunChoice="free" in global-setup so it lands here, not on the S1 fork).
     const emptyState = page.locator('[data-testid="canvas-empty-state"]')
     await expect(emptyState).toBeVisible()
 
+    await expect(page.locator('[data-testid="suggestion-blueprints"]')).toBeVisible()
+    await expect(page.locator('[data-testid="suggestion-components"]')).toBeVisible()
     await expect(page.locator('[data-testid="suggestion-import"]')).toBeVisible()
-    await expect(page.locator('[data-testid="suggestion-example"]')).toBeVisible()
-    await expect(page.locator('[data-testid="suggestion-drag"]')).toBeVisible()
 
     // Verify suggestion text
+    await expect(page.locator('[data-testid="suggestion-blueprints"]')).toContainText("Start from a Blueprint")
+    await expect(page.locator('[data-testid="suggestion-components"]')).toContainText("Browse Components")
     await expect(page.locator('[data-testid="suggestion-import"]')).toContainText("Import a YAML file")
-    await expect(page.locator('[data-testid="suggestion-example"]')).toContainText("Try an example from Blueprints")
-    await expect(page.locator('[data-testid="suggestion-drag"]')).toContainText("Drag a component from the toolbox")
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/01-empty-canvas-with-suggestions.png`,
