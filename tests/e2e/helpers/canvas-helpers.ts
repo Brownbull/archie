@@ -31,11 +31,11 @@ export async function useAdvancedLevel(page: Page): Promise<void> {
 
 /**
  * How long to wait for an async-Firestore-backed card to appear before concluding "not loaded".
- * A real hydration completes in a few seconds; this is generous headroom for slow CI but NOT so
- * long that the failure/skip path (×2 CI retries) blows the 30-min job budget — the over-long 30s
- * value did exactly that (job timed out mid-run even though only ~6 tests truly failed).
+ * With the storageState cache pre-warmed in setup (see global-setup), cards render from a local
+ * cache in ~1-2s, so this rarely bites — it's headroom for a cold cache-miss. Kept moderate (not
+ * 30s) so a genuine miss × CI retries doesn't blow the 30-min job budget.
  */
-const CARD_LOAD_TIMEOUT_MS = 12_000
+const CARD_LOAD_TIMEOUT_MS = 15_000
 
 /**
  * Wait for the component library to finish loading. Returns true once at least one component CARD

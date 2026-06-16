@@ -38,5 +38,14 @@ setup("seed the unlocked replay account", async ({ page }) => {
   // Seed every quest complete + max track XP (writes THIS account's userProgress via the authed session).
   await seedUnlockedProgress(page, projectId as string)
 
+  // Pre-warm the reference-data cache into storageState (see global-setup for the rationale) so replay
+  // specs start with a warm component library. Best-effort.
+  try {
+    await page.goto("/")
+    await page.locator('[data-testid^="component-card-"]').first().waitFor({ state: "visible", timeout: 30_000 })
+  } catch {
+    /* optimization only */
+  }
+
   await page.context().storageState({ path: UNLOCKED_AUTH_FILE })
 })
