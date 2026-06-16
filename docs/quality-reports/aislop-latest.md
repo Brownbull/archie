@@ -1,29 +1,21 @@
 # aislop Quality Report
 
-**Date:** 20260615-220422
-**Score:** 8/100 (Critical)
+**Date:** 20260615-224937
+**Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
 ## Engine Summary
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 54 | 405ms |
-| code-quality | 94 | 4428ms |
-| ai-slop | 5 | 55ms |
-| security | 18 | 8154ms |
+| lint | 54 | 824ms |
+| code-quality | 82 | 10208ms |
+| ai-slop | 0 | 17ms |
+| security | 18 | 5037ms |
 
 ## Findings
 
-### ai-slop (5)
-
-- [!] `scripts/seed-firestore.ts:549` — ai-slop/trivial-comment: Trivial comment that restates the code
-- [!] `src/services/yamlImporter.ts:336` — ai-slop/trivial-comment: Trivial comment that restates the code
-- [i] `src/services/yamlImporter.ts:336` — ai-slop/todo-stub: Unresolved TODO/FIXME/HACK comment indicates incomplete code
-- [i] `src/services/yamlImporter.ts:338` — ai-slop/todo-stub: Unresolved TODO/FIXME/HACK comment indicates incomplete code
-- [!] `src/services/yamlImporter.ts:361` — ai-slop/double-type-assertion: Double type assertion (as unknown as X) bypasses type checking
-
-### code-quality (94)
+### code-quality (82)
 
 - [!] `src/declarations.d.ts:0` — knip/files: Unused file
 - [!] `package.json:43` — knip/dependencies: Unused dependency: tailwindcss
@@ -105,38 +97,16 @@
 - [!] `src/hooks/usePoolExhaustionWay.ts:9` — knip/types: Unused type: MechanicWayOutcome
 - [!] `src/lib/equipmentSlots.ts:3` — knip/types: Unused type: EquipmentSlot
 - [!] `src/components/common/DataSourceNote.tsx:4` — knip/types: Unused type: DataSourceKind
-- [!] `scripts/gen-prompt-template.ts:70` — complexity/function-too-long: Function 'render' has 138 lines (max: 80)
-- [!] `scripts/seed-firestore.ts:498` — complexity/function-too-long: Function 'main' has 87 lines (max: 80)
-- [!] `src/components/auth/LoginPage.tsx:10` — complexity/function-too-long: Function 'LoginPage' has 123 lines (max: 80)
-- [!] `src/components/challenges/BreakItPanel.tsx:137` — complexity/function-too-long: Function 'BreakItPanel' has 188 lines (max: 80)
-- [!] `src/components/challenges/BreakRegistryPanel.tsx:18` — complexity/function-too-long: Function 'BreakRegistryPanel' has 101 lines (max: 80)
-- [!] `src/components/challenges/ChallengeHud.tsx:17` — complexity/function-too-long: Function 'ChallengeHud' has 133 lines (max: 80)
-- [!] `src/components/challenges/MasteryProfilePanel.tsx:198` — complexity/function-too-long: Function 'MasteryProfilePanel' has 187 lines (max: 80)
-- [!] `src/components/layout/LeaderboardDialog.tsx:62` — complexity/function-too-long: Function 'LeaderboardDialog' has 138 lines (max: 80)
-- [!] `src/components/layout/LeaderboardDialog.tsx:62` — complexity/deep-nesting: Function 'LeaderboardDialog' has nesting depth 8 (max: 5)
-- [!] `src/components/layout/SettingsMenu.tsx:19` — complexity/function-too-long: Function 'SettingsMenu' has 153 lines (max: 80)
-- [!] `src/hooks/useAuth.ts:54` — complexity/function-too-long: Function 'AuthProvider' has 111 lines (max: 80)
-- [!] `src/hooks/useAuth.ts:54` — complexity/deep-nesting: Function 'AuthProvider' has nesting depth 6 (max: 5)
-- [!] `src/services/yamlImporter.ts:140` — complexity/function-too-long: Function 'importYamlString' has 163 lines (max: 80)
-- [!] `src/services/yamlImporter.ts:312` — complexity/function-too-long: Function 'hydrateArchitectureSkeleton' has 160 lines (max: 80)
+- [!] `src/components/dashboard/DashboardPanel.tsx:16` — complexity/function-too-long: Function 'DashboardPanel' has 162 lines (max: 80)
+- [!] `src/components/simulation/SimulationStatsSidePanel.tsx:49` — complexity/function-too-long: Function 'SimulationStatsSidePanel' has 134 lines (max: 80)
 
 ### lint (54)
 
 - [!] `tests/integration/challenges/referenceSolution.ts:8` — eslint/no-unused-vars: Identifier 'computeTotalArchitectureCost' is imported but never used.
-- [!] `src/components/canvas/ArchieNode.tsx:9` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
-- [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/dashboard/DashboardOverlay.tsx:272` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
+- [!] `src/components/onboarding/SpotlightTour.tsx:55` — react-hooks/exhaustive-deps: React Hook useLayoutEffect has a complex expression in the dependency array.
+- [!] `src/components/onboarding/SpotlightTour.tsx:42` — react-hooks/exhaustive-deps: React Hook useLayoutEffect has missing dependencies: 'selectors', and 'selectors.length'
 - [!] `src/components/challenges/ChallengeTreeView.tsx:2` — import/no-duplicates: Module 'lucide-react' is imported more than once in this file
-- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/NodeProviderSelect.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
-- [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/TrafficNodeControls.tsx:123` — jsx-a11y/no-autofocus: The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users.
-- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/challenges/ChallengeEditor.tsx:113` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:178` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:320` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
@@ -149,16 +119,26 @@
 - [!] `src/components/challenges/ChallengeEditor.tsx:379` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:386` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:390` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/canvas/NodeProviderSelect.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
+- [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/TrafficNodeControls.tsx:123` — jsx-a11y/no-autofocus: The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users.
+- [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/canvas/ArchieNode.tsx:9` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
+- [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/services/yamlImporter.ts:153` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/dashboard/DashboardOverlay.tsx:272` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
-- [!] `src/components/onboarding/SpotlightTour.tsx:55` — react-hooks/exhaustive-deps: React Hook useLayoutEffect has a complex expression in the dependency array.
-- [!] `src/components/onboarding/SpotlightTour.tsx:42` — react-hooks/exhaustive-deps: React Hook useLayoutEffect has missing dependencies: 'selectors', and 'selectors.length'
 - [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
-- [!] `tests/e2e/helpers/canvas-helpers.ts:27` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 - [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/dashboard/CategoryBar.tsx:53` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `tests/e2e/helpers/canvas-helpers.ts:27` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
@@ -170,10 +150,10 @@
 - [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
 - [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/hooks/useChallengeCoach.test.ts:6` — eslint/no-unused-vars: Identifier 'COMPONENT_CATEGORIES' is imported but never used.
-- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
+- [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
 - [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
+- [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
 - [!] `tests/e2e/unlocked-setup.ts:32` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 - [!] `tests/e2e/global-setup.ts:21` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 

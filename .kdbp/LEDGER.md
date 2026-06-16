@@ -5672,3 +5672,8 @@ PHASE: 1 (Commit ticked)
 - 2026-06-15 22:41 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
 - 2026-06-15 22:44 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
 - 2026-06-15 22:44 | Write | /home/khujta/projects/bmad/archie/docs/gabe/design/beginner-chrome-reduction.md
+
+## 2026-06-15 22:50 — [26c97c9] feat(onboarding): S1/M4/M5/C4/C5 (Phases 2-4)
+FINDINGS: build ✅ | tests ✅ 5190/5190 | structure ✅ | lint baseline (pre-existing)
+PHASES: 2,3,4 Exec=✅ Commit=✅ | S1b deferred → D36
+SCOPE: FirstRunFork + scoreGlosses + M4 contrast tokens + robots/llms.txt + M5 hint + S1b research
