@@ -136,7 +136,9 @@
   --card-foreground: #e2e4eb;
   --popover: #1a1d27;
   --popover-foreground: #e2e4eb;
-  --primary: #6366f1;
+  /* WCAG AA (M4, Kane QA): #6366f1 on #e2e4eb was 3.52:1 (fail). #4f46e5 → 4.95:1.
+     Fixes the active Free-Mode pill + tour Next button (both use --primary). */
+  --primary: #4f46e5;
   --primary-foreground: #e2e4eb;
   --secondary: #242736;
   --secondary-foreground: #e2e4eb;

@@ -5644,3 +5644,31 @@ HTML_ARTIFACT: none
 FINDINGS: lint baseline (19 pre-existing, none new) | types ✅ | tests ✅ 5180/5180 | structure ✅
 SCOPE: B1/B2 + accumulated break-it/QA-login/refData work (owner: commit together)
 PHASE: 1 (Commit ticked)
+- 2026-06-15 22:27 | Write | /home/khujta/projects/bmad/archie/public/robots.txt
+- 2026-06-15 22:27 | Write | /home/khujta/projects/bmad/archie/public/robots.txt
+- 2026-06-15 22:27 | Write | /home/khujta/projects/bmad/archie/public/llms.txt
+- 2026-06-15 22:30 | Edit | /home/khujta/projects/bmad/archie/src/index.css
+- 2026-06-15 22:30 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TestConditionsPanel.tsx
+- 2026-06-15 22:32 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-15 22:32 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-15 22:33 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-15 22:33 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/FirstRunFork.tsx
+- 2026-06-15 22:33 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:34 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:34 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:34 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:35 | Write | /home/khujta/projects/bmad/archie/src/lib/scoreGlosses.ts
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:36 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-15 22:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-06-15 22:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-06-15 22:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-06-15 22:38 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/FirstRunFork.test.tsx
+- 2026-06-15 22:38 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/scoreGlosses.test.ts
+- 2026-06-15 22:40 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-06-15 22:41 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-06-15 22:44 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-15 22:44 | Write | /home/khujta/projects/bmad/archie/docs/gabe/design/beginner-chrome-reduction.md

@@ -1,10 +1,13 @@
 import { Star } from "lucide-react"
 import { scoreToStars, starColor } from "@/lib/metricStars"
+import { aggregateScoreGloss } from "@/lib/scoreGlosses"
 import { METRIC_MAX_VALUE } from "@/lib/constants"
 
 interface AggregateScoreProps {
   score: number
   balancedScore?: number
+  /** S1d: plain-language gloss names the weakest category as the bottleneck when provided. */
+  weakestCategoryName?: string
 }
 
 function letterGrade(score: number): string {
@@ -30,11 +33,12 @@ function StarDisplay({ count, size = "h-3 w-3" }: { count: number; size?: string
   )
 }
 
-export function AggregateScore({ score, balancedScore }: AggregateScoreProps) {
+export function AggregateScore({ score, balancedScore, weakestCategoryName }: AggregateScoreProps) {
   const stars = scoreToStars(score)
   const color = starColor(stars)
   const grade = letterGrade(score)
   const showDual = balancedScore !== undefined && balancedScore.toFixed(1) !== score.toFixed(1)
+  const gloss = aggregateScoreGloss(score, weakestCategoryName)
 
   return (
     <div
@@ -56,6 +60,12 @@ export function AggregateScore({ score, balancedScore }: AggregateScoreProps) {
         </span>
       )}
       <span className="text-xs text-text-secondary">Overall</span>
+      <span
+        data-testid="aggregate-score-gloss"
+        className="mt-0.5 max-w-48 text-center text-[0.625rem] leading-tight text-text-secondary"
+      >
+        {gloss}
+      </span>
     </div>
   )
 }

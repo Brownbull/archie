@@ -1,0 +1,42 @@
+# Archie
+
+> Archie is a visual software-architecture simulator and design tool. You drag
+> components (compute, databases, caches, CDNs, queues, LLM services, …) onto a
+> canvas, wire them together, and watch the design scored live across
+> performance, reliability, scalability, operations, and cost. A simulation
+> engine drives real traffic through the topology, injects failures, and shows
+> where it breaks.
+
+Archie is a client-side React + TypeScript single-page application (Vite, React
+Flow, Firebase Auth + Firestore). It is both a sandbox ("Free Mode") and a
+gamified teaching curriculum ("Quest Mode").
+
+## What you can do
+
+- **Quest Mode**: a 64-quest curriculum across 7 tracks (foundations, data, edge,
+  realtime, reliability, security, AI/ML) and 6 difficulty tiers. Each quest
+  restricts the palette, gives a scenario + budget + target metrics, and unlocks
+  the next via a progression tree. This is the guided way to learn architecture.
+- **Free Mode**: an open sandbox. Build from scratch, drop a ready-made Stack,
+  load a full Blueprint, or take a Challenge.
+- **Simulation**: live telemetry (requests/sec, latency, uptime, cost) with
+  failure injection (node down, zone outage, region loss, …) and grade
+  degradation under stress.
+- **Scoring**: every design is graded per dimension (performance, reliability,
+  scalability, ops, cost) plus a plain-language Build-Health checklist.
+- **Import/Export**: architectures are YAML. You can hand a compatible YAML to
+  Archie via Import and have it scored. See the AI prompt template below.
+
+## For AI agents generating architectures
+
+Archie accepts architecture YAML (schema 4.0.0). To generate a compatible file,
+use only component IDs + config-variant IDs from Archie's component library
+(114 components). The in-app "Prompt Template" dialog provides the full,
+always-current list of component IDs, variants, and the schema. Include at least
+one traffic source with a `traffic_rps`. Import the result via the Import button.
+
+## Notes
+
+- Most surfaces require authentication; the login page is the public entry point.
+- Architecture stats are static/objective; the player profile is a separate layer.
+- The canonical app URL is https://archie-2a560.web.app

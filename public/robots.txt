@@ -1,0 +1,8 @@
+# Archie — Visual Architecture Simulator
+# https://archie-2a560.web.app
+
+User-agent: *
+Allow: /
+
+# Archie is a single-page app. The login/landing page is public; the rest of
+# the app lives behind authentication and is not crawlable.

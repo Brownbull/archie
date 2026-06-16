@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react"
 import { EmptyCanvasState } from "@/components/canvas/EmptyCanvasState"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
@@ -21,6 +22,9 @@ describe("EmptyCanvasState", () => {
   beforeEach(() => {
     useArchitectureStore.setState({ nodes: [], edges: [] })
     useUiStore.setState({ toolboxTab: "components", challengesOpen: false })
+    // S1: the suggestion list only renders once the first-run fork has been answered. These tests
+    // assert the returning-user (post-fork) state; the fork itself is covered in FirstRunFork.test.
+    usePreferencesStore.setState({ firstRunChoice: "free" })
   })
 
   it("renders when nodes array is empty", () => {
@@ -99,5 +103,19 @@ describe("EmptyCanvasState", () => {
     const overlay = screen.getByTestId("canvas-empty-state")
     const card = overlay.firstElementChild
     expect(card?.className).toContain("pointer-events-auto")
+  })
+
+  it("shows the first-run fork (not the suggestions) when the fork is unanswered", () => {
+    usePreferencesStore.setState({ firstRunChoice: null })
+    render(<EmptyCanvasState />)
+    expect(screen.getByTestId("first-run-fork")).toBeInTheDocument()
+    expect(screen.queryByTestId("canvas-empty-state")).not.toBeInTheDocument()
+  })
+
+  it("marks the Blueprint option as the recommended primary path (S1c)", () => {
+    render(<EmptyCanvasState />)
+    const blueprint = screen.getByTestId("suggestion-blueprints")
+    expect(blueprint.className).toContain("border-2")
+    expect(screen.getByText("Recommended")).toBeInTheDocument()
   })
 })

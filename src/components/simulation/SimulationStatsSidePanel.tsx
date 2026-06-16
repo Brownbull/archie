@@ -109,6 +109,15 @@ export function SimulationStatsSidePanel() {
         </div>
       )}
 
+      {/* M5 (Kane QA): the failure selector is hidden during a run (this panel owns the rail).
+          Tell the user where it went so the disappearance isn't surprising. */}
+      <p
+        data-testid="sim-conditions-hint"
+        className="border-b border-archie-border/60 px-3 py-1.5 text-[0.5625rem] leading-tight text-text-secondary"
+      >
+        Stop the simulation to change test conditions.
+      </p>
+
       <div className="overflow-y-auto">
         <Metric
           label="Uptime"
