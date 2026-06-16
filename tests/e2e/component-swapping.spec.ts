@@ -31,7 +31,9 @@ async function selectNodeOnCanvas(
 ) {
   const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
   await expect(node).toBeVisible()
-  await node.click()
+  // Click the node HEADER (top-left), not the center — the center carries the on-node vendor/config
+  // dropdowns, and clicking one opens a Radix listbox whose overlay then blocks the inspector.
+  await node.click({ position: { x: 12, y: 6 } })
   await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 }
 
@@ -64,7 +66,10 @@ async function findSwappableComponentIndex(
       // Ensure cleanup even on assertion failure
       const remaining = await page.locator('[data-testid="archie-node"]').count()
       if (remaining > 0) {
-        await page.locator('[data-testid="archie-node"]').first().click()
+        // Click the node HEADER (top-left), not the center — the center carries the on-node
+        // vendor/config dropdowns; clicking there opens a Radix listbox instead of selecting the
+        // node, so the native React-Flow Delete never fires and the node lingers (count stays 1).
+        await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
         await page.keyboard.press("Delete")
         await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(0, { timeout: 5_000 })
       }
@@ -190,7 +195,9 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
         break
       }
 
-      await page.locator('[data-testid="archie-node"]').first().click()
+      // Header click (not center) so the node selects for the native Delete, rather than opening
+      // the on-node dropdown.
+      await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
       await page.keyboard.press("Delete")
       await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(0, { timeout: 5_000 })
     }
