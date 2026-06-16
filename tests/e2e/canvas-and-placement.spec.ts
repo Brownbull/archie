@@ -276,8 +276,11 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.target").first()).toBeAttached()
     await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.source").first()).toBeAttached()
 
-    // Node has correct width
-    await expect(archieNode).toHaveCSS("width", "208px")
+    // Node width is within the variable-width range (NODE_MIN_WIDTH 176 … NODE_MAX_WIDTH 280),
+    // not a fixed 208px literal (which predates the variable-width model).
+    const widthPx = await archieNode.evaluate((el) => parseFloat(getComputedStyle(el).width))
+    expect(widthPx).toBeGreaterThanOrEqual(176)
+    expect(widthPx).toBeLessThanOrEqual(280)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/09-node-structure-via-button.png`,
