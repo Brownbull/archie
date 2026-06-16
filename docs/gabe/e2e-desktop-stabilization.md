@@ -97,3 +97,20 @@ clears them; each needs source-confirmation + a filtered-dispatch validation.
 
 GOTCHAS confirmed: inspector widths 300/500/40px are LEGIT fixed constants (not drift) — do NOT
 "fix" them. Always source-confirm before changing an assertion.
+
+## Update 2026-06-16 (session 2c) — scoring-dashboard parked, finishing the tractable tail
+
+WIN SO FAR: fan-out + manual fixes took e2e-desktop 80 → 20 failures (254 passed, 17.5min).
+
+SCORING-DASHBOARD (12 of the remaining 20) — PARKED as a follow-up needing local-Firebase exec.
+Symptom: after placing a node it shows cost ($20/mo) but the SCORE dashboard stays empty
+("Add components to see architecture scores" persists → computedMetrics empty). Removing the
+agent's broken config-change recalc step did NOT fix it. Unknown without running locally: whether a
+single UNCONNECTED node produces computedMetrics at all (likely scoring needs a traffic source +
+connection). The placement-recalc path is opaque from source-reading alone (mis-predicted 3×).
+NEXT (when local Firebase E2E is possible): run scoring-dashboard locally, observe whether a lone
+node scores; if not, the tests must place traffic-source + compute + connect (or seed a scored
+canvas via architectureStore directly). Owner chose to skip it for now and fix the tractable rest.
+
+TRACTABLE REMAINING (~8): component-swapping ×3 (edge-create via connectNodes), decision-support,
+ui-batch-features, radial-menu, settings-and-preferences:284, inspector-responsiveness:231, ui-sweep:87.

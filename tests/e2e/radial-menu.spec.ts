@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test"
+import { waitForComponentLibrary, dragComponentToCanvas } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/radial-menu-journey"
 
@@ -6,27 +7,18 @@ test.describe("Radial Menu E2E", () => {
   test("right-click opens radial menu, actions work, keyboard closes", async ({ page }) => {
     await page.goto("/")
     await page.waitForSelector('[data-testid="canvas-panel"]', { timeout: 15000 })
-    await page.waitForTimeout(500)
+    const hasComponents = await waitForComponentLibrary(page)
+    test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-canvas-loaded.png`, fullPage: true })
 
-    // Drag a component onto the canvas
-    const draggable = page.locator('[draggable="true"]').first()
-    if (await draggable.count()) {
-      const canvas = page.locator('[data-testid="canvas-panel"]')
-      const canvasBox = await canvas.boundingBox()
-      const dragBox = await draggable.boundingBox()
-      if (canvasBox && dragBox) {
-        await page.mouse.move(dragBox.x + dragBox.width / 2, dragBox.y + dragBox.height / 2)
-        await page.mouse.down()
-        await page.mouse.move(canvasBox.x + canvasBox.width / 2, canvasBox.y + canvasBox.height / 2, { steps: 10 })
-        await page.mouse.up()
-        await page.waitForTimeout(500)
-      }
-    }
+    // Place a node via the HTML5 drop path (React Flow nodes are placed by the drop handler reading
+    // application/archie-component — a native mouse drag from the toolbox does NOT create a node).
+    const canvasBox = await page.locator('[data-testid="canvas-panel"]').boundingBox()
+    await dragComponentToCanvas(page, "node-express", canvasBox!.x + canvasBox!.width / 2, canvasBox!.y + canvasBox!.height / 2)
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-component-placed.png`, fullPage: true })
 
-    // Verify a node exists
-    const node = page.locator('[data-testid^="rf__node-"]').first()
+    // Verify the node exists (the app renders archie-node, not React Flow's internal rf__node-).
+    const node = page.locator('[data-testid="archie-node"]').first()
     await expect(node).toBeVisible({ timeout: 5000 })
 
     // Right-click to open radial menu
