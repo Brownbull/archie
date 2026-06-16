@@ -101,7 +101,7 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     })
   })
 
-  test("AC-1: dropped node has correct 208px width", async ({ page }) => {
+  test("AC-1: dropped node width is within the variable-width range", async ({ page }) => {
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -119,11 +119,14 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
       canvasBounds!.y + canvasBounds!.height / 2,
     )
 
-    // Verify node CSS width is 208px (P97 wider cards) — use CSS check, not boundingBox
-    // (boundingBox includes React Flow transforms which may scale the element)
+    // Nodes are variable-width (NODE_MIN_WIDTH 176 … NODE_MAX_WIDTH 280) — they grow to fit content,
+    // so assert the rendered CSS width falls in that range, not a brittle fixed px (the old "208px"
+    // literal predates the variable-width model and drifts on any content change).
     const archieNode = page.locator('[data-testid="archie-node"]').first()
     await expect(archieNode).toBeVisible({ timeout: 5_000 })
-    await expect(archieNode).toHaveCSS("width", "208px")
+    const widthPx = await archieNode.evaluate((el) => parseFloat(getComputedStyle(el).width))
+    expect(widthPx).toBeGreaterThanOrEqual(176)
+    expect(widthPx).toBeLessThanOrEqual(280)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/04-node-width.png`,

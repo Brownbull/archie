@@ -17,6 +17,11 @@ on:
   push:
     branches: [dev, main]
   workflow_dispatch:
+    inputs:
+      grep:
+        description: "Playwright --grep filter (validate a subset of specs fast). Empty = full suite."
+        required: false
+        default: ""
 
 concurrency:
   group: e2e-desktop-${{ github.ref }}
@@ -72,7 +77,9 @@ jobs:
         # vite server + a read-only storageState; per-test localStorage is isolated), keeping the full
         # suite under the 30-min cap. Real pass/fail status is reported — a red run is the rot signal —
         # but this workflow is not a required check, so it never blocks a merge.
-        run: npx playwright test --project=desktop --workers=4
+        # GREP: a workflow_dispatch can pass a --grep filter to validate a subset fast (batch fixes);
+        # push events run the full suite (empty grep).
+        run: npx playwright test --project=desktop --workers=4 ${{ inputs.grep && format('--grep {0}', inputs.grep) || '' }}
 
       - name: Upload Playwright artifacts
         if: ${{ failure() && steps.guard.outputs.configured == 'true' }}
