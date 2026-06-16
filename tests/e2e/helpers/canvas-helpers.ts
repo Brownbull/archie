@@ -58,11 +58,14 @@ export async function waitForComponentLibrary(page: Page): Promise<boolean> {
  */
 export async function waitForBlueprints(page: Page): Promise<boolean> {
   await page.getByRole("tab", { name: "Blueprints" }).click()
-  await Promise.race([
-    page.locator('[data-testid="blueprint-tab"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-    page.locator('[data-testid="blueprint-tab-empty"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-  ])
-  return page.locator('[data-testid="blueprint-card"]').first().isVisible()
+  try {
+    // Wait for an actual blueprint card (the readiness signal), not the tab shell — same async-
+    // Firestore race fix as waitForComponentLibrary.
+    await page.locator('[data-testid="blueprint-card"]').first().waitFor({ state: "visible", timeout: 30_000 })
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
@@ -71,13 +74,14 @@ export async function waitForBlueprints(page: Page): Promise<boolean> {
  */
 export async function waitForStacksTab(page: Page): Promise<boolean> {
   await page.getByRole("tab", { name: "Stacks" }).click()
-  await Promise.race([
-    page.locator('[data-testid="stacks-tab"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-    page.locator('[data-testid="stacks-tab-empty"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-    page.locator('[data-testid="stacks-tab-error"]').waitFor({ state: "visible", timeout: 15_000 }).catch(() => {}),
-    page.locator('[data-testid="stacks-tab-loading"]').waitFor({ state: "hidden", timeout: 15_000 }).catch(() => {}),
-  ])
-  return page.locator('[data-testid="stacks-tab"]').isVisible()
+  try {
+    // Wait for an actual stack card (the readiness signal), not the tab shell — same async-Firestore
+    // race fix as waitForComponentLibrary.
+    await page.locator('[data-testid^="stack-card-"]').first().waitFor({ state: "visible", timeout: 30_000 })
+    return true
+  } catch {
+    return false
+  }
 }
 
 /**
