@@ -16,7 +16,8 @@ async function addComponentToCanvas(
   buttonIndex = 0,
 ) {
   const nodesBefore = await page.locator('[data-testid="archie-node"]').count()
-  const addBtn = page.locator('[data-testid^="add-to-canvas-"]').nth(buttonIndex)
+  // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+  const addBtn = page.locator('[data-testid^="add-type-"]').nth(buttonIndex)
   await expect(addBtn).toBeVisible()
   await addBtn.click()
   await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(nodesBefore + 1, {
@@ -46,7 +47,8 @@ async function selectNodeOnCanvas(
 async function findSwappableComponentIndex(
   page: import("@playwright/test").Page,
 ): Promise<number> {
-  const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+  // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+  const addBtns = page.locator('[data-testid^="add-type-"]')
   const btnCount = await addBtns.count()
 
   for (let i = 0; i < btnCount; i++) {
@@ -169,7 +171,8 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     const btnCount = await addBtns.count()
     let found = false
 
@@ -206,7 +209,8 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     // Place swappable component (node 0) and a second component (node 1)
     await addComponentToCanvas(page, idx)
     const secondIdx = idx === 0 ? 1 : 0
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     test.skip((await addBtns.count()) < 2, "Skipped: need 2+ components")
     await addBtns.nth(secondIdx).click()
     await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })

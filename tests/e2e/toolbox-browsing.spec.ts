@@ -49,17 +49,16 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
 
     if (hasComponents) {
       // AC-2: Components organized by category
-      const categories = page.locator('[data-testid^="category-"]')
+      const categories = page.locator('[data-testid^="category-group-"]')
       await expect(categories.first()).toBeVisible()
       const categoryCount = await categories.count()
       expect(categoryCount).toBeGreaterThanOrEqual(1)
 
-      // AC-2: Benefit card format (IS / GAIN / COST)
-      const firstCard = page.locator('[data-testid^="component-card-"]').first()
+      // D23: the default toolbox renders type-block cards (the old component-card IS/GAIN/COST
+      // benefit grid was removed). Assert the type-block card renders with its block-type label.
+      const firstCard = page.locator('[data-testid^="type-block-"]').first()
       await expect(firstCard).toBeVisible()
-      await expect(firstCard.getByText("IS", { exact: true })).toBeVisible()
-      await expect(firstCard.getByText("GAIN", { exact: true })).toBeVisible()
-      await expect(firstCard.getByText("COST", { exact: true })).toBeVisible()
+      await expect(firstCard.locator("h4")).toBeVisible()
 
       await page.screenshot({
         path: `${SCREENSHOT_DIR}/02-components-by-category.png`,
@@ -119,14 +118,14 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
 
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Count initial components
-    const initialCards = page.locator('[data-testid^="component-card-"]')
+    // Count initial type-block cards (D23: the default toolbox renders type-block-* cards).
+    const initialCards = page.locator('[data-testid^="type-block-"]')
     const initialCount = await initialCards.count()
 
     // Need at least 2 components to test filtering
     test.skip(initialCount < 2, "Skipped: Need at least 2 components to test filtering")
 
-    // AC-3: Type in search filter — use first component's name for a known match
+    // AC-3: Type in search filter — use first card's block-type label for a known match
     const firstName = await initialCards.first().locator("h4").textContent()
     const searchInput = page.locator('[data-testid="search-input"]')
     await searchInput.fill(firstName!)
@@ -135,7 +134,7 @@ test.describe("Toolbox Browsing E2E (Story 1-2)", () => {
     await page.waitForTimeout(300)
 
     // Filtered results should be fewer
-    const filteredCards = page.locator('[data-testid^="component-card-"]')
+    const filteredCards = page.locator('[data-testid^="type-block-"]')
     const filteredCount = await filteredCards.count()
     expect(filteredCount).toBeLessThanOrEqual(initialCount)
     expect(filteredCount).toBeGreaterThanOrEqual(1)

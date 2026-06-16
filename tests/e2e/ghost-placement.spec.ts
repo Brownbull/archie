@@ -18,8 +18,9 @@ test.describe("Ghost Placement E2E", () => {
     }
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-canvas-loaded.png`, fullPage: true })
 
-    // Place 3 components to qualify for lowest tier (min_component_count: 3)
-    const addButtons = page.locator('[data-testid^="add-to-canvas-"]')
+    // Place 3 components to qualify for lowest tier (min_component_count: 3).
+    // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+    const addButtons = page.locator('[data-testid^="add-type-"]')
     const buttonCount = await addButtons.count()
     if (buttonCount < 3) {
       test.skip()

@@ -9,12 +9,18 @@ test.describe("Pixel-art component icons E2E (Epic 17 polish)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Every authored component has a pixel icon, so the toolbox cards render <img> icons.
-    const icons = page.locator('[data-testid="component-pixel-icon"]')
+    // D23: the default toolbox renders type-block cards (type-block-<typeId>), not the old
+    // per-vendor component-card grid. Each card carries the logical-block TYPE icon — in the
+    // default `pixel` icon set that's the animated concept-loop (block-loop-<typeId>), Archie's
+    // signature pixel-art block visual. Assert the cards render those type icons.
+    const block = page.locator('[data-testid^="type-block-"]').first()
+    await expect(block).toBeVisible()
+
+    const icons = page.locator('[data-testid^="block-loop-"]')
     await expect(icons.first()).toBeVisible()
     expect(await icons.count()).toBeGreaterThan(0)
-    // The src points at a local /icons/*.png asset (same-origin, no external URL surface).
-    await expect(icons.first()).toHaveAttribute("src", /^\/icons\/.+\.png$/)
+    // The concept-loop is an inline SVG marked as an image for a11y (same-origin, no external URL).
+    await expect(icons.first()).toHaveAttribute("role", "img")
     await page.screenshot({ path: `${SCREENSHOT_DIR}/01-toolbox-icons.png`, fullPage: true })
   })
 })

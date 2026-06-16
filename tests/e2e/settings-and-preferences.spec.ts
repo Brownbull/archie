@@ -59,7 +59,7 @@ async function measureFontSizes(page: Page) {
     return {
       body: parseFloat(getComputedStyle(document.body).fontSize),
       toolbar: measure('[data-testid="toolbar"] span'),
-      toolboxCard: measure('[data-testid^="component-card-"] h4'),
+      toolboxCard: measure('[data-testid^="type-block-"] h4'),
       canvasNode: measure('[data-testid="archie-node"] span'),
       inspector: measure('[data-testid="inspector-panel"] span'),
     }
@@ -293,8 +293,8 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place 2 components via Add to Canvas buttons
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // Place 2 components via Add to Canvas buttons (D23: add-type-* on type-block cards)
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     await expect(addBtns.first()).toBeVisible({ timeout: 5_000 })
     const btnCount = await addBtns.count()
     test.skip(btnCount < 2, "Skipped: Need at least 2 components")

@@ -389,7 +389,9 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const cards = page.locator('[data-testid^="component-card-"]')
+    // D23: the default toolbox renders type-block cards (type-block-<typeId>), not the old
+    // component-card-* grid. Each type-block adds its default vendor as one node.
+    const cards = page.locator('[data-testid^="type-block-"]')
     const cardCount = await cards.count()
     test.skip(cardCount < 2, "Skipped: Need at least 2 components to create an edge")
 
@@ -448,7 +450,9 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const cards = page.locator('[data-testid^="component-card-"]')
+    // D23: the default toolbox renders type-block cards (type-block-<typeId>), not the old
+    // component-card-* grid. Two distinct type-blocks add two distinct default vendors.
+    const cards = page.locator('[data-testid^="type-block-"]')
     const cardCount = await cards.count()
     test.skip(cardCount < 2, "Skipped: Need at least 2 different components")
 
@@ -486,11 +490,13 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
       fullPage: true,
     })
 
-    // If components are different, names should differ
+    // If the two placed components are different, the inspector names should differ.
+    // D23: read the placed-node names from the canvas (the archie-node contains the component
+    // name), NOT from toolbox cards — the type-block grid no longer exposes per-component h4 names.
     if (cardCount >= 2) {
-      const firstCardName = await cards.nth(0).locator("h4").textContent()
-      const secondCardName = await cards.nth(1).locator("h4").textContent()
-      if (firstCardName !== secondCardName) {
+      const firstNodeName = await page.locator('[data-testid="archie-node"]').nth(0).textContent()
+      const secondNodeName = await page.locator('[data-testid="archie-node"]').nth(1).textContent()
+      if (firstNodeName !== secondNodeName) {
         expect(firstName).not.toBe(secondName)
       }
     }

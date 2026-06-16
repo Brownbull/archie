@@ -283,7 +283,9 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count the always-visible type-block "+" buttons (add-type-*); the old per-vendor
+    // add-to-canvas-* cards are no longer in the default toolbox view.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     const btnCount = await addBtns.count()
     test.skip(btnCount < 2, "Skipped: Need at least 2 components for this test")
 
@@ -430,11 +432,9 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     })
   })
 
-  // D22: skipped — drags from a `component-card-` tile, which the toolbox redesign no longer shows in
-  // the default type-block view (the per-vendor cards moved behind type expansion). The drag-to-canvas
-  // mechanism itself is covered by canvas-and-placement / ghost-placement specs. Revisit if the card
-  // grid returns to the default toolbox view.
-  test.skip("dashboard with drag-and-drop placement (via dragComponentToCanvas)", async ({
+  // D23: migrated off the removed `component-card-` grid to drag a known base component by id
+  // (node-express), matching the reference migration in canvas-and-placement.spec.ts.
+  test("dashboard with drag-and-drop placement (via dragComponentToCanvas)", async ({
     page,
   }) => {
     await page.goto("/")
@@ -442,21 +442,15 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Get the first component card ID for drag-and-drop
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const testId = await firstCard.getAttribute("data-testid")
-    const componentId = testId!.replace("component-card-", "")
-
     // Get canvas bounds
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
     const canvasBounds = await canvasPanel.boundingBox()
     expect(canvasBounds).not.toBeNull()
 
-    // Drag component to canvas center
+    // Drag a known base component to canvas center (the old component-card-* grid is gone post-D23)
     await dragComponentToCanvas(
       page,
-      componentId,
+      "node-express",
       canvasBounds!.x + canvasBounds!.width / 2,
       canvasBounds!.y + canvasBounds!.height / 2,
     )
@@ -520,7 +514,8 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count type-block "+" buttons (add-type-*) — the per-vendor add-to-canvas-* cards are gone.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     const btnCount = await addBtns.count()
     test.skip(btnCount < 3, "Skipped: Need at least 3 components for Foundation tier")
 
@@ -555,7 +550,8 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count type-block "+" buttons (add-type-*) — the per-vendor add-to-canvas-* cards are gone.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     test.skip((await addBtns.count()) < 3, "Skipped: Need at least 3 components")
 
     // Place 3 components to reach Foundation tier
@@ -599,7 +595,8 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count type-block "+" buttons (add-type-*) — the per-vendor add-to-canvas-* cards are gone.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     test.skip((await addBtns.count()) < 3, "Skipped: Need at least 3 components")
 
     // Place 3 components to reach Foundation tier

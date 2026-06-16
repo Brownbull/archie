@@ -11,10 +11,12 @@ test.describe("Replicas & Horizontal Scaling E2E (Epic 14)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place the first available component on the canvas.
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const componentId = (await firstCard.getAttribute("data-testid"))!.replace("component-card-", "")
+    // Place a known scalable component on the canvas.
+    // D23: toolbox renders type-block cards (type-block-<typeId>), not the old component-card-* grid;
+    // drag a known base component by id instead of reading one off a card.
+    const block = page.locator('[data-testid^="type-block-"]').first()
+    await expect(block).toBeVisible()
+    const componentId = "node-express"
 
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
     const bounds = await canvasPanel.boundingBox()
@@ -63,9 +65,11 @@ test.describe("Replicas & Horizontal Scaling E2E (Epic 14)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const componentId = (await firstCard.getAttribute("data-testid"))!.replace("component-card-", "")
+    // D23: toolbox renders type-block cards (type-block-<typeId>), not the old component-card-* grid;
+    // drag a known base component by id instead of reading one off a card.
+    const block = page.locator('[data-testid^="type-block-"]').first()
+    await expect(block).toBeVisible()
+    const componentId = "node-express"
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
     const bounds = await canvasPanel.boundingBox()
     await dragComponentToCanvas(page, componentId, bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2)
