@@ -3,7 +3,6 @@ import {
   waitForComponentLibrary,
   dragComponentToCanvas,
   placeComponentAt,
-  triggerRecalcViaConfigChange as triggerRecalcViaConfigChangeHelper,
   useAdvancedLevel,
 } from "./helpers/canvas-helpers"
 
@@ -24,23 +23,6 @@ async function placeComponent(page: Page, buttonIndex = 0) {
   })
 }
 
-/**
- * Trigger recalculation for a node by changing its config variant ON THE BLOCK.
- *
- * addNode()/drag-drop placement does NOT call triggerRecalculation(), so computedMetrics stays empty
- * after placement. Changing the config variant triggers the full pipeline:
- * updateNodeConfigVariant → triggerRecalculation → computedMetrics populated.
- *
- * Fluidity P1: the config-tier picker (`archie-node-config-trigger`, NodeConfigSelect.tsx) only renders
- * for MULTI-VARIANT providers and sits in the node body under the React Flow minimap. Delegate to the
- * shared canvas-helpers implementation, which opens it via keyboard (focus + Enter) — a plain
- * node.click() opens a stray Radix listbox whose overlay then blocks subsequent clicks, and a pointer
- * click on the trigger can be intercepted by the minimap. (That stale local approach was why the
- * dashboard never left its empty state in CI.)
- */
-async function triggerRecalcViaConfigChange(page: Page, nodeIndex = 0) {
-  await triggerRecalcViaConfigChangeHelper(page, nodeIndex)
-}
 
 // Known MULTI-VARIANT base components (verified in src/data/components/*.yaml) from distinct categories,
 // so each placement reliably renders the on-node config trigger AND adds a new scoring category. Indexed
@@ -48,17 +30,18 @@ async function triggerRecalcViaConfigChange(page: Page, nodeIndex = 0) {
 const MULTI_VARIANT_COMPONENTS = ["node-express", "postgresql"] as const
 
 /**
- * Place a multi-variant component on the canvas via drag AND trigger recalculation to populate
- * computedMetrics. Drag (vs the index-based `add-type-` "+") guarantees a known multi-variant provider:
- * `add-type-`.nth(0) is the source-only traffic block, which has a single config variant and so renders
- * no config trigger — recalculation never fires and the dashboard stays in its empty state.
+ * Place a known component on the canvas to populate computedMetrics. Placement is sufficient:
+ * addNode (the drop handler's action) calls triggerRecalculation(node.id) synchronously
+ * (architectureStore.ts addNode → triggerRecalculation), so computedMetrics is populated as soon as
+ * the node lands — no separate config-change step is needed. (An earlier version added a config-tier
+ * change to "force" recalc, but that step depends on a multi-variant trigger + a 1★ tier purchase the
+ * 0-star E2E user can't make, so it failed and left the dashboard stuck in its empty state.)
  */
 async function addComponentWithMetrics(page: Page, buttonIndex = 0) {
   const componentId = MULTI_VARIANT_COMPONENTS[buttonIndex] ?? MULTI_VARIANT_COMPONENTS[0]
   // Spread placements horizontally so multiple nodes don't stack on top of each other.
   const fractionX = 0.3 + buttonIndex * 0.3
   await placeComponentAt(page, componentId, fractionX, 0.5)
-  await triggerRecalcViaConfigChange(page, buttonIndex)
 }
 
 test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
@@ -454,8 +437,7 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
       timeout: 5_000,
     })
 
-    // Trigger recalculation via config change (drag placement doesn't trigger recalc)
-    await triggerRecalcViaConfigChange(page, 0)
+    // Placement alone populates computedMetrics — addNode calls triggerRecalculation synchronously.
 
     // Dashboard should show content (not empty state)
     const dashboardPanel = page.locator('[data-testid="dashboard-panel"]')
