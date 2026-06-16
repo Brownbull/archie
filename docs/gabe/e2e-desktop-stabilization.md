@@ -114,3 +114,29 @@ canvas via architectureStore directly). Owner chose to skip it for now and fix t
 
 TRACTABLE REMAINING (~8): component-swapping ×3 (edge-create via connectNodes), decision-support,
 ui-batch-features, radial-menu, settings-and-preferences:284, inspector-responsiveness:231, ui-sweep:87.
+
+## Update 2026-06-16 (session 2d) — tractable tail cleared; runtime-complex remainder documented
+
+CLEARED (validated green via filtered dispatch this session):
+- canvas-and-placement (node-width range + add-type-compute) ✅
+- radial-menu (HTML5 drop, not native mouse drag; archie-node not rf__node-) ✅
+- ui-sweep: 8/9 green (dense-canvas placement fixed to 5 distinct types; see remainder below)
+- + the 18-spec fan-out (80→20 failures)
+
+RUNTIME-COMPLEX REMAINDER — need LOCAL Firebase execution to fix reliably (blind CI guesses
+mis-predicted repeatedly; each is a subtle drag/SVG/recalc/overlay-timing behavior):
+- scoring-dashboard (~12): lone-node scoring opacity (does an unconnected node populate
+  computedMetrics? likely needs traffic-source + connection or a store-seeded scored canvas).
+- ui-sweep:88 dense-canvas: 5 nodes + connectNodes + overlay → "page has been closed" crash.
+- component-swapping ×3 (208/254/356): connectNodes drag-to-connect doesn't create the edge
+  (fragile mouse-drag + arbitrary node-type compatibility) → use store addEdge with known ids.
+- ui-batch-features:14: clicking the SVG <g> tree-node-first-service doesn't open the detail
+  panel (SVG hit-testing) → try force-click or click the node's circle/label child.
+- decision-support:8: swap before/after econ-delta not visible (swap+recalc, ties to scoring).
+- settings-and-preferences:284: a click hangs in the 3× font-size + place-2-nodes cycle.
+- inspector-responsiveness:231: overlay scrollIntoView/disclosure timeout.
+
+NET: e2e-desktop ~80 → ~17 failures (~79% reduction), completes in budget. The remainder is
+ALL documented above with root-cause hypotheses + the concrete next step for each.
+RECOMMENDATION: fix the remainder in a session where `npm run test:e2e` can run against real
+Firebase locally (fast observe-and-fix), rather than blind ~4-min CI gambles.
