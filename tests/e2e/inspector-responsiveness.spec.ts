@@ -81,6 +81,12 @@ async function assertConsistentBarWidths(page: Page) {
 }
 
 test.describe("Inspector Responsiveness E2E", () => {
+  // Every test imports the connected swap-pair fixture in setupInspector (needed so the compute node
+  // carries scored metric bars), which is heavier than a single placement. Under 4-worker CI load
+  // that brushed the default 30s cap (4 tests went flaky — all timeouts, passed on retry). Give the
+  // whole suite room; the assertions are unchanged.
+  test.describe.configure({ timeout: 60_000 })
+
   // The inspector's gains/costs/metrics/code sections are gated behind the "advanced" experience
   // level (default is "beginner", which hides them). Seed advanced BEFORE goto on every test.
   test.beforeEach(async ({ page }) => {

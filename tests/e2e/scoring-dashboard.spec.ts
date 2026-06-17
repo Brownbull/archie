@@ -389,7 +389,11 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     // Remove button — more robust than node.click()+keyboard Delete, which can land on a control.
     let remaining = await page.locator('[data-testid="archie-node"]').count()
     while (remaining > 0) {
-      await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
+      // force the header click: the node carries an entry ripple/transition (archie-ripple) that can
+      // keep Playwright's actionability check "retrying click action" past the 30s cap under heavy
+      // parallel CI load (observed: 1 hard fail, retries exhausted). The position is still the header
+      // (above the on-node dropdowns); force only skips the stability/intercept wait, not the position.
+      await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 }, force: true })
       await page.getByTestId("inspector-remove-node").click()
       await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(remaining - 1, { timeout: 5_000 })
       remaining -= 1
