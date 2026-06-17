@@ -1,0 +1,17 @@
+schema_version: 4.0.0
+name: scoring fixture — traffic + compute (connected, scores)
+nodes:
+  - id: n-traffic
+    component_id: web-users
+    config_variant_id: moderate
+    position: { x: 0, y: 0 }
+    traffic_rps: 1000
+    traffic_kind: realistic
+  - id: n-compute
+    component_id: node-express
+    config_variant_id: cluster-mode
+    position: { x: 260, y: 0 }
+edges:
+  - id: e1
+    source_node_id: n-traffic
+    target_node_id: n-compute
