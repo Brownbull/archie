@@ -5777,3 +5777,44 @@ VERIFIED LIVE: B1 cold-load import hydrates clean (7 components, 55/mo, 0 placeh
 SHIPPED: B1/B2 (import fix + prompt-gen), S1 (novice fork/blueprint/score-gloss), M4 (contrast),
   M5 (sim hint), C4/C5; + e2e-desktop 80→~17 failures (79% rehab).
 PHASE 1-4 all Push ✅ — plan complete.
+- 2026-06-16 23:28 | Edit | /home/khujta/projects/bmad/archie/playwright.config.ts
+- 2026-06-16 23:29 | Edit | /home/khujta/projects/bmad/archie/package.json
+- 2026-06-16 23:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/auth.ts
+- 2026-06-16 23:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/auth.ts
+- 2026-06-16 23:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/auth.ts
+- 2026-06-16 23:42 | Write | /home/khujta/projects/bmad/archie/debug-score.mjs
+- 2026-06-16 23:43 | Write | /home/khujta/projects/bmad/archie/debug-score2.mjs
+- 2026-06-16 23:44 | Write | /home/khujta/projects/bmad/archie/debug-import-score.mjs
+- 2026-06-16 23:45 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/scoring/two-node-scored.architecture.yaml
+- 2026-06-16 23:46 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_local-e2e-and-scoring.md
+- 2026-06-16 23:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:54 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:54 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:55 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:07 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/scoring/swap-pair.architecture.yaml
+- 2026-06-17 00:07 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:10 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:11 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:12 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:13 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:13 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:14 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:21 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/scoring/dense-canvas.architecture.yaml
+- 2026-06-17 00:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-06-17 00:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-06-17 00:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 00:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 00:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 00:31 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-batch-features.spec.ts
+- 2026-06-17 00:32 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-batch-features.spec.ts
+- 2026-06-17 00:35 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-17 00:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-17 00:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-17 00:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts

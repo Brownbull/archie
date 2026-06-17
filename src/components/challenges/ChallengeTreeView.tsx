@@ -577,9 +577,12 @@ export function ChallengeTreeView({ open, onOpenChange }: { open: boolean; onOpe
             </span>
           </div>
         </DialogHeader>
-        <div className="flex gap-0" style={{ height: "calc(85vh - 80px)" }}>
+        {/* min-w-0 + overflow-hidden keep the wide tree SVG from blowing the dialog past 95vw, which
+            otherwise pushes the w-80 detail panel (and its Accept/Replay button) off-screen-right
+            at narrower desktop widths (≤1280px). */}
+        <div className="flex gap-0 min-w-0 overflow-hidden" style={{ height: "calc(85vh - 80px)" }}>
           {/* Left: quest tree — always visible, fixed position */}
-          <div className="relative flex-1" style={{ minWidth: 0 }}>
+          <div className="relative flex-1 min-w-0" style={{ minWidth: 0 }}>
             {/* Discipline legend — a column pinned over the tree's empty left margin (2026-06-11
                 playtest: one item per row reads better than the cramped header chips). */}
             <div

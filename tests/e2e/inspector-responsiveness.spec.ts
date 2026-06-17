@@ -1,7 +1,8 @@
 import { test, expect, type Page, type Locator } from "@playwright/test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import {
   waitForComponentLibrary,
-  addComponentToCanvas,
   selectNodeOnCanvas,
   useAdvancedLevel,
   expandInspectorSection,
@@ -20,8 +21,13 @@ async function setupInspector(page: Page): Promise<boolean> {
   await page.goto("/")
   const hasComponents = await waitForComponentLibrary(page)
   if (!hasComponents) return false
-  await addComponentToCanvas(page, 0)
-  await selectNodeOnCanvas(page, 0)
+  // Import a connected pair and select the COMPUTE node (node 1). A lone/traffic node has no scored
+  // metrics, so the inspector's metric cards/bars don't render and the bar-consistency checks hang;
+  // a connected compute node has real metrics. Import is reliable (add-type-.nth(0) is traffic).
+  const buf = readFileSync(join(process.cwd(), "tests", "e2e", "fixtures", "scoring", "swap-pair.architecture.yaml"))
+  await page.getByTestId("import-file-input").setInputFiles({ name: "swap-pair.architecture.yaml", mimeType: "text/yaml", buffer: buf })
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 10_000 })
+  await selectNodeOnCanvas(page, 0) // node 0 = n-compute (node-express) — has metrics
   return true
 }
 
@@ -49,14 +55,16 @@ async function assertConsistentBarWidths(page: Page) {
 
   for (let c = 0; c < cardCount; c++) {
     const card = metricCards.nth(c)
-    await card.scrollIntoViewIfNeeded()
+    // scrollIntoViewIfNeeded can hang inside the overlay's internally-scrolling container — it's not
+    // required for boundingBox on a visible element, so make it best-effort with a short bound.
+    await card.scrollIntoViewIfNeeded({ timeout: 2_000 }).catch(() => {})
     const barTracks = card.locator('[data-testid="metric-bar"] .rounded-full.bg-muted')
     const trackCount = await barTracks.count()
     if (trackCount < 2) continue
 
     const widths: number[] = []
     for (let t = 0; t < trackCount; t++) {
-      await barTracks.nth(t).scrollIntoViewIfNeeded()
+      await barTracks.nth(t).scrollIntoViewIfNeeded({ timeout: 2_000 }).catch(() => {})
       const box = await barTracks.nth(t).boundingBox()
       if (box) widths.push(Math.round(box.width))
     }

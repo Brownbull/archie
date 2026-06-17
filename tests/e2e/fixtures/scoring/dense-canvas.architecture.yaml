@@ -1,0 +1,38 @@
+schema_version: 4.0.0
+name: dense canvas — 5 nodes + connections
+nodes:
+  - id: n-traffic
+    component_id: web-users
+    config_variant_id: moderate
+    position: { x: 0, y: 0 }
+    traffic_rps: 2000
+    traffic_kind: realistic
+  - id: n-cdn
+    component_id: cloudflare-cdn
+    config_variant_id: full-site
+    position: { x: 220, y: 0 }
+  - id: n-compute
+    component_id: node-express
+    config_variant_id: cluster-mode
+    position: { x: 440, y: 0 }
+  - id: n-cache
+    component_id: redis
+    config_variant_id: standalone
+    position: { x: 660, y: -120 }
+  - id: n-db
+    component_id: postgresql
+    config_variant_id: primary-replica
+    position: { x: 660, y: 120 }
+edges:
+  - id: e1
+    source_node_id: n-traffic
+    target_node_id: n-cdn
+  - id: e2
+    source_node_id: n-cdn
+    target_node_id: n-compute
+  - id: e3
+    source_node_id: n-compute
+    target_node_id: n-cache
+  - id: e4
+    source_node_id: n-compute
+    target_node_id: n-db
