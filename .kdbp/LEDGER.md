@@ -5908,3 +5908,14 @@ DEPLOY RESULT: ✅ Deploy Production 27671526169 = success (2544 modules, 6.9s b
 - 2026-06-17 03:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
 - 2026-06-17 03:47 | Edit | /home/khujta/projects/bmad/archie/src/services/componentLibrary.ts
 - 2026-06-17 03:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/gastify.architecture.yaml
+- 2026-06-17 03:52 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_seed-from-local.md
+
+## 2026-06-17 — SEED prod Firestore: +2 components (gemini, firebase-auth) — 116 total
+TRIGGER: Kane prompt→import round-trip test on Gastify + archie's own architecture surfaced 2 catalog
+  gaps (no Firebase Auth, no Google Gemini → forced auth0/anthropic substitutions).
+WROTE: firebase-auth (type=auth) + gemini (type=llm-gateway) YAMLs; regenerated prompt-template.md
+  (116, drift 5/5); seeded to prod Firestore archie-2a560 via Admin SDK (.secrets/ SA key, chmod 600,
+  gitignored). Non-destructive upsert (batch.set, 116 ops) + _metadata/seed bump. Commit cb521ff.
+VERIFIED (live dev server): Gastify 8/8 resolve+score 6.5C; archie's own 4/4 resolve+score 6.1C; 0
+  "Component not found". NOTE: seed creds were never local before (CI doesn't seed) — see
+  memory project_seed-from-local.
