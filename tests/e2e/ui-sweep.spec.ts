@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import {
   waitForComponentLibrary,
   addComponentToCanvas,
   selectNodeOnCanvas,
   connectNodes,
-  dragComponentToCanvas,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/ui-sweep"
@@ -88,17 +89,13 @@ test.describe("UI visual sweep", () => {
   test("dense canvas — many nodes + connections + overlay coexist", async ({ page }) => {
     await page.goto("/")
     test.skip(!(await waitForComponentLibrary(page)), "no seeded data")
-    // Crowd the canvas with 5 DISTINCT known types, dropped at spread positions. (The old
-    // add-type-.nth(i) loop hit the one-per-type / max-traffic gate — add-type-.nth(0) is the
-    // traffic-source block, which is per-type capped — so the per-add count assertion failed.)
-    const box = await page.locator('[data-testid="canvas-panel"]').boundingBox()
-    const ids = ["web-users", "node-express", "postgresql", "redis", "nginx"]
-    for (let i = 0; i < ids.length; i++) {
-      await dragComponentToCanvas(page, ids[i], box!.x + box!.width * (0.15 + i * 0.17), box!.y + box!.height * 0.5)
-    }
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(5, { timeout: 5_000 })
-    await connectNodes(page, 0, 1).catch(() => {})
-    await connectNodes(page, 1, 2).catch(() => {})
+    // Crowd the canvas: import a connected 5-node architecture (importing is reliable; dropping +
+    // dragging handle-to-handle to connect is flaky because placed nodes overlap, and the old
+    // add-type-.nth(i) loop hit the traffic one-per-type gate).
+    const buf = readFileSync(join(process.cwd(), "tests", "e2e", "fixtures", "scoring", "dense-canvas.architecture.yaml"))
+    await page.getByTestId("import-file-input").setInputFiles({ name: "dense-canvas.architecture.yaml", mimeType: "text/yaml", buffer: buf })
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(5, { timeout: 10_000 })
+    await expect(page.locator(".react-flow__edge")).toHaveCount(4, { timeout: 5_000 })
     const cost = page.locator('[data-testid="overlay-mode-cost"]')
     if (await cost.isVisible().catch(() => false)) await cost.click()
     await page.waitForTimeout(300)

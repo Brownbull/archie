@@ -1,7 +1,8 @@
 import { test, expect, type Page, type Locator } from "@playwright/test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import {
   waitForComponentLibrary,
-  addComponentToCanvas,
   selectNodeOnCanvas,
   useAdvancedLevel,
   expandInspectorSection,
@@ -20,8 +21,13 @@ async function setupInspector(page: Page): Promise<boolean> {
   await page.goto("/")
   const hasComponents = await waitForComponentLibrary(page)
   if (!hasComponents) return false
-  await addComponentToCanvas(page, 0)
-  await selectNodeOnCanvas(page, 0)
+  // Import a connected pair and select the COMPUTE node (node 1). A lone/traffic node has no scored
+  // metrics, so the inspector's metric cards/bars don't render and the bar-consistency checks hang;
+  // a connected compute node has real metrics. Import is reliable (add-type-.nth(0) is traffic).
+  const buf = readFileSync(join(process.cwd(), "tests", "e2e", "fixtures", "scoring", "swap-pair.architecture.yaml"))
+  await page.getByTestId("import-file-input").setInputFiles({ name: "swap-pair.architecture.yaml", mimeType: "text/yaml", buffer: buf })
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 10_000 })
+  await selectNodeOnCanvas(page, 0) // node 0 = n-compute (node-express) — has metrics
   return true
 }
 
@@ -49,14 +55,16 @@ async function assertConsistentBarWidths(page: Page) {
 
   for (let c = 0; c < cardCount; c++) {
     const card = metricCards.nth(c)
-    await card.scrollIntoViewIfNeeded()
+    // scrollIntoViewIfNeeded can hang inside the overlay's internally-scrolling container — it's not
+    // required for boundingBox on a visible element, so make it best-effort with a short bound.
+    await card.scrollIntoViewIfNeeded({ timeout: 2_000 }).catch(() => {})
     const barTracks = card.locator('[data-testid="metric-bar"] .rounded-full.bg-muted')
     const trackCount = await barTracks.count()
     if (trackCount < 2) continue
 
     const widths: number[] = []
     for (let t = 0; t < trackCount; t++) {
-      await barTracks.nth(t).scrollIntoViewIfNeeded()
+      await barTracks.nth(t).scrollIntoViewIfNeeded({ timeout: 2_000 }).catch(() => {})
       const box = await barTracks.nth(t).boundingBox()
       if (box) widths.push(Math.round(box.width))
     }
@@ -73,6 +81,12 @@ async function assertConsistentBarWidths(page: Page) {
 }
 
 test.describe("Inspector Responsiveness E2E", () => {
+  // Every test imports the connected swap-pair fixture in setupInspector (needed so the compute node
+  // carries scored metric bars), which is heavier than a single placement. Under 4-worker CI load
+  // that brushed the default 30s cap (4 tests went flaky — all timeouts, passed on retry). Give the
+  // whole suite room; the assertions are unchanged.
+  test.describe.configure({ timeout: 60_000 })
+
   // The inspector's gains/costs/metrics/code sections are gated behind the "advanced" experience
   // level (default is "beginner", which hides them). Seed advanced BEFORE goto on every test.
   test.beforeEach(async ({ page }) => {
@@ -205,6 +219,11 @@ test.describe("Inspector Responsiveness E2E", () => {
   test("expanded 500px sidebar: all content fits and bars consistent", async ({ page }) => {
     const hasComponents = await setupInspector(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
+
+    // Wait for the inspector to mount before expanding — under heavy parallel CI load the import +
+    // select + render can lag, and clicking the toggle before the panel exists raced to a 30s timeout
+    // (observed flaky once on CI, passed on retry). Gate on the panel first.
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 10_000 })
 
     // Expand to 500px
     await page.locator('[data-testid="inspector-expand-toggle"]').click()

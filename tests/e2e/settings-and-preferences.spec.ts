@@ -23,7 +23,14 @@ const FONT_FAMILY_PRESETS: Record<string, string> = {
 
 /** Open the settings dropdown and wait for it to be visible */
 async function openSettings(page: Page) {
-  await page.locator('[data-testid="settings-menu-trigger"]').click()
+  const trigger = page.locator('[data-testid="settings-menu-trigger"]')
+  // Radix menus from a prior open/select cycle can leave a closing overlay that intercepts the next
+  // trigger click (the click then hangs on a "stable, receives-events" wait). If the menu is already
+  // open, it's a no-op; otherwise dismiss any lingering overlay with Escape before re-opening.
+  if (await page.locator('[data-testid="settings-menu-content"]').isVisible().catch(() => false)) return
+  await page.keyboard.press("Escape")
+  await expect(trigger).toBeVisible()
+  await trigger.click()
   await page.locator('[data-testid="settings-menu-content"]').waitFor({ state: "visible" })
 }
 
@@ -239,6 +246,7 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
   // --- Combined: multiple preferences persist together ---
 
   test("all three preferences persist together across reload", async ({ page }) => {
+    test.setTimeout(60_000) // 3× openSettings/select cycles + a reload — heavy under parallel CI load
     await page.goto("/")
     await expect(page.locator('[data-testid="settings-menu-trigger"]')).toBeVisible({ timeout: 15_000 })
 
@@ -364,10 +372,14 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
       })
     }
 
-    // Assert: the canvas node width is identical across all three font sizes (font-independence,
-    // AC-ARCH-NO-3) — px-sized nodes must not scale with rem.
-    expect(nodeWidths.medium).toBe(nodeWidths.small)
-    expect(nodeWidths.large).toBe(nodeWidths.small)
+    // Node width is now content-driven: ArchieNode uses width:fit-content clamped to
+    // [NODE_MIN_WIDTH 176 … NODE_MAX_WIDTH 280] (ArchieNode.tsx). The node's text is rem-based, so a
+    // larger font grows the fit-content width until it hits the cap — the old "identical across font
+    // sizes" invariant (AC-ARCH-NO-3, valid only for fixed-px nodes) no longer holds. The surviving
+    // guarantee is monotonic, clamped growth: width never shrinks as the font grows, and stays within
+    // bounds. Per-size [176,280] bounds are already asserted inside the loop above.
+    expect(nodeWidths.medium).toBeGreaterThanOrEqual(nodeWidths.small)
+    expect(nodeWidths.large).toBeGreaterThanOrEqual(nodeWidths.medium)
 
     // Assert: for every measured element, small < medium < large
     for (const key of Object.keys(measurements.small) as (keyof FontMeasurement)[]) {

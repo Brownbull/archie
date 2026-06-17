@@ -28,10 +28,17 @@ test.describe("UI — mode toggle (quest log) + challenge clone/play", () => {
     await expect(page.getByTestId("quest-log")).toBeVisible({ timeout: 5_000 })
     await page.screenshot({ path: `${SCREENSHOT_DIR}/02-quest-log-open.png`, fullPage: true })
 
-    // Select first-service in the tree, then Accept the quest → quest mode.
+    // Select first-service in the tree, then start the quest → quest mode. The button reads "Accept
+    // Quest" for a fresh node and "Replay Quest" once completed (the seeded test account may already
+    // have first-service done); both call onStart and enter quest mode. Force the click — the tree
+    // re-layouts on node selection, so the button can still be settling when Playwright reaches it.
     await page.getByTestId("tree-node-first-service").click()
-    await expect(page.getByTestId("tree-start-challenge")).toBeVisible()
-    await page.getByTestId("tree-start-challenge").click()
+    const startBtn = page.getByTestId("tree-start-challenge")
+    await expect(startBtn).toBeVisible()
+    // The button sits at the bottom of the node detail, below the quest-log fold — scroll it into the
+    // scroll container's view before clicking (a bare/force click on an off-screen element fails).
+    await startBtn.scrollIntoViewIfNeeded()
+    await startBtn.click()
 
     await expect(page.getByTestId("challenge-hud")).toBeVisible({ timeout: 5_000 })
     await expect(page.getByTestId("mode-toggle-quest")).toHaveAttribute("aria-pressed", "true")

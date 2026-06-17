@@ -75,3 +75,6 @@ __pycache__
 _kdbp/
 
 .kdbp/reviews-archive/
+
+# Local static-serve build output for the E2E observe-and-fix harness
+dist-dev/

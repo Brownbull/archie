@@ -140,3 +140,21 @@ NET: e2e-desktop ~80 → ~17 failures (~79% reduction), completes in budget. The
 ALL documented above with root-cause hypotheses + the concrete next step for each.
 RECOMMENDATION: fix the remainder in a session where `npm run test:e2e` can run against real
 Firebase locally (fast observe-and-fix), rather than blind ~4-min CI gambles.
+
+## Update 2026-06-17 — local-Firebase E2E enabled (no emulator, no local DB)
+
+KEY FINDING: local E2E was broken ONLY because the config deliberately `unset`s the Firebase env
+(in package.json test:e2e + playwright.config webServer) — NOT because of a missing local DB. CI
+already runs E2E against the REAL Firebase project (writes .env.local from secrets); no emulator.
+
+ADDED (non-destructive): `npm run test:e2e:local` runs Playwright with LOCAL_FIREBASE_E2E=1, which
+makes the webServer KEEP the .env.local Firebase config (component library, auth, user-data specs
+run for real). The default `npm run test:e2e` is unchanged (still offline/unset). Requires .env.local
+to have the 6 VITE_FIREBASE_* vars + VITE_TEST_EMAIL/PASSWORD (it does).
+
+CAVEAT: test:e2e:local hits the PRODUCTION Firebase project — reads seeded reference data, and the
+test@archie.dev account writes its own userProgress (exactly what CI does, isolated test account).
+
+THIS UNBLOCKS the runtime-complex remainder (scoring-dashboard, component-swapping edge-create,
+ui-batch SVG-click, etc.): run `npm run test:e2e:local <spec>` locally to OBSERVE the real runtime
+(headed: add `--headed --project=desktop`) instead of blind ~4-min CI gambles.

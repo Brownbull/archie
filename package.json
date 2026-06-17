@@ -13,6 +13,7 @@
     "test:story": "vitest run --coverage",
     "test:sprint": "vitest run --coverage --reporter=verbose",
     "test:e2e": "bash -c 'unset ${!VITE_FIREBASE_*} && playwright test'",
+    "test:e2e:local": "LOCAL_FIREBASE_E2E=1 playwright test",
     "preview": "vite preview",
     "gen:icons": "tsx scripts/gen-logos.mts",
     "seed:firestore": "tsx scripts/seed-firestore.ts",

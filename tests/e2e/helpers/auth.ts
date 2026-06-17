@@ -1,4 +1,6 @@
 import type { Page } from "@playwright/test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 
 /**
  * Firebase Auth storage key format.
@@ -6,6 +8,21 @@ import type { Page } from "@playwright/test"
  */
 export function getFirebaseAuthStorageKey(apiKey: string): string {
   return `firebase:authUser:${apiKey}:[DEFAULT]`
+}
+
+/** Read a VITE_* var from process.env, falling back to .env.local (Playwright's node process does
+ *  not auto-load .env.local — Vite does that at build/serve time, not here). */
+function envVar(name: string): string | undefined {
+  if (process.env[name]) return process.env[name]
+  try {
+    for (const line of readFileSync(join(process.cwd(), ".env.local"), "utf8").split("\n")) {
+      const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/)
+      if (m && m[1] === name) return m[2].replace(/^["']|["']$/g, "")
+    }
+  } catch {
+    /* no .env.local — rely on process.env (CI) */
+  }
+  return undefined
 }
 
 /**
@@ -21,11 +38,28 @@ export async function loginWithTestCredentials(page: Page): Promise<void> {
   })
 
   await page.goto("/login")
-  await page.waitForSelector('[data-testid="test-login-button"]', {
-    state: "visible",
-    timeout: 10_000,
-  })
-  await page.click('[data-testid="test-login-button"]')
+
+  // The dev-only "Test Login" button renders only under `import.meta.env.DEV` (the Vite dev server).
+  // When E2E runs against a BUILT app (e.g. a static-served dist, used for local observe-and-fix
+  // where the Vite dev server can't run), that button is absent — fall back to the email/password
+  // form, which works in any build. Same VITE_TEST_EMAIL/PASSWORD account either way.
+  const devButton = page.locator('[data-testid="test-login-button"]')
+  const hasDevButton = await devButton.isVisible().catch(() => false)
+    || await devButton.waitFor({ state: "visible", timeout: 5_000 }).then(() => true).catch(() => false)
+
+  if (hasDevButton) {
+    await page.click('[data-testid="test-login-button"]')
+  } else {
+    const email = envVar("VITE_TEST_EMAIL")
+    const password = envVar("VITE_TEST_PASSWORD")
+    if (!email || !password) {
+      throw new Error("Test login: no dev button and VITE_TEST_EMAIL/PASSWORD not set for the email fallback")
+    }
+    await page.getByTestId("email-toggle").click()
+    await page.getByTestId("email-input").fill(email)
+    await page.getByTestId("password-input").fill(password)
+    await page.getByTestId("email-password-submit").click()
+  }
 
   // Check for auth error first
   const errorOrToolbar = await Promise.race([

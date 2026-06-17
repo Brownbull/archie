@@ -5677,3 +5677,207 @@ PHASE: 1 (Commit ticked)
 FINDINGS: build ✅ | tests ✅ 5190/5190 | structure ✅ | lint baseline (pre-existing)
 PHASES: 2,3,4 Exec=✅ Commit=✅ | S1b deferred → D36
 SCOPE: FirstRunFork + scoreGlosses + M4 contrast tokens + robots/llms.txt + M5 hint + S1b research
+- 2026-06-15 22:58 | Write | /tmp/verify-b1-fixed.mjs
+- 2026-06-15 23:07 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/CategoryBar.tsx
+- 2026-06-15 23:07 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardOverlay.tsx
+- 2026-06-15 23:08 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/TierBadge.tsx
+
+## 2026-06-15 23:45 — [13f3337] fix(e2e): S1 fork blocked the suite
+FINDING: E2E desktop failed — fresh-login specs hit the FirstRunFork overlay (pointer-events-auto)
+  blocking the canvas. ~20 specs failed on "canvas-empty-state not visible". Root cause: S1a fork
+  renders until firstRunChoice is set; auth setup never seeded it.
+FIX: global-setup + unlocked-setup seed firstRunChoice="free" (alongside the existing tourSeen seed).
+ALSO: canvas-and-placement.spec had stale testids (suggestion-example/-drag, removed in 9d73382) —
+  pre-existing break the fork failure surfaced; updated to real testids.
+LESSON: a UI gate that overlays the canvas on first run breaks EVERY authenticated E2E spec, not just
+  empty-state ones. Seed the gate's "answered" state in auth setup, same as tourSeen.
+- 2026-06-16 10:28 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
+- 2026-06-16 10:30 | Edit | /home/khujta/projects/bmad/archie/.github/workflows/e2e-desktop.yml
+- 2026-06-16 10:30 | Edit | /home/khujta/projects/bmad/archie/.github/workflows/e2e-desktop.yml
+- 2026-06-16 10:33 | Edit | /home/khujta/projects/bmad/archie/.github/workflows/e2e-desktop.yml
+- 2026-06-16 10:35 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
+- 2026-06-16 10:40 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/canvas-and-placement.spec.ts
+- 2026-06-16 10:40 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-16 10:41 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-16 10:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-16 10:44 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-16 10:44 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-16 10:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/import-export.spec.ts
+- 2026-06-16 10:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/import-export.spec.ts
+- 2026-06-16 10:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/import-export.spec.ts
+- 2026-06-16 10:59 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/import-export.spec.ts
+- 2026-06-16 11:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-16 11:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 11:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-16 11:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-16 11:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-16 11:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 11:01 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-16 11:01 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-16 11:01 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-16 11:02 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/vendor-links.spec.ts
+- 2026-06-16 11:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/flow-particles-and-legend.spec.ts
+- 2026-06-16 11:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/vendor-links.spec.ts
+- 2026-06-16 11:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/flow-particles-and-legend.spec.ts
+- 2026-06-16 11:04 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:04 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:04 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:04 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ux-connections.spec.ts
+- 2026-06-16 11:05 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ux-connections.spec.ts
+- 2026-06-16 11:05 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/history-tab.spec.ts
+- 2026-06-16 11:05 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:05 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:06 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:07 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/economics-full-journey.spec.ts
+- 2026-06-16 11:07 | Write | /home/khujta/projects/bmad/archie/tests/e2e/_debug-failure.spec.ts
+- 2026-06-16 11:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_debug-failure.spec.ts
+- 2026-06-16 11:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_debug-failure.spec.ts
+- 2026-06-16 11:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_debug-failure.spec.ts
+- 2026-06-16 11:09 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_debug-failure.spec.ts
+- 2026-06-16 11:10 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_debug-failure.spec.ts
+- 2026-06-16 11:11 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:12 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/metric-filter-and-recommendations.spec.ts
+- 2026-06-16 11:12 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_debug-failure.spec.ts
+- 2026-06-16 11:12 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/metric-filter-and-recommendations.spec.ts
+- 2026-06-16 11:12 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/demand-simulation.spec.ts
+- 2026-06-16 11:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-16 11:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/expanded-content.spec.ts
+- 2026-06-16 11:15 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/port-handles.spec.ts
+- 2026-06-16 11:16 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/replicas-and-scaling.spec.ts
+- 2026-06-16 11:16 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/toolbox-browsing.spec.ts
+- 2026-06-16 11:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/status-dot-and-swap-popover.spec.ts
+- 2026-06-16 11:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/auth-and-app-shell.spec.ts
+- 2026-06-16 11:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/auth-and-app-shell.spec.ts
+- 2026-06-16 11:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-16 11:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-16 11:27 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/challenge-validation.spec.ts
+- 2026-06-16 11:30 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:34 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 11:35 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-and-config.spec.ts
+- 2026-06-16 12:42 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 12:42 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 12:42 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 12:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 18:54 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/radial-menu.spec.ts
+- 2026-06-16 18:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-06-16 18:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-06-16 19:03 | Edit | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_e2e-desktop-debt.md
+- 2026-06-16 23:03 | Write | /home/khujta/projects/bmad/archie/verify-b1.mjs
+
+## 2026-06-16 23:04 — DEPLOY: Kane QA remediation live on prod
+PR #31 merged dev→main (7a20b2d); Deploy Production ✅ hosting; firestore:rules ✅ (manual)
+VERIFIED LIVE: B1 cold-load import hydrates clean (7 components, 55/mo, 0 placeholders);
+  C4 robots.txt + C5 llms.txt return 200. M2/M3/C3 ride the redeploy (already in HEAD).
+SHIPPED: B1/B2 (import fix + prompt-gen), S1 (novice fork/blueprint/score-gloss), M4 (contrast),
+  M5 (sim hint), C4/C5; + e2e-desktop 80→~17 failures (79% rehab).
+PHASE 1-4 all Push ✅ — plan complete.
+- 2026-06-16 23:28 | Edit | /home/khujta/projects/bmad/archie/playwright.config.ts
+- 2026-06-16 23:29 | Edit | /home/khujta/projects/bmad/archie/package.json
+- 2026-06-16 23:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/auth.ts
+- 2026-06-16 23:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/auth.ts
+- 2026-06-16 23:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/auth.ts
+- 2026-06-16 23:42 | Write | /home/khujta/projects/bmad/archie/debug-score.mjs
+- 2026-06-16 23:43 | Write | /home/khujta/projects/bmad/archie/debug-score2.mjs
+- 2026-06-16 23:44 | Write | /home/khujta/projects/bmad/archie/debug-import-score.mjs
+- 2026-06-16 23:45 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/scoring/two-node-scored.architecture.yaml
+- 2026-06-16 23:46 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_local-e2e-and-scoring.md
+- 2026-06-16 23:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:53 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:54 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:54 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:55 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-16 23:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:00 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:03 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 00:07 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/scoring/swap-pair.architecture.yaml
+- 2026-06-17 00:07 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:08 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:10 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:11 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:12 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:13 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:13 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:14 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 00:21 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/scoring/dense-canvas.architecture.yaml
+- 2026-06-17 00:21 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-06-17 00:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-sweep.spec.ts
+- 2026-06-17 00:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 00:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 00:26 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 00:31 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-batch-features.spec.ts
+- 2026-06-17 00:32 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/ui-batch-features.spec.ts
+- 2026-06-17 00:35 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeTreeView.tsx
+- 2026-06-17 00:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-17 00:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+- 2026-06-17 00:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+
+## 2026-06-17 — PUSH dev (457f45e) — e2e-desktop stabilization batch
+COMMIT: 457f45e test(e2e): stabilize 4 desktop specs + fix quest-log detail panel off-screen ≤1280px
+PUSHED: HEAD -> origin/dev (integration; full e2e-desktop CI validating)
+LOCAL SWEEP: 60/60 green (scoring-dashboard, inspector-responsiveness, ui-batch-features,
+  settings-and-preferences, ui-sweep, canvas-and-placement, radial-menu); unit 4978 pass.
+SOURCE FIX: ChallengeTreeView dialog flex row min-w-0 + overflow-hidden — quest detail panel
+  (+Accept/Replay button) no longer pushed off-screen-right at ≤1280px viewport.
+CI-BRIDGE-ONLY (validate on CI dev server, not static local harness): component-swapping,
+  decision-support (grantCanvasVendorOwnership seeds unlockedVendors/Tiers via /src import).
+CI: run 27666679691 (E2E desktop) in_progress — watcher br0o08z18.
+PROMOTION: dev → main deferred until e2e-desktop CI result reviewed.
+- 2026-06-17 01:18 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:18 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+
+## 2026-06-17 — FIX e2e component-swapping (fee3f95) — vendor-ownership gate
+ROOT CAUSE (workflow-verified, 2 chokepoints): swap gated on unlockedVendors
+  (NodeProviderSelect onValueChange + swapNodeComponent isVendorOwned); the old
+  grantNodeTierOwnership wrote only unlockedTiers → cross-vendor swaps no-op'd (3 CI fails:
+  preserve-connections / config-reset / round-trip).
+FIX: shared canvas-helpers grantVendorOwnership grants unlockedVendors+Tiers over
+  providersForComponent; component-swapping + decision-support both consume it (no drift).
+ALSO: inspector-responsiveness:213 hardened (wait inspector-panel before 500px expand) —
+  was a once-flaky 30s CI-load timeout.
+PRIOR CI (457f45e): 271 passed / 3 failed / 1 flaky. Expect 274+/0 after this.
+- 2026-06-17 01:41 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:45 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:45 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:46 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:46 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:50 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+
+## 2026-06-17 — FIX component-swapping swap assertions (4972885) — observed-and-fixed on live dev server
+BREAKTHROUGH: ran the Vite DEV server locally (npx vite on :5174 via LOCAL_FIREBASE_E2E=1) so the
+  /src store bridge resolves — reproduced + fixed the 3 CI swap failures by DIRECT OBSERVATION
+  (no more blind CI gambles for bridge-dependent specs).
+ROOT CAUSES (all stale-test, swap itself works):
+  1. performSwap scraped decorated option label (name+stats); now resolves target via /src
+     component-library bridge + reads inspector-summary-provider for the clean applied name.
+  2. assertions read inspector h2 (= logical TYPE since type-first redesign), not the vendor row.
+  3. AC-2+3 used a lone node (no scored metrics → metric-bar-fill []); now imports connected
+     swap-pair + advanced level + expands Metrics disclosure.
+  4. round-trip back-swaps to original BY NAME (optional targetName param).
+  5. performSwap inspector read best-effort so AC-4 (inspector closed) still passes.
+RESULT: component-swapping 6/6 (1 skip) + decision-support 3/3 on live dev server. Expect
+  e2e-desktop 277/0 after this (was 271/3/1-flaky on 457f45e; inspector:213 flake hardened in fee3f95).
+- 2026-06-17 01:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 02:16 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 02:35 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:35 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts

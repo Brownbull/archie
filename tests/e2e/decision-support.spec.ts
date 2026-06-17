@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test"
-import { waitForComponentLibrary, addComponentToCanvas } from "./helpers/canvas-helpers"
+import { waitForComponentLibrary, addComponentToCanvas, grantVendorOwnership } from "./helpers/canvas-helpers"
 
 // Verifies the decision-support pair end-to-end: a provider swap shows a before/after
 // delta, and inline Pathway suggestions can be added with one click.
@@ -14,6 +14,9 @@ test.describe("Decision support", () => {
     await page.locator('[data-testid="search-input"]').fill("PostgreSQL")
     await page.waitForTimeout(300)
     await addComponentToCanvas(page, 0)
+    // Own MySQL (and the rest of the relational-db providers) so the swap lands instead of opening
+    // the capability-purchase dialog the 0-star E2E user can't clear.
+    await grantVendorOwnership(page)
     // Open the read-only inspector — the before/after delta indicators still render there.
     await page.locator('[data-testid="archie-node"]').first().click()
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })

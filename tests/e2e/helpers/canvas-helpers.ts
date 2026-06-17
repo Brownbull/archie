@@ -339,3 +339,46 @@ export async function openDashboardOverlay(page: Page) {
   await expandButton.click()
   await expect(page.locator('[data-testid="dashboard-overlay"]')).toBeVisible({ timeout: 5_000 })
 }
+
+/**
+ * Own every PROVIDER (and its config tiers) for the component types currently on the canvas, so a
+ * vendor swap / config-tier change APPLIES rather than opening the capability-purchase dialog (the
+ * 0-star E2E user can't buy paid vendors). The swap is gated on `unlockedVendors` at TWO chokepoints
+ * — NodeProviderSelect's `onValueChange` (isVendorOwned → setPendingVendor) and `swapNodeComponent`
+ * itself (architectureStore isVendorOwned bail-with-toast) — and `isVendorOwned` never reads
+ * `unlockedTiers`, so granting only tiers leaves the swap intercepted. Grant BOTH maps over
+ * `providersForComponent`. Zustand setState re-renders the live gate, so callers just need this to run
+ * AFTER the node is on the canvas (it reads `nodes` from the architecture store).
+ *
+ * Uses the dev-server `/src` module bridge — works in CI (Vite dev server); the static local-build
+ * harness lacks the bridge, so swap/config-change tests that rely on this are CI-validated only.
+ *
+ * This is the single source of truth for both component-swapping and decision-support specs — keeping
+ * it here prevents the two from drifting (the bug where one was a vendor+tier grant and the other was
+ * tier-only, so cross-vendor swaps silently no-op'd).
+ */
+export async function grantVendorOwnership(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any -- ad-hoc store bridge in browser context */
+    const [archMod, progMod, libMod, typesMod] = await Promise.all([
+      import("/src/stores/architectureStore.ts"),
+      import("/src/stores/userProgressStore.ts"),
+      import("/src/services/componentLibrary.ts"),
+      import("/src/lib/componentTypes.ts"),
+    ])
+    const all = (libMod as any).componentLibrary.getAllComponents()
+    const vendors: Record<string, true> = { ...(progMod as any).useUserProgressStore.getState().unlockedVendors }
+    const tiers: Record<string, true> = { ...(progMod as any).useUserProgressStore.getState().unlockedTiers }
+    for (const node of (archMod as any).useArchitectureStore.getState().nodes) {
+      const id: string = node.data.archieComponentId
+      const comp = (libMod as any).componentLibrary.getComponent(id)
+      if (!comp) continue
+      for (const provider of (typesMod as any).providersForComponent(comp, all)) {
+        vendors[provider.id] = true
+        for (const v of provider.configVariants ?? []) tiers[`${provider.id}/${v.id}`] = true
+      }
+    }
+    ;(progMod as any).useUserProgressStore.setState({ unlockedVendors: vendors, unlockedTiers: tiers })
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  })
+}

@@ -49,7 +49,14 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "bash -c 'unset ${!VITE_FIREBASE_*} 2>/dev/null; npx vite --port 5174'",
+    // By default the local dev server runs WITHOUT Firebase (env vars unset) so a plain
+    // `npm run test:e2e` doesn't touch the cloud project. Set LOCAL_FIREBASE_E2E=1 (via
+    // `npm run test:e2e:local`) to keep the .env.local Firebase config so the component library,
+    // auth, and user-data specs actually run locally against the real project — the same backend CI
+    // uses. Useful for observe-and-fix on Firestore-backed specs without the emulator.
+    command: process.env.LOCAL_FIREBASE_E2E
+      ? "npx vite --port 5174"
+      : "bash -c 'unset ${!VITE_FIREBASE_*} 2>/dev/null; npx vite --port 5174'",
     url: "http://localhost:5174",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -1,47 +1,53 @@
 import { test, expect, type Page } from "@playwright/test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import {
   waitForComponentLibrary,
   dragComponentToCanvas,
-  placeComponentAt,
   useAdvancedLevel,
+  selectNodeOnCanvas,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/scoring-dashboard"
 
-/**
- * Place a component on the canvas via the "Add to Canvas" button.
- */
-async function placeComponent(page: Page, buttonIndex = 0) {
-  // D22: place via the type-block "+" (`add-type-{typeId}`), the primary always-visible toolbox
-  // affordance. The nested per-vendor `add-to-canvas-{id}` cards aren't reliably visible in the
-  // default view after the toolbox redesign.
-  const addBtn = page.locator('[data-testid^="add-type-"]').nth(buttonIndex)
-  await expect(addBtn).toBeVisible()
-  await addBtn.click()
-  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(buttonIndex + 1, {
-    timeout: 5_000,
-  })
+// Playwright runs from the project root; fixtures live under tests/e2e/fixtures/scoring.
+const FIXTURE_DIR = join(process.cwd(), "tests", "e2e", "fixtures", "scoring")
+function fixtureBuf(name: string): Buffer {
+  return readFileSync(join(FIXTURE_DIR, name))
 }
 
 
-// Known MULTI-VARIANT base components (verified in src/data/components/*.yaml) from distinct categories,
-// so each placement reliably renders the on-node config trigger AND adds a new scoring category. Indexed
-// to mirror the previous buttonIndex sequencing used by the metric-dependent tests.
-const MULTI_VARIANT_COMPONENTS = ["node-express", "postgresql"] as const
 
 /**
- * Place a known component on the canvas to populate computedMetrics. Placement is sufficient:
- * addNode (the drop handler's action) calls triggerRecalculation(node.id) synchronously
- * (architectureStore.ts addNode → triggerRecalculation), so computedMetrics is populated as soon as
- * the node lands — no separate config-change step is needed. (An earlier version added a config-tier
- * change to "force" recalc, but that step depends on a multi-variant trigger + a 1★ tier purchase the
- * 0-star E2E user can't make, so it failed and left the dashboard stuck in its empty state.)
+ * Load a CONNECTED, scorable architecture so the dashboard leaves its empty state and shows real
+ * category bars + an aggregate score.
+ *
+ * OBSERVED (2026-06-17, live): the score dashboard needs a CONNECTED architecture with traffic flow —
+ * a single unconnected node has cost ($/mo) but NO architecture score (computedMetrics stays empty),
+ * so the dashboard correctly keeps "Add components to see architecture scores". Placing one node and
+ * expecting scores was a stale premise. We IMPORT a small connected fixture instead: import is the
+ * reliable path (placing via add-type + dragging handle-to-handle fails because the placed nodes
+ * stack at the same position, so the connection drag never lands). `buttonIndex` selects fixture size
+ * so the "first then second component" tests still see the score change: 0 → 2-node, 1 → 3-node.
  */
 async function addComponentWithMetrics(page: Page, buttonIndex = 0) {
-  const componentId = MULTI_VARIANT_COMPONENTS[buttonIndex] ?? MULTI_VARIANT_COMPONENTS[0]
-  // Spread placements horizontally so multiple nodes don't stack on top of each other.
-  const fractionX = 0.3 + buttonIndex * 0.3
-  await placeComponentAt(page, componentId, fractionX, 0.5)
+  const name = buttonIndex >= 1 ? "three-node-scored.architecture.yaml" : "two-node-scored.architecture.yaml"
+  const expectedNodes = buttonIndex >= 1 ? 3 : 2
+  await page.getByTestId("import-file-input").setInputFiles({
+    name,
+    mimeType: "text/yaml",
+    buffer: fixtureBuf(name),
+  })
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(expectedNodes, { timeout: 10_000 })
+}
+
+/** Import the 3-node connected fixture (traffic + compute + db = 3 nodes, 2+ categories) so the tier
+ *  badge reaches Foundation. Replaces 3× placeComponent index-clicks, which hang on gated blocks
+ *  (e.g. add-type-payments) and stack nodes. */
+async function loadThreeNodeScored(page: Page): Promise<void> {
+  const name = "three-node-scored.architecture.yaml"
+  await page.getByTestId("import-file-input").setInputFiles({ name, mimeType: "text/yaml", buffer: fixtureBuf(name) })
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(3, { timeout: 10_000 })
 }
 
 test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
@@ -367,6 +373,10 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
   })
 
   test("dashboard returns to empty state when component is deleted", async ({ page }) => {
+    // Import + recalc + a delete-per-node loop, each step able to brush the 30s cap under 4-worker CI
+    // load (the node's entry ripple kept the bare header click "retrying" past 30s, then the forced
+    // click landed without selecting so inspector-remove-node never appeared). Give it room.
+    test.setTimeout(60_000)
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -379,15 +389,17 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const aggregateScore = page.locator('[data-testid="aggregate-score"]')
     await expect(aggregateScore).toBeVisible()
 
-    // Select the node (click its top-left header, above the on-node vendor/config dropdowns) and remove
-    // it via the deterministic inspector Remove button — more robust than node.click()+keyboard Delete,
-    // which can land on an on-node control and not select the node.
-    const node = page.locator('[data-testid="archie-node"]').first()
-    await node.click({ position: { x: 12, y: 6 } })
-    await page.getByTestId("inspector-remove-node").click()
-
-    // Wait for node to be removed
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(0, { timeout: 5_000 })
+    // Remove ALL nodes (the scored fixture has 2 — a single node wouldn't score). selectNodeOnCanvas
+    // does the header click (above the on-node dropdowns) AND waits for the inspector to open, so the
+    // node is CONFIRMED selected before we click the deterministic inspector Remove button — a bare or
+    // forced click can land without selecting, leaving inspector-remove-node absent (the CI failure).
+    let remaining = await page.locator('[data-testid="archie-node"]').count()
+    while (remaining > 0) {
+      await selectNodeOnCanvas(page, 0)
+      await page.getByTestId("inspector-remove-node").click()
+      await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(remaining - 1, { timeout: 5_000 })
+      remaining -= 1
+    }
 
     // Allow recalculation pipeline to settle
     await page.waitForTimeout(500)
@@ -432,12 +444,14 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
       canvasBounds!.y + canvasBounds!.height / 2,
     )
 
-    // Wait for node to appear
-    await expect(page.locator('[data-testid="archie-node"]').first()).toBeVisible({
-      timeout: 5_000,
-    })
+    // The drag-and-drop placed a node (proves the drop path works).
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
 
-    // Placement alone populates computedMetrics — addNode calls triggerRecalculation synchronously.
+    // A single UNCONNECTED node has cost but no architecture SCORE (computedMetrics needs traffic flow
+    // through a connected graph). Import a connected fixture to verify the dashboard scores.
+    const fx = "two-node-scored.architecture.yaml"
+    await page.getByTestId("import-file-input").setInputFiles({ name: fx, mimeType: "text/yaml", buffer: fixtureBuf(fx) })
+    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 10_000 })
 
     // Dashboard should show content (not empty state)
     const dashboardPanel = page.locator('[data-testid="dashboard-panel"]')
@@ -498,9 +512,7 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const tierBadge = page.locator('[data-testid="tier-badge"]')
 
     // Place 3 components (seed data has 10 components across 7 categories)
-    await placeComponent(page, 0)
-    await placeComponent(page, 1)
-    await placeComponent(page, 2)
+    await loadThreeNodeScored(page)
 
     // Allow tier evaluation to settle after addNode calls
     await page.waitForTimeout(500)
@@ -510,7 +522,8 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     await expect(tierBadge).toContainText("1/3")
 
     // The expandable button should now exist with aria-expanded="false"
-    const tierButton = tierBadge.locator('button[aria-expanded]')
+    // Scope to the tier toggle specifically — the pathway-suggestions link is also aria-expanded.
+    const tierButton = tierBadge.locator('button[aria-controls="tier-detail-panel"]')
     await expect(tierButton).toBeVisible()
     await expect(tierButton).toHaveAttribute("aria-expanded", "false")
 
@@ -531,16 +544,15 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     test.skip((await addBtns.count()) < 3, "Skipped: Need at least 3 components")
 
     // Place 3 components to reach Foundation tier
-    await placeComponent(page, 0)
-    await placeComponent(page, 1)
-    await placeComponent(page, 2)
+    await loadThreeNodeScored(page)
     await page.waitForTimeout(500)
 
     const tierBadge = page.locator('[data-testid="tier-badge"]')
     await expect(tierBadge).toContainText("Foundation", { timeout: 5_000 })
 
     // Click the tier button to expand detail panel
-    const tierButton = tierBadge.locator('button[aria-expanded]')
+    // Scope to the tier toggle specifically — the pathway-suggestions link is also aria-expanded.
+    const tierButton = tierBadge.locator('button[aria-controls="tier-detail-panel"]')
     await tierButton.click()
 
     // Button should now be expanded
@@ -566,6 +578,7 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
   })
 
   test("AC-4: tier returns to empty state when all components are deleted", async ({ page }) => {
+    test.setTimeout(60_000) // 3-node place + delete-per-node loop is heavy under parallel CI load
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -576,20 +589,21 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     test.skip((await addBtns.count()) < 3, "Skipped: Need at least 3 components")
 
     // Place 3 components to reach Foundation tier
-    await placeComponent(page, 0)
-    await placeComponent(page, 1)
-    await placeComponent(page, 2)
+    await loadThreeNodeScored(page)
     await page.waitForTimeout(500)
 
     const tierBadge = page.locator('[data-testid="tier-badge"]')
     await expect(tierBadge).toContainText("Foundation", { timeout: 5_000 })
 
-    // Delete all 3 nodes one by one
-    for (let i = 2; i >= 0; i--) {
-      const node = page.locator('[data-testid="archie-node"]').nth(i)
-      await node.click()
-      await page.keyboard.press("Delete")
-      await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(i, { timeout: 5_000 })
+    // Delete all nodes one by one. selectNodeOnCanvas does the header click AND waits for the inspector
+    // to open (CONFIRMED selection) before we click the deterministic inspector Remove — a bare click
+    // can land without selecting under CI load, leaving inspector-remove-node absent.
+    let left = await page.locator('[data-testid="archie-node"]').count()
+    while (left > 0) {
+      await selectNodeOnCanvas(page, 0)
+      await page.getByTestId("inspector-remove-node").click()
+      await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(left - 1, { timeout: 5_000 })
+      left -= 1
     }
 
     // Allow tier re-evaluation to settle
@@ -598,8 +612,9 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     // Tier badge should return to empty/null state
     await expect(tierBadge).toContainText("Add components to begin", { timeout: 5_000 })
 
-    // No expandable button should exist
-    await expect(tierBadge.locator('button[aria-expanded]')).toHaveCount(0)
+    // No tier-toggle button should exist (scope by aria-controls — the always-present ⓘ
+    // PanelInfoButton is also aria-expanded and would otherwise be miscounted).
+    await expect(tierBadge.locator('button[aria-controls="tier-detail-panel"]')).toHaveCount(0)
 
     // No tier detail panel
     await expect(page.locator('[data-testid="tier-detail"]')).toHaveCount(0)
