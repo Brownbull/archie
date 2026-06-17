@@ -5848,3 +5848,28 @@ FIX: shared canvas-helpers grantVendorOwnership grants unlockedVendors+Tiers ove
 ALSO: inspector-responsiveness:213 hardened (wait inspector-panel before 500px expand) —
   was a once-flaky 30s CI-load timeout.
 PRIOR CI (457f45e): 271 passed / 3 failed / 1 flaky. Expect 274+/0 after this.
+- 2026-06-17 01:41 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:45 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:45 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:46 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:46 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:47 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:50 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+
+## 2026-06-17 — FIX component-swapping swap assertions (4972885) — observed-and-fixed on live dev server
+BREAKTHROUGH: ran the Vite DEV server locally (npx vite on :5174 via LOCAL_FIREBASE_E2E=1) so the
+  /src store bridge resolves — reproduced + fixed the 3 CI swap failures by DIRECT OBSERVATION
+  (no more blind CI gambles for bridge-dependent specs).
+ROOT CAUSES (all stale-test, swap itself works):
+  1. performSwap scraped decorated option label (name+stats); now resolves target via /src
+     component-library bridge + reads inspector-summary-provider for the clean applied name.
+  2. assertions read inspector h2 (= logical TYPE since type-first redesign), not the vendor row.
+  3. AC-2+3 used a lone node (no scored metrics → metric-bar-fill []); now imports connected
+     swap-pair + advanced level + expands Metrics disclosure.
+  4. round-trip back-swaps to original BY NAME (optional targetName param).
+  5. performSwap inspector read best-effort so AC-4 (inspector closed) still passes.
+RESULT: component-swapping 6/6 (1 skip) + decision-support 3/3 on live dev server. Expect
+  e2e-desktop 277/0 after this (was 271/3/1-flaky on 457f45e; inspector:213 flake hardened in fee3f95).
