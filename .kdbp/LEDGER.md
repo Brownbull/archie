@@ -5818,3 +5818,15 @@ PHASE 1-4 all Push ✅ — plan complete.
 - 2026-06-17 00:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
 - 2026-06-17 00:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
 - 2026-06-17 00:43 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+
+## 2026-06-17 — PUSH dev (457f45e) — e2e-desktop stabilization batch
+COMMIT: 457f45e test(e2e): stabilize 4 desktop specs + fix quest-log detail panel off-screen ≤1280px
+PUSHED: HEAD -> origin/dev (integration; full e2e-desktop CI validating)
+LOCAL SWEEP: 60/60 green (scoring-dashboard, inspector-responsiveness, ui-batch-features,
+  settings-and-preferences, ui-sweep, canvas-and-placement, radial-menu); unit 4978 pass.
+SOURCE FIX: ChallengeTreeView dialog flex row min-w-0 + overflow-hidden — quest detail panel
+  (+Accept/Replay button) no longer pushed off-screen-right at ≤1280px viewport.
+CI-BRIDGE-ONLY (validate on CI dev server, not static local harness): component-swapping,
+  decision-support (grantCanvasVendorOwnership seeds unlockedVendors/Tiers via /src import).
+CI: run 27666679691 (E2E desktop) in_progress — watcher br0o08z18.
+PROMOTION: dev → main deferred until e2e-desktop CI result reviewed.
