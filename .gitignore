@@ -78,3 +78,10 @@ _kdbp/
 
 # Local static-serve build output for the E2E observe-and-fix harness
 dist-dev/
+
+# Local-only service-account keys / credentials (never commit)
+.secrets/
+*.serviceaccount.json
+
+# secrets
+.secrets/
