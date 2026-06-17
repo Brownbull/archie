@@ -5830,3 +5830,21 @@ CI-BRIDGE-ONLY (validate on CI dev server, not static local harness): component-
   decision-support (grantCanvasVendorOwnership seeds unlockedVendors/Tiers via /src import).
 CI: run 27666679691 (E2E desktop) in_progress — watcher br0o08z18.
 PROMOTION: dev → main deferred until e2e-desktop CI result reviewed.
+- 2026-06-17 01:18 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:18 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/canvas-helpers.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/decision-support.spec.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:19 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
+- 2026-06-17 01:22 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+
+## 2026-06-17 — FIX e2e component-swapping (fee3f95) — vendor-ownership gate
+ROOT CAUSE (workflow-verified, 2 chokepoints): swap gated on unlockedVendors
+  (NodeProviderSelect onValueChange + swapNodeComponent isVendorOwned); the old
+  grantNodeTierOwnership wrote only unlockedTiers → cross-vendor swaps no-op'd (3 CI fails:
+  preserve-connections / config-reset / round-trip).
+FIX: shared canvas-helpers grantVendorOwnership grants unlockedVendors+Tiers over
+  providersForComponent; component-swapping + decision-support both consume it (no drift).
+ALSO: inspector-responsiveness:213 hardened (wait inspector-panel before 500px expand) —
+  was a once-flaky 30s CI-load timeout.
+PRIOR CI (457f45e): 271 passed / 3 failed / 1 flaky. Expect 274+/0 after this.
