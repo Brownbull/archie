@@ -5876,3 +5876,8 @@ RESULT: component-swapping 6/6 (1 skip) + decision-support 3/3 on live dev serve
 - 2026-06-17 01:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
 - 2026-06-17 02:16 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
 - 2026-06-17 02:17 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/inspector-responsiveness.spec.ts
+- 2026-06-17 02:35 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:35 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
+- 2026-06-17 02:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
