@@ -5881,3 +5881,16 @@ RESULT: component-swapping 6/6 (1 skip) + decision-support 3/3 on live dev serve
 - 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
 - 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
 - 2026-06-17 02:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+
+## 2026-06-17 — PUSH/PROMOTE dev → main (PR #32, merge a191014) — e2e-desktop GREEN
+MERGED: PR #32 dev→main (16 commits: 9 substantive + 7 bookkeeping). Clean merge (no conflicts).
+CI: e2e-desktop FULLY GREEN on 0f28782 — 275 passed / 0 failed / 0 flaky / 12 skipped (11.9m).
+  Arc: ~20 fails (start) → 271/3/1 (457f45e) → 270/1/4 → 273/1/1 → 275/0/0.
+SHIPPED: quest-log detail-panel off-screen fix (real product bug, ≤1280px); 3 component-swapping
+  assertion fixes; shared grantVendorOwnership; inspector/scoring/settings CI-load flake hardening.
+DEPLOY: hosting-only (NO firestore.rules / firebase.json change this batch). Deploy Production
+  workflow 27671526169 in_progress (watcher bg9vwe3yp).
+HARNESS: local Vite dev server (npx vite :5174 + LOCAL_FIREBASE_E2E=1) makes /src-bridge specs
+  (component-swapping, decision-support) reproducible locally — no more blind CI gambles.
+DEPLOYMENTS: P201 (added row).
+PROMOTION: dev → main DONE (user-approved).
