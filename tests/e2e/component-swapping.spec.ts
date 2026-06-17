@@ -274,6 +274,10 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
   })
 
   test("AC-2+3: swap resets config variant and metrics update", async ({ page }) => {
+    // This is the heaviest swap test — import + grant + select + expand disclosure + read config
+    // list + read fills + swap + re-read, several going through the /src bridge (dynamic imports).
+    // Under 4-worker CI load it brushed the default 30s cap (flaky once); give it room.
+    test.setTimeout(60_000)
     // Metric bars render only at "advanced" experience level — at the default beginner level the
     // inspector shows "metrics appear at higher levels" instead. Seed advanced BEFORE goto.
     await useAdvancedLevel(page)
