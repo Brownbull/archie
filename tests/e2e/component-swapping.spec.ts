@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
+import { grantVendorOwnership } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/component-swapping"
 const TRANSITION_WAIT = 300
@@ -137,29 +138,11 @@ async function performSwap(
   return selectedName
 }
 
-/** Seed ownership of every config tier of the first node's component so a swap/config change APPLIES
- *  instead of opening the purchase dialog (the 0-star E2E user can't buy paid tiers). Uses the dev
- *  server's /src module bridge — works in CI (Vite dev server). */
-async function grantNodeTierOwnership(page: import("@playwright/test").Page): Promise<void> {
-  await page.evaluate(async () => {
-    /* eslint-disable @typescript-eslint/no-explicit-any -- ad-hoc store bridge in browser context */
-    const [archMod, progMod, libMod] = await Promise.all([
-      import("/src/stores/architectureStore.ts"),
-      import("/src/stores/userProgressStore.ts"),
-      import("/src/services/componentLibrary.ts"),
-    ])
-    for (const node of (archMod as any).useArchitectureStore.getState().nodes) {
-      const id: string = node.data.archieComponentId
-      const comp = (libMod as any).componentLibrary.getComponent(id)
-      const variants: Array<{ id: string }> = comp?.configVariants ?? []
-      // also own every PROVIDER's variants in this type so swaps land
-      const owned: Record<string, true> = { ...(progMod as any).useUserProgressStore.getState().unlockedTiers }
-      for (const v of variants) owned[`${id}/${v.id}`] = true
-      ;(progMod as any).useUserProgressStore.setState({ unlockedTiers: owned })
-    }
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-  })
-}
+// Vendor+tier ownership grant (so cross-vendor swaps APPLY for the 0-star E2E user instead of opening
+// the capability-purchase dialog) is the shared canvas-helpers grantVendorOwnership — single source of
+// truth, kept there to prevent the drift that previously left this spec tier-only while the swap gate
+// checks unlockedVendors. Aliased to the historical name to keep the call sites stable.
+const grantNodeTierOwnership = grantVendorOwnership
 
 test.describe("Component Swapping E2E (Story 1-6)", () => {
   test("AC-1: swapper dropdown shows alternatives in same category", async ({ page }) => {

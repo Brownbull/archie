@@ -214,6 +214,11 @@ test.describe("Inspector Responsiveness E2E", () => {
     const hasComponents = await setupInspector(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
+    // Wait for the inspector to mount before expanding — under heavy parallel CI load the import +
+    // select + render can lag, and clicking the toggle before the panel exists raced to a 30s timeout
+    // (observed flaky once on CI, passed on retry). Gate on the panel first.
+    await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 10_000 })
+
     // Expand to 500px
     await page.locator('[data-testid="inspector-expand-toggle"]').click()
     const inspector = page.locator('[data-testid="inspector"]')
