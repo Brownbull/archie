@@ -1,0 +1,15 @@
+schema_version: 4.0.0
+name: swap fixture — compute (swappable, node 0) connected to a db
+nodes:
+  - id: n-compute
+    component_id: node-express
+    config_variant_id: cluster-mode
+    position: { x: 0, y: 0 }
+  - id: n-db
+    component_id: postgresql
+    config_variant_id: primary-replica
+    position: { x: 300, y: 0 }
+edges:
+  - id: e1
+    source_node_id: n-compute
+    target_node_id: n-db

@@ -1,7 +1,23 @@
 import { test, expect } from "@playwright/test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 
 const SCREENSHOT_DIR = "test-results/component-swapping"
 const TRANSITION_WAIT = 300
+
+/**
+ * Import a small CONNECTED 2-node fixture (node-express → postgresql, with an edge). node 0 is the
+ * swappable compute node; the edge lets the "swap preserves connections" tests assert against a real
+ * connection. Import is reliable; placing 2 nodes via add-type + dragging handle-to-handle fails
+ * because the placed nodes stack at the same spot, so the connect-drag never lands (edges:0).
+ */
+async function importSwapPair(page: import("@playwright/test").Page): Promise<void> {
+  const name = "swap-pair.architecture.yaml"
+  const buf = readFileSync(join(process.cwd(), "tests", "e2e", "fixtures", "scoring", name))
+  await page.getByTestId("import-file-input").setInputFiles({ name, mimeType: "text/yaml", buffer: buf })
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 10_000 })
+  await expect(page.locator(".react-flow__edge")).toHaveCount(1, { timeout: 5_000 })
+}
 
 async function waitForComponentLibrary(page: import("@playwright/test").Page) {
   await Promise.race([
@@ -102,11 +118,17 @@ async function performSwap(
   const count = await options.count()
   let selectedName = ""
 
+  // Pick the first non-current, non-restricted alternative. Read the clean provider name from the
+  // option's first text span (the whole option textContent also includes price/stat metadata).
+  // Tier ownership is granted by the caller (grantNodeTierOwnership) so the swap applies rather than
+  // opening a purchase dialog for the 0-star E2E user.
   for (let i = 0; i < count; i++) {
-    const text = await options.nth(i).textContent()
-    if (text?.trim() !== currentName.trim()) {
-      selectedName = text?.trim() ?? ""
-      await options.nth(i).click()
+    const opt = options.nth(i)
+    if (await opt.getAttribute("data-restricted")) continue
+    const name = (await opt.locator("span span").first().textContent())?.trim() ?? ""
+    if (name && name !== currentName.trim()) {
+      selectedName = name
+      await opt.click()
       break
     }
   }
@@ -115,31 +137,28 @@ async function performSwap(
   return selectedName
 }
 
-async function connectNodes(
-  page: import("@playwright/test").Page,
-  sourceNodeIndex: number,
-  targetNodeIndex: number,
-) {
-  const sourceHandle = page.locator('[data-testid="archie-node"]').nth(sourceNodeIndex).locator(".react-flow__handle.source").first()
-  const targetHandle = page.locator('[data-testid="archie-node"]').nth(targetNodeIndex).locator(".react-flow__handle.target").first()
-
-  await page.locator('[data-testid="archie-node"]').nth(sourceNodeIndex).hover()
-
-  const sourceBox = await sourceHandle.boundingBox()
-  const targetBox = await targetHandle.boundingBox()
-  if (!sourceBox) throw new Error(`Source handle ${sourceNodeIndex} bounding box not found`)
-  if (!targetBox) throw new Error(`Target handle ${targetNodeIndex} bounding box not found`)
-
-  const srcX = sourceBox.x + sourceBox.width / 2
-  const srcY = sourceBox.y + sourceBox.height / 2
-  const tgtX = targetBox.x + targetBox.width / 2
-  const tgtY = targetBox.y + targetBox.height / 2
-
-  await page.mouse.move(srcX, srcY)
-  await page.mouse.down()
-  await page.mouse.move((srcX + tgtX) / 2, (srcY + tgtY) / 2, { steps: 5 })
-  await page.mouse.move(tgtX, tgtY, { steps: 5 })
-  await page.mouse.up()
+/** Seed ownership of every config tier of the first node's component so a swap/config change APPLIES
+ *  instead of opening the purchase dialog (the 0-star E2E user can't buy paid tiers). Uses the dev
+ *  server's /src module bridge — works in CI (Vite dev server). */
+async function grantNodeTierOwnership(page: import("@playwright/test").Page): Promise<void> {
+  await page.evaluate(async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any -- ad-hoc store bridge in browser context */
+    const [archMod, progMod, libMod] = await Promise.all([
+      import("/src/stores/architectureStore.ts"),
+      import("/src/stores/userProgressStore.ts"),
+      import("/src/services/componentLibrary.ts"),
+    ])
+    for (const node of (archMod as any).useArchitectureStore.getState().nodes) {
+      const id: string = node.data.archieComponentId
+      const comp = (libMod as any).componentLibrary.getComponent(id)
+      const variants: Array<{ id: string }> = comp?.configVariants ?? []
+      // also own every PROVIDER's variants in this type so swaps land
+      const owned: Record<string, true> = { ...(progMod as any).useUserProgressStore.getState().unlockedTiers }
+      for (const v of variants) owned[`${id}/${v.id}`] = true
+      ;(progMod as any).useUserProgressStore.setState({ unlockedTiers: owned })
+    }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  })
 }
 
 test.describe("Component Swapping E2E (Story 1-6)", () => {
@@ -210,22 +229,11 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: no seeded component data")
 
-    const idx = await findSwappableComponentIndex(page)
-    test.skip(idx === -1, "Skipped: no swappable components found")
-
-    // Place swappable component (node 0) and a second component (node 1)
-    await addComponentToCanvas(page, idx)
-    const secondIdx = idx === 0 ? 1 : 0
-    // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
-    const addBtns = page.locator('[data-testid^="add-type-"]')
-    test.skip((await addBtns.count()) < 2, "Skipped: need 2+ components")
-    await addBtns.nth(secondIdx).click()
-    await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
-
-    // Wire a connection
-    await connectNodes(page, 0, 1)
+    // Import a connected pair (node 0 = swappable compute, node 1 = db, with an edge) — placing +
+    // handle-dragging to connect is unreliable (stacked nodes), so import the connection directly.
+    await importSwapPair(page)
+    await grantNodeTierOwnership(page) // so the swap APPLIES (0-star user can't buy paid providers)
     const edges = page.locator(".react-flow__edge")
-    await expect(edges).toHaveCount(1, { timeout: 5_000 })
     await page.screenshot({ path: `${SCREENSHOT_DIR}/03-before-swap-with-connection.png`, fullPage: true })
 
     // Select node 0 and capture original state
@@ -260,6 +268,7 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     test.skip(idx === -1, "Skipped: no swappable components found")
 
     await addComponentToCanvas(page, idx)
+    await grantNodeTierOwnership(page) // config-tier changes APPLY for the 0-star user
     // Open the read-only inspector so the metric bars render (the bars still live there).
     await selectNodeOnCanvas(page, 0)
 
@@ -362,6 +371,7 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     test.skip(idx === -1, "Skipped: no swappable components found")
 
     await addComponentToCanvas(page, idx)
+    await grantNodeTierOwnership(page) // both swaps APPLY for the 0-star user
     await selectNodeOnCanvas(page, 0)
 
     const inspector = page.locator('[data-testid="inspector-panel"]')
