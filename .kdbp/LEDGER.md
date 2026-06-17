@@ -5895,3 +5895,16 @@ HARNESS: local Vite dev server (npx vite :5174 + LOCAL_FIREBASE_E2E=1) makes /sr
 DEPLOYMENTS: P201 (added row).
 PROMOTION: dev → main DONE (user-approved).
 DEPLOY RESULT: ✅ Deploy Production 27671526169 = success (2544 modules, 6.9s build, channel=live). Prod LIVE.
+- 2026-06-17 03:21 | Write | /tmp/gastify.architecture.yaml
+- 2026-06-17 03:22 | Write | /home/khujta/projects/bmad/archie/tests/e2e/_gastify-import.spec.ts
+- 2026-06-17 03:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_gastify-import.spec.ts
+- 2026-06-17 03:34 | Write | /home/khujta/projects/bmad/archie/src/data/components/firebase-auth.yaml
+- 2026-06-17 03:34 | Write | /home/khujta/projects/bmad/archie/src/data/components/gemini.yaml
+- 2026-06-17 03:36 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/archie.architecture.yaml
+- 2026-06-17 03:38 | Edit | /home/khujta/projects/bmad/archie/src/services/componentLibrary.ts
+- 2026-06-17 03:38 | Write | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:47 | Edit | /home/khujta/projects/bmad/archie/src/services/componentLibrary.ts
+- 2026-06-17 03:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/gastify.architecture.yaml
