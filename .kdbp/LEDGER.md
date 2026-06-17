@@ -5881,3 +5881,41 @@ RESULT: component-swapping 6/6 (1 skip) + decision-support 3/3 on live dev serve
 - 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
 - 2026-06-17 02:36 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/scoring-dashboard.spec.ts
 - 2026-06-17 02:37 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/settings-and-preferences.spec.ts
+
+## 2026-06-17 — PUSH/PROMOTE dev → main (PR #32, merge a191014) — e2e-desktop GREEN
+MERGED: PR #32 dev→main (16 commits: 9 substantive + 7 bookkeeping). Clean merge (no conflicts).
+CI: e2e-desktop FULLY GREEN on 0f28782 — 275 passed / 0 failed / 0 flaky / 12 skipped (11.9m).
+  Arc: ~20 fails (start) → 271/3/1 (457f45e) → 270/1/4 → 273/1/1 → 275/0/0.
+SHIPPED: quest-log detail-panel off-screen fix (real product bug, ≤1280px); 3 component-swapping
+  assertion fixes; shared grantVendorOwnership; inspector/scoring/settings CI-load flake hardening.
+DEPLOY: hosting-only (NO firestore.rules / firebase.json change this batch). Deploy Production
+  workflow 27671526169 in_progress (watcher bg9vwe3yp).
+HARNESS: local Vite dev server (npx vite :5174 + LOCAL_FIREBASE_E2E=1) makes /src-bridge specs
+  (component-swapping, decision-support) reproducible locally — no more blind CI gambles.
+DEPLOYMENTS: P201 (added row).
+PROMOTION: dev → main DONE (user-approved).
+DEPLOY RESULT: ✅ Deploy Production 27671526169 = success (2544 modules, 6.9s build, channel=live). Prod LIVE.
+- 2026-06-17 03:21 | Write | /tmp/gastify.architecture.yaml
+- 2026-06-17 03:22 | Write | /home/khujta/projects/bmad/archie/tests/e2e/_gastify-import.spec.ts
+- 2026-06-17 03:23 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_gastify-import.spec.ts
+- 2026-06-17 03:34 | Write | /home/khujta/projects/bmad/archie/src/data/components/firebase-auth.yaml
+- 2026-06-17 03:34 | Write | /home/khujta/projects/bmad/archie/src/data/components/gemini.yaml
+- 2026-06-17 03:36 | Write | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/archie.architecture.yaml
+- 2026-06-17 03:38 | Edit | /home/khujta/projects/bmad/archie/src/services/componentLibrary.ts
+- 2026-06-17 03:38 | Write | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:38 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:39 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/_archie-import.spec.ts
+- 2026-06-17 03:47 | Edit | /home/khujta/projects/bmad/archie/src/services/componentLibrary.ts
+- 2026-06-17 03:48 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/fixtures/gastify.architecture.yaml
+- 2026-06-17 03:52 | Write | /home/khujta/.claude/projects/-home-khujta-projects-bmad-archie/memory/project_seed-from-local.md
+
+## 2026-06-17 — SEED prod Firestore: +2 components (gemini, firebase-auth) — 116 total
+TRIGGER: Kane prompt→import round-trip test on Gastify + archie's own architecture surfaced 2 catalog
+  gaps (no Firebase Auth, no Google Gemini → forced auth0/anthropic substitutions).
+WROTE: firebase-auth (type=auth) + gemini (type=llm-gateway) YAMLs; regenerated prompt-template.md
+  (116, drift 5/5); seeded to prod Firestore archie-2a560 via Admin SDK (.secrets/ SA key, chmod 600,
+  gitignored). Non-destructive upsert (batch.set, 116 ops) + _metadata/seed bump. Commit cb521ff.
+VERIFIED (live dev server): Gastify 8/8 resolve+score 6.5C; archie's own 4/4 resolve+score 6.1C; 0
+  "Component not found". NOTE: seed creds were never local before (CI doesn't seed) — see
+  memory project_seed-from-local.

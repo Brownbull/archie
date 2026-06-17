@@ -1,0 +1,43 @@
+schema_version: "4.0.0"
+name: "Archie — client-side architecture simulator (React SPA + Firebase, no backend)"
+nodes:
+  # --- Traffic source: desktop web users of the SPA ---
+  - id: "n-web"
+    component_id: "web-users"
+    config_variant_id: "moderate"
+    position: { x: 0, y: 120 }
+    traffic_rps: 200
+    traffic_kind: "realistic"
+    traffic_workload: "read"
+    traffic_origin: "multi-region"
+
+  # --- Static SPA delivery: Firebase Hosting (CDN-backed static host, Google infra) ---
+  - id: "n-cdn"
+    component_id: "google-cloud-cdn"
+    config_variant_id: "standard"
+    position: { x: 300, y: 120 }
+
+  # --- Identity: Firebase Authentication (Google sign-in), called directly from the client ---
+  - id: "n-auth"
+    component_id: "firebase-auth"
+    config_variant_id: "standard"
+    position: { x: 620, y: 0 }
+
+  # --- Data: Cloud Firestore — read-only component library + per-user progress/attempts/canvases ---
+  - id: "n-db"
+    component_id: "firestore"
+    config_variant_id: "standard"
+    position: { x: 620, y: 240 }
+
+edges:
+  # Browser loads the SPA bundle from the CDN/host...
+  - id: "e-web-cdn"
+    source_node_id: "n-web"
+    target_node_id: "n-cdn"
+  # ...then the client talks DIRECTLY to Firebase Auth + Firestore (no backend compute tier).
+  - id: "e-web-auth"
+    source_node_id: "n-web"
+    target_node_id: "n-auth"
+  - id: "e-web-db"
+    source_node_id: "n-web"
+    target_node_id: "n-db"

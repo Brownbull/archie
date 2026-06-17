@@ -1,0 +1,159 @@
+id: gemini
+name: Google Gemini API
+category: compute
+type_id: llm-gateway
+vendor_url: https://ai.google.dev/
+description: Hosted Google Gemini models for multimodal reasoning, vision, and long context
+is: A hosted inference API for Google's Gemini family, multimodal by default (text + image/PDF vision) with a balanced Pro model for quality reasoning and a fast Flash model for cheap high-volume calls, strong on long context and structured output
+gain:
+  - Native multimodal — image and PDF vision without a separate OCR stage
+  - Pro and Flash tiers for cost/latency control
+  - Very long context windows and structured/JSON output
+cost:
+  - Per-token (and per-image) pricing scales with usage
+  - Vendor dependency and rate limits outside your control
+  - Latency and data residency tied to Google infrastructure
+tags:
+  - llm
+  - ai
+  - gemini
+  - google
+  - vision
+  - multimodal
+  - inference
+base_metrics:
+  - id: inference-latency
+    value: medium
+    numeric_value: 5
+    category: performance
+  - id: model-availability
+    value: high
+    numeric_value: 8
+    category: reliability
+  - id: horizontal-scalability
+    value: high
+    numeric_value: 9
+    category: scalability
+  - id: cost-per-inference
+    value: medium
+    numeric_value: 6
+    category: cost-efficiency
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+config_variants:
+  - id: balanced
+    name: Balanced (Pro-class)
+    description: >-
+      A Gemini Pro-class model: strong multimodal reasoning at ~650ms per call. The quality default for vision extraction and tasks where the answer matters more than raw volume.
+    docs_url: https://ai.google.dev/gemini-api/docs/models
+    monthly_cost: 160
+    max_rps: 1200
+    base_latency_ms: 650
+    metrics:
+      - id: inference-latency
+        value: medium
+        numeric_value: 6
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-inference
+        value: medium
+        numeric_value: 5
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Gemini — Pro-class multimodal call (text + receipt image)
+        from google import genai
+        client = genai.Client()
+        resp = client.models.generate_content(
+            model="gemini-2.5-pro",
+            contents=[prompt, image_part],
+        )
+    metric_explanations:
+      inference-latency:
+        reason: The Pro model trades a little speed for stronger multimodal reasoning, giving moderate latency on typical vision/text prompts.
+        contributing_factors:
+          - Larger model evaluates more per token than Flash
+          - Image and long-context inputs add prefill time
+          - Streaming hides some latency from users
+      cost-per-inference:
+        reason: Mid-tier per-token and per-image pricing sits between the premium reasoning tier and the cheap Flash tier.
+        contributing_factors:
+          - Moderate per-token input/output rates
+          - Image inputs billed in addition to text
+          - Cheaper than a flagship for similar quality
+  - id: fast
+    name: Fast (Flash-class)
+    description: >-
+      A Gemini Flash-class model: roughly a third of the latency and cost at ~3x the request ceiling. Right for classification, extraction, and high-volume calls that don't need deep reasoning.
+    docs_url: https://ai.google.dev/gemini-api/docs/models
+    monthly_cost: 45
+    max_rps: 4000
+    base_latency_ms: 240
+    metrics:
+      - id: inference-latency
+        value: low
+        numeric_value: 3
+        category: performance
+      - id: model-availability
+        value: high
+        numeric_value: 8
+        category: reliability
+      - id: cost-per-inference
+        value: high
+        numeric_value: 9
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Gemini — Flash model for high-volume, latency-sensitive extraction
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[prompt],
+        )
+    metric_explanations:
+      cost-per-inference:
+        reason: The Flash tier prices tokens well below the Pro model, making high-volume extraction and categorization cheap.
+        contributing_factors:
+          - Lowest per-token rates in the family
+          - Smaller model, cheaper compute
+          - Best for routing, extraction, short replies
+      inference-latency:
+        reason: A smaller model returns tokens faster, keeping latency low for simple, high-throughput tasks.
+        contributing_factors:
+          - Fast forward pass per token
+          - Low time-to-first-token
+          - Scales to high request rates
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 150-1700ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.5
+      model-availability: 0.7
+  concurrent-users:
+    high:
+      inference-latency: 0.7
+    extreme:
+      inference-latency: 0.5
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: http-out
+    type: http
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out

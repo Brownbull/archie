@@ -46,7 +46,7 @@ edges:
 
 ---
 
-## Available Components (114 total)
+## Available Components (116 total)
 
 ### Traffic Sources (demand — every architecture needs at least one)
 
@@ -96,6 +96,7 @@ edges:
 | `etl-pipeline` | ETL Pipeline | `batch`, `micro-batch`, `streaming` |
 | `fivetran` | Fivetran | `standard`, `enterprise` |
 | `flink` | Apache Flink | `standalone`, `managed` |
+| `gemini` | Google Gemini API | `balanced`, `fast` |
 | `go-service` | Go Service | `single-binary`, `horizontal-pods` |
 | `kafka-streams` | Kafka Streams | `standard`, `scaled` |
 | `laravel` | PHP + Laravel | `fpm`, `octane` |
@@ -194,6 +195,7 @@ edges:
 | Component ID | Name | Config Variant IDs |
 |---|---|---|
 | `auth0` | Auth0 | `standard`, `enterprise` |
+| `firebase-auth` | Firebase Authentication | `standard`, `identity-platform` |
 | `keycloak` | Keycloak | `single`, `clustered` |
 | `rate-limiter` | Rate Limiter | `token-bucket`, `sliding-window` |
 

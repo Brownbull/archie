@@ -1,0 +1,82 @@
+schema_version: "4.0.0"
+name: "Gastify — smart expense tracker (FastAPI + Postgres RLS + Gemini scan pipeline)"
+nodes:
+  # --- Traffic sources: two thin clients over one backend ---
+  - id: "n-web"
+    component_id: "web-users"
+    config_variant_id: "moderate"
+    position: { x: 0, y: 0 }
+    traffic_rps: 800
+    traffic_kind: "realistic"
+    traffic_workload: "mixed"
+    traffic_origin: "one-region"
+  - id: "n-mobile"
+    component_id: "mobile-users"
+    config_variant_id: "steady"
+    position: { x: 0, y: 240 }
+    traffic_rps: 400
+    traffic_kind: "realistic"
+    traffic_workload: "mixed"
+    traffic_origin: "one-region"
+
+  # --- API core: FastAPI backend owns the vault ---
+  - id: "n-api"
+    component_id: "python-fastapi"
+    config_variant_id: "uvicorn"
+    position: { x: 320, y: 120 }
+
+  # --- Identity: Firebase Auth (now a first-class archie component) ---
+  - id: "n-auth"
+    component_id: "firebase-auth"
+    config_variant_id: "standard"
+    position: { x: 640, y: 0 }
+
+  # --- Data model: Postgres with RLS (the vault) ---
+  - id: "n-db"
+    component_id: "postgresql"
+    config_variant_id: "primary-replica"
+    position: { x: 640, y: 240 }
+
+  # --- Scan pipeline: Gemini vision + categorization (now a first-class archie component) ---
+  - id: "n-llm"
+    component_id: "gemini"
+    config_variant_id: "balanced"
+    position: { x: 640, y: 480 }
+
+  # --- Real-time scan progress: SSE (web) + WebSocket (mobile) ---
+  - id: "n-ws"
+    component_id: "websocket-server"
+    config_variant_id: "clustered"
+    position: { x: 320, y: 420 }
+
+  # --- Receipt image storage ---
+  - id: "n-images"
+    component_id: "aws-s3"
+    config_variant_id: "standard"
+    position: { x: 960, y: 240 }
+
+edges:
+  - id: "e-web-api"
+    source_node_id: "n-web"
+    target_node_id: "n-api"
+  - id: "e-mobile-api"
+    source_node_id: "n-mobile"
+    target_node_id: "n-api"
+  - id: "e-api-auth"
+    source_node_id: "n-api"
+    target_node_id: "n-auth"
+  - id: "e-api-db"
+    source_node_id: "n-api"
+    target_node_id: "n-db"
+  - id: "e-api-llm"
+    source_node_id: "n-api"
+    target_node_id: "n-llm"
+  - id: "e-api-ws"
+    source_node_id: "n-api"
+    target_node_id: "n-ws"
+  - id: "e-ws-web"
+    source_node_id: "n-ws"
+    target_node_id: "n-web"
+  - id: "e-api-images"
+    source_node_id: "n-api"
+    target_node_id: "n-images"

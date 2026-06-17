@@ -1,0 +1,152 @@
+id: firebase-auth
+name: Firebase Authentication
+category: auth-security
+type_id: auth
+vendor_url: https://firebase.google.com/products/auth
+description: Google's managed identity service for OAuth, social login, and ID-token issuance
+is: A Google-managed identity-as-a-service that issues verifiable JWT ID-tokens for email, phone, and social/OAuth sign-in, so apps verify a bearer token instead of running their own login, sessions, or password store
+gain:
+  - Drop-in OAuth, social, phone, and email login
+  - Verifiable JWT ID-tokens with zero-code refresh on clients
+  - Generous free tier; tight fit with the Google/GCP stack
+cost:
+  - Vendor lock-in to Google identity for a core auth path
+  - Per-verification network hop to Google on each request
+  - Limited customization vs a self-run identity provider
+tags:
+  - auth
+  - identity
+  - oauth
+  - firebase
+  - google
+  - jwt
+base_metrics:
+  - id: auth-latency
+    value: low
+    numeric_value: 4
+    category: performance
+  - id: auth-availability
+    value: high
+    numeric_value: 9
+    category: reliability
+  - id: token-security
+    value: high
+    numeric_value: 9
+    category: security
+  - id: operational-complexity
+    value: low
+    numeric_value: 2
+    category: operational-complexity
+  - id: firebase-auth-cost-efficiency
+    value: high
+    numeric_value: 7
+    category: cost-efficiency
+config_variants:
+  - id: standard
+    name: Standard
+    description: >-
+      Managed Firebase identity: social/email/phone login and verifiable ID-tokens without owning the security surface. Each authenticated request pays a ~110ms token-verification toll against Google.
+    docs_url: https://firebase.google.com/docs/auth
+    monthly_cost: 25
+    max_rps: 3000
+    base_latency_ms: 110
+    metrics:
+      - id: auth-latency
+        value: low
+        numeric_value: 4
+        category: performance
+      - id: token-security
+        value: high
+        numeric_value: 9
+        category: security
+      - id: firebase-auth-cost-efficiency
+        value: high
+        numeric_value: 8
+        category: cost-efficiency
+    code_snippet:
+      language: python
+      code: |
+        # Firebase Auth — verify an incoming bearer ID-token server-side
+        from firebase_admin import auth
+        decoded = auth.verify_id_token(bearer_token)
+        uid = decoded["uid"]
+    metric_explanations:
+      token-security:
+        reason: Google-signed JWTs with rotating public keys, built-in email/phone verification, and abuse detection harden the auth surface beyond hand-rolled login.
+        contributing_factors:
+          - Signed JWT ID-tokens with rotating Google public keys
+          - Built-in email/phone verification and reCAPTCHA abuse checks
+          - Managed session and refresh-token lifecycle
+      firebase-auth-cost-efficiency:
+        reason: A large free verification tier and no in-house auth maintenance make small-to-mid apps very cheap to run.
+        contributing_factors:
+          - Generous free monthly-active-user tier
+          - No self-hosted auth infrastructure to fund
+          - Cheap pay-as-you-go phone/SMS beyond the free tier
+  - id: identity-platform
+    name: Identity Platform (GCIP)
+    description: >-
+      Google Cloud Identity Platform: the enterprise tier of Firebase Auth — multi-tenancy, SAML/OIDC enterprise federation, and a higher SLA, with slightly faster verification. Priced for scale.
+    docs_url: https://cloud.google.com/identity-platform/docs
+    monthly_cost: 120
+    max_rps: 5000
+    base_latency_ms: 100
+    metrics:
+      - id: auth-availability
+        value: high
+        numeric_value: 10
+        category: reliability
+      - id: token-security
+        value: high
+        numeric_value: 10
+        category: security
+      - id: firebase-auth-cost-efficiency
+        value: low
+        numeric_value: 3
+        category: cost-efficiency
+    code_snippet:
+      language: bash
+      code: |
+        # Identity Platform — add a SAML enterprise tenant via gcloud
+        gcloud identity-platform tenants create --display-name="acme-sso"
+    metric_explanations:
+      auth-availability:
+        reason: The GCIP enterprise tier adds a higher contractual SLA, multi-region tenancy, and tenant isolation for resilient login at scale.
+        contributing_factors:
+          - Higher contractual SLA than the free tier
+          - Multi-region Google infrastructure
+          - Per-tenant isolation and quotas
+      firebase-auth-cost-efficiency:
+        reason: Per-MAU enterprise pricing plus SAML/OIDC federation and multi-tenancy raise cost well above the standard tier.
+        contributing_factors:
+          - Per-monthly-active-user enterprise pricing
+          - Enterprise SAML/OIDC federation add-ons
+          - Multi-tenancy and higher quota commitments
+connection_properties:
+  protocol: HTTPS
+  communication_patterns:
+    - request-response
+  typical_latency: 70-350ms
+  co_location_potential: false
+demand_responses:
+  traffic-volume:
+    high:
+      auth-latency: 0.8
+    extreme:
+      auth-latency: 0.6
+      auth-availability: 0.8
+  concurrent-users:
+    high:
+      auth-latency: 0.8
+    extreme:
+      auth-latency: 0.6
+ports:
+  - id: http-in
+    type: http
+    direction: in
+  - id: auth-out
+    type: auth
+    direction: out
+  - id: monitor-out
+    type: monitor
+    direction: out
