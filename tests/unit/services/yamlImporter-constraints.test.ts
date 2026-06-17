@@ -6,6 +6,7 @@ import { METRIC_CATEGORIES } from "@/lib/constants"
 // Mock componentLibrary — importYamlString calls componentLibrary.getComponent during hydration
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
+    initialize: vi.fn().mockResolvedValue(undefined),
     getComponent: vi.fn().mockReturnValue({
       name: "PostgreSQL",
       category: "data-storage",

@@ -42,6 +42,7 @@ interface AuthContextValue {
   loading: boolean
   error: string | null
   signIn: () => Promise<void>
+  signInWithEmail: (email: string, password: string) => Promise<void>
   signInWithTest: () => Promise<void>
   /** DEV/E2E only: sign in (create on first run) the dedicated "unlocked" replay account. */
   signInWithUnlockedTestUser: () => Promise<void>
@@ -85,6 +86,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null)
     try {
       await signInWithPopup(auth, googleProvider)
+    } catch (err) {
+      setError(getErrorMessage(err))
+    }
+  }, [])
+
+  const signInWithEmail = useCallback(async (email: string, password: string) => {
+    setError(null)
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
     } catch (err) {
       setError(getErrorMessage(err))
     }
@@ -149,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const value: AuthContextValue = { user, loading, error, signIn, signInWithTest, signInWithUnlockedTestUser, signOut }
+  const value: AuthContextValue = { user, loading, error, signIn, signInWithEmail, signInWithTest, signInWithUnlockedTestUser, signOut }
   return createElement(AuthContext.Provider, { value }, children)
 }
 

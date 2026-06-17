@@ -19,6 +19,12 @@ interface PreferencesState {
   animationsEnabled: boolean
   /** First-run guided tour seen? Persisted so the tour auto-shows once; restartable from Settings. */
   tourSeen: boolean
+  /**
+   * First-run mode fork (S1, Kane QA): the novice on-ramp. `null` = not yet answered (show the
+   * fork on the empty canvas); `"quest"` = chose the guided curriculum; `"free"` = chose the
+   * sandbox. Persisted like tourSeen so the fork only appears once for a brand-new user.
+   */
+  firstRunChoice: "quest" | "free" | null
   /** First-node contextual nudge shown? Persisted so the "configure & connect" hint fires only once. */
   firstNodeHintSeen: boolean
   /**
@@ -35,6 +41,7 @@ interface PreferencesState {
   setFontFamily: (fontFamily: FontFamily) => void
   setAnimationsEnabled: (enabled: boolean) => void
   setTourSeen: (seen: boolean) => void
+  setFirstRunChoice: (choice: "quest" | "free") => void
   setFirstNodeHintSeen: (seen: boolean) => void
   setExperienceLevel: (level: ExperienceLevel) => void
   setIconSet: (iconSet: IconSet) => void
@@ -48,6 +55,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       fontFamily: "inter",
       animationsEnabled: true,
       tourSeen: false,
+      firstRunChoice: null,
       firstNodeHintSeen: false,
       experienceLevel: "beginner",
       iconSet: "pixel",
@@ -56,6 +64,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       setFontFamily: (fontFamily) => set({ fontFamily }),
       setAnimationsEnabled: (enabled) => set({ animationsEnabled: enabled }),
       setTourSeen: (seen) => set({ tourSeen: seen }),
+      setFirstRunChoice: (choice) => set({ firstRunChoice: choice }),
       setFirstNodeHintSeen: (seen) => set({ firstNodeHintSeen: seen }),
       setExperienceLevel: (level) => set({ experienceLevel: level }),
       setIconSet: (iconSet) => set({ iconSet }),

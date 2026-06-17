@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { importYaml, importYamlString, hydrateArchitectureSkeleton } from "@/services/yamlImporter"
+import { componentLibrary } from "@/services/componentLibrary"
 import { MIGRATIONS, CURRENT_SCHEMA_VERSION } from "@/schemas/architectureFileSchema"
 import { DEFAULT_WEIGHT_PROFILE, MAX_FILE_SIZE } from "@/lib/constants"
 
@@ -64,6 +65,7 @@ const { testComponentMap } = vi.hoisted(() => {
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
+    initialize: vi.fn().mockResolvedValue(undefined),
     getComponent: vi.fn((id: string) => testComponentMap.get(id)),
     isInitialized: () => true,
   },
@@ -286,6 +288,38 @@ edges: []
       expect(result.success).toBe(false)
       if (result.success) return
       expect(result.errors[0].code).toBe("INVALID_MIME_TYPE")
+    })
+  })
+
+  // B1 (2026-06-15): the cold-load import race. getComponent() reads a map hydrated async from
+  // Firestore; importing before componentLibrary.initialize() resolved turned every node into an
+  // unknown-component placeholder. importYaml must AWAIT initialize() before hydrating.
+  describe("importYaml — library-init race guard (B1)", () => {
+    // A File whose .text() resolves to the given content (jsdom's File polyfill lacks .text()).
+    function makeTextFile(content: string, name = "race.yaml"): File {
+      const file = new File([content], name, { type: "application/x-yaml" })
+      Object.defineProperty(file, "text", { value: () => Promise.resolve(content) })
+      return file
+    }
+
+    it("awaits componentLibrary.initialize() before hydrating nodes", async () => {
+      const initSpy = vi.mocked(componentLibrary.initialize)
+      initSpy.mockClear()
+      const result = await importYaml(makeTextFile(validYaml))
+      expect(initSpy).toHaveBeenCalledTimes(1)
+      expect(result.success).toBe(true)
+      if (!result.success) return
+      // Real components hydrate (no placeholders) precisely because the map was ready.
+      expect(result.architecture.placeholderIds).toHaveLength(0)
+    })
+
+    it("fails cleanly with LIBRARY_UNAVAILABLE if the library cannot initialize", async () => {
+      const initSpy = vi.mocked(componentLibrary.initialize)
+      initSpy.mockRejectedValueOnce(new Error("firestore offline"))
+      const result = await importYaml(makeTextFile(validYaml, "offline.yaml"))
+      expect(result.success).toBe(false)
+      if (result.success) return
+      expect(result.errors[0].code).toBe("LIBRARY_UNAVAILABLE")
     })
   })
 

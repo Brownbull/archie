@@ -10,13 +10,11 @@ test.describe("Simulation Engine E2E (Epic 15)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place a component so the canvas is non-empty.
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const componentId = (await firstCard.getAttribute("data-testid"))!.replace("component-card-", "")
+    // Place a component so the canvas is non-empty. D23: the default toolbox renders type-block
+    // cards (no component-card-* grid), so drop a known base component by id.
     const canvas = page.locator('[data-testid="canvas-panel"]')
     const bounds = await canvas.boundingBox()
-    await dragComponentToCanvas(page, componentId, bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2)
+    await dragComponentToCanvas(page, "node-express", bounds!.x + bounds!.width / 2, bounds!.y + bounds!.height / 2)
     await expect(page.locator('[data-testid="archie-node"]').first()).toBeVisible({ timeout: 5_000 })
 
     // Run Simulation button appears when idle with nodes present.

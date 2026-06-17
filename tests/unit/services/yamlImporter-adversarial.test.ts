@@ -62,6 +62,7 @@ const { testComponentMap } = vi.hoisted(() => {
 
 vi.mock("@/services/componentLibrary", () => ({
   componentLibrary: {
+    initialize: vi.fn().mockResolvedValue(undefined),
     getComponent: vi.fn((id: string) => testComponentMap.get(id)),
     isInitialized: () => true,
   },

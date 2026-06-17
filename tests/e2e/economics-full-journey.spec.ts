@@ -9,7 +9,11 @@ test.describe("Economics Full Journey E2E", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: no component data")
 
-    const pgCard = page.locator('[data-testid="component-card-postgresql"]')
+    // D23/P5: the default toolbox renders type-block cards keyed by fundamental TYPE id
+    // (type-block-<typeId>), not by vendor. postgresql is the default provider of the
+    // `relational-db` type (COMPONENT_TYPES in src/lib/componentTypes.ts), so its toolbox
+    // card is type-block-relational-db. The drag below still uses the provider id "postgresql".
+    const pgCard = page.locator('[data-testid="type-block-relational-db"]')
     await expect(pgCard).toBeVisible()
 
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
@@ -169,11 +173,12 @@ test.describe("Economics Full Journey E2E", () => {
     await blueprintsTab.click()
     await page.waitForTimeout(300)
 
-    const firstBlueprint = page.locator('[data-testid^="blueprint-card-"]').first()
+    // D23: blueprint cards now use an exact `blueprint-card` testid (no per-id suffix).
+    const firstBlueprint = page.locator('[data-testid="blueprint-card"]').first()
     const hasBlueprintCards = await firstBlueprint.isVisible().catch(() => false)
     test.skip(!hasBlueprintCards, "No blueprint cards visible")
 
-    const loadButton = firstBlueprint.locator('button', { hasText: /load|apply/i })
+    const loadButton = firstBlueprint.locator('[data-testid="blueprint-load-button"]')
     const hasLoadButton = await loadButton.isVisible().catch(() => false)
 
     if (hasLoadButton) {

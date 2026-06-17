@@ -145,3 +145,35 @@ export function breakMethodLabel(methodId: BreakMethodId): string {
   if (methodId.startsWith("resilience-")) return `Survived-condition: ${methodId.slice("resilience-".length)}`
   return BREAK_METHOD_LABELS[methodId] ?? methodId
 }
+
+const ALL_SHAPE_VALUES = ["steady", "realistic", "periodic", "search"] as const
+const ALL_WORKLOAD_VALUES = ["read", "write", "mixed"] as const
+
+/**
+ * For each dial, returns the set of method IDs that a player could trigger by changing from the
+ * authored value to any alternative. rps has one method; categorical dials have N-1 alternatives.
+ * `authoredSource` is the quest's single authored traffic source (only single-source quests use the
+ * break economy). Returns null for multi-source quests.
+ */
+export function alternativeMethodIds(
+  attribute: BreakAttribute,
+  authoredSource: { kind: string; workload: string; origin: string },
+): BreakMethodId[] {
+  if (attribute === "rps") return ["rps-overload"]
+  if (attribute === "kind") return ALL_SHAPE_VALUES.filter((v) => v !== authoredSource.kind).map((v) => `shape-${v}`)
+  if (attribute === "workload") return ALL_WORKLOAD_VALUES.filter((v) => v !== authoredSource.workload).map((v) => `workload-${v}`)
+  return authoredSource.origin === "one-region" ? ["origin-multi-region"] : []
+}
+
+/**
+ * Checks whether ALL alternative method IDs for a dial are already in the game-wide break registry.
+ * Returns true when attempting this dial cannot earn expert currency (every possible value is known).
+ */
+export function isDialFullyKnown(
+  attribute: BreakAttribute,
+  authoredSource: { kind: string; workload: string; origin: string },
+  breakMethods: Readonly<Record<string, unknown>>,
+): boolean {
+  const alts = alternativeMethodIds(attribute, authoredSource)
+  return alts.length > 0 && alts.every((id) => !!breakMethods[id])
+}

@@ -20,6 +20,8 @@ setup("seed the unlocked replay account", async ({ page }) => {
   await loginWithUnlockedTestCredentials(page)
 
   // Mark the first-run guided tour (P6) as already seen so its modal never blocks replay specs.
+  // S1 (Kane QA): also answer the first-run mode fork so replay specs land in the normal app, not
+  // the fork overlay. "free" — the unlocked account replays quests directly, fork not needed.
   await page.evaluate(() => {
     const KEY = "archie-preferences"
     let parsed: { state?: Record<string, unknown>; version?: number } = {}
@@ -29,7 +31,7 @@ setup("seed the unlocked replay account", async ({ page }) => {
     } catch {
       parsed = {}
     }
-    const state = { ...(parsed.state ?? {}), tourSeen: true }
+    const state = { ...(parsed.state ?? {}), tourSeen: true, firstRunChoice: "free" }
     localStorage.setItem(KEY, JSON.stringify({ state, version: parsed.version ?? 0 }))
   })
 

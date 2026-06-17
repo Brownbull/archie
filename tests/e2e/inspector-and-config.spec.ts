@@ -2,6 +2,7 @@ import { test, expect, type Page } from "@playwright/test"
 import {
   waitForComponentLibrary,
   addComponentToCanvas,
+  dragComponentToCanvas,
   selectNodeOnCanvas,
   expandInspectorSection,
   useAdvancedLevel,
@@ -26,6 +27,113 @@ async function placeMultiVariantComponent(page: Page) {
   return { node, configTrigger }
 }
 
+/**
+ * Mark the placed node's NON-BASE config tiers as already-owned. D103: every variant beyond
+ * configVariants[0] is a ≥1★ purchase, and the E2E user has 0 spendable stars here — so selecting an
+ * unowned tier takes NodeConfigSelect's purchase branch, the buy fails, and the variant never changes
+ * (the trigger stays on "Single Process"). Seeding ownership keeps the switch deterministic and
+ * currency-free; the intent is "switching tier updates metrics/code", not "buying a tier". Keyed
+ * `${componentId}/${variantId}` to match isTierOwned (vendorId IS the componentId). The `.ts` module
+ * URL is required — the extensionless specifier yields a separate store record the app never reads.
+ */
+async function grantNodeTierOwnership(page: Page): Promise<void> {
+  const result = await page.evaluate(async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any -- ad-hoc store bridge in browser context */
+    const [archMod, progMod, libMod] = await Promise.all([
+      import("/src/stores/architectureStore.ts"),
+      import("/src/stores/userProgressStore.ts"),
+      import("/src/services/componentLibrary.ts"),
+    ])
+    const node = (archMod as any).useArchitectureStore.getState().nodes[0]
+    if (!node) return "no-node"
+    const componentId: string = node.data.archieComponentId
+    const variants: Array<{ id: string }> =
+      (libMod as any).componentLibrary.getComponent(componentId)?.configVariants ?? []
+    const progStore = (progMod as any).useUserProgressStore
+    const owned: Record<string, true> = { ...progStore.getState().unlockedTiers }
+    for (const v of variants) owned[`${componentId}/${v.id}`] = true
+    progStore.setState({ unlockedTiers: owned })
+    return "ok"
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  })
+  if (result !== "ok") throw new Error(`grantNodeTierOwnership: ${result}`)
+}
+
+/**
+ * Place node-express + postgresql via the canvas, not the toolbox "+": each TypeBlockCard's
+ * `group-hover:visible` vendor tooltip is `absolute top-full z-20`, so hovering the nth add button
+ * reveals the card-above's tooltip, which overlaps and intercepts the click (timeout). Identities are
+ * preserved for connectFirstTwoNodesViaStore: nodes[0]=node-express (db-out), nodes[1]=postgresql
+ * (db-in). Selection later goes through the store, so the exact drop spot is incidental.
+ */
+async function placeTwoNodesClearOfPanel(page: Page): Promise<void> {
+  const bounds = await page.locator('[data-testid="canvas-panel"]').boundingBox()
+  if (!bounds) throw new Error("canvas-panel not found")
+  await dragComponentToCanvas(page, "node-express", bounds.x + bounds.width * 0.5, bounds.y + bounds.height * 0.68)
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(1, { timeout: 5_000 })
+  await dragComponentToCanvas(page, "postgresql", bounds.x + bounds.width * 0.72, bounds.y + bounds.height * 0.68)
+  await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })
+}
+
+/**
+ * Connect the first two canvas nodes via the store's `addEdge` (node-express db-out → postgresql db-in)
+ * — the same path the UI onConnect calls. Drag-to-connect is flaky for multi-port nodes; the intent is
+ * "edge SELECTION opens the connection inspector", so the creation method is incidental.
+ */
+async function connectFirstTwoNodesViaStore(page: Page): Promise<void> {
+  const result = await page.evaluate(async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any -- ad-hoc store bridge in browser context */
+    const archStore = (await import("/src/stores/architectureStore.ts") as any).useArchitectureStore
+    const nodes = archStore.getState().nodes
+    if (nodes.length < 2) return "need-two-nodes"
+    archStore.getState().addEdge({ source: nodes[0].id, target: nodes[1].id, sourceHandle: "db-out", targetHandle: "db-in" })
+    return archStore.getState().edges.length === 1 ? "ok" : "no-edge"
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  })
+  if (result !== "ok") throw new Error(`connectFirstTwoNodesViaStore: ${result}`)
+}
+
+/**
+ * Select the nth canvas node via the uiStore bridge (`setSelectedNodeId`) — the inspector renders that
+ * node's content. A header click is unreliable for a SECOND node: once the first selection opens the
+ * 300px inspector, fit-view re-frames the remaining node under the build-health / canvas-legend panels,
+ * which intercept the click. Store selection sets the same selectedNodeId CanvasView's onNodeClick does.
+ */
+async function selectNthNodeViaStore(page: Page, index: number): Promise<void> {
+  const result = await page.evaluate(async (i) => {
+    /* eslint-disable @typescript-eslint/no-explicit-any -- ad-hoc store bridge in browser context */
+    const archStore = (await import("/src/stores/architectureStore.ts") as any).useArchitectureStore
+    const uiStore = (await import("/src/stores/uiStore.ts") as any).useUiStore
+    const node = archStore.getState().nodes[i]
+    if (!node) return "no-node"
+    uiStore.getState().setSelectedNodeId(node.id)
+    return "ok"
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  }, index)
+  if (result !== "ok") throw new Error(`selectNthNodeViaStore[${index}]: ${result}`)
+  await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
+}
+
+/**
+ * Select the first canvas edge via the uiStore bridge (`setSelectedEdgeId`) — InspectorPanel renders
+ * ConnectionDetail when it is set. Clicking the edge is unreliable: the two nodes overlap after fit-view
+ * (node-express is wide), so the click lands on a node (opening the component inspector). Store
+ * selection sets the same selectedEdgeId CanvasView's onEdgeClick would.
+ */
+async function selectFirstEdgeViaStore(page: Page): Promise<void> {
+  const result = await page.evaluate(async () => {
+    /* eslint-disable @typescript-eslint/no-explicit-any -- ad-hoc store bridge in browser context */
+    const archStore = (await import("/src/stores/architectureStore.ts") as any).useArchitectureStore
+    const uiStore = (await import("/src/stores/uiStore.ts") as any).useUiStore
+    const edge = archStore.getState().edges[0]
+    if (!edge) return "no-edge"
+    uiStore.getState().setSelectedEdgeId(edge.id)
+    return "ok"
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+  })
+  if (result !== "ok") throw new Error(`selectFirstEdgeViaStore: ${result}`)
+}
+
 test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
   // D22: advanced level (the default "beginner" hides the inspector's gains/costs/metrics/code
   // disclosures) + a clean canvas (the desktop project reuses one storageState, so prior placements
@@ -40,9 +148,7 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place a component on the canvas. (Placing auto-selects the new node, so the inspector opens
-    // immediately — the "selection drives the inspector" deselect path is covered by the dedicated
-    // "click canvas background hides inspector" test below.)
+    // Place a component on the canvas (auto-selects the new node, opening the inspector).
     await addComponentToCanvas(page)
 
     // Ensure the node is selected
@@ -136,6 +242,9 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Place a multi-variant component, then open the read-only inspector for the metric bars.
     const { configTrigger } = await placeMultiVariantComponent(page)
     await selectNodeOnCanvas(page)
+    // D103: the non-base tier (Cluster Mode) is a 1★ purchase and the E2E user has 0 spendable stars
+    // here — own the tiers up front so the switch updates the variant instead of failing the buy.
+    await grantNodeTierOwnership(page)
     // Metrics live in a collapse-by-default disclosure (P3) — expand to read the bars.
     await expandInspectorSection(page, "disclosure-metrics")
 
@@ -321,11 +430,8 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const inspector = page.locator('[data-testid="inspector"]')
     await expect(inspector).toHaveCSS("width", "300px")
 
-    // Deselect via Escape — the canvas keydown handler runs clearSelection + deselectAll, the same path
-    // as an empty-canvas pane click (handlePaneClick), but deterministic. A programmatic pane click is
-    // flaky here: the single fit-view-zoomed node + its connection handles make an empty hit point
-    // unreliable, and React Flow's .pane fails Playwright's actionability check. (selectNodeOnCanvas just
-    // clicked the node, so focus is on the canvas and the keydown reaches the container handler.)
+    // Deselect via Escape — the canvas keydown handler runs clearSelection + deselectAll (the same path
+    // as an empty-canvas pane click, but deterministic — a programmatic .pane click is flaky here).
     await page.keyboard.press("Escape")
 
     // Assertion-based wait: inspector-panel hidden confirms transition complete (TD-1-5a Item 1)
@@ -358,8 +464,8 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Inspector should be open
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible()
 
-    // Remove via the inspector's Remove button — deterministic, vs keyboard Delete which depends on
-    // React Flow holding canvas focus (flaky once the node carries on-canvas dropdowns).
+    // Remove via the inspector's Remove button — deterministic (keyboard Delete depends on React Flow
+    // holding canvas focus, flaky once the node carries on-canvas dropdowns).
     await page.getByTestId("inspector-remove-node").click()
 
     // Node should be removed from canvas
@@ -389,43 +495,22 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const cards = page.locator('[data-testid^="component-card-"]')
+    // D23: the default toolbox renders type-block cards (type-block-<typeId>), not the old
+    // component-card-* grid; need ≥2 to form an edge.
+    const cards = page.locator('[data-testid^="type-block-"]')
     const cardCount = await cards.count()
     test.skip(cardCount < 2, "Skipped: Need at least 2 components to create an edge")
 
-    // Place two components on the canvas
-    await addComponentToCanvas(page, 0)
-    await addComponentToCanvas(page, 1)
-
-    // Connect the two nodes
-    const sourceHandle = page.locator('[data-testid="archie-node"]').nth(0).locator(".react-flow__handle.source").first()
-    const targetHandle = page.locator('[data-testid="archie-node"]').nth(1).locator(".react-flow__handle.target").first()
-
-    // Hover first node to make handles visible
-    await page.locator('[data-testid="archie-node"]').nth(0).hover()
-
-    const sourceBox = await sourceHandle.boundingBox()
-    const targetBox = await targetHandle.boundingBox()
-
-    if (sourceBox && targetBox) {
-      const srcX = sourceBox.x + sourceBox.width / 2
-      const srcY = sourceBox.y + sourceBox.height / 2
-      const tgtX = targetBox.x + targetBox.width / 2
-      const tgtY = targetBox.y + targetBox.height / 2
-
-      await page.mouse.move(srcX, srcY)
-      await page.mouse.down()
-      await page.mouse.move((srcX + tgtX) / 2, (srcY + tgtY) / 2, { steps: 5 })
-      await page.mouse.move(tgtX, tgtY, { steps: 5 })
-      await page.mouse.up()
-    }
+    // Place node-express + postgresql via the canvas, then connect them through the store.
+    await placeTwoNodesClearOfPanel(page)
+    await connectFirstTwoNodesViaStore(page)
 
     // Wait for edge to appear in DOM (SVG edges may not pass Playwright visibility check)
     const edges = page.locator(".react-flow__edge")
     await expect(edges).toHaveCount(1, { timeout: 5_000 })
 
-    // Click the edge path to select it (force: true for SVG elements)
-    await edges.first().click({ force: true })
+    // Select the edge via the store (see selectFirstEdgeViaStore) — opens ConnectionDetail.
+    await selectFirstEdgeViaStore(page)
 
     // Story 4-3: edge selection now opens ConnectionDetail in the inspector
     await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
@@ -448,16 +533,16 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const cards = page.locator('[data-testid^="component-card-"]')
+    // D23: the default toolbox renders type-block cards (type-block-<typeId>); need ≥2 distinct types.
+    const cards = page.locator('[data-testid^="type-block-"]')
     const cardCount = await cards.count()
     test.skip(cardCount < 2, "Skipped: Need at least 2 different components")
 
-    // Place two different components
-    await addComponentToCanvas(page, 0)
-    await addComponentToCanvas(page, 1)
+    // Place two different components via the canvas (node-express + postgresql).
+    await placeTwoNodesClearOfPanel(page)
 
-    // Select the first node
-    await selectNodeOnCanvas(page, 0)
+    // Select node 0 then node 1 via the store (panel-independent — see selectNthNodeViaStore).
+    await selectNthNodeViaStore(page, 0)
     const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
     const firstName = await inspectorPanel.locator("h2").textContent()
 
@@ -466,18 +551,11 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
       fullPage: true,
     })
 
-    // Select the second node
-    const secondNode = page.locator('[data-testid="archie-node"]').nth(1)
-    await secondNode.click()
-
-    // Assertion-based wait: inspector visible confirms re-render complete (TD-1-5a Item 1)
-    await expect(inspectorPanel).toBeVisible({ timeout: 3_000 })
+    await selectNthNodeViaStore(page, 1)
 
     const secondName = await inspectorPanel.locator("h2").textContent()
 
-    // If different components were placed, names should differ
-    // (they could be the same component type if only one type exists)
-    // At minimum, the inspector should still be visible with valid content
+    // At minimum the inspector should still be visible with valid content (names compared below).
     await expect(inspectorPanel).toBeVisible()
     expect(secondName!.length).toBeGreaterThan(0)
 
@@ -486,11 +564,13 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
       fullPage: true,
     })
 
-    // If components are different, names should differ
+    // If the two placed components are different, the inspector names should differ.
+    // D23: read the placed-node names from the canvas (the archie-node contains the component
+    // name), NOT from toolbox cards — the type-block grid no longer exposes per-component h4 names.
     if (cardCount >= 2) {
-      const firstCardName = await cards.nth(0).locator("h4").textContent()
-      const secondCardName = await cards.nth(1).locator("h4").textContent()
-      if (firstCardName !== secondCardName) {
+      const firstNodeName = await page.locator('[data-testid="archie-node"]').nth(0).textContent()
+      const secondNodeName = await page.locator('[data-testid="archie-node"]').nth(1).textContent()
+      if (firstNodeName !== secondNodeName) {
         expect(firstName).not.toBe(secondName)
       }
     }
@@ -568,6 +648,9 @@ test.describe("Component Inspector & Configuration E2E (Story 1-5)", () => {
     // Place a multi-variant component and open the read-only inspector for the code snippet.
     const { configTrigger } = await placeMultiVariantComponent(page)
     await selectNodeOnCanvas(page)
+    // D103: the non-base tier (Cluster Mode) is a 1★ purchase and the E2E user has 0 spendable stars
+    // here — own the tiers up front so the switch updates the snippet instead of failing the buy.
+    await grantNodeTierOwnership(page)
 
     // Fluidity P1: the config dropdown is on the canvas block now.
     await expect(configTrigger).toBeVisible()

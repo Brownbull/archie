@@ -2,6 +2,7 @@ import { create } from "zustand"
 import { doc, getDoc, setDoc, serverTimestamp, increment, deleteDoc } from "firebase/firestore"
 import { db, auth } from "@/lib/firebase"
 import { randomNickname, nicknameSlug, validateNickname } from "@/lib/nicknames"
+import { canWrite } from "@/lib/writeThrottle"
 
 const COLLECTION = "userProgress"
 
@@ -146,6 +147,9 @@ interface UserProgressState extends UserProgress {
   purchaseTier: (userId: string, vendorId: string, variantId: string, costStars: number) => Promise<boolean>
   /** D105b: claim + set a new nickname. Returns null on success, or a user-facing error message. */
   changeNickname: (userId: string, nickname: string) => Promise<string | null>
+  /** Full quest progress reset: back to starter grant, preserves displayName, assigns new nickname.
+   *  Returns null on success, or a user-facing error. */
+  resetQuestProgress: (userId: string) => Promise<string | null>
   reset: () => void
 }
 
@@ -176,7 +180,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           set({ ...wiped, loading: false })
           try {
             // FULL replace (no merge): merge would deep-merge the maps and leave old stars/hints behind.
-            await setDoc(doc(db, COLLECTION, userId), { ...wiped, updatedAt: serverTimestamp() })
+            await setDoc(doc(db, COLLECTION, userId), { ...wiped, totalXp: 0, updatedAt: serverTimestamp() })
           } catch (err) {
             if (import.meta.env.DEV) console.error("Failed to persist progress reset:", err)
             set({ error: "Could not reset your progress." })
@@ -213,13 +217,19 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
           void setDoc(doc(db, COLLECTION, userId), { nickname: assigned, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
           void setDoc(doc(db, "nicknames", nicknameSlug(assigned)), { uid: userId }).catch(() => undefined)
         }
+        // Lazy backfill: stamp totalXp for docs that predate the denormalized field (leaderboard index).
+        if (data.totalXp === undefined) {
+          const trackXp = (data.trackXp as Record<string, number>) ?? {}
+          const computed = Object.values(trackXp).reduce((a, b) => a + (typeof b === "number" ? b : 0), 0)
+          void setDoc(doc(db, COLLECTION, userId), { totalXp: computed, updatedAt: serverTimestamp() }, { merge: true })
+        }
       } else {
         // D104: first sign-in (or post-wipe) — provision the starter grant and persist it so the
         // baseline is durable from minute one.
         const provisioned = { ...STARTER_PROGRESS, displayName: auth.currentUser?.displayName ?? null, nickname: randomNickname() }
         set({ ...provisioned, loading: false })
         try {
-          await setDoc(doc(db, COLLECTION, userId), { ...provisioned, updatedAt: serverTimestamp() })
+          await setDoc(doc(db, COLLECTION, userId), { ...provisioned, totalXp: 0, updatedAt: serverTimestamp() })
           if (provisioned.nickname) void setDoc(doc(db, "nicknames", nicknameSlug(provisioned.nickname)), { uid: userId }).catch(() => undefined)
         } catch (err) {
           if (import.meta.env.DEV) console.error("Failed to provision starter progress:", err)
@@ -234,6 +244,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   awardXp: async (userId, track, totalXp, challengeId, stars) => {
     if (!userId || !track || totalXp <= 0 || stars <= 0) return
+    if (!canWrite(`xp:${userId}`)) return
     const state = get()
     const prevStars = state.bestStarsCloud[challengeId] ?? 0
     if (stars <= prevStars) return
@@ -261,7 +272,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
     try {
       await setDoc(
         doc(db, COLLECTION, userId),
-        { trackXp: newTrackXp, completedChallenges: newCompleted, bestStarsCloud: newBestStars, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
+        { trackXp: newTrackXp, completedChallenges: newCompleted, bestStarsCloud: newBestStars, totalXp: increment(xpAwarded), generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() },
         { merge: true },
       )
     } catch (err) {
@@ -272,6 +283,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   unlockHint: async (userId, challengeId, ladderLength) => {
     if (!userId || !challengeId || ladderLength <= 0) return false
+    if (!canWrite(`hint:${userId}`)) return false
     const state = get()
     const current = state.hintsUnlocked[challengeId] ?? 0
     if (current >= ladderLength) return false // all hints for this challenge already revealed
@@ -295,6 +307,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   equipAvatar: async (userId, avatarKey) => {
     if (!userId) return
+    if (!canWrite(`avatar:${userId}`)) return
     set({ equippedAvatar: avatarKey })
     try {
       await setDoc(doc(db, COLLECTION, userId), { equippedAvatar: avatarKey, generation: PROGRESS_GENERATION, updatedAt: serverTimestamp() }, { merge: true })
@@ -305,6 +318,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   changeNickname: async (userId, raw) => {
     if (!userId) return "Sign in to change your nickname."
+    if (!canWrite(`nick:${userId}`)) return "Too fast — wait a moment."
     const invalid = validateNickname(raw)
     if (invalid) return invalid
     const nickname = raw.trim()
@@ -333,6 +347,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   purchaseVendor: async (userId, vendorId, cost) => {
     if (!userId || !vendorId) return false
+    if (!canWrite(`purchase:${userId}`)) return false
     const state = get()
     if (state.unlockedVendors[vendorId]) return false
     const stars = cost.stars ?? 0
@@ -366,6 +381,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   purchaseTier: async (userId, vendorId, variantId, costStars) => {
     if (!userId || !vendorId || !variantId) return false
+    if (!canWrite(`purchase:${userId}`)) return false
     const state = get()
     const key = `${vendorId}/${variantId}`
     if (state.unlockedTiers[key]) return false
@@ -390,6 +406,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   collectBreakMethod: async (userId, methodId, challengeId, trackId) => {
     if (!userId || !methodId) return false
+    if (!canWrite(`break:${userId}`)) return false
     const state = get()
     if (state.breakMethods[methodId]) return false // known way — knowledge, not money (D102)
     const entry = { challengeId, earnedAt: Date.now(), confirmedOn: { [challengeId]: true as const } }
@@ -408,7 +425,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
         {
           breakMethods: { [methodId]: entry },
           expertCurrency: increment(1),
-          ...(xpTrack ? { trackXp: { [xpTrack]: increment(EXPERT_XP) } } : {}),
+          ...(xpTrack ? { trackXp: { [xpTrack]: increment(EXPERT_XP) }, totalXp: increment(EXPERT_XP) } : {}),
           generation: PROGRESS_GENERATION,
           updatedAt: serverTimestamp(),
         },
@@ -423,6 +440,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   confirmBreakMethod: async (userId, methodId, challengeId) => {
     if (!userId || !methodId) return
+    if (!canWrite(`break:${userId}`)) return
     const state = get()
     const entry = state.breakMethods[methodId]
     if (!entry || entry.confirmedOn[challengeId]) return
@@ -441,6 +459,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   collectBreak: async (userId, challengeId, attribute) => {
     if (!userId || !challengeId) return false
+    if (!canWrite(`break:${userId}`)) return false
     const state = get()
     const record = state.breaksByChallenge[challengeId] ?? {}
     if (record[attribute]) return false // this attribute's break already collected for this quest
@@ -464,6 +483,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   unlockRequiredFilter: async (userId, challengeId) => {
     if (!userId || !challengeId) return false
+    if (!canWrite(`purchase:${userId}`)) return false
     const state = get()
     if (state.requiredFilterUnlocked[challengeId]) return false // already owned for this quest
     if (state.expertCurrency < 1) return false // nothing to spend
@@ -486,6 +506,7 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
 
   collectResilienceClear: async (userId, challengeId, conditionId) => {
     if (!userId || !challengeId || !conditionId) return false
+    if (!canWrite(`break:${userId}`)) return false
     const state = get()
     const record = state.resilienceClears[challengeId] ?? {}
     if (record[conditionId]) return false // this extra already cleared for this quest
@@ -505,6 +526,25 @@ export const useUserProgressStore = create<UserProgressState>((set, get) => ({
       set({ error: "Could not save your resilience clear." })
     }
     return true
+  },
+
+  resetQuestProgress: async (userId) => {
+    if (!userId) return "Not signed in."
+    const current = get()
+    const wiped: UserProgress = {
+      ...STARTER_PROGRESS,
+      displayName: current.displayName,
+      nickname: current.nickname,
+      generation: PROGRESS_GENERATION,
+    }
+    set({ ...wiped, loading: false, error: null, lastAward: null })
+    try {
+      await setDoc(doc(db, COLLECTION, userId), { ...wiped, totalXp: 0, updatedAt: serverTimestamp() })
+    } catch (err) {
+      if (import.meta.env.DEV) console.error("Failed to persist progress reset:", err)
+      return "Could not reset your progress. Please try again."
+    }
+    return null
   },
 
   reset: () => set({ ...EMPTY_PROGRESS, loading: false, error: null, lastAward: null }),

@@ -24,7 +24,7 @@ export function TestConditionsPanel() {
         <span
           data-testid="test-conditions-label"
           title="Optionally inject a failure to stress-test resilience, then Run Simulation. (Demand is set on the traffic-source block.)"
-          className="text-[0.5625rem] font-semibold uppercase tracking-wide text-text-secondary/80"
+          className="text-[0.5625rem] font-semibold uppercase tracking-wide text-text-secondary"
         >
           Test conditions
         </span>

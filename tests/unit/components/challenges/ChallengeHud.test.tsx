@@ -135,3 +135,18 @@ describe("required checklist gating (2026-06-11 — names are the first paid hin
     expect(screen.queryByTestId("req-compute")).toBeNull()
   })
 })
+
+describe("quest guide button", () => {
+  it("shows a help button for challenges that have a guide", () => {
+    const guided = { ...challenge, id: "first-service" }
+    useChallengeStore.getState().selectChallenge(guided)
+    render(<ChallengeHud />)
+    expect(screen.getByTestId("quest-guide")).toBeInTheDocument()
+  })
+
+  it("does not show a help button for challenges without a guide", () => {
+    useChallengeStore.getState().selectChallenge(challenge)
+    render(<ChallengeHud />)
+    expect(screen.queryByTestId("quest-guide")).not.toBeInTheDocument()
+  })
+})

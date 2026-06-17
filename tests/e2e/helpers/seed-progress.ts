@@ -19,7 +19,7 @@ const TRACKS = ["foundations", "data", "edge", "realtime", "reliability", "secur
 const PROGRESS_GENERATION = 3 // must equal userProgressStore.PROGRESS_GENERATION or the reader wipes it
 // expertCurrency/breaksByChallenge/requiredFilterUnlocked (P4-S2) reset to zero each setup run so the
 // break-it journey spec (feedback-phase4) always collects FRESH breaks — the seed is the fixture.
-const ALLOWED_KEYS = ["trackXp", "completedChallenges", "bestStarsCloud", "equippedAvatar", "hintsUnlocked", "expertCurrency", "breaksByChallenge", "requiredFilterUnlocked", "resilienceClears", "breakMethods", "unlockedVendors", "unlockedTiers", "starsSpentOnUnlocks", "bonusStars", "isTestAccount", "expertEarned", "generation"] as const
+const ALLOWED_KEYS = ["trackXp", "completedChallenges", "bestStarsCloud", "equippedAvatar", "hintsUnlocked", "expertCurrency", "breaksByChallenge", "requiredFilterUnlocked", "resilienceClears", "breakMethods", "unlockedVendors", "unlockedTiers", "starsSpentOnUnlocks", "bonusStars", "isTestAccount", "expertEarned", "totalXp", "generation"] as const
 
 function loadEnv(): Record<string, string> {
   const env: Record<string, string> = { ...process.env } as Record<string, string>
@@ -81,6 +81,7 @@ async function writeProgress(page: Page, projectId: string, completedChallenges:
         expertEarned: { integerValue: "0" },
         requiredFilterUnlocked: { mapValue: { fields: {} } },
         resilienceClears: { mapValue: { fields: {} } },
+        totalXp: { integerValue: String(xp * tracks.length) },
         generation: { integerValue: String(generation) },
       }
       const docName = `projects/${projectId}/databases/(default)/documents/userProgress/${uid}`

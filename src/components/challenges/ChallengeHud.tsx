@@ -1,9 +1,11 @@
 import { useState } from "react"
-import { Check, X as XIcon, Minus, Maximize2, Lock } from "lucide-react"
+import { Check, X as XIcon, Minus, Maximize2, Lock, HelpCircle } from "lucide-react"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { computeTotalArchitectureCost } from "@/stores/architectureStoreHelpers"
+import { useTourStore } from "@/stores/tourStore"
+import { getQuestGuide } from "@/lib/questGuides"
 import { ChallengeCoach } from "@/components/challenges/ChallengeCoach"
 import { HintPanel } from "@/components/challenges/HintPanel"
 import { COMPONENT_CATEGORIES, type ComponentCategoryId } from "@/lib/constants"
@@ -20,10 +22,14 @@ export function ChallengeHud() {
   const [minimized, setMinimized] = useState(false)
   const [confirmExit, setConfirmExit] = useState(false)
 
+  const startGuide = useTourStore((s) => s.start)
+
   // Hooks above every conditional return (hook-order invariant).
   const hintsUnlocked = useUserProgressStore((s) => (s.hintsUnlocked[useChallengeStore.getState().activeChallenge?.id ?? ""] ?? 0))
 
   if (!challenge) return null
+
+  const guide = getQuestGuide(challenge.id)
 
   const placed = new Set(nodes.map((n) => n.data.componentCategory))
   // D74: on-path cost — the HUD budget readout excludes disconnected blocks, matching the scored cost.
@@ -40,6 +46,17 @@ export function ChallengeHud() {
         <div className="flex items-center justify-between gap-2 px-3 py-2">
           <span className="text-base font-bold text-text-primary">{challenge.title}</span>
           <div className="flex items-center gap-1">
+            {guide && (
+              <button
+                type="button"
+                data-testid="quest-guide"
+                onClick={() => startGuide(guide)}
+                className="flex h-5 w-5 items-center justify-center rounded text-text-secondary hover:bg-surface hover:text-blue-400"
+                title="Quest guide"
+              >
+                <HelpCircle className="h-3.5 w-3.5" />
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setMinimized((v) => !v)}

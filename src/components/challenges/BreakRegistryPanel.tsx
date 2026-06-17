@@ -61,7 +61,7 @@ export function BreakRegistryPanel() {
   return (
     <div
       data-testid="break-registry-panel"
-      className="absolute right-3 top-14 z-20 flex max-h-[70vh] w-80 flex-col rounded-lg border border-orange-500/30 bg-[#0a0e14]/95 shadow-xl"
+      className="absolute right-55 top-4 z-20 flex max-h-[70vh] w-80 flex-col rounded-lg border border-orange-500/30 bg-[#0a0e14]/95 shadow-xl"
     >
       <div className="flex items-center gap-2 border-b border-archie-border/60 px-3 py-2.5">
         <BookOpen className="h-4 w-4 text-orange-400" />

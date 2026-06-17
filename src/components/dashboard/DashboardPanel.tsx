@@ -112,6 +112,7 @@ export function DashboardPanel() {
             <AggregateScore
               score={weightedAggregateScore}
               balancedScore={isNonDefaultWeights ? aggregateScore : undefined}
+              weakestCategoryName={weakest?.meta.name}
             />
           </button>
 

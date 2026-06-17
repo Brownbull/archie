@@ -15,10 +15,10 @@ test.describe("Economics Cost Badge E2E", () => {
       fullPage: true,
     })
 
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const testId = await firstCard.getAttribute("data-testid")
-    const componentId = testId!.replace("component-card-", "")
+    // D23: the default toolbox renders type-block cards (type-block-<typeId>), not the old
+    // component-card-* grid. Drag a known base component by id rather than reading an id off a card.
+    const block = page.locator('[data-testid^="type-block-"]').first()
+    await expect(block).toBeVisible()
 
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
     const canvasBounds = await canvasPanel.boundingBox()
@@ -26,7 +26,7 @@ test.describe("Economics Cost Badge E2E", () => {
 
     const dropX = canvasBounds!.x + canvasBounds!.width / 2
     const dropY = canvasBounds!.y + canvasBounds!.height / 2
-    await dragComponentToCanvas(page, componentId, dropX, dropY)
+    await dragComponentToCanvas(page, "node-express", dropX, dropY)
 
     const archieNode = page.locator('[data-testid="archie-node"]').first()
     await expect(archieNode).toBeVisible({ timeout: 5_000 })

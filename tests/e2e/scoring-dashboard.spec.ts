@@ -1,5 +1,10 @@
 import { test, expect, type Page } from "@playwright/test"
-import { waitForComponentLibrary, dragComponentToCanvas, useAdvancedLevel } from "./helpers/canvas-helpers"
+import {
+  waitForComponentLibrary,
+  dragComponentToCanvas,
+  placeComponentAt,
+  useAdvancedLevel,
+} from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/scoring-dashboard"
 
@@ -18,53 +23,25 @@ async function placeComponent(page: Page, buttonIndex = 0) {
   })
 }
 
-/**
- * Trigger recalculation for a node by changing its config variant ON THE BLOCK.
- *
- * addNode() does NOT call triggerRecalculation(), so computedMetrics stays empty
- * after placement. Changing the config variant triggers the full pipeline:
- * updateNodeConfigVariant → triggerRecalculation → computedMetrics populated.
- *
- * Fluidity P1: the config-tier picker moved off the inspector onto the canvas node
- * (`archie-node-config-trigger`) and only renders for MULTI-VARIANT providers. Mirrors
- * the redirected `triggerRecalcViaConfigChange` in helpers/canvas-helpers.ts.
- */
-async function triggerRecalcViaConfigChange(page: Page, nodeIndex = 0) {
-  const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
-  // Click the node (opens the read-only inspector; harmless, not required to reach the dropdown).
-  await node.click()
 
-  // Open the on-node config variant dropdown (Radix Select combobox).
-  const configTrigger = node.locator('[data-testid="archie-node-config-trigger"]')
-  if (!(await configTrigger.isVisible().catch(() => false))) {
-    // Single-variant provider — no on-node config picker; recalculation won't trigger this way.
-    await page.waitForTimeout(500)
-    return
-  }
-  await configTrigger.click()
-
-  // Wait for the dropdown to open (Radix portals to body)
-  await page.locator('[role="listbox"]').waitFor({ state: "visible", timeout: 3_000 })
-
-  // Pick a variant that is NOT currently selected (data-state="unchecked")
-  const unchecked = page.locator('[role="option"][data-state="unchecked"]')
-  if ((await unchecked.count()) > 0) {
-    await unchecked.first().click()
-  } else {
-    // Single variant — close dropdown; recalculation won't trigger
-    await page.keyboard.press("Escape")
-  }
-
-  // Allow recalculation + React re-render to settle
-  await page.waitForTimeout(500)
-}
+// Known MULTI-VARIANT base components (verified in src/data/components/*.yaml) from distinct categories,
+// so each placement reliably renders the on-node config trigger AND adds a new scoring category. Indexed
+// to mirror the previous buttonIndex sequencing used by the metric-dependent tests.
+const MULTI_VARIANT_COMPONENTS = ["node-express", "postgresql"] as const
 
 /**
- * Place a component AND trigger recalculation to populate computedMetrics.
+ * Place a known component on the canvas to populate computedMetrics. Placement is sufficient:
+ * addNode (the drop handler's action) calls triggerRecalculation(node.id) synchronously
+ * (architectureStore.ts addNode → triggerRecalculation), so computedMetrics is populated as soon as
+ * the node lands — no separate config-change step is needed. (An earlier version added a config-tier
+ * change to "force" recalc, but that step depends on a multi-variant trigger + a 1★ tier purchase the
+ * 0-star E2E user can't make, so it failed and left the dashboard stuck in its empty state.)
  */
 async function addComponentWithMetrics(page: Page, buttonIndex = 0) {
-  await placeComponent(page, buttonIndex)
-  await triggerRecalcViaConfigChange(page, buttonIndex)
+  const componentId = MULTI_VARIANT_COMPONENTS[buttonIndex] ?? MULTI_VARIANT_COMPONENTS[0]
+  // Spread placements horizontally so multiple nodes don't stack on top of each other.
+  const fractionX = 0.3 + buttonIndex * 0.3
+  await placeComponentAt(page, componentId, fractionX, 0.5)
 }
 
 test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
@@ -283,7 +260,9 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count the always-visible type-block "+" buttons (add-type-*); the old per-vendor
+    // add-to-canvas-* cards are no longer in the default toolbox view.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     const btnCount = await addBtns.count()
     test.skip(btnCount < 2, "Skipped: Need at least 2 components for this test")
 
@@ -430,11 +409,9 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     })
   })
 
-  // D22: skipped — drags from a `component-card-` tile, which the toolbox redesign no longer shows in
-  // the default type-block view (the per-vendor cards moved behind type expansion). The drag-to-canvas
-  // mechanism itself is covered by canvas-and-placement / ghost-placement specs. Revisit if the card
-  // grid returns to the default toolbox view.
-  test.skip("dashboard with drag-and-drop placement (via dragComponentToCanvas)", async ({
+  // D23: migrated off the removed `component-card-` grid to drag a known base component by id
+  // (node-express), matching the reference migration in canvas-and-placement.spec.ts.
+  test("dashboard with drag-and-drop placement (via dragComponentToCanvas)", async ({
     page,
   }) => {
     await page.goto("/")
@@ -442,21 +419,15 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Get the first component card ID for drag-and-drop
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const testId = await firstCard.getAttribute("data-testid")
-    const componentId = testId!.replace("component-card-", "")
-
     // Get canvas bounds
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
     const canvasBounds = await canvasPanel.boundingBox()
     expect(canvasBounds).not.toBeNull()
 
-    // Drag component to canvas center
+    // Drag a known base component to canvas center (the old component-card-* grid is gone post-D23)
     await dragComponentToCanvas(
       page,
-      componentId,
+      "node-express",
       canvasBounds!.x + canvasBounds!.width / 2,
       canvasBounds!.y + canvasBounds!.height / 2,
     )
@@ -466,8 +437,7 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
       timeout: 5_000,
     })
 
-    // Trigger recalculation via config change (drag placement doesn't trigger recalc)
-    await triggerRecalcViaConfigChange(page, 0)
+    // Placement alone populates computedMetrics — addNode calls triggerRecalculation synchronously.
 
     // Dashboard should show content (not empty state)
     const dashboardPanel = page.locator('[data-testid="dashboard-panel"]')
@@ -520,7 +490,8 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count type-block "+" buttons (add-type-*) — the per-vendor add-to-canvas-* cards are gone.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     const btnCount = await addBtns.count()
     test.skip(btnCount < 3, "Skipped: Need at least 3 components for Foundation tier")
 
@@ -555,7 +526,8 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count type-block "+" buttons (add-type-*) — the per-vendor add-to-canvas-* cards are gone.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     test.skip((await addBtns.count()) < 3, "Skipped: Need at least 3 components")
 
     // Place 3 components to reach Foundation tier
@@ -599,7 +571,8 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: count type-block "+" buttons (add-type-*) — the per-vendor add-to-canvas-* cards are gone.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     test.skip((await addBtns.count()) < 3, "Skipped: Need at least 3 components")
 
     // Place 3 components to reach Foundation tier

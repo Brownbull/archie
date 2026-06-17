@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
 
+vi.mock("@/lib/writeThrottle", () => ({ canWrite: () => true }))
 vi.mock("@/lib/firebase", () => ({ db: {} }))
 vi.mock("firebase/firestore", () => ({
   doc: vi.fn(() => ({})),

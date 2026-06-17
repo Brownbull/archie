@@ -3,7 +3,6 @@ import {
   waitForComponentLibrary,
   waitForBlueprints,
   dragComponentToCanvas,
-  triggerRecalcViaConfigChange,
   openDashboardOverlay,
   useAdvancedLevel,
 } from "./helpers/canvas-helpers"
@@ -20,6 +19,15 @@ const SEVERITY: Record<string, number> = { bottleneck: 0, warning: 1, healthy: 2
 /**
  * Place a component and trigger recalculation to populate computedMetrics.
  * Deselects the node afterward to prevent React Flow overlay interference.
+ *
+ * Recalc is triggered by bumping the node's replica count (setNodeReplicaCount → triggerRecalculation
+ * in architectureStore) rather than switching its config tier. A tier switch goes through
+ * updateNodeConfigVariant, which D103-gates premium tiers behind a star purchase: every non-base
+ * config_variant costs 1★, the shared E2E account's STARTER_BONUS_STARS (3) is consumed/persisted in
+ * Firestore across the whole suite, and an unaffordable switch silently no-ops (no recalc → empty
+ * computedMetrics → no dashboard-expand-button). Replicas carry no ownership gate, so the recalc
+ * always fires regardless of the account's star balance. Compute/data-storage components are
+ * `scalable` (src/lib/constants CATEGORY_SCALING_RULES), so the replica stepper is present on-node.
  */
 async function addComponentWithMetrics(
   page: Page,
@@ -32,7 +40,12 @@ async function addComponentWithMetrics(
   await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(expectedCount, {
     timeout: 5_000,
   })
-  await triggerRecalcViaConfigChange(page, expectedCount - 1)
+  const node = page.locator('[data-testid="archie-node"]').nth(expectedCount - 1)
+  const replicaIncrement = node.locator('[data-testid="replica-increment"]')
+  await expect(replicaIncrement).toBeVisible({ timeout: 5_000 })
+  await replicaIncrement.click()
+  // setNodeReplicaCount runs the recalc synchronously then ripples; give the ripple time to settle.
+  await page.waitForTimeout(500)
   await page.locator('[data-testid="canvas-panel"]').click({ position: { x: 10, y: 10 } })
   await expect(page.locator('[data-testid="inspector-panel"]')).toBeHidden({ timeout: 3_000 })
 }
@@ -374,7 +387,8 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
     // Baseline: all 18 components visible before filtering
-    const componentCards = page.locator('[data-testid^="component-card-"]')
+    // D23: toolbox renders type-block cards (type-block-<typeId>), not the old component-card-* grid.
+    const componentCards = page.locator('[data-testid^="type-block-"]')
     const totalBefore = await componentCards.count()
     expect(totalBefore, "Baseline should have at least 18 components").toBeGreaterThanOrEqual(EXPECTED_TOTAL_COMPONENTS)
 
@@ -389,11 +403,11 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
 
     // V6: assert specific component IDs (content correctness, not just count)
     await expect(
-      page.locator('[data-testid="component-card-prometheus"]'),
+      page.locator('[data-testid="type-block-prometheus"]'),
       "V6: prometheus should be visible under monitoring filter",
     ).toBeVisible({ timeout: 3_000 })
     await expect(
-      page.locator('[data-testid="component-card-siem"]'),
+      page.locator('[data-testid="type-block-siem"]'),
       "V6: siem should be visible under monitoring filter",
     ).toBeVisible({ timeout: 3_000 })
 
@@ -416,32 +430,32 @@ test.describe("Expanded Content E2E (Story 11-6)", () => {
     await expect(componentCards).toHaveCount(5, { timeout: 3_000 })
 
     // V6: assert specific known component IDs
-    const vectorDbCard = page.locator('[data-testid="component-card-vector-db"]')
+    const vectorDbCard = page.locator('[data-testid="type-block-vector-db"]')
     await vectorDbCard.scrollIntoViewIfNeeded()
     await expect(
       vectorDbCard,
       "V6: vector-db should be visible under data-storage filter",
     ).toBeVisible({ timeout: 3_000 })
-    const graphDbCard = page.locator('[data-testid="component-card-graph-db"]')
+    const graphDbCard = page.locator('[data-testid="type-block-graph-db"]')
     await graphDbCard.scrollIntoViewIfNeeded()
     await expect(
       graphDbCard,
       "V6: graph-db should be visible under data-storage filter",
     ).toBeVisible({ timeout: 3_000 })
 
-    const dataLakeCard = page.locator('[data-testid="component-card-data-lake"]')
+    const dataLakeCard = page.locator('[data-testid="type-block-data-lake"]')
     await dataLakeCard.scrollIntoViewIfNeeded()
     await expect(
       dataLakeCard,
       "V6: data-lake should be visible under data-storage filter",
     ).toBeVisible({ timeout: 3_000 })
-    const postgresCard = page.locator('[data-testid="component-card-postgresql"]')
+    const postgresCard = page.locator('[data-testid="type-block-postgresql"]')
     await postgresCard.scrollIntoViewIfNeeded()
     await expect(
       postgresCard,
       "V6: postgresql should be visible under data-storage filter",
     ).toBeVisible({ timeout: 3_000 })
-    const redisCard = page.locator('[data-testid="component-card-redis"]')
+    const redisCard = page.locator('[data-testid="type-block-redis"]')
     await redisCard.scrollIntoViewIfNeeded()
     await expect(
       redisCard,

@@ -6,6 +6,13 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    // Rate-limit guard: reject updates fired less than 1 second after the previous write.
+    // First write (create) is exempt. updatedAt is always pinned to request.time by every rule.
+    function notTooFast() {
+      return !('updatedAt' in resource.data)
+        || request.time > resource.data.updatedAt + duration.value(1, 's');
+    }
+
     // Component library collections — read-only for authenticated users
     match /components/{docId} {
       allow read: if isAuthenticated();
@@ -94,7 +101,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'expertEarned', 'generation', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'expertEarned', 'totalXp', 'generation', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200
@@ -113,10 +120,12 @@ service cloud.firestore {
         && (!('nickname' in request.resource.data) || request.resource.data.nickname is string)
         && (!('isTestAccount' in request.resource.data) || request.resource.data.isTestAccount is bool)
         && (!('expertEarned' in request.resource.data) || (request.resource.data.expertEarned is int && request.resource.data.expertEarned >= 0))
+        && (!('totalXp' in request.resource.data) || (request.resource.data.totalXp is int && request.resource.data.totalXp >= 0))
         && request.resource.data.updatedAt == request.time;
       allow update: if isAuthenticated()
         && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'expertEarned', 'generation', 'updatedAt'])
+        && notTooFast()
+        && request.resource.data.keys().hasOnly(['trackXp', 'completedChallenges', 'bestStarsCloud', 'equippedAvatar', 'hintsUnlocked', 'expertCurrency', 'breaksByChallenge', 'requiredFilterUnlocked', 'resilienceClears', 'breakMethods', 'unlockedVendors', 'unlockedTiers', 'starsSpentOnUnlocks', 'bonusStars', 'displayName', 'nickname', 'isTestAccount', 'expertEarned', 'totalXp', 'generation', 'updatedAt'])
         && request.resource.data.trackXp is map
         && request.resource.data.completedChallenges is list
         && request.resource.data.completedChallenges.size() <= 200
@@ -135,6 +144,7 @@ service cloud.firestore {
         && (!('nickname' in request.resource.data) || request.resource.data.nickname is string)
         && (!('isTestAccount' in request.resource.data) || request.resource.data.isTestAccount is bool)
         && (!('expertEarned' in request.resource.data) || (request.resource.data.expertEarned is int && request.resource.data.expertEarned >= 0))
+        && (!('totalXp' in request.resource.data) || (request.resource.data.totalXp is int && request.resource.data.totalXp >= 0))
         && request.resource.data.updatedAt == request.time;
       allow delete: if false;
     }
@@ -150,6 +160,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
       allow update: if isAuthenticated()
         && request.auth.uid == uid
+        && notTooFast()
         && request.resource.data.keys().hasOnly(['challenges', 'updatedAt'])
         && request.resource.data.challenges is list
         && request.resource.data.challenges.size() <= 100
@@ -169,6 +180,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
       allow update: if isAuthenticated()
         && request.auth.uid == uid
+        && notTooFast()
         && request.resource.data.keys().hasOnly(['defaults', 'updatedAt'])
         && request.resource.data.defaults is map
         && request.resource.data.updatedAt == request.time;
@@ -187,6 +199,7 @@ service cloud.firestore {
         && request.resource.data.updatedAt == request.time;
       allow update: if isAuthenticated()
         && request.auth.uid == uid
+        && notTooFast()
         && request.resource.data.keys().hasOnly(['slots', 'updatedAt'])
         && request.resource.data.slots is list
         && request.resource.data.slots.size() <= 2

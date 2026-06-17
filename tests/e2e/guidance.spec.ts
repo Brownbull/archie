@@ -30,8 +30,8 @@ test.describe("Live guidance: tour + build health (P6)", () => {
     // Empty canvas → the Get-started state guides, so the panel stays hidden.
     await expect(page.locator('[data-testid="build-health-panel"]')).toBeHidden()
 
-    // Add a component → live build-health guidance appears.
-    await page.locator('[data-testid^="add-to-canvas-"]').first().click()
+    // Add a component → live build-health guidance appears. (D23: add-type-* on type-block cards)
+    await page.locator('[data-testid^="add-type-"]').first().click()
     const panel = page.locator('[data-testid="build-health-panel"]')
     await expect(panel).toBeVisible({ timeout: 5_000 })
     await expect(page.locator('[data-testid="build-health-score"]')).toBeVisible()

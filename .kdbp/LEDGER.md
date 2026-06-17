@@ -5488,3 +5488,192 @@ PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P199
 ## 2026-06-11 — [owner] feat(challenges): D107 XP-only rankings + spend-display bug
 FINDINGS: the bug was LX1's ghost — the retired free-first perk lived on in totalHintsSpent's formula, eating the first star silently
 CHECKS: lint ✅ · types ✅ · tests ✅ (quick 5150/5150)
+
+## 2026-06-11 — PUSH dev -> main
+PR: — · CI: Deploy Production ✅ success · DEPLOYMENTS: P200
+- 2026-06-11 21:21 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-11 21:22 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-11 21:22 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-11 21:22 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-11 21:22 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-11 21:23 | Write | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+- 2026-06-11 21:23 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+- 2026-06-11 21:24 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+- 2026-06-11 21:24 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+- 2026-06-11 21:24 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+- 2026-06-11 21:24 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-11 21:25 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/seed-progress.ts
+- 2026-06-11 21:25 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/helpers/seed-progress.ts
+- 2026-06-11 21:27 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/layout/LeaderboardDialog.test.tsx
+- 2026-06-11 21:28 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+- 2026-06-11 21:28 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/LeaderboardDialog.tsx
+- 2026-06-11 21:28 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/LeaderboardDialog.test.tsx
+- 2026-06-11 21:28 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/layout/LeaderboardDialog.test.tsx
+- 2026-06-11 21:33 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+- 2026-06-12 09:23 | Edit | /home/khujta/projects/bmad/archie/.env.local
+- 2026-06-12 10:13 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-12 10:14 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-12 10:14 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-12 10:14 | Write | /home/khujta/projects/bmad/archie/src/lib/writeThrottle.ts
+- 2026-06-12 10:14 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:15 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:16 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:16 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:16 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:16 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:16 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 10:16 | Edit | /home/khujta/projects/bmad/archie/src/stores/userCanvasesStore.ts
+- 2026-06-12 10:16 | Edit | /home/khujta/projects/bmad/archie/src/stores/userCanvasesStore.ts
+- 2026-06-12 10:17 | Edit | /home/khujta/projects/bmad/archie/src/stores/userCanvasesStore.ts
+- 2026-06-12 10:17 | Edit | /home/khujta/projects/bmad/archie/src/stores/userBlockDefaultsStore.ts
+- 2026-06-12 10:19 | Edit | /home/khujta/projects/bmad/archie/src/stores/userBlockDefaultsStore.ts
+- 2026-06-12 10:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userBlockDefaultsStore.test.ts
+- 2026-06-12 10:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userCanvasesStore.test.ts
+- 2026-06-12 10:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useBreakCollection.test.ts
+- 2026-06-12 10:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/hooks/useResilienceClears.test.ts
+- 2026-06-12 10:22 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/HintPanel.test.tsx
+- 2026-06-12 10:24 | Edit | /home/khujta/projects/bmad/archie/tests/unit/stores/userProgressStore.test.ts
+- 2026-06-12 10:55 | Write | /home/khujta/projects/bmad/archie/src/services/refDataCache.ts
+- 2026-06-12 10:56 | Write | /home/khujta/projects/bmad/archie/src/services/componentLibrary.ts
+- 2026-06-12 10:56 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-06-12 10:56 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-06-12 10:56 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/componentLibrary.test.ts
+- 2026-06-12 10:57 | Write | /home/khujta/projects/bmad/archie/tests/unit/services/refDataCache.test.ts
+- 2026-06-12 10:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/componentLibrary.test.ts
+- 2026-06-12 10:57 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/refDataCache.test.ts
+- 2026-06-12 10:58 | Edit | /home/khujta/projects/bmad/archie/tests/unit/scripts/seed-firestore.test.ts
+- 2026-06-12 10:58 | Edit | /home/khujta/projects/bmad/archie/tests/unit/scripts/seed-firestore.test.ts
+- 2026-06-12 10:58 | Edit | /home/khujta/projects/bmad/archie/tests/unit/scripts/seed-firestore.test.ts
+- 2026-06-12 10:59 | Edit | /home/khujta/projects/bmad/archie/tests/unit/scripts/seed-firestore.test.ts
+- 2026-06-12 10:59 | Edit | /home/khujta/projects/bmad/archie/scripts/seed-firestore.ts
+- 2026-06-12 12:14 | Write | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 12:14 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-12 12:14 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-12 12:14 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-12 12:15 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/ChallengeHud.tsx
+- 2026-06-12 12:15 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/challenges/ChallengeHud.test.tsx
+- 2026-06-12 12:33 | Edit | /home/khujta/projects/bmad/archie/src/engine/breakDetection.ts
+- 2026-06-12 12:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 12:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 12:33 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 12:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/breakDetection.test.ts
+- 2026-06-12 12:34 | Edit | /home/khujta/projects/bmad/archie/tests/unit/engine/breakDetection.test.ts
+- 2026-06-12 12:41 | Edit | /home/khujta/projects/bmad/archie/firebase.json
+- 2026-06-12 12:41 | Edit | /home/khujta/projects/bmad/archie/firebase.json
+- 2026-06-12 12:47 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/SpotlightTour.tsx
+- 2026-06-12 12:51 | Write | /home/khujta/projects/bmad/archie/src/components/onboarding/SpotlightTour.tsx
+- 2026-06-12 12:52 | Write | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 12:58 | Write | /home/khujta/projects/bmad/archie/src/components/onboarding/SpotlightTour.tsx
+- 2026-06-12 12:59 | Write | /home/khujta/projects/bmad/archie/src/components/onboarding/SpotlightTour.tsx
+- 2026-06-12 12:59 | Write | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:05 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/SpotlightTour.tsx
+- 2026-06-12 13:05 | Edit | /home/khujta/projects/bmad/archie/src/components/onboarding/SpotlightTour.tsx
+- 2026-06-12 13:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:05 | Edit | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:12 | Edit | /home/khujta/projects/bmad/archie/src/components/help/PanelInfoButton.tsx
+- 2026-06-12 13:13 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/SettingsMenu.tsx
+- 2026-06-12 13:13 | Edit | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:13 | Edit | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:13 | Edit | /home/khujta/projects/bmad/archie/src/lib/questGuides.ts
+- 2026-06-12 13:27 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 13:27 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 13:27 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 13:27 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 13:27 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakItPanel.tsx
+- 2026-06-12 13:34 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakRegistryPanel.tsx
+- 2026-06-12 13:34 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/BreakRegistryPanel.tsx
+- 2026-06-12 13:41 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 13:42 | Edit | /home/khujta/projects/bmad/archie/src/stores/userProgressStore.ts
+- 2026-06-12 13:42 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-12 13:42 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-12 13:42 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-12 13:42 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-12 13:42 | Edit | /home/khujta/projects/bmad/archie/src/components/challenges/MasteryProfilePanel.tsx
+- 2026-06-12 13:43 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-12 13:43 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-12 13:43 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-12 13:43 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-12 13:43 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-15 09:11 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-15 09:11 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-15 09:11 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-15 09:12 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/LoginPage.tsx
+- 2026-06-15 09:12 | Write | /home/khujta/projects/bmad/archie/scripts/seed-qa-user.ts
+- 2026-06-15 09:12 | Write | /home/khujta/projects/bmad/archie/docs/qa-login.md
+- 2026-06-15 09:14 | Write | /tmp/archie-qa-user.json
+- 2026-06-15 09:15 | Write | /home/khujta/projects/khujta_eyes/apps-docs/archie/credentials.json
+- 2026-06-15 09:16 | Edit | /home/khujta/projects/khujta_eyes/apps-docs/archie/discover-config.archie.md
+- 2026-06-15 09:17 | Edit | /home/khujta/projects/khujta_eyes/apps-docs/archie/discover-config.archie.md
+- 2026-06-15 09:17 | Edit | /home/khujta/projects/khujta_eyes/apps-docs/archie/discover-config.archie.md
+- 2026-06-15 12:34 | Write | /home/khujta/projects/bmad/archie/scripts/seed-unlocked-qa-user.ts
+- 2026-06-15 12:34 | Edit | /home/khujta/projects/bmad/archie/.env.local
+- 2026-06-15 12:35 | Edit | /home/khujta/projects/bmad/archie/docs/qa-login.md
+- 2026-06-15 12:35 | Edit | /home/khujta/projects/bmad/archie/docs/qa-login.md
+- 2026-06-15 12:35 | Edit | /home/khujta/projects/khujta_eyes/apps-docs/archie/credentials.json
+- 2026-06-15 12:35 | Edit | /home/khujta/projects/khujta_eyes/apps-docs/archie/discover-config.archie.md
+- 2026-06-15 18:45 | Write | /tmp/repro-b1.mjs
+- 2026-06-15 18:46 | Edit | /home/khujta/projects/bmad/archie/src/services/yamlImporter.ts
+- 2026-06-15 18:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter.test.ts
+- 2026-06-15 18:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter-adversarial.test.ts
+- 2026-06-15 18:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter-v4-migration.test.ts
+- 2026-06-15 18:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter-v2-migration.test.ts
+- 2026-06-15 18:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter-constraints.test.ts
+- 2026-06-15 18:48 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter-v3-migration.test.ts
+- 2026-06-15 18:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter.test.ts
+- 2026-06-15 18:49 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter.test.ts
+- 2026-06-15 18:50 | Edit | /home/khujta/projects/bmad/archie/tests/unit/services/yamlImporter.test.ts
+- 2026-06-15 18:52 | Write | /home/khujta/projects/bmad/archie/scripts/gen-prompt-template.ts
+- 2026-06-15 18:52 | Edit | /home/khujta/projects/bmad/archie/scripts/gen-prompt-template.ts
+- 2026-06-15 18:53 | Write | /home/khujta/projects/bmad/archie/tests/unit/scripts/prompt-template-drift.test.ts
+
+## 2026-06-15 19:00 — PLAN CREATED: Kane QA remediation (verified findings)
+PHASES: 4 | COMPLEXITY: mixed (low/high/med/med) | MATURITY: enterprise
+TIERS: mvp × 0, ent × 4, scale × 0 | PROTOTYPES: 0
+DECISIONS: D108 → D111 (4 phase tier decisions logged)
+PRE-DONE: B1 import init-race fix + B2 prompt-template auto-gen (landed this session, tests green)
+HTML_ARTIFACT: none
+
+## 2026-06-15 22:04 — [80d8a6f] feat(import): fix init race + auto-gen prompt template (B1/B2)
+FINDINGS: lint baseline (19 pre-existing, none new) | types ✅ | tests ✅ 5180/5180 | structure ✅
+SCOPE: B1/B2 + accumulated break-it/QA-login/refData work (owner: commit together)
+PHASE: 1 (Commit ticked)
+- 2026-06-15 22:27 | Write | /home/khujta/projects/bmad/archie/public/robots.txt
+- 2026-06-15 22:27 | Write | /home/khujta/projects/bmad/archie/public/robots.txt
+- 2026-06-15 22:27 | Write | /home/khujta/projects/bmad/archie/public/llms.txt
+- 2026-06-15 22:30 | Edit | /home/khujta/projects/bmad/archie/src/index.css
+- 2026-06-15 22:30 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/TestConditionsPanel.tsx
+- 2026-06-15 22:32 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-15 22:32 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-15 22:33 | Edit | /home/khujta/projects/bmad/archie/src/stores/preferencesStore.ts
+- 2026-06-15 22:33 | Write | /home/khujta/projects/bmad/archie/src/components/canvas/FirstRunFork.tsx
+- 2026-06-15 22:33 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:34 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:34 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:34 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/EmptyCanvasState.tsx
+- 2026-06-15 22:35 | Write | /home/khujta/projects/bmad/archie/src/lib/scoreGlosses.ts
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:35 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/AggregateScore.tsx
+- 2026-06-15 22:36 | Edit | /home/khujta/projects/bmad/archie/src/components/dashboard/DashboardPanel.tsx
+- 2026-06-15 22:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-06-15 22:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-06-15 22:37 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/EmptyCanvasState.test.tsx
+- 2026-06-15 22:38 | Write | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/FirstRunFork.test.tsx
+- 2026-06-15 22:38 | Write | /home/khujta/projects/bmad/archie/tests/unit/lib/scoreGlosses.test.ts
+- 2026-06-15 22:40 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-06-15 22:41 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/canvas/CanvasView.test.tsx
+- 2026-06-15 22:44 | Edit | /home/khujta/projects/bmad/archie/src/components/simulation/SimulationStatsSidePanel.tsx
+- 2026-06-15 22:44 | Write | /home/khujta/projects/bmad/archie/docs/gabe/design/beginner-chrome-reduction.md
+
+## 2026-06-15 22:50 — [26c97c9] feat(onboarding): S1/M4/M5/C4/C5 (Phases 2-4)
+FINDINGS: build ✅ | tests ✅ 5190/5190 | structure ✅ | lint baseline (pre-existing)
+PHASES: 2,3,4 Exec=✅ Commit=✅ | S1b deferred → D36
+SCOPE: FirstRunFork + scoreGlosses + M4 contrast tokens + robots/llms.txt + M5 hint + S1b research

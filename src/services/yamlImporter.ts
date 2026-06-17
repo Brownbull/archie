@@ -81,6 +81,20 @@ export async function importYaml(file: File): Promise<ImportResult> {
 
   importInProgress = true
   try {
+    // Step 0: Ensure the component library is populated BEFORE any getComponent() lookup.
+    // getComponent() is a synchronous read of a map hydrated async from Firestore — importing
+    // before initialize() resolves makes every lookup return undefined, turning all nodes into
+    // unknown-component placeholders (B1: the cold-load import race). initialize() is idempotent
+    // and returns the in-flight promise, so this is a no-op once the library is ready.
+    try {
+      await componentLibrary.initialize()
+    } catch {
+      return {
+        success: false,
+        errors: [{ code: "LIBRARY_UNAVAILABLE", message: "Component library is still loading. Please try again in a moment." }],
+      }
+    }
+
     // Step 1: File size check
     if (file.size > MAX_FILE_SIZE) {
       return {

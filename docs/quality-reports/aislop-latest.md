@@ -1,17 +1,17 @@
 # aislop Quality Report
 
-**Date:** 20260611-205820
-**Score:** 10/100 (Critical)
+**Date:** 20260615-230931
+**Score:** 9/100 (Critical)
 **Scan:** `aislop scan --staged`
 
 ## Engine Summary
 
 | Engine | Issues | Time |
 |--------|--------|------|
-| lint | 53 | 550ms |
-| code-quality | 82 | 4142ms |
-| ai-slop | 0 | 14ms |
-| security | 11 | 2072ms |
+| lint | 54 | 388ms |
+| code-quality | 82 | 4059ms |
+| ai-slop | 0 | 10ms |
+| security | 18 | 3184ms |
 
 ## Findings
 
@@ -21,6 +21,8 @@
 - [!] `package.json:43` — knip/dependencies: Unused dependency: tailwindcss
 - [!] `package.json:71` — knip/devDependencies: Unused devDependency: shadcn
 - [!] `package.json:73` — knip/devDependencies: Unused devDependency: tw-animate-css
+- [!!!] `scripts/seed-qa-user.ts:19` — knip/unlisted: Unlisted dependency: dotenv
+- [!!!] `scripts/seed-unlocked-qa-user.ts:21` — knip/unlisted: Unlisted dependency: dotenv
 - [!!!] `tests/e2e/challenge-validation.spec.ts:92` — knip/unresolved: Unresolved import: /src/services/challengeLoader
 - [!!!] `tests/e2e/challenge-validation.spec.ts:93` — knip/unresolved: Unresolved import: /src/stores/challengeStore
 - [!!!] `tests/e2e/challenge-validation.spec.ts:94` — knip/unresolved: Unresolved import: /src/stores/userProgressStore
@@ -88,25 +90,25 @@
 - [!] `src/lib/challengeTracks.ts:10` — knip/types: Unused type: ChallengeTrack
 - [!] `src/lib/challengeTracks.ts:66` — knip/types: Unused type: MasteryRank
 - [!] `src/lib/metricTone.ts:13` — knip/types: Unused type: MetricTone
-- [!] `src/stores/userBlockDefaultsStore.ts:17` — knip/types: Unused type: BlockDefault
-- [!] `src/stores/userCanvasesStore.ts:22` — knip/types: Unused type: CanvasSlot
-- [!] `src/stores/userCanvasesStore.ts:28` — knip/types: Unused type: CanvasSlots
+- [!] `src/stores/userBlockDefaultsStore.ts:18` — knip/types: Unused type: BlockDefault
+- [!] `src/stores/userCanvasesStore.ts:23` — knip/types: Unused type: CanvasSlot
+- [!] `src/stores/userCanvasesStore.ts:29` — knip/types: Unused type: CanvasSlots
 - [!] `src/services/challengeAutosave.ts:5` — knip/types: Unused type: SavedChallenge
 - [!] `src/hooks/usePoolExhaustionWay.ts:9` — knip/types: Unused type: MechanicWayOutcome
 - [!] `src/lib/equipmentSlots.ts:3` — knip/types: Unused type: EquipmentSlot
 - [!] `src/components/common/DataSourceNote.tsx:4` — knip/types: Unused type: DataSourceKind
-- [!] `src/components/layout/LeaderboardDialog.tsx:30` — complexity/function-too-long: Function 'LeaderboardDialog' has 125 lines (max: 80)
-- [!] `src/hooks/useBreakCollection.ts:44` — complexity/function-too-long: Function 'useBreakCollection' has 106 lines (max: 80)
-- [!] `src/hooks/useBreakCollection.ts:44` — complexity/deep-nesting: Function 'useBreakCollection' has nesting depth 7 (max: 5)
-- [!] `src/hooks/useResilienceClears.ts:27` — complexity/deep-nesting: Function 'useResilienceClears' has nesting depth 6 (max: 5)
+- [!] `src/components/dashboard/DashboardOverlay.tsx:44` — complexity/function-too-long: Function 'DashboardOverlay' has 292 lines (max: 80)
+- [!] `src/components/dashboard/TierBadge.tsx:14` — complexity/function-too-long: Function 'TierBadge' has 91 lines (max: 80)
 
-### lint (53)
+### lint (54)
 
+- [!] `src/components/dashboard/DashboardOverlay.tsx:272` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `tests/integration/challenges/referenceSolution.ts:8` — eslint/no-unused-vars: Identifier 'computeTotalArchitectureCost' is imported but never used.
-- [!] `src/components/challenges/ChallengeTreeView.tsx:2` — import/no-duplicates: Module 'lucide-react' is imported more than once in this file
 - [!] `src/components/canvas/ArchieNode.tsx:9` — import/no-duplicates: Module '@/lib/constants' is imported more than once in this file
 - [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/ArchieNode.tsx:391` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/services/yamlImporter.ts:153` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
+- [!] `src/components/challenges/ChallengeTreeView.tsx:2` — import/no-duplicates: Module 'lucide-react' is imported more than once in this file
 - [!] `src/components/challenges/ChallengeEditor.tsx:113` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:178` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:320` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
@@ -119,54 +121,60 @@
 - [!] `src/components/challenges/ChallengeEditor.tsx:379` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:386` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `src/components/challenges/ChallengeEditor.tsx:390` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
+- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `src/components/canvas/NodeProviderSelect.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
 - [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/NodeProviderSelect.tsx:94` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
-- [!] `src/components/canvas/NodeConfigSelect.tsx:76` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/dashboard/DashboardOverlay.tsx:272` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/TrafficNodeControls.tsx:123` — jsx-a11y/no-autofocus: The `autoFocus` attribute is found here, which can cause usability issues for sighted and non-sighted users.
 - [!] `src/components/canvas/TrafficNodeControls.tsx:85` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `src/components/onboarding/SpotlightTour.tsx:55` — react-hooks/exhaustive-deps: React Hook useLayoutEffect has a complex expression in the dependency array.
+- [!] `src/components/onboarding/SpotlightTour.tsx:42` — react-hooks/exhaustive-deps: React Hook useLayoutEffect has missing dependencies: 'selectors', and 'selectors.length'
 - [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/canvas/TrafficPatternSelect.tsx:26` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/services/yamlImporter.ts:139` — eslint/no-unused-vars: Catch parameter '_err' is caught but never used.
-- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `tests/unit/components/canvas/ObjectActionToolbar.test.tsx:35` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `tests/e2e/helpers/canvas-helpers.ts:27` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
-- [!] `src/components/dashboard/CategoryBar.tsx:53` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
 - [!] `tests/unit/services/yamlImporter-v3-migration.test.ts:4` — eslint/no-unused-vars: Identifier 'setPortResolver' is imported but never used.
+- [!] `src/components/inspector/ConfigSelector.tsx:24` — jsx-a11y/label-has-associated-control: A form label must be associated with a control.
+- [!] `src/components/dashboard/CategoryBar.tsx:53` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
+- [!] `tests/e2e/helpers/canvas-helpers.ts:27` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 - [!] `src/components/inspector/FitIndicator.tsx:55` — jsx-a11y/prefer-tag-over-role: Prefer `button` over `role` attribute `button`.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/inspector/MetricBar.tsx:25` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/challenges/MasteryProfilePanel.tsx:1` — import/no-duplicates: Module 'react' is imported more than once in this file
+- [!] `src/components/challenges/BreakRegistryPanel.tsx:35` — react-hooks/exhaustive-deps: React Hook useMemo has missing dependencies: 'nodes', and 'edges'
 - [!] `src/components/layout/AppMenuBar.tsx:51` — jsx-a11y/click-events-have-key-events: Enforce a clickable non-interactive element has at least one keyboard event listener.
 - [!] `src/components/layout/AppMenuBar.tsx:51` — jsx-a11y/no-static-element-interactions: Static HTML elements with event handlers require a role.
-- [!] `src/components/challenges/BreakRegistryPanel.tsx:35` — react-hooks/exhaustive-deps: React Hook useMemo has missing dependencies: 'nodes', and 'edges'
 - [!] `tests/e2e/status-dot-and-swap-popover.spec.ts:143` — eslint/no-unused-vars: Variable 'node' is declared but never used. Unused variables should start with a '_'.
-- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
-- [!] `tests/unit/engine/monitoringFeedback.test.ts:2` — eslint/no-unused-vars: Identifier 'simulateTick' is imported but never used.
 - [!] `tests/unit/stores/architectureStore.test.ts:1` — eslint/no-unused-vars: Identifier 'afterEach' is imported but never used.
+- [!] `tests/unit/engine/monitoringFeedback.test.ts:2` — eslint/no-unused-vars: Identifier 'simulateTick' is imported but never used.
+- [!] `tests/integration/data-context-flow.test.ts:4` — eslint/no-unused-vars: Type 'FitLevel' is imported but never used.
 - [!] `tests/unit/hooks/useChallengeCoach.test.ts:6` — eslint/no-unused-vars: Identifier 'COMPONENT_CATEGORIES' is imported but never used.
 - [!] `tests/unit/schemas/portDefinition.test.ts:31` — eslint/no-unused-vars: Variable 'key' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/unit/engine/simulationEngine.test.ts:3` — import/no-duplicates: Modules should not be imported multiple times in the same file
-- [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/export-report.spec.ts:5` — eslint/no-unused-vars: Identifier 'waitForBlueprints' is imported but never used.
-- [!] `tests/e2e/global-setup.ts:21` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
+- [!] `tests/e2e/port-handles.spec.ts:66` — eslint/no-unused-vars: Variable 'expressPortHandles' is declared but never used. Unused variables should start with a '_'.
 - [!] `tests/e2e/unlocked-setup.ts:32` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
+- [!] `tests/e2e/global-setup.ts:21` — unicorn/no-useless-fallback-in-spread: Empty fallbacks in spreads are unnecessary
 
-### security (11)
+### security (18)
 
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @babel/core (low)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/firestore (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @google-cloud/storage (moderate)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): @grpc/grpc-js (high)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): esbuild (high)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): firebase-admin (moderate)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): form-data (high)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): gaxios (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): google-gax (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): js-yaml (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): protobufjs (moderate)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): react-router (high)
 - [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): react-router-dom (high)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): retry-request (moderate)
+- [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): tar (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): teeny-request (moderate)
 - [!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): uuid (moderate)
+- [!!!] `package.json:0` — security/vulnerable-dependency: Vulnerable dependency (npm audit): vite (high)
 

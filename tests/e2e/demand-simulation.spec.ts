@@ -396,7 +396,19 @@ test.describe("Failure Scenario E2E (Story 9-7)", () => {
     const failureSelector = page.locator('[data-testid="failure-selector"]')
     await expect(failureSelector).toBeVisible({ timeout: 5_000 })
 
-    // Capture baseline
+    // Settle to the canonical baseline BEFORE capturing it. addComponentWithMetrics populates
+    // computedMetrics one node at a time (each config change recalcs only that node — there are no
+    // edges, so the propagator's BFS never re-touches the others). That staggered population leaves
+    // the aggregate in a TRANSIENT state. setActiveFailureScenario, by contrast, recalcs EVERY node,
+    // collapsing the architecture to its stable, fully-recomputed score. The invariant AC-4 asserts is
+    // "clearing a failure restores whatever the score was the instant before the failure" — so the
+    // baseline must be read AFTER a full-node recalc, not from the transient. One apply+clear cycle
+    // forces that full recalc; the score is then deterministic and clearing restores it exactly.
+    await selectFailureScenario(page, "Database Failure")
+    await selectFailureScenario(page, "No Failure")
+    await expect(page.locator('[data-testid="failure-banner"]')).toBeHidden({ timeout: 3_000 })
+
+    // Capture baseline (now the canonical settled state)
     const baselineScore = await getDashboardScore(page)
     const baselinePostgres = await getNodeHeatmapStatus(page, "PostgreSQL")
 

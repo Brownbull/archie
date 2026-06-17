@@ -1604,3 +1604,86 @@ Calibration landed with ONE deviation from Table 3: **postgresql.synchronous-rep
 **Owner (supersedes D106's dual-ledger):** rankings read EXPERIENCE alone. Every Expert earned through play grants EXPERT_XP (50) onto its quest's track at the single pay-point (collectBreakMethod + trackId); stars already pay quest XP. Spends only lower wallets; future purchased packs add wallet currency and zero XP — the ranking is purchase-proof by construction with ONE axis, so the expertEarned ledger is retired (field stops being written/read; rules keep it harmlessly). Leaderboard: XP desc, equal-XP shares a rank (competition), alphabetical within; 3★ stays as a display column.
 **Also fixed (the owner's bug report):** totalHintsSpent still applied LX1's retired free-first discount (`count − 1`) — star spends were invisible in the top bar. Every unlocked hint now counts as spent.
 **Status:** active
+
+## D108 — Phase 1 tier: ent (2026-06-15)
+
+**Phase:** Redeploy + re-verify the stale-build items
+**Types:** user-facing, deployment
+**Tier chosen:** ent
+**Prototype:** no
+**Reason:** Production deploy + journey re-verification of user-facing surfaces (leaderboard, tour, import) — enterprise maturity demands runtime evidence on the real build, not a cheap MVP smoke test. Kane's findings were against a stale deploy; shipping HEAD must be proven, not assumed.
+
+### Sections rendered
+- Core (always)
+- Client-state: progress/leaderboard/tour persistence surfaces
+
+### Δ deferred by tier choice
+- none material — this is a deploy + verify phase
+
+### Review trigger (when to escalate this phase)
+- N/A (one-time remediation deploy)
+
+### Status
+- accepted
+
+## D109 — Phase 2 tier: ent (2026-06-15)
+
+**Phase:** Novice on-ramp (S1 keystone)
+**Types:** user-facing, client-state
+**Tier chosen:** ent
+**Prototype:** no
+**Reason:** The keystone UX fix for the owner-confirmed public-novice audience. First-run routing + persisted preference + score legibility is real product surface, not a throwaway — needs edge coverage (returning user, both branches, unauth) and journey evidence, i.e. enterprise, not MVP.
+
+### Sections rendered
+- Core (always)
+- Client-state: first-run flag + mode persistence
+
+### Δ deferred by tier choice
+- Scale-tier polish (A/B-tested copy, analytics on fork choice) deferred — revisit if conversion matters
+
+### Review trigger (when to escalate this phase)
+- When novice activation/retention becomes a measured metric worth optimizing
+
+### Status
+- accepted
+
+## D110 — Phase 3 tier: ent (2026-06-15)
+
+**Phase:** Accessibility & discoverability
+**Types:** user-facing, web
+**Tier chosen:** ent
+**Prototype:** no
+**Reason:** WCAG-AA compliance for a public-facing app is an enterprise-grade obligation (legal/UX), not an MVP nicety; the contrast failures are measured + verified. robots.txt/llms.txt are cheap correctness wins that ride along.
+
+### Sections rendered
+- Core (always)
+- Client-state: theme tokens
+
+### Δ deferred by tier choice
+- Full a11y audit (screen-reader journey, keyboard-nav sweep) deferred to a dedicated pass — this phase fixes the named, measured failures only
+
+### Review trigger (when to escalate this phase)
+- When a full WCAG audit / VPAT is required (e.g., enterprise customer, accessibility complaint)
+
+### Status
+- accepted
+
+## D111 — Phase 4 tier: ent (2026-06-15)
+
+**Phase:** Polish & research
+**Types:** user-facing
+**Tier chosen:** ent
+**Prototype:** no
+**Reason:** S1b is design-gated (research doc before any build) precisely to avoid re-opening settled Beginner-mode work at the wrong tier; M5 is a one-line discoverability hint over an intentional design. Enterprise = "decide before you build," which is the whole point of the research gate here.
+
+### Sections rendered
+- Core (always)
+
+### Δ deferred by tier choice
+- S1b implementation itself is conditional on the research verdict — explicitly NOT committed at plan time
+
+### Review trigger (when to escalate this phase)
+- If novice testing post-S1 still shows density complaints, escalate S1b from research to build
+
+### Status
+- accepted

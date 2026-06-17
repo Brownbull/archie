@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { CanvasView } from "@/components/canvas/CanvasView"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { usePreferencesStore } from "@/stores/preferencesStore"
 import { componentLibrary } from "@/services/componentLibrary"
 import { resolveStackPlacement } from "@/services/stackPlacement"
 import { CANVAS_FIT_PADDING } from "@/lib/constants"
@@ -118,6 +119,8 @@ describe("CanvasView", () => {
     vi.resetAllMocks()
     useArchitectureStore.setState({ nodes: [], edges: [] })
     useUiStore.setState({ selectedNodeId: null, selectedEdgeId: null })
+    // S1: the empty-canvas suggestion list only renders after the first-run fork is answered.
+    usePreferencesStore.setState({ firstRunChoice: "free" })
   })
 
   it("renders canvas-panel testid", () => {

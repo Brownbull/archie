@@ -3,12 +3,18 @@ import {
   waitForComponentLibrary,
   addComponentToCanvas,
   selectNodeOnCanvas,
+  useAdvancedLevel,
+  expandInspectorSection,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/inspector-responsiveness"
 
 /**
  * Shared setup: navigate, wait for library, place one component, select it.
+ *
+ * Runs at the "advanced" experience level (seeded via useAdvancedLevel in beforeEach, before goto):
+ * the inspector's progressive-disclosure sections (gains/costs/metrics/code) only render at advanced —
+ * the default "beginner" level hides them entirely (ComponentDetail showTradeoffs/showTechnical gates).
  */
 async function setupInspector(page: Page): Promise<boolean> {
   await page.goto("/")
@@ -67,6 +73,12 @@ async function assertConsistentBarWidths(page: Page) {
 }
 
 test.describe("Inspector Responsiveness E2E", () => {
+  // The inspector's gains/costs/metrics/code sections are gated behind the "advanced" experience
+  // level (default is "beginner", which hides them). Seed advanced BEFORE goto on every test.
+  test.beforeEach(async ({ page }) => {
+    await useAdvancedLevel(page)
+  })
+
   // -------------------------------------------------------------------------
   // Default sidebar view (300px)
   // -------------------------------------------------------------------------
@@ -91,10 +103,12 @@ test.describe("Inspector Responsiveness E2E", () => {
 
     const inspector = page.locator('[data-testid="inspector"]')
 
-    // Scroll to metrics section
-    const metricsHeading = page.locator('[data-testid="inspector-panel"] h3', { hasText: "Metrics" })
-    await expect(metricsHeading).toBeVisible({ timeout: 5_000 })
-    await metricsHeading.scrollIntoViewIfNeeded()
+    // Metrics is a collapse-by-default disclosure (P3) — the "Metrics" heading is the disclosure
+    // trigger, not an h3. Expand it so the metric bars below are visible/measurable.
+    const metricsDisclosure = page.locator('[data-testid="disclosure-metrics"]')
+    await expect(metricsDisclosure).toBeVisible({ timeout: 5_000 })
+    await metricsDisclosure.scrollIntoViewIfNeeded()
+    await expandInspectorSection(page, "disclosure-metrics")
 
     // Check metric bars: each should have visible value text and fit horizontally
     const metricBars = page.locator('[data-testid="metric-bar"]')
@@ -131,10 +145,11 @@ test.describe("Inspector Responsiveness E2E", () => {
     const hasComponents = await setupInspector(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Scroll to metrics
-    const metricsHeading = page.locator('[data-testid="inspector-panel"] h3', { hasText: "Metrics" })
-    await expect(metricsHeading).toBeVisible({ timeout: 5_000 })
-    await metricsHeading.scrollIntoViewIfNeeded()
+    // Metrics is a collapse-by-default disclosure (P3) — expand it before measuring bar tracks.
+    const metricsDisclosure = page.locator('[data-testid="disclosure-metrics"]')
+    await expect(metricsDisclosure).toBeVisible({ timeout: 5_000 })
+    await metricsDisclosure.scrollIntoViewIfNeeded()
+    await expandInspectorSection(page, "disclosure-metrics")
 
     await assertConsistentBarWidths(page)
 
@@ -146,13 +161,15 @@ test.describe("Inspector Responsiveness E2E", () => {
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
     const inspector = page.locator('[data-testid="inspector"]')
-    const inspectorPanel = page.locator('[data-testid="inspector-panel"]')
 
-    // Check Gains section
-    const gainsHeading = inspectorPanel.locator("h3", { hasText: "Gains" })
-    if (await gainsHeading.isVisible()) {
-      await gainsHeading.scrollIntoViewIfNeeded()
-      const gainItems = gainsHeading.locator("..").locator("li")
+    // Gains/Costs are collapse-by-default disclosures (P3): the headings are disclosure triggers
+    // (disclosure-gains / disclosure-costs) and the list items live in the *-content collapsible.
+    // Expand each, then assert each <li> wraps within the inspector width.
+    const gainsTrigger = page.locator('[data-testid="disclosure-gains"]')
+    if (await gainsTrigger.isVisible()) {
+      await gainsTrigger.scrollIntoViewIfNeeded()
+      await expandInspectorSection(page, "disclosure-gains")
+      const gainItems = page.locator('[data-testid="disclosure-gains-content"] li')
       const gainCount = await gainItems.count()
       for (let i = 0; i < Math.min(gainCount, 3); i++) {
         await gainItems.nth(i).scrollIntoViewIfNeeded()
@@ -164,10 +181,11 @@ test.describe("Inspector Responsiveness E2E", () => {
     }
 
     // Check Costs section
-    const costsHeading = inspectorPanel.locator("h3", { hasText: "Costs" })
-    if (await costsHeading.isVisible()) {
-      await costsHeading.scrollIntoViewIfNeeded()
-      const costItems = costsHeading.locator("..").locator("li")
+    const costsTrigger = page.locator('[data-testid="disclosure-costs"]')
+    if (await costsTrigger.isVisible()) {
+      await costsTrigger.scrollIntoViewIfNeeded()
+      await expandInspectorSection(page, "disclosure-costs")
+      const costItems = page.locator('[data-testid="disclosure-costs-content"] li')
       const costCount = await costItems.count()
       for (let i = 0; i < Math.min(costCount, 3); i++) {
         await costItems.nth(i).scrollIntoViewIfNeeded()
@@ -196,10 +214,11 @@ test.describe("Inspector Responsiveness E2E", () => {
     // Fluidity P1: the config dropdown is on the canvas block now, not inside the inspector aside,
     // so the in-panel config-fit check is dropped. Metric-bar consistency below still applies.
 
-    // Scroll to metrics and check bar widths
-    const metricsHeading = page.locator('[data-testid="inspector-panel"] h3', { hasText: "Metrics" })
-    await expect(metricsHeading).toBeVisible({ timeout: 5_000 })
-    await metricsHeading.scrollIntoViewIfNeeded()
+    // Metrics is a collapse-by-default disclosure (P3) — expand it before measuring bar tracks.
+    const metricsDisclosure = page.locator('[data-testid="disclosure-metrics"]')
+    await expect(metricsDisclosure).toBeVisible({ timeout: 5_000 })
+    await metricsDisclosure.scrollIntoViewIfNeeded()
+    await expandInspectorSection(page, "disclosure-metrics")
 
     await assertConsistentBarWidths(page)
 
@@ -222,10 +241,15 @@ test.describe("Inspector Responsiveness E2E", () => {
     // so an overlay-scoped config-fit check no longer makes sense (the control isn't in the overlay).
     // The overlay-content regression coverage now rests on the metric-bar consistency check below.
 
-    // Scroll to metrics and check bar consistency
-    const metricsHeading = overlay.locator("h3", { hasText: "Metrics" })
-    if (await metricsHeading.isVisible()) {
-      await metricsHeading.scrollIntoViewIfNeeded()
+    // Metrics is a collapse-by-default disclosure (P3): the "Metrics" heading is the disclosure
+    // trigger, not an h3. Scope to the overlay (the aside InspectorPanel is also mounted, so the
+    // trigger exists twice) and expand it before measuring bar tracks.
+    const metricsTrigger = overlay.locator('[data-testid="disclosure-metrics"]')
+    if (await metricsTrigger.isVisible()) {
+      await metricsTrigger.scrollIntoViewIfNeeded()
+      if ((await metricsTrigger.getAttribute("aria-expanded")) === "false") {
+        await metricsTrigger.click()
+      }
       await assertConsistentBarWidths(page)
     }
 

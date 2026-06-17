@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { renderHook, waitFor } from "@testing-library/react"
 
+vi.mock("@/lib/writeThrottle", () => ({ canWrite: () => true }))
 vi.mock("@/lib/firebase", () => ({ db: {}, auth: { currentUser: null } }))
 vi.mock("firebase/firestore", () => ({
   increment: vi.fn((n: number) => ({ __increment: n })),

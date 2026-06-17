@@ -59,7 +59,7 @@ async function measureFontSizes(page: Page) {
     return {
       body: parseFloat(getComputedStyle(document.body).fontSize),
       toolbar: measure('[data-testid="toolbar"] span'),
-      toolboxCard: measure('[data-testid^="component-card-"] h4'),
+      toolboxCard: measure('[data-testid^="type-block-"] h4'),
       canvasNode: measure('[data-testid="archie-node"] span'),
       inspector: measure('[data-testid="inspector-panel"] span'),
     }
@@ -293,8 +293,8 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Place 2 components via Add to Canvas buttons
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // Place 2 components via Add to Canvas buttons (D23: add-type-* on type-block cards)
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     await expect(addBtns.first()).toBeVisible({ timeout: 5_000 })
     const btnCount = await addBtns.count()
     test.skip(btnCount < 2, "Skipped: Need at least 2 components")
@@ -336,6 +336,7 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
     // Cycle through font sizes and collect measurements
     type FontMeasurement = Awaited<ReturnType<typeof measureFontSizes>>
     const measurements: Record<string, FontMeasurement> = {}
+    const nodeWidths: Record<string, number> = {}
 
     for (const size of ["small", "medium", "large"] as const) {
       await openSettings(page)
@@ -347,8 +348,14 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
       // Measure computed font-sizes on elements across all panels
       measurements[size] = await measureFontSizes(page)
 
-      // Canvas node width must remain fixed at 208px regardless of font size (AC-ARCH-NO-3)
-      await expect(page.locator('[data-testid="archie-node"]').first()).toHaveCSS("width", "208px")
+      // Canvas node width must remain STABLE regardless of font size (AC-ARCH-NO-3): nodes are
+      // sized in px, not rem, so font scaling must not change them. Record per-size; the post-loop
+      // assertion checks all three are identical. (Width is now variable per content — NODE_MIN_WIDTH
+      // 176 … NODE_MAX_WIDTH 280 — so we no longer pin a fixed 208px literal, just font-independence.)
+      const w = await page.locator('[data-testid="archie-node"]').first().evaluate((el) => parseFloat(getComputedStyle(el).width))
+      expect(w).toBeGreaterThanOrEqual(176)
+      expect(w).toBeLessThanOrEqual(280)
+      nodeWidths[size] = w
 
       const num = size === "small" ? "21" : size === "medium" ? "22" : "23"
       await page.screenshot({
@@ -356,6 +363,11 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
         fullPage: true,
       })
     }
+
+    // Assert: the canvas node width is identical across all three font sizes (font-independence,
+    // AC-ARCH-NO-3) — px-sized nodes must not scale with rem.
+    expect(nodeWidths.medium).toBe(nodeWidths.small)
+    expect(nodeWidths.large).toBe(nodeWidths.small)
 
     // Assert: for every measured element, small < medium < large
     for (const key of Object.keys(measurements.small) as (keyof FontMeasurement)[]) {

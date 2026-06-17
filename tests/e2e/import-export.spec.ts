@@ -10,6 +10,9 @@ test.describe("Import/Export E2E (Story 3-2)", () => {
     await page.goto("/")
     await expect(page.locator('[data-testid="toolbar"]')).toBeVisible({ timeout: 15_000 })
 
+    // Export now lives inside the File menu (P95 menu-bar refactor) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
+
     const exportButton = page.getByTestId("export-button")
     await expect(exportButton).toBeVisible()
 
@@ -22,6 +25,9 @@ test.describe("Import/Export E2E (Story 3-2)", () => {
   test("AC-6: export button is disabled on empty canvas", async ({ page }) => {
     await page.goto("/")
     await expect(page.locator('[data-testid="toolbar"]')).toBeVisible({ timeout: 15_000 })
+
+    // Export now lives inside the File menu (P95 menu-bar refactor) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
 
     // Empty canvas → export button must be disabled
     const exportButton = page.getByTestId("export-button")
@@ -46,6 +52,9 @@ test.describe("Import/Export E2E (Story 3-2)", () => {
 
     // Wait for the canvas node to appear
     await page.locator(".react-flow__node").first().waitFor({ state: "visible", timeout: 5_000 })
+
+    // Export now lives inside the File menu (P95 menu-bar refactor) — open it to reach the button.
+    await page.getByTestId("menu-file").click()
 
     // Export button should now be enabled
     const exportButton = page.getByTestId("export-button")
@@ -175,10 +184,11 @@ test.describe("Blueprint & AI Prompt E2E (Story 3-3)", () => {
     await page.goto("/")
     await expect(page.locator('[data-testid="toolbar"]')).toBeVisible({ timeout: 15_000 })
 
-    // Click the AI Prompt button in the toolbar
-    const promptButton = page.getByTestId("prompt-template-button")
-    await expect(promptButton).toBeVisible()
-    await promptButton.click()
+    // AI Prompt now opens from the Build menu (P95 menu-bar refactor): Build → AI Prompt…
+    await page.getByTestId("menu-build").click()
+    const promptMenuItem = page.getByTestId("menu-ai-prompt")
+    await expect(promptMenuItem).toBeVisible()
+    await promptMenuItem.click()
 
     // Dialog should appear with template content
     const dialog = page.getByTestId("prompt-template-dialog")

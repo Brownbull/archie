@@ -16,7 +16,8 @@ async function addComponentToCanvas(
   buttonIndex = 0,
 ) {
   const nodesBefore = await page.locator('[data-testid="archie-node"]').count()
-  const addBtn = page.locator('[data-testid^="add-to-canvas-"]').nth(buttonIndex)
+  // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+  const addBtn = page.locator('[data-testid^="add-type-"]').nth(buttonIndex)
   await expect(addBtn).toBeVisible()
   await addBtn.click()
   await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(nodesBefore + 1, {
@@ -30,7 +31,9 @@ async function selectNodeOnCanvas(
 ) {
   const node = page.locator('[data-testid="archie-node"]').nth(nodeIndex)
   await expect(node).toBeVisible()
-  await node.click()
+  // Click the node HEADER (top-left), not the center — the center carries the on-node vendor/config
+  // dropdowns, and clicking one opens a Radix listbox whose overlay then blocks the inspector.
+  await node.click({ position: { x: 12, y: 6 } })
   await expect(page.locator('[data-testid="inspector-panel"]')).toBeVisible({ timeout: 5_000 })
 }
 
@@ -46,7 +49,8 @@ async function selectNodeOnCanvas(
 async function findSwappableComponentIndex(
   page: import("@playwright/test").Page,
 ): Promise<number> {
-  const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+  // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+  const addBtns = page.locator('[data-testid^="add-type-"]')
   const btnCount = await addBtns.count()
 
   for (let i = 0; i < btnCount; i++) {
@@ -62,7 +66,10 @@ async function findSwappableComponentIndex(
       // Ensure cleanup even on assertion failure
       const remaining = await page.locator('[data-testid="archie-node"]').count()
       if (remaining > 0) {
-        await page.locator('[data-testid="archie-node"]').first().click()
+        // Click the node HEADER (top-left), not the center — the center carries the on-node
+        // vendor/config dropdowns; clicking there opens a Radix listbox instead of selecting the
+        // node, so the native React-Flow Delete never fires and the node lingers (count stays 1).
+        await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
         await page.keyboard.press("Delete")
         await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(0, { timeout: 5_000 })
       }
@@ -169,7 +176,8 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     const btnCount = await addBtns.count()
     let found = false
 
@@ -187,7 +195,9 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
         break
       }
 
-      await page.locator('[data-testid="archie-node"]').first().click()
+      // Header click (not center) so the node selects for the native Delete, rather than opening
+      // the on-node dropdown.
+      await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
       await page.keyboard.press("Delete")
       await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(0, { timeout: 5_000 })
     }
@@ -206,7 +216,8 @@ test.describe("Component Swapping E2E (Story 1-6)", () => {
     // Place swappable component (node 0) and a second component (node 1)
     await addComponentToCanvas(page, idx)
     const secondIdx = idx === 0 ? 1 : 0
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: the default toolbox renders type-block cards whose "add to canvas" button is add-type-*.
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     test.skip((await addBtns.count()) < 2, "Skipped: need 2+ components")
     await addBtns.nth(secondIdx).click()
     await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(2, { timeout: 5_000 })

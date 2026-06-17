@@ -3,6 +3,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { stripUndefined } from "@/lib/firestoreSanitize"
 import { sanitizeDisplayString } from "@/lib/sanitize"
+import { canWrite } from "@/lib/writeThrottle"
 import type { SavedCanvas } from "@/services/canvasAutosave"
 
 /**
@@ -72,6 +73,7 @@ export const useUserCanvasesStore = create<UserCanvasesState>((set, get) => ({
 
   saveToSlot: async (userId, index, name, canvas) => {
     if (!userId || index < 0 || index >= MAX_SLOTS) return false
+    if (!canWrite(`canvas:${userId}`)) return false
     const slot: CanvasSlot = {
       name: sanitizeDisplayString(name, CANVAS_NAME_MAX) || `Canvas ${index + 1}`,
       savedAt: Date.now(),
@@ -100,6 +102,7 @@ export const useUserCanvasesStore = create<UserCanvasesState>((set, get) => ({
 
   deleteSlot: async (userId, index) => {
     if (!userId || index < 0 || index >= MAX_SLOTS) return
+    if (!canWrite(`canvas:${userId}`)) return
     const next = [...get().slots]
     next[index] = null
     set({ slots: next, error: null })

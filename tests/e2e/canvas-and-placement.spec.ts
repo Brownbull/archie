@@ -10,18 +10,19 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     // Wait for app to be ready
     await expect(page.locator('[data-testid="canvas-panel"]')).toBeVisible({ timeout: 15_000 })
 
-    // Empty state overlay with three suggestions
+    // Empty-state overlay with the start-option suggestions (post-first-run-fork; the suite seeds
+    // firstRunChoice="free" in global-setup so it lands here, not on the S1 fork).
     const emptyState = page.locator('[data-testid="canvas-empty-state"]')
     await expect(emptyState).toBeVisible()
 
+    await expect(page.locator('[data-testid="suggestion-blueprints"]')).toBeVisible()
+    await expect(page.locator('[data-testid="suggestion-components"]')).toBeVisible()
     await expect(page.locator('[data-testid="suggestion-import"]')).toBeVisible()
-    await expect(page.locator('[data-testid="suggestion-example"]')).toBeVisible()
-    await expect(page.locator('[data-testid="suggestion-drag"]')).toBeVisible()
 
     // Verify suggestion text
+    await expect(page.locator('[data-testid="suggestion-blueprints"]')).toContainText("Start from a Blueprint")
+    await expect(page.locator('[data-testid="suggestion-components"]')).toContainText("Browse Components")
     await expect(page.locator('[data-testid="suggestion-import"]')).toContainText("Import a YAML file")
-    await expect(page.locator('[data-testid="suggestion-example"]')).toContainText("Try an example from Blueprints")
-    await expect(page.locator('[data-testid="suggestion-drag"]')).toContainText("Drag a component from the toolbox")
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/01-empty-canvas-with-suggestions.png`,
@@ -62,14 +63,11 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Get the first component card's ID
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const testId = await firstCard.getAttribute("data-testid")
-    const componentId = testId!.replace("component-card-", "")
-
-    // Verify card is draggable
-    await expect(firstCard).toHaveAttribute("draggable", "true")
+    // D23: the default toolbox renders type-block cards (type-block-<typeId>), not the old
+    // component-card-* grid. Drag a known base component by id.
+    const block = page.locator('[data-testid^="type-block-"]').first()
+    await expect(block).toBeVisible()
+    await expect(block).toHaveAttribute("draggable", "true")
 
     // Get canvas bounds for drop target
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
@@ -80,16 +78,11 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     const dropX = canvasBounds!.x + canvasBounds!.width / 2
     const dropY = canvasBounds!.y + canvasBounds!.height / 2
 
-    // Simulate drag-and-drop
-    await dragComponentToCanvas(page, componentId, dropX, dropY)
+    await dragComponentToCanvas(page, "node-express", dropX, dropY)
 
     // Wait for node to appear
     const archieNode = page.locator('[data-testid="archie-node"]').first()
     await expect(archieNode).toBeVisible({ timeout: 5_000 })
-
-    // AC-1: Node displays component name
-    const componentName = await firstCard.locator("h4").textContent()
-    await expect(archieNode).toContainText(componentName!)
 
     // AC-1: Node displays category color stripe
     const stripe = page.locator('[data-testid="archie-node-stripe"]').first()
@@ -108,33 +101,32 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     })
   })
 
-  test("AC-1: dropped node has correct 208px width", async ({ page }) => {
+  test("AC-1: dropped node width is within the variable-width range", async ({ page }) => {
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Get first component and drop it
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    await expect(firstCard).toBeVisible()
-    const testId = await firstCard.getAttribute("data-testid")
-    const componentId = testId!.replace("component-card-", "")
-
+    // D23: the default toolbox renders type-block cards (no component-card-* grid). Drop a known
+    // base component by id rather than reading an id off a card.
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
     const canvasBounds = await canvasPanel.boundingBox()
 
     await dragComponentToCanvas(
       page,
-      componentId,
+      "node-express",
       canvasBounds!.x + canvasBounds!.width / 2,
       canvasBounds!.y + canvasBounds!.height / 2,
     )
 
-    // Verify node CSS width is 208px (P97 wider cards) — use CSS check, not boundingBox
-    // (boundingBox includes React Flow transforms which may scale the element)
+    // Nodes are variable-width (NODE_MIN_WIDTH 176 … NODE_MAX_WIDTH 280) — they grow to fit content,
+    // so assert the rendered CSS width falls in that range, not a brittle fixed px (the old "208px"
+    // literal predates the variable-width model and drifts on any content change).
     const archieNode = page.locator('[data-testid="archie-node"]').first()
     await expect(archieNode).toBeVisible({ timeout: 5_000 })
-    await expect(archieNode).toHaveCSS("width", "208px")
+    const widthPx = await archieNode.evaluate((el) => parseFloat(getComputedStyle(el).width))
+    expect(widthPx).toBeGreaterThanOrEqual(176)
+    expect(widthPx).toBeLessThanOrEqual(280)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/04-node-width.png`,
@@ -148,27 +140,23 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const cards = page.locator('[data-testid^="component-card-"]')
-    const cardCount = await cards.count()
-    test.skip(cardCount < 2, "Skipped: Need at least 2 components")
-
     const canvasPanel = page.locator('[data-testid="canvas-panel"]')
     const canvasBounds = await canvasPanel.boundingBox()
 
+    // D23: the default toolbox renders type-block cards (no component-card-* grid). Drop two known
+    // base components by id at distinct positions.
     // Drop first component on left side
-    const firstTestId = await cards.nth(0).getAttribute("data-testid")
     await dragComponentToCanvas(
       page,
-      firstTestId!.replace("component-card-", ""),
+      "node-express",
       canvasBounds!.x + canvasBounds!.width * 0.3,
       canvasBounds!.y + canvasBounds!.height / 2,
     )
 
     // Drop second component on right side
-    const secondTestId = await cards.nth(1).getAttribute("data-testid")
     await dragComponentToCanvas(
       page,
-      secondTestId!.replace("component-card-", ""),
+      "postgresql",
       canvasBounds!.x + canvasBounds!.width * 0.7,
       canvasBounds!.y + canvasBounds!.height / 2,
     )
@@ -192,7 +180,8 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
+    // D23: the default toolbox renders type-block cards. The draggable card is now type-block-*.
+    const firstCard = page.locator('[data-testid^="type-block-"]').first()
     await expect(firstCard).toBeVisible()
 
     // Verify HTML5 draggable attribute
@@ -214,8 +203,8 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Find first add-to-canvas button
-    const addBtn = page.locator('[data-testid^="add-to-canvas-"]').first()
+    // D23: the "add to canvas" button inside each type-block card is now add-type-*.
+    const addBtn = page.locator('[data-testid^="add-type-"]').first()
     await expect(addBtn).toBeVisible()
 
     // Click it to add to canvas
@@ -240,7 +229,8 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    const addBtns = page.locator('[data-testid^="add-to-canvas-"]')
+    // D23: the "add to canvas" buttons are now add-type-* (one per type-block card).
+    const addBtns = page.locator('[data-testid^="add-type-"]')
     const btnCount = await addBtns.count()
     test.skip(btnCount < 2, "Skipped: Need at least 2 components")
 
@@ -264,20 +254,20 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     const hasComponents = await waitForComponentLibrary(page)
     test.skip(!hasComponents, "Skipped: Firestore has no seeded component data")
 
-    // Get first card name for comparison
-    const firstCard = page.locator('[data-testid^="component-card-"]').first()
-    const componentName = await firstCard.locator("h4").textContent()
-
-    // Click the add button
-    const addBtn = page.locator('[data-testid^="add-to-canvas-"]').first()
+    // D23: the "add to canvas" button inside each type-block card is now add-type-* (the default
+    // toolbox no longer renders the component-card-* grid with a readable h4 name). Target the
+    // Compute block specifically — `.first()` is the traffic-source, which has only a SOURCE handle
+    // (traffic originates there), so its node has no target handle and the structure check below fails.
+    const addBtn = page.locator('[data-testid="add-type-compute"]')
     await addBtn.click()
 
     // Verify node structure
     const archieNode = page.locator('[data-testid="archie-node"]').first()
     await expect(archieNode).toBeVisible({ timeout: 5_000 })
 
-    // Node displays the component name
-    await expect(archieNode).toContainText(componentName!)
+    // Node displays a component name — asserted on the placed node itself (the card no longer
+    // exposes a name to compare against; the node renders data.componentName).
+    await expect(archieNode).not.toHaveText("")
 
     // Node has category color stripe
     await expect(page.locator('[data-testid="archie-node-stripe"]').first()).toBeVisible()
@@ -286,8 +276,11 @@ test.describe("Canvas & Component Placement E2E (Story 1-3)", () => {
     await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.target").first()).toBeAttached()
     await expect(page.locator('[data-testid="archie-node"]').first().locator(".react-flow__handle.source").first()).toBeAttached()
 
-    // Node has correct width
-    await expect(archieNode).toHaveCSS("width", "208px")
+    // Node width is within the variable-width range (NODE_MIN_WIDTH 176 … NODE_MAX_WIDTH 280),
+    // not a fixed 208px literal (which predates the variable-width model).
+    const widthPx = await archieNode.evaluate((el) => parseFloat(getComputedStyle(el).width))
+    expect(widthPx).toBeGreaterThanOrEqual(176)
+    expect(widthPx).toBeLessThanOrEqual(280)
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/09-node-structure-via-button.png`,

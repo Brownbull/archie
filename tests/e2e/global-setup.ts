@@ -9,6 +9,9 @@ setup("authenticate with test credentials", async ({ page }) => {
 
   // Mark the first-run guided tour (P6) as already seen so its modal never blocks the rest of
   // the E2E suite. The dedicated tour test re-triggers it explicitly via Settings → Restart tour.
+  // S1 (Kane QA): also answer the first-run mode fork (firstRunChoice) so the suite lands in the
+  // normal app (empty-state suggestions / canvas), not the novice/expert fork overlay. The fork's
+  // own behavior is covered by FirstRunFork.test.tsx. "free" = the sandbox the specs expect.
   await page.evaluate(() => {
     const KEY = "archie-preferences"
     let parsed: { state?: Record<string, unknown>; version?: number } = {}
@@ -18,7 +21,7 @@ setup("authenticate with test credentials", async ({ page }) => {
     } catch {
       parsed = {}
     }
-    const state = { ...(parsed.state ?? {}), tourSeen: true }
+    const state = { ...(parsed.state ?? {}), tourSeen: true, firstRunChoice: "free" }
     localStorage.setItem(KEY, JSON.stringify({ state, version: parsed.version ?? 0 }))
   })
 
