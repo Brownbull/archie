@@ -5,6 +5,7 @@ import {
   waitForComponentLibrary,
   dragComponentToCanvas,
   useAdvancedLevel,
+  selectNodeOnCanvas,
 } from "./helpers/canvas-helpers"
 
 const SCREENSHOT_DIR = "test-results/scoring-dashboard"
@@ -372,6 +373,10 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
   })
 
   test("dashboard returns to empty state when component is deleted", async ({ page }) => {
+    // Import + recalc + a delete-per-node loop, each step able to brush the 30s cap under 4-worker CI
+    // load (the node's entry ripple kept the bare header click "retrying" past 30s, then the forced
+    // click landed without selecting so inspector-remove-node never appeared). Give it room.
+    test.setTimeout(60_000)
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -384,16 +389,13 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const aggregateScore = page.locator('[data-testid="aggregate-score"]')
     await expect(aggregateScore).toBeVisible()
 
-    // Remove ALL nodes (the scored fixture has 2 — a single node wouldn't score). Select each by its
-    // top-left header (above the on-node vendor/config dropdowns) and use the deterministic inspector
-    // Remove button — more robust than node.click()+keyboard Delete, which can land on a control.
+    // Remove ALL nodes (the scored fixture has 2 — a single node wouldn't score). selectNodeOnCanvas
+    // does the header click (above the on-node dropdowns) AND waits for the inspector to open, so the
+    // node is CONFIRMED selected before we click the deterministic inspector Remove button — a bare or
+    // forced click can land without selecting, leaving inspector-remove-node absent (the CI failure).
     let remaining = await page.locator('[data-testid="archie-node"]').count()
     while (remaining > 0) {
-      // force the header click: the node carries an entry ripple/transition (archie-ripple) that can
-      // keep Playwright's actionability check "retrying click action" past the 30s cap under heavy
-      // parallel CI load (observed: 1 hard fail, retries exhausted). The position is still the header
-      // (above the on-node dropdowns); force only skips the stability/intercept wait, not the position.
-      await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 }, force: true })
+      await selectNodeOnCanvas(page, 0)
       await page.getByTestId("inspector-remove-node").click()
       await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(remaining - 1, { timeout: 5_000 })
       remaining -= 1
@@ -576,6 +578,7 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
   })
 
   test("AC-4: tier returns to empty state when all components are deleted", async ({ page }) => {
+    test.setTimeout(60_000) // 3-node place + delete-per-node loop is heavy under parallel CI load
     await page.goto("/")
 
     const hasComponents = await waitForComponentLibrary(page)
@@ -592,11 +595,12 @@ test.describe("Scoring Dashboard E2E (Story 2-3)", () => {
     const tierBadge = page.locator('[data-testid="tier-badge"]')
     await expect(tierBadge).toContainText("Foundation", { timeout: 5_000 })
 
-    // Delete all nodes one by one via header-select + inspector Remove (center-click opens the
-    // on-node dropdown instead of selecting, so native Delete never fires).
+    // Delete all nodes one by one. selectNodeOnCanvas does the header click AND waits for the inspector
+    // to open (CONFIRMED selection) before we click the deterministic inspector Remove — a bare click
+    // can land without selecting under CI load, leaving inspector-remove-node absent.
     let left = await page.locator('[data-testid="archie-node"]').count()
     while (left > 0) {
-      await page.locator('[data-testid="archie-node"]').first().click({ position: { x: 12, y: 6 } })
+      await selectNodeOnCanvas(page, 0)
       await page.getByTestId("inspector-remove-node").click()
       await expect(page.locator('[data-testid="archie-node"]')).toHaveCount(left - 1, { timeout: 5_000 })
       left -= 1

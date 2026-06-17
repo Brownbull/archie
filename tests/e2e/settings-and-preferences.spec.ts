@@ -246,6 +246,7 @@ test.describe("Settings & Preferences E2E (Story 2-5)", () => {
   // --- Combined: multiple preferences persist together ---
 
   test("all three preferences persist together across reload", async ({ page }) => {
+    test.setTimeout(60_000) // 3× openSettings/select cycles + a reload — heavy under parallel CI load
     await page.goto("/")
     await expect(page.locator('[data-testid="settings-menu-trigger"]')).toBeVisible({ timeout: 15_000 })
 
