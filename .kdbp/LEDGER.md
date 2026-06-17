@@ -5873,3 +5873,4 @@ ROOT CAUSES (all stale-test, swap itself works):
   5. performSwap inspector read best-effort so AC-4 (inspector closed) still passes.
 RESULT: component-swapping 6/6 (1 skip) + decision-support 3/3 on live dev server. Expect
   e2e-desktop 277/0 after this (was 271/3/1-flaky on 457f45e; inspector:213 flake hardened in fee3f95).
+- 2026-06-17 01:58 | Edit | /home/khujta/projects/bmad/archie/tests/e2e/component-swapping.spec.ts
