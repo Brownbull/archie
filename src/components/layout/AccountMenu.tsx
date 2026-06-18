@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react"
-import { CircleUser, LogOut, Trophy } from "lucide-react"
+import { useNavigate } from "react-router-dom"
+import { CircleUser, LogIn, LogOut, Trophy } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
+import { useGuestStore } from "@/stores/guestStore"
 import { useUserProgressStore } from "@/stores/userProgressStore"
 import { rankForXp } from "@/lib/challengeTracks"
 import { getMasteryAvatar, getTrackAvatar, getDisciplineAvatars } from "@/lib/masteryAvatars"
@@ -14,8 +16,44 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { MasteryProfilePanel } from "@/components/challenges/MasteryProfilePanel"
 
+/**
+ * Guest ("try without login") account chip: no account/avatar/progress to show — just a single
+ * "Sign in to save" affordance routing to the login page. Nothing is persisted for a guest. Kept as
+ * its own component so AccountMenu's hooks stay unconditional (rules of hooks).
+ */
+function GuestAccountMenu() {
+  const navigate = useNavigate()
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          data-testid="account-menu-trigger"
+          aria-label="Guest account"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm text-text-secondary hover:text-text-primary"
+        >
+          <CircleUser className="h-4 w-4" />
+          <span>Guest</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" data-testid="account-menu-content">
+        <DropdownMenuLabel className="max-w-[200px]">
+          <span className="block text-xs font-normal text-text-secondary">
+            Guest session — nothing is saved
+          </span>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem data-testid="guest-sign-in" onSelect={() => navigate("/login")}>
+          <LogIn className="mr-2 h-3.5 w-3.5" /> Sign in to save progress
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 export function AccountMenu() {
   const { user, signOut } = useAuth()
+  const isGuest = useGuestStore((s) => s.isGuest)
   // D105b follow-up: the public identity is the NICKNAME — the Google name stays private
   // (it only appears as the dropdown's sublabel so you know which account is signed in).
   const nickname = useUserProgressStore((s) => s.nickname)
@@ -33,6 +71,9 @@ export function AccountMenu() {
     if (equippedAvatar?.startsWith("track:")) return getTrackAvatar(equippedAvatar.slice(6))
     return getMasteryAvatar(rankForXp(totalXp).rank)
   }, [equippedAvatar, totalXp])
+
+  // Guest gets the lightweight "Sign in to save" chip (hooks above stay unconditional).
+  if (isGuest && !user) return <GuestAccountMenu />
 
   return (
     <>

@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils"
 import { useChallengeStore } from "@/stores/challengeStore"
 import { useArchitectureStore } from "@/stores/architectureStore"
 import { useUiStore } from "@/stores/uiStore"
+import { useGuestStore } from "@/stores/guestStore"
 
 /**
  * Always-visible Quest/Free mode toggle. Mode is DERIVED from challengeStore: Quest Mode ===
@@ -29,9 +30,15 @@ export function ModeToggle() {
   const setQuestLogOpen = useUiStore((s) => s.setQuestLogOpen)
   const setSaveCanvasOpen = useUiStore((s) => s.setSaveCanvasOpen)
   const setPendingSaveAction = useUiStore((s) => s.setPendingSaveAction)
+  const isGuest = useGuestStore((s) => s.isGuest)
 
   // The deferred mode switch awaiting the save/discard/cancel decision (null = no prompt open).
   const [guard, setGuard] = useState<{ proceed: () => void; target: "quest" | "free" } | null>(null)
+
+  // A guest is scoped to the quest sandbox: hide the Free/Quest toggle so they stay in the quest
+  // (whose palette is the component scope), and so they never hit the canvas-save guard they can't
+  // satisfy (no Firestore). Signing in restores the full toggle. (After hooks — rules of hooks.)
+  if (isGuest) return null
 
   const isQuestMode = activeChallenge !== null
 

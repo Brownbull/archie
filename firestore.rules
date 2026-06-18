@@ -13,34 +13,39 @@ service cloud.firestore {
         || request.time > resource.data.updatedAt + duration.value(1, 's');
     }
 
-    // Component library collections — read-only for authenticated users
+    // Component library collections — PUBLIC read (no auth) so guest ("try without login") sessions
+    // can load the catalog and play the first quest. This is non-sensitive, server-seeded reference
+    // data with no PII/secrets that already ships to every authed client; opening reads leaks nothing
+    // new — it's a billing concern, backstopped by a Firestore daily spend cap. Writes stay
+    // server-only. User-data collections below remain auth+ownership gated (guests can read none).
     match /components/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if false;
     }
 
     match /stacks/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if false;
     }
 
     match /blueprints/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if false;
     }
 
     match /connectionTypes/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if false;
     }
 
     match /metricCategories/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if false;
     }
 
+    // Seed version marker — read by componentLibrary for cache validation; same public catalog tier.
     match /_metadata/{docId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow write: if false;
     }
 

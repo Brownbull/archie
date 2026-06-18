@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { Navigate } from "react-router-dom"
+import { Navigate, useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
+import { useGuestStore } from "@/stores/guestStore"
 import { Button } from "@/components/ui/button"
 
 const isDev = import.meta.env.DEV
@@ -9,6 +10,8 @@ const hasUnlockedTestCredentials = !!import.meta.env.VITE_TEST_UNLOCKED_EMAIL
 
 export function LoginPage() {
   const { user, loading, error, signIn, signInWithEmail, signInWithTest, signInWithUnlockedTestUser } = useAuth()
+  const enterGuest = useGuestStore((s) => s.enterGuest)
+  const navigate = useNavigate()
   const [emailOpen, setEmailOpen] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -20,6 +23,13 @@ export function LoginPage() {
 
   if (user) {
     return <Navigate to="/" replace />
+  }
+
+  // Enter guest mode and go to the canvas; the quest auto-launches there once the library loads
+  // (useGuestQuestLaunch) — launching here would race componentLibrary.initialize().
+  const handleGuest = () => {
+    enterGuest()
+    navigate("/")
   }
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
@@ -51,6 +61,27 @@ export function LoginPage() {
         >
           Sign in with Google
         </Button>
+
+        <div className="flex w-full items-center gap-3">
+          <div className="h-px flex-1 bg-archie-border" />
+          <span className="text-[0.625rem] uppercase tracking-wide text-text-secondary/70">or</span>
+          <div className="h-px flex-1 bg-archie-border" />
+        </div>
+
+        <div className="flex w-full flex-col items-center gap-1.5">
+          <Button
+            data-testid="guest-try-button"
+            onClick={handleGuest}
+            variant="outline"
+            className="w-full"
+            size="lg"
+          >
+            Try the first quest — no login
+          </Button>
+          <p className="text-center text-[0.6875rem] text-text-secondary/80">
+            Play and simulate instantly. Nothing is saved — sign in to keep your progress.
+          </p>
+        </div>
 
         {!emailOpen ? (
           <button
