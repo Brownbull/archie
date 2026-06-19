@@ -1,6 +1,7 @@
 import { test as setup } from "@playwright/test"
 import { loginWithTestCredentials } from "./helpers/auth"
 import { stampTestAccount, seedProjectId } from "./helpers/seed-progress"
+import { warmCatalogCache } from "./helpers/warmCache"
 
 const AUTH_FILE = "tests/e2e/.auth/user.json"
 
@@ -29,6 +30,10 @@ setup("authenticate with test credentials", async ({ page }) => {
   const projectId = seedProjectId()
   if (projectId) await stampTestAccount(page, projectId)
 
-  // Save authenticated state (cookies + localStorage) for reuse
+  // Warm the catalog cache so every test reuses it from localStorage instead of cold-loading ~150
+  // Firestore reads each (the dominant Firestore cost — see warmCache.ts).
+  await warmCatalogCache(page)
+
+  // Save authenticated state (cookies + localStorage — now including the warmed refdata cache) for reuse
   await page.context().storageState({ path: AUTH_FILE })
 })
