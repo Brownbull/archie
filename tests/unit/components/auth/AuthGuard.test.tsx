@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
 import { render, screen } from "@testing-library/react"
 import { MemoryRouter, Routes, Route } from "react-router-dom"
 import { AuthGuard } from "@/components/auth/AuthGuard"
+import { useGuestStore } from "@/stores/guestStore"
 
 const mockUseAuth = vi.fn()
 
@@ -16,6 +17,11 @@ vi.mock("@/lib/firebase", () => ({
 describe("AuthGuard", () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    useGuestStore.getState().exitGuest()
+  })
+
+  afterEach(() => {
+    useGuestStore.getState().exitGuest()
   })
 
   it("renders skeleton loading state (not a spinner)", () => {
@@ -50,7 +56,7 @@ describe("AuthGuard", () => {
     expect(screen.getByText("Protected Content")).toBeInTheDocument()
   })
 
-  it("redirects to /login when unauthenticated", () => {
+  it("redirects to /login when unauthenticated and not a guest", () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false })
 
     render(
@@ -71,5 +77,29 @@ describe("AuthGuard", () => {
 
     expect(screen.queryByText("Protected Content")).not.toBeInTheDocument()
     expect(screen.getByText("Login Page")).toBeInTheDocument()
+  })
+
+  it("renders children for a guest (no Firebase user) without redirecting", () => {
+    mockUseAuth.mockReturnValue({ user: null, loading: false })
+    useGuestStore.getState().enterGuest()
+
+    render(
+      <MemoryRouter initialEntries={["/"]}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <AuthGuard>
+                <div>Protected Content</div>
+              </AuthGuard>
+            }
+          />
+          <Route path="/login" element={<div>Login Page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    expect(screen.getByText("Protected Content")).toBeInTheDocument()
+    expect(screen.queryByText("Login Page")).not.toBeInTheDocument()
   })
 })

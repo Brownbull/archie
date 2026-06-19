@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { Navigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
+import { useGuestStore } from "@/stores/guestStore"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   TOOLBAR_HEIGHT,
@@ -15,6 +16,7 @@ interface AuthGuardProps {
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const { user, loading } = useAuth()
+  const isGuest = useGuestStore((s) => s.isGuest)
 
   if (loading) {
     return (
@@ -30,7 +32,9 @@ export function AuthGuard({ children }: AuthGuardProps) {
     )
   }
 
-  if (!user) {
+  // A guest (no Firebase user) is allowed through — they reach the canvas with a null uid, so every
+  // Firestore write stays a no-op and nothing persists. Real auth is still required for everyone else.
+  if (!user && !isGuest) {
     return <Navigate to="/login" replace />
   }
 

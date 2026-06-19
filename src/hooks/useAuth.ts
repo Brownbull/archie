@@ -15,6 +15,7 @@ import { useUserProgressStore } from "@/stores/userProgressStore"
 import { useUserChallengeStore } from "@/stores/userChallengeStore"
 import { useUserBlockDefaultsStore } from "@/stores/userBlockDefaultsStore"
 import { useUserCanvasesStore } from "@/stores/userCanvasesStore"
+import { useGuestStore } from "@/stores/guestStore"
 import { useChallengeStore } from "@/stores/challengeStore"
 
 const googleProvider = new GoogleAuthProvider()
@@ -63,6 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(firebaseUser)
         setLoading(false)
         if (firebaseUser) {
+          // A real sign-in ends any guest session (e.g. a guest who chose to sign in to save).
+          useGuestStore.getState().exitGuest()
           void useUserProgressStore.getState().loadProgress(firebaseUser.uid).then(() => {
             const { bestStarsCloud } = useUserProgressStore.getState()
             if (Object.keys(bestStarsCloud).length > 0) {

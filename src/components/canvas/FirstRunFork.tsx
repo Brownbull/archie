@@ -1,13 +1,7 @@
 import { GraduationCap, Wrench } from "lucide-react"
-import { getAllChallenges } from "@/services/challengeLoader"
-import { makeChallengeCanvas } from "@/services/challengeCanvasSeed"
-import { useArchitectureStore } from "@/stores/architectureStore"
-import { useChallengeStore } from "@/stores/challengeStore"
-import { useSimulationStore } from "@/stores/simulationStore"
 import { usePreferencesStore } from "@/stores/preferencesStore"
+import { launchFirstServiceQuest } from "@/services/questLaunch"
 import { Z_INDEX } from "@/lib/constants"
-
-const FIRST_QUEST_ID = "first-service"
 
 /**
  * S1 (Kane QA) — the novice on-ramp. On a brand-new user's first visit (empty canvas, no prior
@@ -16,26 +10,15 @@ const FIRST_QUEST_ID = "first-service"
  *   - "I know architecture"  → stay in Free Mode (the normal empty-state options)
  *
  * The choice persists in preferencesStore.firstRunChoice (like tourSeen), so the fork appears once.
- * Rendered by EmptyCanvasState when firstRunChoice === null. The quest path replicates
- * ChallengeTreeView.startChallenge so the behavior is identical to picking First Service by hand.
+ * Rendered by EmptyCanvasState when firstRunChoice === null. The quest path uses the shared
+ * launchFirstServiceQuest so it's identical to picking First Service by hand (and to the guest entry).
  */
 export function FirstRunFork() {
   const setFirstRunChoice = usePreferencesStore((s) => s.setFirstRunChoice)
-  const selectChallenge = useChallengeStore((s) => s.selectChallenge)
 
   const chooseQuest = () => {
     setFirstRunChoice("quest")
-    const firstService = getAllChallenges().find((c) => c.id === FIRST_QUEST_ID)
-    if (!firstService) return // defensive — curriculum always ships First Service
-    try {
-      useSimulationStore.getState().reset()
-      const seeded = makeChallengeCanvas(firstService)
-      useArchitectureStore.getState().loadArchitecture(seeded.nodes, seeded.edges)
-    } catch {
-      /* canvas seeding is best-effort; selectChallenge still enters Quest Mode */
-    }
-    usePreferencesStore.getState().setExperienceLevel(firstService.difficulty)
-    selectChallenge(firstService)
+    launchFirstServiceQuest()
   }
 
   const chooseFree = () => setFirstRunChoice("free")

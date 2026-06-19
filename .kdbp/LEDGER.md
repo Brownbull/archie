@@ -5919,3 +5919,48 @@ WROTE: firebase-auth (type=auth) + gemini (type=llm-gateway) YAMLs; regenerated 
 VERIFIED (live dev server): Gastify 8/8 resolve+score 6.5C; archie's own 4/4 resolve+score 6.1C; 0
   "Component not found". NOTE: seed creds were never local before (CI doesn't seed) — see
   memory project_seed-from-local.
+- 2026-06-18 10:13 | Edit | /home/khujta/projects/bmad/archie/.claude/settings.json
+- 2026-06-18 10:23 | Write | /home/khujta/projects/khujta_eyes/reports/archie/REMEDIATION-handoff.md
+- 2026-06-18 10:24 | Edit | /home/khujta/projects/khujta_eyes/reports/archie/REMEDIATION-handoff.md
+- 2026-06-18 19:40 | Write | /home/khujta/projects/bmad/archie/src/stores/guestStore.ts
+- 2026-06-18 19:40 | Write | /home/khujta/projects/bmad/archie/src/services/questLaunch.ts
+- 2026-06-18 19:40 | Edit | /home/khujta/projects/bmad/archie/src/components/canvas/FirstRunFork.tsx
+- 2026-06-18 19:40 | Write | /home/khujta/projects/bmad/archie/src/hooks/useGuestQuestLaunch.ts
+- 2026-06-18 19:41 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/AuthGuard.tsx
+- 2026-06-18 19:41 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/AuthGuard.tsx
+- 2026-06-18 19:41 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/AuthGuard.tsx
+- 2026-06-18 19:41 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-18 19:41 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AppLayout.tsx
+- 2026-06-18 19:41 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/LoginPage.tsx
+- 2026-06-18 19:42 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/LoginPage.tsx
+- 2026-06-18 19:42 | Edit | /home/khujta/projects/bmad/archie/src/components/auth/LoginPage.tsx
+- 2026-06-18 19:44 | Edit | /home/khujta/projects/bmad/archie/src/stores/guestStore.ts
+- 2026-06-18 19:47 | Edit | /home/khujta/projects/bmad/archie/src/stores/guestStore.ts
+- 2026-06-18 19:47 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/ModeToggle.tsx
+- 2026-06-18 19:47 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/ModeToggle.tsx
+- 2026-06-18 19:47 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-18 19:47 | Edit | /home/khujta/projects/bmad/archie/src/hooks/useAuth.ts
+- 2026-06-18 19:48 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-18 19:48 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-18 19:49 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-18 19:49 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/AccountMenu.tsx
+- 2026-06-18 19:50 | Edit | /home/khujta/projects/bmad/archie/src/components/layout/ModeToggle.tsx
+- 2026-06-18 19:51 | Edit | /home/khujta/projects/bmad/archie/firestore.rules
+- 2026-06-18 19:52 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/auth/AuthGuard.test.tsx
+- 2026-06-18 19:52 | Edit | /home/khujta/projects/bmad/archie/tests/unit/components/auth/AuthGuard.test.tsx
+- 2026-06-18 19:52 | Write | /home/khujta/projects/bmad/archie/tests/unit/stores/guestStore.test.ts
+- 2026-06-18 19:53 | Write | /home/khujta/projects/bmad/archie/tests/e2e/guest-mode.spec.ts
+
+## 2026-06-17 — FEAT guest "try without login" mode (1038886) — NOT YET LIVE
+WHAT: anonymous visitor plays First Service quest, zero Firestore writes, nothing persisted. True
+  no-Firebase-user guest (not signInAnonymously) — no accounts to spam, no write paths. Guest is
+  quest-scoped (ModeToggle hidden) so the quest palette is the component bound.
+FILES: guestStore (sessionStorage), questLaunch (shared launcher), useGuestQuestLaunch, AuthGuard
+  passthrough, LoginPage CTA, AccountMenu guest chip, useAuth clears guest on sign-in, firestore.rules
+  catalog → public read.
+TESTS: guestStore 3/3 + AuthGuard guest 4/4; E2E guest entry validated locally (catalog deploy-gated).
+DESIGN NOTE: user asked for a ~12-node cap; reframed to quest-scoping because architectureStore
+  (addNode) is over the 800-line pre-edit guard — a hard cap can ride a future split.
+GO-LIVE PENDING (needs user): (1) set a Firestore daily spend cap in Firebase console; (2) manual
+  `firebase deploy --only firestore:rules` (CI deploys hosting only — see memory). Until rules deploy,
+  a guest can't read the catalog so the feature is dormant on prod even after a hosting deploy.

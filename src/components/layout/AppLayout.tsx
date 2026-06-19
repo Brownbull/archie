@@ -9,6 +9,7 @@ import { FocusedTour } from "@/components/onboarding/FocusedTour"
 import { useCanvasAutosave } from "@/hooks/useCanvasAutosave"
 import { useFirstNodeNudge } from "@/hooks/useFirstNodeNudge"
 import { useCanvasShortcuts } from "@/hooks/useCanvasShortcuts"
+import { useGuestQuestLaunch } from "@/hooks/useGuestQuestLaunch"
 import { KeyboardShortcutsDialog } from "@/components/help/KeyboardShortcutsDialog"
 import { CanvasErrorBoundary } from "@/components/canvas/CanvasErrorBoundary"
 import { InspectorPanel } from "@/components/inspector/InspectorPanel"
@@ -61,6 +62,8 @@ export function AppLayout() {
       })
   }, [])
 
+  // Guest ("try without login") sessions auto-launch the First Service quest once the library is ready.
+  useGuestQuestLaunch(libraryReady)
   // Restore the last autosaved canvas + debounce-save on change (no work lost on refresh).
   // Deferred until libraryReady so nodes hydrate with full provider data (name, RPS, stats).
   useCanvasAutosave(libraryReady)
