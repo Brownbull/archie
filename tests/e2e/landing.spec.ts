@@ -42,4 +42,16 @@ test.describe("Landing page", () => {
     await expect(page).toHaveURL(/\/$/)
     await expect(page.getByTestId("landing-guest-cta")).toBeVisible({ timeout: 10_000 })
   })
+
+  // GIF preview variant (/gif): same CTAs, GIF hero background + motion clips.
+  test("the /gif preview variant renders and its guest CTA enters the app", async ({ page }) => {
+    test.setTimeout(60_000)
+    await page.goto("/gif")
+    await expect(page.getByTestId("landing-guest-cta")).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(/software architecture/i)
+    await expect(page.locator('[data-testid="toolbar"]')).toHaveCount(0)
+    await page.getByTestId("landing-guest-cta").click()
+    await expect(page).toHaveURL(/\/app$/)
+    await expect(page.locator('[data-testid="toolbar"]')).toBeVisible({ timeout: 20_000 })
+  })
 })
