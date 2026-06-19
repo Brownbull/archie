@@ -56,27 +56,27 @@ describe("AuthGuard", () => {
     expect(screen.getByText("Protected Content")).toBeInTheDocument()
   })
 
-  it("redirects to /login when unauthenticated and not a guest", () => {
+  it("redirects to the landing (/) when unauthenticated and not a guest", () => {
     mockUseAuth.mockReturnValue({ user: null, loading: false })
 
     render(
-      <MemoryRouter initialEntries={["/"]}>
+      <MemoryRouter initialEntries={["/app"]}>
         <Routes>
           <Route
-            path="/"
+            path="/app"
             element={
               <AuthGuard>
                 <div>Protected Content</div>
               </AuthGuard>
             }
           />
-          <Route path="/login" element={<div>Login Page</div>} />
+          <Route path="/" element={<div>Landing Page</div>} />
         </Routes>
       </MemoryRouter>
     )
 
     expect(screen.queryByText("Protected Content")).not.toBeInTheDocument()
-    expect(screen.getByText("Login Page")).toBeInTheDocument()
+    expect(screen.getByText("Landing Page")).toBeInTheDocument()
   })
 
   it("renders children for a guest (no Firebase user) without redirecting", () => {
