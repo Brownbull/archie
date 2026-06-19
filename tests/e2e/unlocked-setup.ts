@@ -1,6 +1,7 @@
 import { test as setup, expect } from "@playwright/test"
 import { loginWithUnlockedTestCredentials } from "./helpers/auth"
 import { seedUnlockedProgress, seedProjectId } from "./helpers/seed-progress"
+import { warmCatalogCache } from "./helpers/warmCache"
 
 const UNLOCKED_AUTH_FILE = "tests/e2e/.auth/unlocked-user.json"
 
@@ -37,6 +38,9 @@ setup("seed the unlocked replay account", async ({ page }) => {
 
   // Seed every quest complete + max track XP (writes THIS account's userProgress via the authed session).
   await seedUnlockedProgress(page, projectId as string)
+
+  // Warm the catalog cache so replay specs reuse it instead of cold-loading ~150 Firestore reads each.
+  await warmCatalogCache(page)
 
   await page.context().storageState({ path: UNLOCKED_AUTH_FILE })
 })

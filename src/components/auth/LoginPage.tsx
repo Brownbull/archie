@@ -22,14 +22,14 @@ export function LoginPage() {
   }
 
   if (user) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/app" replace />
   }
 
-  // Enter guest mode and go to the canvas; the quest auto-launches there once the library loads
+  // Enter guest mode and go to the app; the quest auto-launches there once the library loads
   // (useGuestQuestLaunch) — launching here would race componentLibrary.initialize().
   const handleGuest = () => {
     enterGuest()
-    navigate("/")
+    navigate("/app")
   }
 
   const handleEmailSubmit = async (e: React.FormEvent) => {

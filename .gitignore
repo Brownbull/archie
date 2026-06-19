@@ -85,3 +85,5 @@ dist-dev/
 
 # secrets
 .secrets/
+# Landing screenshot SOURCES (heavy PNGs) — the served WebPs in public/landing/ are committed; regenerate PNGs via the capture spec
+docs/landing/screenshots/

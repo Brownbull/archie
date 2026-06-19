@@ -65,7 +65,7 @@ describe("LoginPage", () => {
     expect(screen.getByTestId("auth-error")).toHaveTextContent("Sign-in was cancelled.")
   })
 
-  it("redirects to / when user is authenticated", () => {
+  it("redirects to /app when user is authenticated", () => {
     mockUseAuth.mockReturnValue({
       user: { uid: "123", displayName: "Test User" },
       loading: false,
@@ -78,13 +78,13 @@ describe("LoginPage", () => {
       <MemoryRouter initialEntries={["/login"]}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<div>Home Page</div>} />
+          <Route path="/app" element={<div>App Page</div>} />
         </Routes>
       </MemoryRouter>
     )
 
     expect(screen.queryByTestId("sign-in-button")).not.toBeInTheDocument()
-    expect(screen.getByText("Home Page")).toBeInTheDocument()
+    expect(screen.getByText("App Page")).toBeInTheDocument()
   })
 
   it("renders nothing while loading", () => {

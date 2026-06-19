@@ -33,9 +33,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
   }
 
   // A guest (no Firebase user) is allowed through — they reach the canvas with a null uid, so every
-  // Firestore write stays a no-op and nothing persists. Real auth is still required for everyone else.
+  // Firestore write stays a no-op and nothing persists. Anyone else who lands on /app without entering
+  // goes to the marketing landing ("/") to pick guest or sign-in.
   if (!user && !isGuest) {
-    return <Navigate to="/login" replace />
+    return <Navigate to="/" replace />
   }
 
   return <>{children}</>

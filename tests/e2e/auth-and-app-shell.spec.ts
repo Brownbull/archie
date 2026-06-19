@@ -4,13 +4,18 @@ const SCREENSHOT_DIR = "test-results/auth-and-app-shell"
 
 test.describe("Auth & App Shell E2E", () => {
   test("authenticated user sees app shell with all regions", async ({ page }) => {
-    await page.goto("/")
+    // The app now lives at /app (the marketing landing is "/"). An authed visit to "/" auto-redirects
+    // here, but go direct to avoid the redirect + lazy-chunk hop in this shell assertion.
+    await page.goto("/app")
 
     // Toolbar
     const toolbar = page.locator('[data-testid="toolbar"]')
-    await expect(toolbar).toBeVisible()
+    await expect(toolbar).toBeVisible({ timeout: 20_000 })
     await expect(toolbar).toContainText("Archie")
-    await expect(toolbar).toContainText("Test User")
+    // The signed-in account chip is present. (Don't assert a specific name: the toolbar shows the
+    // account NICKNAME once userProgress loads, not the Firebase displayName — D105b — so asserting
+    // "Test User" raced the nickname load.)
+    await expect(page.getByTestId("account-menu-trigger")).toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/01-app-shell-authenticated.png`,
@@ -29,20 +34,21 @@ test.describe("Auth & App Shell E2E", () => {
     })
   })
 
-  test("sign out returns to login page", async ({ page }) => {
-    await page.goto("/")
-    await expect(page.locator('[data-testid="toolbar"]')).toBeVisible()
+  test("sign out returns to the landing", async ({ page }) => {
+    await page.goto("/app")
+    await expect(page.locator('[data-testid="toolbar"]')).toBeVisible({ timeout: 20_000 })
 
     // Sign out now lives inside the account dropdown (data-testid="account-sign-out"),
     // opened via the account-menu trigger — it is no longer a top-level "Sign out" button.
     await page.getByTestId("account-menu-trigger").click()
     await page.getByTestId("account-sign-out").click()
 
-    await expect(page.locator('[data-testid="sign-in-button"]')).toBeVisible({ timeout: 10_000 })
-    await expect(page.locator('text=Sign in with Google')).toBeVisible()
+    // Signing out clears the user; AuthGuard sends them to the marketing landing ("/"), where they
+    // can pick guest mode or sign in again.
+    await expect(page.getByTestId("landing-guest-cta")).toBeVisible({ timeout: 10_000 })
 
     await page.screenshot({
-      path: `${SCREENSHOT_DIR}/03-signed-out-login-page.png`,
+      path: `${SCREENSHOT_DIR}/03-signed-out-landing.png`,
       fullPage: true,
     })
   })
@@ -50,14 +56,18 @@ test.describe("Auth & App Shell E2E", () => {
   test.describe("unauthenticated", () => {
     test.use({ storageState: { cookies: [], origins: [] } })
 
-    test("unauthenticated user is redirected to login", async ({ page }) => {
+    test("unauthenticated user sees the landing at / and is kept out of /app", async ({ page }) => {
+      // "/" is now the marketing landing for first-time visitors (not the login page).
       await page.goto("/")
+      await expect(page.getByTestId("landing-guest-cta")).toBeVisible({ timeout: 10_000 })
+      await expect(page.locator('[data-testid="toolbar"]')).toHaveCount(0)
 
-      // Should redirect to /login
-      await expect(page.locator('[data-testid="sign-in-button"]')).toBeVisible({ timeout: 10_000 })
+      // A direct hit on /app without auth/guest bounces back to the landing.
+      await page.goto("/app")
+      await expect(page.getByTestId("landing-guest-cta")).toBeVisible({ timeout: 10_000 })
 
       await page.screenshot({
-        path: `${SCREENSHOT_DIR}/04-unauthenticated-redirect.png`,
+        path: `${SCREENSHOT_DIR}/04-unauthenticated-landing.png`,
         fullPage: true,
       })
     })

@@ -5964,3 +5964,15 @@ DESIGN NOTE: user asked for a ~12-node cap; reframed to quest-scoping because ar
 GO-LIVE PENDING (needs user): (1) set a Firestore daily spend cap in Firebase console; (2) manual
   `firebase deploy --only firestore:rules` (CI deploys hosting only — see memory). Until rules deploy,
   a guest can't read the catalog so the feature is dormant on prod even after a hosting deploy.
+
+## 2026-06-17 — INFRA budget guard for guest-mode public catalog reads
+CONTEXT: guest mode opened catalog reads to unauthenticated clients; archie-2a560 is on Blaze
+  (billingEnabled). Set a Cloud Billing budget ALERT (not a hard cap — budgets only notify).
+DETAILS: budget 2c93f87e-… on billing acct 0101C8-9EA7E8-A26040, scoped to archie-2a560 ONLY
+  (project 186079942012, not the shared Gastify projects), amount 10,000 CLP (~$10/mo, account
+  currency is CLP), thresholds 50/90/100% → emails billing admins. Enabled billingbudgets API on
+  archie-2a560. Created via gcloud (user's own account auth).
+USAGE FACTS: guest spends Firestore READS only (zero writes). Cold load ~150 reads; warm/returning
+  ~1 (localStorage cache, refDataCache). Free tier 50k reads/day = ~330 new cold guests/day free.
+  Reads ~$0.06/100k beyond free → financial risk LOW; budget is anomaly-detection hygiene.
+NOT DONE (the real anti-abuse control): App Check — deferred (needs reCAPTCHA key + code change).
