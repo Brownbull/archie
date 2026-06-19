@@ -4,7 +4,14 @@ import { useAuth } from "@/hooks/useAuth"
 import { useGuestStore } from "@/stores/guestStore"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "./Reveal"
-import { useParallax } from "./useParallax"
+import { WordReveal } from "./WordReveal"
+
+const HEADLINE = "Design, score & simulate software architecture."
+// Word-reveal timing (must match the values passed to <WordReveal> below). The subtitle + CTAs fade
+// in once the last word lands, so the rest of the hero "appears" right after the title finishes.
+const WR_START = 120
+const WR_STAGGER = 95
+const REST_DELAY = WR_START + HEADLINE.split(" ").length * WR_STAGGER + 320
 
 // Custom pixel-art icons (PixelLab, 64×64, no background) — the same visual language as Archie's
 // in-app component icons. Rendered with image-rendering: pixelated so they stay crisp when scaled.
@@ -54,6 +61,18 @@ const SHOTS = [
     title: "Watch it under load",
     body: "Live telemetry and a request-health timeline. Run failure scenarios and prove your architecture holds — or find out where it doesn't.",
   },
+  {
+    src: "/landing/04-quests.webp",
+    alt: "Archie's Quest Log — a tree of 64 quests across seven tracks, from Foundations to AI/ML",
+    title: "Learn by building",
+    body: "64 guided quests across seven tracks — from your first service to scale-out. Work up the tree, one architecture at a time.",
+  },
+  {
+    src: "/landing/05-ai-prompt.webp",
+    alt: "Archie's AI prompt template dialog for generating an architecture with any LLM and importing the YAML",
+    title: "Describe it with AI",
+    body: "Ask any LLM for an architecture in Archie's format, paste the YAML back in, and get it scored in seconds.",
+  },
 ] as const
 
 export function LandingPage() {
@@ -61,7 +80,6 @@ export function LandingPage() {
   const isGuest = useGuestStore((s) => s.isGuest)
   const enterGuest = useGuestStore((s) => s.enterGuest)
   const navigate = useNavigate()
-  const heroShot = useParallax<HTMLImageElement>(0.05)
 
   // Returning users (or an in-progress guest) skip the marketing page and go straight to the app.
   if (user || isGuest) return <Navigate to="/app" replace />
@@ -74,7 +92,7 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0f1117] text-text-primary">
       {/* Top bar */}
-      <header className="sticky top-0 z-30 border-b border-archie-border/60 bg-[#0f1117]/80 backdrop-blur">
+      <header className="sticky top-0 z-30 border-b border-archie-border/40 bg-[#0f1117]/70 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
           <span className="font-mono text-lg font-bold tracking-tight text-text-primary">Archie</span>
           <button
@@ -88,51 +106,39 @@ export function LandingPage() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        {/* indigo glow + dot grid */}
+      {/* Hero — a static, blurred + dimmed app screenshot behind a word-by-word headline */}
+      <section className="relative flex min-h-[88vh] items-center overflow-hidden">
+        <img
+          src="/landing/01-architecture-canvas.webp"
+          aria-hidden
+          className="absolute inset-0 h-full w-full scale-105 object-cover blur-[3px]"
+        />
+        <div aria-hidden className="absolute inset-0 bg-[#0f1117]/82" />
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(60% 50% at 50% 0%, rgba(99,102,241,0.18) 0%, rgba(99,102,241,0) 70%)",
-          }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage: "radial-gradient(rgba(129,140,248,0.18) 1px, transparent 1px)",
-            backgroundSize: "26px 26px",
-            maskImage: "radial-gradient(70% 55% at 50% 25%, #000 0%, transparent 80%)",
-            WebkitMaskImage: "radial-gradient(70% 55% at 50% 25%, #000 0%, transparent 80%)",
+              "radial-gradient(70% 60% at 50% 45%, rgba(15,17,23,0.55) 0%, rgba(15,17,23,0.92) 100%), radial-gradient(50% 40% at 50% 30%, rgba(99,102,241,0.22), transparent 70%)",
           }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-20 text-center sm:pt-28">
+        <div className="relative mx-auto max-w-3xl px-6 pb-10 text-center">
           <Reveal>
             <span className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-archie-accent-hover">
               Visual Architecture Simulator
             </span>
-            <h1 className="mx-auto mt-5 max-w-3xl text-balance text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
-              Design, score &amp; simulate{" "}
-              <span className="bg-gradient-to-r from-archie-accent to-archie-accent-hover bg-clip-text text-transparent">
-                software architecture
-              </span>
-              .
-            </h1>
+          </Reveal>
+          <h1 className="mx-auto mt-5 text-balance text-4xl font-bold leading-[1.1] tracking-tight sm:text-6xl">
+            <WordReveal text={HEADLINE} gradientFrom={4} startDelay={WR_START} stagger={WR_STAGGER} />
+          </h1>
+          <Reveal delay={REST_DELAY}>
             <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-text-secondary sm:text-lg">
               Drag real components onto a canvas, get an objective grade, and run live traffic
               simulations with failure injection — right in your browser. No setup, no signup.
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Button
-                data-testid="landing-guest-cta"
-                size="lg"
-                onClick={startGuest}
-                className="group w-full sm:w-auto"
-              >
+              <Button data-testid="landing-guest-cta" size="lg" onClick={startGuest} className="group w-full sm:w-auto">
                 Try it free — no login
                 <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Button>
@@ -145,26 +151,6 @@ export function LandingPage() {
               >
                 Sign in
               </Button>
-            </div>
-          </Reveal>
-
-          {/* Hero product shot */}
-          <Reveal delay={120} className="mt-14">
-            <div className="relative mx-auto max-w-5xl">
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -inset-6 rounded-3xl opacity-60 blur-2xl"
-                style={{ background: "radial-gradient(50% 50% at 50% 50%, rgba(99,102,241,0.25), transparent 70%)" }}
-              />
-              <img
-                ref={heroShot}
-                src="/landing/01-architecture-canvas.webp"
-                alt="An architecture built in Archie — connected components on a canvas with a build-health checklist, an overall grade and a cost estimate"
-                width={1600}
-                height={1000}
-                loading="eager"
-                className="relative w-full rounded-xl border border-archie-border shadow-2xl"
-              />
             </div>
           </Reveal>
         </div>
