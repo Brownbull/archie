@@ -31,10 +31,15 @@ test.describe("Landing page", () => {
     await expect(page.getByTestId("guest-sign-in")).toBeVisible({ timeout: 5_000 })
   })
 
-  test("sign-in CTA routes to /login", async ({ page }) => {
+  test("sign-in CTA routes to /login, and the login page can return to the landing", async ({ page }) => {
     await page.goto("/")
     await page.getByTestId("landing-signin-cta").click()
     await expect(page).toHaveURL(/\/login$/)
     await expect(page.getByTestId("login-page")).toBeVisible({ timeout: 10_000 })
+
+    // "Back to home" returns to the marketing landing.
+    await page.getByTestId("login-back-home").click()
+    await expect(page).toHaveURL(/\/$/)
+    await expect(page.getByTestId("landing-guest-cta")).toBeVisible({ timeout: 10_000 })
   })
 })

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
+import { ArrowLeft } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useGuestStore } from "@/stores/guestStore"
 import { Button } from "@/components/ui/button"
@@ -43,8 +44,17 @@ export function LoginPage() {
   return (
     <div
       data-testid="login-page"
-      className="flex min-h-screen items-center justify-center bg-canvas"
+      className="relative flex min-h-screen items-center justify-center bg-canvas"
     >
+      <button
+        type="button"
+        data-testid="login-back-home"
+        onClick={() => navigate("/")}
+        className="absolute left-4 top-4 inline-flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to home
+      </button>
+
       <div className="flex w-full max-w-sm flex-col items-center gap-6 rounded-lg border border-archie-border bg-panel p-8">
         <div className="flex flex-col items-center gap-2">
           <h1 className="text-3xl font-bold text-text-primary">Archie</h1>
