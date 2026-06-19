@@ -1,39 +1,32 @@
-name: E2E (unlocked replay)
+name: E2E (landing — home-screen check)
 
-# Runs the capstone/replay E2E (the `desktop-unlocked` Playwright project) against REAL Firebase, using
-# the dedicated all-quests-complete account. Kept SEPARATE from the deploy gate (deploy-production.yml)
-# and from the unit/integration CI (ci.yml) — per D11, full E2E is environmental and not a deploy gate;
-# this is a focused, deterministic signal that capstones still replay to 3★ in the running app.
+# Fast counterpart to e2e-desktop.yml. The heavy app suite is skipped for home-screen-only pushes
+# (see paths-ignore there); this runs in its place — just the landing/home specs (~a handful of tests
+# vs ~290), so marketing-page iterations get a CI safety net without the ~13-minute app suite.
 #
-# Required repo secrets (skips gracefully if VITE_TEST_UNLOCKED_EMAIL is unset):
-#   VITE_FIREBASE_* (the 6 existing config secrets), VITE_TEST_EMAIL/PASSWORD,
-#   VITE_TEST_UNLOCKED_EMAIL/PASSWORD. The e2e-unlocked account auto-creates on first run if
-#   Email/Password sign-up is enabled in Firebase Auth; otherwise create it once in the console.
+# Triggers ONLY when a push changes landing files. Uses the same Firebase + primary test-account
+# secrets as e2e-desktop (the guest-CTA test boots the app shell, and global-setup authenticates via
+# the dev-only Test Login). Skips gracefully if secrets are unset.
 
 on:
   push:
     branches: [dev, main]
-    # Skip the heavy unlocked-replay suite for home-screen / docs / bookkeeping / workflow-only pushes
-    # (same rationale as e2e-desktop.yml). App-code changes still run it.
-    paths-ignore:
+    paths:
       - "src/components/landing/**"
       - "public/landing/**"
       - "tests/e2e/landing.spec.ts"
-      - "docs/**"
-      - ".kdbp/**"
-      - ".github/**"
-      - "**/*.md"
   workflow_dispatch:
 
 concurrency:
-  group: e2e-unlocked-${{ github.ref }}
+  group: e2e-landing-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  e2e-unlocked:
+  e2e-landing:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
-      VITE_TEST_UNLOCKED_EMAIL: ${{ secrets.VITE_TEST_UNLOCKED_EMAIL }}
+      VITE_TEST_EMAIL: ${{ secrets.VITE_TEST_EMAIL }}
     steps:
       - uses: actions/checkout@v6
 
@@ -47,8 +40,8 @@ jobs:
       - name: Check secrets configured
         id: guard
         run: |
-          if [ -z "$VITE_TEST_UNLOCKED_EMAIL" ]; then
-            echo "::notice::VITE_TEST_UNLOCKED_EMAIL secret not set — skipping unlocked E2E."
+          if [ -z "$VITE_TEST_EMAIL" ]; then
+            echo "::notice::VITE_TEST_EMAIL secret not set — skipping landing E2E."
             echo "configured=false" >> "$GITHUB_OUTPUT"
           else
             echo "configured=true" >> "$GITHUB_OUTPUT"
@@ -70,19 +63,17 @@ jobs:
           VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_TEST_EMAIL=${{ secrets.VITE_TEST_EMAIL }}
           VITE_TEST_PASSWORD=${{ secrets.VITE_TEST_PASSWORD }}
-          VITE_TEST_UNLOCKED_EMAIL=${{ secrets.VITE_TEST_UNLOCKED_EMAIL }}
-          VITE_TEST_UNLOCKED_PASSWORD=${{ secrets.VITE_TEST_UNLOCKED_PASSWORD }}
           EOF
 
-      - name: Run unlocked replay E2E
+      - name: Run landing E2E
         if: steps.guard.outputs.configured == 'true'
-        run: npx playwright test --project=desktop-unlocked
+        run: npx playwright test landing.spec.ts --project=desktop --workers=2
 
       - name: Upload Playwright artifacts
         if: ${{ failure() && steps.guard.outputs.configured == 'true' }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-landing
           path: |
             playwright-report/
             test-results/
