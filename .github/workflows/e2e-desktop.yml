@@ -16,6 +16,18 @@ name: E2E (desktop — informational)
 on:
   push:
     branches: [dev, main]
+    # Skip the heavy app suite when a push touches ONLY home-screen / docs / bookkeeping / workflow
+    # files — the marketing landing doesn't exercise the application. ANY change outside this list
+    # (app code, engine, stores, shared layout, App.tsx routing, other specs) still runs the full
+    # suite. Landing-only changes are covered by the fast e2e-landing.yml instead.
+    paths-ignore:
+      - "src/components/landing/**"
+      - "public/landing/**"
+      - "tests/e2e/landing.spec.ts"
+      - "docs/**"
+      - ".kdbp/**"
+      - ".github/**"
+      - "**/*.md"
   workflow_dispatch:
     inputs:
       grep:
