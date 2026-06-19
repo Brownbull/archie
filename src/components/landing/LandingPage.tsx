@@ -1,38 +1,40 @@
 import { Navigate, useNavigate } from "react-router-dom"
-import { Boxes, Gauge, Activity, Sparkles, GraduationCap, MousePointerClick, ArrowRight } from "lucide-react"
+import { ArrowRight } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useGuestStore } from "@/stores/guestStore"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "./Reveal"
 
+// Custom pixel-art icons (PixelLab, 64×64, no background) — the same visual language as Archie's
+// in-app component icons. Rendered with image-rendering: pixelated so they stay crisp when scaled.
 const FEATURES = [
   {
-    icon: Boxes,
+    icon: "/landing/icons/01-components.png",
     title: "116 real components",
     body: "AWS, Postgres, Kafka, Redis, CDNs, LLM gateways and more — drag them onto the canvas and wire them together.",
   },
   {
-    icon: Gauge,
+    icon: "/landing/icons/02-scoring.png",
     title: "Objective scoring",
     body: "Every build is graded across performance, reliability, scalability, cost and operations. No hand-waving.",
   },
   {
-    icon: Activity,
+    icon: "/landing/icons/03-simulation.png",
     title: "Live simulation",
     body: "Drive real traffic and watch latency, RPS, uptime and cost move in real time. Inject failures and see what breaks.",
   },
   {
-    icon: Sparkles,
+    icon: "/landing/icons/04-ai-import.png",
     title: "AI prompt → import",
     body: "Ask any LLM for an architecture in Archie's format, import the YAML, and get it scored in seconds.",
   },
   {
-    icon: GraduationCap,
+    icon: "/landing/icons/05-quests.png",
     title: "Quest curriculum",
     body: "Learn by building — 64 guided quests across 7 tracks, from your First Service all the way to scale-out.",
   },
   {
-    icon: MousePointerClick,
+    icon: "/landing/icons/06-zero-setup.png",
     title: "Zero setup",
     body: "Runs entirely in your browser. Nothing to install, and no account required to start.",
   },
@@ -183,8 +185,17 @@ export function LandingPage() {
           {FEATURES.map((f, i) => (
             <Reveal key={f.title} delay={(i % 3) * 80}>
               <div className="group h-full rounded-xl border border-archie-border bg-panel/60 p-6 transition-colors duration-200 hover:border-archie-accent/60">
-                <div className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-archie-border bg-surface text-archie-accent-hover transition-colors group-hover:border-archie-accent/60">
-                  <f.icon className="h-5 w-5" />
+                <div className="inline-flex h-14 w-14 items-center justify-center rounded-lg border border-archie-border bg-surface transition-colors group-hover:border-archie-accent/60">
+                  <img
+                    src={f.icon}
+                    alt=""
+                    aria-hidden
+                    width={64}
+                    height={64}
+                    loading="lazy"
+                    className="h-10 w-10"
+                    style={{ imageRendering: "pixelated" }}
+                  />
                 </div>
                 <h3 className="mt-4 text-base font-semibold text-text-primary">{f.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-text-secondary">{f.body}</p>
