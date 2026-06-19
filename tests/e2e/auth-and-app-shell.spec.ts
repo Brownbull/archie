@@ -12,7 +12,10 @@ test.describe("Auth & App Shell E2E", () => {
     const toolbar = page.locator('[data-testid="toolbar"]')
     await expect(toolbar).toBeVisible({ timeout: 20_000 })
     await expect(toolbar).toContainText("Archie")
-    await expect(toolbar).toContainText("Test User")
+    // The signed-in account chip is present. (Don't assert a specific name: the toolbar shows the
+    // account NICKNAME once userProgress loads, not the Firebase displayName — D105b — so asserting
+    // "Test User" raced the nickname load.)
+    await expect(page.getByTestId("account-menu-trigger")).toBeVisible()
 
     await page.screenshot({
       path: `${SCREENSHOT_DIR}/01-app-shell-authenticated.png`,
