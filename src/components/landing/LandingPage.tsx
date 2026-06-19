@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth"
 import { useGuestStore } from "@/stores/guestStore"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "./Reveal"
+import { useParallax } from "./useParallax"
 
 // Custom pixel-art icons (PixelLab, 64×64, no background) — the same visual language as Archie's
 // in-app component icons. Rendered with image-rendering: pixelated so they stay crisp when scaled.
@@ -60,6 +61,7 @@ export function LandingPage() {
   const isGuest = useGuestStore((s) => s.isGuest)
   const enterGuest = useGuestStore((s) => s.enterGuest)
   const navigate = useNavigate()
+  const heroShot = useParallax<HTMLImageElement>(0.05)
 
   // Returning users (or an in-progress guest) skip the marketing page and go straight to the app.
   if (user || isGuest) return <Navigate to="/app" replace />
@@ -155,6 +157,7 @@ export function LandingPage() {
                 style={{ background: "radial-gradient(50% 50% at 50% 50%, rgba(99,102,241,0.25), transparent 70%)" }}
               />
               <img
+                ref={heroShot}
                 src="/landing/01-architecture-canvas.webp"
                 alt="An architecture built in Archie — connected components on a canvas with a build-health checklist, an overall grade and a cost estimate"
                 width={1600}
@@ -183,8 +186,8 @@ export function LandingPage() {
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((f, i) => (
-            <Reveal key={f.title} delay={(i % 3) * 80}>
-              <div className="group h-full rounded-xl border border-archie-border bg-panel/60 p-6 transition-colors duration-200 hover:border-archie-accent/60">
+            <Reveal key={f.title} delay={(i % 3) * 110} direction="up">
+              <div className="group h-full rounded-xl border border-archie-border bg-panel/60 p-6 transition-all duration-200 hover:-translate-y-1 hover:border-archie-accent/60">
                 <div className="inline-flex h-14 w-14 items-center justify-center rounded-lg border border-archie-border bg-surface transition-colors group-hover:border-archie-accent/60">
                   <img
                     src={f.icon}
@@ -208,12 +211,15 @@ export function LandingPage() {
       {/* Screenshot showcase — alternating */}
       <section className="mx-auto max-w-6xl px-6 pb-8">
         <div className="flex flex-col gap-16 sm:gap-24">
-          {SHOTS.map((s, i) => (
-            <Reveal key={s.src}>
+          {SHOTS.map((s, i) => {
+            // Alternate sides; each half slides in from its own side as the row scrolls into view.
+            const imgOnLeft = i % 2 === 0
+            return (
               <div
-                className={`grid items-center gap-8 lg:grid-cols-2 ${i % 2 === 1 ? "lg:[&>*:first-child]:order-2" : ""}`}
+                key={s.src}
+                className={`grid items-center gap-8 lg:grid-cols-2 ${imgOnLeft ? "" : "lg:[&>*:first-child]:order-2"}`}
               >
-                <div className="relative">
+                <Reveal direction={imgOnLeft ? "left" : "right"} className="relative">
                   <div
                     aria-hidden
                     className="pointer-events-none absolute -inset-4 rounded-3xl opacity-50 blur-2xl"
@@ -227,20 +233,20 @@ export function LandingPage() {
                     loading="lazy"
                     className="relative w-full rounded-xl border border-archie-border shadow-xl"
                   />
-                </div>
-                <div className="max-w-md">
+                </Reveal>
+                <Reveal direction={imgOnLeft ? "right" : "left"} delay={90} className="max-w-md">
                   <h3 className="text-2xl font-bold tracking-tight sm:text-3xl">{s.title}</h3>
                   <p className="mt-4 leading-relaxed text-text-secondary">{s.body}</p>
-                </div>
+                </Reveal>
               </div>
-            </Reveal>
-          ))}
+            )
+          })}
         </div>
       </section>
 
       {/* Closing CTA */}
       <section className="mx-auto max-w-6xl px-6 py-24">
-        <Reveal>
+        <Reveal direction="scale">
           <div className="relative overflow-hidden rounded-2xl border border-archie-border bg-panel/60 px-6 py-16 text-center">
             <div
               aria-hidden
